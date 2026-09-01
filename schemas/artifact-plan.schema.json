@@ -1,0 +1,89 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://suengj.com/schemas/artifact-plan.schema.json",
+  "title": "Artifact plan",
+  "description": "Generator-neutral plan emitted by the plan-artifacts Skill (AES-P2.6 / SUE-448). The plan is the versioned artifact; the rendered output is a build product. Handing the same plan to a different generator must not change the editorial semantics.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "article_ref", "planned_by", "decisions"],
+  "properties": {
+    "schema_version": { "const": "1.0.0" },
+    "article_ref": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["article_id", "version_number", "content_hash", "claims_hash"],
+      "properties": {
+        "article_id": { "type": "string", "pattern": "^art:[a-z0-9]+(-[a-z0-9]+)*$" },
+        "version_number": { "type": "integer", "minimum": 1 },
+        "content_hash": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "claims_hash": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+      }
+    },
+    "planned_by": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "version"],
+      "properties": {
+        "name": { "const": "plan-artifacts" },
+        "version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" }
+      }
+    },
+    "decisions": {
+      "description": "One entry per artifact kind considered. `skip` is a valid and expected outcome.",
+      "type": "array",
+      "items": { "$ref": "#/$defs/decision" }
+    }
+  },
+  "$defs": {
+    "decision": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "verdict", "reason"],
+      "properties": {
+        "kind": {
+          "enum": ["brief", "full", "sources", "evidence_visual", "slides", "infographic", "audio", "video"]
+        },
+        "verdict": { "enum": ["recommended", "optional", "skip"] },
+        "reason": { "type": "string", "minLength": 1 },
+        "media_stage": { "enum": ["evidence", "distribution"] },
+        "carries_claims": {
+          "description": "claim_ids this artifact will assert. Required for any fact-bearing artifact that is not skipped.",
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "spec": { "$ref": "#/$defs/spec" }
+      }
+    },
+    "spec": {
+      "description": "Generator-neutral instructions. Describes what the artifact must accomplish, never how a particular tool should do it.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "question": {
+          "description": "Evidence visuals only: the single question the visual must answer. A visual without one is decoration.",
+          "type": "string"
+        },
+        "form": {
+          "enum": ["chart", "table", "timeline", "diagram", "framework"]
+        },
+        "data_claims": { "type": "array", "items": { "type": "string" } },
+        "feedback_point": {
+          "description": "Evidence visuals only: where this could change the argument if it does not show what was expected.",
+          "type": "string"
+        },
+        "hierarchy": {
+          "description": "Brief only: information order, most load-bearing first.",
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "narrative": {
+          "description": "Slides only: the argument beat per page.",
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "page_target": { "type": "integer", "minimum": 1 },
+        "purpose": { "type": "string" }
+      }
+    }
+  }
+}

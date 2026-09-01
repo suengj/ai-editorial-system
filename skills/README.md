@@ -33,4 +33,21 @@ npm run validate:skills
 npm run test:skills
 ```
 
-Skills built in AES-P2.2–P2.6.
+## The V0.1 set
+
+```
+frame-article → verify-claims → write-article → editorial-polish → human review
+                                      ↘ plan-artifacts → generators
+```
+
+| Skill | Owns | Issue |
+|---|---|---|
+| [`frame-article`](frame-article/) | The decision to write, or `NO_ARTICLE` | AES-P2.2 (SUE-444) |
+| [`verify-claims`](verify-claims/) | What is true and supported | AES-P2.4 (SUE-446) |
+| [`write-article`](write-article/) | The draft, arguing the frame's thesis | AES-P2.3 (SUE-445) |
+| [`editorial-polish`](editorial-polish/) | How it reads — never what it claims | AES-P2.5 (SUE-447) |
+| [`plan-artifacts`](plan-artifacts/) | Which artifacts are worth building | AES-P2.6 (SUE-448) |
+
+The division is the design. Verification decides truth and may block a
+finalization; polish decides rhythm and may not touch a protected span; the
+human decides publication, and no Skill in the set can.

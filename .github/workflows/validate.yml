@@ -69,3 +69,7 @@ jobs:
         run: npm run validate:skills
       - name: Skill format regression
         run: npm run test:skills
+      - name: Validate artifact plan example
+        run: npm run validate:plan
+      - name: Skills pipeline regression
+        run: npm run test:pipeline

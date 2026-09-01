@@ -1,0 +1,83 @@
+{
+  "schema_version": "1.0.0",
+  "article_ref": {
+    "article_id": "art:ai-inference-pricing-and-saas-gross-margin",
+    "version_number": 3,
+    "content_hash": "1111111111111111111111111111111111111111111111111111111111111111",
+    "claims_hash": "2222222222222222222222222222222222222222222222222222222222222222"
+  },
+  "planned_by": { "name": "plan-artifacts", "version": "0.1.0" },
+  "decisions": [
+    {
+      "kind": "evidence_visual",
+      "verdict": "recommended",
+      "reason": "The argument turns on a gap between two series that no source plots together.",
+      "media_stage": "evidence",
+      "carries_claims": ["c1", "c2"],
+      "spec": {
+        "question": "Did reported gross margin move while list prices fell?",
+        "form": "chart",
+        "data_claims": ["c1", "c2"],
+        "feedback_point": "If margin tracks price after all, the thesis fails and the piece returns to framing."
+      }
+    },
+    {
+      "kind": "sources",
+      "verdict": "recommended",
+      "reason": "Three sources of differing authority, one of them contradicting. Readers should see the weighting.",
+      "media_stage": "evidence"
+    },
+    {
+      "kind": "brief",
+      "verdict": "recommended",
+      "reason": "News profile default; the argument compresses to three beats without loss.",
+      "media_stage": "distribution",
+      "carries_claims": ["c1", "c2", "c4"],
+      "spec": {
+        "hierarchy": [
+          "Prices fell and margins did not",
+          "Why seat pricing amplifies rather than absorbs",
+          "What would have to be true for the usual reading to hold"
+        ]
+      }
+    },
+    {
+      "kind": "slides",
+      "verdict": "optional",
+      "reason": "Compresses cleanly, but the cost-stack decomposition needs the chart to carry it. Build after the evidence visual is settled.",
+      "media_stage": "distribution",
+      "carries_claims": ["c1", "c2"],
+      "spec": {
+        "narrative": [
+          "The claim as usually stated",
+          "What the price actually covers",
+          "The cost stack",
+          "Where the two series diverge",
+          "What would have to be true",
+          "What remains unknown"
+        ],
+        "page_target": 6
+      }
+    },
+    {
+      "kind": "infographic",
+      "verdict": "skip",
+      "reason": "Nothing here needs a composed visual that the chart does not already carry."
+    },
+    {
+      "kind": "audio",
+      "verdict": "skip",
+      "reason": "Rank 5 in the priority order and no automation surface established. No reason to promote it for this piece."
+    },
+    {
+      "kind": "video",
+      "verdict": "skip",
+      "reason": "Deferred at strategy level; per-second cost with no editorial need."
+    },
+    {
+      "kind": "full",
+      "verdict": "skip",
+      "reason": "The canonical article is the full text. A duplicate would be a second copy to keep in sync."
+    }
+  ]
+}
