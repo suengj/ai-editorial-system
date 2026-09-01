@@ -47,7 +47,6 @@ console.log('allow fixtures (expect 0 violations)');
 console.log('deny fixtures (expect the named rule on each file)');
 {
   const expected = {
-    'captions.vtt': RULES.SOURCE_CORPUS,
     'confidential-note.md': RULES.PRIVATE_RESEARCH,
     'archived-article.md': RULES.ARTICLE_ARCHIVE,
   };
@@ -66,10 +65,15 @@ console.log('deny fixtures (expect the named rule on each file)');
 }
 
 // --- 3. runtime-only deny cases -------------------------------------------
-// Secret-shaped material and oversized binaries are synthesised in a temp dir
-// rather than committed: a public repo must not carry credential-shaped blobs
-// even as test data, and the charter bans large binaries outright.
-console.log('runtime-only deny cases (secrets, large binaries)');
+// Secret-shaped material, oversized binaries, and source-corpus files are
+// synthesised in a temp dir rather than committed: a public repo must not carry
+// credential-shaped blobs even as test data, and the charter bans large
+// binaries and raw transcript corpora outright.
+//
+// A committed fixture cannot test a rule that .gitignore already enforces —
+// the file would be absent from a clean checkout and the case would pass
+// vacuously. Synthesising it is the only way the rule is actually exercised.
+console.log('runtime-only deny cases (secrets, large binaries, source corpus)');
 {
   const dir = mkdtempSync(join(tmpdir(), 'aes-boundary-'));
   try {
@@ -82,6 +86,10 @@ console.log('runtime-only deny cases (secrets, large binaries)');
     writeFileSync(join(dir, 'oversized.mp4'), Buffer.alloc(3 * 1024 * 1024, 0x41));
     writeFileSync(join(dir, 'small.png'), Buffer.alloc(1024, 0x42));
     writeFileSync(join(dir, 'clean.md'), '# Ordinary document\n\nNothing forbidden here.\n');
+    writeFileSync(
+      join(dir, 'captions.vtt'),
+      'WEBVTT\n\n00:00:00.000 --> 00:00:02.000\nraw transcript line\n',
+    );
 
     const { violations } = scan(dir);
     const fired = (file, rule) => violations.some((v) => v.file === file && v.rule === rule);
@@ -91,6 +99,7 @@ console.log('runtime-only deny cases (secrets, large binaries)');
     check('assigned api_key trips secret', fired('assigned.yaml', RULES.SECRET));
     check('.env file name trips secret', fired('.env', RULES.SECRET));
     check('a 3 MB .mp4 trips large-binary', fired('oversized.mp4', RULES.LARGE_BINARY));
+    check('a .vtt transcript trips source-corpus', fired('captions.vtt', RULES.SOURCE_CORPUS));
     check(
       'a 1 KB .png does not',
       !violations.some((v) => v.file === 'small.png'),
