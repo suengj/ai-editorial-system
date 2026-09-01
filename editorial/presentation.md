@@ -103,6 +103,58 @@ Two entries worth explaining:
 **No rule requires any article to use a block.** Plain prose is the default
 and always sufficient.
 
+## Domain is a separate axis, not a content type
+
+Content type answers *what kind of piece is this*. Domain answers *what is it
+about*. They are orthogonal, and mixing them is how a taxonomy doubles.
+
+Domain may make certain roles more useful. It does not create new content
+types and, in V0.1, it does not extend the vocabulary:
+
+| Domain | Roles that tend to earn their place |
+|---|---|
+| Technology | `code_example`, `visual_ref` (architecture, system flow), `comparison` for decisions |
+| Investment | `visual_ref` (chart), `data_table` for scenarios, `timeline`, `caution` for assumptions |
+| Math education | *deferred* — `definition`, `worked_example`, `derivation`, `common_mistake` are plausible domain extensions and are **not** added now |
+
+The rule for V0.1 is to leave the vocabulary at ten roles. A domain extension
+is a contract change with its own evidence, not a convenience. Adding
+`definition` before a single piece needs it would be expanding a taxonomy on
+speculation.
+
+There is no `domain` field in the presentation plan yet, deliberately. When
+one is needed it belongs beside `content_type` on the Article, not inside the
+block vocabulary.
+
+## Semantic presentation is not a generated artifact
+
+Two things that look adjacent and are governed differently:
+
+| | Semantic presentation | Generated artifact |
+|---|---|---|
+| What it is | A role assigned to information already in the article | A separate object compiled from the article |
+| Where it lives | `presentation-plan.schema.json` | `artifact.schema.json` |
+| Governed by | This document | `MEDIA-STRATEGY.md`, evidence-media provenance |
+| Example | `comparison` rendered as a Markdown table | `evidence_visual` — a chart with a spec, a renderer version, and claim provenance |
+
+A `comparison` role often needs no artifact at all: a Markdown table carries
+it, and inventing a chart would be decoration. The `visual_ref` role is the
+one bridge — it *points at* an artifact rather than being one, and the
+artifact it points at obeys the evidence-media rules in full: verified claims,
+recorded spec, deterministic regeneration.
+
+Put plainly: **choosing a role is an editorial decision; producing an artifact
+is a build step.** Do not let a role imply that something must be generated.
+
+## Semantic roles are not a decoration quota
+
+Length is not a reason to add a block. A long article with no callouts is
+fine; a short one with four is usually wrong.
+
+The `usually_avoid` guidance and the density check both exist to resist the
+instinct to distribute structure evenly across a piece. Structure earns its
+place per paragraph, not per word count.
+
 ## What is rejected
 
 | Anti-pattern | Why |

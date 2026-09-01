@@ -119,6 +119,13 @@
     "type_fields": {
       "description": "Fields required or permitted by the content-type profile (editorial/profiles/*.json). Shape varies by type; enforced by scripts/lib/profile-core.mjs rather than by this schema.",
       "type": "object"
+    },
+    "presentation_plan_ref": {
+      "description": "Optional. Identifier of a sidecar presentation plan (presentation-plan.schema.json). Additive by design: an article with no plan is complete, and removing a plan never removes information from the canonical Markdown.",
+      "type": [
+        "string",
+        "null"
+      ]
     }
   },
   "$defs": {

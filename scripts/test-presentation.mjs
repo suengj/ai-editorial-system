@@ -173,6 +173,48 @@ console.log('rubric integration');
   check('whether structure clarifies is an editorial dimension', e12?.class === 'editorial');
   check('the regression statement is recorded',
     /less clear, less portable, less accessible, or factually more ambiguous/i.test(rubric.presentation_note ?? ''));
+  check('visual richness is never itself a positive score',
+    /never itself a positive score/i.test(rubric.presentation_note ?? ''));
+  check('E-12 enumerates what a reader must check', (e12?.checks ?? []).length >= 8);
+  check('the mechanical subset is named on I-6', /mechanically decidable/i.test(i6?.note ?? ''));
+}
+
+// --- continuation requirements -------------------------------------------
+console.log('domain axis and artifact distinction');
+{
+  const doc = readFileSync(resolve(ROOT, 'editorial/presentation.md'), 'utf8');
+  check('domain is documented as a separate axis from content type',
+    /Domain is a separate axis, not a content type/.test(doc));
+  check('the V0.1 vocabulary is not extended for domains',
+    /leave the vocabulary at ten roles/.test(doc) && /deferred/.test(doc));
+  check('math-education roles are named as deferred, not added',
+    !JSON.parse(readFileSync(resolve(ROOT, 'schemas/presentation-plan.schema.json'), 'utf8'))
+      .$defs.role.enum.some((r) => ['definition', 'worked_example', 'derivation', 'common_mistake'].includes(r)));
+  check('semantic presentation is distinguished from a generated artifact',
+    /Semantic presentation is not a generated artifact/.test(doc));
+  check('a comparison is allowed to need no artifact',
+    /needs no artifact at all/.test(doc));
+  check('roles are not a decoration quota',
+    /not a decoration quota/.test(doc) && /Length is not a reason to add a block/.test(doc));
+}
+
+// --- writer extension point ----------------------------------------------
+console.log('writer extension point');
+{
+  const skill = readFileSync(resolve(ROOT, 'skills/write-article/SKILL.md'), 'utf8');
+  const articleSchema = JSON.parse(readFileSync(resolve(ROOT, 'schemas/article.schema.json'), 'utf8'));
+
+  check('write-article may emit an optional presentation plan',
+    /optional presentation plan/i.test(skill));
+  check('write-article is forbidden from emitting HTML, CSS, or component names',
+    /emit HTML, CSS, colour values, or renderer component names/.test(skill));
+  check('write-article defers to the presentation contract',
+    /editorial\/presentation\.md/.test(skill));
+  check('the plan link on the Article is optional and additive',
+    'presentation_plan_ref' in articleSchema.properties &&
+    !articleSchema.required.includes('presentation_plan_ref'));
+  check('the losslessness invariant is stated in the Skill',
+    /canonical Markdown is complete\s+without it/.test(skill));
 }
 
 console.log(failures === 0 ? '\npresentation regression: PASS' : `\npresentation regression: FAIL (${failures})`);

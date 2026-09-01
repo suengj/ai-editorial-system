@@ -1,6 +1,6 @@
 ---
 name: write-article
-version: 0.1.0
+version: 0.2.0
 description: Draft a review-state article from an approved frame and a verified claim set, arguing the thesis rather than walking the sources.
 when_not_to_use: Do not use without a frame — inventing a thesis while drafting is the failure this Skill exists to prevent. Do not use for voice polishing, which is editorial-polish.
 inputs:
@@ -11,6 +11,7 @@ inputs:
 outputs:
   - review draft in Markdown, with citation anchors intact
   - claims that drafting exposed as unsupported
+  - optional presentation plan (semantic roles only, never appearance)
 requires:
   - the article frame, including its thesis and structure
   - the verified claim set from verify-claims
@@ -22,6 +23,7 @@ authority:
     - report that a connective claim the draft needs is unsupported
   may_not:
     - introduce a thesis the frame does not contain
+    - emit HTML, CSS, colour values, or renderer component names
     - assert a claim absent from the verified claim set
     - set an article to status published
     - record human approval
@@ -31,6 +33,7 @@ governed_by:
   - editorial/voice.md
   - editorial/profiles/
   - editorial/quality-gates.json
+  - editorial/presentation.md
 allowed_tools:
   - file_read
 evidence:
@@ -89,7 +92,15 @@ structure default and the evidence burden.
 7. **Report the gaps.** A connective claim the argument needs and the claim
    set lacks goes back to `verify-claims`. It is not written as though
    supported, and it is not smoothed into a hedge.
-8. **Hand off** to `editorial-polish` in `drafted` state.
+8. **Optionally assign semantic roles.** Where a passage's information
+   function is not prose — a comparison, a caution, an ordered procedure — it
+   may carry a role from the presentation vocabulary. This is optional, it is
+   never required by length, and the plan must satisfy the losslessness rule:
+   removing every block leaves the canonical Markdown complete.
+
+   Roles only. No colour, no CSS, no component name — the schema cannot
+   express them and the validator rejects them in the text.
+9. **Hand off** to `editorial-polish` in `drafted` state.
 
 ## Invariants
 
@@ -100,6 +111,9 @@ structure default and the evidence burden.
 - The article state after this Skill is `drafted`. Never `final`.
 - The profile's evidence burden holds in the finished draft, not just in the
   frame.
+- If a presentation plan is produced, the canonical Markdown is complete
+  without it. Presentation metadata never hides or substitutes for a fact, a
+  citation, a qualification, or a stated uncertainty.
 
 ## Refusal conditions
 
@@ -117,6 +131,8 @@ This Skill stops rather than drafting when:
 
 - `npm run check:gates` — no reject-severity finding on the draft.
 - `npm run check:profile` — the profile's burden is met.
+- `npm run validate:presentation` — when a plan is produced: renderer-neutral,
+  and every block's fallback lossless.
 - Every citation anchor resolves to a `verified` claim.
 - Resulting state is `drafted`.
 
