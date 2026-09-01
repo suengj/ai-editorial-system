@@ -20,7 +20,9 @@
     "test:article": "node scripts/test-article-contract.mjs",
     "test:rights": "node scripts/test-rights-policy.mjs",
     "test:gates": "node scripts/test-quality-gates.mjs",
-    "test": "npm run test:boundary && npm run test:source && npm run test:article && npm run test:rights && npm run test:gates"
+    "test": "npm run test:boundary && npm run test:source && npm run test:article && npm run test:rights && npm run test:gates && npm run test:profiles",
+    "check:profile": "node scripts/check-profile.mjs",
+    "test:profiles": "node scripts/test-profiles.mjs"
   },
   "repository": {
     "type": "git",

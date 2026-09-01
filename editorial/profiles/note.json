@@ -1,0 +1,30 @@
+{
+  "schema_version": "1.0.0",
+  "content_type": "note",
+  "intent": "A concise observation or compressed reading, with the personal judgment kept.",
+  "evidence_burden": {
+    "min_sources": 1,
+    "min_verified_claims": 0,
+    "min_source_roles": [],
+    "rationale": "A note points at something and says what the author made of it. Verification applies to any claim it does assert, and to nothing more."
+  },
+  "required_frame_fields": ["thesis", "uncertainty"],
+  "required_type_fields": ["my_note"],
+  "optional_type_fields": ["source_summary"],
+  "limits": {
+    "max_words": 800,
+    "rationale": "A note that grows past this has become a research piece wearing a note's structure. Reclassify it rather than padding it."
+  },
+  "typical_structure": ["Summary", "Key points", "My note"],
+  "flexibility": "Highest of any profile. A note may be three sentences. It may not be a report.",
+  "artifacts": {
+    "default": [],
+    "optional": ["sources"],
+    "inappropriate": ["brief", "slides", "infographic", "audio", "video"]
+  },
+  "anti_patterns": [
+    "Inflating an observation into a full report with generic sections",
+    "Dropping the personal judgment and leaving only a summary",
+    "Adding a distribution artifact to a piece too small to carry one"
+  ]
+}

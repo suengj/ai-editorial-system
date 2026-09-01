@@ -85,6 +85,20 @@
           "kind": "assertion",
           "status": "unverified",
           "evidence": []
+        },
+        {
+          "claim_id": "c4",
+          "text": "Input tokens are billed on retrieval-augmented requests even when the generated output is short.",
+          "kind": "assertion",
+          "status": "verified",
+          "evidence": [
+            {
+              "url": "https://example.com/api-billing",
+              "title": "Provider billing documentation",
+              "retrieved_at": "2026-08-31",
+              "authority": "primary"
+            }
+          ]
         }
       ]
     },
@@ -110,6 +124,9 @@
       "target_status": "draft",
       "target_path": "content/editorial/ai-inference-pricing-and-saas-gross-margin.md",
       "canonical_url": "/content/ai-inference-pricing-and-saas-gross-margin"
+    },
+    "type_fields": {
+      "event_date": "2026-08-31"
     }
   },
   "artifacts": [

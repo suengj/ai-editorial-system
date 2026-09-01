@@ -1,0 +1,55 @@
+{
+  "schema_version": "1.0.0",
+  "description": "Artifact build-out order and the conditions that would change it (AES-P1.5 / SUE-442). Provisional and evidence-revisable — an input to the P4 PoC, not a permanent assumption.",
+  "stages": {
+    "evidence": {
+      "kinds": ["evidence_visual", "sources"],
+      "created_when": "article state >= framed",
+      "may_change_the_argument": true,
+      "rationale": "Evidence media is built during research and writing because plotting the data can falsify the thesis. It is not decoration applied afterwards."
+    },
+    "distribution": {
+      "kinds": ["brief", "full", "slides", "infographic", "audio", "video"],
+      "created_when": "article state in [final, published]",
+      "published_when": "article state == published",
+      "may_change_the_argument": false,
+      "rationale": "Distribution media consumes one identified article version. It never precedes human finalization."
+    }
+  },
+  "priority": [
+    { "rank": 1, "kind": "evidence_visual", "note": "Charts, tables, timelines, diagrams. Highest return: they improve the article itself, not only its reach." },
+    { "rank": 2, "kind": "brief", "note": "Cheapest distribution artifact and the most reused." },
+    { "rank": 3, "kind": "slides", "note": "6–8 page social deck. Text-in, text-out; theme carries the existing role matrix." },
+    { "rank": 4, "kind": "infographic", "note": "Higher design cost, narrower reuse." },
+    { "rank": 5, "kind": "audio", "note": "Programmable and cheap, but no automation surface for the product-grade route (see the multimedia benchmark)." },
+    { "rank": 6, "kind": "video", "note": "Per-second cost, no editorial need established." },
+    { "rank": 7, "kind": "interactive", "note": "Quiz or study surface. Not modelled as an artifact kind yet; would require its own contract." }
+  ],
+  "reprioritisation_criteria": [
+    {
+      "id": "RP-1",
+      "trigger": "An evidence visual changes a thesis during the PoC.",
+      "effect": "Confirms rank 1 and raises the evidence-media budget."
+    },
+    {
+      "id": "RP-2",
+      "trigger": "Brief regeneration after a cosmetic article edit produces materially different text.",
+      "effect": "The generator is under-constrained. Fix the plan contract before adding artifact kinds."
+    },
+    {
+      "id": "RP-3",
+      "trigger": "Slides cannot be produced without hand-editing the deck.",
+      "effect": "Demote slides below infographic; the chain is not actually text-to-text."
+    },
+    {
+      "id": "RP-4",
+      "trigger": "A distribution artifact is observed asserting a claim the article never verified.",
+      "effect": "Stop adding kinds. The claim carry-through contract is the blocker, not throughput."
+    },
+    {
+      "id": "RP-5",
+      "trigger": "Measured reader behaviour shows a kind is consumed instead of the article rather than as a door to it.",
+      "effect": "Demote that kind. The canonical article is the destination."
+    }
+  ]
+}

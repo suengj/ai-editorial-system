@@ -1,0 +1,36 @@
+{
+  "schema_version": "1.0.0",
+  "content_type": "news",
+  "intent": "Current facts, separated from our reading of them, with analytical value beyond recap.",
+  "evidence_burden": {
+    "min_sources": 2,
+    "min_verified_claims": 3,
+    "min_source_roles": ["primary"],
+    "rationale": "A claim about what is happening now needs a source that observed it, not one that repeated it."
+  },
+  "required_frame_fields": ["thesis", "article_worthiness", "verification_needs", "original_value_add", "uncertainty"],
+  "required_type_fields": ["event_date"],
+  "optional_type_fields": ["developing"],
+  "freshness": {
+    "max_source_age_days": 30,
+    "rationale": "Event and source dates are distinct from our publication date; a month-old primary source is fine, a month-old claim about 'now' is not."
+  },
+  "typical_structure": [
+    "What is now true",
+    "How we know",
+    "What it changes",
+    "What is still unresolved"
+  ],
+  "flexibility": "Sections may collapse for a short piece. Fact and interpretation may never share a paragraph without being marked apart.",
+  "artifacts": {
+    "default": ["brief"],
+    "optional": ["evidence_visual", "slides", "infographic", "sources"],
+    "inappropriate": []
+  },
+  "anti_patterns": [
+    "Recap with a concluding paragraph attached as 'analysis'",
+    "The source's publication date used as the event date",
+    "'What happened / Why it matters' applied mechanically",
+    "Reporting a projection in the present tense"
+  ]
+}

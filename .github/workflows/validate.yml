@@ -52,3 +52,7 @@ jobs:
         run: npm run check:gates
       - name: Quality gates regression
         run: npm run test:gates
+      - name: Worked example conforms to its content-type profile
+        run: npm run check:profile
+      - name: Profiles and media strategy regression
+        run: npm run test:profiles

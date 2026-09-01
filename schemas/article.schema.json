@@ -88,6 +88,10 @@
           "content_hash_at_use": {
             "type": "string",
             "pattern": "^[a-f0-9]{64}$"
+          },
+          "pinned_ref": {
+            "description": "Commit or immutable ref the claim was verified against. Required for GitHub sources in the project profile: repository prose is a claim, not evidence.",
+            "type": "string"
           }
         }
       }
@@ -111,6 +115,10 @@
     },
     "transformation": {
       "$ref": "#/$defs/transformation"
+    },
+    "type_fields": {
+      "description": "Fields required or permitted by the content-type profile (editorial/profiles/*.json). Shape varies by type; enforced by scripts/lib/profile-core.mjs rather than by this schema.",
+      "type": "object"
     }
   },
   "$defs": {
