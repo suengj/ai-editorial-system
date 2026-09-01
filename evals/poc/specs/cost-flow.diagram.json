@@ -1,0 +1,20 @@
+{
+  "type": "flow",
+  "title": "Where a price drop lands in the cost stack",
+  "source_note": "Structure derived from provider billing documentation (c4); no quantities depicted.",
+  "nodes": [
+    { "id": "price", "label": "List price per token" },
+    { "id": "calls", "label": "Calls per seat" },
+    { "id": "input", "label": "Input tokens (RAG)" },
+    { "id": "spend", "label": "Inference spend" },
+    { "id": "cogs", "label": "COGS" },
+    { "id": "margin", "label": "Gross margin" }
+  ],
+  "edges": [
+    { "from": "price", "to": "spend", "label": "falls" },
+    { "from": "calls", "to": "spend", "label": "rises" },
+    { "from": "input", "to": "spend", "label": "billed even when output is short" },
+    { "from": "spend", "to": "cogs" },
+    { "from": "cogs", "to": "margin", "label": "one line among several" }
+  ]
+}

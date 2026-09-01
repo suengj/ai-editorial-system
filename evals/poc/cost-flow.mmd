@@ -1,0 +1,14 @@
+%% Where a price drop lands in the cost stack
+%% source: Structure derived from provider billing documentation (c4); no quantities depicted.
+flowchart LR
+  price["List price per token"]
+  calls["Calls per seat"]
+  input["Input tokens (RAG)"]
+  spend["Inference spend"]
+  cogs["COGS"]
+  margin["Gross margin"]
+  price -->|"falls"| spend
+  calls -->|"rises"| spend
+  input -->|"billed even when output is short"| spend
+  spend --> cogs
+  cogs -->|"one line among several"| margin

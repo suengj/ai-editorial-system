@@ -14,6 +14,7 @@ Validation and evaluation tooling. Node ESM, no build step, no dependencies.
 | `validate-artifact-plan.mjs` | Artifact plan conformance and claim carry-through (AES-P2.6) |
 | `validate-presentation.mjs` | Semantic block grammar and renderer neutrality (AES-P1.6) |
 | `run-eval.mjs` | Scorecard over the fixture corpus (AES-P3.2) |
+| `generate-poc-artifacts.mjs` | Compile the PoC artifacts; `--check` asserts determinism (AES-P4) |
 | `test-repo-boundary.mjs` | Allow/deny regression for the charter |
 | `test-source-contract.mjs` | Mutation regression over the source example |
 | `test-article-contract.mjs` | Mutation regression over the article/artifact example |
@@ -24,6 +25,7 @@ Validation and evaluation tooling. Node ESM, no build step, no dependencies.
 | `test-skills-pipeline.mjs` | The Skill set as a pipeline: closed authority, aligned handoffs |
 | `test-presentation.mjs` | Renderer neutrality, lossless fallbacks, role fit |
 | `test-eval.mjs` | The evaluation method's own regression suite |
+| `test-poc-artifacts.mjs` | Determinism, generator refusals, lineage and staleness |
 | `lib/boundary-core.mjs` | Charter rule engine |
 | `lib/source-contract-core.mjs` | Source schema + cross-field invariants |
 | `lib/article-contract-core.mjs` | Article/Artifact invariants + staleness classifier |
@@ -35,6 +37,10 @@ Validation and evaluation tooling. Node ESM, no build step, no dependencies.
 | `lib/plan-core.mjs` | Artifact plan rules and claim carry-through |
 | `lib/presentation-core.mjs` | Semantic grammar, renderer-leak detection, fallback losslessness |
 | `lib/eval-core.mjs` | Rubric scoring and the integrity-dominates comparison |
+| `lib/chart-renderer.mjs` | Deterministic SVG chart and Mermaid diagram emitters |
+| `lib/brief-generator.mjs` | Brief compiler with claim-carry-through refusals |
+| `lib/deck-generator.mjs` | Marp deck compiler |
+| `lib/lineage.mjs` | Staleness classification, relocation, regeneration |
 | `lib/yaml-lite.mjs` | Fail-loud YAML subset parser for SKILL.md front matter |
 | `lib/json-schema-lite.mjs` | Dependency-free JSON Schema subset validator |
 
@@ -43,7 +49,8 @@ npm run validate       # boundary + source + article + rights + skills
 npm run check:gates    # editorial gates over the golden fixture
 npm run check:profile  # worked example against its profile
 npm run eval           # scorecard over the fixture corpus
-npm test               # all ten regression suites
+npm run poc:check      # PoC artifacts regenerate byte-identically
+npm test               # all eleven regression suites
 ```
 
 Rejects: credentials, deploy logic, imports from `suengj-com`.

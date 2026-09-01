@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 360" role="img" aria-labelledby="title desc">
+  <title id="title">List price fell; reported gross margin did not</title>
+  <desc id="desc">Two indexed series over the same window: mid-tier output-token list price against reported gross margin for the cohort. Period: 2026-03 – 2026-08. Source: Vendor pricing page (c1); quarterly filings (c2). Both indexed to 100 at 2026-03.</desc>
+  <style>
+    .grid { stroke: currentColor; stroke-opacity: 0.15; stroke-width: 1; }
+    .axis { stroke: currentColor; stroke-opacity: 0.5; stroke-width: 1; }
+    .series { fill: none; stroke: currentColor; stroke-width: 2; }
+    text { font-family: Pretendard, system-ui, sans-serif; fill: currentColor; }
+    .tick { font-size: 11px; fill-opacity: 0.7; }
+    .label { font-size: 12px; }
+    .heading { font-size: 15px; font-weight: 600; }
+    .note { font-size: 11px; fill-opacity: 0.7; }
+  </style>
+  <text class="heading" x="64.00" y="24">List price fell; reported gross margin did not</text>
+  <text class="note" x="64.00" y="40">2026-03 – 2026-08 · Indexed to 100 at 2026-03 ()</text>
+  <line class="grid" x1="64.00" y1="304.00" x2="696.00" y2="304.00"/>
+  <text class="tick" x="56.00" y="308.00" text-anchor="end">60</text>
+  <line class="grid" x1="64.00" y1="240.00" x2="696.00" y2="240.00"/>
+  <text class="tick" x="56.00" y="244.00" text-anchor="end">73</text>
+  <line class="grid" x1="64.00" y1="176.00" x2="696.00" y2="176.00"/>
+  <text class="tick" x="56.00" y="180.00" text-anchor="end">85</text>
+  <line class="grid" x1="64.00" y1="112.00" x2="696.00" y2="112.00"/>
+  <text class="tick" x="56.00" y="116.00" text-anchor="end">98</text>
+  <line class="grid" x1="64.00" y1="48.00" x2="696.00" y2="48.00"/>
+  <text class="tick" x="56.00" y="52.00" text-anchor="end">110</text>
+  <line class="axis" x1="64.00" y1="304.00" x2="696.00" y2="304.00"/>
+  <text class="tick" x="64.00" y="324.00" text-anchor="middle">0</text>
+  <text class="tick" x="696.00" y="324.00" text-anchor="middle">5</text>
+  <path class="series" stroke-dasharray="none" d="M64.00,99.20 L190.40,119.68 L316.80,145.28 L443.20,181.12 L569.60,222.08 L696.00,252.80"/>
+  <text class="label" x="702.00" y="256.80">list price</text>
+  <path class="series" stroke-dasharray="6 4" d="M64.00,99.20 L190.40,99.20 L316.80,104.32 L443.20,99.20 L569.60,104.32 L696.00,99.20"/>
+  <text class="label" x="702.00" y="103.20">gross margin</text>
+  <text class="note" x="64.00" y="348.00">Month index from 2026-03 · Vendor pricing page (c1); quarterly filings (c2). Both indexed to 100 at 2026-03.</text>
+</svg>

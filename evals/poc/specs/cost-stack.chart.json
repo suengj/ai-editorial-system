@@ -1,0 +1,21 @@
+{
+  "type": "line",
+  "title": "List price fell; reported gross margin did not",
+  "description": "Two indexed series over the same window: mid-tier output-token list price against reported gross margin for the cohort.",
+  "period": "2026-03 – 2026-08",
+  "source_note": "Vendor pricing page (c1); quarterly filings (c2). Both indexed to 100 at 2026-03.",
+  "x": { "field": "month", "label": "Month index from 2026-03" },
+  "y": { "label": "Indexed to 100 at 2026-03", "unit": "", "min": 60, "max": 110 },
+  "series": [
+    {
+      "name": "list price",
+      "claim": "c1",
+      "points": [[0, 100], [1, 96], [2, 91], [3, 84], [4, 76], [5, 70]]
+    },
+    {
+      "name": "gross margin",
+      "claim": "c2",
+      "points": [[0, 100], [1, 100], [2, 99], [3, 100], [4, 99], [5, 100]]
+    }
+  ]
+}
