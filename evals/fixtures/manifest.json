@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0.0",
-  "description": "Fixture corpus for editorial regression (AES-P3.1 / SUE-449). Small enough to rerun after every rule or Skill change. Bodies only — no front matter — so a fixture is a fixture and never an article.",
+  "description": "Fixture corpus for editorial regression (AES-P3.1 / SUE-449). Small enough to rerun after every rule or Skill change. Bodies only \u2014 no front matter \u2014 so a fixture is a fixture and never an article.",
   "rights_policy": "All fixtures are synthetic or owner-authored. No third-party article is reproduced. External material appears as reference only. See editorial/RIGHTS-AND-PROVENANCE.md.",
   "fixtures": [
     {
@@ -10,9 +10,25 @@
       "content_type": "news",
       "origin": "synthetic",
       "why": "The shape a passing article has: thesis in the first paragraph, synthesis across sources that disagree, numbers rather than adjectives, a stated limit, and a closing that lands a consequence.",
-      "dimensions_tested": ["thesis-clarity", "synthesis", "evidence-density", "fact-interpretation-separation", "flow-density", "voice-fit", "content-type-fit"],
-      "anti_patterns_avoided": ["sequential source summary", "formulaic sectioning", "empty hedging", "unstated uncertainty"],
-      "expected": { "hard_fail": false, "gate_findings": 0 }
+      "dimensions_tested": [
+        "thesis-clarity",
+        "synthesis",
+        "evidence-density",
+        "fact-interpretation-separation",
+        "flow-density",
+        "voice-fit",
+        "content-type-fit"
+      ],
+      "anti_patterns_avoided": [
+        "sequential source summary",
+        "formulaic sectioning",
+        "empty hedging",
+        "unstated uncertainty"
+      ],
+      "expected": {
+        "hard_fail": false,
+        "gate_findings": 0
+      }
     },
     {
       "id": "G-02",
@@ -21,9 +37,22 @@
       "content_type": "view",
       "origin": "synthetic",
       "why": "The View register: position first, the strongest objection stated at full strength and conceded where it lands, and an explicit condition that would change the author's mind.",
-      "dimensions_tested": ["thesis-clarity", "fact-interpretation-separation", "voice-fit", "content-type-fit", "overclaiming"],
-      "anti_patterns_avoided": ["opinion in the register of neutral research", "weakened counterargument", "confidence without stated uncertainty"],
-      "expected": { "hard_fail": false, "gate_findings": 0 }
+      "dimensions_tested": [
+        "thesis-clarity",
+        "fact-interpretation-separation",
+        "voice-fit",
+        "content-type-fit",
+        "overclaiming"
+      ],
+      "anti_patterns_avoided": [
+        "opinion in the register of neutral research",
+        "weakened counterargument",
+        "confidence without stated uncertainty"
+      ],
+      "expected": {
+        "hard_fail": false,
+        "gate_findings": 0
+      }
     },
     {
       "id": "G-03",
@@ -32,9 +61,20 @@
       "content_type": "note",
       "origin": "synthetic",
       "why": "The Note register: one observation, the author's judgment kept, well under the 800-word cap. Brevity here is correctness, not thinness.",
-      "dimensions_tested": ["content-type-fit", "voice-fit", "flow-density"],
-      "anti_patterns_avoided": ["inflating an observation into a report", "dropping the personal judgment", "generic sections"],
-      "expected": { "hard_fail": false, "gate_findings": 0 }
+      "dimensions_tested": [
+        "content-type-fit",
+        "voice-fit",
+        "flow-density"
+      ],
+      "anti_patterns_avoided": [
+        "inflating an observation into a report",
+        "dropping the personal judgment",
+        "generic sections"
+      ],
+      "expected": {
+        "hard_fail": false,
+        "gate_findings": 0
+      }
     },
     {
       "id": "N-01",
@@ -43,7 +83,13 @@
       "content_type": "news",
       "origin": "reconstructed from the SUE-417 first end-to-end draft",
       "why": "The transport path passed and the editorial result failed. This fixture exists so that distinction stays visible.",
-      "dimensions_tested": ["ai-scaffolding", "synthesis", "thesis-clarity", "citation-integrity", "overclaiming"],
+      "dimensions_tested": [
+        "ai-scaffolding",
+        "synthesis",
+        "thesis-clarity",
+        "citation-integrity",
+        "overclaiming"
+      ],
       "failure_modes": [
         "the generator instruction emitted as the dek and the first body line",
         "one paragraph repeated verbatim",
@@ -52,7 +98,14 @@
         "a hedge carrying no number",
         "each citing paragraph on one source, in order"
       ],
-      "expected": { "hard_fail": true, "reject_gates": ["prompt-echo", "duplicate-paragraph", "scaffolding-leak"] }
+      "expected": {
+        "hard_fail": true,
+        "reject_gates": [
+          "prompt-echo",
+          "duplicate-paragraph",
+          "scaffolding-leak"
+        ]
+      }
     },
     {
       "id": "N-02",
@@ -60,14 +113,22 @@
       "path": "negative/N-02-phantom-citation.md",
       "content_type": "news",
       "origin": "synthetic",
-      "why": "Every citation resolves; none supports the claim beside it. Proves the mechanical layer is insufficient on its own — this is caught by verify-claims, not by a gate.",
-      "dimensions_tested": ["citation-integrity", "evidence-authority", "overclaiming"],
+      "why": "Every citation resolves; none supports the claim beside it. Proves the mechanical layer is insufficient on its own \u2014 this is caught by verify-claims, not by a gate.",
+      "dimensions_tested": [
+        "citation-integrity",
+        "evidence-authority",
+        "overclaiming"
+      ],
       "failure_modes": [
         "a source supporting a weaker version of the claim, cited as if it supported the stronger one",
         "a source from a different period and scope, cited as current evidence",
         "a conclusion asserted as confirmed by two citations that establish neither"
       ],
-      "expected": { "hard_fail": false, "caught_by": "verify-claims", "note": "mechanically clean by design" }
+      "expected": {
+        "hard_fail": false,
+        "caught_by": "verify-claims",
+        "note": "mechanically clean by design"
+      }
     },
     {
       "id": "N-03",
@@ -77,14 +138,29 @@
       "origin": "synthetic, derived from G-01",
       "paired_with": "G-01",
       "why": "Smoother than the golden fixture and factually worse. Every editorial dimension improves; two integrity dimensions fail. The evaluation must report this as a regression, or it is measuring the wrong thing.",
-      "dimensions_tested": ["polish-preservation", "citation-integrity", "fact-interpretation-separation", "overclaiming", "flow-density"],
+      "dimensions_tested": [
+        "polish-preservation",
+        "citation-integrity",
+        "fact-interpretation-separation",
+        "overclaiming",
+        "flow-density"
+      ],
       "failure_modes": [
-        "a number changed under cover of a style pass (30% → 40%)",
+        "a number changed under cover of a style pass (30% \u2192 40%)",
         "a citation dropped from a retained claim",
         "a stated uncertainty softened into a confident claim",
         "a limit inverted into a premise"
       ],
-      "expected": { "hard_fail": true, "regression_against": "G-01" }
+      "expected": {
+        "hard_fail": true,
+        "regression_against": "G-01"
+      }
     }
-  ]
+  ],
+  "calibration": {
+    "baseline": "N-01",
+    "calibrated": "G-01",
+    "question": "Does the calibrated editorial contract produce a materially better result than the first end-to-end draft?",
+    "note": "Both are news-register pieces on the same subject. The baseline is the SUE-417 smoke draft's failure shape; the calibrated fixture is what the contract now requires. Measured by hard-fail status and gate findings, not by a subjective read."
+  }
 }

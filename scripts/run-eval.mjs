@@ -16,7 +16,7 @@
 import { readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { compare, evaluate, loadManifest, loadRubric, UNSCORED } from './lib/eval-core.mjs';
+import { calibrate, compare, evaluate, loadManifest, loadRubric, UNSCORED } from './lib/eval-core.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(HERE, '..');
@@ -79,6 +79,19 @@ if (paired) {
   if (result.verdict !== 'regression') {
     mismatches += 1;
     console.error('  MISMATCH — the paired fixture must be reported as a regression');
+  }
+}
+
+// --- calibration against the known-bad baseline (SUE-417) ----------------
+if (manifest.calibration) {
+  const { baseline, calibrated } = manifest.calibration;
+  const c = calibrate(scorecards.get(baseline), scorecards.get(calibrated));
+  console.log(`\ncalibration ${baseline} → ${calibrated}: ${c.materially_better ? 'MATERIALLY BETTER' : 'NOT MATERIALLY BETTER'}`);
+  console.log(`  hard fail: ${c.hard_fail.before} → ${c.hard_fail.after}`);
+  console.log(`  reject ${c.rejects.before} → ${c.rejects.after}   fix ${c.fixes.before} → ${c.fixes.after}   flag ${c.flags.before} → ${c.flags.after}`);
+  if (!c.materially_better) {
+    mismatches += 1;
+    console.error('  MISMATCH — the calibrated fixture must clear every blocking failure');
   }
 }
 

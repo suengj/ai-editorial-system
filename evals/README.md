@@ -7,6 +7,7 @@ Fixture corpus, editorial rubric, and the regression method.
 | Corpus | [`fixtures/manifest.json`](fixtures/manifest.json) — 3 golden, 3 negative (AES-P3.1 / SUE-449) |
 | Rubric | [`RUBRIC.md`](RUBRIC.md) + [`rubric.json`](rubric.json) — 16 dimensions (AES-P3.2 / SUE-450) |
 | Runner | `../scripts/run-eval.mjs` |
+| SUE-417 calibration | [`SUE-417-CALIBRATION.md`](SUE-417-CALIBRATION.md) |
 
 ```bash
 npm run eval        # scorecard over the corpus
@@ -34,6 +35,15 @@ mechanical layer is insufficient on its own — only `verify-claims` catches it.
 `N-03` is the calibration for the whole method. It reads better than `G-01`
 and states a wrong number. If the comparison ever stops reporting
 **REGRESSION**, the method has broken and the suite fails.
+
+## Two questions the runner answers
+
+**Did this get worse?** — `compare()`, integrity dominates. `G-01 → N-03`.
+
+**Is this materially better than where we started?** — `calibrate()`, against
+the SUE-417 baseline. `N-01 → G-01`. Material improvement means every blocking
+failure cleared, not merely fewer findings: a draft that still cannot be
+materialized has not improved materially, however much tidier it reads.
 
 ## Golden fixtures are references, not templates
 

@@ -10,7 +10,7 @@
 import { readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { compare, evaluate, loadManifest, loadRubric, UNSCORED } from './lib/eval-core.mjs';
+import { calibrate, compare, evaluate, loadManifest, loadRubric, UNSCORED } from './lib/eval-core.mjs';
 import { loadProfiles } from './lib/profile-core.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -132,6 +132,23 @@ console.log('smoother but factually worse');
   check('every editorial dimension improving does not override the regression',
     forced.verdict === 'regression');
   check('the report says so explicitly', forced.improvedDespiteRegression === true);
+}
+
+// --- SUE-417 calibration --------------------------------------------------
+console.log('SUE-417 calibration');
+{
+  const { baseline, calibrated } = manifest.calibration;
+  const c = calibrate(run(baseline), run(calibrated));
+
+  check('the smoke-draft shape hard fails', c.hard_fail.before === true);
+  check('the calibrated shape does not', c.hard_fail.after === false);
+  check('every blocking failure is cleared', c.rejects.after === 0 && c.rejects.before > 0);
+  check('the result is materially better', c.materially_better === true);
+
+  // Fewer findings is not the bar. Clearing the blocking ones is.
+  const stillBlocked = { ...run(calibrated), hard_fail: true, findings: [{ severity: 'reject', gate: 'x', detail: 'x' }] };
+  check('merely reducing findings does not count as materially better',
+    calibrate(run(baseline), stillBlocked).materially_better === false);
 }
 
 // --- method properties ----------------------------------------------------

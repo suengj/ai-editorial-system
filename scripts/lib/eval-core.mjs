@@ -182,3 +182,31 @@ export function compare(before, after) {
     improvedDespiteRegression: integrityRegressions.length > 0 && improved.length > 0,
   };
 }
+
+/**
+ * Calibration: did a change produce a materially better result than a known
+ * bad baseline? Measured, not judged — hard-fail status and the count of gate
+ * findings by severity.
+ *
+ * Deliberately separate from `compare`. That function answers "did this get
+ * worse"; this one answers "is this materially better than where we started",
+ * which is the SUE-417 question.
+ */
+export function calibrate(baseline, calibrated) {
+  const count = (card, severity) => card.findings.filter((f) => f.severity === severity).length;
+  const rejects = { before: count(baseline, 'reject'), after: count(calibrated, 'reject') };
+  const fixes = { before: count(baseline, 'fix'), after: count(calibrated, 'fix') };
+  const flags = { before: count(baseline, 'flag'), after: count(calibrated, 'flag') };
+
+  return {
+    hard_fail: { before: baseline.hard_fail, after: calibrated.hard_fail },
+    rejects,
+    fixes,
+    flags,
+    total: { before: baseline.findings.length, after: calibrated.findings.length },
+    // Material improvement requires the blocking failures to be gone, not
+    // merely fewer. A draft that still cannot be materialized has not improved
+    // materially, however much tidier it reads.
+    materially_better: baseline.hard_fail && !calibrated.hard_fail && rejects.after === 0,
+  };
+}
