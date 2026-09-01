@@ -1,0 +1,79 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://suengj.com/schemas/skill.schema.json",
+  "title": "Skill front matter",
+  "description": "Front matter of a SKILL.md (AES-P2.1 / SUE-443). A Skill is an orchestration contract: it declares what it needs, what it produces, what must remain true, and what it may not decide. The generator that satisfies it is replaceable.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "name", "version", "description", "when_not_to_use",
+    "inputs", "outputs", "requires", "authority", "evidence"
+  ],
+  "properties": {
+    "name": {
+      "description": "Must equal the containing directory name.",
+      "type": "string",
+      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+    },
+    "version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" },
+    "description": {
+      "description": "One line, loaded always. This is the progressive-disclosure surface: an agent decides from this alone whether to load the body.",
+      "type": "string",
+      "minLength": 20
+    },
+    "when_not_to_use": {
+      "description": "Required. A description that does not say when NOT to use the Skill is a defect — it is how near-duplicate Skills get picked by coin-flip.",
+      "type": "string",
+      "minLength": 10
+    },
+    "inputs": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+    "outputs": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+    "requires": {
+      "description": "Context that must be present. Absence is a refusal, never a prompt to improvise.",
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "authority": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["may", "may_not"],
+      "properties": {
+        "may": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+        "may_not": { "type": "array", "items": { "type": "string", "minLength": 1 } }
+      }
+    },
+    "governed_by": {
+      "description": "Paths to the constitution, profile, or gates this Skill defers to. Referenced, never copied.",
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "allowed_tools": {
+      "description": "Capability classes, not vendor products. `web_search`, not a named provider.",
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "references": {
+      "description": "Progressive disclosure: material loaded only when the stated condition holds.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["path", "load_when"],
+        "properties": {
+          "path": { "type": "string", "minLength": 1 },
+          "load_when": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "evidence": {
+      "description": "How a run of this Skill is proved. A Skill with no acceptance is not enforceable, and an unenforceable Skill is not a Skill.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["acceptance"],
+      "properties": {
+        "acceptance": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+        "fixtures": { "type": "array", "items": { "type": "string", "minLength": 1 } }
+      }
+    }
+  }
+}
