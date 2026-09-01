@@ -5,12 +5,26 @@
   "evidence_burden": {
     "min_sources": 3,
     "min_verified_claims": 4,
-    "min_source_roles": ["primary", "contradicting"],
+    "min_source_roles": [
+      "primary",
+      "contradicting"
+    ],
     "rationale": "A research piece that never met a source disagreeing with it has not finished its research."
   },
-  "required_frame_fields": ["thesis", "source_weighting", "verification_needs", "uncertainty"],
-  "required_type_fields": ["research_question"],
-  "optional_type_fields": ["scenarios", "historical_analogues", "method_note"],
+  "required_frame_fields": [
+    "thesis",
+    "source_weighting",
+    "verification_needs",
+    "uncertainty"
+  ],
+  "required_type_fields": [
+    "research_question"
+  ],
+  "optional_type_fields": [
+    "scenarios",
+    "historical_analogues",
+    "method_note"
+  ],
   "typical_structure": [
     "Research question",
     "What the sources agree on",
@@ -21,14 +35,27 @@
   ],
   "flexibility": "Structure is a default, not a requirement. Sections may be merged or renamed when the argument calls for it; the evidence burden may not be relaxed.",
   "artifacts": {
-    "default": ["evidence_visual", "sources"],
-    "optional": ["brief", "slides", "full"],
-    "inappropriate": ["video"]
+    "default": [
+      "evidence_visual",
+      "sources"
+    ],
+    "optional": [
+      "brief",
+      "slides",
+      "full"
+    ],
+    "inappropriate": [
+      "video"
+    ]
   },
   "anti_patterns": [
     "Sequential restatement of each source in turn",
     "A literature-review shape with no synthesis of our own",
     "Historical analogues invoked for colour rather than examined",
     "Scenarios presented with the same confidence as findings"
-  ]
+  ],
+  "quality_gates": {
+    "evidence_density_floor": 0.4,
+    "rationale": "Highest floor: a research piece argues from material and should show it."
+  }
 }

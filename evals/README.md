@@ -1,21 +1,50 @@
 # evals/
 
-Golden corpus references, negative fixtures, the editorial rubric, and the
-regression method.
+Fixture corpus, editorial rubric, and the regression method.
 
-| Fixture | Purpose |
+| | |
 |---|---|
-| `fixtures/negative/N-01-sue-417-shape.md` | The SUE-417 failure shape: prompt echo, verbatim repetition, scaffolding leakage, formulaic sectioning, hedged non-statement, single-source-in-order citation |
-| `fixtures/golden/G-01-synthesis.md` | The shape a passing article has: thesis first, synthesis across disagreeing sources, numbers rather than adjectives, a stated limit |
+| Corpus | [`fixtures/manifest.json`](fixtures/manifest.json) — 3 golden, 3 negative (AES-P3.1 / SUE-449) |
+| Rubric | [`RUBRIC.md`](RUBRIC.md) + [`rubric.json`](rubric.json) — 16 dimensions (AES-P3.2 / SUE-450) |
+| Runner | `../scripts/run-eval.mjs` |
 
-Fixtures are body-only — no front matter — so they are fixtures and not
-articles. They reproduce failure and success *shapes*, not original text.
+```bash
+npm run eval        # scorecard over the corpus
+npm run eval -- --verbose
+npm run test:eval   # the method's own regression suite
+```
 
-Both directions are required. A gate suite that only fires on bad text proves
-nothing about good text, so every run asserts that the golden fixture produces
-no findings at all.
+## The corpus
 
-Expanded by AES-P3.1 (SUE-449); scored by the rubric in AES-P3.2 (SUE-450).
+| Fixture | Type | Tests |
+|---|---|---|
+| `G-01` | news | Synthesis across disagreeing sources; thesis first |
+| `G-02` | view | Position first, strongest objection conceded, falsifiable |
+| `G-03` | note | One observation, judgment kept, brevity as correctness |
+| `N-01` | news | The SUE-417 failure shape — prompt echo, repetition, scaffolding |
+| `N-02` | news | Phantom citations: every citation resolves, none supports |
+| `N-03` | news | **Smoother and factually worse** — paired against G-01 |
 
-Admits: synthetic or publicly sourced, attributed fixtures.
-Rejects: raw transcript corpus, private research working set.
+Bodies only, no front matter, so a fixture is a fixture and never an article.
+All synthetic or owner-authored; no third-party article is reproduced.
+
+`N-02` is deliberately clean to every mechanical gate. It exists to prove the
+mechanical layer is insufficient on its own — only `verify-claims` catches it.
+
+`N-03` is the calibration for the whole method. It reads better than `G-01`
+and states a wrong number. If the comparison ever stops reporting
+**REGRESSION**, the method has broken and the suite fails.
+
+## Golden fixtures are references, not templates
+
+They show what good looks like for a register. A piece that imitates their
+structure mechanically has missed the point — and the `formulaic-sectioning`
+gate exists to catch exactly that.
+
+## What the corpus already found
+
+The first run flagged `evidence-density` on both the View and the Note golden
+fixtures. The gate was right that they carry few numbers and wrong to treat
+that as a fault: a View earns its keep by reasoning, not citation volume. The
+floor is now per content type, calibrated against these fixtures rather than
+picked a priori.

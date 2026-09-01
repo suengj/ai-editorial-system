@@ -5,15 +5,28 @@
   "evidence_burden": {
     "min_sources": 1,
     "min_verified_claims": 2,
-    "min_source_roles": ["primary"],
+    "min_source_roles": [
+      "primary"
+    ],
     "rationale": "Project claims are checkable against the repository. A claim about what the code does is verified against the code, not against the README."
   },
-  "required_frame_fields": ["thesis", "original_value_add", "uncertainty"],
-  "required_type_fields": ["project_ref", "period"],
-  "optional_type_fields": ["role", "project_status", "links"],
+  "required_frame_fields": [
+    "thesis",
+    "original_value_add",
+    "uncertainty"
+  ],
+  "required_type_fields": [
+    "project_ref",
+    "period"
+  ],
+  "optional_type_fields": [
+    "role",
+    "project_status",
+    "links"
+  ],
   "source_rules": {
     "repo_prose_is_not_evidence": true,
-    "rationale": "A GitHub README states an intention. Treat repository prose as a claim to verify against commits, tests, and behaviour — never as automatically true.",
+    "rationale": "A GitHub README states an intention. Treat repository prose as a claim to verify against commits, tests, and behaviour \u2014 never as automatically true.",
     "requires_pinned_ref": true
   },
   "typical_structure": [
@@ -25,14 +38,27 @@
   ],
   "flexibility": "Structure follows the project's actual history. Sections with nothing behind them are cut.",
   "artifacts": {
-    "default": ["evidence_visual"],
-    "optional": ["brief", "slides", "sources"],
-    "inappropriate": ["audio", "video"]
+    "default": [
+      "evidence_visual"
+    ],
+    "optional": [
+      "brief",
+      "slides",
+      "sources"
+    ],
+    "inappropriate": [
+      "audio",
+      "video"
+    ]
   },
   "anti_patterns": [
     "Invented project history, dates, or outcomes",
     "README prose repeated as fact",
     "Screenshots reproduced without a rights basis",
     "Retrospective certainty about decisions that were guesses at the time"
-  ]
+  ],
+  "quality_gates": {
+    "evidence_density_floor": 0.3,
+    "rationale": "Moderate: implementation evidence is often prose about behaviour."
+  }
 }

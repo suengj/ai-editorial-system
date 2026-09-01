@@ -12,6 +12,7 @@ Validation and evaluation tooling. Node ESM, no build step, no dependencies.
 | `check-profile.mjs` | Article against its content-type profile (AES-P1.4/P1.5) |
 | `validate-skills.mjs` | Skill contract conformance (AES-P2.1) |
 | `validate-artifact-plan.mjs` | Artifact plan conformance and claim carry-through (AES-P2.6) |
+| `run-eval.mjs` | Scorecard over the fixture corpus (AES-P3.2) |
 | `test-repo-boundary.mjs` | Allow/deny regression for the charter |
 | `test-source-contract.mjs` | Mutation regression over the source example |
 | `test-article-contract.mjs` | Mutation regression over the article/artifact example |
@@ -20,6 +21,7 @@ Validation and evaluation tooling. Node ESM, no build step, no dependencies.
 | `test-profiles.mjs` | Profiles differ by type; media strategy holds |
 | `test-skill-format.mjs` | Skill structure, authority boundary, vendor neutrality |
 | `test-skills-pipeline.mjs` | The Skill set as a pipeline: closed authority, aligned handoffs |
+| `test-eval.mjs` | The evaluation method's own regression suite |
 | `lib/boundary-core.mjs` | Charter rule engine |
 | `lib/source-contract-core.mjs` | Source schema + cross-field invariants |
 | `lib/article-contract-core.mjs` | Article/Artifact invariants + staleness classifier |
@@ -29,6 +31,7 @@ Validation and evaluation tooling. Node ESM, no build step, no dependencies.
 | `lib/profile-core.mjs` | Content-type evidence burden, fields, and artifact fit |
 | `lib/skill-core.mjs` | Skill contract rules and authority boundary |
 | `lib/plan-core.mjs` | Artifact plan rules and claim carry-through |
+| `lib/eval-core.mjs` | Rubric scoring and the integrity-dominates comparison |
 | `lib/yaml-lite.mjs` | Fail-loud YAML subset parser for SKILL.md front matter |
 | `lib/json-schema-lite.mjs` | Dependency-free JSON Schema subset validator |
 
@@ -36,7 +39,8 @@ Validation and evaluation tooling. Node ESM, no build step, no dependencies.
 npm run validate       # boundary + source + article + rights + skills
 npm run check:gates    # editorial gates over the golden fixture
 npm run check:profile  # worked example against its profile
-npm test               # all eight regression suites
+npm run eval           # scorecard over the fixture corpus
+npm test               # all nine regression suites
 ```
 
 Rejects: credentials, deploy logic, imports from `suengj-com`.

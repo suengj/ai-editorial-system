@@ -8,9 +8,19 @@
     "min_source_roles": [],
     "rationale": "A view earns its keep by reasoning, not citation volume. Facts it does assert are still verified."
   },
-  "required_frame_fields": ["thesis", "original_value_add", "uncertainty"],
-  "required_type_fields": ["confidence", "counterarguments"],
-  "optional_type_fields": ["view_status", "what_would_change_my_mind"],
+  "required_frame_fields": [
+    "thesis",
+    "original_value_add",
+    "uncertainty"
+  ],
+  "required_type_fields": [
+    "confidence",
+    "counterarguments"
+  ],
+  "optional_type_fields": [
+    "view_status",
+    "what_would_change_my_mind"
+  ],
   "typical_structure": [
     "The position",
     "Why I hold it",
@@ -20,13 +30,24 @@
   "flexibility": "Free-form. The only structural requirement is that the position appears before its support.",
   "artifacts": {
     "default": [],
-    "optional": ["brief", "slides", "evidence_visual"],
-    "inappropriate": ["audio", "video"]
+    "optional": [
+      "brief",
+      "slides",
+      "evidence_visual"
+    ],
+    "inappropriate": [
+      "audio",
+      "video"
+    ]
   },
   "anti_patterns": [
     "Opinion written in the register of neutral research",
     "Counterarguments stated in a weakened form so they can be dismissed",
     "Confidence asserted as high with no stated uncertainty",
     "Burying the position under three paragraphs of context"
-  ]
+  ],
+  "quality_gates": {
+    "evidence_density_floor": 0.1,
+    "rationale": "Low by design. A view earns its keep by reasoning, not citation volume; holding it to the News floor would penalise the register rather than the writing."
+  }
 }

@@ -50,7 +50,7 @@ const DATE_RE = /\b\d{4}-\d{2}-\d{2}\b|\b\d{4}년\b|\b(19|20)\d{2}\b/;
  * Run every body-level gate. `article` is optional; when supplied, citation
  * integrity and thesis fidelity are checked too.
  */
-export function runGates(body, article = null, gates = loadGates()) {
+export function runGates(body, article = null, gates = loadGates(), profile = null) {
   const findings = [];
   const paras = paragraphs(body);
 
@@ -104,13 +104,17 @@ export function runGates(body, article = null, gates = loadGates()) {
   // --- G-09 evidence density ----------------------------------------------
   {
     const t = gates.thresholds.evidenceDensity;
+    // The floor is per content type. A View earns its keep by reasoning, not
+    // citation volume; holding it to the News floor would penalise the
+    // register rather than the writing.
+    const floor = profile?.quality_gates?.evidence_density_floor ?? t.minParagraphFraction;
     if (paras.length > 0) {
       const carrying = paras.filter((p) => NUMBER_RE.test(p) || DATE_RE.test(p) || CITATION_MARKER_RE.test(p)).length;
       const fraction = carrying / paras.length;
-      if (fraction < t.minParagraphFraction) {
+      if (fraction < floor) {
         findings.push(finding(
           t.name, t.severity,
-          `${(fraction * 100).toFixed(0)}% of paragraphs carry a number, date, or citation (floor ${(t.minParagraphFraction * 100).toFixed(0)}%)`,
+          `${(fraction * 100).toFixed(0)}% of paragraphs carry a number, date, or citation (floor ${(floor * 100).toFixed(0)}% for ${profile?.content_type ?? 'default'})`,
           `${carrying}/${paras.length}`,
         ));
       }

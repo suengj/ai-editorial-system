@@ -1,0 +1,122 @@
+{
+  "schema_version": "1.0.0",
+  "description": "Editorial evaluation rubric (AES-P3.2 / SUE-450). Two classes with different authority: integrity dimensions are hard gates decided by evidence; editorial dimensions are judgements that require an observation and never produce an authoritative single score.",
+  "scales": {
+    "integrity": { "values": ["pass", "fail"], "authority": "hard gate — a fail blocks finalization regardless of any editorial rating" },
+    "editorial": { "values": [0, 1, 2, 3], "authority": "advisory — a human editorial judgment remains final for style and insight" }
+  },
+  "evidence_required": true,
+  "no_aggregate_score": "There is deliberately no total. A single number would hide the one thing this rubric exists to reveal: that a piece can improve on every editorial dimension while failing on integrity.",
+  "dimensions": [
+    {
+      "id": "I-1", "class": "integrity", "name": "citation-integrity",
+      "fails_when": "A citation does not resolve, repeats to inflate the evidence base, points at a working document, or does not support the claim beside it.",
+      "decided_by": ["gate:citation-integrity", "skill:verify-claims"],
+      "mechanical": "partial"
+    },
+    {
+      "id": "I-2", "class": "integrity", "name": "polish-preservation",
+      "fails_when": "A protected span changed across a polish pass — a number, unit, date, citation marker, quotation, URL, or technical term added, removed, or altered.",
+      "decided_by": ["lib:polish-invariants"],
+      "mechanical": "full"
+    },
+    {
+      "id": "I-3", "class": "integrity", "name": "claim-support",
+      "fails_when": "A material claim is unsupported, or an interpretation is presented as a verified fact.",
+      "decided_by": ["skill:verify-claims"],
+      "mechanical": "none"
+    },
+    {
+      "id": "I-4", "class": "integrity", "name": "publication-state",
+      "fails_when": "An article reaches published without recorded human approval, or any Skill claims publication, approval, or finalization authority.",
+      "decided_by": ["lib:article-contract-core", "lib:skill-core"],
+      "mechanical": "full"
+    },
+    {
+      "id": "I-5", "class": "integrity", "name": "provenance-lineage",
+      "fails_when": "An artifact cannot identify the article version that produced it, carries a claim the article never verified, or asserts a staleness level its hashes contradict.",
+      "decided_by": ["lib:article-contract-core", "lib:plan-core"],
+      "mechanical": "full"
+    },
+    {
+      "id": "E-1", "class": "editorial", "name": "thesis-clarity",
+      "asks": "Is there a falsifiable position, stated early, that the piece actually argues?",
+      "evidence": "Quote the sentence carrying the thesis, or record that none exists.",
+      "mechanical": "none"
+    },
+    {
+      "id": "E-2", "class": "editorial", "name": "synthesis",
+      "asks": "Does the piece connect sources in a way none of them does alone, or does it walk them in order?",
+      "evidence": "Name the paragraph doing the connective work, or cite the citation sequence showing a walk.",
+      "decided_by": ["gate:sequential-summary"],
+      "mechanical": "partial"
+    },
+    {
+      "id": "E-3", "class": "editorial", "name": "evidence-density",
+      "asks": "Do the paragraphs carry numbers, dates, and mechanisms, at the level this content type warrants?",
+      "evidence": "The measured fraction against the profile floor.",
+      "decided_by": ["gate:evidence-density"],
+      "mechanical": "partial"
+    },
+    {
+      "id": "E-4", "class": "editorial", "name": "original-reasoning",
+      "asks": "Is there a connective step the sources do not supply — a decomposition, a mechanism, a consequence?",
+      "evidence": "Point to it, or record its absence.",
+      "mechanical": "none"
+    },
+    {
+      "id": "E-5", "class": "editorial", "name": "fact-interpretation-separation",
+      "asks": "Can a reader tell, sentence by sentence, what is sourced, what is our reading, and what is hypothesis?",
+      "evidence": "Quote a blended sentence, or confirm the registers stay marked.",
+      "mechanical": "none"
+    },
+    {
+      "id": "E-6", "class": "editorial", "name": "flow-density",
+      "asks": "Does every paragraph carry something the reader did not have before?",
+      "evidence": "Quote the emptiest paragraph.",
+      "mechanical": "none"
+    },
+    {
+      "id": "E-7", "class": "editorial", "name": "headline-fidelity",
+      "asks": "Does the title carry the claim the piece makes?",
+      "evidence": "The title beside the thesis.",
+      "decided_by": ["gate:headline-thesis-fidelity"],
+      "mechanical": "partial"
+    },
+    {
+      "id": "E-8", "class": "editorial", "name": "overclaiming",
+      "asks": "Is any certainty asserted that the evidence does not carry?",
+      "evidence": "Quote the overclaim.",
+      "decided_by": ["gate:overclaim", "gate:empty-hedge"],
+      "mechanical": "partial"
+    },
+    {
+      "id": "E-9", "class": "editorial", "name": "ai-scaffolding",
+      "asks": "Is there prompt echo, repetition, placeholder text, or formulaic sectioning?",
+      "evidence": "Quote it.",
+      "decided_by": ["gate:prompt-echo", "gate:duplicate-paragraph", "gate:scaffolding-leak", "gate:formulaic-sectioning", "gate:filler-phrase"],
+      "mechanical": "full"
+    },
+    {
+      "id": "E-10", "class": "editorial", "name": "content-type-fit",
+      "asks": "Does it meet its profile's evidence burden and read in that profile's register?",
+      "evidence": "The profile check result plus one register observation.",
+      "decided_by": ["lib:profile-core"],
+      "mechanical": "partial"
+    },
+    {
+      "id": "E-11", "class": "editorial", "name": "voice-fit",
+      "asks": "Does it sound like Suengj — Korean-first with technical terms in English, restrained first person, distinctions as the characteristic move?",
+      "evidence": "Quote a sentence that does or does not.",
+      "mechanical": "none"
+    }
+  ],
+  "regression_rule": {
+    "statement": "A run is a regression if any integrity dimension moves from pass to fail, regardless of how many editorial dimensions improved.",
+    "rationale": "This is the rule the method exists for. A piece that reads better and states a wrong number is worse, and any method that reports it as an improvement is measuring the wrong thing."
+  },
+  "human_authority": {
+    "statement": "A human editorial judgment is recorded separately and is never replaced by a rating in this rubric.",
+    "rationale": "Model ratings inform; they do not accept. Style and insight quality stay with the editor."
+  }
+}

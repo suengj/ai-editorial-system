@@ -13,24 +13,31 @@ import { readFileSync } from 'node:fs';
 import { dirname, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { blocks, loadGates, runGates, SEVERITY } from './lib/quality-gates-core.mjs';
+import { loadProfiles } from './lib/profile-core.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = resolve(HERE, '..');
 
 const args = process.argv.slice(2);
 if (args.length === 0) {
-  console.error('usage: check-quality-gates.mjs <body.md> [...] | --bundle <bundle.json>');
+  console.error('usage: check-quality-gates.mjs <body.md> [...] [--bundle <bundle.json>] [--type <content-type>]');
   process.exit(2);
 }
 
 const gates = loadGates();
+const profiles = loadProfiles();
 let article = null;
+let contentType = null;
 const files = [];
 
 for (let i = 0; i < args.length; i += 1) {
   if (args[i] === '--bundle') {
     const bundle = JSON.parse(readFileSync(resolve(args[i + 1]), 'utf8'));
     article = bundle.article ?? bundle;
+    contentType = article?.content_type ?? null;
+    i += 1;
+  } else if (args[i] === '--type') {
+    contentType = args[i + 1];
     i += 1;
   } else {
     files.push(resolve(args[i]));
@@ -40,7 +47,7 @@ for (let i = 0; i < args.length; i += 1) {
 let blocked = 0;
 for (const file of files) {
   const body = readFileSync(file, 'utf8');
-  const findings = runGates(body, article, gates);
+  const findings = runGates(body, article, gates, profiles[contentType] ?? null);
   const label = relative(REPO_ROOT, file) || file;
 
   if (findings.length === 0) {

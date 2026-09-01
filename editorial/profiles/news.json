@@ -5,12 +5,24 @@
   "evidence_burden": {
     "min_sources": 2,
     "min_verified_claims": 3,
-    "min_source_roles": ["primary"],
+    "min_source_roles": [
+      "primary"
+    ],
     "rationale": "A claim about what is happening now needs a source that observed it, not one that repeated it."
   },
-  "required_frame_fields": ["thesis", "article_worthiness", "verification_needs", "original_value_add", "uncertainty"],
-  "required_type_fields": ["event_date"],
-  "optional_type_fields": ["developing"],
+  "required_frame_fields": [
+    "thesis",
+    "article_worthiness",
+    "verification_needs",
+    "original_value_add",
+    "uncertainty"
+  ],
+  "required_type_fields": [
+    "event_date"
+  ],
+  "optional_type_fields": [
+    "developing"
+  ],
   "freshness": {
     "max_source_age_days": 30,
     "rationale": "Event and source dates are distinct from our publication date; a month-old primary source is fine, a month-old claim about 'now' is not."
@@ -23,8 +35,15 @@
   ],
   "flexibility": "Sections may collapse for a short piece. Fact and interpretation may never share a paragraph without being marked apart.",
   "artifacts": {
-    "default": ["brief"],
-    "optional": ["evidence_visual", "slides", "infographic", "sources"],
+    "default": [
+      "brief"
+    ],
+    "optional": [
+      "evidence_visual",
+      "slides",
+      "infographic",
+      "sources"
+    ],
     "inappropriate": []
   },
   "anti_patterns": [
@@ -32,5 +51,9 @@
     "The source's publication date used as the event date",
     "'What happened / Why it matters' applied mechanically",
     "Reporting a projection in the present tense"
-  ]
+  ],
+  "quality_gates": {
+    "evidence_density_floor": 0.3,
+    "rationale": "Calibrated against golden fixture G-01, which sits at 33%. A news analysis carries its numbers in the paragraphs that argue from them, not in every paragraph; a higher floor penalised the connective prose rather than the evidence."
+  }
 }
