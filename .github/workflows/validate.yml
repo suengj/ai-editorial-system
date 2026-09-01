@@ -35,3 +35,7 @@ jobs:
         run: npm run validate:article
       - name: Article contract regression
         run: npm run test:article
+      - name: Validate rights catalog
+        run: npm run validate:rights
+      - name: Rights policy regression
+        run: npm run test:rights

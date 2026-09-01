@@ -38,6 +38,8 @@ export const CODES = Object.freeze({
   CLAIM_LINK: 'claim-link',
   STALENESS: 'staleness',
   ARTIFACT_ID: 'artifact-id',
+  TRANSFORMATION: 'transformation',
+  VISUAL_RIGHTS: 'visual-rights',
 });
 
 /** state → the only `suengj-com` status it may be materialized as. */
@@ -67,6 +69,15 @@ const DISTRIBUTION_KINDS = new Set(['brief', 'full', 'slides', 'infographic', 'a
 /** Artifact kinds that assert facts on their own and must cite them. */
 const FACT_BEARING_KINDS = new Set(['brief', 'slides', 'infographic', 'audio', 'video', 'evidence_visual']);
 const DISTRIBUTION_ALLOWED_STATES = new Set(['final', 'published']);
+
+/** States at which the article is materialized and the rights record must hold. */
+const MATERIALIZED_STATES = new Set(['final', 'published', 'revised']);
+
+/** Visual artifact kinds that must carry a rights record. */
+const VISUAL_KINDS = new Set(['evidence_visual', 'infographic']);
+/** Visual classes that reproduce someone else's work. */
+const BORROWED_VISUAL_CLASSES = new Set(['screenshot', 'thumbnail', 'source_image', 'remix']);
+const OWN_VISUAL_CLASSES = new Set(['generated_chart', 'generated_diagram']);
 
 const issue = (code, where, message) => ({ code, where, message });
 
@@ -134,6 +145,27 @@ export function validateArticle(article, schemas = loadSchemas()) {
     }
   }
 
+  // --- transformation record (AES-P0.4) ---
+  if (MATERIALIZED_STATES.has(state)) {
+    const t = article?.transformation;
+    if (!t) {
+      issues.push(issue(
+        CODES.TRANSFORMATION, where,
+        `state "${state}" requires a transformation record; source-derived work must show original framing before it is materialized`,
+      ));
+    } else {
+      if (t.transcript_shaped === true) {
+        issues.push(issue(
+          CODES.TRANSFORMATION, where,
+          'transcript_shaped is true; a piece that still follows the source\'s order and phrasing may not be materialized',
+        ));
+      }
+      if (t.original_framing !== true) {
+        issues.push(issue(CODES.TRANSFORMATION, where, 'original_framing must be true before an article is materialized'));
+      }
+    }
+  }
+
   return issues;
 }
 
@@ -177,6 +209,35 @@ export function validateArtifact(artifact, article = null, schemas = loadSchemas
       CODES.CLAIM_LINK, where,
       `kind "${kind}" asserts facts and requires source_references tying its claims to verified article claims`,
     ));
+  }
+
+  // --- visual rights (AES-P0.4) ---
+  if (VISUAL_KINDS.has(kind)) {
+    const v = artifact?.visual;
+    if (!v) {
+      issues.push(issue(CODES.VISUAL_RIGHTS, where, `kind "${kind}" requires a visual rights record`));
+    } else {
+      if (v.rights_basis === 'unclear' && v.embedded !== false) {
+        issues.push(issue(
+          CODES.VISUAL_RIGHTS, where,
+          'rights_basis is unclear; the visual may be referenced by link but never embedded — set embedded: false',
+        ));
+      }
+      if (BORROWED_VISUAL_CLASSES.has(v.visual_class)) {
+        if (v.rights_basis === 'own_work') {
+          issues.push(issue(CODES.VISUAL_RIGHTS, where, `visual_class "${v.visual_class}" reproduces someone else's work and cannot claim own_work`));
+        }
+        if (v.embedded === true && !v.attribution) {
+          issues.push(issue(CODES.VISUAL_RIGHTS, where, `embedded "${v.visual_class}" requires attribution`));
+        }
+        if (v.embedded === true && v.rights_basis === 'licensed' && !v.license) {
+          issues.push(issue(CODES.VISUAL_RIGHTS, where, 'rights_basis "licensed" requires a named license'));
+        }
+      }
+      if (OWN_VISUAL_CLASSES.has(v.visual_class) && v.rights_basis !== 'own_work') {
+        issues.push(issue(CODES.VISUAL_RIGHTS, where, `visual_class "${v.visual_class}" is our own work; rights_basis should be own_work`));
+      }
+    }
   }
 
   if (!article) return issues;

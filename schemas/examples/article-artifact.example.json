@@ -30,9 +30,21 @@
       ]
     },
     "source_set": [
-      { "source_id": "src:drive:1AbCdEfGhIjKlMnOpQrStUvWxYz012345", "role": "primary", "content_hash_at_use": "3b1f0c5d9a2e47c8b6d0f1a3e5c7b9d1f3a5c7e9b1d3f5a7c9e1b3d5f7a9c1e3" },
-      { "source_id": "src:drive:1MarketBriefFileIdAbCdEfGhIjKlMnOp", "role": "supporting", "content_hash_at_use": "a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f90" },
-      { "source_id": "src:web:example.com/inference-cost-report-2026", "role": "contradicting", "content_hash_at_use": "5c7e9b1d3f5a7c9e1b3d5f7a9c1e33b1f0c5d9a2e47c8b6d0f1a3e5c7b9d1f3a" }
+      {
+        "source_id": "src:drive:1AbCdEfGhIjKlMnOpQrStUvWxYz012345",
+        "role": "primary",
+        "content_hash_at_use": "3b1f0c5d9a2e47c8b6d0f1a3e5c7b9d1f3a5c7e9b1d3f5a7c9e1b3d5f7a9c1e3"
+      },
+      {
+        "source_id": "src:drive:1MarketBriefFileIdAbCdEfGhIjKlMnOp",
+        "role": "supporting",
+        "content_hash_at_use": "a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f90"
+      },
+      {
+        "source_id": "src:web:example.com/inference-cost-report-2026",
+        "role": "contradicting",
+        "content_hash_at_use": "5c7e9b1d3f5a7c9e1b3d5f7a9c1e33b1f0c5d9a2e47c8b6d0f1a3e5c7b9d1f3a"
+      }
     ],
     "verification": {
       "verified_at": "2026-08-31T15:00:00Z",
@@ -43,7 +55,12 @@
           "kind": "number",
           "status": "verified",
           "evidence": [
-            { "url": "https://example.com/pricing", "title": "Vendor pricing page", "retrieved_at": "2026-08-31", "authority": "primary" }
+            {
+              "url": "https://example.com/pricing",
+              "title": "Vendor pricing page",
+              "retrieved_at": "2026-08-31",
+              "authority": "primary"
+            }
           ]
         },
         {
@@ -52,7 +69,12 @@
           "kind": "number",
           "status": "verified",
           "evidence": [
-            { "url": "https://example.com/10q", "title": "Quarterly filing", "retrieved_at": "2026-08-31", "authority": "primary" }
+            {
+              "url": "https://example.com/10q",
+              "title": "Quarterly filing",
+              "retrieved_at": "2026-08-31",
+              "authority": "primary"
+            }
           ]
         },
         {
@@ -69,6 +91,12 @@
       "reviewer": "Suengjae Hong",
       "decision": "accept",
       "notes": "c3 stays flagged as unverified in the body rather than being dropped."
+    },
+    "transformation": {
+      "transcript_shaped": false,
+      "original_framing": true,
+      "synthesis_note": "The sources report prices and report margins separately. This piece decomposes the cost stack to show why the first does not move the second.",
+      "attribution": "Underlying video summaries and the market brief are credited inline; no transcript text is reproduced."
     },
     "version": {
       "number": 3,
@@ -96,18 +124,45 @@
         "commit": "a1b2c3d"
       },
       "generator": {
-        "skill": { "name": "plan-artifacts", "version": "0.1.0" },
-        "tool": { "name": "chart-renderer", "version": "1.4.0", "model": null }
+        "skill": {
+          "name": "plan-artifacts",
+          "version": "0.1.0"
+        },
+        "tool": {
+          "name": "chart-renderer",
+          "version": "1.4.0",
+          "model": null
+        }
       },
       "generated_at": "2026-08-31T16:00:00Z",
       "verified_at": "2026-08-31T16:20:00Z",
       "state": "approved",
-      "staleness": { "level": "fresh", "checked_at": "2026-08-31T18:05:00Z", "against_version": 3 },
-      "location": { "kind": "suengj_com_asset", "path": "public/artifacts/ai-inference-pricing-cost-stack.svg" },
+      "staleness": {
+        "level": "fresh",
+        "checked_at": "2026-08-31T18:05:00Z",
+        "against_version": 3
+      },
+      "location": {
+        "kind": "suengj_com_asset",
+        "path": "public/artifacts/ai-inference-pricing-cost-stack.svg"
+      },
       "source_references": [
-        { "claim_id": "c1", "url": "https://example.com/pricing" },
-        { "claim_id": "c2", "url": "https://example.com/10q" }
-      ]
+        {
+          "claim_id": "c1",
+          "url": "https://example.com/pricing"
+        },
+        {
+          "claim_id": "c2",
+          "url": "https://example.com/10q"
+        }
+      ],
+      "visual": {
+        "visual_class": "generated_chart",
+        "rights_basis": "own_work",
+        "license": null,
+        "attribution": "Chart by Suengj. Underlying figures cited to the sources listed in source_references.",
+        "embedded": true
+      }
     },
     {
       "schema_version": "1.0.0",
@@ -121,16 +176,33 @@
         "claims_hash": "2222222222222222222222222222222222222222222222222222222222222222"
       },
       "generator": {
-        "skill": { "name": "plan-artifacts", "version": "0.1.0" },
-        "tool": { "name": "text-generator", "version": "2026-08", "model": "replaceable" }
+        "skill": {
+          "name": "plan-artifacts",
+          "version": "0.1.0"
+        },
+        "tool": {
+          "name": "text-generator",
+          "version": "2026-08",
+          "model": "replaceable"
+        }
       },
       "generated_at": "2026-08-31T18:10:00Z",
       "state": "generated",
-      "staleness": { "level": "fresh", "checked_at": "2026-08-31T18:10:00Z", "against_version": 3 },
-      "location": { "kind": "pending" },
+      "staleness": {
+        "level": "fresh",
+        "checked_at": "2026-08-31T18:10:00Z",
+        "against_version": 3
+      },
+      "location": {
+        "kind": "pending"
+      },
       "source_references": [
-        { "claim_id": "c1" },
-        { "claim_id": "c2" }
+        {
+          "claim_id": "c1"
+        },
+        {
+          "claim_id": "c2"
+        }
       ]
     },
     {
@@ -145,14 +217,31 @@
         "claims_hash": "2222222222222222222222222222222222222222222222222222222222222222"
       },
       "generator": {
-        "skill": { "name": "plan-artifacts", "version": "0.1.0" },
-        "tool": { "name": "deck-builder", "version": "0.9.1", "model": null }
+        "skill": {
+          "name": "plan-artifacts",
+          "version": "0.1.0"
+        },
+        "tool": {
+          "name": "deck-builder",
+          "version": "0.9.1",
+          "model": null
+        }
       },
       "generated_at": "2026-08-30T11:00:00Z",
       "state": "generated",
-      "staleness": { "level": "cosmetic", "checked_at": "2026-08-31T18:10:00Z", "against_version": 3 },
-      "location": { "kind": "pending" },
-      "source_references": [{ "claim_id": "c1" }],
+      "staleness": {
+        "level": "cosmetic",
+        "checked_at": "2026-08-31T18:10:00Z",
+        "against_version": 3
+      },
+      "location": {
+        "kind": "pending"
+      },
+      "source_references": [
+        {
+          "claim_id": "c1"
+        }
+      ],
       "notes": "Built from v2. Prose changed in v3 but the verified claims did not, so regeneration is optional."
     },
     {
@@ -167,13 +256,26 @@
         "claims_hash": "2222222222222222222222222222222222222222222222222222222222222222"
       },
       "generator": {
-        "skill": { "name": "plan-artifacts", "version": "0.1.0" },
-        "tool": { "name": "manifest-writer", "version": "1.0.0", "model": null }
+        "skill": {
+          "name": "plan-artifacts",
+          "version": "0.1.0"
+        },
+        "tool": {
+          "name": "manifest-writer",
+          "version": "1.0.0",
+          "model": null
+        }
       },
       "generated_at": "2026-08-31T18:10:00Z",
       "state": "generated",
-      "staleness": { "level": "fresh", "checked_at": "2026-08-31T18:10:00Z", "against_version": 3 },
-      "location": { "kind": "pending" }
+      "staleness": {
+        "level": "fresh",
+        "checked_at": "2026-08-31T18:10:00Z",
+        "against_version": 3
+      },
+      "location": {
+        "kind": "pending"
+      }
     }
   ]
 }

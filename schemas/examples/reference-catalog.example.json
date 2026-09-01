@@ -1,0 +1,50 @@
+{
+  "schema_version": "1.0.0",
+  "entries": [
+    {
+      "ref_id": "ref:permissive-skill-repo",
+      "url": "https://example.com/some-open-skill-repo",
+      "title": "An openly licensed Skill collection",
+      "creator": "Example Maintainers",
+      "kind": "skill",
+      "observed_at": "2026-09-01",
+      "rights_status": "clear",
+      "license": "MIT",
+      "license_compatible": true,
+      "attribution": "Example Maintainers, MIT licensed.",
+      "copy_status": "copied",
+      "local_path": "references/vendored/example-skill/",
+      "verdict": "adapt",
+      "observations": "Their invariant-per-Skill layout is worth adopting; their vendor coupling is not."
+    },
+    {
+      "ref_id": "ref:paywalled-industry-report",
+      "url": "https://example.com/industry-report",
+      "title": "An industry report behind a paywall",
+      "creator": "Example Research",
+      "kind": "paper",
+      "observed_at": "2026-09-01",
+      "rights_status": "unclear",
+      "license": null,
+      "copy_status": "linked",
+      "verdict": "monitor",
+      "observations": "Terms are not stated. Link only; figures may be cited from the public summary with attribution.",
+      "notes": "Fail-to-reference applied: nothing reproduced."
+    },
+    {
+      "ref_id": "ref:newsroom-ai-guidelines",
+      "url": "https://example.com/guidelines",
+      "title": "Example Press AI guidelines",
+      "creator": "Example Press",
+      "kind": "documentation",
+      "observed_at": "2026-09-01",
+      "rights_status": "clear",
+      "license": "All rights reserved",
+      "license_compatible": false,
+      "attribution": "Example Press, quoted under attribution for commentary.",
+      "copy_status": "quoted",
+      "verdict": "adopt",
+      "observations": "Their split between verification and copy-editing matches Editorial Rule 4; we quote the definition and write our own rule."
+    }
+  ]
+}

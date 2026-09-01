@@ -12,11 +12,13 @@
     "validate:boundary": "node scripts/validate-repo-boundary.mjs",
     "validate:source": "node scripts/validate-source-manifest.mjs",
     "validate:article": "node scripts/validate-article-contract.mjs",
-    "validate": "npm run validate:boundary && npm run validate:source && npm run validate:article",
+    "validate:rights": "node scripts/validate-rights.mjs",
+    "validate": "npm run validate:boundary && npm run validate:source && npm run validate:article && npm run validate:rights",
     "test:boundary": "node scripts/test-repo-boundary.mjs",
     "test:source": "node scripts/test-source-contract.mjs",
     "test:article": "node scripts/test-article-contract.mjs",
-    "test": "npm run test:boundary && npm run test:source && npm run test:article"
+    "test:rights": "node scripts/test-rights-policy.mjs",
+    "test": "npm run test:boundary && npm run test:source && npm run test:article && npm run test:rights"
   },
   "repository": {
     "type": "git",

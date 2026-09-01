@@ -1,0 +1,61 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://suengj.com/schemas/reference-catalog.schema.json",
+  "title": "Reference and benchmark catalog",
+  "description": "Catalog of external material this system studies or cites (AES-P0.4 / SUE-437). Entries are pointers with explicit rights metadata. When rights are unclear the entry must be link-only; the repository never becomes a mirror.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "entries"],
+  "properties": {
+    "schema_version": { "const": "1.0.0" },
+    "entries": { "type": "array", "items": { "$ref": "#/$defs/entry" } }
+  },
+  "$defs": {
+    "entry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "ref_id", "url", "creator", "kind", "observed_at",
+        "rights_status", "license", "copy_status", "verdict", "observations"
+      ],
+      "properties": {
+        "ref_id": { "type": "string", "pattern": "^ref:[a-z0-9]+(-[a-z0-9]+)*$" },
+        "url": { "type": "string", "pattern": "^https?://" },
+        "title": { "type": "string" },
+        "creator": {
+          "description": "Author, project, or organisation. Never omitted — attribution starts here.",
+          "type": "string",
+          "minLength": 1
+        },
+        "kind": {
+          "enum": ["article", "skill", "prompt", "tool", "dataset", "documentation", "media", "paper"]
+        },
+        "observed_at": { "type": "string", "format": "date" },
+        "rights_status": {
+          "description": "clear: license identified and understood. unclear: not identified, ambiguous, or contradictory. Unclear forces link-only.",
+          "enum": ["clear", "unclear"]
+        },
+        "license": {
+          "description": "SPDX identifier or a plain-language license name. null when rights_status is unclear.",
+          "type": ["string", "null"]
+        },
+        "license_compatible": {
+          "description": "Whether the license permits inclusion in this MIT / CC BY 4.0 repository. Required to be true before anything is copied.",
+          "type": "boolean"
+        },
+        "attribution": { "type": "string" },
+        "copy_status": {
+          "description": "linked: URL and our notes only. quoted: limited attributed excerpt supporting analysis. copied: material reproduced in-repo — permitted only under a compatible license with attribution.",
+          "enum": ["linked", "quoted", "copied"]
+        },
+        "local_path": { "type": "string" },
+        "verdict": {
+          "description": "What we decided after studying it.",
+          "enum": ["adopt", "adapt", "avoid", "monitor"]
+        },
+        "observations": { "type": "string", "minLength": 1 },
+        "notes": { "type": "string" }
+      }
+    }
+  }
+}

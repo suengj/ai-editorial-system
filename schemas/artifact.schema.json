@@ -6,36 +6,79 @@
   "type": "object",
   "additionalProperties": false,
   "required": [
-    "schema_version", "artifact_id", "kind", "media_stage", "article_ref",
-    "generator", "generated_at", "state"
+    "schema_version",
+    "artifact_id",
+    "kind",
+    "media_stage",
+    "article_ref",
+    "generator",
+    "generated_at",
+    "state"
   ],
   "properties": {
-    "schema_version": { "const": "1.0.0" },
+    "schema_version": {
+      "const": "1.0.0"
+    },
     "artifact_id": {
       "type": "string",
       "pattern": "^art:[a-z0-9]+(-[a-z0-9]+)*#(brief|full|sources|evidence_visual|slides|infographic|audio|video)(\\.[a-z0-9-]+)?$"
     },
-    "kind": { "$ref": "#/$defs/kind" },
+    "kind": {
+      "$ref": "#/$defs/kind"
+    },
     "media_stage": {
       "description": "Evidence media may be produced during research and writing. Distribution media requires a human-finalized article.",
-      "enum": ["evidence", "distribution"]
+      "enum": [
+        "evidence",
+        "distribution"
+      ]
     },
-    "article_ref": { "$ref": "#/$defs/article_ref" },
-    "generator": { "$ref": "#/$defs/generator" },
-    "generated_at": { "type": "string", "format": "date-time" },
-    "verified_at": { "type": "string", "format": "date-time" },
+    "article_ref": {
+      "$ref": "#/$defs/article_ref"
+    },
+    "generator": {
+      "$ref": "#/$defs/generator"
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "verified_at": {
+      "type": "string",
+      "format": "date-time"
+    },
     "state": {
-      "enum": ["generated", "reviewed", "approved", "stale", "superseded", "retired"]
+      "enum": [
+        "generated",
+        "reviewed",
+        "approved",
+        "stale",
+        "superseded",
+        "retired"
+      ]
     },
-    "staleness": { "$ref": "#/$defs/staleness" },
+    "staleness": {
+      "$ref": "#/$defs/staleness"
+    },
     "location": {
       "description": "Where the artifact lives once handed off. Storage architecture is decided in AES-P6.3; this field only records the outcome.",
       "type": "object",
       "additionalProperties": false,
-      "required": ["kind"],
+      "required": [
+        "kind"
+      ],
       "properties": {
-        "kind": { "enum": ["suengj_com_content", "suengj_com_asset", "drive", "pending"] },
-        "path": { "type": "string" }
+        "kind": {
+          "enum": [
+            "suengj_com_content",
+            "suengj_com_asset",
+            "drive",
+            "pending"
+          ]
+        },
+        "path": {
+          "type": "string"
+        }
       }
     },
     "source_references": {
@@ -44,57 +87,127 @@
       "items": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["claim_id"],
+        "required": [
+          "claim_id"
+        ],
         "properties": {
-          "claim_id": { "type": "string", "minLength": 1 },
-          "source_id": { "type": "string", "pattern": "^src:(drive|github|web|local):" },
-          "url": { "type": "string" }
+          "claim_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "source_id": {
+            "type": "string",
+            "pattern": "^src:(drive|github|web|local):"
+          },
+          "url": {
+            "type": "string"
+          }
         }
       }
     },
-    "notes": { "type": "string" }
+    "notes": {
+      "type": "string"
+    },
+    "visual": {
+      "$ref": "#/$defs/visual"
+    }
   },
   "$defs": {
     "kind": {
       "description": "Artifact kinds. Deliberately disjoint from content types (research/view/news/note/project).",
-      "enum": ["brief", "full", "sources", "evidence_visual", "slides", "infographic", "audio", "video"]
+      "enum": [
+        "brief",
+        "full",
+        "sources",
+        "evidence_visual",
+        "slides",
+        "infographic",
+        "audio",
+        "video"
+      ]
     },
     "article_ref": {
       "description": "Exactly which article version produced this artifact.",
       "type": "object",
       "additionalProperties": false,
-      "required": ["article_id", "version_number", "content_hash", "claims_hash"],
+      "required": [
+        "article_id",
+        "version_number",
+        "content_hash",
+        "claims_hash"
+      ],
       "properties": {
-        "article_id": { "type": "string", "pattern": "^art:[a-z0-9]+(-[a-z0-9]+)*$" },
-        "version_number": { "type": "integer", "minimum": 1 },
-        "content_hash": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
-        "claims_hash": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
-        "commit": { "type": "string", "pattern": "^[a-f0-9]{7,40}$" }
+        "article_id": {
+          "type": "string",
+          "pattern": "^art:[a-z0-9]+(-[a-z0-9]+)*$"
+        },
+        "version_number": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "content_hash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "claims_hash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "commit": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{7,40}$"
+        }
       }
     },
     "generator": {
       "description": "Vendor-neutral. A Skill is the orchestration contract; the generator is a replaceable worker. No field here is specific to any provider.",
       "type": "object",
       "additionalProperties": false,
-      "required": ["skill", "tool"],
+      "required": [
+        "skill",
+        "tool"
+      ],
       "properties": {
         "skill": {
           "type": "object",
           "additionalProperties": false,
-          "required": ["name", "version"],
+          "required": [
+            "name",
+            "version"
+          ],
           "properties": {
-            "name": { "type": "string", "minLength": 1 },
-            "version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" }
+            "name": {
+              "type": "string",
+              "minLength": 1
+            },
+            "version": {
+              "type": "string",
+              "pattern": "^\\d+\\.\\d+\\.\\d+$"
+            }
           }
         },
         "tool": {
           "type": "object",
           "additionalProperties": false,
-          "required": ["name", "version"],
+          "required": [
+            "name",
+            "version"
+          ],
           "properties": {
-            "name": { "type": "string", "minLength": 1 },
-            "version": { "type": "string", "minLength": 1 },
-            "model": { "type": ["string", "null"] }
+            "name": {
+              "type": "string",
+              "minLength": 1
+            },
+            "version": {
+              "type": "string",
+              "minLength": 1
+            },
+            "model": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
           }
         }
       }
@@ -103,14 +216,74 @@
       "description": "Set by the staleness check, never by hand.",
       "type": "object",
       "additionalProperties": false,
-      "required": ["level", "checked_at"],
+      "required": [
+        "level",
+        "checked_at"
+      ],
       "properties": {
         "level": {
-          "description": "fresh: article version matches. cosmetic: prose changed, verified claims did not. material: the factual substance changed — the artifact must be regenerated before it may remain published.",
-          "enum": ["fresh", "cosmetic", "material"]
+          "description": "fresh: article version matches. cosmetic: prose changed, verified claims did not. material: the factual substance changed \u2014 the artifact must be regenerated before it may remain published.",
+          "enum": [
+            "fresh",
+            "cosmetic",
+            "material"
+          ]
         },
-        "checked_at": { "type": "string", "format": "date-time" },
-        "against_version": { "type": "integer", "minimum": 1 }
+        "checked_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "against_version": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "visual": {
+      "description": "Rights and provenance for visual artifacts (AES-P0.4 / SUE-437). Required on evidence_visual and infographic.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "visual_class",
+        "rights_basis"
+      ],
+      "properties": {
+        "visual_class": {
+          "description": "generated_chart / generated_diagram are ours but may depict external facts. screenshot, thumbnail, source_image and remix reproduce someone else's work and need a rights basis and attribution.",
+          "enum": [
+            "generated_chart",
+            "generated_diagram",
+            "screenshot",
+            "thumbnail",
+            "source_image",
+            "remix"
+          ]
+        },
+        "rights_basis": {
+          "description": "own_work: we made it. licensed: permitted by an identified license. quotation: limited attributed use supporting commentary. unclear: rights not established \u2014 the artifact may only be referenced by link, never embedded.",
+          "enum": [
+            "own_work",
+            "licensed",
+            "quotation",
+            "unclear"
+          ]
+        },
+        "license": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "attribution": {
+          "type": "string"
+        },
+        "embedded": {
+          "description": "Whether the image is reproduced in our surface. Must be false when rights_basis is unclear.",
+          "type": "boolean"
+        },
+        "external_url": {
+          "type": "string"
+        }
       }
     }
   }
