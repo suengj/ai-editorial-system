@@ -99,7 +99,11 @@ const MATRIX = [
     name: 'Golden + negative fixtures and regression rubric exercised; SUE-417 improved',
     status: () => (all('eval', 'test:eval') ? 'PASS' : 'FAIL'),
     evidence: 'eval — calibration N-01 → G-01 MATERIALLY BETTER; regression G-01 → N-03 caught',
-    caveat: 'Fixture-based. A live P03 rerun judged by the owner is still outstanding (SUE-417, SUE-458).',
+    caveat:
+      'Fixture-based. Run against the real P03 drafts on 2026-09-01 the mechanical gates did not '
+      + 'separate the first smoke draft from the calibrated ones — both are clean. They do catch the '
+      + 'legacy Auto Blog artifact (scaffolding leak, duplicate paragraph). Discriminating editorial '
+      + 'worth is left to the twelve judgement dimensions, so SUE-417 still needs the owner\'s reading.',
   },
   {
     id: 6,
@@ -118,16 +122,25 @@ const MATRIX = [
   {
     id: 8,
     name: 'SUE-403 final Markdown handoff preserves Drive provenance and draft safety',
-    status: () => 'BLOCKED',
-    evidence: 'Handoff contract and receipt exist and are validated (validate:handoff).',
-    blocker: 'SUE-403 requires writing a final article to Drive and opening a suengj-com change. Both are owner actions on private/live systems and were not performed.',
+    status: () => (all('handoff:check', 'test:handoff') ? 'PASS' : 'FAIL'),
+    evidence:
+      'Executed 2026-09-01 on one real article: P03 seed (Drive YT_summary/source, T3hpzc0IGMw) '
+      + '→ review draft (Drive YT_summary/drafts) → final (Drive PJT/Article, 13,389 bytes) '
+      + '→ suengj-com content/editorial entry, merged as suengj-com 8190fa4. '
+      + 'Provenance carried end to end; status stayed draft and the build stayed at 51 pages with the entry absent from dist.',
+    caveat:
+      'The boundary was tested, not the article. Its factual claims came from the P03 run and were not '
+      + 're-verified here, and editorial approval remains the owner\'s.',
   },
   {
     id: 9,
     name: 'suengj.com artifact integration preserves canonical and AEO behaviour',
-    status: () => (all('handoff:check', 'test:handoff') ? 'PASS (contract side)' : 'FAIL'),
-    evidence: 'handoff:check; suengj-com branch feature/aes-p62-semantic-surfaces passes content contract, topics, AEO build, publication regression, and P03 fixture with byte-identical article markup',
-    caveat: 'The suengj-com change is on a branch, unmerged and undeployed, and has had no visual review.',
+    status: () => (all('handoff:check', 'test:handoff') ? 'PASS' : 'FAIL'),
+    evidence:
+      'handoff:check; merged to suengj-com main as 8cf2b0d (PR #12). Full dist compared against the '
+      + 'pre-merge build: 51 pages, 0 markup differences, 0 CSS rules changed, 9 added. '
+      + 'Rendering verified on a real published article — prose byte-identical under an applied sidecar.',
+    caveat: 'No article declares a sidecar yet, so the semantic path is exercised by tests and a probe rather than by live content.',
   },
   {
     id: 10,

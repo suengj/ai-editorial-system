@@ -10,7 +10,7 @@ quietly passed.
 
 ## Result
 
-**26/26 gates passing. 9 items pass, 0 fail, 1 blocked.**
+**26/26 gates passing. 10 items pass, 0 fail, 0 blocked.**
 
 | | Item | Status |
 |---|---|---|
@@ -21,20 +21,33 @@ quietly passed.
 | 5 | Golden + negative fixtures, rubric, SUE-417 improved | PASS ¹ |
 | 6 | Cross-source HITL matrix | PASS ¹ |
 | 7 | Brief + visual + deck lineage and staleness | PASS ¹ |
-| 8 | SUE-403 Drive + suengj.com final handoff | **BLOCKED** |
-| 9 | suengj.com integration preserves canonical/AEO | PASS (contract side) ¹ |
+| 8 | SUE-403 Drive + suengj.com final handoff | PASS ¹ |
+| 9 | suengj.com integration preserves canonical/AEO | PASS ¹ |
 | 10 | Media storage and audio/video roadmap | PASS |
 
 ¹ carries a caveat, printed by the runner and repeated below.
 
-## The blocker
+## The publication boundary, executed
 
-**Item 8 — SUE-403.** Finalizing a real article to Google Drive and opening a
-`suengj-com` change are owner actions on private and live systems. The contract
-and the receipt exist and are validated; the act has not been performed.
+**Item 8 — SUE-403** was executed on 2026-09-01 rather than deferred. One real
+article traversed the whole path:
 
-This is the one item that cannot be closed from here, and V1 is not fully
-certified until it is.
+| Stage | Where |
+|---|---|
+| P03 seed source | Drive `PJT/YT_summary/source/` — 티타임즈 `T3hpzc0IGMw` |
+| Review draft | Drive `PJT/YT_summary/drafts/Uploaded/` |
+| Final | Drive `PJT/Article/` — 13,389 bytes |
+| Site entry | `content/editorial/ai-agent-cost-governance.md`, suengj-com `8190fa4` |
+
+Provenance survived every hop: the seed source, the Drive ref of the review
+draft, the pipeline run id, and an explicit AI-assistance disclosure.
+
+Nothing was published. `status` stayed `draft`, the build stayed at 51 pages,
+and the entry is absent from `dist` — verified, not assumed. Setting
+`status: published` remains a separate human act.
+
+What this proves is the boundary, not the article. Its factual claims came from
+the P03 run and were not re-verified here; editorial approval is still yours.
 
 ## Caveats on the passing items
 
@@ -43,13 +56,34 @@ one that does not.
 
 | | What is not established |
 |---|---|
-| 5 | Fixture-based. A live P03 rerun, judged by the owner, is outstanding |
+| 5 | Fixture-based — and on real P03 drafts the mechanical gates did **not** separate the first smoke draft from the calibrated ones. Both are clean. See below |
 | 6 | Structurally faithful cases, not live corpora — real Drive content cannot enter a public repo |
 | 7 | The brief and deck generators are deterministic compilers, not writers; the model-in-the-slot case is untested |
-| 9 | The `suengj-com` change is on a branch, unmerged, undeployed, and has had no visual review |
+| 9 | Merged (`8cf2b0d`), but no article declares a sidecar yet, so the semantic path runs in tests and a probe rather than in live content |
 
-Every one of these resolves with the same missing thing: **one live run against
-real material, read by you.**
+### What the real comparison showed
+
+Running the implemented gates over the actual P03 output was the most useful
+negative result of this phase:
+
+| Article | Verdict |
+|---|---|
+| Legacy Auto Blog artifact (`blog-post.md`) | REJECT — scaffolding leak, duplicate paragraph |
+| First P03 smoke draft (`24d99a5`) | clean |
+| Calibrated P03 draft A | clean |
+| Calibrated P03 draft B | clean |
+
+The gates catch shipped template debris. They do not distinguish a mediocre
+argument from a good one, because nothing mechanical can — that is exactly why
+twelve of the eighteen rubric dimensions are judgement dimensions left
+deliberately unscored.
+
+So the honest reading is not "the calibration worked". It is: **the mechanical
+layer has nothing left to say here, and the remaining question is editorial.**
+
+Every caveat above resolves with the same missing thing: **your reading of real
+output.** The system can now put that output in front of you; it cannot grade it
+for you.
 
 ## Legacy reconciliation
 
@@ -67,7 +101,7 @@ rules.
 | SUE-361 — CanonicalPost → Markdown boundary | **Consumed as active authority** | The handoff contract references it rather than replacing it |
 | SUE-27 — human approval before publication | **Consumed as active authority** | Reinforced: `final` → `draft`, no Skill may publish |
 | SUE-417 — first E2E draft | **Consumed as evidence** | Negative fixture `N-01`; calibration recorded |
-| SUE-403 — Drive + suengj.com final publication | **Still independently active** | Item 8 above. Requires owner action |
+| SUE-403 — Drive + suengj.com final publication | **Executed 2026-09-01** | Item 8 above. Drive final + suengj-com `8190fa4`, status draft |
 
 Nothing was reopened to preserve history.
 
@@ -104,8 +138,8 @@ Secret-shaped test fixtures are synthesised at runtime rather than committed.
 
 | | Item |
 |---|---|
-| B-1 | **Live run against real Drive corpora**, judged by the owner. Resolves the caveats on items 5, 6, 7, and 9 at once |
-| B-2 | SUE-403 — final article to Drive and a `suengj-com` change (item 8) |
+| B-1 | **Owner judgement of the calibrated P03 drafts.** The mechanical layer is exhausted; this is what closes SUE-417 |
+| B-2 | ~~SUE-403 — final article to Drive and a `suengj-com` change~~ — done 2026-09-01, see item 8 |
 | B-3 | Review and merge `feature/aes-p62-semantic-surfaces`, after visual review |
 | B-4 | A model-written brief tested against the claim-carry-through boundary — the trigger `AV-1` for reconsidering audio |
 | B-5 | Phantom-citation detection beyond fixture `N-02`: verifying that a citation *supports* its claim, not merely that it resolves |
