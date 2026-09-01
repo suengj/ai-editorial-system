@@ -17,6 +17,7 @@ Validation and evaluation tooling. Node ESM, no build step, no dependencies.
 | `generate-poc-artifacts.mjs` | Compile the PoC artifacts; `--check` asserts determinism (AES-P4) |
 | `validate-hitl.mjs` | Review record and finalization receipt (AES-P5.1) |
 | `run-matrix.mjs` | Cross-source acceptance matrix (AES-P5.2) |
+| `generate-handoff.mjs` | Build and validate the suengj-com handoff receipt (AES-P6.1) |
 | `test-repo-boundary.mjs` | Allow/deny regression for the charter |
 | `test-source-contract.mjs` | Mutation regression over the source example |
 | `test-article-contract.mjs` | Mutation regression over the article/artifact example |
@@ -30,6 +31,7 @@ Validation and evaluation tooling. Node ESM, no build step, no dependencies.
 | `test-poc-artifacts.mjs` | Determinism, generator refusals, lineage and staleness |
 | `test-hitl.mjs` | Approval boundary, re-verification, Final ≠ Published |
 | `test-matrix.mjs` | Three source classes, one control plane |
+| `test-handoff.mjs` | Sidecar anchoring, safe degradation, version compatibility |
 | `lib/boundary-core.mjs` | Charter rule engine |
 | `lib/source-contract-core.mjs` | Source schema + cross-field invariants |
 | `lib/article-contract-core.mjs` | Article/Artifact invariants + staleness classifier |
@@ -46,6 +48,7 @@ Validation and evaluation tooling. Node ESM, no build step, no dependencies.
 | `lib/deck-generator.mjs` | Marp deck compiler |
 | `lib/lineage.mjs` | Staleness classification, relocation, regeneration |
 | `lib/hitl-core.mjs` | Human approval boundary and re-verification rules |
+| `lib/handoff-core.mjs` | Article → front matter mapping and presentation sidecar |
 | `lib/yaml-lite.mjs` | Fail-loud YAML subset parser for SKILL.md front matter |
 | `lib/json-schema-lite.mjs` | Dependency-free JSON Schema subset validator |
 
@@ -56,7 +59,8 @@ npm run check:profile  # worked example against its profile
 npm run eval           # scorecard over the fixture corpus
 npm run poc:check      # PoC artifacts regenerate byte-identically
 npm run matrix         # three source classes through one control plane
-npm test               # all thirteen regression suites
+npm run handoff        # build the suengj-com handoff receipt
+npm test               # all fourteen regression suites
 ```
 
 Rejects: credentials, deploy logic, imports from `suengj-com`.

@@ -1,0 +1,95 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://suengj.com/schemas/handoff-receipt.schema.json",
+  "title": "Cross-repo handoff receipt",
+  "description": "What ai-editorial-system hands to suengj-com for one article (AES-P6.1 / SUE-459). Checked before a suengj-com change is opened. The receipt describes the handoff; suengj-com remains the publication authority and may still refuse it.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "article_id", "target", "front_matter", "body_sha256", "artifacts", "produced_at"],
+  "properties": {
+    "schema_version": {
+      "description": "Contract version. suengj-com declares the major versions it accepts; a major mismatch is refused rather than guessed at.",
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$"
+    },
+    "article_id": { "type": "string", "pattern": "^art:[a-z0-9]+(-[a-z0-9]+)*$" },
+    "produced_at": { "type": "string", "format": "date-time" },
+    "target": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "canonical_url", "status"],
+      "properties": {
+        "path": { "type": "string", "pattern": "^content/(notes|research|views|projects|editorial)/[a-z0-9-]+\\.md$" },
+        "canonical_url": { "type": "string", "pattern": "^/content/[a-z0-9-]+$" },
+        "status": {
+          "description": "Always draft on handoff. Publication is a separate human act inside suengj-com.",
+          "const": "draft"
+        }
+      }
+    },
+    "front_matter": {
+      "description": "The values to write into the canonical Markdown. Plain data only — nothing here requires editorial-system code to interpret.",
+      "type": "object"
+    },
+    "body_sha256": {
+      "description": "Digest of the canonical Markdown body being handed over, so the receipt cannot drift from the file.",
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "artifacts": {
+      "description": "Optional dependencies. An empty list is a complete, valid handoff.",
+      "type": "array",
+      "items": { "$ref": "#/$defs/artifact" }
+    },
+    "presentation": { "$ref": "#/$defs/presentation" },
+    "evidence": {
+      "description": "Execution evidence that stays in this repository and is referenced, never copied into the site.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "review_record": { "type": "string" },
+        "eval_run": { "type": "string" },
+        "source_manifest": { "type": "string" }
+      }
+    }
+  },
+  "$defs": {
+    "artifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["artifact_id", "kind", "staleness", "location"],
+      "properties": {
+        "artifact_id": { "type": "string" },
+        "kind": { "enum": ["brief", "full", "sources", "evidence_visual", "slides", "infographic", "audio", "video"] },
+        "staleness": { "enum": ["fresh", "cosmetic", "material", "unknown"] },
+        "location": { "type": "string" },
+        "asset_sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+      }
+    },
+    "presentation": {
+      "description": "Semantic roles carried as a sidecar. Anchors reference text in the body; the body itself is unchanged plain Markdown and is complete without this block.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schema_version", "blocks"],
+      "properties": {
+        "schema_version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" },
+        "blocks": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["role", "anchor"],
+            "properties": {
+              "role": { "type": "string" },
+              "anchor": {
+                "description": "Exact text from the body. Must match once. A block whose anchor does not match is dropped, never guessed at.",
+                "type": "string",
+                "minLength": 8
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

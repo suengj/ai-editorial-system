@@ -1,0 +1,91 @@
+{
+  "schema_version": "1.0.0",
+  "article_id": "art:ai-inference-pricing-and-saas-gross-margin",
+  "produced_at": "2026-09-01T12:00:00Z",
+  "target": {
+    "path": "content/editorial/ai-inference-pricing-and-saas-gross-margin.md",
+    "canonical_url": "/content/ai-inference-pricing-and-saas-gross-margin",
+    "status": "draft"
+  },
+  "front_matter": {
+    "type": "editorial",
+    "title": "추론 가격 하락은 SaaS gross margin을 회복시키지 않는다",
+    "date": "2026-08-31",
+    "status": "draft",
+    "provenance": {
+      "article_version": 3,
+      "content_hash": "1111111111111111111111111111111111111111111111111111111111111111",
+      "claims_hash": "2222222222222222222222222222222222222222222222222222222222222222",
+      "commit": "a1b2c3d"
+    },
+    "ai_assistance": {
+      "disclosed": true,
+      "scope": "draft_generation,verification"
+    },
+    "citations": [
+      {
+        "id": "c1",
+        "label": "Vendor pricing page",
+        "url": "https://example.com/pricing"
+      },
+      {
+        "id": "c2",
+        "label": "Quarterly filing",
+        "url": "https://example.com/10q"
+      },
+      {
+        "id": "c4",
+        "label": "Provider billing documentation",
+        "url": "https://example.com/api-billing"
+      }
+    ]
+  },
+  "body_sha256": "8b722eac67ec19b092383dd8d7c7f0ec4953ef59416e69286937f6840bdeca48",
+  "artifacts": [
+    {
+      "artifact_id": "art:ai-inference-pricing-and-saas-gross-margin#evidence_visual.cost-stack",
+      "kind": "evidence_visual",
+      "staleness": "fresh",
+      "location": "public/artifacts/ai-inference-pricing-cost-stack.svg"
+    },
+    {
+      "artifact_id": "art:ai-inference-pricing-and-saas-gross-margin#brief",
+      "kind": "brief",
+      "staleness": "fresh",
+      "location": "pending"
+    },
+    {
+      "artifact_id": "art:ai-inference-pricing-and-saas-gross-margin#slides",
+      "kind": "slides",
+      "staleness": "cosmetic",
+      "location": "pending"
+    },
+    {
+      "artifact_id": "art:ai-inference-pricing-and-saas-gross-margin#sources",
+      "kind": "sources",
+      "staleness": "fresh",
+      "location": "pending"
+    }
+  ],
+  "presentation": {
+    "schema_version": "1.0.0",
+    "blocks": [
+      {
+        "role": "key_point",
+        "anchor": "가격이 내려간 것은 **list price**이고, 마진을 결정하는 것은 seat당 실제 소비량이기 때문이다."
+      },
+      {
+        "role": "evidence",
+        "anchor": "공급자 가격표를 보면 mid-tier 모델의 1M output token 가격은 관찰 기간 동안 실제로 하락했다. [^1]"
+      },
+      {
+        "role": "caution",
+        "anchor": "대형 구매자의 협상 단가는 공개되지 않으며, list price는 이들이 실제로 지불하는 금액을 과대평가한다. [^3] 이 격차가 충분히 크다면 위 계산은 성립하지 않는다."
+      }
+    ]
+  },
+  "evidence": {
+    "review_record": "schemas/examples/review-record.example.json",
+    "source_manifest": "schemas/examples/source-manifest.example.json"
+  }
+}

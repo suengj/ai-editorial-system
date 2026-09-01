@@ -1,0 +1,28 @@
+{
+  "schema_version": "1.0.0",
+  "article_id": "art:ai-inference-pricing-and-saas-gross-margin",
+  "blocks": [
+    {
+      "id": "b1",
+      "role": "key_point",
+      "why": "The distinction the whole piece turns on. A reader scanning should not have to reconstruct it from the argument.",
+      "content": "가격이 내려간 것은 **list price**이고, 마진을 결정하는 것은 seat당 실제 소비량이기 때문이다.",
+      "fallback": "가격이 내려간 것은 **list price**이고, 마진을 결정하는 것은 seat당 실제 소비량이기 때문이다."
+    },
+    {
+      "id": "b2",
+      "role": "evidence",
+      "why": "The observed series behind the claim, separated so the reader can check it rather than take it.",
+      "content": "공급자 가격표를 보면 mid-tier 모델의 1M output token 가격은 관찰 기간 동안 실제로 하락했다. [^1]",
+      "fallback": "공급자 가격표를 보면 mid-tier 모델의 1M output token 가격은 관찰 기간 동안 실제로 하락했다. [^1]",
+      "claims": ["c1"]
+    },
+    {
+      "id": "b3",
+      "role": "caution",
+      "why": "A limit that could invalidate the argument. It must not read as an aside.",
+      "content": "대형 구매자의 협상 단가는 공개되지 않으며, list price는 이들이 실제로 지불하는 금액을 과대평가한다. [^3] 이 격차가 충분히 크다면 위 계산은 성립하지 않는다.",
+      "fallback": "대형 구매자의 협상 단가는 공개되지 않으며, list price는 이들이 실제로 지불하는 금액을 과대평가한다. [^3] 이 격차가 충분히 크다면 위 계산은 성립하지 않는다."
+    }
+  ]
+}
