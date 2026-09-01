@@ -12,7 +12,8 @@
 
 import { dirname, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { loadSchema, validateCatalogFile } from './lib/rights-core.mjs';
+import { readFileSync } from 'node:fs';
+import { loadSchema, validateCatalogFile, validateReferenceCitations } from './lib/rights-core.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = resolve(HERE, '..');
@@ -33,6 +34,22 @@ for (const target of targets) {
   } else {
     failed += 1;
     console.error(`rights: FAIL — ${label} (${issues.length} issue(s))`);
+    for (const i of issues) console.error(`  [${i.code}] ${i.where} — ${i.message}`);
+  }
+}
+
+// Prose and catalog must agree: every cited ref resolves, every entry is cited.
+{
+  const catalog = JSON.parse(readFileSync(resolve(REPO_ROOT, 'references/catalog.json'), 'utf8'));
+  const issues = validateReferenceCitations(catalog, [
+    resolve(REPO_ROOT, 'benchmarks'),
+    resolve(REPO_ROOT, 'editorial'),
+  ]);
+  if (issues.length === 0) {
+    console.log('rights: PASS — reference citations resolve both ways');
+  } else {
+    failed += 1;
+    console.error(`rights: FAIL — reference cross-check (${issues.length} issue(s))`);
     for (const i of issues) console.error(`  [${i.code}] ${i.where} — ${i.message}`);
   }
 }

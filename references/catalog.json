@@ -1,4 +1,80 @@
 {
   "schema_version": "1.0.0",
-  "entries": []
+  "entries": [
+    {
+      "ref_id": "ref:agent-skills-spec",
+      "url": "https://github.com/agentskills/agentskills",
+      "title": "Agent Skills — specification and documentation",
+      "creator": "Agent Skills project",
+      "kind": "documentation",
+      "observed_at": "2026-09-01",
+      "rights_status": "clear",
+      "license": "Apache-2.0 (code) / CC-BY-4.0 (docs)",
+      "license_compatible": true,
+      "attribution": "Agent Skills project. Apache-2.0 / CC-BY-4.0.",
+      "copy_status": "linked",
+      "verdict": "adopt",
+      "observations": "Skill as a directory (SKILL.md + scripts/references/assets), minimal required frontmatter, progressive disclosure so the agent loads the body only on demand. Adopted structurally for skills/; we add invariants, acceptance, and authority fields the spec does not require.",
+      "notes": "License is compatible, but nothing is copied — we implement the shape ourselves."
+    },
+    {
+      "ref_id": "ref:ap-ai-newsroom-standards",
+      "url": "https://www.editorandpublisher.com/stories/ap-updates-newsroom-standards-for-artificial-intelligence,262741",
+      "title": "AP updates newsroom standards for artificial intelligence",
+      "creator": "Editor & Publisher, reporting on Associated Press standards",
+      "kind": "article",
+      "observed_at": "2026-09-01",
+      "rights_status": "clear",
+      "license": "All rights reserved",
+      "license_compatible": false,
+      "attribution": "Editor & Publisher, reporting on Associated Press newsroom AI standards. Paraphrased under attribution; no text reproduced.",
+      "copy_status": "linked",
+      "verdict": "adopt",
+      "observations": "Draws the human line around a function rather than a tool: reporting, sourcing, editorial judgment, and verification stay human, while summarization, transcription, translation, headline suggestion, and grammar cleanup may be assisted. Confirms verification and polish as structurally different activities. The staffing model behind it does not transfer to a single-author publication."
+    },
+    {
+      "ref_id": "ref:llm-judge-reliability",
+      "url": "https://arxiv.org/pdf/2606.19544",
+      "title": "Reliability without Validity — LLM-as-a-Judge across agreement, consistency, and bias",
+      "creator": "arXiv preprint authors",
+      "kind": "paper",
+      "observed_at": "2026-09-01",
+      "rights_status": "unclear",
+      "license": null,
+      "copy_status": "linked",
+      "verdict": "adapt",
+      "observations": "Position, verbosity, and self-preference bias make a single holistic judge score unsafe as a release gate. Method adopted: decompose the rubric into discrete checks, rotate positions, validate against a human baseline, and keep deterministic checks out of the judge entirely. Quantitative magnitudes were read from secondary summaries and are not republished as findings.",
+      "notes": "Related: https://arxiv.org/pdf/2604.23178 (bias mitigation strategies). Rights not established for either; link-only."
+    },
+    {
+      "ref_id": "ref:ai-slop-screening",
+      "url": "https://casrai.org/guides/ai-detection-tools-adoption-academic-publishing-2026-trends",
+      "title": "AI detection tools adoption in academic publishing — 2026 trends",
+      "creator": "CASRAI",
+      "kind": "documentation",
+      "observed_at": "2026-09-01",
+      "rights_status": "unclear",
+      "license": null,
+      "copy_status": "linked",
+      "verdict": "adapt",
+      "observations": "Publishing moved from AI-origin detection to editorial quality assessment. The checkable failure signatures — fabricated references, phantom citations, overstated claims, weak figure provenance, missing disclosure — map onto mechanisms already enforced in P0. Gap identified: we verify that a citation resolves, not that it supports the claim; that belongs in the eval fixtures.",
+      "notes": "No AI-origin detector will be adopted; it answers the wrong question."
+    },
+    {
+      "ref_id": "ref:denoiser-consumption-architecture",
+      "url": "https://github.com/suengj/suengj-com/blob/main/docs/architecture/P1-6-VISUAL-HIERARCHY.md",
+      "title": "Denoiser multi-surface consumption architecture — as recorded in the suengj-com visual hierarchy contract",
+      "creator": "Suengj (internal benchmark note)",
+      "kind": "documentation",
+      "observed_at": "2026-09-01",
+      "rights_status": "clear",
+      "license": "Owner's own repository",
+      "license_compatible": true,
+      "attribution": "Internal benchmark note in suengj-com.",
+      "copy_status": "linked",
+      "verdict": "adapt",
+      "observations": "Borrowed idea is role consistency — same information role, same visual grammar across surfaces — not the aesthetic. Already applied in suengj-com (SUE-429/SUE-430) with Pretendard, the warm-neutral palette, and AEO-native IA preserved. Artifact surfaces in AES-P6.2 inherit the existing role matrix rather than introducing a design language.",
+      "notes": "Captured as one reference among five, explicitly not as a visual template."
+    }
+  ]
 }

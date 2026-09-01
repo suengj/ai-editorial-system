@@ -9,7 +9,9 @@
 import { readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { CODES as RIGHTS, loadSchema, validateCatalog } from './lib/rights-core.mjs';
+import {
+  CODES as RIGHTS, loadSchema, validateCatalog, validateReferenceCitations,
+} from './lib/rights-core.mjs';
 import {
   CODES as ART, loadSchemas, validateBundle,
 } from './lib/article-contract-core.mjs';
@@ -116,6 +118,39 @@ for (const [name, expected, mutate] of visualCases) {
   const b = cloneBundle(); mutate(b);
   const got = bunCodes(b);
   check(name, got.includes(expected), `expected ${expected}, got [${[...new Set(got)].join(', ')}]`);
+}
+
+// --- reference cross-check ------------------------------------------------
+console.log('catalog and prose agree');
+{
+  const liveCatalog = JSON.parse(readFileSync(resolve(HERE, '../references/catalog.json'), 'utf8'));
+  const dirs = [resolve(HERE, '../benchmarks'), resolve(HERE, '../editorial')];
+
+  check('live catalog is valid', catCodes(liveCatalog).length === 0,
+    JSON.stringify(validateCatalog(liveCatalog, catalogSchema)));
+  check('every cited ref resolves and every entry is cited',
+    validateReferenceCitations(liveCatalog, dirs).length === 0,
+    JSON.stringify(validateReferenceCitations(liveCatalog, dirs)));
+
+  const orphaned = JSON.parse(JSON.stringify(liveCatalog));
+  orphaned.entries.push({
+    ref_id: 'ref:never-cited-anywhere',
+    url: 'https://example.com/x',
+    creator: 'Example',
+    kind: 'article',
+    observed_at: '2026-09-01',
+    rights_status: 'unclear',
+    license: null,
+    copy_status: 'linked',
+    verdict: 'monitor',
+    observations: 'An entry nobody cites.',
+  });
+  check('an uncited catalog entry is reported',
+    validateReferenceCitations(orphaned, dirs).some((i) => i.code === RIGHTS.UNCITED_REF));
+
+  const emptied = { schema_version: '1.0.0', entries: [] };
+  check('a citation with no catalog entry is reported',
+    validateReferenceCitations(emptied, dirs).some((i) => i.code === RIGHTS.UNRESOLVED_REF));
 }
 
 // --- fail-closed ----------------------------------------------------------

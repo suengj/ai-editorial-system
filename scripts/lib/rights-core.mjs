@@ -9,7 +9,7 @@
  * must be link-only. Nothing is copied on an assumption.
  */
 
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { validate } from './json-schema-lite.mjs';
@@ -28,7 +28,11 @@ export const CODES = Object.freeze({
   COPY_PATH: 'copy-requires-path',
   LINKED_PATH: 'linked-has-local-copy',
   DUPLICATE: 'duplicate-ref-id',
+  UNRESOLVED_REF: 'unresolved-ref',
+  UNCITED_REF: 'uncited-ref',
 });
+
+const REF_TOKEN_RE = /\bref:[a-z0-9]+(?:-[a-z0-9]+)*\b/g;
 
 const issue = (code, where, message) => ({ code, where, message });
 
@@ -102,4 +106,54 @@ export function validateCatalogFile(path, schema = loadSchema()) {
     return [issue(CODES.PARSE, path, `unparseable catalog: ${err.message}`)];
   }
   return validateCatalog(catalog, schema);
+}
+
+
+/** Recursively collect Markdown files under `dir`. */
+function markdownFiles(dir) {
+  const out = [];
+  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+    const abs = `${dir}/${entry.name}`;
+    if (entry.isDirectory()) out.push(...markdownFiles(abs));
+    else if (entry.isFile() && entry.name.endsWith('.md')) out.push(abs);
+  }
+  return out;
+}
+
+/**
+ * Cross-check prose against the catalog: every `ref:` token cited in the
+ * given directories must resolve, and every catalog entry must be cited
+ * somewhere. A catalog nobody cites is an unreviewed import list; a citation
+ * that resolves to nothing is an unattributed claim.
+ */
+export function validateReferenceCitations(catalog, dirs) {
+  const issues = [];
+  const known = new Set((catalog?.entries ?? []).map((e) => e.ref_id).filter(Boolean));
+  const cited = new Set();
+
+  for (const dir of dirs) {
+    let files;
+    try {
+      files = statSync(dir).isDirectory() ? markdownFiles(dir) : [dir];
+    } catch {
+      continue; // a directory that does not exist yet cites nothing
+    }
+    for (const file of files) {
+      const text = readFileSync(file, 'utf8');
+      for (const token of text.match(REF_TOKEN_RE) ?? []) {
+        cited.add(token);
+        if (!known.has(token)) {
+          issues.push(issue(CODES.UNRESOLVED_REF, file, `cites "${token}", which is not in the reference catalog`));
+        }
+      }
+    }
+  }
+
+  for (const id of known) {
+    if (!cited.has(id)) {
+      issues.push(issue(CODES.UNCITED_REF, id, 'catalog entry is not cited by any benchmark or policy document'));
+    }
+  }
+
+  return issues;
 }
