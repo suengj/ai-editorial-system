@@ -39,3 +39,16 @@ jobs:
         run: npm run validate:rights
       - name: Rights policy regression
         run: npm run test:rights
+
+  editorial:
+    name: Editorial gates
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Golden fixture passes the gates
+        run: npm run check:gates
+      - name: Quality gates regression
+        run: npm run test:gates

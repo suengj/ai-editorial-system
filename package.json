@@ -14,11 +14,13 @@
     "validate:article": "node scripts/validate-article-contract.mjs",
     "validate:rights": "node scripts/validate-rights.mjs",
     "validate": "npm run validate:boundary && npm run validate:source && npm run validate:article && npm run validate:rights",
+    "check:gates": "node scripts/check-quality-gates.mjs --bundle schemas/examples/article-artifact.example.json evals/fixtures/golden/G-01-synthesis.md",
     "test:boundary": "node scripts/test-repo-boundary.mjs",
     "test:source": "node scripts/test-source-contract.mjs",
     "test:article": "node scripts/test-article-contract.mjs",
     "test:rights": "node scripts/test-rights-policy.mjs",
-    "test": "npm run test:boundary && npm run test:source && npm run test:article && npm run test:rights"
+    "test:gates": "node scripts/test-quality-gates.mjs",
+    "test": "npm run test:boundary && npm run test:source && npm run test:article && npm run test:rights && npm run test:gates"
   },
   "repository": {
     "type": "git",

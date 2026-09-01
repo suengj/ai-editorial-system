@@ -13,7 +13,8 @@
     "frame",
     "source_set",
     "version",
-    "lifecycle_authority"
+    "lifecycle_authority",
+    "title"
   ],
   "properties": {
     "schema_version": {
@@ -33,6 +34,15 @@
         "note",
         "project"
       ]
+    },
+    "title": {
+      "description": "Display title. Must carry the thesis, not merely name the topic \u2014 enforced by the headline-fidelity gate.",
+      "type": "string",
+      "minLength": 1
+    },
+    "dek": {
+      "description": "Optional standfirst. Held to the same fidelity requirement as the title.",
+      "type": "string"
     },
     "state": {
       "$ref": "#/$defs/state"

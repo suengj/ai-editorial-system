@@ -1,0 +1,126 @@
+{
+  "schema_version": "1.0.0",
+  "description": "Machine-readable gate definitions for AES-P1.3 (SUE-440). Prose form: quality-gates.md. Engine: scripts/lib/quality-gates-core.mjs. Severity — reject: blocks materialization. fix: must be resolved before review. flag: human judgement required.",
+  "gates": [
+    {
+      "id": "G-01",
+      "name": "prompt-echo",
+      "severity": "reject",
+      "rationale": "The instruction given to the generator was emitted as prose. Observed in the SUE-417 fixture as both the dek and the first body line.",
+      "patterns": [
+        "(?im)^\\s*(explain|describe|summari[sz]e|outline|discuss|state|write|analy[sz]e)\\b[^.?!]*\\b(using evidence|the key facts|the problem|first)\\b",
+        "(?im)^\\s*what should readers know about\\b",
+        "(?m)^\\s*(설명하라|서술하라|요약하라)\\b"
+      ]
+    },
+    {
+      "id": "G-03",
+      "name": "scaffolding-leak",
+      "severity": "reject",
+      "rationale": "Planning notes, placeholders, or template markers shipped as content.",
+      "patterns": [
+        "(?im)^\\s*>\\s*\\*\\*note:?\\*\\*",
+        "(?i)\\b(TODO|TBD|FIXME|PLACEHOLDER|lorem ipsum)\\b",
+        "\\{\\{[^}]*\\}\\}",
+        "(?i)\\[(insert|add|placeholder)[^\\]]*\\]"
+      ]
+    },
+    {
+      "id": "G-05",
+      "name": "citation-integrity",
+      "severity": "reject",
+      "rationale": "Provenance pointing at a disposable working document is not provenance. Duplicate citations to one URL inflate the apparent evidence base.",
+      "workingDocHosts": ["docs.google.com", "drive.google.com", "notion.so", "localhost"],
+      "disposableLabelPatterns": ["(?i)\\bdisposable\\b", "(?i)AUTO-BLOG SOURCE", "(?i)\\binternal(-| )only\\b"]
+    },
+    {
+      "id": "G-06",
+      "name": "filler-phrase",
+      "severity": "fix",
+      "rationale": "Openings and closings banned by voice.md. They occupy the two positions in a piece that carry the most weight.",
+      "patterns": [
+        "(?i)in today'?s rapidly (evolving|changing)",
+        "(?i)\\bit is no secret that\\b",
+        "(?i)\\bonly time will tell\\b",
+        "(?i)\\bthe future is bright\\b",
+        "최근 [^.\\n]{0,20}가 화두",
+        "오늘날 급변하는",
+        "바야흐로",
+        "결론적으로 살펴본 바와 같이",
+        "앞으로가 기대된다"
+      ]
+    },
+    {
+      "id": "G-07",
+      "name": "overclaim",
+      "severity": "flag",
+      "rationale": "Absolute or certainty-asserting language that the evidence rarely supports.",
+      "patterns": [
+        "(?i)\\b(guarantees|proves that|will certainly|without a doubt|undoubtedly)\\b",
+        "(?i)\\bin (all|every) cases?\\b",
+        "(항상|반드시|절대로|모든 경우에) "
+      ]
+    },
+    {
+      "id": "G-08",
+      "name": "empty-hedge",
+      "severity": "fix",
+      "rationale": "A hedge with no number and no citation states nothing. 'We do not know X' is precise; 'results may vary' is filler.",
+      "patterns": [
+        "(?i)\\b(may|can|could) vary (significantly|widely|considerably)?\\b",
+        "(?i)\\bit depends on (a variety|many|various) (of )?factors\\b",
+        "(?i)\\bnot automatically equate\\b",
+        "(다양하게 나타날 수 있다|경우에 따라 다를 수 있다)"
+      ]
+    },
+    {
+      "id": "G-10",
+      "name": "formulaic-sectioning",
+      "severity": "flag",
+      "rationale": "Generic section framing applied mechanically rather than earned by the argument.",
+      "headings": [
+        "key takeaways",
+        "core analysis",
+        "implications and limits",
+        "what happened",
+        "why it matters",
+        "background",
+        "conclusion",
+        "final thoughts",
+        "핵심 요약",
+        "시사점과 한계"
+      ],
+      "threshold": 2
+    }
+  ],
+  "thresholds": {
+    "evidenceDensity": {
+      "id": "G-09",
+      "name": "evidence-density",
+      "severity": "flag",
+      "minParagraphFraction": 0.3,
+      "rationale": "Fraction of body paragraphs carrying a number, a date, or a citation marker. Below this the piece is assertion rather than analysis."
+    },
+    "sequentialSummary": {
+      "id": "G-12",
+      "name": "sequential-summary",
+      "severity": "flag",
+      "minSingleSourceFraction": 0.8,
+      "minCitingParagraphs": 3,
+      "rationale": "Most citing paragraphs draw on exactly one source and the sources appear in order — the shape of a source-by-source restatement rather than a synthesis."
+    }
+  },
+  "protectedSpans": {
+    "id": "polish-invariants",
+    "severity": "reject",
+    "rationale": "What a polish pass may never alter. This is what distinguishes polish from rewrite, and it is why no rule in voice.md takes the form 'vary sentence length to sound natural'.",
+    "classes": [
+      "numbers",
+      "dates",
+      "citation-markers",
+      "quotations",
+      "urls",
+      "technical-terms"
+    ]
+  }
+}
