@@ -2,15 +2,19 @@
   "name": "ai-editorial-system",
   "version": "0.1.0",
   "private": false,
-  "description": "Editorial Control Plane for suengj.com — editorial rules, Skills, schemas, and evaluations.",
+  "description": "Editorial Control Plane for suengj.com \u2014 editorial rules, Skills, schemas, and evaluations.",
   "license": "MIT",
   "type": "module",
-  "engines": { "node": ">=20" },
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "validate:boundary": "node scripts/validate-repo-boundary.mjs",
+    "validate:source": "node scripts/validate-source-manifest.mjs",
+    "validate": "npm run validate:boundary && npm run validate:source",
     "test:boundary": "node scripts/test-repo-boundary.mjs",
-    "test": "npm run test:boundary",
-    "validate": "npm run validate:boundary"
+    "test:source": "node scripts/test-source-contract.mjs",
+    "test": "npm run test:boundary && npm run test:source"
   },
   "repository": {
     "type": "git",

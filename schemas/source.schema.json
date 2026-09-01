@@ -1,0 +1,129 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://suengj.com/schemas/source.schema.json",
+  "title": "Source manifest",
+  "description": "Intake contract for the AI Editorial System (AES-P0.2 / SUE-435). Describes sources by reference only; source bodies are never stored in this repository.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "generated_at", "sources"],
+  "properties": {
+    "schema_version": { "const": "1.0.0" },
+    "generated_at": { "type": "string", "format": "date-time" },
+    "sources": { "type": "array", "items": { "$ref": "#/$defs/source" } }
+  },
+  "$defs": {
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "source_id", "kind", "origin", "origin_ref", "title",
+        "source_created_at", "ingested_at", "content_observed_at",
+        "content_hash", "revision", "disposition", "disposition_authority",
+        "disposition_changed_at", "rights"
+      ],
+      "properties": {
+        "source_id": {
+          "type": "string",
+          "description": "Stable identity, independent of display filename or folder. Never changes on rename or move.",
+          "pattern": "^src:(drive|github|web|local):[a-zA-Z0-9._@/-]{3,200}$"
+        },
+        "kind": {
+          "$ref": "#/$defs/source_kind"
+        },
+        "origin": {
+          "$ref": "#/$defs/origin"
+        },
+        "origin_ref": {
+          "description": "Locator in the origin system. Shape must match `origin`; enforced by the validator.",
+          "type": "object"
+        },
+        "title": { "type": "string", "minLength": 1 },
+        "language": { "type": "string", "pattern": "^[a-z]{2}(-[A-Z]{2})?$" },
+        "source_created_at": {
+          "description": "When the source itself was authored or published. null when genuinely unknown — never fabricated, never substituted with the ingestion date.",
+          "type": ["string", "null"],
+          "format": "date"
+        },
+        "ingested_at": {
+          "description": "When this manifest entry was created. Distinct from source_created_at and from any article publication date.",
+          "type": "string",
+          "format": "date-time"
+        },
+        "content_observed_at": {
+          "description": "When content_hash was last computed.",
+          "type": "string",
+          "format": "date-time"
+        },
+        "content_hash": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["algo", "value"],
+          "properties": {
+            "algo": { "const": "sha256" },
+            "value": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+          }
+        },
+        "revision": {
+          "description": "Increments when the same source_id is observed with a different content_hash.",
+          "type": "integer",
+          "minimum": 1
+        },
+        "disposition": { "$ref": "#/$defs/disposition" },
+        "disposition_authority": {
+          "description": "Who set the current disposition. `archived` and `rejected` require human authority.",
+          "enum": ["human", "ai_recommended"]
+        },
+        "disposition_changed_at": { "type": "string", "format": "date-time" },
+        "supersedes": { "type": "string" },
+        "superseded_by": { "type": "string" },
+        "duplicate_of": {
+          "description": "Another source_id carrying identical content_hash.",
+          "type": "string"
+        },
+        "used_by": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["article_id", "role", "first_used_at"],
+            "properties": {
+              "article_id": { "type": "string", "minLength": 1 },
+              "role": { "enum": ["primary", "supporting", "contradicting", "background"] },
+              "first_used_at": { "type": "string", "format": "date-time" }
+            }
+          }
+        },
+        "rights": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["quotable", "redistributable"],
+          "properties": {
+            "license": { "type": ["string", "null"] },
+            "quotable": { "type": "boolean" },
+            "redistributable": { "type": "boolean" },
+            "attribution": { "type": "string" }
+          }
+        },
+        "notes": { "type": "string" }
+      }
+    },
+    "source_kind": {
+      "description": "Finite vocabulary of source classes currently in the estate.",
+      "enum": [
+        "youtube_summary",
+        "market_brief",
+        "research_draft",
+        "project_repo",
+        "web_reference",
+        "dataset"
+      ]
+    },
+    "origin": {
+      "enum": ["google_drive", "github", "web", "local"]
+    },
+    "disposition": {
+      "description": "SOURCE lifecycle only. Deliberately shares no vocabulary with article publication status: an agent must never infer approval or publication from a source disposition, a folder path, or a filename.",
+      "enum": ["active", "candidate", "used", "superseded", "archived", "rejected"]
+    }
+  }
+}

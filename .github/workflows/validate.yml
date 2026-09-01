@@ -17,4 +17,17 @@ jobs:
       - name: Enforce public repo charter
         run: npm run validate:boundary
       - name: Boundary regression (allow/deny fixtures)
-        run: npm test
+        run: npm run test:boundary
+
+  contracts:
+    name: Contracts
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate source manifest example
+        run: npm run validate:source
+      - name: Source contract regression
+        run: npm run test:source
