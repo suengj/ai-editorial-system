@@ -8,7 +8,7 @@
  * correctly when the article changes.
  */
 
-import { readFileSync } from 'node:fs';
+import { readFileSync, statSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { renderChart, renderDiagram, validateChartAgainstArticle, validateChartSpec, RENDERER_VERSION } from './lib/chart-renderer.mjs';
@@ -258,6 +258,33 @@ console.log('audio/video roadmap');
     /canonical article remains the\s+destination/.test(roadmap));
   check('lineage requirements survive any later format',
     /would carry `article_ref` with both hashes/.test(roadmap));
+}
+
+// --- storage decision is measured, not projected (SUE-461) ---------------
+console.log('media storage decision');
+{
+  // Prose is line-wrapped; match across whitespace rather than assuming a
+  // phrase sits on one line.
+  const raw = readFileSync(resolve(ROOT, 'docs/architecture/MEDIA-STORAGE.md'), 'utf8');
+  const doc = raw.replace(/\s+/g, ' ');
+  const files = [
+    'cost-stack.svg', 'cost-flow.mmd', 'brief.md', 'deck.md',
+    'specs/cost-stack.chart.json', 'specs/cost-flow.diagram.json', 'handoff-receipt.json',
+  ];
+  const total = files.reduce((n, f) => n + statSync(resolve(POC, f)).size, 0);
+
+  check('one fully-artifacted article stays under 16 KB', total < 16 * 1024, `${total} bytes`);
+  check('the document cites the measured figure', /~10 KB/.test(doc));
+  check('every produced artifact is text',
+    files.every((f) => !/\.(png|jpe?g|mp4|mp3|pdf|pptx)$/.test(f)));
+  check('no artifact approaches the 2 MB charter ceiling',
+    files.every((f) => statSync(resolve(POC, f)).size < 2 * 1024 * 1024));
+  check('the decision names thresholds that would overturn it',
+    ['ST-1', 'ST-2', 'ST-3', 'ST-4'].every((t) => doc.includes(t)));
+  check('a migration path exists that is a location change, not a rewrite',
+    /location change for one artifact class, not an architecture change/.test(doc));
+  check('specs are never deleted', /Specs are never deleted/.test(doc));
+  check('nothing is auto-deleted', /Nothing is auto-deleted/.test(doc));
 }
 
 console.log(failures === 0 ? '\nPoC regression: PASS' : `\nPoC regression: FAIL (${failures})`);
