@@ -47,7 +47,6 @@ console.log('allow fixtures (expect 0 violations)');
 console.log('deny fixtures (expect the named rule on each file)');
 {
   const expected = {
-    'leaked-key.txt': RULES.SECRET,
     'captions.vtt': RULES.SOURCE_CORPUS,
     'confidential-note.md': RULES.PRIVATE_RESEARCH,
     'archived-article.md': RULES.ARTICLE_ARCHIVE,
@@ -66,21 +65,40 @@ console.log('deny fixtures (expect the named rule on each file)');
   }
 }
 
-// --- 3. large-binary ceiling (generated, never committed) ------------------
-console.log('large-binary ceiling');
+// --- 3. runtime-only deny cases -------------------------------------------
+// Secret-shaped material and oversized binaries are synthesised in a temp dir
+// rather than committed: a public repo must not carry credential-shaped blobs
+// even as test data, and the charter bans large binaries outright.
+console.log('runtime-only deny cases (secrets, large binaries)');
 {
   const dir = mkdtempSync(join(tmpdir(), 'aes-boundary-'));
   try {
+    // Assembled at runtime so the literal never exists in a committed file.
+    const KEY_HEADER = ['-----BEGIN', 'RSA', 'PRIVATE', 'KEY-----'].join(' ');
+    writeFileSync(join(dir, 'leaked-key.txt'), `${KEY_HEADER}\nMIIEowIBAAKCAQEA\n`);
+    writeFileSync(join(dir, 'aws.txt'), 'id = AKIA' + 'ABCDEFGHIJKLMNOP' + '\n');
+    writeFileSync(join(dir, 'assigned.yaml'), 'api_key: ' + 'k'.repeat(24) + '\n');
+    writeFileSync(join(dir, '.env'), 'TOKEN=placeholder\n');
     writeFileSync(join(dir, 'oversized.mp4'), Buffer.alloc(3 * 1024 * 1024, 0x41));
     writeFileSync(join(dir, 'small.png'), Buffer.alloc(1024, 0x42));
+    writeFileSync(join(dir, 'clean.md'), '# Ordinary document\n\nNothing forbidden here.\n');
+
     const { violations } = scan(dir);
-    check(
-      'a 3 MB .mp4 trips large-binary',
-      violations.some((v) => v.file === 'oversized.mp4' && v.rule === RULES.LARGE_BINARY),
-    );
+    const fired = (file, rule) => violations.some((v) => v.file === file && v.rule === rule);
+
+    check('private key block trips secret', fired('leaked-key.txt', RULES.SECRET));
+    check('AWS access key id trips secret', fired('aws.txt', RULES.SECRET));
+    check('assigned api_key trips secret', fired('assigned.yaml', RULES.SECRET));
+    check('.env file name trips secret', fired('.env', RULES.SECRET));
+    check('a 3 MB .mp4 trips large-binary', fired('oversized.mp4', RULES.LARGE_BINARY));
     check(
       'a 1 KB .png does not',
       !violations.some((v) => v.file === 'small.png'),
+      violations.map((v) => `${v.rule}:${v.file}`).join(', '),
+    );
+    check(
+      'an ordinary document does not',
+      !violations.some((v) => v.file === 'clean.md'),
       violations.map((v) => `${v.rule}:${v.file}`).join(', '),
     );
   } finally {
