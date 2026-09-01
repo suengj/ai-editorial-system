@@ -1,0 +1,82 @@
+{
+  "schema_version": "1.0.0",
+  "article_id": "art:ai-inference-pricing-and-saas-gross-margin",
+  "reviews": [
+    {
+      "stage": "frame",
+      "at": "2026-08-30T10:00:00Z",
+      "reviewer": "Suengjae Hong",
+      "decision": "accept",
+      "against_version": 1,
+      "feedback": [
+        {
+          "text": "논지는 성립한다. 다만 협상 단가 문제를 uncertainty에 명시할 것.",
+          "changes": "frame",
+          "material": false
+        }
+      ]
+    },
+    {
+      "stage": "draft",
+      "at": "2026-08-31T11:00:00Z",
+      "reviewer": "Suengjae Hong",
+      "decision": "revise",
+      "against_version": 2,
+      "feedback": [
+        {
+          "text": "seat 과금이 완충이 아니라 증폭이라는 부분이 근거 없이 단정적이다. 청구 방식을 확인할 것.",
+          "changes": "verification",
+          "material": true
+        }
+      ],
+      "notes": "구조는 좋다. 세 번째 문단의 인과 주장만 검증 필요."
+    },
+    {
+      "stage": "verification",
+      "at": "2026-08-31T15:00:00Z",
+      "reviewer": "Suengjae Hong",
+      "decision": "accept",
+      "against_version": 3,
+      "against_claims_hash": "2222222222222222222222222222222222222222222222222222222222222222",
+      "notes": "c4 추가 확인 완료. c3은 unverified로 본문에 표시 유지."
+    },
+    {
+      "stage": "polish",
+      "at": "2026-08-31T17:00:00Z",
+      "reviewer": "Suengjae Hong",
+      "decision": "accept",
+      "against_version": 3,
+      "feedback": [
+        {
+          "text": "마지막 문단이 요약으로 끝난다. 결과로 끝낼 것.",
+          "changes": "final_article",
+          "material": false
+        }
+      ]
+    },
+    {
+      "stage": "final",
+      "at": "2026-08-31T18:00:00Z",
+      "reviewer": "Suengjae Hong",
+      "decision": "accept",
+      "against_version": 3,
+      "against_claims_hash": "2222222222222222222222222222222222222222222222222222222222222222",
+      "notes": "Final. 게시는 별도로 판단한다."
+    }
+  ],
+  "finalization": {
+    "at": "2026-08-31T18:00:00Z",
+    "finalized_by": "Suengjae Hong",
+    "article_version": 3,
+    "content_hash": "1111111111111111111111111111111111111111111111111111111111111111",
+    "claims_hash": "2222222222222222222222222222222222222222222222222222222222222222",
+    "frame_version": 1,
+    "verification_at": "2026-08-31T15:00:00Z",
+    "source_ids": [
+      "src:drive:1AbCdEfGhIjKlMnOpQrStUvWxYz012345",
+      "src:drive:1MarketBriefFileIdAbCdEfGhIjKlMnOp",
+      "src:web:example.com/inference-cost-report-2026"
+    ],
+    "target_status": "draft"
+  }
+}

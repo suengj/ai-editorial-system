@@ -103,3 +103,20 @@ jobs:
         run: npm run poc:check
       - name: PoC regression
         run: npm run test:poc
+
+  hitl:
+    name: HITL and cross-source matrix
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate the review record
+        run: npm run validate:hitl
+      - name: HITL protocol regression
+        run: npm run test:hitl
+      - name: Cross-source acceptance matrix
+        run: npm run matrix
+      - name: Matrix regression
+        run: npm run test:matrix

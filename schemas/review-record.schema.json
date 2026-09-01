@@ -1,0 +1,80 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://suengj.com/schemas/review-record.schema.json",
+  "title": "HITL review record",
+  "description": "Human review and approval trail for one article (AES-P5.1 / SUE-457). Designed to be produced in an ordinary chat conversation: every field is something a person can state in a sentence. There is no field an AI can set to grant approval — approval carries a human name and a decision, and the validator checks the pairing.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "article_id", "reviews"],
+  "properties": {
+    "schema_version": { "const": "1.0.0" },
+    "article_id": { "type": "string", "pattern": "^art:[a-z0-9]+(-[a-z0-9]+)*$" },
+    "reviews": { "type": "array", "items": { "$ref": "#/$defs/review" } },
+    "finalization": { "$ref": "#/$defs/finalization" }
+  },
+  "$defs": {
+    "review": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["stage", "at", "reviewer", "decision", "against_version"],
+      "properties": {
+        "stage": { "$ref": "#/$defs/stage" },
+        "at": { "type": "string", "format": "date-time" },
+        "reviewer": {
+          "description": "A human name. An AI may prepare a review summary; it may not be the reviewer.",
+          "type": "string",
+          "minLength": 1
+        },
+        "decision": { "enum": ["accept", "revise", "reject"] },
+        "against_version": {
+          "description": "The article version the human actually read. Approval never applies to a version nobody saw.",
+          "type": "integer",
+          "minimum": 1
+        },
+        "against_claims_hash": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "feedback": { "type": "array", "items": { "$ref": "#/$defs/feedback" } },
+        "notes": { "type": "string" }
+      }
+    },
+    "feedback": {
+      "description": "One item of feedback, routed to the artifact it actually changes.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["text", "changes"],
+      "properties": {
+        "text": { "type": "string", "minLength": 1 },
+        "changes": {
+          "description": "Which upstream artifact this feedback edits. Routing is the point: a thesis complaint changes the frame, not the prose.",
+          "enum": ["frame", "draft", "verification", "final_article", "presentation", "nothing"]
+        },
+        "material": {
+          "description": "True when the change touches a fact, number, date, citation, quotation, or the claim set. Material changes force re-verification.",
+          "type": "boolean"
+        }
+      }
+    },
+    "finalization": {
+      "description": "The finalization receipt. This is the editorial `Final`, which materializes as suengj-com `status: draft`. It is not publication.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["at", "finalized_by", "article_version", "content_hash", "claims_hash", "target_status"],
+      "properties": {
+        "at": { "type": "string", "format": "date-time" },
+        "finalized_by": { "type": "string", "minLength": 1 },
+        "article_version": { "type": "integer", "minimum": 1 },
+        "content_hash": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "claims_hash": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "frame_version": { "type": "integer", "minimum": 1 },
+        "verification_at": { "type": "string", "format": "date-time" },
+        "source_ids": { "type": "array", "items": { "type": "string" } },
+        "target_status": {
+          "description": "Always `draft`. Finalization is not publication, and this field exists to make the attempt visible rather than possible.",
+          "const": "draft"
+        }
+      }
+    },
+    "stage": {
+      "enum": ["frame", "draft", "verification", "polish", "final"]
+    }
+  }
+}

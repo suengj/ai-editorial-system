@@ -15,6 +15,8 @@ Validation and evaluation tooling. Node ESM, no build step, no dependencies.
 | `validate-presentation.mjs` | Semantic block grammar and renderer neutrality (AES-P1.6) |
 | `run-eval.mjs` | Scorecard over the fixture corpus (AES-P3.2) |
 | `generate-poc-artifacts.mjs` | Compile the PoC artifacts; `--check` asserts determinism (AES-P4) |
+| `validate-hitl.mjs` | Review record and finalization receipt (AES-P5.1) |
+| `run-matrix.mjs` | Cross-source acceptance matrix (AES-P5.2) |
 | `test-repo-boundary.mjs` | Allow/deny regression for the charter |
 | `test-source-contract.mjs` | Mutation regression over the source example |
 | `test-article-contract.mjs` | Mutation regression over the article/artifact example |
@@ -26,6 +28,8 @@ Validation and evaluation tooling. Node ESM, no build step, no dependencies.
 | `test-presentation.mjs` | Renderer neutrality, lossless fallbacks, role fit |
 | `test-eval.mjs` | The evaluation method's own regression suite |
 | `test-poc-artifacts.mjs` | Determinism, generator refusals, lineage and staleness |
+| `test-hitl.mjs` | Approval boundary, re-verification, Final ≠ Published |
+| `test-matrix.mjs` | Three source classes, one control plane |
 | `lib/boundary-core.mjs` | Charter rule engine |
 | `lib/source-contract-core.mjs` | Source schema + cross-field invariants |
 | `lib/article-contract-core.mjs` | Article/Artifact invariants + staleness classifier |
@@ -41,6 +45,7 @@ Validation and evaluation tooling. Node ESM, no build step, no dependencies.
 | `lib/brief-generator.mjs` | Brief compiler with claim-carry-through refusals |
 | `lib/deck-generator.mjs` | Marp deck compiler |
 | `lib/lineage.mjs` | Staleness classification, relocation, regeneration |
+| `lib/hitl-core.mjs` | Human approval boundary and re-verification rules |
 | `lib/yaml-lite.mjs` | Fail-loud YAML subset parser for SKILL.md front matter |
 | `lib/json-schema-lite.mjs` | Dependency-free JSON Schema subset validator |
 
@@ -50,7 +55,8 @@ npm run check:gates    # editorial gates over the golden fixture
 npm run check:profile  # worked example against its profile
 npm run eval           # scorecard over the fixture corpus
 npm run poc:check      # PoC artifacts regenerate byte-identically
-npm test               # all eleven regression suites
+npm run matrix         # three source classes through one control plane
+npm test               # all thirteen regression suites
 ```
 
 Rejects: credentials, deploy logic, imports from `suengj-com`.

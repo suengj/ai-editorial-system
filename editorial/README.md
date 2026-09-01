@@ -11,6 +11,7 @@ quality gates.
 | [`profiles/`](profiles/) | Evidence burden, required fields, and artifact fit per content type | AES-P1.4 (SUE-441) |
 | [`MEDIA-STRATEGY.md`](MEDIA-STRATEGY.md) + [`artifact-priority.json`](artifact-priority.json) | Evidence vs distribution media, build-out order, and what would change it | AES-P1.5 (SUE-442) |
 | [`presentation.md`](presentation.md) | Semantic block grammar — what a block means, never how it looks | AES-P1.6 (SUE-464) |
+| [`HITL-PROTOCOL.md`](HITL-PROTOCOL.md) | Human review stages, approval boundary, Final ≠ Published | AES-P5.1 (SUE-457) |
 | [`RIGHTS-AND-PROVENANCE.md`](RIGHTS-AND-PROVENANCE.md) | Transformation, citation, visual rights | AES-P0.4 (SUE-437) |
 
 The separation is deliberate. Principles are durable, voice is prose-only,
