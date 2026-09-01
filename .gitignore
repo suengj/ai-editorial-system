@@ -1,0 +1,70 @@
+# --- Secrets ---------------------------------------------------------------
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+credentials.json
+client_secret*.json
+service-account*.json
+token.json
+.secrets/
+secrets/
+
+# --- Raw source corpus (never committed; see REPOSITORY-CONTRACT.md) --------
+*.vtt
+*.srt
+*.sbv
+transcripts/
+transcript/
+corpus/
+raw/
+sources/raw/
+**/youtube-corpus/
+**/*.transcript.*
+
+# --- Private / working research -------------------------------------------
+private/
+internal/
+working/
+scratch/
+drafts/
+_private/
+*.private.*
+*.internal.*
+
+# --- Canonical article archive (belongs in suengj-com) --------------------
+articles/
+content/
+published/
+
+# --- Generated media (large binaries) --------------------------------------
+*.mp4
+*.mov
+*.webm
+*.mp3
+*.wav
+*.m4a
+*.pptx
+*.pdf
+out/
+dist/
+build/
+generated/
+artifacts-out/
+
+# --- Tooling ---------------------------------------------------------------
+node_modules/
+.cache/
+coverage/
+*.log
+npm-debug.log*
+
+# --- OS / editor -----------------------------------------------------------
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp

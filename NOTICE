@@ -1,0 +1,24 @@
+# NOTICE — third-party material
+
+This repository is an editorial control plane. It cites external work; it does
+not redistribute it.
+
+## Rules
+
+1. Entries under `references/` and `benchmarks/` are POINTERS: title, author,
+   publisher, URL, retrieval date, plus our own analysis. Full copies of the
+   referenced work are not committed.
+2. Quotation is limited to what is necessary to support the analysis, is always
+   attributed, and never substitutes for the original.
+3. Nothing in `LICENSE` or `LICENSE-DOCS` grants rights over third-party work.
+   Each cited work remains under its own terms.
+4. Source material processed by this system (Google Drive, project GitHub,
+   YouTube, market/finance data) is NOT part of this repository and is not
+   licensed by it. See `docs/architecture/SSOT-BOUNDARIES.md`.
+5. Where a benchmark evaluates a commercial product or API, the product name
+   and marks belong to their respective owners.
+
+## Reporting
+
+If you believe material here exceeds attribution or fair quotation, open an
+issue or contact the maintainer. See SECURITY.md for the contact path.

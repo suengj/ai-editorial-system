@@ -1,0 +1,12 @@
+name: frame-article
+version: 0.1.0
+purpose: Produce an Article Frame before any prose is written.
+inputs:
+  - source_manifest_ref
+outputs:
+  - article_frame
+invariants:
+  - thesis is stated or NO_ARTICLE is returned
+  - uncertainty is enumerated, never omitted
+acceptance:
+  - fixture: evals/fixtures/frame/golden-01
