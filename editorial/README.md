@@ -10,6 +10,7 @@ quality gates.
 | [`quality-gates.md`](quality-gates.md) + [`quality-gates.json`](quality-gates.json) | Executable reject / fix / flag conditions | AES-P1.3 (SUE-440) |
 | [`profiles/`](profiles/) | Evidence burden, required fields, and artifact fit per content type | AES-P1.4 (SUE-441) |
 | [`MEDIA-STRATEGY.md`](MEDIA-STRATEGY.md) + [`artifact-priority.json`](artifact-priority.json) | Evidence vs distribution media, build-out order, and what would change it | AES-P1.5 (SUE-442) |
+| [`presentation.md`](presentation.md) | Semantic block grammar — what a block means, never how it looks | AES-P1.6 (SUE-464) |
 | [`RIGHTS-AND-PROVENANCE.md`](RIGHTS-AND-PROVENANCE.md) | Transformation, citation, visual rights | AES-P0.4 (SUE-437) |
 
 The separation is deliberate. Principles are durable, voice is prose-only,
@@ -22,6 +23,8 @@ npm run check:gates     # editorial gates over the golden fixture
 npm run check:profile   # worked example against its content-type profile
 npm run test:gates      # negative fires, golden passes, polish invariants hold
 npm run test:profiles   # profiles differ; media strategy holds
+npm run validate:presentation
+npm run test:presentation  # renderer neutrality and lossless fallbacks
 ```
 
 Admits: Markdown rules, machine-readable gate and profile definitions.

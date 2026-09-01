@@ -57,5 +57,24 @@
   "quality_gates": {
     "evidence_density_floor": 0.4,
     "rationale": "Highest floor: a research piece argues from material and should show it."
+  },
+  "semantic_roles": {
+    "recommended": [
+      "evidence",
+      "comparison",
+      "data_table",
+      "timeline",
+      "caution"
+    ],
+    "allowed": [
+      "key_point",
+      "visual_ref",
+      "example"
+    ],
+    "usually_avoid": [
+      "procedure",
+      "code_example"
+    ],
+    "rationale": "Evidence and comparison earn separation because the argument turns on what sources show and where they differ."
   }
 }

@@ -13,9 +13,10 @@
 import { readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { blocks, loadGates, runGates } from './quality-gates-core.mjs';
+import { blocks, loadGates, paragraphs, runGates } from './quality-gates-core.mjs';
 import { checkPolish } from './polish-invariants.mjs';
 import { loadProfiles } from './profile-core.mjs';
+import { validatePresentationPlan } from './presentation-core.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(HERE, '../..');
@@ -43,11 +44,20 @@ const GATE_MAP = {
  * the body is claimed to be a polished version of.
  */
 export function evaluate(body, { article = null, contentType = null, baseline = null,
+  presentationPlan = null,
   rubric = loadRubric(), gates = loadGates(), profiles = loadProfiles() } = {}) {
   const profile = contentType ? profiles[contentType] : null;
   const findings = runGates(body, article, gates, profile);
   const byGate = new Map();
   for (const f of findings) byGate.set(f.gate, f);
+
+  // Presentation dimensions are decidable only when a plan exists. An article
+  // with no semantic blocks is not thereby deficient — plain prose is the
+  // default — so absence yields `unscored`, not a fail.
+  const presentationIssues = presentationPlan
+    ? validatePresentationPlan(presentationPlan, { contentType, paragraphCount: paragraphs(body).length, profiles })
+    : null;
+  const portabilityCodes = new Set(['renderer-leak', 'lossy-fallback', 'meaning-carried-by-colour']);
 
   const dimensions = {};
   for (const dim of rubric.dimensions) {
@@ -69,6 +79,23 @@ export function evaluate(body, { article = null, contentType = null, baseline = 
           ? 'protected spans identical'
           : violations.slice(0, 4).map((v) => `${v.kind} ${v.class}: ${v.value}`).join('; '),
       };
+      continue;
+    }
+
+    if (dim.id === 'I-6' || dim.id === 'E-12') {
+      if (!presentationIssues) {
+        dimensions[dim.id] = { class: dim.class, name: dim.name, result: UNSCORED,
+          evidence: 'no presentation plan supplied; plain prose is the default and is not a deficiency' };
+        continue;
+      }
+      const relevant = dim.id === 'I-6'
+        ? presentationIssues.filter((i) => portabilityCodes.has(i.code))
+        : presentationIssues.filter((i) => !portabilityCodes.has(i.code));
+      dimensions[dim.id] = dim.class === 'integrity'
+        ? { class: dim.class, name: dim.name, result: relevant.length === 0 ? 'pass' : 'fail',
+            evidence: relevant.length === 0 ? 'fallbacks lossless, no renderer leak' : relevant.map((i) => `${i.code}: ${i.message}`).join('; ') }
+        : { class: dim.class, name: dim.name, result: relevant.length === 0 ? UNSCORED : 0,
+            evidence: relevant.length === 0 ? 'no structural finding; rating requires human assessment' : relevant.map((i) => `${i.code}: ${i.message}`).join('; ') };
       continue;
     }
 

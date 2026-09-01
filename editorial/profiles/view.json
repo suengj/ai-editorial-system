@@ -49,5 +49,22 @@
   "quality_gates": {
     "evidence_density_floor": 0.1,
     "rationale": "Low by design. A view earns its keep by reasoning, not citation volume; holding it to the News floor would penalise the register rather than the writing."
+  },
+  "semantic_roles": {
+    "recommended": [
+      "key_point",
+      "caution"
+    ],
+    "allowed": [
+      "evidence",
+      "comparison"
+    ],
+    "usually_avoid": [
+      "procedure",
+      "data_table",
+      "code_example",
+      "timeline"
+    ],
+    "rationale": "Avoid over-boxing opinion. A judgment argued in prose reads as a judgment; the same judgment in a callout reads as a claim of authority it has not earned."
   }
 }

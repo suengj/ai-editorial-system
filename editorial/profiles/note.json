@@ -49,5 +49,21 @@
   "quality_gates": {
     "evidence_density_floor": 0.1,
     "rationale": "Low by design. A note points at something and says what the author made of it."
+  },
+  "semantic_roles": {
+    "recommended": [],
+    "allowed": [
+      "key_point",
+      "example",
+      "code_example"
+    ],
+    "usually_avoid": [
+      "comparison",
+      "data_table",
+      "timeline",
+      "procedure",
+      "visual_ref"
+    ],
+    "rationale": "Mostly plain prose. Semantic blocks should be rare here \u2014 a note that needs three callouts is a research piece."
   }
 }

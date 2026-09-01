@@ -1,0 +1,64 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://suengj.com/schemas/presentation-plan.schema.json",
+  "title": "Presentation plan",
+  "description": "Renderer-neutral semantic structure for an article (AES-P1.6 / SUE-464). Declares what an information block MEANS. How it looks is decided by suengj-com. There is deliberately no field for colour, spacing, component name, or any other visual property — the schema cannot express them.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "article_id", "blocks"],
+  "properties": {
+    "schema_version": { "const": "1.0.0" },
+    "article_id": { "type": "string", "pattern": "^art:[a-z0-9]+(-[a-z0-9]+)*$" },
+    "blocks": { "type": "array", "items": { "$ref": "#/$defs/block" } }
+  },
+  "$defs": {
+    "block": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "role", "why", "content", "fallback"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^b[0-9]+$" },
+        "role": { "$ref": "#/$defs/role" },
+        "why": {
+          "description": "Why this information deserves separation. A block that cannot answer this is decoration.",
+          "type": "string",
+          "minLength": 10
+        },
+        "content": {
+          "description": "The block's text, in plain Markdown. No HTML, CSS, colours, or component names — enforced.",
+          "type": "string",
+          "minLength": 1
+        },
+        "fallback": {
+          "description": "The same information as ordinary prose or a plain list. Removing all presentation must lose nothing; enforced by span comparison against content.",
+          "type": "string",
+          "minLength": 1
+        },
+        "claims": {
+          "description": "claim_ids this block asserts. Required for role `evidence`.",
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "artifact_ref": {
+          "description": "Required for role `visual_ref`: the artifact_id of the evidence visual.",
+          "type": "string"
+        }
+      }
+    },
+    "role": {
+      "description": "V0.1 allowlist. Deliberately small. Two roles must never differ only by decoration.",
+      "enum": [
+        "key_point",
+        "evidence",
+        "caution",
+        "comparison",
+        "procedure",
+        "example",
+        "code_example",
+        "data_table",
+        "timeline",
+        "visual_ref"
+      ]
+    }
+  }
+}

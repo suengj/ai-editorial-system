@@ -60,5 +60,23 @@
   "quality_gates": {
     "evidence_density_floor": 0.3,
     "rationale": "Moderate: implementation evidence is often prose about behaviour."
+  },
+  "semantic_roles": {
+    "recommended": [
+      "procedure",
+      "code_example",
+      "comparison"
+    ],
+    "allowed": [
+      "key_point",
+      "evidence",
+      "visual_ref",
+      "caution",
+      "example"
+    ],
+    "usually_avoid": [
+      "timeline"
+    ],
+    "rationale": "Procedure and code carry real structure. A timeline usually restates prose that already reads chronologically."
   }
 }

@@ -1,0 +1,36 @@
+{
+  "schema_version": "1.0.0",
+  "article_id": "art:ai-inference-pricing-and-saas-gross-margin",
+  "blocks": [
+    {
+      "id": "b1",
+      "role": "key_point",
+      "why": "The whole piece turns on this distinction, and a reader scanning should not have to reconstruct it from the argument.",
+      "content": "가격이 내려간 것은 **list price**이고, 마진을 결정하는 것은 seat당 실제 소비량이다.",
+      "fallback": "가격이 내려간 것은 list price이고, 마진을 결정하는 것은 seat당 실제 소비량이다."
+    },
+    {
+      "id": "b2",
+      "role": "evidence",
+      "why": "Two series that no single source plots together; separating them makes the gap checkable rather than asserted.",
+      "content": "mid-tier 모델 1M output token 가격은 관찰 기간 동안 하락했다. [^1] 같은 기간 코호트의 보고 gross margin은 유의미하게 움직이지 않았다. [^2]",
+      "fallback": "관찰 기간 동안 mid-tier 모델의 1M output token 가격은 하락했고 [^1], 같은 기간 해당 코호트의 보고 gross margin은 유의미하게 움직이지 않았다 [^2].",
+      "claims": ["c1", "c2"]
+    },
+    {
+      "id": "b3",
+      "role": "caution",
+      "why": "A limit that could invalidate the argument. Burying it in a closing paragraph would understate it.",
+      "content": "대형 구매자의 협상 단가는 공개되지 않으며, list price는 이들이 실제로 지불하는 금액을 과대평가한다. 이 격차가 충분히 크다면 위 계산은 성립하지 않는다.",
+      "fallback": "한 가지 한계가 있다. 대형 구매자의 협상 단가는 공개되지 않으며, list price는 이들이 실제로 지불하는 금액을 과대평가한다. 이 격차가 충분히 크다면 위 계산은 성립하지 않는다."
+    },
+    {
+      "id": "b4",
+      "role": "visual_ref",
+      "why": "The two-series comparison is the argument; prose describing a divergence is weaker than showing it.",
+      "content": "가격 지수와 gross margin의 추이 비교.",
+      "fallback": "가격 지수와 gross margin의 추이 비교 차트. 관찰 기간 동안 가격 지수는 하락하고 gross margin은 평탄하다.",
+      "artifact_ref": "art:ai-inference-pricing-and-saas-gross-margin#evidence_visual.cost-stack"
+    }
+  ]
+}

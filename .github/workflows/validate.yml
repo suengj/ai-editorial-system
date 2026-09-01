@@ -56,6 +56,10 @@ jobs:
         run: npm run check:profile
       - name: Profiles and media strategy regression
         run: npm run test:profiles
+      - name: Validate presentation plan example
+        run: npm run validate:presentation
+      - name: Semantic grammar regression
+        run: npm run test:presentation
 
   skills:
     name: Skills
