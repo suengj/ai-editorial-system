@@ -1,0 +1,167 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://suengj.com/schemas/article.schema.json",
+  "title": "Process Article",
+  "description": "Process-level Article for the AI Editorial System (AES-P0.3 / SUE-436). Carries framing, research state, review state, and finalization evidence. Maps deterministically onto the suengj-com canonical publication contract (SBM-03 / SUE-358) without duplicating it.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version", "article_id", "content_type", "state", "frame",
+    "source_set", "version", "lifecycle_authority"
+  ],
+  "properties": {
+    "schema_version": { "const": "1.0.0" },
+    "article_id": {
+      "description": "Stable process identity. The slug segment is the suengj-com global slug once materialized.",
+      "type": "string",
+      "pattern": "^art:[a-z0-9]+(-[a-z0-9]+)*$"
+    },
+    "content_type": {
+      "description": "What kind of piece this is. Orthogonal to artifacts.",
+      "enum": ["research", "view", "news", "note", "project"]
+    },
+    "state": { "$ref": "#/$defs/state" },
+    "state_changed_at": { "type": "string", "format": "date-time" },
+    "lifecycle_authority": {
+      "description": "Who moved the article into its current state. `final` and `published` require human.",
+      "enum": ["human", "ai"]
+    },
+    "frame": { "$ref": "#/$defs/frame" },
+    "source_set": {
+      "description": "Sources that contributed, by source_id, with the content hash observed at use time. Enables source-drift detection.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["source_id", "role", "content_hash_at_use"],
+        "properties": {
+          "source_id": { "type": "string", "pattern": "^src:(drive|github|web|local):" },
+          "role": { "enum": ["primary", "supporting", "contradicting", "background"] },
+          "content_hash_at_use": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+        }
+      }
+    },
+    "verification": { "$ref": "#/$defs/verification" },
+    "review": { "$ref": "#/$defs/review" },
+    "version": { "$ref": "#/$defs/version" },
+    "publication": { "$ref": "#/$defs/publication" },
+    "no_article_reason": {
+      "description": "Required when state is no_article. A weak thesis is a legitimate outcome, not a failure to hide.",
+      "type": "string",
+      "minLength": 1
+    }
+  },
+  "$defs": {
+    "state": {
+      "description": "Process lifecycle. Reconciled with, not a replacement for, the suengj-com status contract.",
+      "enum": [
+        "candidate", "framed", "drafted", "verified", "polished",
+        "reviewed", "final", "published", "revised", "archived", "no_article"
+      ]
+    },
+    "frame": {
+      "description": "Article Frame. Required before any prose is written (Editorial Rule 3).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "thesis", "article_worthiness", "audience", "source_weighting",
+        "verification_needs", "original_value_add", "uncertainty", "structure"
+      ],
+      "properties": {
+        "thesis": { "type": "string", "minLength": 1 },
+        "article_worthiness": { "type": "string", "minLength": 1 },
+        "audience": { "type": "string", "minLength": 1 },
+        "source_weighting": { "type": "string", "minLength": 1 },
+        "verification_needs": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+        "original_value_add": { "type": "string", "minLength": 1 },
+        "uncertainty": {
+          "description": "What we do not know. An empty list is not a valid frame.",
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "structure": { "type": "array", "items": { "type": "string", "minLength": 1 } }
+      }
+    },
+    "verification": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["claims", "verified_at"],
+      "properties": {
+        "verified_at": { "type": "string", "format": "date-time" },
+        "claims": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["claim_id", "text", "kind", "status"],
+            "properties": {
+              "claim_id": { "type": "string", "minLength": 1 },
+              "text": { "type": "string", "minLength": 1 },
+              "kind": { "enum": ["number", "date", "quotation", "attribution", "assertion"] },
+              "status": { "enum": ["verified", "unverified", "contradicted", "not_applicable"] },
+              "evidence": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": ["url", "retrieved_at"],
+                  "properties": {
+                    "url": { "type": "string", "minLength": 1 },
+                    "title": { "type": "string" },
+                    "retrieved_at": { "type": "string", "format": "date" },
+                    "authority": { "enum": ["primary", "secondary", "aggregator"] }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "review": {
+      "description": "HITL evidence. Presence of a review block is not approval; `decision` is.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["reviewed_at", "reviewer", "decision"],
+      "properties": {
+        "reviewed_at": { "type": "string", "format": "date-time" },
+        "reviewer": { "type": "string", "minLength": 1 },
+        "decision": { "enum": ["accept", "revise", "reject"] },
+        "notes": { "type": "string" }
+      }
+    },
+    "version": {
+      "description": "Version identity used by every derived artifact to decide staleness.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["number", "content_hash", "claims_hash"],
+      "properties": {
+        "number": { "type": "integer", "minimum": 1 },
+        "content_hash": {
+          "description": "sha256 over the normalised canonical Markdown (front matter + body). Any edit changes it.",
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "claims_hash": {
+          "description": "sha256 over the ordered verified-claim set (id, text, status). Changes only when the factual substance changes.",
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "commit": { "type": "string", "pattern": "^[a-f0-9]{7,40}$" }
+      }
+    },
+    "publication": {
+      "description": "Mirror of the suengj-com contract. Authoritative values live there; this block records what was handed off.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["target_status", "target_path"],
+      "properties": {
+        "target_status": { "enum": ["draft", "published", "archived"] },
+        "target_path": { "type": "string", "pattern": "^content/(notes|research|views|projects|editorial)/[a-z0-9-]+\\.md$" },
+        "canonical_url": { "type": "string", "pattern": "^/content/[a-z0-9-]+$" },
+        "approved_by": { "type": "string" },
+        "approved_at": { "type": "string", "format": "date-time" }
+      }
+    }
+  }
+}

@@ -2,19 +2,25 @@
 
 Source, Article, and Artifact schemas plus lineage and staleness rules.
 
-| Contract | Status |
-|---|---|
-| [`SOURCE-CONTRACT.md`](SOURCE-CONTRACT.md) + [`source.schema.json`](source.schema.json) | AES-P0.2 (SUE-435) |
-| Article + Artifact contracts | AES-P0.3 (SUE-436) — in progress |
+| Contract | Machine schema | Issue |
+|---|---|---|
+| [`SOURCE-CONTRACT.md`](SOURCE-CONTRACT.md) | [`source.schema.json`](source.schema.json) | AES-P0.2 (SUE-435) |
+| [`ARTICLE-ARTIFACT-CONTRACT.md`](ARTICLE-ARTIFACT-CONTRACT.md) | [`article.schema.json`](article.schema.json), [`artifact.schema.json`](artifact.schema.json) | AES-P0.3 (SUE-436) |
 
-Every artifact tracks the article version/hash and the generator/skill version
-that produced it, so staleness is decidable when the article changes.
+Content types (`research`, `view`, `news`, `note`, `project`) and artifact
+kinds (`brief`, `full`, `sources`, `evidence_visual`, `slides`, `infographic`,
+`audio`, `video`) are orthogonal axes.
+
+Every artifact records the article version and the generator/skill version
+that produced it, so staleness is decidable: `claims_hash` unchanged means a
+prose edit (cosmetic), `claims_hash` changed means the factual substance moved
+(material) and the artifact must be regenerated.
 
 Admits: JSON Schema and contract documents, plus examples built from synthetic
 or public material (`examples/`).
 Rejects: populated instance data from real private sources.
 
 ```bash
-npm run validate:source
-npm run test:source
+npm run validate:source && npm run validate:article
+npm run test:source && npm run test:article
 ```

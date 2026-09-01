@@ -31,3 +31,7 @@ jobs:
         run: npm run validate:source
       - name: Source contract regression
         run: npm run test:source
+      - name: Validate article + artifact example
+        run: npm run validate:article
+      - name: Article contract regression
+        run: npm run test:article

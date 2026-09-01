@@ -1,0 +1,117 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://suengj.com/schemas/artifact.schema.json",
+  "title": "Derived Artifact",
+  "description": "Artifact derived from a canonical article (AES-P0.3 / SUE-436). Artifact kinds are orthogonal to content types. Every artifact records the exact article version that produced it, so staleness is decidable without manual guesswork.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version", "artifact_id", "kind", "media_stage", "article_ref",
+    "generator", "generated_at", "state"
+  ],
+  "properties": {
+    "schema_version": { "const": "1.0.0" },
+    "artifact_id": {
+      "type": "string",
+      "pattern": "^art:[a-z0-9]+(-[a-z0-9]+)*#(brief|full|sources|evidence_visual|slides|infographic|audio|video)(\\.[a-z0-9-]+)?$"
+    },
+    "kind": { "$ref": "#/$defs/kind" },
+    "media_stage": {
+      "description": "Evidence media may be produced during research and writing. Distribution media requires a human-finalized article.",
+      "enum": ["evidence", "distribution"]
+    },
+    "article_ref": { "$ref": "#/$defs/article_ref" },
+    "generator": { "$ref": "#/$defs/generator" },
+    "generated_at": { "type": "string", "format": "date-time" },
+    "verified_at": { "type": "string", "format": "date-time" },
+    "state": {
+      "enum": ["generated", "reviewed", "approved", "stale", "superseded", "retired"]
+    },
+    "staleness": { "$ref": "#/$defs/staleness" },
+    "location": {
+      "description": "Where the artifact lives once handed off. Storage architecture is decided in AES-P6.3; this field only records the outcome.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind"],
+      "properties": {
+        "kind": { "enum": ["suengj_com_content", "suengj_com_asset", "drive", "pending"] },
+        "path": { "type": "string" }
+      }
+    },
+    "source_references": {
+      "description": "Required when the artifact itself asserts facts (brief, slides, infographic, audio, video, evidence_visual).",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["claim_id"],
+        "properties": {
+          "claim_id": { "type": "string", "minLength": 1 },
+          "source_id": { "type": "string", "pattern": "^src:(drive|github|web|local):" },
+          "url": { "type": "string" }
+        }
+      }
+    },
+    "notes": { "type": "string" }
+  },
+  "$defs": {
+    "kind": {
+      "description": "Artifact kinds. Deliberately disjoint from content types (research/view/news/note/project).",
+      "enum": ["brief", "full", "sources", "evidence_visual", "slides", "infographic", "audio", "video"]
+    },
+    "article_ref": {
+      "description": "Exactly which article version produced this artifact.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["article_id", "version_number", "content_hash", "claims_hash"],
+      "properties": {
+        "article_id": { "type": "string", "pattern": "^art:[a-z0-9]+(-[a-z0-9]+)*$" },
+        "version_number": { "type": "integer", "minimum": 1 },
+        "content_hash": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "claims_hash": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "commit": { "type": "string", "pattern": "^[a-f0-9]{7,40}$" }
+      }
+    },
+    "generator": {
+      "description": "Vendor-neutral. A Skill is the orchestration contract; the generator is a replaceable worker. No field here is specific to any provider.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["skill", "tool"],
+      "properties": {
+        "skill": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["name", "version"],
+          "properties": {
+            "name": { "type": "string", "minLength": 1 },
+            "version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" }
+          }
+        },
+        "tool": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["name", "version"],
+          "properties": {
+            "name": { "type": "string", "minLength": 1 },
+            "version": { "type": "string", "minLength": 1 },
+            "model": { "type": ["string", "null"] }
+          }
+        }
+      }
+    },
+    "staleness": {
+      "description": "Set by the staleness check, never by hand.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["level", "checked_at"],
+      "properties": {
+        "level": {
+          "description": "fresh: article version matches. cosmetic: prose changed, verified claims did not. material: the factual substance changed — the artifact must be regenerated before it may remain published.",
+          "enum": ["fresh", "cosmetic", "material"]
+        },
+        "checked_at": { "type": "string", "format": "date-time" },
+        "against_version": { "type": "integer", "minimum": 1 }
+      }
+    }
+  }
+}

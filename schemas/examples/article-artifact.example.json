@@ -1,0 +1,179 @@
+{
+  "article": {
+    "schema_version": "1.0.0",
+    "article_id": "art:ai-inference-pricing-and-saas-gross-margin",
+    "content_type": "news",
+    "state": "final",
+    "state_changed_at": "2026-08-31T18:00:00Z",
+    "lifecycle_authority": "human",
+    "frame": {
+      "thesis": "Falling inference prices do not translate into SaaS gross-margin recovery, because the cost that moved is not the cost that binds.",
+      "article_worthiness": "The price-drop narrative is widely repeated; the margin consequence is asserted without a cost breakdown.",
+      "audience": "Operators and investors who read the pricing headlines and need the margin arithmetic.",
+      "source_weighting": "Vendor price sheets are primary for prices and weak for margins; filings are primary for margins. Weight accordingly.",
+      "verification_needs": [
+        "Current published per-token prices and their effective dates",
+        "Reported gross margin for at least one AI-native SaaS filer",
+        "Whether the quoted price applies to the tier actually used at scale"
+      ],
+      "original_value_add": "Decomposes the cost stack to show which line the price drop touches, and what share it represents.",
+      "uncertainty": [
+        "Negotiated enterprise rates are not public; list prices overstate what large buyers pay.",
+        "Serving-infrastructure cost is not separable from other COGS in most filings."
+      ],
+      "structure": [
+        "The claim as usually stated",
+        "What the price actually covers",
+        "The cost stack, decomposed",
+        "What would have to be true for the claim to hold",
+        "What remains unknown"
+      ]
+    },
+    "source_set": [
+      { "source_id": "src:drive:1AbCdEfGhIjKlMnOpQrStUvWxYz012345", "role": "primary", "content_hash_at_use": "3b1f0c5d9a2e47c8b6d0f1a3e5c7b9d1f3a5c7e9b1d3f5a7c9e1b3d5f7a9c1e3" },
+      { "source_id": "src:drive:1MarketBriefFileIdAbCdEfGhIjKlMnOp", "role": "supporting", "content_hash_at_use": "a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f90" },
+      { "source_id": "src:web:example.com/inference-cost-report-2026", "role": "contradicting", "content_hash_at_use": "5c7e9b1d3f5a7c9e1b3d5f7a9c1e33b1f0c5d9a2e47c8b6d0f1a3e5c7b9d1f3a" }
+    ],
+    "verification": {
+      "verified_at": "2026-08-31T15:00:00Z",
+      "claims": [
+        {
+          "claim_id": "c1",
+          "text": "Published per-token inference prices for the mid-tier model fell over the period examined.",
+          "kind": "number",
+          "status": "verified",
+          "evidence": [
+            { "url": "https://example.com/pricing", "title": "Vendor pricing page", "retrieved_at": "2026-08-31", "authority": "primary" }
+          ]
+        },
+        {
+          "claim_id": "c2",
+          "text": "The filer's reported gross margin did not move materially over the same period.",
+          "kind": "number",
+          "status": "verified",
+          "evidence": [
+            { "url": "https://example.com/10q", "title": "Quarterly filing", "retrieved_at": "2026-08-31", "authority": "primary" }
+          ]
+        },
+        {
+          "claim_id": "c3",
+          "text": "Serving infrastructure is the dominant share of COGS for this cohort.",
+          "kind": "assertion",
+          "status": "unverified",
+          "evidence": []
+        }
+      ]
+    },
+    "review": {
+      "reviewed_at": "2026-08-31T17:30:00Z",
+      "reviewer": "Suengjae Hong",
+      "decision": "accept",
+      "notes": "c3 stays flagged as unverified in the body rather than being dropped."
+    },
+    "version": {
+      "number": 3,
+      "content_hash": "1111111111111111111111111111111111111111111111111111111111111111",
+      "claims_hash": "2222222222222222222222222222222222222222222222222222222222222222",
+      "commit": "a1b2c3d"
+    },
+    "publication": {
+      "target_status": "draft",
+      "target_path": "content/editorial/ai-inference-pricing-and-saas-gross-margin.md",
+      "canonical_url": "/content/ai-inference-pricing-and-saas-gross-margin"
+    }
+  },
+  "artifacts": [
+    {
+      "schema_version": "1.0.0",
+      "artifact_id": "art:ai-inference-pricing-and-saas-gross-margin#evidence_visual.cost-stack",
+      "kind": "evidence_visual",
+      "media_stage": "evidence",
+      "article_ref": {
+        "article_id": "art:ai-inference-pricing-and-saas-gross-margin",
+        "version_number": 3,
+        "content_hash": "1111111111111111111111111111111111111111111111111111111111111111",
+        "claims_hash": "2222222222222222222222222222222222222222222222222222222222222222",
+        "commit": "a1b2c3d"
+      },
+      "generator": {
+        "skill": { "name": "plan-artifacts", "version": "0.1.0" },
+        "tool": { "name": "chart-renderer", "version": "1.4.0", "model": null }
+      },
+      "generated_at": "2026-08-31T16:00:00Z",
+      "verified_at": "2026-08-31T16:20:00Z",
+      "state": "approved",
+      "staleness": { "level": "fresh", "checked_at": "2026-08-31T18:05:00Z", "against_version": 3 },
+      "location": { "kind": "suengj_com_asset", "path": "public/artifacts/ai-inference-pricing-cost-stack.svg" },
+      "source_references": [
+        { "claim_id": "c1", "url": "https://example.com/pricing" },
+        { "claim_id": "c2", "url": "https://example.com/10q" }
+      ]
+    },
+    {
+      "schema_version": "1.0.0",
+      "artifact_id": "art:ai-inference-pricing-and-saas-gross-margin#brief",
+      "kind": "brief",
+      "media_stage": "distribution",
+      "article_ref": {
+        "article_id": "art:ai-inference-pricing-and-saas-gross-margin",
+        "version_number": 3,
+        "content_hash": "1111111111111111111111111111111111111111111111111111111111111111",
+        "claims_hash": "2222222222222222222222222222222222222222222222222222222222222222"
+      },
+      "generator": {
+        "skill": { "name": "plan-artifacts", "version": "0.1.0" },
+        "tool": { "name": "text-generator", "version": "2026-08", "model": "replaceable" }
+      },
+      "generated_at": "2026-08-31T18:10:00Z",
+      "state": "generated",
+      "staleness": { "level": "fresh", "checked_at": "2026-08-31T18:10:00Z", "against_version": 3 },
+      "location": { "kind": "pending" },
+      "source_references": [
+        { "claim_id": "c1" },
+        { "claim_id": "c2" }
+      ]
+    },
+    {
+      "schema_version": "1.0.0",
+      "artifact_id": "art:ai-inference-pricing-and-saas-gross-margin#slides",
+      "kind": "slides",
+      "media_stage": "distribution",
+      "article_ref": {
+        "article_id": "art:ai-inference-pricing-and-saas-gross-margin",
+        "version_number": 2,
+        "content_hash": "3333333333333333333333333333333333333333333333333333333333333333",
+        "claims_hash": "2222222222222222222222222222222222222222222222222222222222222222"
+      },
+      "generator": {
+        "skill": { "name": "plan-artifacts", "version": "0.1.0" },
+        "tool": { "name": "deck-builder", "version": "0.9.1", "model": null }
+      },
+      "generated_at": "2026-08-30T11:00:00Z",
+      "state": "generated",
+      "staleness": { "level": "cosmetic", "checked_at": "2026-08-31T18:10:00Z", "against_version": 3 },
+      "location": { "kind": "pending" },
+      "source_references": [{ "claim_id": "c1" }],
+      "notes": "Built from v2. Prose changed in v3 but the verified claims did not, so regeneration is optional."
+    },
+    {
+      "schema_version": "1.0.0",
+      "artifact_id": "art:ai-inference-pricing-and-saas-gross-margin#sources",
+      "kind": "sources",
+      "media_stage": "evidence",
+      "article_ref": {
+        "article_id": "art:ai-inference-pricing-and-saas-gross-margin",
+        "version_number": 3,
+        "content_hash": "1111111111111111111111111111111111111111111111111111111111111111",
+        "claims_hash": "2222222222222222222222222222222222222222222222222222222222222222"
+      },
+      "generator": {
+        "skill": { "name": "plan-artifacts", "version": "0.1.0" },
+        "tool": { "name": "manifest-writer", "version": "1.0.0", "model": null }
+      },
+      "generated_at": "2026-08-31T18:10:00Z",
+      "state": "generated",
+      "staleness": { "level": "fresh", "checked_at": "2026-08-31T18:10:00Z", "against_version": 3 },
+      "location": { "kind": "pending" }
+    }
+  ]
+}

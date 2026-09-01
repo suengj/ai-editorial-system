@@ -11,10 +11,12 @@
   "scripts": {
     "validate:boundary": "node scripts/validate-repo-boundary.mjs",
     "validate:source": "node scripts/validate-source-manifest.mjs",
-    "validate": "npm run validate:boundary && npm run validate:source",
+    "validate:article": "node scripts/validate-article-contract.mjs",
+    "validate": "npm run validate:boundary && npm run validate:source && npm run validate:article",
     "test:boundary": "node scripts/test-repo-boundary.mjs",
     "test:source": "node scripts/test-source-contract.mjs",
-    "test": "npm run test:boundary && npm run test:source"
+    "test:article": "node scripts/test-article-contract.mjs",
+    "test": "npm run test:boundary && npm run test:source && npm run test:article"
   },
   "repository": {
     "type": "git",
