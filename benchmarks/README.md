@@ -6,7 +6,7 @@ generators, and publication workflows.
 | Benchmark | Issue |
 |---|---|
 | [`EDITORIAL-SYSTEMS-BENCHMARK.md`](EDITORIAL-SYSTEMS-BENCHMARK.md) | AES-P1.1 (SUE-438) |
-| Multimedia generators and artifact workflows | AES-P1.2 (SUE-439) — pending |
+| [`MULTIMEDIA-GENERATORS-BENCHMARK.md`](MULTIMEDIA-GENERATORS-BENCHMARK.md) | AES-P1.2 (SUE-439) |
 
 Every reference cited here must resolve to an entry in
 [`../references/catalog.json`](../references/catalog.json), and every catalog

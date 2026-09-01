@@ -4,7 +4,7 @@
     {
       "ref_id": "ref:agent-skills-spec",
       "url": "https://github.com/agentskills/agentskills",
-      "title": "Agent Skills — specification and documentation",
+      "title": "Agent Skills \u2014 specification and documentation",
       "creator": "Agent Skills project",
       "kind": "documentation",
       "observed_at": "2026-09-01",
@@ -15,7 +15,7 @@
       "copy_status": "linked",
       "verdict": "adopt",
       "observations": "Skill as a directory (SKILL.md + scripts/references/assets), minimal required frontmatter, progressive disclosure so the agent loads the body only on demand. Adopted structurally for skills/; we add invariants, acceptance, and authority fields the spec does not require.",
-      "notes": "License is compatible, but nothing is copied — we implement the shape ourselves."
+      "notes": "License is compatible, but nothing is copied \u2014 we implement the shape ourselves."
     },
     {
       "ref_id": "ref:ap-ai-newsroom-standards",
@@ -35,7 +35,7 @@
     {
       "ref_id": "ref:llm-judge-reliability",
       "url": "https://arxiv.org/pdf/2606.19544",
-      "title": "Reliability without Validity — LLM-as-a-Judge across agreement, consistency, and bias",
+      "title": "Reliability without Validity \u2014 LLM-as-a-Judge across agreement, consistency, and bias",
       "creator": "arXiv preprint authors",
       "kind": "paper",
       "observed_at": "2026-09-01",
@@ -49,7 +49,7 @@
     {
       "ref_id": "ref:ai-slop-screening",
       "url": "https://casrai.org/guides/ai-detection-tools-adoption-academic-publishing-2026-trends",
-      "title": "AI detection tools adoption in academic publishing — 2026 trends",
+      "title": "AI detection tools adoption in academic publishing \u2014 2026 trends",
       "creator": "CASRAI",
       "kind": "documentation",
       "observed_at": "2026-09-01",
@@ -57,13 +57,13 @@
       "license": null,
       "copy_status": "linked",
       "verdict": "adapt",
-      "observations": "Publishing moved from AI-origin detection to editorial quality assessment. The checkable failure signatures — fabricated references, phantom citations, overstated claims, weak figure provenance, missing disclosure — map onto mechanisms already enforced in P0. Gap identified: we verify that a citation resolves, not that it supports the claim; that belongs in the eval fixtures.",
+      "observations": "Publishing moved from AI-origin detection to editorial quality assessment. The checkable failure signatures \u2014 fabricated references, phantom citations, overstated claims, weak figure provenance, missing disclosure \u2014 map onto mechanisms already enforced in P0. Gap identified: we verify that a citation resolves, not that it supports the claim; that belongs in the eval fixtures.",
       "notes": "No AI-origin detector will be adopted; it answers the wrong question."
     },
     {
       "ref_id": "ref:denoiser-consumption-architecture",
       "url": "https://github.com/suengj/suengj-com/blob/main/docs/architecture/P1-6-VISUAL-HIERARCHY.md",
-      "title": "Denoiser multi-surface consumption architecture — as recorded in the suengj-com visual hierarchy contract",
+      "title": "Denoiser multi-surface consumption architecture \u2014 as recorded in the suengj-com visual hierarchy contract",
       "creator": "Suengj (internal benchmark note)",
       "kind": "documentation",
       "observed_at": "2026-09-01",
@@ -73,8 +73,78 @@
       "attribution": "Internal benchmark note in suengj-com.",
       "copy_status": "linked",
       "verdict": "adapt",
-      "observations": "Borrowed idea is role consistency — same information role, same visual grammar across surfaces — not the aesthetic. Already applied in suengj-com (SUE-429/SUE-430) with Pretendard, the warm-neutral palette, and AEO-native IA preserved. Artifact surfaces in AES-P6.2 inherit the existing role matrix rather than introducing a design language.",
+      "observations": "Borrowed idea is role consistency \u2014 same information role, same visual grammar across surfaces \u2014 not the aesthetic. Already applied in suengj-com (SUE-429/SUE-430) with Pretendard, the warm-neutral palette, and AEO-native IA preserved. Artifact surfaces in AES-P6.2 inherit the existing role matrix rather than introducing a design language.",
       "notes": "Captured as one reference among five, explicitly not as a visual template."
+    },
+    {
+      "ref_id": "ref:gemini-notebook-api-status",
+      "url": "https://web-clipper-for-notebooklm.com/blog/notebooklm-api",
+      "title": "Gemini Notebook API (formerly NotebookLM API) \u2014 what is available today",
+      "creator": "Notebook Clipper (third-party coverage)",
+      "kind": "article",
+      "observed_at": "2026-09-01",
+      "rights_status": "unclear",
+      "license": null,
+      "copy_status": "linked",
+      "verdict": "monitor",
+      "observations": "Distinguishes the consumer product from the automation surface: no public consumer API for Gemini Notebook (ex-NotebookLM); REST endpoints exist under Gemini Notebook Enterprise via Gemini Enterprise. Establishes that an automated audio-brief pipeline would require an enterprise contract, not an API key. Read from secondary coverage; the authoritative source is Google Cloud documentation and was not verified directly in this pass.",
+      "notes": "Third-party NotebookLM-style podcast APIs exist and are not Google; routing article content through an unaffiliated intermediary is a provenance question before a technical one."
+    },
+    {
+      "ref_id": "ref:gemini-api-media",
+      "url": "https://ai.google.dev/gemini-api/docs/pricing",
+      "title": "Gemini Developer API \u2014 pricing and media generation models",
+      "creator": "Google",
+      "kind": "documentation",
+      "observed_at": "2026-09-01",
+      "rights_status": "clear",
+      "license": "All rights reserved",
+      "license_compatible": false,
+      "attribution": "Google, Gemini API documentation. Capabilities and indicative prices paraphrased; no text reproduced.",
+      "copy_status": "linked",
+      "verdict": "adapt",
+      "observations": "A genuine programmable surface for image, speech, and video, unlike Gemini Notebook. Fit is by artifact kind: not for evidence visuals (a generative model cannot be trusted to render a number), plausible for infographic and audio, video deferred on cost with no editorial need. Pricing figures in the benchmark came from third-party summaries and are order-of-magnitude sequencing inputs, not a budget."
+    },
+    {
+      "ref_id": "ref:vega-lite",
+      "url": "https://vega.github.io/vega-lite/",
+      "title": "Vega-Lite \u2014 a grammar of interactive graphics",
+      "creator": "Vega project, University of Washington Interactive Data Lab",
+      "kind": "tool",
+      "observed_at": "2026-09-01",
+      "rights_status": "unclear",
+      "license": null,
+      "copy_status": "linked",
+      "verdict": "adopt",
+      "observations": "Chart specifications are JSON, so the spec is a text artifact that can be diffed, reviewed, versioned, and hashed; SVG output gives direct font control, which matters for Korean typography and Pretendard parity with suengj-com. Chosen for evidence visuals because the spec \u2014 not the rendered image \u2014 is the artifact, making byte-level regeneration possible.",
+      "notes": "License not verified in this pass. Nothing is copied, so it does not gate; verify before vendoring any spec or theme."
+    },
+    {
+      "ref_id": "ref:mermaid-headless-renderers",
+      "url": "https://github.com/Latias94/merman",
+      "title": "Headless Mermaid rendering outside the Node/Chromium path",
+      "creator": "merman project",
+      "kind": "tool",
+      "observed_at": "2026-09-01",
+      "rights_status": "unclear",
+      "license": null,
+      "copy_status": "linked",
+      "verdict": "adapt",
+      "observations": "Mermaid source is text and now renders headlessly to SVG/PNG/PDF without Puppeteer or a browser, which makes diagram artifacts regenerable in CI. At least one project in this space claims byte-identical geometry across architectures; that claim is unverified here and is a reason to shortlist, not a guarantee to design around. SUE-453 should test regeneration and record the result.",
+      "notes": "Vendor claim, not replicated."
+    },
+    {
+      "ref_id": "ref:markdown-deck-tools",
+      "url": "https://www.pkgpulse.com/guides/slidev-vs-marp-vs-revealjs-code-first-presentations-2026",
+      "title": "Slidev vs Marp vs reveal.js \u2014 code-first presentations",
+      "creator": "PkgPulse (third-party comparison)",
+      "kind": "article",
+      "observed_at": "2026-09-01",
+      "rights_status": "unclear",
+      "license": null,
+      "copy_status": "linked",
+      "verdict": "adapt",
+      "observations": "Marp exports PDF and PPTX natively and is reportedly reliable and widely used in Korean developer practice, which matters because Korean-font deck templates are a known pain point. Slidev is more capable but turns the deck into an app; reveal.js needs external tooling to export. Marp chosen for the SUE-454 deck PoC so the whole chain stays textual: article Markdown \u2192 deck source \u2192 rendered deck."
     }
   ]
 }
