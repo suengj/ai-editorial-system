@@ -61,18 +61,25 @@ See [`docs/architecture/REPOSITORY-CONTRACT.md`](docs/architecture/REPOSITORY-CO
 | `scripts/` | Validation and evaluation tooling |
 | `docs/architecture/` | Architecture decisions and contracts |
 
-## Boundary enforcement
+## Running it
 
-Charter rules are executable, not advisory:
+Every contract in this repository is executable. Nothing here is enforced by
+convention alone.
 
 ```bash
-npm run validate:boundary   # fail-closed scan for forbidden content
-npm test                    # boundary validator regression over allow/deny fixtures
+npm run validate    # every contract: boundary, source, article, rights,
+                    # skills, plan, presentation, HITL, artifacts, handoff
+npm test            # fourteen regression suites
+npm run eval        # editorial scorecard over the fixture corpus
+npm run matrix      # three source classes through one control plane
+npm run certify     # the V1 certification matrix
 ```
 
-`scripts/validate-repo-boundary.mjs` fails the build on secrets, source corpus
-files, canonical article archives, oversized binaries, and private-research
-markers. Absence of a finding is only a PASS when the validator actually ran.
+`npm run certify` is the one to read first. It runs every gate and maps the
+results onto the certification matrix, reporting what cannot be proved from
+this repository as **BLOCKED with a reason** rather than passing it quietly.
+
+Absence of a finding is a PASS only when the check demonstrably ran.
 
 ## Licensing
 
@@ -82,7 +89,22 @@ markers. Absence of a finding is only a PASS when the validator actually ran.
 - **Third-party material** referenced in `references/` and `benchmarks/`
   retains its own license. Nothing here relicenses it. See [`NOTICE`](NOTICE).
 
+## Where the pieces are
+
+| | |
+|---|---|
+| Principles, voice, gates, profiles, presentation, HITL | [`editorial/`](editorial/) |
+| The five Skills and their format | [`skills/`](skills/) |
+| Source, Article, Artifact, Skill, plan, receipt schemas | [`schemas/`](schemas/) |
+| Fixtures, rubric, matrix, PoC artifacts | [`evals/`](evals/) |
+| Benchmarks and the reference catalog | [`benchmarks/`](benchmarks/), [`references/`](references/) |
+| Architecture decisions | [`docs/architecture/`](docs/architecture/) |
+
+Start with [`docs/architecture/V1-CERTIFICATION.md`](docs/architecture/V1-CERTIFICATION.md)
+for what is proved, what is caveated, and what is still open.
+
 ## Status
 
-V1 in progress. Work, scope, and acceptance are tracked in Linear under
-*Suengj.com · AI Editorial System*.
+V1 complete on every item that can be certified from this repository; one item
+is blocked on owner action (see the certification). Work, scope, and acceptance
+are tracked in Linear under *Suengj.com · AI Editorial System*.

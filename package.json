@@ -40,7 +40,8 @@
     "test:matrix": "node scripts/test-matrix.mjs",
     "handoff": "node scripts/generate-handoff.mjs",
     "handoff:check": "node scripts/generate-handoff.mjs --check",
-    "test:handoff": "node scripts/test-handoff.mjs"
+    "test:handoff": "node scripts/test-handoff.mjs",
+    "certify": "node scripts/certify-v1.mjs"
   },
   "repository": {
     "type": "git",
