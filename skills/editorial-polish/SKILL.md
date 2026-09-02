@@ -146,8 +146,10 @@ This Skill stops rather than editing when:
 
 - The claim set is unavailable — the protected spans cannot be checked.
 - **A wanted edit would change a protected span.** The pass does not make the
-  change. It reports a verification or terminology finding and hands it back.
-  Wanting to change a number or technical term is not permission to change it.
+  change. It reports the finding; when the protected span is factual or
+  technical, it hands it to `verify-claims`, while a register-only problem goes
+  back to `write-article`. Wanting to change a number or technical term is not
+  permission to change it.
 - The draft's meaning cannot be preserved under the profile's register — that
   is a drafting problem and goes back to `write-article`.
 - The only way to make the Korean read naturally is to change the thesis,
