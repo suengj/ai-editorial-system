@@ -62,6 +62,31 @@ a deterministic/traceable renderer. Generative imagery is appropriate for
 identity, navigation, illustration, distribution, or atmosphere when those
 roles are explicitly planned.
 
+### Audio is also compiled before it is rendered
+
+`audio` is not the article body sent directly to a TTS API. It has an
+intermediate editorial representation:
+
+```text
+Canonical Article
+→ listener-first audio plan
+→ Canonical Spoken Script
+→ provider/model adapter
+→ rendered audio
+```
+
+The spoken script may reorder explanation, compress secondary detail, make a
+logical transition audible, or recur to a load-bearing idea while preserving
+the article's verified claims, uncertainty, and provenance. Provider-specific
+SSML, audio tags, voice IDs, pronunciation dictionaries, prompts, and endpoint
+parameters belong only to the rendering adapter.
+
+The provider-neutral script and audio QA contract live in
+[`AUDIO-SCRIPT.md`](AUDIO-SCRIPT.md). Current Google, ElevenLabs, and OpenAI
+TTS/model behavior is tracked separately in
+[`../benchmarks/AUDIO-TTS-PROVIDERS.md`](../benchmarks/AUDIO-TTS-PROVIDERS.md).
+A provider change therefore changes renderer lineage, not article semantics.
+
 ## Citation behaviour
 
 | Artifact | Must carry |
@@ -110,6 +135,11 @@ promote decorative imagery above evidence. Audio/video backend capability may
 also exist, yet their priority remains an editorial ROI and QA decision rather
 than a capability checklist; video additionally carries materially higher
 render cost and faster provider lifecycle risk.
+
+Audio reaching rank 5 does not mean a TTS backend becomes an editorial
+dependency. Before audio can move higher, the canonical spoken-script layer and
+at least one Korean-certified rendering adapter must show that claim fidelity,
+pronunciation, chunk continuity, and bounded regeneration work in practice.
 
 ## What would change the order
 
