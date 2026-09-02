@@ -1,0 +1,20 @@
+<!--
+Golden fixture G-04 — a Research register that is still recognisably Suengj
+without copying G-01's sentence architecture. Synthetic and body-only.
+
+Demonstrates: evidence-led reasoning, challenge evidence that narrows rather
+than opposes, Korean-native prose rhythm, domain terminology chosen for the
+field, and a limit stated without a generic Limits section.
+
+Expected: no reject-severity findings and no mechanical gate findings.
+-->
+
+오래된 책의 종이가 손끝에서 부서질 정도가 되면 탈산 처리는 이미 늦었을 수 있다. 종이 안의 산을 중화하는 것과 끊어진 셀룰로오스 사슬을 되돌리는 일은 같지 않기 때문이다. 그래서 탈산의 성능을 볼 때는 처리 뒤 pH가 얼마나 올랐는지만큼, 어떤 상태의 책을 골라 언제 처리했는지가 중요하다.
+
+대규모 처리가 불가능한 기술은 아니다. 한 보존 프로그램은 2001년 이후 약 20년에 걸쳐 550만 권가량을 처리했고, 산을 중화한 뒤 알칼리 완충 성분을 남기는 방식으로 추가 열화를 늦추려 했다. 이 정도 규모가 가능했다는 사실은 적어도 공정 자체의 운영 가능성에 대해서는 꽤 강한 근거다.
+
+다만 여기서 바로 "처리하면 수명이 몇 배 늘어난다"고 넘어가기는 어렵다. 2022년 실제 오래된 책의 종이를 조사한 연구에서는 처리 뒤 pH와 알칼리 성분이 늘어도 종이별 열화 속도가 그만큼 일정하게 개선되지는 않았다. 처리 약품이 표면과 내부에 고르게 남지 않는 경우도 있어, 측정하기 쉬운 지표와 장기간의 보존 효과 사이에 거리가 생길 수 있었다.
+
+이 결과는 대규모 탈산이 효과가 없다는 반론이라기보다 적용 범위를 좁힌다. 아직 종이가 유연한 단계라면 앞으로 진행될 산성 열화를 늦출 여지가 있지만, 이미 심하게 취화된 종이에서는 중화 이후에도 물리적 강도가 돌아오지 않는다. 같은 처리라도 자료의 상태에 따라 기대할 수 있는 효과가 달라지는 셈이다.
+
+남는 문제는 실제 시간이다. 수십 년을 기다릴 수 없기 때문에 보존 연구는 높은 온도와 습도를 이용한 가속 열화 실험에 의존하는데, 그 결과를 서가에서의 실제 연수로 그대로 환산할 수는 없다. 탈산을 복원 기술이라기보다 **아직 남아 있는 시간을 덜 빠르게 쓰게 만드는 보존 조치**로 보는 편이 현재 근거와 더 잘 맞는다.
