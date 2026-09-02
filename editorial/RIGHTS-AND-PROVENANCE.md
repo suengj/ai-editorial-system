@@ -96,9 +96,59 @@ specifically:
   `ai_assistance` block.
 - A generated visual that depicts external facts carries those facts'
   citations, not merely a note that it was generated.
+- Generated audio/video carries the same `source_references` obligation for
+  every factual claim it speaks or depicts.
 - Generated audio or video reproducing a third party's voice, likeness, or
   distinctive style is out of scope for this system. Not a rights question we
   intend to litigate.
+
+### Generated voice provenance
+
+A TTS provider's voice catalog, cloning workflow, consent checkbox, or identity
+verification is **not editorial rights authority**. It tells us what that
+provider will technically accept under its product rules; it does not decide
+what this publication may represent as a voice.
+
+For every production audio artifact, the rendering lineage should identify the
+voice provenance class even while the current Artifact schema has no dedicated
+`voice` block. Until such a block is justified by implementation evidence,
+record this in artifact/render notes rather than expanding the schema
+speculatively.
+
+Recommended provenance classes:
+
+| Voice class | Policy |
+|---|---|
+| `provider_stock` | Allowed subject to provider terms and required AI-audio disclosure. Record provider voice ID/version where available. |
+| `synthetic_designed` | Allowed when the voice is generated as a non-identifying synthetic identity. Record the generation/design source. |
+| `owner_cloned` | Allowed only with explicit owner control/consent and the provider's required verification flow. Preserve the consent/provenance record privately. |
+| `licensed_voice_actor` | Requires an explicit licence/consent basis covering synthetic use; provider acceptance alone is insufficient. |
+| `third_party_imitation` | Out of scope — public figure, creator, colleague, expert, or other identifiable third-party imitation is not used. |
+
+Provider mechanics differ and change. Current official documentation observed
+for Google Cloud, ElevenLabs, and OpenAI includes provider-specific custom-voice
+consent or verification flows; see
+[`../benchmarks/AUDIO-TTS-PROVIDERS.md`](../benchmarks/AUDIO-TTS-PROVIDERS.md).
+Those controls are additive to this policy, never substitutes for it.
+
+### Consent records are not public artifacts
+
+Consent recordings, raw cloning samples, identity-verification audio, and
+provider verification material can themselves be sensitive media. They do not
+belong in this public repository and do not become a distribution artifact.
+Store only the minimum lineage/reference needed to prove that an authorised
+process occurred; the actual sensitive source stays in an appropriate private
+system.
+
+### Disclosure
+
+If a provider requires disclosure that speech is AI-generated, that requirement
+must survive into the publication surface. The publication may choose a broader
+disclosure rule than the provider requires. A provider requiring less never
+weakens the publication rule.
+
+The canonical audio-script and rendering boundary is defined in
+[`AUDIO-SCRIPT.md`](AUDIO-SCRIPT.md).
 
 ## 5. Reference and benchmark catalog
 
