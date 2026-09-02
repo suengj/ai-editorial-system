@@ -1,6 +1,6 @@
 ---
 name: plan-artifacts
-version: 0.1.0
+version: 0.2.0
 description: Decide which derived artifacts an article actually warrants and emit generator-neutral plans with lineage attached.
 when_not_to_use: Do not use to render anything — this Skill plans, generators render. Do not use to decide what the article argues.
 inputs:
@@ -30,6 +30,7 @@ governed_by:
   - editorial/constitution.md
   - editorial/profiles/
   - editorial/MEDIA-STRATEGY.md
+  - editorial/AUDIO-SCRIPT.md
   - editorial/artifact-priority.json
 allowed_tools:
   - file_read
@@ -90,10 +91,15 @@ are appropriate at all.
    and the claims it carries.
 6. **For slides**, state the argument beat per page and a page target. The
    deck follows the argument, not the article's section order.
-7. **For audio, video, infographic** — justify against the priority order or
-   skip. These are low-ranked for reasons already recorded; a plan that
-   promotes one states why.
-8. **Attach lineage.** `article_ref` with both hashes, so anything built from
+7. **For audio**, decide whether listening adds a useful consumption surface,
+   identify audience/listening context and carried claims, and declare whether
+   the downstream narration is `free` or genuinely `timed`. Do not write the
+   spoken script here. A non-skipped audio decision hands off to
+   `compile-audio-script`, which owns the Article → listener-first rewrite.
+8. **For video and infographic**, justify against the priority order or skip.
+   These are low-ranked for reasons already recorded; a plan that promotes one
+   states why.
+9. **Attach lineage.** `article_ref` with both hashes, so anything built from
    this plan can be classified fresh, cosmetically stale, or materially stale
    without inspecting it.
 
@@ -104,6 +110,9 @@ are appropriate at all.
 - `carries_claims` contains only `claim_id`s that are `verified` on the
   article. An artifact may not introduce a claim the article does not make.
 - A distribution artifact is never planned for an article below `final`.
+- An audio plan describes purpose, carried claims, listening context, and any
+  real timing constraint; it does not contain provider syntax or a finished
+  narration script.
 - The spec describes what the artifact must accomplish, never how a named tool
   should do it.
 - The plan carries `article_ref` with `content_hash` and `claims_hash`.
@@ -135,4 +144,5 @@ Run: `npm run validate:plan`.
 
 This Skill plans. It does not render, does not decide what the article argues,
 and does not publish. A plan is not an artifact, and an artifact is not an
-approval.
+approval. For audio, it decides **whether and why** to build; `compile-audio-script`
+decides **how the finalized article becomes spoken structure**.
