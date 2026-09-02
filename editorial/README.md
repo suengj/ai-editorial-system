@@ -10,6 +10,7 @@ quality gates.
 | [`quality-gates.md`](quality-gates.md) + [`quality-gates.json`](quality-gates.json) | Executable reject / fix / flag conditions | AES-P1.3 (SUE-440) |
 | [`profiles/`](profiles/) | Evidence burden, required fields, **content-type register**, and artifact fit | AES-P1.4 (SUE-441) |
 | [`MEDIA-STRATEGY.md`](MEDIA-STRATEGY.md) + [`artifact-priority.json`](artifact-priority.json) | Evidence vs distribution media, build-out order, and what would change it | AES-P1.5 (SUE-442) |
+| [`IMAGE-GENERATION.md`](IMAGE-GENERATION.md) | Editorial role, routing, prompt construction, reference consistency, bounded revision, and visual QA for generated/edited images | Visual generation extension |
 | [`presentation.md`](presentation.md) | Semantic block grammar — what a block means, never how it looks | AES-P1.6 (SUE-464) |
 | [`HITL-PROTOCOL.md`](HITL-PROTOCOL.md) | Human review stages, approval boundary, Final ≠ Published | AES-P5.1 (SUE-457) |
 | [`RIGHTS-AND-PROVENANCE.md`](RIGHTS-AND-PROVENANCE.md) | Transformation, citation, visual rights | AES-P0.4 (SUE-437) |
@@ -18,7 +19,10 @@ The separation is deliberate. Constitution holds the durable reasoning and
 integrity principles. `voice.md` holds only the shared identity and language
 quality constraints. The profiles carry register, so Research, View, News,
 Note, and Project do not collapse into one sentence architecture. Mechanical
-gates remain separate from judgement.
+gates remain separate from judgement. `IMAGE-GENERATION.md` extends the same
+control plane beyond prose without making this repository a renderer: it owns
+the editorial brief and QA contract, while project repositories own provider
+adapters and publication implementation.
 
 A rule that is not load-bearing across all five content types does not belong
 in the constitution. A corpus tendency that becomes repetitive when used as a

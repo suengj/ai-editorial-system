@@ -33,6 +33,35 @@ precedes human finalization, it never adds a claim, and it carries
 artifact with `media_stage: distribution` on an article that is not `final` or
 `published` fails validation.
 
+## Generation method is not artifact kind
+
+Image generation adds a renderer, not a new editorial authority or necessarily
+a new schema kind.
+
+A generated or edited image can realize an existing artifact/surface role, but
+the artifact kind is still determined by what it **means** and where it sits in
+the article lifecycle. The same applies to authored SVG, chart code, or other
+renderers.
+
+```text
+artifact semantics
+→ renderer choice
+→ generated raster | authored SVG/CSS | chart/diagram code
+```
+
+Do not add a generic `generated_image` kind merely because a model produced the
+pixels. Provider/model identity belongs in generator lineage. Editorial
+semantics stay provider-neutral.
+
+For image-specific briefing, prompt construction, reference-image consistency,
+and visual QA, see [`IMAGE-GENERATION.md`](IMAGE-GENERATION.md).
+
+A generated raster must not impersonate evidence. If exact values, labels,
+relationships, chronology, or source-derived geometry are load-bearing, prefer
+a deterministic/traceable renderer. Generative imagery is appropriate for
+identity, navigation, illustration, distribution, or atmosphere when those
+roles are explicitly planned.
+
 ## Citation behaviour
 
 | Artifact | Must carry |
@@ -59,8 +88,8 @@ matter:
 - **View takes no audio or video.** A judgment should be readable and
   arguable, not narrated.
 - **Nothing is required.** `default` means "expected when one is produced",
-  never "must exist". No rule anywhere obliges a quiz, an audio track, or a
-  video for any content type.
+  never "must exist". No rule anywhere obliges a quiz, an audio track, a video,
+  or a generated image for any content type.
 
 ## Build-out order
 
@@ -69,17 +98,18 @@ Provisional. Locked as an *input* to the P4 PoC, not as an assumption.
 1. **Evidence visuals** — charts, diagrams, tables, timelines
 2. **Brief**
 3. **Slides / carousel**
-4. **Infographic**
+4. **Infographic / selected generated editorial imagery**
 5. **Audio**
 6. **Video**
 7. **Interactive / quiz**
 
 Rank 1 is highest because evidence visuals improve the article itself, not
-only its reach — the only artifact class with that property. Ranks 5–7 are
-low for reasons already established in
-[`../benchmarks/MULTIMEDIA-GENERATORS-BENCHMARK.md`](../benchmarks/MULTIMEDIA-GENERATORS-BENCHMARK.md):
-no automation surface for product-grade audio, per-second cost for video, and
-no contract at all yet for an interactive surface.
+only its reach — the only artifact class with that property. Image generation
+now makes high-quality raster rendering operationally easier, but that does not
+promote decorative imagery above evidence. Audio/video backend capability may
+also exist, yet their priority remains an editorial ROI and QA decision rather
+than a capability checklist; video additionally carries materially higher
+render cost and faster provider lifecycle risk.
 
 ## What would change the order
 
@@ -93,5 +123,6 @@ rather than by preference:
 | RP-3 | Slides need hand-editing to be usable | Demote below infographic; the chain is not actually text-to-text |
 | RP-4 | A distribution artifact asserts an unverified claim | Stop adding kinds; claim carry-through is the blocker, not throughput |
 | RP-5 | A kind is consumed *instead of* the article rather than as a door to it | Demote it; the canonical article is the destination |
+| RP-6 | Generated imagery repeatedly requires unbounded prompt/revision loops | Fix image acceptance and routing before increasing image volume |
 
 RP-4 and RP-5 are the two that would stop the roadmap rather than reorder it.
