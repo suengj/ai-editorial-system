@@ -4,7 +4,7 @@
     {
       "ref_id": "ref:agent-skills-spec",
       "url": "https://github.com/agentskills/agentskills",
-      "title": "Agent Skills \u2014 specification and documentation",
+      "title": "Agent Skills — specification and documentation",
       "creator": "Agent Skills project",
       "kind": "documentation",
       "observed_at": "2026-09-01",
@@ -15,7 +15,7 @@
       "copy_status": "linked",
       "verdict": "adopt",
       "observations": "Skill as a directory (SKILL.md + scripts/references/assets), minimal required frontmatter, progressive disclosure so the agent loads the body only on demand. Adopted structurally for skills/; we add invariants, acceptance, and authority fields the spec does not require.",
-      "notes": "License is compatible, but nothing is copied \u2014 we implement the shape ourselves."
+      "notes": "License is compatible, but nothing is copied — we implement the shape ourselves."
     },
     {
       "ref_id": "ref:ap-ai-newsroom-standards",
@@ -35,7 +35,7 @@
     {
       "ref_id": "ref:llm-judge-reliability",
       "url": "https://arxiv.org/pdf/2606.19544",
-      "title": "Reliability without Validity \u2014 LLM-as-a-Judge across agreement, consistency, and bias",
+      "title": "Reliability without Validity — LLM-as-a-Judge across agreement, consistency, and bias",
       "creator": "arXiv preprint authors",
       "kind": "paper",
       "observed_at": "2026-09-01",
@@ -49,7 +49,7 @@
     {
       "ref_id": "ref:ai-slop-screening",
       "url": "https://casrai.org/guides/ai-detection-tools-adoption-academic-publishing-2026-trends",
-      "title": "AI detection tools adoption in academic publishing \u2014 2026 trends",
+      "title": "AI detection tools adoption in academic publishing — 2026 trends",
       "creator": "CASRAI",
       "kind": "documentation",
       "observed_at": "2026-09-01",
@@ -57,13 +57,13 @@
       "license": null,
       "copy_status": "linked",
       "verdict": "adapt",
-      "observations": "Publishing moved from AI-origin detection to editorial quality assessment. The checkable failure signatures \u2014 fabricated references, phantom citations, overstated claims, weak figure provenance, missing disclosure \u2014 map onto mechanisms already enforced in P0. Gap identified: we verify that a citation resolves, not that it supports the claim; that belongs in the eval fixtures.",
+      "observations": "Publishing moved from AI-origin detection to editorial quality assessment. The checkable failure signatures — fabricated references, phantom citations, overstated claims, weak figure provenance, missing disclosure — map onto mechanisms already enforced in P0. Gap identified: we verify that a citation resolves, not that it supports the claim; that belongs in the eval fixtures.",
       "notes": "No AI-origin detector will be adopted; it answers the wrong question."
     },
     {
       "ref_id": "ref:denoiser-consumption-architecture",
       "url": "https://github.com/suengj/suengj-com/blob/main/docs/architecture/P1-6-VISUAL-HIERARCHY.md",
-      "title": "Denoiser multi-surface consumption architecture \u2014 as recorded in the suengj-com visual hierarchy contract",
+      "title": "Denoiser multi-surface consumption architecture — as recorded in the suengj-com visual hierarchy contract",
       "creator": "Suengj (internal benchmark note)",
       "kind": "documentation",
       "observed_at": "2026-09-01",
@@ -73,13 +73,13 @@
       "attribution": "Internal benchmark note in suengj-com.",
       "copy_status": "linked",
       "verdict": "adapt",
-      "observations": "Borrowed idea is role consistency \u2014 same information role, same visual grammar across surfaces \u2014 not the aesthetic. Already applied in suengj-com (SUE-429/SUE-430) with Pretendard, the warm-neutral palette, and AEO-native IA preserved. Artifact surfaces in AES-P6.2 inherit the existing role matrix rather than introducing a design language.",
+      "observations": "Borrowed idea is role consistency — same information role, same visual grammar across surfaces — not the aesthetic. Already applied in suengj-com (SUE-429/SUE-430) with Pretendard, the warm-neutral palette, and AEO-native IA preserved. Artifact surfaces in AES-P6.2 inherit the existing role matrix rather than introducing a design language.",
       "notes": "Captured as one reference among five, explicitly not as a visual template."
     },
     {
       "ref_id": "ref:gemini-notebook-api-status",
       "url": "https://web-clipper-for-notebooklm.com/blog/notebooklm-api",
-      "title": "Gemini Notebook API (formerly NotebookLM API) \u2014 what is available today",
+      "title": "Gemini Notebook API (formerly NotebookLM API) — what is available today",
       "creator": "Notebook Clipper (third-party coverage)",
       "kind": "article",
       "observed_at": "2026-09-01",
@@ -93,7 +93,7 @@
     {
       "ref_id": "ref:gemini-api-media",
       "url": "https://ai.google.dev/gemini-api/docs/pricing",
-      "title": "Gemini Developer API \u2014 pricing and media generation models",
+      "title": "Gemini Developer API — pricing and media generation models",
       "creator": "Google",
       "kind": "documentation",
       "observed_at": "2026-09-01",
@@ -108,7 +108,7 @@
     {
       "ref_id": "ref:vega-lite",
       "url": "https://vega.github.io/vega-lite/",
-      "title": "Vega-Lite \u2014 a grammar of interactive graphics",
+      "title": "Vega-Lite — a grammar of interactive graphics",
       "creator": "Vega project, University of Washington Interactive Data Lab",
       "kind": "tool",
       "observed_at": "2026-09-01",
@@ -116,7 +116,7 @@
       "license": null,
       "copy_status": "linked",
       "verdict": "adopt",
-      "observations": "Chart specifications are JSON, so the spec is a text artifact that can be diffed, reviewed, versioned, and hashed; SVG output gives direct font control, which matters for Korean typography and Pretendard parity with suengj-com. Chosen for evidence visuals because the spec \u2014 not the rendered image \u2014 is the artifact, making byte-level regeneration possible.",
+      "observations": "Chart specifications are JSON, so the spec is a text artifact that can be diffed, reviewed, versioned, and hashed; SVG output gives direct font control, which matters for Korean typography and Pretendard parity with suengj-com. Chosen for evidence visuals because the spec — not the rendered image — is the artifact, making byte-level regeneration possible.",
       "notes": "License not verified in this pass. Nothing is copied, so it does not gate; verify before vendoring any spec or theme."
     },
     {
@@ -136,7 +136,7 @@
     {
       "ref_id": "ref:markdown-deck-tools",
       "url": "https://www.pkgpulse.com/guides/slidev-vs-marp-vs-revealjs-code-first-presentations-2026",
-      "title": "Slidev vs Marp vs reveal.js \u2014 code-first presentations",
+      "title": "Slidev vs Marp vs reveal.js — code-first presentations",
       "creator": "PkgPulse (third-party comparison)",
       "kind": "article",
       "observed_at": "2026-09-01",
@@ -144,7 +144,138 @@
       "license": null,
       "copy_status": "linked",
       "verdict": "adapt",
-      "observations": "Marp exports PDF and PPTX natively and is reportedly reliable and widely used in Korean developer practice, which matters because Korean-font deck templates are a known pain point. Slidev is more capable but turns the deck into an app; reveal.js needs external tooling to export. Marp chosen for the SUE-454 deck PoC so the whole chain stays textual: article Markdown \u2192 deck source \u2192 rendered deck."
+      "observations": "Marp exports PDF and PPTX natively and is reportedly reliable and widely used in Korean developer practice — relevant because Korean-font templates are a known pain point. Slidev is more capable but turns the deck into an app; reveal.js needs external tooling to export. Marp chosen for the SUE-454 deck PoC so the whole chain stays textual: article Markdown → deck source → rendered deck."
+    },
+    {
+      "ref_id": "ref:google-gemini-tts",
+      "url": "https://ai.google.dev/gemini-api/docs/speech-generation",
+      "title": "Gemini API — text-to-speech generation",
+      "creator": "Google",
+      "kind": "documentation",
+      "observed_at": "2026-09-02",
+      "rights_status": "clear",
+      "license": "CC-BY-4.0 documentation / Apache-2.0 code samples unless otherwise noted",
+      "license_compatible": true,
+      "attribution": "Google Gemini API documentation. Capability descriptions paraphrased; no third-party body copied.",
+      "copy_status": "linked",
+      "verdict": "adapt",
+      "observations": "Official Gemini TTS guide distinguishes exact-script TTS from Live interactive audio, documents natural-language control of style/tone/accent/pace, single and up-to-two-speaker synthesis, director-style prompting, and expressive inline audio tags. Audio tags are not a closed grammar and require rendered-output testing."
+    },
+    {
+      "ref_id": "ref:google-gemini-models",
+      "url": "https://ai.google.dev/gemini-api/docs/models",
+      "title": "Gemini API — model catalog and lifecycle",
+      "creator": "Google",
+      "kind": "documentation",
+      "observed_at": "2026-09-02",
+      "rights_status": "clear",
+      "license": "CC-BY-4.0 documentation / Apache-2.0 code samples unless otherwise noted",
+      "license_compatible": true,
+      "attribution": "Google Gemini API model documentation. Model status and identifiers paraphrased.",
+      "copy_status": "linked",
+      "verdict": "adapt",
+      "observations": "Current catalog lists Gemini 3.1 Flash TTS preview plus 2.5 Flash/Pro TTS variants and documents stable/preview/latest/experimental version semantics. Supports the adapter rule that model status and alias drift are recertification concerns rather than editorial semantics.",
+      "notes": "Related model detail: https://ai.google.dev/gemini-api/docs/models/gemini-3.1-flash-tts-preview"
+    },
+    {
+      "ref_id": "ref:google-cloud-tts",
+      "url": "https://cloud.google.com/text-to-speech",
+      "title": "Google Cloud Text-to-Speech — product and model documentation",
+      "creator": "Google Cloud",
+      "kind": "documentation",
+      "observed_at": "2026-09-02",
+      "rights_status": "clear",
+      "license": "Google Cloud documentation terms; linked and paraphrased only",
+      "license_compatible": false,
+      "attribution": "Google Cloud Text-to-Speech documentation. Features paraphrased; no documentation copied.",
+      "copy_status": "linked",
+      "verdict": "adapt",
+      "observations": "Google Cloud TTS exposes model-dependent control through plain text, SSML, prompts, pace/pitch/volume and related parameters depending on voice family. Current Chirp 3 documentation demonstrates that SSML/control availability can differ by model and synchronous versus streaming mode, so certification must bind provider+model+endpoint/mode.",
+      "notes": "Related official pages: https://docs.cloud.google.com/text-to-speech/docs/list-voices-and-types and https://docs.cloud.google.com/text-to-speech/docs/chirp3-hd"
+    },
+    {
+      "ref_id": "ref:google-cloud-custom-voice",
+      "url": "https://docs.cloud.google.com/text-to-speech/docs/chirp3-instant-custom-voice",
+      "title": "Chirp 3 Instant Custom Voice",
+      "creator": "Google Cloud",
+      "kind": "documentation",
+      "observed_at": "2026-09-02",
+      "rights_status": "clear",
+      "license": "Google Cloud documentation terms; linked and paraphrased only",
+      "license_compatible": false,
+      "attribution": "Google Cloud Chirp 3 Instant Custom Voice documentation. Capabilities and consent flow paraphrased.",
+      "copy_status": "linked",
+      "verdict": "adapt",
+      "observations": "Official documentation describes short-reference custom voice creation, prescribed consent statements, pace controls, and experimental pause/pronunciation controls on the observed product surface. Confirms that provider-side consent and feature support are adapter concerns and do not expand editorial voice rights."
+    },
+    {
+      "ref_id": "ref:elevenlabs-tts",
+      "url": "https://elevenlabs.io/docs/overview/models",
+      "title": "ElevenLabs — TTS models and text-to-speech guidance",
+      "creator": "ElevenLabs",
+      "kind": "documentation",
+      "observed_at": "2026-09-02",
+      "rights_status": "unclear",
+      "license": null,
+      "copy_status": "linked",
+      "verdict": "adapt",
+      "observations": "Official model and TTS docs distinguish expressive Eleven v3, stable multilingual long-form lanes, and low-latency Flash v2.5. Control grammar is model-specific: v3 uses audio tags/punctuation and not SSML break tags, while supported non-v3 models accept break tags. Flash v2.5 documentation flags number/date/currency normalization as a latency-related risk.",
+      "notes": "Related official pages: https://elevenlabs.io/docs/eleven-creative/playground/text-to-speech and https://elevenlabs.io/docs/help-center/product/core-capabilities/text-to-speech/how-can-i-add-pauses"
+    },
+    {
+      "ref_id": "ref:elevenlabs-pronunciation",
+      "url": "https://elevenlabs.io/docs/eleven-api/guides/how-to/text-to-speech/pronunciation-dictionaries",
+      "title": "ElevenLabs — pronunciation dictionaries and speech continuity controls",
+      "creator": "ElevenLabs",
+      "kind": "documentation",
+      "observed_at": "2026-09-02",
+      "rights_status": "unclear",
+      "license": null,
+      "copy_status": "linked",
+      "verdict": "adapt",
+      "observations": "Official docs expose pronunciation dictionaries with model-dependent phoneme/alias support. The speech API also provides previous/next text and request IDs for long-form continuity plus best-effort seed repeatability; determinism is explicitly not guaranteed.",
+      "notes": "Related official API page: https://elevenlabs.io/docs/api-reference/text-to-speech/convert"
+    },
+    {
+      "ref_id": "ref:elevenlabs-voice-cloning",
+      "url": "https://elevenlabs.io/docs/eleven-creative/voices/voice-cloning",
+      "title": "ElevenLabs — voice cloning overview and verification",
+      "creator": "ElevenLabs",
+      "kind": "documentation",
+      "observed_at": "2026-09-02",
+      "rights_status": "unclear",
+      "license": null,
+      "copy_status": "linked",
+      "verdict": "adapt",
+      "observations": "ElevenLabs separates Instant and Professional Voice Cloning. Current PVC documentation requires verification and states that Professional Voice Cloning is for one's own voice; Instant Voice Cloning requires confirmation of right and consent. These controls are implementation safeguards, not editorial rights authority.",
+      "notes": "Related official PVC page: https://elevenlabs.io/docs/eleven-creative/voices/voice-cloning/professional-voice-cloning"
+    },
+    {
+      "ref_id": "ref:openai-tts",
+      "url": "https://developers.openai.com/api/docs/guides/text-to-speech",
+      "title": "OpenAI API — text to speech",
+      "creator": "OpenAI",
+      "kind": "documentation",
+      "observed_at": "2026-09-02",
+      "rights_status": "unclear",
+      "license": null,
+      "copy_status": "linked",
+      "verdict": "adapt",
+      "observations": "Official Speech API documentation describes /v1/audio/speech, gpt-4o-mini-tts instruction-based control, streaming, multiple audio formats, multilingual input including Korean, and a required disclosure that TTS audio is AI-generated. The instruction parameter does not apply to legacy tts-1/tts-1-hd. Model snapshots support version pinning.",
+      "notes": "Related official model page: https://developers.openai.com/api/docs/models/gpt-4o-mini-tts"
+    },
+    {
+      "ref_id": "ref:openai-custom-voice",
+      "url": "https://developers.openai.com/api/docs/guides/text-to-speech#custom-voices",
+      "title": "OpenAI API — custom voices and consent",
+      "creator": "OpenAI",
+      "kind": "documentation",
+      "observed_at": "2026-09-02",
+      "rights_status": "unclear",
+      "license": null,
+      "copy_status": "linked",
+      "verdict": "adapt",
+      "observations": "Current custom-voice documentation limits the feature to eligible customers and requires separate consent and sample recordings whose voice identity must match. Confirms that provider-level consent is part of adapter governance while editorial policy remains independent and may be stricter."
     }
   ]
 }
