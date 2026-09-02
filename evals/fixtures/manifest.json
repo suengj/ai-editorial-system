@@ -1,6 +1,6 @@
 {
-  "schema_version": "1.0.0",
-  "description": "Fixture corpus for editorial regression (AES-P3.1 / SUE-449). Small enough to rerun after every rule or Skill change. Bodies only \u2014 no front matter \u2014 so a fixture is a fixture and never an article.",
+  "schema_version": "1.1.0",
+  "description": "Fixture corpus for editorial regression (AES-P3.1 / SUE-449). Small enough to rerun after every rule or Skill change. Bodies only — no front matter — so a fixture is a fixture and never an article. The corpus now includes mechanically clean prose failures as well as integrity failures.",
   "rights_policy": "All fixtures are synthetic or owner-authored. No third-party article is reproduced. External material appears as reference only. See editorial/RIGHTS-AND-PROVENANCE.md.",
   "fixtures": [
     {
@@ -77,6 +77,32 @@
       }
     },
     {
+      "id": "G-04",
+      "kind": "golden",
+      "path": "golden/G-04-research-native-korean.md",
+      "content_type": "research",
+      "origin": "synthetic",
+      "why": "An alternate Research register that is evidence-led without copying G-01's rhetorical architecture. It demonstrates Korean-native rhythm, domain-appropriate terminology, and challenge evidence that narrows rather than stages a binary opposition.",
+      "dimensions_tested": [
+        "synthesis",
+        "evidence-density",
+        "flow-density",
+        "content-type-fit",
+        "voice-fit",
+        "language-native-prose"
+      ],
+      "anti_patterns_avoided": [
+        "translated research-paper cadence",
+        "repeated A-not-B distinctions",
+        "manufactured opposing side",
+        "generic Limits section"
+      ],
+      "expected": {
+        "hard_fail": false,
+        "gate_findings": 0
+      }
+    },
+    {
       "id": "N-01",
       "kind": "negative",
       "path": "negative/N-01-sue-417-shape.md",
@@ -113,7 +139,7 @@
       "path": "negative/N-02-phantom-citation.md",
       "content_type": "news",
       "origin": "synthetic",
-      "why": "Every citation resolves; none supports the claim beside it. Proves the mechanical layer is insufficient on its own \u2014 this is caught by verify-claims, not by a gate.",
+      "why": "Every citation resolves; none supports the claim beside it. Proves the mechanical layer is insufficient on its own — this is caught by verify-claims, not by a gate.",
       "dimensions_tested": [
         "citation-integrity",
         "evidence-authority",
@@ -137,7 +163,7 @@
       "content_type": "news",
       "origin": "synthetic, derived from G-01",
       "paired_with": "G-01",
-      "why": "Smoother than the golden fixture and factually worse. Every editorial dimension improves; two integrity dimensions fail. The evaluation must report this as a regression, or it is measuring the wrong thing.",
+      "why": "Smoother than the golden fixture and factually worse. Every editorial dimension may improve; integrity still fails. The evaluation must report this as a regression, or it is measuring the wrong thing.",
       "dimensions_tested": [
         "polish-preservation",
         "citation-integrity",
@@ -146,7 +172,7 @@
         "flow-density"
       ],
       "failure_modes": [
-        "a number changed under cover of a style pass (30% \u2192 40%)",
+        "a number changed under cover of a style pass (30% → 40%)",
         "a citation dropped from a retained claim",
         "a stated uncertainty softened into a confident claim",
         "a limit inverted into a premise"
@@ -154,6 +180,53 @@
       "expected": {
         "hard_fail": true,
         "regression_against": "G-01"
+      }
+    },
+    {
+      "id": "N-04",
+      "kind": "negative",
+      "path": "negative/N-04-translationese-prose.md",
+      "content_type": "research",
+      "origin": "synthetic",
+      "why": "Fact-shaped, coherent, and mechanically acceptable Korean that still reads like an English research answer translated paragraph by paragraph. It exists because grammatical correctness is not native prose quality.",
+      "dimensions_tested": [
+        "language-native-prose",
+        "voice-fit",
+        "content-type-fit"
+      ],
+      "failure_modes": [
+        "English discourse order preserved in Korean",
+        "meta-connectives such as 이 구분은 / 이 관점에서 / 반대로 / 따라서 carry the structure",
+        "English technical nouns accumulate where Korean domain usage would be more natural",
+        "each paragraph announces its logical relation before making the point"
+      ],
+      "expected": {
+        "hard_fail": false,
+        "caught_by": "human-or-judge:E-13",
+        "note": "mechanical cleanliness is intentional; L0 must not pretend to decide translationese"
+      }
+    },
+    {
+      "id": "N-05",
+      "kind": "negative",
+      "path": "negative/N-05-overapplied-voice.md",
+      "content_type": "view",
+      "origin": "synthetic",
+      "why": "Each paragraph is individually coherent, but the same A-versus-B distinction is repeated until a corpus tendency becomes a visible generation rule.",
+      "dimensions_tested": [
+        "voice-fit",
+        "flow-density",
+        "language-native-prose"
+      ],
+      "failure_modes": [
+        "five successive paragraphs built from the same distinction move",
+        "house style is more visible than the argument",
+        "surface imitation replaces register variation"
+      ],
+      "expected": {
+        "hard_fail": false,
+        "caught_by": "human-or-judge:E-11",
+        "note": "mechanically clean by design"
       }
     }
   ],
