@@ -1,6 +1,6 @@
 ---
 name: frame-article
-version: 0.1.0
+version: 0.2.0
 description: Triage a source set and produce either an Article Frame or an explicit NO_ARTICLE decision, before any prose exists.
 when_not_to_use: Do not use once a frame exists — revising a frame is a new framing run, and drafting from one is write-article. Never use to produce prose.
 inputs:
@@ -36,7 +36,7 @@ allowed_tools:
   - web_search
 references:
   - path: references/weighting.md
-    load_when: the source set mixes authority levels or contains sources that disagree
+    load_when: the source set mixes authority levels, contains disagreement, or includes evidence that could materially narrow the thesis
 evidence:
   acceptance:
     - the frame validates against article.schema.json $defs/frame
@@ -45,6 +45,7 @@ evidence:
     - every time-sensitive claim appears in verification_needs
   fixtures:
     - evals/fixtures/golden/G-01-synthesis.md
+    - evals/fixtures/golden/G-04-research-native-korean.md
     - evals/fixtures/negative/N-01-sue-417-shape.md
 ---
 
@@ -58,6 +59,9 @@ frame — or there is not, and here is why.
 
 This Skill exists because the failure it prevents is invisible later. A draft
 written without a thesis can be polished indefinitely and never become good.
+That does **not** mean research starts with a fixed answer. For Research in
+particular, discovery may begin from a question or competing explanations; the
+thesis becomes mandatory at the Article Frame boundary.
 
 ## Inputs
 
@@ -65,7 +69,7 @@ Source manifest entries (`schemas/source.schema.json`), a candidate content
 type, the current date, and optionally a human angle.
 
 A human angle shapes what the piece is *about*. It does not exempt any claim
-from verification.
+from verification and it is not a thesis the evidence is required to defend.
 
 ## Outputs
 
@@ -94,14 +98,20 @@ opportunities.
    disposition. Note what each one is actually authoritative *for* — a vendor
    page is primary for its own prices and weak for anyone's margins.
 2. **Weight.** Rank by authority for the claims in question, then by
-   freshness. Load `references/weighting.md` if the set mixes authority levels
-   or disagrees with itself.
-3. **Look for the disagreement.** Where two sources conflict, that conflict is
-   usually the article. Record it before looking for anything else.
-4. **Propose a thesis.** One sentence, falsifiable, that the sources support
-   and that none of them states outright.
-5. **Test it.** Against the profile's evidence burden, and against the two
-   questions below. If it fails, return `NO_ARTICLE`.
+   freshness. Load `references/weighting.md` when the set mixes authority
+   levels or contains material challenge evidence.
+3. **Map the challenge.** Look for anything that could change the eventual
+   claim: direct contradiction, a different measurement boundary, a narrower
+   population or period, a missing variable, or a source that lowers
+   confidence. Do **not** manufacture a binary disagreement merely because the
+   Research profile carries a `contradicting` lineage role.
+4. **Propose a thesis.** Only after the evidence map. One sentence,
+   falsifiable, that the sources support and that none of them states outright.
+   For Research, an angle formed before this point is provisional, not a premise.
+5. **Test it against the strongest challenge.** Ask what becomes false,
+   narrower, or less certain if that evidence is right. Then test the resulting
+   thesis against the profile's evidence burden. If it fails, return
+   `NO_ARTICLE` rather than weakening the standard.
 6. **Flag verification needs.** Every number, date, quotation, and
    current-state claim the thesis depends on.
 7. **Identify evidence-visual opportunities** — the comparisons and series
@@ -115,6 +125,9 @@ opportunities.
 - Every time-sensitive claim appears in `verification_needs`.
 - Source weighting is recorded per claim type, not as one global ranking.
 - A human-supplied angle is recorded as an angle, never as a verified premise.
+- Research does not satisfy its challenge burden by inventing an opposing camp;
+  boundary evidence that materially narrows the thesis is legitimate challenge
+  evidence.
 
 ## Refusal conditions
 
@@ -127,6 +140,8 @@ This Skill **stops and returns `NO_ARTICLE`**, or refuses outright, when:
   source more briefly is not an article.
 - The source set is large but says one thing. **A high source count is not
   evidence of article-worthiness**; ten summaries of one event are one source.
+- The thesis survives only by ignoring or mislabelling material challenge
+  evidence.
 - The thesis would require a claim no available source supports and no
   verification could reach.
 
