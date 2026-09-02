@@ -8,12 +8,15 @@ generators, provider adapters, and publication workflows.
 | [`EDITORIAL-SYSTEMS-BENCHMARK.md`](EDITORIAL-SYSTEMS-BENCHMARK.md) | AES-P1.1 (SUE-438) |
 | [`MULTIMEDIA-GENERATORS-BENCHMARK.md`](MULTIMEDIA-GENERATORS-BENCHMARK.md) | AES-P1.2 (SUE-439) |
 | [`AUDIO-TTS-PROVIDERS.md`](AUDIO-TTS-PROVIDERS.md) | Audio provider/model adapter snapshot — observed capability, certification lanes, and recertification triggers |
+| [`AUDIO-AGENT-SKILLS.md`](AUDIO-AGENT-SKILLS.md) | Reusable orchestration patterns observed across speech/narration/voiceover Agent Skills |
 
-The provider-specific audio benchmark is deliberately separate from
-`../editorial/AUDIO-SCRIPT.md`. Editorial semantics are intended to remain
-stable; TTS models, endpoints, control grammars, and launch stages are not.
-Provider/model observations therefore live here and may be superseded without
-changing the canonical spoken-script contract.
+The two audio benchmarks answer different questions. Provider-specific behavior
+is deliberately separate from `../editorial/AUDIO-SCRIPT.md`: editorial
+semantics are intended to remain stable; TTS models, endpoints, control
+grammars, and launch stages are not. The Agent-Skill benchmark studies workflow
+boundaries — clean text vs direction, timing modes, continuity context, bounded
+revision — and feeds only the patterns that survive a backend swap into the
+canonical audio contract.
 
 Every reference cited here must resolve to an entry in
 [`../references/catalog.json`](../references/catalog.json), and every catalog
