@@ -276,20 +276,27 @@ not here.
 
 ## 11. Relationship to other media
 
-The same editorial hierarchy can later govern audio and video:
+The same editorial hierarchy governs audio and can later govern video:
 
 ```text
 Canonical Article
 → generator-neutral artifact plan
+→ modality-specific semantic representation
 → modality-specific rendering backend
 → modality-specific QA
 → lineage
 ```
 
-But image, audio, and video must keep separate acceptance criteria. Audio fails
-on pronunciation, pacing, and voice continuity; video fails on temporal
-continuity, motion, synchronization, and duration/cost; image fails on
-composition, crop, local visual defects, and identity consistency.
+Audio now has its own contract:
+[`AUDIO-SCRIPT.md`](AUDIO-SCRIPT.md). It defines the listener-first spoken
+script, pronunciation/performance intents, semantic chunking, and audio QA
+before a TTS backend is selected. Provider/model observations remain in
+[`../benchmarks/AUDIO-TTS-PROVIDERS.md`](../benchmarks/AUDIO-TTS-PROVIDERS.md).
+
+Image, audio, and video keep separate acceptance criteria. Audio fails on
+listening structure, pronunciation, pacing, and voice continuity; video fails
+on temporal continuity, motion, synchronization, and duration/cost; image fails
+on composition, crop, local visual defects, and identity consistency.
 
 Share provenance and planning rules. Do not reduce them to one vague
 “multimedia generation” prompt.
