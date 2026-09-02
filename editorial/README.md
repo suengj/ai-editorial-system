@@ -1,23 +1,28 @@
 # editorial/
 
-Editorial Constitution, Suengj voice, content-type profiles, and executable
+Editorial Constitution, shared voice, content-type registers, and executable
 quality gates.
 
 | Document | What it governs | Issue |
 |---|---|---|
 | [`constitution.md`](constitution.md) | Ten durable principles, with a precedence order for when they collide | AES-P1.3 (SUE-440) |
-| [`voice.md`](voice.md) | How the sentences sound — derived from published writing, not invented | AES-P1.3 (SUE-440) |
+| [`voice.md`](voice.md) | Shared prose identity and language-quality failure signatures; explicitly not a sentence template | AES-P1.3 (SUE-440) |
 | [`quality-gates.md`](quality-gates.md) + [`quality-gates.json`](quality-gates.json) | Executable reject / fix / flag conditions | AES-P1.3 (SUE-440) |
-| [`profiles/`](profiles/) | Evidence burden, required fields, and artifact fit per content type | AES-P1.4 (SUE-441) |
+| [`profiles/`](profiles/) | Evidence burden, required fields, **content-type register**, and artifact fit | AES-P1.4 (SUE-441) |
 | [`MEDIA-STRATEGY.md`](MEDIA-STRATEGY.md) + [`artifact-priority.json`](artifact-priority.json) | Evidence vs distribution media, build-out order, and what would change it | AES-P1.5 (SUE-442) |
 | [`presentation.md`](presentation.md) | Semantic block grammar — what a block means, never how it looks | AES-P1.6 (SUE-464) |
 | [`HITL-PROTOCOL.md`](HITL-PROTOCOL.md) | Human review stages, approval boundary, Final ≠ Published | AES-P5.1 (SUE-457) |
 | [`RIGHTS-AND-PROVENANCE.md`](RIGHTS-AND-PROVENANCE.md) | Transformation, citation, visual rights | AES-P0.4 (SUE-437) |
 
-The separation is deliberate. Principles are durable, voice is prose-only,
-gates are executable, structure lives only in the profiles. A rule that is not
-load-bearing across all five content types does not belong in the
-constitution.
+The separation is deliberate. Constitution holds the durable reasoning and
+integrity principles. `voice.md` holds only the shared identity and language
+quality constraints. The profiles carry register, so Research, View, News,
+Note, and Project do not collapse into one sentence architecture. Mechanical
+gates remain separate from judgement.
+
+A rule that is not load-bearing across all five content types does not belong
+in the constitution. A corpus tendency that becomes repetitive when used as a
+generation command does not belong among voice invariants.
 
 ```bash
 npm run check:gates     # editorial gates over the golden fixture
@@ -26,6 +31,7 @@ npm run test:gates      # negative fires, golden passes, polish invariants hold
 npm run test:profiles   # profiles differ; media strategy holds
 npm run validate:presentation
 npm run test:presentation  # renderer neutrality and lossless fallbacks
+npm run test:eval       # integrity + prose-regression corpus
 ```
 
 Admits: Markdown rules, machine-readable gate and profile definitions.
