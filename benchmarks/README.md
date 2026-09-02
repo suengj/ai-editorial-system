@@ -1,12 +1,19 @@
 # benchmarks/
 
 Our own findings on external editorial systems, Skill designs, multimedia
-generators, and publication workflows.
+generators, provider adapters, and publication workflows.
 
 | Benchmark | Issue |
 |---|---|
 | [`EDITORIAL-SYSTEMS-BENCHMARK.md`](EDITORIAL-SYSTEMS-BENCHMARK.md) | AES-P1.1 (SUE-438) |
 | [`MULTIMEDIA-GENERATORS-BENCHMARK.md`](MULTIMEDIA-GENERATORS-BENCHMARK.md) | AES-P1.2 (SUE-439) |
+| [`AUDIO-TTS-PROVIDERS.md`](AUDIO-TTS-PROVIDERS.md) | Audio provider/model adapter snapshot — observed capability, certification lanes, and recertification triggers |
+
+The provider-specific audio benchmark is deliberately separate from
+`../editorial/AUDIO-SCRIPT.md`. Editorial semantics are intended to remain
+stable; TTS models, endpoints, control grammars, and launch stages are not.
+Provider/model observations therefore live here and may be superseded without
+changing the canonical spoken-script contract.
 
 Every reference cited here must resolve to an entry in
 [`../references/catalog.json`](../references/catalog.json), and every catalog
