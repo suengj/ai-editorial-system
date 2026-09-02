@@ -4,7 +4,8 @@
  *
  * The method's own failure mode is the interesting one: a rubric that reports
  * "smoother" as "better" would pass every naive test. Most of these checks
- * exist to prove it does not.
+ * exist to prove it does not. The corpus also carries prose failures that are
+ * intentionally invisible to deterministic gates.
  */
 
 import { readFileSync } from 'node:fs';
@@ -44,6 +45,8 @@ console.log('fixture corpus');
   check('golden corpus covers more than one content type',
     new Set(golden.map((f) => f.content_type)).size >= 3,
     [...new Set(golden.map((f) => f.content_type))].join());
+  check('the golden corpus contains more than one analytical prose shape',
+    golden.some((f) => f.id === 'G-01') && golden.some((f) => f.id === 'G-04'));
   check('the SUE-417 draft is represented as negative evidence',
     negative.some((f) => /SUE-417/i.test(f.origin ?? '')));
   check('every fixture states which dimensions it tests',
@@ -62,14 +65,15 @@ console.log('fixture corpus');
 // --- golden fixtures pass -------------------------------------------------
 console.log('golden fixtures');
 {
-  for (const id of ['G-01', 'G-02', 'G-03']) {
+  const goldenIds = manifest.fixtures.filter((f) => f.kind === 'golden').map((f) => f.id);
+  for (const id of goldenIds) {
     const card = run(id);
     check(`${id} does not hard fail`, !card.hard_fail,
       JSON.stringify(card.findings.map((f) => `${f.severity}:${f.gate}`)));
   }
   check('golden fixtures produce no gate findings at all',
-    ['G-01', 'G-02', 'G-03'].every((id) => run(id).findings.length === 0),
-    JSON.stringify(['G-01', 'G-02', 'G-03'].map((id) => [id, run(id).findings.map((f) => f.gate)])));
+    goldenIds.every((id) => run(id).findings.length === 0),
+    JSON.stringify(goldenIds.map((id) => [id, run(id).findings.map((f) => f.gate)])));
 }
 
 // --- profile-relative calibration ----------------------------------------
@@ -102,6 +106,18 @@ console.log('negative fixtures');
     /verify-claims/.test(fixture('N-02').expected?.caught_by ?? ''));
   check('I-3 claim-support is not claimed to be mechanical',
     rubric.dimensions.find((d) => d.id === 'I-3').mechanical === 'none');
+
+  const n4 = run('N-04');
+  check('N-04 translationese is not pretended to be a deterministic hard failure', !n4.hard_fail,
+    JSON.stringify(n4.findings.map((f) => f.gate)));
+  check('N-04 is assigned to E-13 human-or-judge review',
+    /E-13/.test(fixture('N-04').expected?.caught_by ?? ''));
+
+  const n5 = run('N-05');
+  check('N-05 style overfit is not pretended to be a deterministic hard failure', !n5.hard_fail,
+    JSON.stringify(n5.findings.map((f) => f.gate)));
+  check('N-05 is assigned to E-11 human-or-judge review',
+    /E-11/.test(fixture('N-05').expected?.caught_by ?? ''));
 }
 
 // --- the regression the method exists for --------------------------------
@@ -145,7 +161,6 @@ console.log('SUE-417 calibration');
   check('every blocking failure is cleared', c.rejects.after === 0 && c.rejects.before > 0);
   check('the result is materially better', c.materially_better === true);
 
-  // Fewer findings is not the bar. Clearing the blocking ones is.
   const stillBlocked = { ...run(calibrated), hard_fail: true, findings: [{ severity: 'reject', gate: 'x', detail: 'x' }] };
   check('merely reducing findings does not count as materially better',
     calibrate(run(baseline), stillBlocked).materially_better === false);
@@ -157,6 +172,10 @@ console.log('method properties');
   check('integrity and editorial dimensions have different scales',
     rubric.scales.integrity.values.join() === 'pass,fail' &&
     rubric.scales.editorial.values.length === 4);
+  check('the rubric carries 6 integrity and 13 editorial dimensions',
+    rubric.dimensions.filter((d) => d.class === 'integrity').length === 6 &&
+    rubric.dimensions.filter((d) => d.class === 'editorial').length === 13,
+    `${rubric.dimensions.filter((d) => d.class === 'integrity').length}/${rubric.dimensions.filter((d) => d.class === 'editorial').length}`);
   check('there is no aggregate score', typeof rubric.no_aggregate_score === 'string');
   check('evidence is required for every rating', rubric.evidence_required === true);
   check('human authority is recorded as non-replaceable',
@@ -164,12 +183,19 @@ console.log('method properties');
   check('the regression rule is stated in the machine form',
     /regardless of how many editorial dimensions improved/i.test(rubric.regression_rule.statement));
 
+  const e11 = rubric.dimensions.find((d) => d.id === 'E-11');
+  const e13 = rubric.dimensions.find((d) => d.id === 'E-13');
+  check('voice-fit rejects mechanical imitation of signature moves',
+    /mechanically imitating|signature moves/i.test(e11?.asks ?? ''));
+  check('native-language prose is a separate editorial dimension',
+    e13?.name === 'language-native-prose' && e13.mechanical === 'none');
+  check('E-13 explicitly rejects AI-origin detection as its purpose',
+    /not an AI-origin detector/i.test(e13?.note ?? ''));
+
   const card = run('G-01');
   const unscored = Object.values(card.dimensions).filter((d) => d.result === UNSCORED);
   check('judgement dimensions are left unscored rather than invented',
     unscored.length > 0 && unscored.every((d) => d.evidence));
-  // An unscored slot must still tell the reader what would fill it — either
-  // who must assess it, or what observation to record.
   check('every unscored dimension says what would fill it',
     unscored.every((d) => typeof d.evidence === 'string' && d.evidence.length > 20),
     JSON.stringify(unscored.map((d) => [d.name, d.evidence])));
