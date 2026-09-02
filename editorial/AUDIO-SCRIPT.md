@@ -31,7 +31,7 @@ Canonical Article
         ↓
 audio plan
         ↓
-Canonical Spoken Script
+Canonical Spoken Script Package
         ↓
 provider adapter
         ↓
@@ -42,7 +42,43 @@ The audio plan may reorder explanation, compress supporting detail, make a
 transition explicit, or recur to a load-bearing idea. It may not silently
 change what the article claims.
 
-## 2. The protected factual set survives modality change
+## 2. The canonical script is a package, not one prompt blob
+
+Keep **what is spoken** separate from **how it should be performed**. Existing
+speech-generation Skills repeatedly converge on this separation even though
+their provider syntax differs; we adopt the boundary, not their vendor-specific
+controls.
+
+A canonical spoken-script package contains four independent layers:
+
+```yaml
+narration_text: clean spoken text only
+pronunciation_glossary: provider-neutral intended readings
+delivery_spec: global and local performance intents
+segment_plan: semantic boundaries, continuity context, optional time budgets
+```
+
+`narration_text` is the textual SSOT for what the listener should hear. It must
+remain usable for a human reader or a different TTS backend without stripping
+SSML, audio tags, stage directions, voice IDs, or API instructions.
+
+`delivery_spec` may describe affect, tone, pace, emphasis, pauses, or speaker
+assignment. It is not part of the narration text and must never leak into
+speech.
+
+`segment_plan` exists because long-form rendering, local regeneration, dubbing,
+and video synchronization all need structure that a flat text file cannot
+express safely.
+
+This separation gives the system a clean invariant:
+
+```text
+same narration_text
++ different certified adapter
+→ different render, same spoken claim set
+```
+
+## 3. The protected factual set survives modality change
 
 Across Article → Spoken Script, preserve:
 
@@ -65,7 +101,7 @@ claim** and returns to verification before rendering.
 
 `audio-friendly` is not an exception to the evidence contract.
 
-## 3. One listen changes information architecture
+## 4. One listen changes information architecture
 
 The unit of spoken writing is not a fixed sentence length. It is a **listenably
 complete thought**.
@@ -86,7 +122,7 @@ valid when a boundary needs to land cleanly.
 The test is whether a listener can retain the relation without needing to
 reconstruct written syntax.
 
-## 4. Spoken structure is allowed to differ from article structure
+## 5. Spoken structure is allowed to differ from article structure
 
 Section order in the article is not protected. The spoken version should give
 the listener the minimum context needed **before** a claim depends on it.
@@ -110,7 +146,7 @@ Do not create headings in speech merely because the article has headings.
 Translate structural boundaries into the lightest transition the listener
 actually needs.
 
-## 5. Recurrence is not repetition
+## 6. Recurrence is not repetition
 
 Written prose usually cuts repetition. Spoken prose sometimes needs a central
 idea to return because the listener cannot glance back up the page.
@@ -129,7 +165,7 @@ initial claim
 
 Verbatim recurrence without a new function is filler.
 
-## 6. Transitions carry logic, not presenter scaffolding
+## 7. Transitions carry logic, not presenter scaffolding
 
 Audio needs more explicit connection than text, but less hosting than a generic
 AI script tends to add.
@@ -147,7 +183,7 @@ consequence, reversal, time shift, or unresolved condition.
 If the relation is already obvious from the adjacent sentences, no transition
 is required.
 
-## 7. Opening reduces entry cost; it does not manufacture a hook
+## 8. Opening reduces entry cost; it does not manufacture a hook
 
 The opening has three possible jobs:
 
@@ -161,7 +197,7 @@ question. Clickbait translated into speech is still clickbait.
 The opening should reach the article's real argument quickly without sounding
 like a headline being read aloud.
 
-## 8. The ending lands an inference
+## 9. The ending lands an inference
 
 Do not close by listing what the listener has just heard.
 
@@ -174,7 +210,7 @@ A useful ending does one of three things:
 “Today we covered…” and equivalent recap formulas are not endings unless the
 artifact is explicitly instructional and a recap is the learning objective.
 
-## 9. Numbers are spoken forms of the same facts
+## 10. Numbers are spoken forms of the same facts
 
 Written notation and spoken notation are different representations of one
 verified value.
@@ -203,7 +239,15 @@ pronunciation_ref: optional glossary key
 Do not rewrite the canonical article merely to make a TTS model pronounce it
 correctly.
 
-## 10. Pronunciation is editorial metadata
+### Normalization is an explicit decision
+
+Do not let a backend decide silently whether a date, decimal, currency, code,
+or abbreviation should be normalized. Provider Skills expose materially
+different normalization behavior, especially in low-latency lanes. Anything
+whose spoken expansion matters should be resolved in the canonical spoken-form
+layer and then verified in the render.
+
+## 11. Pronunciation is editorial metadata
 
 Names, acronyms, technical terms, and mixed-language phrases need explicit
 handling when pronunciation matters.
@@ -223,7 +267,35 @@ If a provider cannot reliably realize a load-bearing pronunciation, route the
 artifact to another certified configuration or require a human audio fix. Do
 not distort the terminology to accommodate one backend.
 
-## 11. Performance cues are semantic, not provider markup
+## 12. Delivery direction is separate from narration text
+
+Do not solve performance control by contaminating the text with directions.
+The renderer receives two channels conceptually:
+
+```text
+TEXT
+- exact narration to speak
+
+DIRECTION
+- voice affect
+- tone / formality
+- pace
+- pronunciation guidance
+- intentional pauses
+- emphasis
+- speaker assignment
+```
+
+The direction layer should be **augmented, not invented**. It may make explicit
+what the article register, audience, and audio plan already imply. It must not
+invent a persona, accent, emotional stance, or theatrical interpretation merely
+because a provider can render one.
+
+A provider-specific adapter can compile this compact direction into natural
+language instructions, SSML, audio tags, voice settings, or other controls.
+Those compiled controls never become canonical text.
+
+## 13. Performance cues are semantic, not provider markup
 
 The canonical script may carry a **small, provider-neutral performance
 vocabulary** when delivery changes meaning or comprehension.
@@ -246,7 +318,7 @@ handles it naturally.
 Do not encode provider syntax such as `<break>`, `[whispers]`, voice IDs, or
 model names in the canonical script.
 
-## 12. Pauses must do work
+## 14. Pauses must do work
 
 A pause is warranted when it separates ideas the listener must not blend:
 
@@ -260,7 +332,7 @@ pause markup also makes a script brittle across providers.
 
 Use the fewest explicit cues that survive a backend swap.
 
-## 13. Single speaker is the default
+## 15. Single speaker is the default
 
 Multiple speakers add a second editorial structure: who owns each sentence.
 Use them only when the information function justifies the split — for example,
@@ -276,7 +348,37 @@ A synthetic second speaker must never be presented as:
 
 A generated dialogue is a distribution format, not a new source.
 
-## 14. Chunk by meaning, not by character count
+Speaker choice and per-segment voice mapping belong in delivery/rendering state,
+not in the factual article layer.
+
+## 16. Free narration and time-constrained narration are different modes
+
+Most article audio should use **free narration**: structure and pace follow the
+argument, and duration is an output measurement.
+
+Some downstream surfaces impose a real time constraint — for example a fixed
+video segment, dubbing slot, or synchronized presentation. In that case use a
+**time-constrained narration** mode and make the constraint explicit before the
+script is written.
+
+```yaml
+rendering_mode: free | timed
+target_duration_ms: optional global target
+tolerance_ms: optional acceptance band
+segment_budgets: optional per-beat targets
+```
+
+A time budget is an editorial input, not permission to speed-warp the finished
+audio. When narration is materially too long or too short, prefer revising the
+spoken script **within the verified claim set** over stretching/compressing the
+audio until it sounds unnatural.
+
+If a video is the destination, the narration and visual timeline must agree on
+what is being asserted at each beat. Timing alignment is a separate constraint;
+it does not authorize new claims or force the audio to describe every visible
+action.
+
+## 17. Segment by meaning, then preserve neighbour context
 
 Long-form synthesis often requires multiple requests. Provider limits are a
 rendering constraint; they must not become the editorial segmentation rule.
@@ -284,14 +386,36 @@ rendering constraint; they must not become the editorial segmentation rule.
 Choose semantic chunk boundaries first — completed beats, paragraph groups,
 or speaker turns — then fit those chunks to the certified provider limit.
 
-The adapter may pass preceding/following context or continuity identifiers when
-a provider supports them. It must not silently insert, delete, or paraphrase
-text to make chunks fit.
+The `segment_plan` should make local regeneration possible without guessing:
 
-A re-rendered middle chunk is accepted only if its boundary cadence still
-joins cleanly to the retained audio on both sides.
+```yaml
+segments:
+  - segment_id: stable-local-id
+    narration_span_hash: hash-of-spoken-text
+    speaker: optional-speaker-role
+    target_duration_ms: optional
+    previous_context: short semantic neighbour context
+    next_context: short semantic neighbour context
+    cues: sparse provider-neutral performance intents
+```
 
-## 15. Performance direction stays subordinate to the text
+`previous_context` and `next_context` are continuity aids, not extra narration.
+A provider adapter may pass them through explicit request-stitching fields,
+prompt context, previous request IDs, or another certified mechanism. They must
+never be spoken or silently alter the segment text.
+
+A re-rendered middle segment is accepted only if:
+
+- its exact narration span is unchanged unless a script revision was recorded;
+- its entry cadence joins cleanly to the retained previous segment;
+- its exit cadence joins cleanly to the retained next segment;
+- voice identity and loudness remain coherent;
+- no continuity context leaks into speech.
+
+This makes **bounded local regeneration** the default repair strategy for a
+local defect.
+
+## 18. Performance direction stays subordinate to the text
 
 Tone, pace, emphasis, accent, emotion, and vocal character can improve an audio
 artifact. They cannot rescue a script whose reasoning is unclear.
@@ -309,19 +433,17 @@ Avoid large acting prompts whose persona becomes more salient than the article.
 The renderer should make the argument easier to hear, not turn the publication
 into a character performance unless that is the explicit artifact purpose.
 
-## 16. Provider adaptation is a compilation step
+## 19. Provider adaptation is a compilation step
 
 The canonical script is the SSOT for what is spoken. Provider adaptation is a
 lossless compilation from editorial semantics to one backend's controls.
 
 ```text
-Canonical Spoken Script
-+ pronunciation glossary
-+ performance intent
+Canonical Spoken Script Package
         ↓
 Provider Adapter
         ↓
-provider/model/endpoint-specific input
+provider/model/endpoint-specific render jobs
 ```
 
 The adapter may:
@@ -330,20 +452,26 @@ The adapter may:
 - translate pause/performance intent into supported syntax;
 - apply pronunciation dictionaries or safe text normalization;
 - split long-form input at approved semantic boundaries;
-- choose streaming or file output parameters.
+- supply previous/next continuity context;
+- choose streaming or file output parameters;
+- batch independent or ordered segment render jobs when that preserves lineage.
 
 It may not:
 
-- change the factual text without recording a script revision;
+- change narration text without recording a script revision;
 - add emotional or dramatic direction that changes apparent certainty;
 - turn interpretation into quotation or dialogue;
 - normalize a number into a different value;
 - hide provider/model/version identity from lineage.
 
+For batch rendering, every job should retain a stable segment ID and record the
+final text hash, delivery inputs, voice/model configuration, and output path.
+Temporary provider job files are implementation state; stable lineage is not.
+
 See [`../benchmarks/AUDIO-TTS-PROVIDERS.md`](../benchmarks/AUDIO-TTS-PROVIDERS.md)
 for current adapter observations.
 
-## 17. Audio QA has two passes
+## 20. Audio QA has two passes
 
 A successful API response is not an accepted audio artifact.
 
@@ -357,8 +485,10 @@ Before rendering:
 - language-native spoken prose;
 - no presenter scaffolding;
 - semantic recurrence only where useful;
+- clean narration text separated from delivery instructions;
 - pronunciation glossary complete for risky terms;
-- performance cues sparse and meaningful.
+- performance cues sparse and meaningful;
+- segment/time budgets explicit when the destination is constrained.
 
 ### Render QA
 
@@ -367,17 +497,22 @@ Listen to the actual output and inspect:
 - pronunciation and number/date reading;
 - pacing and pause placement;
 - emphasis that accidentally changes meaning;
-- sentence-boundary and chunk-boundary continuity;
+- sentence-boundary and segment-boundary continuity;
 - voice consistency across the artifact;
+- duration against an explicit budget when one exists;
 - multi-speaker identity consistency when applicable;
-- directive leakage — control text must never be spoken;
+- directive/context leakage — control text must never be spoken;
 - truncation, skipped words, repeated words, artifacts, or unexpected
   non-verbal sounds;
 - output duration/format and provider lineage.
 
 Audio cannot be certified from transcript inspection alone.
 
-## 18. Bounded revision
+For a material or publication-facing clip, always perform rendered-audio QA.
+For exploratory batch output, sample inspection may be used only when the batch
+contract explicitly allows it and no factual/pronunciation risk is being hidden.
+
+## 21. Bounded revision
 
 Classify the failure before regenerating.
 
@@ -397,16 +532,22 @@ the factual value.
 The script is right but pace, emphasis, voice, or pause behavior is wrong.
 Change only renderer configuration where possible.
 
+### Timing failure
+
+The destination has a real duration constraint and the script misses it.
+Tighten or expand the spoken script while preserving the verified semantics;
+do not default to unnatural time stretching.
+
 ### Local audio defect
 
-A bounded chunk is defective. Regenerate that semantic chunk with continuity
+A bounded segment is defective. Regenerate that semantic segment with neighbour
 context when supported; do not reroll the entire artifact by default.
 
-Routine production should use bounded attempts and an explicit escalation path.
-Repeated “make it more natural” generations are a missing acceptance criterion,
-not a workflow.
+Routine production should use **one targeted change per revision pass** so the
+cause of improvement or regression remains observable. Repeated “make it more
+natural” generations are a missing acceptance criterion, not a workflow.
 
-## 19. Lineage and staleness
+## 22. Lineage and staleness
 
 `audio` remains a distribution artifact under
 [`../schemas/ARTICLE-ARTIFACT-CONTRACT.md`](../schemas/ARTICLE-ARTIFACT-CONTRACT.md).
@@ -418,11 +559,12 @@ It therefore:
 - records the Skill and actual rendering tool/model in `generator` lineage;
 - becomes materially stale when the carried verified claim set changes.
 
-A provider/model migration is **not** an article revision. It is a new render of
-the same script lineage and must be re-certified for pronunciation, continuity,
-and performance.
+The canonical script package should itself retain a script version and hashes
+for narration text and pronunciation/delivery state. A provider/model migration
+is **not** an article revision. It is a new render of the same script lineage
+and must be re-certified for pronunciation, continuity, timing, and performance.
 
-## 20. Relationship to image and video
+## 23. Relationship to image and video
 
 Audio shares the same editorial hierarchy as generated imagery:
 
@@ -436,9 +578,19 @@ editorial semantics
 
 It does not share image acceptance criteria. Images fail on composition and
 crop; audio fails on listening structure, pronunciation, pacing, continuity,
-and voice identity. Video will add another temporal layer rather than replacing
+and voice identity. Video adds another temporal layer rather than replacing
 this audio contract.
+
+For video-bound narration, keep two linked but distinct representations:
+
+```text
+clean narration text
++ timed segment / visual alignment plan
+```
+
+Do not embed shot directions or visual-production notes into text that a TTS
+backend is expected to speak.
 
 ## One-line rule
 
-> **Compile the verified article into a listener-first spoken script before choosing a TTS backend; preserve claims and uncertainty, keep pronunciation and performance intent provider-neutral, then translate those intents through a versioned adapter and certify the audio by listening to the rendered result.**
+> **Compile the verified article into clean listener-first narration plus separate pronunciation, delivery, and segment/timing state before choosing a TTS backend; preserve claims and uncertainty, then translate those intents through a versioned adapter and certify the actual rendered audio by listening.**
