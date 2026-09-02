@@ -49,9 +49,15 @@ exist.
 
 ## 5. A thesis, or no article
 
-Every piece is written from a stated thesis. When the corpus does not support
-one, `no_article` with a recorded reason is the correct outcome — not a
-weaker article on the same topic.
+Every **drafted article** is written from a stated thesis. This is a publication
+boundary, not a command to decide the answer before research begins. Source
+discovery may start from a question, competing explanations, or an unresolved
+observation; a thesis formed early remains provisional until it has met the
+strongest evidence that could narrow or overturn it.
+
+When the corpus does not support a thesis by the Article Frame boundary,
+`no_article` with a recorded reason is the correct outcome — not a weaker
+article on the same topic.
 
 Declining to publish is a normal result of the process, not a failure of it.
 
@@ -79,11 +85,14 @@ verified is a defect, regardless of how good it looks.
 
 ## 9. Density over volume
 
-Every paragraph carries something the reader did not have before: a number, a
-mechanism, a distinction, a consequence. Filler sections, restated headings,
-and paragraphs that only announce what the next paragraph will say are cut.
+Every paragraph changes what the reader knows or understands: a number, a
+mechanism, a distinction, a consequence, or the explanation needed to make a
+hard inference legible. Filler sections, restated headings, and paragraphs that
+only announce what the next paragraph will say are cut.
 
-Shorter is not automatically better. Emptier always is worse.
+Density is not compression. A paragraph may spend words making a difficult
+connection easier to absorb without adding another fact or citation. Shorter
+is not automatically better. Emptier always is worse.
 
 ## 10. Human finalization is not publication
 
