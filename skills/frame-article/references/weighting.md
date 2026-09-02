@@ -1,7 +1,8 @@
 # Source weighting — reference
 
-Loaded when the source set mixes authority levels or contains sources that
-disagree.
+Loaded when the source set mixes authority levels, contains sources that
+disagree, or includes evidence that could materially narrow the proposed
+thesis.
 
 ## Authority is per claim, not per source
 
@@ -31,23 +32,35 @@ is whether the claim is time-sensitive:
   source must be recent *relative to the claim*, and the claim must carry its
   observation date.
 
-## Disagreement is not noise
+## Challenge evidence is not noise
 
-When two sources conflict, do not average them, and do not silently pick the
-more convenient one. Record both, with:
+Do not reduce research to a search for a source that says the opposite. The
+useful challenge can take several forms:
 
-1. what each actually claims, at full strength;
-2. what each is authoritative for;
-3. whether the conflict is factual (they cannot both be right) or definitional
-   (they are measuring different things).
+- **Factual conflict** — two claims cannot both be true under the same scope.
+- **Definitional conflict** — the sources use the same label for different
+  boundaries or measurements.
+- **Boundary evidence** — a finding holds, but only for a narrower population,
+  period, mechanism, or condition than the proposed thesis assumes.
+- **Missing-variable evidence** — the observed relationship survives, but a
+  plausible variable makes the proposed causal reading too strong.
 
-Definitional conflicts are the more common and the more interesting. Two
-sources reporting different "inference costs" usually differ on what is inside
-the boundary, not on arithmetic.
+For each material challenge, record:
 
-A conflict that survives this analysis is frequently the article. Record it in
-`uncertainty` when it does not resolve, and give the losing source the
-`contradicting` role in `source_set` — it is lineage, not an omission.
+1. what the source actually establishes, at full strength;
+2. what it is authoritative for;
+3. which part of the thesis it changes — truth, scope, mechanism, confidence,
+   or none.
+
+Do not average unresolved sources and do not silently pick the convenient one.
+A definitional conflict often produces a better article by forcing a boundary
+to be named. A boundary source may be more useful than an explicit opponent.
+
+The existing lineage role `contradicting` covers a source that **directly
+contradicts or materially undercuts the scope of the thesis**. The name does
+not require a binary debate. Give a source that role only when the thesis would
+be materially weaker or narrower if the source is right. Record the unresolved
+part in `uncertainty`.
 
 ## Count is not weight
 
