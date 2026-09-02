@@ -1,6 +1,6 @@
 ---
 name: frame-article
-version: 0.2.0
+version: 0.3.0
 description: Triage a source set and produce either an Article Frame or an explicit NO_ARTICLE decision, before any prose exists.
 when_not_to_use: Do not use once a frame exists — revising a frame is a new framing run, and drafting from one is write-article. Never use to produce prose.
 inputs:
@@ -47,6 +47,7 @@ evidence:
     - evals/fixtures/golden/G-01-synthesis.md
     - evals/fixtures/golden/G-04-research-native-korean.md
     - evals/fixtures/negative/N-01-sue-417-shape.md
+    - evals/fixtures/negative/N-06-source-tour.md
 ---
 
 # frame-article
@@ -62,6 +63,10 @@ written without a thesis can be polished indefinitely and never become good.
 That does **not** mean research starts with a fixed answer. For Research in
 particular, discovery may begin from a question or competing explanations; the
 thesis becomes mandatory at the Article Frame boundary.
+
+A second failure is subtler: a Writer can read a large corpus correctly and
+still produce a bad article because the corpus becomes the outline. A frame
+must compress research into a reader-facing argument before drafting begins.
 
 ## Inputs
 
@@ -84,6 +89,18 @@ weighting, claims requiring verification, planned original value-add,
 counterarguments and uncertainties, proposed structure, and evidence-visual
 opportunities.
 
+The frame must also make four reader-contract questions answerable in one
+sentence each, using existing frame fields rather than adding ceremonial
+metadata:
+
+1. **Purpose** — what understanding, judgement, or decision should change after reading?
+2. **Audience** — who is this for, and what do they already know?
+3. **Message** — what single sentence should survive if the reader remembers only one?
+4. **Minimum argument path** — what is the shortest conceptual route that earns that message?
+
+If these cannot be answered, the research may be useful but the article is not
+framed.
+
 ## Preconditions
 
 - At least one source entry resolves. An unresolvable `source_id` is not a
@@ -94,29 +111,46 @@ opportunities.
 
 ## Procedure
 
-1. **Inventory.** List each source with its kind, origin, authored date, and
+1. **State the reader contract before the source inventory becomes structure.**
+   Record audience, purpose, the one-sentence takeaway, and the minimum argument
+   path. A repository, report, or folder tree may be the subject of research;
+   it is not automatically the article's table of contents.
+2. **Inventory.** List each source with its kind, origin, authored date, and
    disposition. Note what each one is actually authoritative *for* — a vendor
    page is primary for its own prices and weak for anyone's margins.
-2. **Weight.** Rank by authority for the claims in question, then by
+3. **Assign an argumentative role.** For the candidate article, mark a source
+   as load-bearing support, challenge/boundary evidence, context, example, or
+   verification-only. A consulted source with no load-bearing role is allowed
+   to disappear from the article. Coverage is not an acceptance criterion.
+4. **Weight.** Rank by authority for the claims in question, then by
    freshness. Load `references/weighting.md` when the set mixes authority
    levels or contains material challenge evidence.
-3. **Map the challenge.** Look for anything that could change the eventual
+5. **Map the challenge.** Look for anything that could change the eventual
    claim: direct contradiction, a different measurement boundary, a narrower
    population or period, a missing variable, or a source that lowers
    confidence. Do **not** manufacture a binary disagreement merely because the
    Research profile carries a `contradicting` lineage role.
-4. **Propose a thesis.** Only after the evidence map. One sentence,
+6. **Compress the research into one core insight.** The insight must be useful
+   to the intended reader even if the source filenames, repository paths, and
+   document section names are removed. For a Project piece, project internals
+   may be the subject; even then, structure follows the decision or mechanism
+   being explained rather than directory order.
+7. **Propose a thesis.** Only after the evidence map. One sentence,
    falsifiable, that the sources support and that none of them states outright.
    For Research, an angle formed before this point is provisional, not a premise.
-5. **Test it against the strongest challenge.** Ask what becomes false,
+8. **Test it against the strongest challenge.** Ask what becomes false,
    narrower, or less certain if that evidence is right. Then test the resulting
    thesis against the profile's evidence burden. If it fails, return
    `NO_ARTICLE` rather than weakening the standard.
-6. **Flag verification needs.** Every number, date, quotation, and
-   current-state claim the thesis depends on.
-7. **Identify evidence-visual opportunities** — the comparisons and series
-   worth plotting *while* the argument is being made, not after.
-8. **Hand off** to `verify-claims` with the frame and the flagged claims.
+9. **Derive the structure from the argument.** Sections earn their place by
+   advancing the thesis through mechanism, evidence, boundary, consequence, or
+   another necessary conceptual move. Do not allocate a section merely because
+   a source, README, report chapter, or repository directory exists.
+10. **Flag verification needs.** Every number, date, quotation, and
+    current-state claim the thesis depends on.
+11. **Identify evidence-visual opportunities** — the comparisons and series
+    worth plotting *while* the argument is being made, not after.
+12. **Hand off** to `verify-claims` with the frame and the flagged claims.
 
 ## Invariants
 
@@ -128,6 +162,10 @@ opportunities.
 - Research does not satisfy its challenge burden by inventing an opposing camp;
   boundary evidence that materially narrows the thesis is legitimate challenge
   evidence.
+- Source count and source coverage are never quality targets.
+- The proposed structure is explainable from the thesis without reference to
+  source order, search order, repository topology, or document topology.
+- A source may be important to research and absent from the final prose.
 
 ## Refusal conditions
 
@@ -140,6 +178,8 @@ This Skill **stops and returns `NO_ARTICLE`**, or refuses outright, when:
   source more briefly is not an article.
 - The source set is large but says one thing. **A high source count is not
   evidence of article-worthiness**; ten summaries of one event are one source.
+- The only proposed structure is a source tour, repository tour, README tour,
+  or report-chapter tour. Reframe around the reader contract before drafting.
 - The thesis survives only by ignoring or mislabelling material challenge
   evidence.
 - The thesis would require a claim no available source supports and no
@@ -153,6 +193,9 @@ This Skill **stops and returns `NO_ARTICLE`**, or refuses outright, when:
 - `uncertainty` is non-empty.
 - The profile's `required_frame_fields` are all present.
 - A `NO_ARTICLE` result carries a reason (`no_article_reason`).
+- `N-06-source-tour.md` remains mechanically plausible while failing the
+  editorial synthesis/original-reasoning test; framing must prevent that shape
+  before prose exists.
 
 Run: `npm run validate:article`, `npm run check:profile`.
 

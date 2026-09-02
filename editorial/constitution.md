@@ -44,8 +44,14 @@ connection the sources do not make themselves: a contradiction between two of
 them, a number that undercuts a narrative, a pattern visible only across
 several.
 
-If the piece could be replaced by reading the sources in order, it should not
-exist.
+**The topology of the source set is never, by itself, the topology of the
+article.** A repository tree, README section order, report table of contents,
+search-result order, or research notebook is an inventory of material, not an
+outline. A consulted source earns a place in the published piece only when it
+does load-bearing work for the argument; coverage is not a quality target.
+
+If the piece could be replaced by reading the sources, files, or repository
+sections in order, it should not exist.
 
 ## 5. A thesis, or no article
 

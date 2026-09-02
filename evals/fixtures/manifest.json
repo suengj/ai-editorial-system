@@ -228,6 +228,30 @@
         "caught_by": "human-or-judge:E-11",
         "note": "mechanically clean by design"
       }
+    },
+    {
+      "id": "N-06",
+      "kind": "negative",
+      "path": "negative/N-06-source-tour.md",
+      "content_type": "research",
+      "origin": "synthetic, derived from the 2026-09-02 AI Editorial System article failure",
+      "why": "The draft understands the system and states a thesis, but then lets the repository/workflow topology become the article. It demonstrates that factual correctness and broad source coverage do not equal synthesis.",
+      "dimensions_tested": [
+        "synthesis",
+        "original-reasoning",
+        "flow-density"
+      ],
+      "failure_modes": [
+        "headings mirror internal modules rather than the reader's conceptual path",
+        "each section exists to prove coverage of a component",
+        "the project is described rather than used to advance an independent argument",
+        "the closing restates the inventory without a new consequence"
+      ],
+      "expected": {
+        "hard_fail": false,
+        "caught_by": "human-or-judge:E-2,E-4,E-6",
+        "note": "mechanically clean by design; framing and editorial judgement must reject this shape"
+      }
     }
   ],
   "calibration": {
