@@ -2,6 +2,15 @@
   "schema_version": "1.0.0",
   "content_type": "note",
   "intent": "A concise observation or compressed reading, with the personal judgment kept.",
+  "register": {
+    "default": "Observational, compact, and allowed to be loose. A Note does not need to prove that it is an article; it can preserve an unfinished thought as long as the distinction between observation and judgment remains clear.",
+    "avoid": [
+      "Summary / Key points / My note as mandatory headings",
+      "inflating one observation into a research structure",
+      "citation density added for appearance",
+      "formal connective scaffolding that makes a short note sound like a translated report"
+    ]
+  },
   "evidence_burden": {
     "min_sources": 1,
     "min_verified_claims": 0,
@@ -23,11 +32,10 @@
     "rationale": "A note that grows past this has become a research piece wearing a note's structure. Reclassify it rather than padding it."
   },
   "typical_structure": [
-    "Summary",
-    "Key points",
-    "My note"
+    "Observation",
+    "What I make of it"
   ],
-  "flexibility": "Highest of any profile. A note may be three sentences. It may not be a report.",
+  "flexibility": "Highest of any profile. A note may be one paragraph or three sentences, and headings are usually unnecessary. It may not be a report.",
   "artifacts": {
     "default": [],
     "optional": [
@@ -44,6 +52,7 @@
   "anti_patterns": [
     "Inflating an observation into a full report with generic sections",
     "Dropping the personal judgment and leaving only a summary",
+    "Using Summary / Key points / My note as a fixed output template",
     "Adding a distribution artifact to a piece too small to carry one"
   ],
   "quality_gates": {
@@ -64,6 +73,6 @@
       "procedure",
       "visual_ref"
     ],
-    "rationale": "Mostly plain prose. Semantic blocks should be rare here \u2014 a note that needs three callouts is a research piece."
+    "rationale": "Mostly plain prose. Semantic blocks should be rare here — a note that needs three callouts is a research piece."
   }
 }
