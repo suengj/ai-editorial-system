@@ -130,7 +130,7 @@
       "license": null,
       "copy_status": "linked",
       "verdict": "adapt",
-      "observations": "Mermaid source is text and now renders headlessly to SVG/PNG/PDF without Puppeteer or a browser, which makes diagram artifacts regenerable in CI. At least one project in this space claims byte-identical geometry across architectures; that claim is unverified here and is a reason to shortlist, not a guarantee to design around. SUE-453 should test regeneration and record the result.",
+      "observations": "Mermaid source is text and now renders headlessly to SVG/PNG/PDF without Puppeteer or a browser, which makes diagram artifacts regenerable in CI. At least one project in this space claims byte-identical geometry across architectures; that claim is unverified here and is a reason to shortlist, not a guarantee to design around. SUE-453 should test it and record the result.",
       "notes": "Vendor claim, not replicated."
     },
     {
@@ -276,6 +276,79 @@
       "copy_status": "linked",
       "verdict": "adapt",
       "observations": "Current custom-voice documentation limits the feature to eligible customers and requires separate consent and sample recordings whose voice identity must match. Confirms that provider-level consent is part of adapter governance while editorial policy remains independent and may be stricter."
+    },
+    {
+      "ref_id": "ref:elevenlabs-tts-skill",
+      "url": "https://github.com/elevenlabs/skills/blob/main/text-to-speech/SKILL.md",
+      "title": "ElevenLabs Skills — text-to-speech Skill",
+      "creator": "ElevenLabs",
+      "kind": "skill",
+      "observed_at": "2026-09-02",
+      "rights_status": "clear",
+      "license": "MIT",
+      "license_compatible": true,
+      "attribution": "ElevenLabs text-to-speech Skill. MIT. Studied as a linked implementation reference; no Skill body copied.",
+      "copy_status": "linked",
+      "verdict": "adapt",
+      "observations": "The official Skill makes model choice, text normalization, request stitching with previous/next text, output mode, and usage tracking explicit. We absorb normalization/continuity/lineage patterns while keeping Eleven-specific voices, models, codecs, and SDK calls in the adapter layer."
+    },
+    {
+      "ref_id": "ref:openai-speech-skill",
+      "url": "https://github.com/openai/skills/blob/main/skills/.curated/speech/SKILL.md",
+      "title": "OpenAI Skills — curated speech generation Skill",
+      "creator": "OpenAI",
+      "kind": "skill",
+      "observed_at": "2026-09-02",
+      "rights_status": "clear",
+      "license": "Apache-2.0",
+      "license_compatible": true,
+      "attribution": "OpenAI curated speech Skill. Apache-2.0. Studied as a linked implementation reference; no Skill body copied.",
+      "copy_status": "linked",
+      "verdict": "adapt",
+      "observations": "The Skill separates exact input text from short labeled delivery instructions, distinguishes single/batch execution, validates important rendered clips, records final text/instructions/flags, and recommends one targeted iteration. We absorb those process boundaries without its provider/model/voice defaults."
+    },
+    {
+      "ref_id": "ref:noiz-tts-skill",
+      "url": "https://github.com/NoizAI/skills/blob/main/skills/tts/SKILL.md",
+      "title": "NoizAI Skills — TTS Skill",
+      "creator": "NoizAI",
+      "kind": "skill",
+      "observed_at": "2026-09-02",
+      "rights_status": "unclear",
+      "license": null,
+      "copy_status": "linked",
+      "verdict": "adapt",
+      "observations": "The TTS Skill separates simple narration from timeline-accurate mode and stores voice/speed/emotion or reference-audio settings per segment. We absorb free-versus-timed narration and per-segment delivery-state patterns, not backend-specific cloning/emotion controls or fixed CPS heuristics."
+    },
+    {
+      "ref_id": "ref:social-ai-voiceover-skill",
+      "url": "https://github.com/social-media-skills/skills/blob/main/skills/ai-voiceover/SKILL.md",
+      "title": "Social Media Skills — AI voiceover Skill",
+      "creator": "Social Media Skills / WoopSocial",
+      "kind": "skill",
+      "observed_at": "2026-09-02",
+      "rights_status": "clear",
+      "license": "MIT",
+      "license_compatible": true,
+      "attribution": "Social Media Skills AI voiceover Skill. MIT. Studied as a linked implementation reference; no Skill body copied.",
+      "copy_status": "linked",
+      "verdict": "adapt",
+      "observations": "The Skill treats script-for-the-ear plus delivery direction as the main quality driver, loads shared brand/voice context before audio choices, and keeps consent/disclosure as a boundary. We adapt this to Suengj voice + content register while rejecting universal short-sentence rules, social hooks, and provider-led defaults."
+    },
+    {
+      "ref_id": "ref:app-demo-voiceover-skill",
+      "url": "https://github.com/michaelboeding/skills/blob/master/skills/app-demo-agent/SKILL.md",
+      "title": "app-demo-agent — timed voiceover workflow",
+      "creator": "Michael Boeding",
+      "kind": "skill",
+      "observed_at": "2026-09-02",
+      "rights_status": "clear",
+      "license": "MIT",
+      "license_compatible": true,
+      "attribution": "michaelboeding/skills app-demo-agent. MIT. Studied as a linked implementation reference; no Skill body copied.",
+      "copy_status": "linked",
+      "verdict": "adapt",
+      "observations": "The workflow establishes the visual timeline and duration before writing narration, measures rendered duration afterward, and prefers script adjustment over mechanical stretching. We absorb explicit predeclared timing contracts and script-first timing repair, not its app-demo-specific tolerances, voices, or mix settings."
     }
   ]
 }
