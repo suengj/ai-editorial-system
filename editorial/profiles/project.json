@@ -2,6 +2,15 @@
   "schema_version": "1.0.0",
   "content_type": "project",
   "intent": "Context, problem, decision, implementation evidence, and what was learned.",
+  "register": {
+    "default": "Decision- and implementation-oriented. Prefer concrete constraints, choices, evidence, and trade-offs over a polished retrospective narrative.",
+    "avoid": [
+      "turning project history into a heroic story",
+      "retrofitting every decision into an A-versus-B distinction",
+      "README language repeated as implementation evidence",
+      "generic lessons-learned sections with no decision consequence"
+    ]
+  },
   "evidence_burden": {
     "min_sources": 1,
     "min_verified_claims": 2,
@@ -26,17 +35,17 @@
   ],
   "source_rules": {
     "repo_prose_is_not_evidence": true,
-    "rationale": "A GitHub README states an intention. Treat repository prose as a claim to verify against commits, tests, and behaviour \u2014 never as automatically true.",
+    "rationale": "A GitHub README states an intention. Treat repository prose as a claim to verify against commits, tests, and behaviour — never as automatically true.",
     "requires_pinned_ref": true
   },
   "typical_structure": [
-    "Context",
-    "The problem",
-    "What was decided, and why",
-    "Implementation and evidence",
-    "What it cost and what was learned"
+    "Operating context",
+    "Constraint or problem",
+    "Decision and trade-off",
+    "Implementation evidence",
+    "Consequence or lesson"
   ],
-  "flexibility": "Structure follows the project's actual history. Sections with nothing behind them are cut.",
+  "flexibility": "Structure follows the project's actual history. Chronology is allowed when chronology explains the decision; sections with nothing behind them are cut.",
   "artifacts": {
     "default": [
       "evidence_visual"
@@ -55,7 +64,8 @@
     "Invented project history, dates, or outcomes",
     "README prose repeated as fact",
     "Screenshots reproduced without a rights basis",
-    "Retrospective certainty about decisions that were guesses at the time"
+    "Retrospective certainty about decisions that were guesses at the time",
+    "Forcing every decision into the same contrast-and-consequence prose pattern"
   ],
   "quality_gates": {
     "evidence_density_floor": 0.3,
@@ -77,6 +87,6 @@
     "usually_avoid": [
       "timeline"
     ],
-    "rationale": "Procedure and code carry real structure. A timeline usually restates prose that already reads chronologically."
+    "rationale": "Procedure and code carry real structure. A timeline is useful only when chronology explains a decision rather than merely restating prose."
   }
 }
