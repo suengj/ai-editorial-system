@@ -33,11 +33,17 @@ npm run validate:skills
 npm run test:skills
 ```
 
-## The V0.1 set
+## The current set
 
-```
+```text
 frame-article → verify-claims → write-article → editorial-polish → human review
-                                      ↘ plan-artifacts → generators
+                                      ↘ plan-artifacts
+                                           ├─ evidence / text / slide generators
+                                           └─ audio decision
+                                                ↓
+                                      compile-audio-script
+                                                ↓
+                                      replaceable TTS adapter
 ```
 
 | Skill | Owns | Issue |
@@ -46,8 +52,15 @@ frame-article → verify-claims → write-article → editorial-polish → human
 | [`verify-claims`](verify-claims/) | What is true and supported | AES-P2.4 (SUE-446) |
 | [`write-article`](write-article/) | The draft, arguing the frame's thesis | AES-P2.3 (SUE-445) |
 | [`editorial-polish`](editorial-polish/) | How it reads — never what it claims | AES-P2.5 (SUE-447) |
-| [`plan-artifacts`](plan-artifacts/) | Which artifacts are worth building | AES-P2.6 (SUE-448) |
+| [`plan-artifacts`](plan-artifacts/) | Which artifacts are worth building and what each must carry | AES-P2.6 (SUE-448) |
+| [`compile-audio-script`](compile-audio-script/) | Article → clean spoken structure, pronunciation/delivery state, semantic segments and timing budgets | Audio generation extension |
 
 The division is the design. Verification decides truth and may block a
 finalization; polish decides rhythm and may not touch a protected span; the
 human decides publication, and no Skill in the set can.
+
+For audio specifically, `plan-artifacts` owns **whether and why** an audio
+artifact should exist. `compile-audio-script` owns **how the finalized article
+becomes listener-first spoken structure**. A provider adapter owns **how that
+package is rendered by one TTS backend**. Voice IDs, SSML, audio tags, model
+names, and provider defaults therefore never become Skill authority.
