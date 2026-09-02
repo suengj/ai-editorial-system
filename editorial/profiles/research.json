@@ -2,6 +2,15 @@
   "schema_version": "1.0.0",
   "content_type": "research",
   "intent": "Evidence-first synthesis answering a stated research question.",
+  "register": {
+    "default": "Evidence-led and analytical without imitating an academic paper. Explanation may slow down a difficult inference; not every paragraph needs to announce a contrast or a finding.",
+    "avoid": [
+      "English-derived literature-review cadence",
+      "manufactured binary debate",
+      "repeated A-not-B contrast structure",
+      "generic Findings / Implications / Limits sectioning when the argument does not need it"
+    ]
+  },
   "evidence_burden": {
     "min_sources": 3,
     "min_verified_claims": 4,
@@ -9,7 +18,7 @@
       "primary",
       "contradicting"
     ],
-    "rationale": "A research piece that never met a source disagreeing with it has not finished its research."
+    "rationale": "Research must confront material that could narrow, weaken, or overturn the thesis. The 'contradicting' role includes direct contradiction and material boundary-setting evidence; it does not require inventing an opposing camp."
   },
   "required_frame_fields": [
     "thesis",
@@ -26,14 +35,13 @@
     "method_note"
   ],
   "typical_structure": [
-    "Research question",
-    "What the sources agree on",
-    "Where they disagree, and why",
-    "Our synthesis",
-    "What would change this reading",
-    "Limits"
+    "Question or tension",
+    "Evidence and mechanism",
+    "Challenge or boundary evidence",
+    "Synthesis",
+    "Conditions that would change the reading"
   ],
-  "flexibility": "Structure is a default, not a requirement. Sections may be merged or renamed when the argument calls for it; the evidence burden may not be relaxed.",
+  "flexibility": "Structure is a default, not a template. Sections may be merged, renamed, or omitted when the argument calls for it; the evidence burden may not be relaxed. Research discovery may precede the Article Frame, so the required thesis is the drafting-boundary thesis rather than a pre-research commitment.",
   "artifacts": {
     "default": [
       "evidence_visual",
@@ -51,12 +59,14 @@
   "anti_patterns": [
     "Sequential restatement of each source in turn",
     "A literature-review shape with no synthesis of our own",
+    "Manufacturing a binary debate solely to satisfy the contradicting-source role",
+    "Committing to a thesis before source discovery and treating later research as confirmation",
     "Historical analogues invoked for colour rather than examined",
     "Scenarios presented with the same confidence as findings"
   ],
   "quality_gates": {
     "evidence_density_floor": 0.4,
-    "rationale": "Highest floor: a research piece argues from material and should show it."
+    "rationale": "Highest floor: a research piece argues from material and should show it. Density is not compression; connective explanation that makes a hard inference legible is editorial value even without another citation."
   },
   "semantic_roles": {
     "recommended": [
@@ -75,6 +85,6 @@
       "procedure",
       "code_example"
     ],
-    "rationale": "Evidence and comparison earn separation because the argument turns on what sources show and where they differ."
+    "rationale": "Evidence and comparison earn separation when the argument actually turns on them. Do not create a comparison block merely to perform synthesis."
   }
 }
