@@ -2,6 +2,15 @@
   "schema_version": "1.0.0",
   "content_type": "view",
   "intent": "A stated judgment, argued honestly, with its own limits visible.",
+  "register": {
+    "default": "Judgment is visible and owned. The prose may be more personal and uneven than Research; it should read like a position being reasoned through, not a neutral report with an opinion appended.",
+    "avoid": [
+      "neutral-research register used to hide authorship of the judgment",
+      "mandatory objection paragraphs",
+      "repeated concession formulas",
+      "citation volume used as a substitute for reasoning"
+    ]
+  },
   "evidence_burden": {
     "min_sources": 1,
     "min_verified_claims": 1,
@@ -22,12 +31,12 @@
     "what_would_change_my_mind"
   ],
   "typical_structure": [
-    "The position",
-    "Why I hold it",
-    "The strongest objection",
-    "What would change my mind"
+    "Position",
+    "Reasoning",
+    "Material objection or limit",
+    "Condition that would change the position"
   ],
-  "flexibility": "Free-form. The only structural requirement is that the position appears before its support.",
+  "flexibility": "Free-form. The position should become clear early, but the strongest objection appears only where it genuinely tests the position; it is not a mandatory section heading.",
   "artifacts": {
     "default": [],
     "optional": [
@@ -43,8 +52,9 @@
   "anti_patterns": [
     "Opinion written in the register of neutral research",
     "Counterarguments stated in a weakened form so they can be dismissed",
+    "A token counterargument inserted only to satisfy structure",
     "Confidence asserted as high with no stated uncertainty",
-    "Burying the position under three paragraphs of context"
+    "Burying the position under generic context"
   ],
   "quality_gates": {
     "evidence_density_floor": 0.1,
@@ -65,6 +75,6 @@
       "code_example",
       "timeline"
     ],
-    "rationale": "Avoid over-boxing opinion. A judgment argued in prose reads as a judgment; the same judgment in a callout reads as a claim of authority it has not earned."
+    "rationale": "Avoid over-boxing opinion. A judgment argued in prose reads as a judgment; the same judgment in a callout can read as authority it has not earned."
   }
 }
