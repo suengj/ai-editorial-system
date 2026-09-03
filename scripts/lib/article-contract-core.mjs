@@ -36,6 +36,7 @@ export const CODES = Object.freeze({
   MEDIA_STAGE: 'media-stage',
   DISTRIBUTION_GATE: 'distribution-gate',
   CLAIM_LINK: 'claim-link',
+  ANSWER: 'answer-unit',
   STALENESS: 'staleness',
   ARTIFACT_ID: 'artifact-id',
   TRANSFORMATION: 'transformation',
@@ -142,6 +143,50 @@ export function validateArticle(article, schemas = loadSchemas()) {
     }
     if (slug && pub.canonical_url && pub.canonical_url !== `/content/${slug}`) {
       issues.push(issue(CODES.PATH_MAP, where, `canonical_url should be "/content/${slug}", got "${pub.canonical_url}"`));
+    }
+  }
+
+  // --- answer unit (AEO-P2.3) ---
+  /*
+   * An answer unit is a compression, and a compression is where fabrication
+   * enters: the shorter the surface, the easier it is to state something the
+   * article never verified. So it may only point at claims that exist, and it
+   * may only call something a fact when the claim is verified and carries
+   * evidence. Everything else must be labelled interpretation or forecast.
+   */
+  if (article?.answer) {
+    const claimsById = new Map(
+      (article.verification?.claims ?? []).map((c) => [c.claim_id, c]),
+    );
+    const seen = new Set();
+    for (const ref of article.answer.claims ?? []) {
+      if (seen.has(ref.claim_id)) {
+        issues.push(issue(CODES.ANSWER, where, `answer references claim "${ref.claim_id}" twice`));
+      }
+      seen.add(ref.claim_id);
+
+      const claim = claimsById.get(ref.claim_id);
+      if (!claim) {
+        issues.push(issue(
+          CODES.ANSWER, where,
+          `answer references claim "${ref.claim_id}", which the verification block does not carry`,
+        ));
+        continue;
+      }
+      if (ref.kind === 'fact') {
+        if (claim.status !== 'verified') {
+          issues.push(issue(
+            CODES.ANSWER, where,
+            `answer presents claim "${ref.claim_id}" as fact, but its verification status is "${claim.status}"`,
+          ));
+        }
+        if (!(claim.evidence ?? []).length) {
+          issues.push(issue(
+            CODES.ANSWER, where,
+            `answer presents claim "${ref.claim_id}" as fact, but the claim carries no evidence`,
+          ));
+        }
+      }
     }
   }
 

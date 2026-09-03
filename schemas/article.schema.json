@@ -120,6 +120,9 @@
       "description": "Fields required or permitted by the content-type profile (editorial/profiles/*.json). Shape varies by type; enforced by scripts/lib/profile-core.mjs rather than by this schema.",
       "type": "object"
     },
+    "answer": {
+      "$ref": "#/$defs/answer"
+    },
     "presentation_plan_ref": {
       "description": "Optional. Identifier of a sidecar presentation plan (presentation-plan.schema.json). Additive by design: an article with no plan is complete, and removing a plan never removes information from the canonical Markdown.",
       "type": [
@@ -200,6 +203,60 @@
           "items": {
             "type": "string",
             "minLength": 1
+          }
+        }
+      }
+    },
+    "answer": {
+      "description": "Optional AnswerUnit (AEO-P2.3 / SUE-525). The retrieval-facing compression of what this article answers: a question, one concise answer, and references into claims the article has already verified. Additive by design — an article with no answer unit is complete, and an answer unit never introduces a claim the verification block does not carry.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "question",
+        "summary"
+      ],
+      "properties": {
+        "question": {
+          "description": "The retrieval intent this article answers, in the reader's words rather than the article's headline.",
+          "type": "string",
+          "minLength": 1
+        },
+        "summary": {
+          "description": "One self-contained answer. Capped so it stays an answer rather than becoming a second article.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 400
+        },
+        "claims": {
+          "description": "References into verification.claims. Claims are never restated here — only pointed at, with the epistemic kind the publication surface must show and the body text that carries them.",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "claim_id",
+              "kind",
+              "anchor"
+            ],
+            "properties": {
+              "claim_id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "kind": {
+                "description": "What the reader is being offered. `fact` requires a verified claim with evidence; interpretation and forecast are the honest labels for everything else.",
+                "enum": [
+                  "fact",
+                  "interpretation",
+                  "forecast"
+                ]
+              },
+              "anchor": {
+                "description": "Exact text from the canonical body that carries this claim, so a compression can be checked against the full article rather than trusted.",
+                "type": "string",
+                "minLength": 8
+              }
+            }
           }
         }
       }

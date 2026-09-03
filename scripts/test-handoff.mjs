@@ -44,6 +44,37 @@ console.log('worked receipt');
     Object.values(receipt.evidence ?? {}).every((v) => typeof v === 'string' && v.endsWith('.json')));
 }
 
+// --- the answer unit crosses resolved, not by reference -------------------
+console.log('an answer unit hands over its own support');
+{
+  const article = JSON.parse(JSON.stringify(bundle.article));
+  article.answer = {
+    question: 'Did per-token price cuts move the filer\'s gross margin?',
+    summary: 'Published prices fell while the reported gross margin did not move materially.',
+    claims: [
+      { claim_id: 'c1', kind: 'fact', anchor: 'published per-token inference prices' },
+      { claim_id: 'c3', kind: 'interpretation', anchor: 'serving infrastructure is the dominant share' },
+    ],
+  };
+  const built = buildReceipt(article, body, { producedAt: receipt.produced_at });
+  const answer = built.front_matter.answer;
+  const byId = Object.fromEntries((answer?.claims ?? []).map((c) => [c.id, c]));
+
+  check('the answer reaches the site in front matter', Boolean(answer?.question && answer?.summary));
+  check('claim text is copied, so the site never reads this repo\'s claim store',
+    byId.c1?.text === article.verification.claims.find((c) => c.claim_id === 'c1').text);
+  check('a fact claim carries the evidence URLs that support it',
+    Array.isArray(byId.c1?.support) && byId.c1.support.length > 0);
+  check('an unverified claim crosses as interpretation with no support',
+    byId.c3?.kind === 'interpretation' && !('support' in (byId.c3 ?? {})));
+  check('the anchor travels with the claim so the site can check it against the body',
+    byId.c1?.anchor === 'published per-token inference prices');
+  check('an article without an answer unit hands over no answer key',
+    !('answer' in buildReceipt(bundle.article, body, { producedAt: receipt.produced_at }).front_matter));
+  check('the receipt with an answer unit is still valid',
+    validateReceipt(built, body).length === 0, JSON.stringify(validateReceipt(built, body)));
+}
+
 // --- the canonical article is the deliverable ----------------------------
 console.log('the article is the deliverable, everything else optional');
 {

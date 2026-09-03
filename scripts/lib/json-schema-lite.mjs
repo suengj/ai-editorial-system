@@ -3,7 +3,7 @@
  * this repository actually uses.
  *
  * Supported: type, const, enum, required, properties, additionalProperties,
- * items, pattern, minLength, minimum, format (date, date-time), $ref into
+ * items, pattern, minLength, maxLength, minimum, format (date, date-time), $ref into
  * local $defs, and union types via array-valued `type`.
  *
  * Deliberately small. Fail-closed on constructs it does not understand: an
@@ -14,7 +14,7 @@
 const KNOWN_KEYWORDS = new Set([
   '$schema', '$id', '$ref', '$defs', 'title', 'description',
   'type', 'const', 'enum', 'required', 'properties', 'additionalProperties',
-  'items', 'pattern', 'minLength', 'minimum', 'format',
+  'items', 'pattern', 'minLength', 'maxLength', 'minimum', 'format',
 ]);
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
@@ -82,6 +82,9 @@ export function validate(value, schema, root = schema, path = '$') {
     }
     if (schema.minLength !== undefined && value.length < schema.minLength) {
       errors.push({ path, message: `shorter than minLength ${schema.minLength}` });
+    }
+    if (schema.maxLength !== undefined && value.length > schema.maxLength) {
+      errors.push({ path, message: `longer than maxLength ${schema.maxLength}` });
     }
     if (schema.format === 'date' && !DATE_RE.test(value)) {
       errors.push({ path, message: 'not an ISO date (YYYY-MM-DD)' });
