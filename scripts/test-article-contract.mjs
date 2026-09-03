@@ -47,6 +47,51 @@ console.log('canonical example (expect 0 issues)');
     base.article.source_set.some((s) => s.role === 'contradicting'));
 }
 
+// --- answer unit (AEO-P2.3 / SUE-525) ------------------------------------
+console.log('an answer unit may only compress what the article verified');
+{
+  const withAnswer = (answer) => {
+    const b = clone();
+    b.article.answer = answer;
+    return b;
+  };
+  const unit = (claims) => ({
+    question: 'Did per-token price cuts move the filer\'s gross margin?',
+    summary: 'Published prices fell while the reported gross margin did not move materially.',
+    claims,
+  });
+  const ref = (claim_id, kind) => ({
+    claim_id,
+    kind,
+    anchor: 'the filer\'s reported gross margin did not move materially',
+  });
+
+  check('an article with no answer unit stays valid',
+    !('answer' in base.article) && validateBundle(base, schemas).length === 0);
+  check('an answer over verified, evidenced claims is valid',
+    codes(withAnswer(unit([ref('c1', 'fact'), ref('c2', 'fact')]))).length === 0,
+    JSON.stringify(validateBundle(withAnswer(unit([ref('c1', 'fact')])), schemas)));
+  check('an answer with no claims at all is still valid',
+    codes(withAnswer({ question: 'q?', summary: 'a.' })).length === 0);
+  check('a claim the verification block never carried is refused',
+    codes(withAnswer(unit([ref('c9', 'fact')]))).includes(CODES.ANSWER));
+  check('an unverified claim may not be presented as fact',
+    codes(withAnswer(unit([ref('c3', 'fact')]))).includes(CODES.ANSWER));
+  check('the same unverified claim is fine as an interpretation',
+    codes(withAnswer(unit([ref('c3', 'interpretation')]))).length === 0);
+  check('a verified claim stripped of its evidence may not be presented as fact', (() => {
+    const b = withAnswer(unit([ref('c1', 'fact')]));
+    b.article.verification.claims.find((c) => c.claim_id === 'c1').evidence = [];
+    return codes(b).includes(CODES.ANSWER);
+  })());
+  check('the same claim may not be referenced twice',
+    codes(withAnswer(unit([ref('c1', 'fact'), ref('c1', 'fact')]))).includes(CODES.ANSWER));
+  check('a summary longer than the cap is refused by the schema',
+    codes(withAnswer({ question: 'q?', summary: 'x'.repeat(401) })).includes(CODES.SCHEMA));
+  check('an anchor too short to locate in the body is refused by the schema',
+    codes(withAnswer(unit([{ claim_id: 'c1', kind: 'fact', anchor: 'short' }]))).includes(CODES.SCHEMA));
+}
+
 // --- staleness classification --------------------------------------------
 console.log('staleness is computed from the two hashes');
 {

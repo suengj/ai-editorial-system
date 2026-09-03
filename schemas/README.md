@@ -6,6 +6,7 @@ Source, Article, and Artifact schemas plus lineage and staleness rules.
 |---|---|---|
 | [`SOURCE-CONTRACT.md`](SOURCE-CONTRACT.md) | [`source.schema.json`](source.schema.json) | AES-P0.2 (SUE-435) |
 | [`ARTICLE-ARTIFACT-CONTRACT.md`](ARTICLE-ARTIFACT-CONTRACT.md) | [`article.schema.json`](article.schema.json), [`artifact.schema.json`](artifact.schema.json) | AES-P0.3 (SUE-436) |
+| [`ANSWER-UNIT-CONTRACT.md`](ANSWER-UNIT-CONTRACT.md) | [`article.schema.json`](article.schema.json) `$defs.answer` | AEO-P2.3 (SUE-525) |
 
 Content types (`research`, `view`, `news`, `note`, `project`) and artifact
 kinds (`brief`, `full`, `sources`, `evidence_visual`, `slides`, `infographic`,

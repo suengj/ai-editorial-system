@@ -90,6 +90,35 @@ export function buildReceipt(article, body, {
     })));
   if (citations.length > 0) front.citations = citations;
 
+  /*
+   * The answer unit crosses the boundary resolved, not by reference: the site
+   * renders and validates it without reading this repository's claim store.
+   * Claim text and supporting URLs are copied from the verified claim, so the
+   * site can never publish an answer whose support this repo did not record.
+   */
+  if (article.answer) {
+    const claimsById = new Map((article.verification?.claims ?? []).map((c) => [c.claim_id, c]));
+    front.answer = {
+      question: article.answer.question,
+      summary: article.answer.summary,
+      ...((article.answer.claims ?? []).length > 0
+        ? {
+            claims: article.answer.claims.map((ref) => {
+              const claim = claimsById.get(ref.claim_id);
+              const support = (claim?.evidence ?? []).map((e) => e.url);
+              return {
+                id: ref.claim_id,
+                text: claim?.text ?? '',
+                kind: ref.kind,
+                anchor: ref.anchor,
+                ...(support.length > 0 ? { support } : {}),
+              };
+            }),
+          }
+        : {}),
+    };
+  }
+
   const receipt = {
     schema_version: CONTRACT_VERSION,
     article_id: article.article_id,
