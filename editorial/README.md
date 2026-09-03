@@ -17,6 +17,7 @@ quality gates.
 | [`IMAGE-GENERATION.md`](IMAGE-GENERATION.md) | Editorial role, routing, prompt construction, reference consistency, bounded revision, and visual QA for generated/edited images | Visual generation extension |
 | [`IMAGE-TEXT-RENDERING-PROFILES.md`](IMAGE-TEXT-RENDERING-PROFILES.md) | Modular text handling for generated images: external overlay, hybrid, integrated generated text, or no text | Visual generation extension |
 | [`DIAGRAMMATIC-VISUAL-LANGUAGE.md`](DIAGRAMMATIC-VISUAL-LANGUAGE.md) | Diagrammatic editorial styling, geometric character grammar, thumbnail adaptation, reusable prompt blocks, and style QA | Visual language extension |
+| [`ARTICLE-ILLUSTRATION-ROUTING.md`](ARTICLE-ILLUSTRATION-ROUTING.md) | Article thesis → information type → renderer → illustration family routing, plus the current suengj.com Editorial Research Graphic profile | Article illustration extension |
 | [`AUDIO-SCRIPT.md`](AUDIO-SCRIPT.md) | Article-to-spoken-script recompilation, clean narration vs delivery state, pronunciation, semantic segmentation/timing, bounded revision, and rendered-audio QA | Audio generation extension |
 | [`presentation.md`](presentation.md) | Semantic block grammar — what a block means, never how it looks | AES-P1.6 (SUE-464) |
 | [`HITL-PROTOCOL.md`](HITL-PROTOCOL.md) | Human review stages, approval boundary, Final ≠ Published | AES-P5.1 (SUE-457) |
@@ -73,6 +74,14 @@ artifact/visual family rather than making one thumbnail convention a permanent
 image-generation invariant. `DIAGRAMMATIC-VISUAL-LANGUAGE.md` adds a reusable
 style contract on top of that workflow without turning a project-specific
 screenshot or one generated image into global editorial authority.
+`ARTICLE-ILLUSTRATION-ROUTING.md` adds the missing article-level decision layer:
+it reads the thesis and reader need first, routes exact data to deterministic
+evidence, relationships/processes to explanatory diagrams, systems to layered
+architectural visuals, comparisons to structured analytical graphics, and
+abstract theses to restrained conceptual illustration. It also records the
+current suengj.com **Editorial Research Graphic** publication profile so future
+article sessions do not have to reconstruct the visual direction from chat
+memory.
 
 `AUDIO-SCRIPT.md` applies the same boundary to speech. This repository decides
 how a verified article becomes a listener-first canonical package: clean
