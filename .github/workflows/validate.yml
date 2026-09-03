@@ -1,9 +1,9 @@
 name: validate
 
+# Documentation/contract repository: keep validation available on demand,
+# but do not spend CI minutes on normal pushes or pull requests.
 on:
-  push:
-    branches: [main]
-  pull_request:
+  workflow_dispatch:
 
 jobs:
   boundary:
