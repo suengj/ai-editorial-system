@@ -33,18 +33,24 @@ npm run validate:skills
 npm run test:skills
 ```
 
-## The current set
+## The V0.1 set + modality compilers
 
 ```text
 frame-article → verify-claims → write-article → editorial-polish → human review
                                       ↘ plan-artifacts
-                                           ├─ evidence / text / slide generators
-                                           └─ audio decision
-                                                ↓
-                                      compile-audio-script
-                                                ↓
-                                      replaceable TTS adapter
+                                             ↓
+                                  compile-visual-story
+                                   ↙                 ↘
+                         visual surfaces      compile-audio-script
+                                   \                 /
+                                    \→ video assembly
 ```
+
+`plan-artifacts` decides **whether** a derivative is worth building.
+`compile-visual-story` runs only for approved multi-surface visual/spoken work
+and defines one shared argument-beat graph. `compile-audio-script` remains the
+authority for the final provider-neutral listener-first spoken package. None of
+these Skills renders anything.
 
 | Skill | Owns | Issue |
 |---|---|---|
@@ -53,11 +59,16 @@ frame-article → verify-claims → write-article → editorial-polish → human
 | [`write-article`](write-article/) | The draft, arguing the frame's thesis | AES-P2.3 (SUE-445) |
 | [`editorial-polish`](editorial-polish/) | How it reads — never what it claims | AES-P2.5 (SUE-447) |
 | [`plan-artifacts`](plan-artifacts/) | Which artifacts are worth building and what each must carry | AES-P2.6 (SUE-448) |
+| [`compile-visual-story`](compile-visual-story/) | One provider-neutral argument-beat graph and cross-surface mapping for approved slides, infographics, audio selection, and video | Visual-story extension |
 | [`compile-audio-script`](compile-audio-script/) | Article → clean spoken structure, pronunciation/delivery state, semantic segments and timing budgets | Audio generation extension |
 
 The division is the design. Verification decides truth and may block a
 finalization; polish decides rhythm and may not touch a protected span; the
-human decides publication, and no Skill in the set can.
+human decides publication. Artifact planning decides whether a derivative
+exists; visual-story compilation keeps approved multi-surface derivatives
+semantically aligned; the audio compiler performs the reading→listening
+modality change; renderers produce files. No Skill in this set can publish or
+approve.
 
 For audio specifically, `plan-artifacts` owns **whether and why** an audio
 artifact should exist. `compile-audio-script` owns **how the finalized article

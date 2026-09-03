@@ -1,6 +1,6 @@
 ---
 name: plan-artifacts
-version: 0.2.0
+version: 0.3.0
 description: Decide which derived artifacts an article actually warrants and emit generator-neutral plans with lineage attached.
 when_not_to_use: Do not use to render anything — this Skill plans, generators render. Do not use to decide what the article argues.
 inputs:
@@ -30,6 +30,7 @@ governed_by:
   - editorial/constitution.md
   - editorial/profiles/
   - editorial/MEDIA-STRATEGY.md
+  - editorial/VISUAL-STORY-COMPILATION.md
   - editorial/AUDIO-SCRIPT.md
   - editorial/artifact-priority.json
 allowed_tools:
@@ -49,11 +50,16 @@ evidence:
 ## Purpose
 
 Decide what is worth building from an article, and describe it precisely
-enough that any competent generator can build it — without naming one.
+enough that any competent downstream compiler/renderer can build it — without
+naming one.
 
 The plan is the versioned artifact. The rendered output is a build product.
 That is what keeps generators replaceable: swapping one changes
 `generator.tool` in the lineage and nothing in the editorial semantics.
+
+This Skill owns **whether and why** an artifact exists. It does not independently
+write the full slide sequence, infographic modules, spoken narration, or video
+storyboard.
 
 ## Inputs
 
@@ -89,16 +95,26 @@ are appropriate at all.
    too late.
 5. **For a brief**, state the information hierarchy, most load-bearing first,
    and the claims it carries.
-6. **For slides**, state the argument beat per page and a page target. The
-   deck follows the argument, not the article's section order.
+6. **For slides/carousel or infographic/poster**, state intended audience,
+   consumption surface, rough scope/page-module target when useful, carried
+   claims, and what the artifact must accomplish. Do not independently write
+   the full surface sequence here. When one or more visual/spoken surfaces are
+   approved for the same article, hand this plan to `compile-visual-story` so
+   they share one beat graph.
 7. **For audio**, decide whether listening adds a useful consumption surface,
    identify audience/listening context and carried claims, and declare whether
-   the downstream narration is `free` or genuinely `timed`. Do not write the
-   spoken script here. A non-skipped audio decision hands off to
-   `compile-audio-script`, which owns the Article → listener-first rewrite.
-8. **For video and infographic**, justify against the priority order or skip.
-   These are low-ranked for reasons already recorded; a plan that promotes one
-   states why.
+   downstream narration is `free` or genuinely `timed`. Do not write the
+   spoken script here. A non-skipped audio decision ultimately hands off to
+   `compile-audio-script`, which owns the Article → listener-first rewrite. If
+   audio participates in a multi-surface story, `compile-visual-story` may
+   first provide the shared beat/dependency map; it does not replace the audio
+   compiler.
+8. **For video**, justify it against the priority order, state the intended
+   consumption context and carried claims, and identify whether the video is an
+   assembled visual story over planned static/audio artifacts. Do not create a
+   separate video outline here. Approved multi-surface video hands off through
+   `compile-visual-story` → visual/audio surface compilation →
+   `VIDEO-STORYBOARD.md` temporal assembly.
 9. **Attach lineage.** `article_ref` with both hashes, so anything built from
    this plan can be classified fresh, cosmetically stale, or materially stale
    without inspecting it.
@@ -113,6 +129,8 @@ are appropriate at all.
 - An audio plan describes purpose, carried claims, listening context, and any
   real timing constraint; it does not contain provider syntax or a finished
   narration script.
+- A multi-surface artifact decision is not a shared storyboard; beat sequencing
+  belongs to `compile-visual-story` when that Skill is needed.
 - The spec describes what the artifact must accomplish, never how a named tool
   should do it.
 - The plan carries `article_ref` with `content_hash` and `claims_hash`.
@@ -144,5 +162,8 @@ Run: `npm run validate:plan`.
 
 This Skill plans. It does not render, does not decide what the article argues,
 and does not publish. A plan is not an artifact, and an artifact is not an
-approval. For audio, it decides **whether and why** to build; `compile-audio-script`
-decides **how the finalized article becomes spoken structure**.
+approval. For audio, it decides **whether and why** to build;
+`compile-audio-script` decides **how the finalized article becomes spoken
+structure**. For approved multi-surface visual/video work,
+`compile-visual-story` decides **how those approved surfaces share one semantic
+beat graph**.

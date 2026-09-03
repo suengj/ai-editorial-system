@@ -70,6 +70,7 @@ intermediate editorial representation:
 ```text
 Canonical Article
 → listener-first audio plan
+→ compile-audio-script
 → Canonical Spoken Script
 → provider/model adapter
 → rendered audio
@@ -86,6 +87,62 @@ The provider-neutral script and audio QA contract live in
 TTS/model behavior is tracked separately in
 [`../benchmarks/AUDIO-TTS-PROVIDERS.md`](../benchmarks/AUDIO-TTS-PROVIDERS.md).
 A provider change therefore changes renderer lineage, not article semantics.
+
+## Shared visual-story compilation comes before multi-surface rendering
+
+When an article is approved for more than one visual/spoken derivative, do not
+ask each generator to summarize the article independently.
+
+Use one shared semantic compilation layer:
+
+```text
+Canonical Article + verified claims
+        ↓
+plan-artifacts
+        ↓
+Visual Story Plan / stable argument-beat graph
+        ↓
+┌────────────────┬──────────────────┬──────────────────┐
+│ spatial        │ sequential       │ spoken           │
+│ infographic    │ slides/carousel  │ audio beat map   │
+│ poster         │ scrolly          │                  │
+└────────────────┴──────────────────┴──────────────────┘
+        ↓                               ↓
+visual/image renderers        compile-audio-script
+                                      ↓
+                              Canonical Spoken Script
+                                      ↓
+                                  TTS adapter
+        └───────────────────────┬─────┘
+                                ↓
+                         timed storyboard
+                                ↓
+                         assembled video
+```
+
+The Visual Story Plan is **not a new artifact kind**. It is an internal
+compilation plan that maps verified claims and logical dependencies to stable
+`beat_id`s, then records how each planned surface uses those beats.
+
+This provides three guarantees:
+
+1. slide, infographic, audio, and video do not invent separate summaries;
+2. the same evidence/claim keeps one semantic identity across surfaces;
+3. a stale or defective beat can be rebuilt locally instead of forcing an
+   unrelated full-media reroll.
+
+The cross-surface contract lives in
+[`VISUAL-STORY-COMPILATION.md`](VISUAL-STORY-COMPILATION.md). Surface-specific
+rules live in [`SLIDES-AND-CAROUSELS.md`](SLIDES-AND-CAROUSELS.md),
+[`INFOGRAPHIC-AND-POSTER.md`](INFOGRAPHIC-AND-POSTER.md), and
+[`VIDEO-STORYBOARD.md`](VIDEO-STORYBOARD.md).
+
+`plan-artifacts` remains the authority for **whether** each artifact kind is
+worth building. `compile-visual-story` only runs for kinds that plan approved;
+it does not promote skipped media. `compile-audio-script` remains the authority
+for the final provider-neutral spoken package; the visual-story layer supplies
+shared beat/dependency constraints when audio participates in a multi-surface
+story.
 
 ## Citation behaviour
 
@@ -141,6 +198,10 @@ dependency. Before audio can move higher, the canonical spoken-script layer and
 at least one Korean-certified rendering adapter must show that claim fidelity,
 pronunciation, chunk continuity, and bounded regeneration work in practice.
 
+The visual-story compiler does not change the priority order. It reduces drift
+and duplicated reasoning **after** two or more approved surfaces need the same
+argument.
+
 ## What would change the order
 
 Recorded as `reprioritisation_criteria` so the order is revisable by evidence
@@ -154,5 +215,7 @@ rather than by preference:
 | RP-4 | A distribution artifact asserts an unverified claim | Stop adding kinds; claim carry-through is the blocker, not throughput |
 | RP-5 | A kind is consumed *instead of* the article rather than as a door to it | Demote it; the canonical article is the destination |
 | RP-6 | Generated imagery repeatedly requires unbounded prompt/revision loops | Fix image acceptance and routing before increasing image volume |
+| RP-7 | The same beat repeatedly drifts across slide/infographic/audio/video | Fix the Visual Story Plan / compiler boundary before increasing surface count |
+| RP-8 | Beat-local repair cannot avoid full video rerender | Treat compositor/manifest modularity as the implementation bottleneck before adding motion complexity |
 
 RP-4 and RP-5 are the two that would stop the roadmap rather than reorder it.
