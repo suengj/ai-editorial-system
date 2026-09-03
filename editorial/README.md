@@ -18,6 +18,7 @@ quality gates.
 | [`IMAGE-TEXT-RENDERING-PROFILES.md`](IMAGE-TEXT-RENDERING-PROFILES.md) | Modular text handling for generated images: external overlay, hybrid, integrated generated text, or no text | Visual generation extension |
 | [`DIAGRAMMATIC-VISUAL-LANGUAGE.md`](DIAGRAMMATIC-VISUAL-LANGUAGE.md) | Diagrammatic editorial styling, geometric character grammar, thumbnail adaptation, reusable prompt blocks, and style QA | Visual language extension |
 | [`ARTICLE-ILLUSTRATION-ROUTING.md`](ARTICLE-ILLUSTRATION-ROUTING.md) | Article thesis → information type → renderer → illustration family routing, plus the current suengj.com Editorial Research Graphic profile | Article illustration extension |
+| [`ARTICLE-VISUAL-PUBLICATION-HANDOFF.md`](ARTICLE-VISUAL-PUBLICATION-HANDOFF.md) | Rendered article visual → semantic placement, external publication text, accessibility, lineage, and publication-layer handoff | Article illustration extension |
 | [`AUDIO-SCRIPT.md`](AUDIO-SCRIPT.md) | Article-to-spoken-script recompilation, clean narration vs delivery state, pronunciation, semantic segmentation/timing, bounded revision, and rendered-audio QA | Audio generation extension |
 | [`presentation.md`](presentation.md) | Semantic block grammar — what a block means, never how it looks | AES-P1.6 (SUE-464) |
 | [`HITL-PROTOCOL.md`](HITL-PROTOCOL.md) | Human review stages, approval boundary, Final ≠ Published | AES-P5.1 (SUE-457) |
@@ -82,6 +83,14 @@ abstract theses to restrained conceptual illustration. It also records the
 current suengj.com **Editorial Research Graphic** publication profile so future
 article sessions do not have to reconstruct the visual direction from chat
 memory.
+
+`ARTICLE-VISUAL-PUBLICATION-HANDOFF.md` closes the next boundary after rendering:
+it keeps mutable article/section titles, dates, captions, citations, and UI copy
+outside generated artwork; expresses placement through semantic article anchors;
+and hands accessibility, lineage, and renderer-neutral asset identity to the
+publication repository. Binary storage and transport remain publication
+implementation details, so Git-native assets can later move to object storage
+without changing the editorial meaning.
 
 `AUDIO-SCRIPT.md` applies the same boundary to speech. This repository decides
 how a verified article becomes a listener-first canonical package: clean
