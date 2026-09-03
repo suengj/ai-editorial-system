@@ -78,16 +78,25 @@ protected spans cannot be checked, and an unchecked polish is a rewrite.
    than divide, paragraphs that only preview the next one.
 3. **Tighten rhythm and density** per `voice.md`. Three to six sentences a
    paragraph; the point, then the mechanism, then the consequence.
-4. **Reduce listification** where prose carries the argument better. A list is
+4. **For Korean prose, rewrite toward native thought-flow**, per `voice.md`'s
+   failure-signature list: let a subject drop where context already carries
+   it; prefer a verb to a stacked abstract noun; reorder or split a clause
+   still carrying English discourse order; remove a mechanical connective
+   rather than swap it for a synonym. This is a preference, not a rewrite
+   mandate — a dense hypotactic sentence (`voice.md` §5) is not translationese
+   for being long, and uneven rhythm across paragraphs stays if the thought
+   needs it. Do not manufacture a house formula from these moves; apply each
+   only where the draft actually shows the signal.
+5. **Reduce listification** where prose carries the argument better. A list is
    right for parallel items and wrong for a chain of reasoning.
-5. **Remove rhetorical inflation** — unsupported certainty, absolutes,
+6. **Remove rhetorical inflation** — unsupported certainty, absolutes,
    openings and closings banned by `voice.md`.
-6. **Re-extract the protected spans and compare.** Identical multisets, or the
+7. **Re-extract the protected spans and compare.** Identical multisets, or the
    pass has failed.
-7. **Write the edit summary** for anything a reader could call
+8. **Write the edit summary** for anything a reader could call
    meaning-adjacent: a removed qualifier, a reordered claim, a merged
    paragraph.
-8. **Hand off** to human review.
+9. **Hand off** to human review.
 
 ## Invariants
 

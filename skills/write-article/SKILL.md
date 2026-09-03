@@ -77,22 +77,26 @@ structure default and the evidence burden.
 
 1. **Start from the thesis**, not from the first source. The opening paragraph
    states the position or the question, per `voice.md`.
-2. **Build sections around moves in the argument** — a distinction, a
+2. **For a Korean piece, reason in Korean.** Form the argument's logic
+   directly in Korean sentences, not in an English reasoning outline
+   translated afterward. `editorial-polish` catches remaining translationese;
+   it should not be doing the work of forming the thought.
+3. **Build sections around moves in the argument** — a distinction, a
    mechanism, a consequence — not around sources. Where a paragraph draws on
    more than one source, that is usually the paragraph doing the real work.
-3. **Mark the register.** Sourced fact, our interpretation, and hypothesis are
+4. **Mark the register.** Sourced fact, our interpretation, and hypothesis are
    distinguishable sentence by sentence, in wording as well as structure.
-4. **Let the evidence visuals argue.** A chart built during research may
+5. **Let the evidence visuals argue.** A chart built during research may
    reorder the piece or change its conclusion; that is what it was for. If a
    visual contradicts the drafted claim, the claim is wrong, not the visual.
-5. **Carry the anchors.** Every claim keeps its citation from the claim set.
+6. **Carry the anchors.** Every claim keeps its citation from the claim set.
    Anchors are copied, never re-derived.
-6. **Use an analogue only if it sharpens the thesis** and is itself verified.
+7. **Use an analogue only if it sharpens the thesis** and is itself verified.
    An unverified analogue is a decorative claim.
-7. **Report the gaps.** A connective claim the argument needs and the claim
+8. **Report the gaps.** A connective claim the argument needs and the claim
    set lacks goes back to `verify-claims`. It is not written as though
    supported, and it is not smoothed into a hedge.
-8. **Optionally assign semantic roles.** Where a passage's information
+9. **Optionally assign semantic roles.** Where a passage's information
    function is not prose — a comparison, a caution, an ordered procedure — it
    may carry a role from the presentation vocabulary. This is optional, it is
    never required by length, and the plan must satisfy the losslessness rule:
@@ -100,7 +104,7 @@ structure default and the evidence burden.
 
    Roles only. No colour, no CSS, no component name — the schema cannot
    express them and the validator rejects them in the text.
-9. **Hand off** to `editorial-polish` in `drafted` state.
+10. **Hand off** to `editorial-polish` in `drafted` state.
 
 ## Invariants
 

@@ -25,6 +25,46 @@ English term faster than any translation of it.
 English-language pieces exist and are terser and more declarative. Same
 principles, fewer connectives.
 
+### Native Korean, not translated Korean
+
+Korean-first is a composition rule, not just a language choice: the thought
+must be formed in Korean, not reasoned out in an English outline and then
+translated. A sentence can be grammatically correct and still read as
+translated when the discourse order, the subject handling, or the connective
+density is English-shaped rather than Korean-shaped.
+
+The following are signals, not banned phrases. Any one of them can appear
+once where the sentence genuinely needs it. The defect is repetition, or an
+English-shaped discourse order running underneath correct Korean grammar:
+
+> ~라는 점에서 · ~의 관점에서 · 이를 통해 · 이러한 맥락에서 · 결국 중요한 것은 ·
+> 한편/반면/따라서 used as mechanical transitions rather than earned turns ·
+> "A는 B를 의미한다" repeated as English-style declarative scaffolding ·
+> abstract noun stacks (`구조적 변화의 전이 가능성에 대한 판단`) ·
+> excessive ~에 있어, ~에 대한, ~을 통해 nominalization · a subject restated
+> where Korean would let it drop · English clause order preserved when Korean
+> information flow wants a different sequence
+
+Preferred instead: let the subject stay implied once context carries it;
+prefer a verb to a stacked noun; reorder or split a clause so the Korean
+sentence follows its own order rather than the English original's; drop a
+connective rather than swap it for a synonym; let a sentence end plainly
+without an attached analytical conclusion; state the causal relation directly
+rather than framing it.
+
+None of this is a formula to apply uniformly. A dense, hypotactic sentence
+(§5) is not translationese merely for being long, and a technical term
+carried in English (above) is not translationese merely for being foreign.
+The test is whether the thought reads as though someone thought it in
+Korean.
+
+This whole list is judgement, checked by a human or a reviewing model.
+`quality-gates.json`'s `G-13` gate mechanically flags genuine repetition of
+five of these strings only (`라는 점에서`, `다는 점에서`, `의 관점에서`,
+`이러한 맥락에서`, `결국 중요한 것은`) — `이를 통해`, `~에 있어`, and `~에 대한`
+are deliberately left ungated, because they occur too often in ordinary
+technical Korean to flag without reading the sentence.
+
 ## 2. Restrained first person
 
 The author is present but not performing. Positions are stated as positions.
@@ -35,6 +75,22 @@ Not: 놀랍게도, 정말 흥미로운 점은, 여러분도 아시다시피.
 
 The register is that of someone thinking carefully in public, not someone
 addressing an audience.
+
+This is the same principle as quiet authority: authority is demonstrated
+through observation, evidence, mechanism, distinction, judgment, and
+uncertainty handled well — never through self-positioning. First person
+stays valid exactly where it identifies ownership of a judgment, a decision,
+or a question; it is not valid where the sentence exists mainly to establish
+that the author is qualified to have an opinion.
+
+> Not: 전문가의 관점에서 보면 · 제가 주목하는 핵심은 · 이 글에서는 심층적으로
+> 분석한다 · 전략적으로 중요한 시사점은 · "I study..." / "I specialize in..."
+> when the sentence's only job is to establish authority rather than state a
+> position.
+
+The distinction is not the presence of the first person, or of a claim to
+depth — it is whether the sentence does work (states a position, owns an
+uncertainty) or performs one (announces that work is about to happen).
 
 ## 3. Distinctions are the characteristic move
 

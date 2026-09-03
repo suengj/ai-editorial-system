@@ -74,6 +74,22 @@
       ]
     },
     {
+      "id": "G-13",
+      "name": "translationese-scaffold",
+      "severity": "flag",
+      "rationale": "SUE-523. None of these strings is a banned phrase; attributing a viewpoint (~의 관점에서), naming a cause (~다는 점에서), or framing a stake (결국 중요한 것은) is ordinary Korean once, each. This gate keys on repetition of the same scaffold, which is narrower than voice.md's own test — voice.md flags repetition OR an English-shaped discourse order running underneath correct Korean grammar; several different scaffolds used once each, and discourse order generally, are deliberately outside what this gate can see (voice.md and quality-gates.md document that gap; the rubric's E-13 carries it as judgement). It fires only when (a) the total across the piece clears the threshold, (b) at least one individual string repeats, and (c) that threshold scales up for a longer piece, so a handful of legitimate one-off uses spread across many paragraphs cannot sum to a false positive. threshold: 4, not 3 — floor 3 still fired on two measured idiomatic three-paragraph passages (contrastive viewpoint attribution to two named parties; an ordinary causal connective used twice) that are not translationese. Deliberately narrow: the most countable discourse-scaffolding strings, chosen to be checkable without judging whether a single use was earned.",
+      "scaffoldPatterns": [
+        "라는 점에서",
+        "다는 점에서",
+        "의 관점에서",
+        "이러한 맥락에서",
+        "결국 중요한 것은"
+      ],
+      "threshold": 4,
+      "minRepeatedPatternCount": 2,
+      "minRatePerParagraph": 0.25
+    },
+    {
       "id": "G-10",
       "name": "formulaic-sectioning",
       "severity": "flag",

@@ -217,6 +217,18 @@
         "no raw HTML, CSS, or renderer component name leaks from Writer output",
         "the plain-Markdown fallback is complete"
       ]
+    },
+    {
+      "id": "E-13",
+      "class": "editorial",
+      "name": "korean-naturalness",
+      "asks": "Does the Korean read as though the thought was formed in Korean, rather than reasoned in English and translated?",
+      "evidence": "Quote a sentence carrying English-shaped discourse order, subject repetition, or nominal stacking, or confirm none is present.",
+      "decided_by": [
+        "gate:translationese-scaffold"
+      ],
+      "mechanical": "partial",
+      "note": "The mechanical gate catches repeated discourse-scaffolding strings only. Subject omission, verb-forward rewriting, and overall native thought-flow are judgement, per voice.md's caution against a Korean-naturalness lint."
     }
   ],
   "regression_rule": {

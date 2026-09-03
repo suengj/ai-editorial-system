@@ -101,6 +101,59 @@ export function runGates(body, article = null, gates = loadGates(), profile = nu
     }
   }
 
+  // --- G-13 translationese scaffold frequency ------------------------------
+  // Counted, not first-match: a single occurrence of any of these strings is
+  // ordinary Korean. This gate keys on repetition of the SAME scaffold, which
+  // is narrower than voice.md's own test (repetition OR an English-shaped
+  // discourse order running underneath correct Korean grammar) — a piece
+  // using 의 관점에서, 이러한 맥락에서, and 결국 중요한 것은 once apiece is
+  // unremarkable Korean and stays silent here, and English-shaped discourse
+  // order generally is invisible to this gate regardless of what it counts.
+  // That is a deliberate, documented gap (voice.md, quality-gates.md), not a
+  // claim that this gate implements voice.md's full test. This block is kept
+  // out of the generic per-pattern loop above, which fires on first match.
+  //
+  // Two things are stripped before counting, neither of which is prose the
+  // gate should judge: HTML comments (a fixture's own documentation header
+  // may name the signature strings it illustrates) and protected quotation
+  // spans (a hit inside a source quotation cannot be fixed without altering
+  // a span `polish-invariants` — reject severity — forbids changing; the
+  // regex mirrors the `quotations` class in polish-invariants.mjs). The
+  // paragraph count used for length-scaling is taken from the same
+  // comment-stripped text the scaffold count uses — a fixture's own header
+  // must not inflate the denominator and raise its own effective threshold.
+  {
+    const gate = gates.gates.find((g) => g.name === 'translationese-scaffold');
+    if (gate) {
+      const noComments = body.replace(/<!--[\s\S]*?-->/g, '');
+      const prose = noComments.replace(/"[^"\n]{4,}"|“[^”\n]{4,}”|「[^」\n]{4,}」/g, '');
+      const prosePars = paragraphs(noComments);
+      const counts = new Map();
+      let total = 0;
+      for (const s of gate.scaffoldPatterns ?? []) {
+        const count = prose.split(s).length - 1;
+        if (count > 0) { total += count; counts.set(s, count); }
+      }
+      const maxRepeat = counts.size > 0 ? Math.max(...counts.values()) : 0;
+      // A flat count penalises a long piece unfairly: three legitimate,
+      // distinct one-off uses spread across forty paragraphs is nothing, but
+      // the same three crowded into four paragraphs is exactly the shape
+      // this gate exists to catch. The threshold scales with length; it
+      // never drops below the flat floor for a short piece.
+      const effectiveThreshold = Math.max(
+        gate.threshold,
+        Math.ceil(prosePars.length * (gate.minRatePerParagraph ?? 0)),
+      );
+      if (total >= effectiveThreshold && maxRepeat >= (gate.minRepeatedPatternCount ?? 1)) {
+        findings.push(finding(
+          gate.name, gate.severity,
+          `${total} occurrences of translationese discourse-scaffolding, including one string repeated ${maxRepeat}× — repetition of the same scaffold, not merely several different ones used once, is the defect`,
+          [...counts.entries()].map(([s, n]) => `${s}×${n}`).join(', '),
+        ));
+      }
+    }
+  }
+
   // --- G-09 evidence density ----------------------------------------------
   {
     const t = gates.thresholds.evidenceDensity;

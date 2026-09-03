@@ -77,6 +77,31 @@
       }
     },
     {
+      "id": "G-04",
+      "kind": "golden",
+      "path": "golden/G-04-korean-native.md",
+      "content_type": "note",
+      "origin": "synthetic",
+      "why": "Seven calibration cases (SUE-523): the same facts and argument as N-04-translationese, expressed in native Korean discourse order. Cases 1-6 are sentence-level, one failure signature each; case 7 is paragraph-length, reordering sentences relative to each other rather than words within one sentence, since sentence-level cases alone cannot demonstrate discourse order. Every rewrite keeps an explicit subject as an antecedent before dropping it later, restructures rather than swaps scaffolding synonyms, and adds no claim the source does not make. Counterpart to N-04, not a paired regression — see N-04's header for the per-case failure signature and rewrite rationale.",
+      "counterpart": "N-04",
+      "dimensions_tested": [
+        "korean-naturalness",
+        "voice-fit"
+      ],
+      "anti_patterns_avoided": [
+        "translationese discourse scaffolding",
+        "abstract noun stacking",
+        "subject dropped with no antecedent",
+        "English clause order and English-shaped discourse order preserved under correct Korean grammar",
+        "scaffolding swapped for a synonym instead of removed",
+        "claim strengthened or made proportional beyond what the source states"
+      ],
+      "expected": {
+        "hard_fail": false,
+        "gate_findings": 0
+      }
+    },
+    {
       "id": "N-01",
       "kind": "negative",
       "path": "negative/N-01-sue-417-shape.md",
@@ -154,6 +179,54 @@
       "expected": {
         "hard_fail": true,
         "regression_against": "G-01"
+      }
+    },
+    {
+      "id": "N-04",
+      "kind": "negative",
+      "path": "negative/N-04-translationese.md",
+      "content_type": "note",
+      "origin": "synthetic",
+      "why": "Same seven facts and argument as G-04-korean-native, expressed with repeated translationese discourse scaffolding named in voice.md's 'Native Korean, not translated Korean' section — ~라는 점에서 / ~다는 점에서 / ~의 관점에서 / 이러한 맥락에서 / 결국 중요한 것은, abstract noun stacking, subject repetition, and preserved English discourse order. Demonstrates that G-13 fires on genuine repetition of the same scaffold, not on several different ones each used once (see quality-gates.md's G-13 note).",
+      "counterpart": "G-04",
+      "dimensions_tested": [
+        "korean-naturalness"
+      ],
+      "failure_modes": [
+        "~라는 점에서 / ~다는 점에서 / ~의 관점에서 stacked as third-party-viewpoint and justification scaffolding (not author self-positioning)",
+        "이를 통해 / 이러한 맥락에서 standing in for a direct causal clause",
+        "결국 중요한 것은 scaffolding wrapping an abstract noun stack around a hidden verb",
+        "mechanical 따라서/한편 glue plus \"A는 B를 의미한다\" repeated as English-style declarative scaffolding",
+        "~에 대한 / ~에 있어 / ~을 통해 nominal stacking preserving English clause order",
+        "a subject restated across three consecutive sentences instead of dropped after first mention",
+        "English essay discourse order (general claim, self-referential preview, data, conclusion) instead of Korean-shaped sentence order within one paragraph"
+      ],
+      "expected": {
+        "hard_fail": false,
+        "caught_by": "gate:translationese-scaffold",
+        "note": "flag-severity only — Korean naturalness is judgement, per voice.md and rubric dimension E-13; this fixture is not expected to hard-fail"
+      }
+    },
+    {
+      "id": "N-05",
+      "kind": "negative",
+      "path": "negative/N-05-over-applied-voice.md",
+      "content_type": "note",
+      "origin": "synthetic",
+      "why": "The specific guard against the risk SUE-523's editorial-polish changes create: subject omission, verb-forward rewriting, de-nominalization, and connective removal, each applied past the point voice.md recommends. Deliberately gate-invisible — every defect here is a judgement failure (ambiguous referent, flattened uncertainty, chopped rhythm), not a mechanical one, so no gate in quality-gates.json is expected to fire.",
+      "dimensions_tested": [
+        "korean-naturalness",
+        "voice-fit"
+      ],
+      "failure_modes": [
+        "subject dropped between two plausible-but-unresolved antecedents (팀 vs 벤더), realistic rather than a caricature — a careful reader has to stop and work out who acted",
+        "stated uncertainty (원인은 확정되지 않았다) flattened into a confident claim one sentence later with no new evidence",
+        "hypotactic sentences chopped into clipped, efficient-sounding status-log fragments, against voice.md §5, without being a strawman no polish pass would emit"
+      ],
+      "expected": {
+        "hard_fail": false,
+        "gate_findings": 0,
+        "note": "documented as a case no gate should reach — this is what editorial-polish must not become, not a positive example of anything"
       }
     }
   ],

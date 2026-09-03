@@ -36,6 +36,7 @@ const GATE_MAP = {
   'E-7': ['headline-thesis-fidelity'],
   'E-8': ['overclaim', 'empty-hedge'],
   'E-9': ['prompt-echo', 'duplicate-paragraph', 'scaffolding-leak', 'formulaic-sectioning', 'filler-phrase'],
+  'E-13': ['translationese-scaffold'],
 };
 
 /**
