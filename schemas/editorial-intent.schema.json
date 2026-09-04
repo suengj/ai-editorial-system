@@ -1,0 +1,265 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://suengj.com/schemas/editorial-intent.schema.json",
+  "title": "Editorial Intent",
+  "description": "The structured result of natural-language intake (AES-V2.1 / SUE-559) expressed over five independent axes (AES-V2.2 / SUE-560). A human writes sentences; an agent writes this. Every axis value carries a resolution state, and only `confirmed` values may ever inform durable calibration.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version", "intent_id", "created_at", "request",
+    "axes", "inputs", "clarification", "status"
+  ],
+  "properties": {
+    "schema_version": { "const": "2.0.0" },
+    "intent_id": {
+      "description": "Stable id for this intake. Lineage anchor: every downstream frame, plan, artifact, and feedback record cites it.",
+      "type": "string",
+      "pattern": "^intent:[0-9]{4}-[0-9]{2}-[0-9]{2}-[a-z0-9]+(-[a-z0-9]+)*$"
+    },
+    "created_at": { "type": "string", "format": "date-time" },
+
+    "request": {
+      "description": "What the human actually said, kept verbatim. The intake is auditable only if the utterance survives next to its interpretation.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["utterance", "language"],
+      "properties": {
+        "utterance": { "type": "string", "minLength": 1 },
+        "language": {
+          "description": "BCP-47 language of the request itself. Not the output language — that is constraints.output_language.",
+          "type": "string",
+          "pattern": "^[a-z]{2}(-[A-Za-z0-9]{2,8})*$"
+        },
+        "received_by": {
+          "description": "Agent runtime that performed intake, e.g. `claude-code`, `chatgpt`. Recorded so an intake defect can be attributed.",
+          "type": "string"
+        },
+        "received_at": { "type": "string", "format": "date-time" }
+      }
+    },
+
+    "axes": {
+      "description": "The five independent axes. They do not collapse into one another: a transformation is not a content type, a surface is not an audience, an artifact is not a style.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["transformation", "content_type", "audience", "surface", "artifacts"],
+      "properties": {
+        "transformation": { "$ref": "#/$defs/axis_value" },
+        "content_type": { "$ref": "#/$defs/axis_value" },
+        "audience": { "$ref": "#/$defs/audience_axis" },
+        "surface": { "$ref": "#/$defs/axis_value" },
+        "artifacts": {
+          "description": "One or more requested artifacts. Empty means the artifact axis is still unresolved and must appear in clarification.required.",
+          "type": "array",
+          "items": { "$ref": "#/$defs/artifact_request" }
+        }
+      }
+    },
+
+    "inputs": {
+      "description": "Source and Reference are separate lists because they are separate kinds of authority. A reference can never establish a fact; a source can never dictate a composition.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["sources", "references"],
+      "properties": {
+        "sources": { "type": "array", "items": { "$ref": "#/$defs/source_input" } },
+        "references": { "type": "array", "items": { "$ref": "#/$defs/reference_input" } }
+      }
+    },
+
+    "constraints": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "output_language": { "type": "string", "pattern": "^[a-z]{2}(-[A-Za-z0-9]{2,8})*$" },
+        "max_source_age_days": {
+          "description": "Freshness ceiling when the request is time-sensitive. Absent means the content-type profile decides.",
+          "type": "integer",
+          "minimum": 0
+        },
+        "length_hint": { "type": "string" },
+        "deadline": { "type": "string", "format": "date" },
+        "must_cover": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+        "must_avoid": { "type": "array", "items": { "type": "string", "minLength": 1 } }
+      }
+    },
+
+    "overrides": {
+      "description": "Values the human set for THIS RUN only. Task-scoped by construction — an override is never durable preference, and V2.10 calibration may not read this array.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["field", "value", "stated_by"],
+        "properties": {
+          "field": { "type": "string", "minLength": 1 },
+          "value": { "type": ["string", "number", "boolean", "null"] },
+          "stated_by": { "enum": ["human", "upstream_contract"] },
+          "rationale": { "type": "string" }
+        }
+      }
+    },
+
+    "clarification": {
+      "description": "The exception path. Questions are asked only when a missing field would materially change thesis, audience fit, transformation fidelity, artifact route, publication constraint, or cost.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["required", "asked", "resolution"],
+      "properties": {
+        "required": {
+          "description": "Axis or constraint paths currently in state `missing_material`. Non-empty forces status `blocked_on_clarification`.",
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "asked": {
+          "description": "Normally 0-3 entries. An intake that asks four or more questions has failed its own gate and must record why in `note`.",
+          "type": "array",
+          "items": { "$ref": "#/$defs/question" }
+        },
+        "resolution": {
+          "description": "proceeded: nothing material was missing. answered: the human supplied the missing values. default_authorized: the human said `알아서 해` / `use default`, which authorizes `assumed` for this run and nothing beyond it. unresolved: still blocked.",
+          "enum": ["proceeded", "answered", "default_authorized", "unresolved"]
+        },
+        "note": { "type": "string" }
+      }
+    },
+
+    "calibration_ref": {
+      "description": "The calibration version active at intake (AES-V2.10). Recorded so a later verdict can be attributed to the calibration that produced it rather than to whichever is current.",
+      "type": ["string", "null"],
+      "pattern": "^calibration:[a-z0-9]+(-[a-z0-9]+)*@v[0-9]+$"
+    },
+
+    "status": {
+      "description": "ready: the intent may drive framing/planning. blocked_on_clarification: at least one material field is unresolved. declined: intake refused the request and recorded why in clarification.note.",
+      "enum": ["ready", "blocked_on_clarification", "declined"]
+    }
+  },
+
+  "$defs": {
+    "resolution_state": {
+      "description": "confirmed: the human said it, or an authoritative upstream contract did — the only state that may inform durable calibration. assumed: safely inferred for this run; never durable preference evidence. missing_material: absent and materially outcome-changing.",
+      "enum": ["confirmed", "assumed", "missing_material"]
+    },
+
+    "axis_value": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["value", "state"],
+      "properties": {
+        "value": {
+          "description": "Profile id within the matching axis directory under editorial/profiles/. null only when state is missing_material.",
+          "type": ["string", "null"],
+          "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+        },
+        "state": { "$ref": "#/$defs/resolution_state" },
+        "profile_ref": {
+          "description": "Repository path of the resolved profile. Absent when unresolved.",
+          "type": "string",
+          "pattern": "^editorial/profiles/"
+        },
+        "basis": {
+          "description": "Why this value. For `confirmed`, the span of the utterance or the upstream contract that fixed it. For `assumed`, the inference. Required in practice for audit; a value with no basis cannot be routed when it turns out wrong.",
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+
+    "audience_axis": {
+      "description": "Audience is the one axis shared by every modality: it changes explanation depth in text, information density in visuals, and pace and assumed knowledge in audio. A preset plus task-specific trait overrides, never a rigid bucket.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["value", "state"],
+      "properties": {
+        "value": { "type": ["string", "null"], "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$" },
+        "state": { "$ref": "#/$defs/resolution_state" },
+        "profile_ref": { "type": "string", "pattern": "^editorial/profiles/audience/" },
+        "basis": { "type": "string", "minLength": 1 },
+        "traits": {
+          "description": "Task-specific deviations from the preset. Only traits that materially change delivery belong here — demographics that change nothing are ceremonial and are omitted.",
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "expertise": { "enum": ["novice", "informed", "practitioner", "expert"] },
+            "domain_familiarity": { "type": "string" },
+            "purpose": { "type": "string" },
+            "attention_context": { "enum": ["glance", "reading", "study", "listening"] },
+            "jargon_tolerance": { "enum": ["none", "low", "moderate", "high"] },
+            "occupation": { "type": "string" },
+            "life_stage": {
+              "description": "Recorded only when it materially affects communication — a child audience changes vocabulary and example choice; an age number that changes nothing does not belong here.",
+              "type": "string"
+            },
+            "accessibility": { "type": "array", "items": { "type": "string", "minLength": 1 } }
+          }
+        }
+      }
+    },
+
+    "artifact_request": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["value", "state"],
+      "properties": {
+        "value": {
+          "description": "Artifact profile id, namespaced by modality: `text/article`, `visual/body-infographic`, `audio/dialogue`. The modality prefix is what keeps text, visual, and audio generation contracts separate.",
+          "type": ["string", "null"],
+          "pattern": "^(text|visual|audio|video)/[a-z0-9]+(-[a-z0-9]+)*$"
+        },
+        "state": { "$ref": "#/$defs/resolution_state" },
+        "profile_ref": { "type": "string", "pattern": "^editorial/profiles/artifact/" },
+        "basis": { "type": "string", "minLength": 1 },
+        "count": { "type": "integer", "minimum": 1 }
+      }
+    },
+
+    "source_input": {
+      "description": "Material that can establish fact. Referenced by id and never copied into this repository.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source_id", "state"],
+      "properties": {
+        "source_id": { "type": "string", "minLength": 1 },
+        "state": { "$ref": "#/$defs/resolution_state" },
+        "uri": { "type": "string" },
+        "note": { "type": "string" }
+      }
+    },
+
+    "reference_input": {
+      "description": "Material that can inform craft. Carries no factual authority: an evaluation of a reference may never become a verified claim.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["ref_id", "state"],
+      "properties": {
+        "ref_id": { "type": "string", "pattern": "^ref:[a-z0-9]+(-[a-z0-9]+)*$" },
+        "state": { "$ref": "#/$defs/resolution_state" },
+        "modality": { "enum": ["text", "visual", "audio", "video"] },
+        "dimensions": {
+          "description": "Which dimensions of this reference the human actually wants applied. `이 reference는 정보 구조는 좋은데 색감은 싫어` becomes dimensions plus a task override, not wholesale imitation.",
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "note": { "type": "string" }
+      }
+    },
+
+    "question": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["field", "question"],
+      "properties": {
+        "field": { "type": "string", "minLength": 1 },
+        "question": { "type": "string", "minLength": 1 },
+        "options": {
+          "description": "Choices with a marked default beat an open prompt. A clarification with no options is a defect unless the field genuinely has an open range.",
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "default": { "type": "string" },
+        "answer": { "type": ["string", "null"] }
+      }
+    }
+  }
+}
