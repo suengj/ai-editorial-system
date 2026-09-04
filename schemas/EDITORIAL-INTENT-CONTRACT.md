@@ -92,6 +92,25 @@ cost.** Concretely:
   states this directly (`artifacts` empty means the axis is unresolved), and
   `validate-intent.mjs` enforces it as a `missing_material` case even with no
   explicit `state` field to check.
+- A `references[]` entry whose `ref_id` does not resolve against
+  `references/catalog.json` is material — intake may not invent a `ref_id`
+  and present it as settled.
+
+**This test is executable, not a judgement call.** A portability probe
+(`evals/system/portability/2026-09-05-intra-family-capability.md`, P2/P3)
+found a capable model substitute a plausibility read for the content-type
+comparison above and invent a justification the contract never states, and
+found three routes produce three different clarification sets from the same
+utterance because nothing enumerated which fields were material. Both are
+the same defect: a rule stated in prose but left to be inferred.
+`scripts/lib/materiality-core.mjs` computes it instead, reading exactly the
+data named above — a content profile's own `evidence_burden`, an artifact's
+excluded `kind` under another profile's `artifacts.inappropriate`,
+`references/catalog.json`, an audience profile's own `modality_effects` —
+and returns, per field, whether it is material and the reason with the
+actual numbers compared. `scripts/validate-intent.mjs` fails closed
+(`materiality-computed-unlisted`) when a field it reports material is left
+`assumed` and absent from `clarification.required`.
 
 Passing the materiality test produces **1–3 questions**, each with `options`
 and a marked `default` (`$defs/question`) — a menu, not an open prompt.
@@ -143,6 +162,7 @@ validation passes:
 | an `axes.artifacts[]` value's modality prefix (`visual/…`, `audio/…`, …) matches its resolved profile's own `modality` field | `artifact-modality-mismatch` |
 | `clarification.asked.length > 3` requires a non-empty `clarification.note` | `clarification-gate-exceeded` |
 | every `confirmed`/`assumed` axis or artifact value carries a non-empty `basis` | `missing-basis` |
+| a field `materiality-core.mjs` computes as material is `confirmed`, or under `default_authorized`, or appears in `clarification.required` | `materiality-computed-unlisted` |
 
 A source id placed in `inputs.references` is caught earlier, structurally:
 `reference_input.ref_id` requires the `ref:` prefix

@@ -12,6 +12,7 @@ import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { validate } from './json-schema-lite.mjs';
 import { loadAxes, loadAxisProfiles, PROFILES_ROOT } from './profile-core.mjs';
+import { evaluateContentTypeMateriality, evaluateReferenceMateriality } from './materiality-core.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 export const SCHEMA_PATH = resolve(HERE, '../../schemas/editorial-intent.schema.json');
@@ -29,6 +30,7 @@ export const CODES = Object.freeze({
   ARTIFACT_MODALITY: 'artifact-modality-mismatch',
   CLARIFICATION_GATE: 'clarification-gate-exceeded',
   MISSING_BASIS: 'missing-basis',
+  MATERIALITY_UNLISTED: 'materiality-computed-unlisted',
 });
 
 // Scalar axis fields, mapped to the axis id in editorial/profiles/axes.json.
@@ -156,6 +158,34 @@ export function validateIntent(intent, schema = loadSchema(), { axes = loadAxes(
       }
     }
   });
+
+  // --- computed materiality must agree with clarification.required --------
+  // AES-V2.11 (SUE-569), P2/P3: schemas/EDITORIAL-INTENT-CONTRACT.md states a
+  // numeric materiality test; materiality-core.mjs makes it executable. A
+  // field the repository's own data proves material may not be silently
+  // `assumed` and left out of `clarification.required`. `confirmed` is
+  // exempt — confirmation means the utterance or an upstream contract
+  // already settled the question, so materiality is moot by then.
+  // `default_authorized` is exempt too: per the contract, that resolution's
+  // entire effect is converting a would-be-`missing_material` field into a
+  // sanctioned `assumed` for this run, which is precisely the case this
+  // check would otherwise flag.
+  const defaultAuthorized = clarification.resolution === 'default_authorized';
+  const checkComputedMaterial = (path, state, result) => {
+    if (!result.material) return;
+    if (state === 'confirmed') return;
+    if (defaultAuthorized) return;
+    if (required.has(path)) return;
+    issues.push(issue(CODES.MATERIALITY_UNLISTED, path,
+      `computed material (${result.reason}) but "${path}" does not appear in clarification.required`));
+  };
+
+  const contentTypeResult = evaluateContentTypeMateriality(intent, { axes });
+  checkComputedMaterial('axes.content_type', axesValue.content_type.state, contentTypeResult);
+
+  for (const [i, refResult] of evaluateReferenceMateriality(intent).entries()) {
+    checkComputedMaterial(refResult.path, intent.inputs.references[i]?.state, refResult);
+  }
 
   // --- clarification.asked gate -------------------------------------------
   const asked = clarification.asked ?? [];

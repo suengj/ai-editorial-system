@@ -54,6 +54,7 @@ evidence:
     - schemas/examples/intent-blocked-clarification.example.json
     - schemas/examples/intent-default-authorized.example.json
     - schemas/examples/intent-reference-dimensions.example.json
+    - schemas/examples/intent-portability-p2-p3-agent-materials.example.json
 ---
 
 # intake-request
@@ -131,14 +132,32 @@ Exactly one Editorial Intent record. `status` is one of:
    The artifact list resolves the same way per requested artifact; an empty
    list is always `missing_material` for the whole axis — the schema's own
    description of `axes.artifacts` says so, and there is no safe default for
-   "produce nothing in particular."
+   "produce nothing in particular." Every `value` recorded on any axis is the
+   exact profile id (`information_density`, `visual/body-infographic`),
+   never a description of it (`"VISUAL / density"`, "an infographic about
+   density") — the portability probe's P4 finding: a paraphrase breaks any
+   downstream consumer keying on the id.
 
-3. **Apply the materiality test to every `missing_material` field before
-   deciding to ask.** A field is material only if getting it wrong would
-   change thesis, audience fit, transformation fidelity, artifact route,
-   publication constraint, or cost (spine §4). Worked examples of this
-   judgement live in `references/materiality-examples.md`, loaded only when
-   the call is not obvious from the axis descriptions alone.
+3. **Materiality is computed, not judged.** For content type and for a named
+   reference's resolvability, run `scripts/lib/materiality-core.mjs`
+   (`evaluateContentTypeMateriality`, `evaluateReferenceMateriality`,
+   `evaluateAudienceMateriality`, `evaluateArtifactMateriality`) rather than
+   reasoning about evidence burden by eye — a portability probe
+   (`evals/system/portability/2026-09-05-intra-family-capability.md`, P2/P3)
+   found a capable model substitute a plausibility call for the contract's
+   own numeric test and invent a justification the contract never states.
+   The module reads the same data `schemas/EDITORIAL-INTENT-CONTRACT.md`
+   already names — content profiles' `evidence_burden`, an artifact's
+   excluded `kind` under a profile's `artifacts.inappropriate`,
+   `references/catalog.json`, audience profiles' `modality_effects` — and
+   returns, per field, whether it is material and the computed reason with
+   the actual numbers compared. A field it reports material must appear in
+   `clarification.required` unless its state is `confirmed`
+   (`node scripts/validate-intent.mjs` fails closed on this,
+   `materiality-computed-unlisted`). What remains genuine model judgement is
+   recognizing *that* a phrase points at a reference or names a content
+   type at all — natural-language understanding the module cannot do —
+   never whether the resulting gap matters once recognized.
 
 4. **If nothing material is missing, set `status: ready` and stop asking.**
    `clarification.required` is empty, `clarification.asked` is empty,
@@ -224,11 +243,16 @@ This Skill **stops and returns `status: declined`**, with the reason in
 - The record validates against `schemas/editorial-intent.schema.json` and
   passes `node scripts/validate-intent.mjs` (schema plus the cross-field
   rules in `schemas/EDITORIAL-INTENT-CONTRACT.md`).
-- `node scripts/test-intent.mjs` proves the five worked examples in
+- `node scripts/test-intent.mjs` proves the worked examples in
   `evidence.fixtures` each resolve through a genuinely different path:
   zero-question proceed, confirmed child audience, blocked with two
   questions and defaults, `default_authorized` with several `assumed`
-  values, and a reference carrying `dimensions` plus a task override.
+  values, a reference carrying `dimensions` plus a task override, and the
+  portability probe's own two-gap case (content type plus an unresolved
+  reference) computed and both listed in `clarification.required`. The same
+  file also proves a computed-material content type left `assumed` and
+  unlisted — the probe's own P2 failure — now fails
+  `node scripts/validate-intent.mjs` closed.
 
 ## Authority
 

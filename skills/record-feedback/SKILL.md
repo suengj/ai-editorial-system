@@ -122,7 +122,11 @@ utterance; a compound utterance about two different failures is two runs.
    modality) using each layer's `owns` and `symptoms`, and check the `do_not`
    entries for the layers this utterance is adjacent to — those exist
    precisely to catch the misroute this utterance looks like at first read.
-   Do not restate the routing table; select from it.
+   Do not restate the routing table; select from it. `routing.layer` is
+   always the layer's exact id (`information_density`), never a description
+   of it (`"VISUAL / density"`) — a portability probe
+   (`evals/system/portability/2026-09-05-intra-family-capability.md`, P4)
+   found a paraphrased layer breaks any downstream consumer keying on the id.
 
 4. **Abstain rather than guess.** When two or more layers fit equally well,
    or the utterance does not contain enough to decide, set `routing.layer`

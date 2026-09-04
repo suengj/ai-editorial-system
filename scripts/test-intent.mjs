@@ -12,6 +12,7 @@ import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { CODES, loadSchema, validateIntent } from './lib/intent-core.mjs';
 import { loadAxes } from './lib/profile-core.mjs';
+import { evaluateContentTypeMateriality } from './lib/materiality-core.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const EXAMPLES = resolve(HERE, '../schemas/examples');
@@ -125,6 +126,27 @@ const cases = [
     m.status = 'published';
     return m;
   }],
+
+  // AES-V2.11 (SUE-569), P2 — portability probe 2026-09-05
+  // (evals/system/portability/2026-09-05-intra-family-capability.md). On
+  // this exact utterance, one Claude route (Haiku 4.5) marked content type
+  // `assumed`, cited the contract, and supplied a justification appearing
+  // nowhere in it. `ready` already requests visual/body-infographic with 3
+  // confirmed sources, so note.json is excluded (its artifacts.inappropriate
+  // lists "infographic") and the remaining plausible types spread by 2
+  // sources in min_sources — material by the contract's own numeric test.
+  // Reproduced here as `assumed` with no clarification entry: it must now
+  // fail closed rather than pass as Route A's response did.
+  ['P2 — Route A\'s content-type-assumed failure now fails closed', CODES.MATERIALITY_UNLISTED, () => {
+    const m = clone(ready);
+    m.axes.content_type = {
+      value: 'research',
+      state: 'assumed',
+      profile_ref: 'editorial/profiles/content/research.json',
+      basis: 'getting it wrong costs little to correct later; the risk direction is acceptable.',
+    };
+    return m;
+  }],
 ];
 
 for (const [name, expected, build, opts] of cases) {
@@ -151,6 +173,17 @@ console.log('planned/deferred profile references are notes, not failures');
   const { issues, notes } = validateIntent(ready, schema);
   check('text/article (planned) does not fail the run', issues.length === 0, JSON.stringify(issues));
   check('text/article (planned) is surfaced as a note', notes.some((n) => n.message.includes('text/article')));
+}
+
+// --- demonstration: the probe's own case, computed rather than judged -----
+console.log('\nportability probe 2026-09-05 — computed content-type materiality');
+{
+  const routeA = clone(ready);
+  routeA.axes.content_type = { value: 'research', state: 'assumed', profile_ref: 'editorial/profiles/content/research.json', basis: 'x' };
+  const p2p3 = load('intent-portability-p2-p3-agent-materials.example.json');
+  console.log(`  Route A shape (content_type assumed): material=${evaluateContentTypeMateriality(routeA).material}`);
+  console.log(`  reason: ${evaluateContentTypeMateriality(routeA).reason}`);
+  console.log(`  Route C shape (content_type missing_material, listed): material=${evaluateContentTypeMateriality(p2p3).material}, listed=${p2p3.clarification.required.includes('axes.content_type')}`);
 }
 
 console.log(failures === 0 ? '\nintent contract regression: PASS' : `\nintent contract regression: FAIL (${failures})`);

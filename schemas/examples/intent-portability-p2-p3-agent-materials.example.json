@@ -1,0 +1,84 @@
+{
+  "schema_version": "2.0.0",
+  "intent_id": "intent:2026-09-05-portability-p2-p3-agent-materials",
+  "created_at": "2026-09-05T16:00:00Z",
+  "request": {
+    "utterance": "P03에 모아둔 AI 에이전트 자료들 좀 묶어서 suengj.com에 올릴 글 하나 써줘. 독자는 AI 실무자야. 본문에 들어갈 인포그래픽도 하나 만들어줘. 아, 그리고 이 이미지 참고해 — 정보 배치는 좋은데 색감은 따라하지 마.",
+    "language": "ko",
+    "received_by": "claude-code",
+    "received_at": "2026-09-05T16:00:00Z"
+  },
+  "axes": {
+    "transformation": {
+      "value": "synthesize",
+      "state": "confirmed",
+      "profile_ref": "editorial/profiles/transformation/synthesize.json",
+      "basis": "utterance says \"자료들 좀 묶어서\" (bundle these materials together) into one piece — combining several source items around a new organizing question, the direct sense of transformation/synthesize.json."
+    },
+    "content_type": {
+      "value": null,
+      "state": "missing_material",
+      "basis": "nothing named a content type. Excluding academic and note (note.json's artifacts.inappropriate lists \"infographic\", and this request confirms visual/body-infographic) leaves news (min_sources=2), project (min_sources=1), promotional (min_sources=1), research (min_sources=3, requires contradicting), and view (min_sources=1) as plausible against the 3 confirmed sources on hand — a spread of 2 source(s) in min_sources, and a split over requiring a contradicting-role source, exceeds the contract's 1-source materiality threshold (schemas/EDITORIAL-INTENT-CONTRACT.md, \"the materiality test for clarification\"; computed by scripts/lib/materiality-core.mjs#evaluateContentTypeMateriality). Portability probe 2026-09-05, P2 — a Haiku 4.5 route (Route A) previously marked this `assumed` on the same utterance and was wrong to."
+    },
+    "audience": {
+      "value": "domain-practitioner",
+      "state": "confirmed",
+      "profile_ref": "editorial/profiles/audience/domain-practitioner.json",
+      "basis": "utterance says \"독자는 AI 실무자야\" (the reader is an AI practitioner) — matches audience/domain-practitioner.json directly."
+    },
+    "surface": {
+      "value": "suengj-com",
+      "state": "confirmed",
+      "profile_ref": "editorial/profiles/surface/suengj-com.json",
+      "basis": "utterance says \"suengj.com에 올릴\" (to post on suengj.com)."
+    },
+    "artifacts": [
+      {
+        "value": "text/article",
+        "state": "confirmed",
+        "basis": "utterance asks for a written piece (\"글 하나 써줘\"); text/article is the planned text-artifact id in the artifact axis registry (editorial/profiles/axes.json)."
+      },
+      {
+        "value": "visual/body-infographic",
+        "state": "confirmed",
+        "profile_ref": "editorial/profiles/artifact/visual-body-infographic.json",
+        "basis": "utterance says \"본문에 들어갈 인포그래픽도 하나 만들어줘\" (also make an infographic for the body).",
+        "count": 1
+      }
+    ]
+  },
+  "inputs": {
+    "sources": [
+      { "source_id": "src:drive:1P03AgentMaterialsA", "state": "confirmed", "note": "one of the P03 agent materials named in the utterance" },
+      { "source_id": "src:drive:1P03AgentMaterialsB", "state": "confirmed" },
+      { "source_id": "src:drive:1P03AgentMaterialsC", "state": "confirmed" }
+    ],
+    "references": []
+  },
+  "constraints": {
+    "output_language": "ko"
+  },
+  "overrides": [],
+  "clarification": {
+    "required": ["axes.content_type", "inputs.references"],
+    "asked": [
+      {
+        "field": "axes.content_type",
+        "question": "이 글은 어떤 콘텐츠 유형인가요? (근거 부담이 크게 달라집니다)",
+        "options": ["news", "project", "promotional", "research", "view"],
+        "default": "project",
+        "answer": null
+      },
+      {
+        "field": "inputs.references",
+        "question": "\"이 이미지\"라고 하신 참고 이미지가 첨부되어 있지 않습니다 — 어떤 이미지인지 알려주시거나 첨부해 주시겠어요?",
+        "options": [],
+        "answer": null
+      }
+    ],
+    "resolution": "unresolved",
+    "note": "portability probe 2026-09-05, P3: the utterance names a reference (\"이 이미지\") but no attachment resolves to a ref_id, and content type is unstated with a >1-source spread among plausible readings (see axes.content_type.basis) — both are material and both are asked, matching the probe's Route C (Opus 5) resolution, the only one of three routes to catch both gaps."
+  },
+  "calibration_ref": null,
+  "status": "blocked_on_clarification"
+}
