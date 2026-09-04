@@ -1,0 +1,149 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://suengj.com/schemas/calibration-version.schema.json",
+  "title": "Calibration version",
+  "description": "One versioned calibration snapshot with lineage (AES-V2.10 / SUE-568). Never the mean of all feedback ever recorded — see docs/architecture/V2-EDITORIAL-LEARNING-CORE.md §6-§7. status \"candidate\" is the DRIFT_CANDIDATE an agent may raise (write-authority class 3, automatic); status \"active\"/\"superseded\" require a human authorized_by (class 4, explicit human intent) — enforced by scripts/lib/calibration-core.mjs, not merely by this schema. Historical records are immutable evidence: superseding a version writes a NEW file and sets superseded_by on the old one; it never edits the old version's substantive fields. See calibration/CALIBRATION-PROTOCOL.md.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version", "calibration_id", "status", "scope", "effective_from",
+    "supersedes", "superseded_by", "authorized_by", "signals", "evidence_refs"
+  ],
+  "properties": {
+    "schema_version": { "const": "1.0.0" },
+    "calibration_id": {
+      "description": "Stable id. On disk at calibration/versions/<scope-slug>.v<N>.json.",
+      "type": "string",
+      "pattern": "^calibration:[a-z0-9]+(-[a-z0-9]+)*@v[0-9]+$"
+    },
+    "status": {
+      "description": "active: the currently authoritative snapshot for this scope. superseded: retained as immutable evidence, no longer authoritative. candidate: a DRIFT_CANDIDATE — recorded, never self-activating.",
+      "enum": ["active", "superseded", "candidate"]
+    },
+    "scope": { "$ref": "#/$defs/scope" },
+    "effective_from": {
+      "description": "When this version became (or would become) the active snapshot for its scope. Meaningless for status candidate until promoted.",
+      "type": "string",
+      "format": "date-time"
+    },
+    "supersedes": {
+      "description": "The calibration_id this version replaces, or null for the first version of a scope.",
+      "type": ["string", "null"],
+      "pattern": "^calibration:[a-z0-9]+(-[a-z0-9]+)*@v[0-9]+$"
+    },
+    "superseded_by": {
+      "description": "The calibration_id that replaced this one, or null while this version is still active/candidate. Set on the OLD file when a new one supersedes it — the old file's other fields never change.",
+      "type": ["string", "null"],
+      "pattern": "^calibration:[a-z0-9]+(-[a-z0-9]+)*@v[0-9]+$"
+    },
+    "authorized_by": { "$ref": "#/$defs/authorized_by" },
+    "signals": {
+      "description": "The four V2 signals (docs/architecture/V2-EDITORIAL-LEARNING-CORE.md §6). Kept structurally separate and never averaged: a change in owner_preference must not touch objective_quality or audience_fit history.",
+      "$ref": "#/$defs/signals"
+    },
+    "evidence_refs": {
+      "description": "Feedback / L1 review / real-output-corpus record ids that motivated this snapshot. scripts/lib/calibration-core.mjs cross-checks these resolve and, for calibration_candidate-sourced evidence, that basis is explicit_human_feedback where required.",
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "conflicting_evidence": {
+      "description": "Required (non-empty) when status is candidate: the independent explicit-human-feedback records that conflict with the currently active calibration for this scope. A model_inference-basis record may never serve as drift evidence — checked by scripts/lib/calibration-core.mjs against the referenced feedback records, not by this schema.",
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "promotion": {
+      "description": "Present only when this active version was promoted from a candidate (DRIFT_CANDIDATE). Mirrors schemas/reference-evaluation.schema.json's promotion block rather than inventing a second shape. authorized_by here must be human — an agent may never activate a candidate it raised.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["authorized_by", "basis", "evidence_refs", "promoted_at"],
+      "properties": {
+        "authorized_by": {
+          "description": "Must be a human identity (e.g. \"human:owner\") — checked by scripts/lib/calibration-core.mjs, not this schema, so the specific promotion-not-human code (rather than a generic schema failure) is reported.",
+          "type": "string",
+          "minLength": 1
+        },
+        "basis": {
+          "description": "Why this promotion is justified: repeated independent evidence, or an explicit owner declaration that preference itself changed. \"published\" or \"L1 pass\" alone is never sufficient (mirrors reference-evaluation.schema.json).",
+          "type": "string",
+          "minLength": 1
+        },
+        "evidence_refs": {
+          "description": "Must be non-empty and, unless basis states an explicit owner declaration, must carry more than one independent record — checked by scripts/lib/calibration-core.mjs.",
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "promoted_at": { "type": "string", "format": "date-time" }
+      }
+    },
+    "notes": { "type": "string" }
+  },
+  "$defs": {
+    "scope": {
+      "description": "Which profile/modality/axis this calibration governs. Never the whole system at once.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["modality", "axis"],
+      "properties": {
+        "modality": { "enum": ["text", "visual", "audio", "cross_modal"] },
+        "profile_ref": {
+          "description": "Repository path of the profile this scope governs, when it governs one specific profile.",
+          "type": "string",
+          "pattern": "^editorial/profiles/"
+        },
+        "axis": {
+          "description": "The concrete axis this calibration governs, e.g. \"audience.beginner-learner\", \"content.register\", \"brand_profile.suengj-com\". Free text because the axis vocabulary is owned by editorial/profiles/**, not restated here.",
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "authorized_by": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "identity"],
+      "properties": {
+        "type": {
+          "description": "human is required for status active/superseded — an agent may never author an active calibration version. Enforced by scripts/lib/calibration-core.mjs.",
+          "enum": ["human", "agent"]
+        },
+        "identity": {
+          "description": "e.g. \"human:owner\" or \"agent:claude-code\".",
+          "type": "string",
+          "minLength": 1
+        },
+        "agent": {
+          "description": "Present only when type is \"agent\" (i.e. only legal on a candidate).",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["runtime"],
+          "properties": {
+            "runtime": { "type": "string", "minLength": 1 },
+            "model": { "type": "string" },
+            "version": { "type": "string" }
+          }
+        }
+      }
+    },
+    "signal_entry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["statement", "evidence_refs"],
+      "properties": {
+        "statement": { "type": "string", "minLength": 1 },
+        "rationale": { "type": "string" },
+        "evidence_refs": { "type": "array", "items": { "type": "string", "minLength": 1 } }
+      }
+    },
+    "signals": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["objective_quality", "audience_fit", "publication_fit", "owner_preference"],
+      "properties": {
+        "objective_quality": { "$ref": "#/$defs/signal_entry" },
+        "audience_fit": { "$ref": "#/$defs/signal_entry" },
+        "publication_fit": { "$ref": "#/$defs/signal_entry" },
+        "owner_preference": { "$ref": "#/$defs/signal_entry" }
+      }
+    }
+  }
+}

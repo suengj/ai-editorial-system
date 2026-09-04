@@ -1,0 +1,50 @@
+{
+  "schema_version": "1.0.0",
+  "calibration_id": "calibration:audience-domain-expert@v1",
+  "status": "candidate",
+  "scope": {
+    "modality": "text",
+    "profile_ref": "editorial/profiles/audience/domain-expert.json",
+    "axis": "audience.domain-expert"
+  },
+  "effective_from": "2026-09-05T00:00:00Z",
+  "supersedes": null,
+  "superseded_by": null,
+  "authorized_by": {
+    "type": "agent",
+    "identity": "agent:claude-code",
+    "agent": {
+      "runtime": "claude-code",
+      "model": "claude-sonnet",
+      "version": "5"
+    }
+  },
+  "signals": {
+    "objective_quality": {
+      "statement": "No objective-quality change proposed; this candidate concerns audience_fit only.",
+      "evidence_refs": []
+    },
+    "audience_fit": {
+      "statement": "PROPOSED (not active): domain-expert audience prose should assume more prior art context than the current profile defaults grant, per recurring explicit correction.",
+      "rationale": "DRIFT_CANDIDATE — a conservative trigger under calibration/CALIBRATION-PROTOCOL.md §3, not an activation.",
+      "evidence_refs": [
+        "feedback:paragraph-order-2026-09-05",
+        "feedback:demo-illustrative-domain-expert-second-signal"
+      ]
+    },
+    "publication_fit": {
+      "statement": "No publication-fit change proposed.",
+      "evidence_refs": []
+    },
+    "owner_preference": {
+      "statement": "No explicit owner declaration has been made; this candidate rests on the repeated-independent-evidence branch of the trigger, not the single-declaration branch.",
+      "evidence_refs": []
+    }
+  },
+  "evidence_refs": [],
+  "conflicting_evidence": [
+    "feedback:paragraph-order-2026-09-05",
+    "feedback:demo-illustrative-domain-expert-second-signal"
+  ],
+  "notes": "SHAPE DEMONSTRATION (AES-V2.10 / SUE-568 seed) of a DRIFT_CANDIDATE (write-authority class 3, automatic — docs/architecture/V2-EDITORIAL-LEARNING-CORE.md §10). An agent may raise this; it may never activate it. `feedback:paragraph-order-2026-09-05` is a real record; `feedback:demo-illustrative-domain-expert-second-signal` is a fabricated placeholder id standing in for the second independent signal the conservative trigger requires — no such second record exists yet. This candidate is deliberately never promoted to active in this repository state; promoting it would require a human authorized_by and either a second real independent record or an explicit owner declaration (calibration/CALIBRATION-PROTOCOL.md §3-4)."
+}
