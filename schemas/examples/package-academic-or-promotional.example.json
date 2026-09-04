@@ -1,0 +1,68 @@
+{
+  "schema_version": "1.0.0",
+  "package_id": "pkg:academic-recreate-inference-pricing-2026-09-05",
+  "created_at": "2026-09-05T13:00:00Z",
+  "intent_ref": "intent:2026-09-05-academic-recreate-inference-pricing",
+  "transformation": {
+    "value": "recreate",
+    "profile_ref": "editorial/profiles/transformation/recreate.json"
+  },
+  "content_type": {
+    "value": "research",
+    "profile_ref": "editorial/profiles/content/research.json"
+  },
+  "audience": {
+    "value": "academic-reviewer"
+  },
+  "target_surfaces": [
+    {
+      "value": "academic-paper"
+    }
+  ],
+  "sources": [],
+  "article_ref": {
+    "article_id": "art:ai-inference-pricing-and-saas-gross-margin",
+    "version_number": 4,
+    "content_hash": "d345cc94a0eed27c9d32796ef2a0f556a59c1366915c23faf6f7c8c575cb8b97",
+    "claims_hash": "76f13be6d99981075028dc7e2f64689db50281564572a41f3548bf227282ccfa",
+    "commit": "a1b2c3d"
+  },
+  "thesis": null,
+  "key_concepts": [],
+  "summary": "A methods-and-findings restructuring of the verified article for an academic-review surface, with the cost-decomposition argument rebuilt around a claims-and-evidence section order instead of the original's narrative order.",
+  "verified_claims": [],
+  "uncertainty": [],
+  "reference_profile_refs": [
+    "ref:academic-section-order-2026"
+  ],
+  "calibration_ref": "calibration:suengj-default@v3",
+  "proposed_artifacts": [
+    "text/academic-manuscript"
+  ],
+  "approved_artifacts": [],
+  "lineage": {
+    "claims_hash": "76f13be6d99981075028dc7e2f64689db50281564572a41f3548bf227282ccfa",
+    "package_hash": "a18f891d592cfc78fe365f5dd27d5f34145a38a1488a71403fd6b8c6104efb12",
+    "supersedes": null,
+    "produced_by": {
+      "skill": {
+        "name": "plan-artifacts",
+        "version": "0.3.1"
+      },
+      "tool": {
+        "name": "editorial-package-compiler",
+        "version": "0.1.0",
+        "model": null
+      }
+    }
+  },
+  "rights": {
+    "quotable": true,
+    "redistributable": true,
+    "license": null,
+    "attribution": "",
+    "transcript_shaped": false,
+    "original_framing": true,
+    "synthesis_note": "Rebuilds the article's argument around a methods/findings/limitations structure the original narrative order does not use; carries forward every retained claim's attribution and stated uncertainty per the recreate profile. This surface is not suengj.com — the same Core intent contract feeds it without a core change."
+  }
+}

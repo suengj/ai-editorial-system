@@ -1,0 +1,66 @@
+{
+  "schema_version": "1.0.0",
+  "package_id": "pkg:notebooklm-handoff-inference-pricing-2026-09-04",
+  "created_at": "2026-09-04T12:00:00Z",
+  "intent_ref": "intent:2026-09-04-notebooklm-handoff-inference-pricing",
+  "transformation": {
+    "value": "summarize",
+    "profile_ref": "editorial/profiles/transformation/summarize.json"
+  },
+  "content_type": {
+    "value": "research",
+    "profile_ref": "editorial/profiles/content/research.json"
+  },
+  "audience": {
+    "value": "ai-practitioner"
+  },
+  "target_surfaces": [
+    {
+      "value": "notebooklm"
+    }
+  ],
+  "sources": [],
+  "article_ref": {
+    "article_id": "art:ai-inference-pricing-and-saas-gross-margin",
+    "version_number": 4,
+    "content_hash": "d345cc94a0eed27c9d32796ef2a0f556a59c1366915c23faf6f7c8c575cb8b97",
+    "claims_hash": "76f13be6d99981075028dc7e2f64689db50281564572a41f3548bf227282ccfa",
+    "commit": "a1b2c3d"
+  },
+  "thesis": null,
+  "key_concepts": [],
+  "summary": "A study-ready compression of the verified article, prioritized for a practitioner exploring the topic further inside NotebookLM.",
+  "verified_claims": [],
+  "uncertainty": [],
+  "reference_profile_refs": [],
+  "calibration_ref": "calibration:suengj-default@v3",
+  "proposed_artifacts": [
+    "text/study-bundle"
+  ],
+  "approved_artifacts": [],
+  "lineage": {
+    "claims_hash": "76f13be6d99981075028dc7e2f64689db50281564572a41f3548bf227282ccfa",
+    "package_hash": "b2047c888a5793d1555457b616e4d694afbd7af2f65afd414b35b55deea66236",
+    "supersedes": null,
+    "produced_by": {
+      "skill": {
+        "name": "plan-artifacts",
+        "version": "0.3.1"
+      },
+      "tool": {
+        "name": "editorial-package-compiler",
+        "version": "0.1.0",
+        "model": null
+      }
+    }
+  },
+  "rights": {
+    "quotable": true,
+    "redistributable": true,
+    "license": null,
+    "attribution": "",
+    "transcript_shaped": false,
+    "original_framing": true,
+    "synthesis_note": "Reduces the article to a study bundle by omission only; no claim beyond the article's own verified set is introduced. NotebookLM consumes this bundle as a replaceable adapter — it holds no editorial authority and this repository's validity does not depend on it being reachable."
+  }
+}

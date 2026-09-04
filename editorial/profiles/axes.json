@@ -6,6 +6,7 @@
       "axis": "content",
       "dir": "content",
       "id_pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
+      "id_field": "content_type",
       "intent_path": "axes.content_type",
       "owns": "Evidence burden, required fields, register, and artifact fit per content type.",
       "populated": true,
@@ -15,6 +16,7 @@
       "axis": "transformation",
       "dir": "transformation",
       "id_pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
+      "id_field": "transformation",
       "intent_path": "axes.transformation",
       "owns": "What a transformation from source to output may change and what it must preserve.",
       "populated": true,
@@ -24,6 +26,7 @@
       "axis": "audience",
       "dir": "audience",
       "id_pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
+      "id_field": "audience",
       "intent_path": "axes.audience",
       "owns": "Who is on the other end, expressed as concrete text/visual/audio delivery adjustments.",
       "populated": true,
@@ -33,6 +36,7 @@
       "axis": "surface",
       "dir": "surface",
       "id_pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
+      "id_field": "surface",
       "intent_path": "axes.surface",
       "owns": "Where the piece lands, who owns that destination, and what constraint that puts on the Core.",
       "populated": true,
@@ -42,27 +46,46 @@
       "axis": "artifact",
       "dir": "artifact",
       "id_pattern": "^(text|visual|audio|video)/[a-z0-9]+(-[a-z0-9]+)*$",
+      "id_field": "artifact",
       "intent_path": "axes.artifacts[].value",
       "owns": "Which medium and which shape of it — visual/audio artifact profiles, brand tokens, prompt compilation.",
-      "populated": false,
-      "linear_issue": "AES-V2.7 (SUE-565) / AES-V2.8 (SUE-566)"
+      "populated": true,
+      "linear_issue": "AES-V2.7 (SUE-565) / AES-V2.8 (SUE-566)",
+      "filename_rule": "namespaced id, \"/\" written as \"-\" in the filename: visual/thumbnail -> visual-thumbnail.json",
+      "planned": [
+        "audio/monologue",
+        "audio/dialogue",
+        "audio/timed-narration",
+        "text/article",
+        "text/brief",
+        "text/knowledge-note",
+        "text/sources"
+      ],
+      "planned_note": "Declared but not yet built. audio/* lands with AES-V2.8 (SUE-566); text/* profiles are an open integration item — V1 already defines artifact kinds in schemas/artifact.schema.json, so the text artifact profiles must extend that vocabulary rather than duplicate it. A cross-reference to a planned id is reported, never silently accepted, and never treated as a typo.",
+      "deferred": [
+        "video/explainer"
+      ],
+      "deferred_note": "Video artifact profiles are out of V2 scope. VIDEO-STORYBOARD.md remains the V1 editorial authority; no machine profile is planned until a real video need exists."
     },
     {
       "axis": "brand",
       "dir": "brand",
       "id_pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
+      "id_field": "brand",
       "intent_path": null,
       "owns": "Visual/voice brand tokens applied by artifact profiles. Not an editorial-intent axis field; referenced from artifact profiles.",
-      "populated": false,
-      "linear_issue": "AES-V2.7 (SUE-565)"
+      "populated": true,
+      "linear_issue": "AES-V2.7 (SUE-565)",
+      "filename_rule": "versioned: <brand-id>.v<major>.json — the version lives in the filename so an old brand profile is never overwritten in place"
     },
     {
       "axis": "reference",
       "dir": "reference",
-      "id_pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
+      "id_pattern": "^(text|visual|audio|video)$",
+      "id_field": "modality",
       "intent_path": null,
       "owns": "Modality-aware craft-reference evaluation and selection rules. Never grants factual authority (see docs/architecture/V2-EDITORIAL-LEARNING-CORE.md §2).",
-      "populated": false,
+      "populated": true,
       "linear_issue": "AES-V2.4 (SUE-562)"
     }
   ]

@@ -7,7 +7,7 @@
   "additionalProperties": false,
   "required": [
     "schema_version", "feedback_id", "created_at", "subject", "evaluator",
-    "basis", "signal", "verdict", "statement", "routing", "scope"
+    "basis", "signal", "verdict", "owner_verdict", "statement", "routing", "scope"
   ],
   "properties": {
     "schema_version": { "const": "1.0.0" },
@@ -48,6 +48,10 @@
       "enum": ["objective_quality", "audience_fit", "publication_fit", "owner_preference"]
     },
     "verdict": { "enum": ["good", "bad", "mixed"] },
+    "owner_verdict": {
+      "description": "Distinct from verdict: whether the owner actually accepted the output, not the evaluator's read of its quality. unknown is the required default when no owner acceptance/rejection has actually been expressed — it is never omitted and never inferred as accepted from publication, an L1 pass, silence, or time passing.",
+      "enum": ["accepted", "rejected", "needs_rework", "unknown"]
+    },
     "statement": {
       "description": "What the human actually said, verbatim where possible.",
       "type": "string",
@@ -61,6 +65,11 @@
     "calibration_ref": {
       "type": ["string", "null"],
       "pattern": "^calibration:[a-z0-9]+(-[a-z0-9]+)*@v[0-9]+$"
+    },
+    "evidence_links": {
+      "description": "Ids of other feedback or evaluation records this one corroborates. Required (non-empty) when scope is calibration_candidate — a single record, human- or agent-authored, never promotes itself; it must point at the repeated independent evidence it joins. AES-V2.10 still owns the actual promotion.",
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
     }
   },
   "$defs": {

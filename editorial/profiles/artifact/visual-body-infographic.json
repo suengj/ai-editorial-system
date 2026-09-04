@@ -1,0 +1,82 @@
+{
+  "schema_version": "1.0.0",
+  "artifact": "visual/body-infographic",
+  "modality": "visual",
+  "family": "Body infographic / explanatory research graphic — Family B of SUENGJ-ARTICLE-IMAGE-FAMILIES.md.",
+  "primary_job": "Explain a mechanism, comparison, process, governance structure, boundary, sequence, or cross-section synthesis more efficiently than prose alone.",
+  "semantic_density": {
+    "level": "high",
+    "rationale": "Medium-to-high semantic density is the deliberate target: retain comparison dimensions, causal steps, historical stages, and consequences that are load-bearing for the article's thesis (SUENGJ-INFOGRAPHIC-CALIBRATION.md §2). This is the field that mechanically distinguishes this artifact from visual/thumbnail, which is deliberately low."
+  },
+  "visual_density": {
+    "level": "low",
+    "rationale": "Compress visual chrome, not the argument: reduce boxes, fills, icons, borders, and repeated labels while preserving every load-bearing relationship (SUENGJ-INFOGRAPHIC-CALIBRATION.md §2, §4). Visual density is low even though semantic density is high — the two controls are independent (§2)."
+  },
+  "text_policy": {
+    "profile": "hybrid_template",
+    "label_count_ceiling": 8,
+    "complexity_ceiling": "Short stable semantic labels only (e.g. TOKEN MARKET, CUSTODIAN, MINT / REDEEM), never mutable article/section titles, dates, captions, citations, or promotional copy (SUENGJ-ARTICLE-IMAGE-FAMILIES.md §4.3; ARTICLE-VISUAL-PUBLICATION-HANDOFF.md §1)."
+  },
+  "composition": {
+    "dominant_structure": "One primary question, answered by 2-4 strong semantic modules, one explicit reading path, and a consequence/tension/output when needed (SUENGJ-ARTICLE-IMAGE-FAMILIES.md §4.2).",
+    "supporting_modules_max": 4,
+    "reading_path": "Single explicit path; a forking reading path is a split trigger (SUENGJ-ARTICLE-IMAGE-FAMILIES.md §6).",
+    "negative_space": "generous but subordinate to the comparison/mechanism structure",
+    "chrome_level": "low-to-medium; prefer typography and spacing hierarchy over cards, fills, and heavy borders (SUENGJ-INFOGRAPHIC-CALIBRATION.md §4)"
+  },
+  "audience_adaptation": {
+    "domain-expert": "Legend optional; may use denser domain encodings (e.g. custody/rights-chain vocabulary) without in-frame expansion.",
+    "domain-practitioner": "Moderate label density with brief glossing on first use.",
+    "beginner-learner": "Expand every acronym in-frame and keep to the low end of the module range (2 modules).",
+    "child-upper-elementary": "Avoid this artifact class for a genuinely child-targeted piece unless the mechanism is essential; if used, cap at 2 modules, use plain-language labels only, avoid abstract encodings, and never make the legend load-bearing — simplifying the audience must never simplify the truth (docs/architecture/V2-EDITORIAL-LEARNING-CORE.md §9 constraint 1)."
+  },
+  "renderer_preference": {
+    "order": ["deterministic", "hybrid", "generative"],
+    "rule": "Default toward a deterministic or strongly structured renderer whenever labels, topology, arrows, evidence, comparison rows, chronology, or exact relationships must remain stable and auditable. Use generative rendering only when the body visual is primarily qualitative and can tolerate image-model variance without weakening meaning; exact values and labels never ride on a generative raster model (SUENGJ-ARTICLE-IMAGE-FAMILIES.md §4.4)."
+  },
+  "readability_gate": {
+    "applies": true,
+    "gate": {
+      "viewport": "~390px reading surface",
+      "requirements": [
+        "module boundaries readable after downscaling",
+        "2-4 strong modules rather than many tiny panels",
+        "one clear reading path",
+        "line weight/contrast that survives mobile rendering",
+        "labels only where they improve comprehension",
+        "no pseudo-detail or ornamental micro-charts",
+        "no horizontal page overflow",
+        "no reliance on hover or desktop-only interaction"
+      ]
+    },
+    "rationale": "Mobile readability is a hard gate for body infographics, not an aspiration (SUENGJ-ARTICLE-IMAGE-FAMILIES.md §5; SUENGJ-INFOGRAPHIC-CALIBRATION.md §10)."
+  },
+  "split_rule": {
+    "applies": true,
+    "rule": "One plate, one primary question. Split when more than one primary question is being answered, the reading path forks repeatedly, important labels become too small on mobile, more than 4 major modules compete for attention, the visual requires dashboard-like micro-panels, or semantic structure remains valid only after zooming. Do not solve information overload by shrinking modules, fonts, or labels (SUENGJ-ARTICLE-IMAGE-FAMILIES.md §6; SUENGJ-INFOGRAPHIC-CALIBRATION.md §10)."
+  },
+  "acceptance": [
+    "passes VISUAL-INFORMATION-GAIN.md with a named new_information item beyond adjacent prose",
+    "answers exactly one primary question per plate",
+    "2-4 load-bearing modules with one explicit reading path",
+    "structurally understandable at ~390px without zoom",
+    "exact values, topology, or chronology remain deterministic/traceable",
+    "no mutable article title, date, caption, or citation baked into the artwork"
+  ],
+  "reject": [
+    "mini dashboard or multi-panel report crammed into one plate",
+    "dense infographic collage or icon-per-cell composition",
+    "pseudo-detail or ornamental micro-charts",
+    "more than one primary question on a single plate",
+    "structure that only becomes legible after zooming on mobile",
+    "minimalism achieved by deleting load-bearing dimensions, exceptions, or consequences (SUENGJ-INFOGRAPHIC-CALIBRATION.md §5)"
+  ],
+  "source_authority": [
+    "editorial/SUENGJ-ARTICLE-IMAGE-FAMILIES.md",
+    "editorial/SUENGJ-INFOGRAPHIC-CALIBRATION.md",
+    "editorial/VISUAL-INFORMATION-GAIN.md",
+    "editorial/SUENGJ-VISUAL-TASTE-CALIBRATION.md",
+    "editorial/ARTICLE-VISUAL-PUBLICATION-HANDOFF.md",
+    "docs/architecture/V2-EDITORIAL-LEARNING-CORE.md"
+  ]
+}

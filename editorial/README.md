@@ -23,6 +23,9 @@ quality gates.
 | [`presentation.md`](presentation.md) | Semantic block grammar — what a block means, never how it looks | AES-P1.6 (SUE-464) |
 | [`HITL-PROTOCOL.md`](HITL-PROTOCOL.md) | Human review stages, approval boundary, Final ≠ Published | AES-P5.1 (SUE-457) |
 | [`RIGHTS-AND-PROVENANCE.md`](RIGHTS-AND-PROVENANCE.md) | Transformation, citation, visual/media rights and generated-voice provenance | AES-P0.4 (SUE-437) |
+| [`profiles/artifact/visual-*.json`](profiles/artifact/) | Eight machine-readable visual artifact profiles (concept illustration, thumbnail, body infographic, explanatory diagram, analytical graphic, slide image, social card, evidence visual) — the density, text, renderer, and mobile-gate rules above, encoded so a router reads them uniformly instead of re-deriving them from prose | AES-V2.7 (SUE-565) |
+| [`profiles/brand/suengj-com.v1.json`](profiles/brand/suengj-com.v1.json) | Versioned suengj.com brand profile — palette/materiality tokens, topic-cliché rejection, and the priority order for conflicting visual instructions | AES-V2.7 (SUE-565) |
+| [`../schemas/visual-job.schema.json`](../schemas/visual-job.schema.json) + [`../schemas/VISUAL-JOB-CONTRACT.md`](../schemas/VISUAL-JOB-CONTRACT.md) | The compiled visual job contract: full lineage, the two pre-render gates (information gain, density/profile match), and the context-isolation allowlist | AES-V2.7 (SUE-565) |
 
 The separation is deliberate. Constitution holds the durable reasoning and
 integrity principles. `voice.md` holds only the shared identity and language

@@ -20,6 +20,10 @@ information, one of them is a **cache** and must say so.
 | Publication status / gating | `suengj-com` content contract | — | `status: draft \| published \| archived` |
 | Rendering, routing, build, deploy | `suengj-com` | — | Never duplicated here |
 | Derived artifacts (brief, visual, slides) | `suengj-com` alongside the article | Generator config lives here | Lineage fields defined here (AES-P0.3) |
+| Editorial Intent (five axes, clarification state) | **ai-editorial-system** | — | `schemas/editorial-intent.schema.json` (AES-V2.1/V2.2) |
+| Editorial Package (destination-neutral handoff) | **ai-editorial-system** | Adapter-side renders are outputs, not replicas | `schemas/editorial-package.schema.json`, `schemas/EDITORIAL-PACKAGE-CONTRACT.md` (AES-V2.9) |
+| Reference evaluations (craft evidence, never claims) | **ai-editorial-system** | — | `references/`, `editorial/profiles/reference/` (AES-V2.3/V2.4) |
+| Calibration (versioned owner preference snapshot) | **ai-editorial-system** | — | `calibration/` (AES-V2.10); never the mean of all feedback, never rewritten in place |
 | Work, dependency, acceptance, evidence | Linear | — | Project *Suengj.com · AI Editorial System* |
 
 ## Directional rules

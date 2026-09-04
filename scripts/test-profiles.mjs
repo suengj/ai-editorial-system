@@ -30,11 +30,11 @@ const check = (name, ok, detail = '') => {
 const codes = (article, opts = {}) => validateAgainstProfile(article, { profiles, ...opts }).map((i) => i.code);
 
 // --- profiles exist and differ -------------------------------------------
-console.log('five profiles, genuinely different');
+console.log('seven profiles, genuinely different');
 {
   const types = Object.keys(profiles).sort();
-  check('all five content types have a profile',
-    types.join() === 'news,note,project,research,view', types.join());
+  check('all seven content types have a profile (five V1 + academic + promotional, AES-V2.2)',
+    types.join() === 'academic,news,note,project,promotional,research,view', types.join());
 
   const burden = (t) => profiles[t].evidence_burden;
   check('Research carries the heaviest evidence burden',
@@ -57,6 +57,28 @@ console.log('five profiles, genuinely different');
   check('every profile declares artifact fit',
     Object.values(profiles).every((p) => p.artifacts && 'default' in p.artifacts && 'inappropriate' in p.artifacts));
 }
+
+// --- the extension proof: a new content type is data, not a code change ---
+console.log('academic and promotional extend the axis without touching the engine');
+{
+  check('Academic carries the heaviest citation burden of any content type',
+    burdenOf('academic').min_verified_claims >= burdenOf('research').min_verified_claims &&
+    burdenOf('academic').min_source_roles.includes('contradicting'));
+  check('Academic names method transparency and hedging as load-bearing',
+    /method/i.test(JSON.stringify(profiles.academic.required_type_fields)) &&
+    profiles.academic.anti_patterns.some((a) => /hedge/i.test(a)));
+  check('Promotional requires disclosure of persuasive intent',
+    profiles.promotional.required_type_fields.includes('disclosure'));
+  check('Promotional still verifies every factual claim (evidence burden not waived)',
+    burdenOf('promotional').min_verified_claims >= 1);
+  check('Promotional names unfalsifiable superlatives as its anti-pattern',
+    profiles.promotional.anti_patterns.some((a) => /superlative/i.test(a)));
+  check('Academic and Promotional are not thin copies of an existing profile',
+    JSON.stringify(profiles.academic.anti_patterns) !== JSON.stringify(profiles.research.anti_patterns) &&
+    JSON.stringify(profiles.promotional.anti_patterns) !== JSON.stringify(profiles.news.anti_patterns));
+}
+
+function burdenOf(t) { return profiles[t].evidence_burden; }
 
 // --- the worked example conforms -----------------------------------------
 console.log('worked example against the news profile');

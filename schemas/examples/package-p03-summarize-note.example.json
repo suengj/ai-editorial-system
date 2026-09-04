@@ -1,0 +1,84 @@
+{
+  "schema_version": "1.0.0",
+  "package_id": "pkg:p03-yt-agent-memory-summary-2026-09-01",
+  "created_at": "2026-09-01T09:00:00Z",
+  "intent_ref": "intent:2026-09-01-p03-yt-agent-memory",
+  "transformation": {
+    "value": "summarize",
+    "profile_ref": "editorial/profiles/transformation/summarize.json"
+  },
+  "content_type": {
+    "value": "note",
+    "profile_ref": "editorial/profiles/content/note.json"
+  },
+  "audience": {
+    "value": "general-professional"
+  },
+  "target_surfaces": [
+    {
+      "value": "internal-notes"
+    }
+  ],
+  "sources": [
+    {
+      "source_id": "src:drive:1P03YtAgentMemoryFileId0001",
+      "uri": "https://drive.google.com/file/d/1P03YtAgentMemoryFileId0001",
+      "retrieved_at": "2026-09-01T08:30:00Z",
+      "hash": {
+        "algo": "sha256",
+        "value": "c5171596f75cc0056229552464abb184da8193f92123ca398e896ccfacc6b291"
+      },
+      "role": "primary"
+    }
+  ],
+  "article_ref": null,
+  "thesis": null,
+  "key_concepts": [
+    "agent memory compaction",
+    "context-window budgeting",
+    "tool-call replay over transcript storage"
+  ],
+  "summary": "The video argues that agent memory should be compacted by replaying prior tool calls rather than storing raw transcripts, keeping context budgets bounded across long sessions.",
+  "verified_claims": [
+    {
+      "claim_id": "c1",
+      "text": "The presenter demonstrates a memory-compaction technique that replays prior tool calls instead of retaining their full output verbatim.",
+      "kind": "assertion",
+      "status": "unverified"
+    }
+  ],
+  "uncertainty": [
+    "Whether the technique generalizes beyond the single demo agent shown in the video is not established."
+  ],
+  "reference_profile_refs": [],
+  "calibration_ref": null,
+  "proposed_artifacts": [
+    "text/knowledge-note"
+  ],
+  "approved_artifacts": [],
+  "lineage": {
+    "claims_hash": "a7c945b99d34711b2027916f5ee38476f727629f6fe90275ef71b62a5733ed8d",
+    "package_hash": "73948533d825ebd4f888e2f0b3ce6f3b38dd4497d83037dcb73de072f2b04014",
+    "supersedes": null,
+    "produced_by": {
+      "skill": {
+        "name": "plan-artifacts",
+        "version": "0.3.1"
+      },
+      "tool": {
+        "name": "editorial-package-compiler",
+        "version": "0.1.0",
+        "model": null
+      }
+    }
+  },
+  "rights": {
+    "quotable": true,
+    "redistributable": false,
+    "license": null,
+    "attribution": "Summarized from a third-party YouTube video ingested via P03; the video itself is not redistributed.",
+    "transcript_shaped": false,
+    "original_framing": true,
+    "synthesis_note": "Restructured around three portable concepts rather than following the video's minute-by-minute order."
+  }
+}

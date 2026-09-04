@@ -1,0 +1,27 @@
+{
+  "generated": true,
+  "generated_by": "scripts/registry.mjs --rebuild",
+  "records": [
+    {
+      "created_at": "2026-09-05T04:00:00Z",
+      "feedback_id": "feedback:paragraph-order-2026-09-05",
+      "path": "feedback/records/paragraph-order-2026-09-05.json",
+      "scope": "task_local",
+      "signal": "objective_quality",
+      "subject_kind": "article",
+      "subject_ref": "article:example-synthetic-draft-001",
+      "verdict": "bad"
+    },
+    {
+      "created_at": "2026-09-05T04:30:00Z",
+      "feedback_id": "feedback:routing-unclear-2026-09-05",
+      "path": "feedback/records/routing-unclear-2026-09-05.json",
+      "scope": "task_local",
+      "signal": "publication_fit",
+      "subject_kind": "artifact",
+      "subject_ref": "artifact:example-body-infographic-001",
+      "verdict": "mixed"
+    }
+  ],
+  "schema_version": "1.0.0"
+}

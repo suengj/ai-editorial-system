@@ -1,0 +1,56 @@
+{
+  "schema_version": "1.0.0",
+  "evaluation_id": "eval:denoiser-consumption-architecture-2026-09-05-01",
+  "ref_id": "ref:denoiser-consumption-architecture",
+  "modality": "visual",
+  "evaluator": {
+    "type": "agent",
+    "agent": {
+      "runtime": "claude-code",
+      "model": "claude-sonnet-5"
+    }
+  },
+  "evaluated_at": "2026-09-05T02:15:00Z",
+  "calibration_ref": null,
+  "profile_ref": "editorial/profiles/reference/visual.json",
+  "basis": "model_inference",
+  "dimensions": [
+    {
+      "dimension": "hierarchy",
+      "verdict": "adopt",
+      "note": "Role consistency across surfaces — same information role, same visual grammar — is a transferable hierarchy principle already applied in suengj-com (SUE-429/SUE-430).",
+      "evidence": "catalog observation: 'Borrowed idea is role consistency ... not the aesthetic.'"
+    },
+    {
+      "dimension": "composition",
+      "verdict": "do_not_copy",
+      "note": "Denoiser's actual composition and aesthetic are its own house style and are explicitly excluded from imitation, per the catalog note and per SUENGJ-VISUAL-TASTE-CALIBRATION.md's own airy/warm-neutral target.",
+      "evidence": "catalog notes: 'Captured as one reference among five, explicitly not as a visual template.'"
+    },
+    {
+      "dimension": "artifact-suitability",
+      "verdict": "neutral",
+      "note": "This reference is a documentation note about a multi-surface consumption architecture, not itself a rendered infographic — it is not authoritative for body-infographic density or line weight."
+    }
+  ],
+  "strengths": [
+    "Demonstrates that one information role can be kept visually consistent across multiple surfaces without duplicating a design language."
+  ],
+  "weaknesses": [
+    "No evidence about palette, line weight, or density — this reference speaks to structure, not surface language."
+  ],
+  "applicable_to": {
+    "content_types": [],
+    "audiences": [],
+    "artifacts": [
+      "visual/body-infographic",
+      "visual/thumbnail"
+    ],
+    "surfaces": [
+      "suengj-com"
+    ]
+  },
+  "authority_boundary": "craft_evidence_only",
+  "notes": "not_authoritative_for palette/density/line-weight — see editorial/profiles/reference/visual.json and SUENGJ-VISUAL-TASTE-CALIBRATION.md for those dimensions.",
+  "provenance_class": "external"
+}

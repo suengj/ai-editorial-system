@@ -38,9 +38,8 @@ export function loadAxes(file = AXES_FILE) {
 
 /**
  * Load every profile file under an axis's declared directory, keyed by the
- * profile's own id field (whichever key the axis uses — content profiles key
- * on `content_type`, every other axis keys on its own axis-name field or
- * falls back to the filename stem).
+ * profile's own id field. Which field that is comes from axes.json's
+ * `id_field` for that axis, so no axis id or field name is hardcoded here.
  */
 export function loadAxisProfiles(axisId, { axes = loadAxes(), root = PROFILES_ROOT } = {}) {
   const axis = axes.find((a) => a.axis === axisId);
@@ -51,7 +50,7 @@ export function loadAxisProfiles(axisId, { axes = loadAxes(), root = PROFILES_RO
   const out = {};
   for (const f of readdirSync(dir).filter((n) => n.endsWith('.json'))) {
     const profile = JSON.parse(readFileSync(resolve(dir, f), 'utf8'));
-    const id = profile[axis.axis] ?? profile.id ?? f.replace(/\.json$/, '');
+    const id = profile[axis.id_field] ?? f.replace(/\.json$/, '');
     out[id] = profile;
   }
   return out;

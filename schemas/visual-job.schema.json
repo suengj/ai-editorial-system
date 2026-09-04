@@ -1,0 +1,272 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://suengj.com/schemas/visual-job.schema.json",
+  "title": "Visual Job",
+  "description": "The compiled visual job record (AES-V2.7 / SUE-565). The durable knowledge is the semantic/artifact/reference/brand profile state; the compiled prompt is an output of that state, not the source of truth. This record carries the full lineage so a bad result routes back to the layer that produced it (docs/architecture/V2-EDITORIAL-LEARNING-CORE.md §5). See schemas/VISUAL-JOB-CONTRACT.md.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version", "job_id", "intent_ref", "calibration_ref", "artifact_profile", "profile_ref",
+    "audience", "semantic_spec", "information_gain", "density_check",
+    "selected_reference_traits", "brand_profile", "brand_profile_version",
+    "text_policy", "renderer_route", "renderer", "context_isolation",
+    "attempts", "max_attempts", "qa", "status"
+  ],
+  "properties": {
+    "schema_version": { "const": "1.0.0" },
+    "job_id": {
+      "type": "string",
+      "pattern": "^job:[a-z0-9]+(-[a-z0-9]+)*$"
+    },
+    "intent_ref": {
+      "description": "Editorial Intent this job traces to (schemas/editorial-intent.schema.json intent_id).",
+      "type": "string",
+      "pattern": "^intent:[0-9]{4}-[0-9]{2}-[0-9]{2}-[a-z0-9]+(-[a-z0-9]+)*$"
+    },
+    "calibration_ref": {
+      "description": "The calibration version active when this job was compiled (docs/architecture/V2-EDITORIAL-LEARNING-CORE.md §6, §10 AES-V2.10). Nullable because calibration versioning may not yet be active; recorded explicitly either way so a later verdict is attributed to the calibration that produced it, not whichever is current.",
+      "type": ["string", "null"],
+      "pattern": "^calibration:[a-z0-9]+(-[a-z0-9]+)*@v[0-9]+$"
+    },
+    "article_ref": { "$ref": "#/$defs/article_ref" },
+    "package_ref": {
+      "description": "Editorial Package reference, when this job is planned from a package rather than a single article. Exactly one of article_ref/package_ref must be present — checked by scripts/compile-visual-prompt.mjs, not by this schema.",
+      "type": "string",
+      "minLength": 1
+    },
+    "artifact_profile": {
+      "description": "One of the eight pinned visual artifact profile ids.",
+      "enum": [
+        "visual/concept-illustration", "visual/thumbnail", "visual/body-infographic",
+        "visual/explanatory-diagram", "visual/analytical-graphic", "visual/slide-image",
+        "visual/social-card", "visual/evidence-visual"
+      ]
+    },
+    "profile_ref": {
+      "type": "string",
+      "pattern": "^editorial/profiles/artifact/"
+    },
+    "audience": { "$ref": "#/$defs/audience" },
+    "semantic_spec": { "$ref": "#/$defs/semantic_spec" },
+    "information_gain": { "$ref": "#/$defs/information_gain" },
+    "density_check": { "$ref": "#/$defs/density_check" },
+    "selected_reference_traits": { "$ref": "#/$defs/selected_reference_traits" },
+    "brand_profile": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+    },
+    "brand_profile_version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$"
+    },
+    "text_policy": {
+      "enum": ["external_overlay", "hybrid_template", "integrated_generated_text", "no_text"]
+    },
+    "renderer_route": {
+      "enum": ["deterministic", "hybrid", "generative"]
+    },
+    "renderer": {
+      "description": "Full runtime lineage for the renderer layer (docs/architecture/V2-EDITORIAL-LEARNING-CORE.md §5 'renderer' routing layer). Model/provider drift is an editorial quality event even when semantic_spec, artifact_profile, audience, reference traits, and brand_profile are unchanged: recording runtime identity here — never inside compiled_prompt — is what lets a quality regression route to this layer instead of being misattributed to brand_profile or semantic_spec.",
+      "$ref": "#/$defs/runtime"
+    },
+    "compiled_prompt": {
+      "description": "Deterministic string assembly from the declared inputs only. Absent when information_gain.verdict is skip.",
+      "type": "string"
+    },
+    "compiled_from": {
+      "description": "Every input the compiled_prompt was assembled from. Required whenever compiled_prompt is present.",
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "context_isolation": { "$ref": "#/$defs/context_isolation" },
+    "attempts": { "type": "integer", "minimum": 0 },
+    "max_attempts": { "type": "integer", "minimum": 1 },
+    "qa": { "$ref": "#/$defs/qa" },
+    "status": {
+      "enum": [
+        "planned", "gated_skip", "compiling", "compiled",
+        "rendered", "qa_pass", "qa_fail", "accepted", "rejected"
+      ]
+    }
+  },
+  "$defs": {
+    "article_ref": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["article_id", "version_number", "content_hash", "claims_hash"],
+      "properties": {
+        "article_id": { "type": "string", "pattern": "^art:[a-z0-9]+(-[a-z0-9]+)*$" },
+        "version_number": { "type": "integer", "minimum": 1 },
+        "content_hash": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "claims_hash": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+      }
+    },
+    "runtime": {
+      "description": "Renderer-layer lineage. tool/tool_version identify the rendering pipeline (e.g. a deterministic SVG compiler); provider/model/model_version identify the underlying generative runtime where one is used. Deterministic tools still record provider/model as the tool's own identity so the field is never blank. None of this may appear inside compiled_prompt — see context_isolation.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["tool", "provider", "model", "model_version"],
+      "properties": {
+        "tool": { "type": "string", "minLength": 1 },
+        "tool_version": { "type": "string", "minLength": 1 },
+        "provider": { "type": "string", "minLength": 1 },
+        "model": { "type": "string", "minLength": 1 },
+        "model_version": {
+          "description": "Exact model version or a dated model alias, so quality drift from a silent model swap is diagnosable.",
+          "type": "string",
+          "minLength": 1
+        },
+        "quality_tier": {
+          "description": "Reasoning/quality tier, where the provider exposes one. Absent for tools with no such tier.",
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "audience": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["value", "profile_ref"],
+      "properties": {
+        "value": {
+          "enum": [
+            "general-reader", "professional-generalist", "domain-practitioner",
+            "domain-expert", "beginner-learner", "child-upper-elementary"
+          ]
+        },
+        "profile_ref": { "type": "string", "pattern": "^editorial/profiles/audience/" },
+        "traits_applied": {
+          "description": "Which concrete audience adjustments were actually applied to this job, not the whole profile.",
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "semantic_spec": {
+      "description": "What the image must communicate — the information, not the styling.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["must_communicate"],
+      "properties": {
+        "question": { "type": "string", "minLength": 1 },
+        "must_communicate": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "must_not_include": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "information_gain": {
+      "description": "Gate 1 (docs/architecture/V2-EDITORIAL-LEARNING-CORE.md §8; editorial/VISUAL-INFORMATION-GAIN.md). Cheap semantic preflight before any rendering. skip is a first-class, non-failing outcome.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["adjacent_representation", "redundancy_test", "integration_strategy", "verdict"],
+      "properties": {
+        "adjacent_representation": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["type", "summary"],
+          "properties": {
+            "type": { "enum": ["prose", "code_block", "table", "list", "visual", "mixed", "none"] },
+            "summary": { "type": "string", "minLength": 1 }
+          }
+        },
+        "redundancy_test": {
+          "description": "The four VISUAL-INFORMATION-GAIN.md §2 questions.",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["q1_new_perception", "q2_harder_without_it", "q3_merely_recreates", "q4_worth_the_interruption"],
+          "properties": {
+            "q1_new_perception": { "type": "string", "minLength": 1 },
+            "q2_harder_without_it": { "type": "string", "minLength": 1 },
+            "q3_merely_recreates": { "type": "boolean" },
+            "q4_worth_the_interruption": { "type": "boolean" }
+          }
+        },
+        "gain_type": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "structure", "relation", "comparison", "compression", "spatialization",
+              "temporalization", "counterfactual", "evidence", "framing"
+            ]
+          }
+        },
+        "integration_strategy": {
+          "enum": ["add", "replace", "extend", "reposition", "skip"]
+        },
+        "verdict": {
+          "description": "proceed: the visual earns its place. skip: correctly deciding not to make the image — not an error.",
+          "enum": ["proceed", "skip"]
+        }
+      }
+    },
+    "density_check": {
+      "description": "Gate 2 (docs/architecture/V2-EDITORIAL-LEARNING-CORE.md §8; editorial/SUENGJ-ARTICLE-IMAGE-FAMILIES.md; editorial/SUENGJ-INFOGRAPHIC-CALIBRATION.md §2). The compiled job's semantic and visual density must match its artifact profile.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["profile_semantic_density", "profile_visual_density", "compiled_semantic_density", "compiled_visual_density", "match"],
+      "properties": {
+        "profile_semantic_density": { "enum": ["low", "moderate", "high"] },
+        "profile_visual_density": { "enum": ["low", "moderate", "high"] },
+        "compiled_semantic_density": { "enum": ["low", "moderate", "high"] },
+        "compiled_visual_density": { "enum": ["low", "moderate", "high"] },
+        "match": {
+          "description": "false means the job FAILS (e.g. a body infographic compiled at thumbnail density).",
+          "type": "boolean"
+        }
+      }
+    },
+    "selected_reference_traits": {
+      "description": "Traits only, never a reference body (docs/architecture/V2-EDITORIAL-LEARNING-CORE.md §2).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["adopt", "avoid", "do_not_copy"],
+      "properties": {
+        "adopt": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+        "avoid": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+        "do_not_copy": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+        "authoritative_override": {
+          "description": "A reference trait listed here is the only way a reference may outrank the brand default, per editorial/profiles/brand/suengj-com.v1.json priority_rule.",
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "context_isolation": {
+      "description": "Required allowlist, not optional. Models the fix for SUE-531 (built-in generative image attempts leaked unrelated recent project/conversation context into dashboard artwork).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["permitted_inputs", "excluded"],
+      "properties": {
+        "permitted_inputs": {
+          "type": "array",
+          "items": {
+            "enum": ["semantic_spec", "artifact_profile", "audience", "selected_reference_traits", "brand_profile"]
+          }
+        },
+        "excluded": {
+          "description": "Assertion that these categories were excluded from the compiled prompt. renderer_runtime_identity covers provider/model/model_version/quality_tier: that identity is lineage, not an input, and must never reach compiled_prompt text.",
+          "type": "array",
+          "items": {
+            "enum": ["ambient_conversation", "unrelated_project_state", "prior_unrelated_jobs", "renderer_runtime_identity"]
+          }
+        }
+      }
+    },
+    "qa": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["performed", "information_gain_recheck", "density_recheck"],
+      "properties": {
+        "performed": { "type": "boolean" },
+        "information_gain_recheck": { "enum": ["pass", "fail", "not_yet"] },
+        "density_recheck": { "enum": ["pass", "fail", "not_yet"] },
+        "notes": { "type": "string" }
+      }
+    }
+  }
+}

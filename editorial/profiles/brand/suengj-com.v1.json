@@ -1,0 +1,152 @@
+{
+  "schema_version": "1.0.0",
+  "brand": "suengj-com",
+  "profile_version": "1.0.0",
+  "effective_from": "2026-09-04",
+  "description": "Versioned suengj.com visual brand profile (AES-V2.7 / SUE-565). Encodes the current stable visual character so a compiled visual job records exactly which version it compiled against. This repository owns why the profile looks this way and what it forbids; suengj-com owns the canonical design-token values.",
+  "priority": [
+    "semantic/evidence requirement",
+    "artifact-function requirement",
+    "explicit task/reference override",
+    "publication brand default",
+    "renderer/model default"
+  ],
+  "priority_rule": "A reference's colour or style may not silently override this brand profile. A reference trait may only outrank the brand default when it is explicitly selected as an authoritative trait for the job (see schemas/visual-job.schema.json selected_reference_traits). Absent that explicit selection, this priority order is binding, highest first.",
+  "palette": {
+    "background": {
+      "family": "warm off-white / cream",
+      "token_ref": "suengj-com:color.background.canvas",
+      "observed_value": "warm off-white, low saturation",
+      "observed_at": "2026-09-04",
+      "resolved_from": "suengj-com"
+    },
+    "primary_structure": {
+      "family": "muted forest / sage green — the structural identity color, not a saturation effect",
+      "token_ref": "suengj-com:color.structural.primary",
+      "observed_value": "muted sage / desaturated green with a deeper forest/moss variant for hierarchy",
+      "observed_at": "2026-09-04",
+      "resolved_from": "suengj-com"
+    },
+    "accent": {
+      "family": "restrained sand / camel — accent only, never a second dominant palette",
+      "token_ref": "suengj-com:color.accent.sand",
+      "observed_value": "muted camel / sand / brown, sparse use",
+      "observed_at": "2026-09-04",
+      "resolved_from": "suengj-com"
+    },
+    "neutral": {
+      "family": "warm gray / stone / charcoal — hierarchy and contrast, never a fill for the whole composition",
+      "token_ref": "suengj-com:color.neutral.charcoal",
+      "observed_value": "quiet charcoal for typography and linework",
+      "observed_at": "2026-09-04",
+      "resolved_from": "suengj-com"
+    },
+    "prohibited": [
+      "neon",
+      "broad rainbow palette",
+      "glossy glass",
+      "dark drop shadows",
+      "cinematic 3D lighting"
+    ]
+  },
+  "line_and_materiality": {
+    "line_weight": "thin, quiet, purposeful; low visual weight relative to primary blocks",
+    "line_role": "connectors clarify hierarchy rather than build a dense network; dashed lines may indicate secondary or inferred relationships",
+    "depth_model": "flat or nearly flat 2D composition; a small amount of tonal separation, faint ground plane, or soft card-edge separation is acceptable",
+    "materiality_ceiling": "never glossy glass, heavy shadow, cinematic 3D, or chrome objects",
+    "source_authority": [
+      "editorial/DIAGRAMMATIC-VISUAL-LANGUAGE.md",
+      "editorial/SUENGJ-VISUAL-TASTE-CALIBRATION.md"
+    ]
+  },
+  "stable_visual_properties": {
+    "background": "warm off-white / soft neutral",
+    "primary_marks": "charcoal / dark warm gray",
+    "accent": "one restrained accent family; at most two when semantically useful",
+    "geometry": "flat or nearly flat, modular, clean",
+    "layout": "editorial grid, clear alignment, strong grouping",
+    "lines": "thin, quiet, purposeful",
+    "whitespace": "generous and functional",
+    "text": "deterministic outside generated artwork when load-bearing",
+    "source_authority": "editorial/ARTICLE-ILLUSTRATION-ROUTING.md §3"
+  },
+  "desired_impression": {
+    "target": [
+      "research publication",
+      "editorial information design",
+      "scientific concept figure",
+      "architectural explanatory graphic"
+    ],
+    "reject": [
+      "startup landing-page illustration",
+      "stock technology art",
+      "cinematic AI concept art",
+      "generic blog hero"
+    ],
+    "one_line": "The goal is visual argument, not visual spectacle (editorial/ARTICLE-ILLUSTRATION-ROUTING.md §3).",
+    "source_authority": "editorial/ARTICLE-ILLUSTRATION-ROUTING.md §3"
+  },
+  "topic_cliche_rejection": {
+    "finance_blockchain": [
+      "floating coins",
+      "golden crypto tokens",
+      "candlestick wallpaper",
+      "bull/bear mascots",
+      "neon blockchain cubes",
+      "exchange-building stock imagery"
+    ],
+    "ai_agents": [
+      "robot faces",
+      "human brain + circuitry",
+      "glowing neural networks",
+      "holographic dashboards",
+      "hands touching digital brains"
+    ],
+    "research_data": [
+      "random charts with invented values",
+      "magnifying glass over generic documents",
+      "floating formulas with no semantic role",
+      "icon carpets"
+    ],
+    "global": [
+      "neon circuitry",
+      "holographic dashboards",
+      "robot heads",
+      "AI brains",
+      "3D glassmorphism",
+      "chrome objects",
+      "photorealistic offices",
+      "stock-photo business scenes",
+      "busy cyberpunk interfaces"
+    ],
+    "source_authority": [
+      "editorial/ARTICLE-ILLUSTRATION-ROUTING.md §9",
+      "editorial/DIAGRAMMATIC-VISUAL-LANGUAGE.md §2"
+    ]
+  },
+  "taste_calibration_evidence": {
+    "preference_order_note": "Four variants of the same article concept were reviewed with the owner; preference order 2 > 4 > 3 > 1. The ranking is evidence about visual character, not authority over the exact composition or subject matter of those specific images.",
+    "preferred_qualities": [
+      "very generous negative space",
+      "thin, quiet linework",
+      "low-contrast warm off-white field",
+      "muted forest/sage green with a restrained sand/camel accent",
+      "a small amount of physical depth or material presence without glossy 3D",
+      "fewer, larger compositional groups rather than many small icons",
+      "asymmetry that still feels balanced",
+      "soft hierarchy and editorial calm rather than obvious infographic loudness"
+    ],
+    "less_preferred_qualities": [
+      "dense icon-library composition",
+      "many tiny UI fragments or mini charts competing at once",
+      "every object enclosed in a heavy card or container",
+      "dashboard-like visual density",
+      "flat vector sterility with no tonal/material nuance"
+    ],
+    "source_authority": "editorial/SUENGJ-VISUAL-TASTE-CALIBRATION.md §1-3"
+  },
+  "resolution_boundary": {
+    "note": "Canonical design tokens (exact hex/HSL values, type scale, spacing scale) live in suengj-com, not this repository. Every token above is recorded as a reference plus an observed value and observation date, marked resolved_from suengj-com, per docs/architecture/SSOT-BOUNDARIES.md. A future site redesign updates the publication profile; it does not retroactively change what a job compiled against an earlier profile_version meant.",
+    "source_authority": "docs/architecture/SSOT-BOUNDARIES.md"
+  }
+}

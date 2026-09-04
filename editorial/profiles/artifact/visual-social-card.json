@@ -1,0 +1,69 @@
+{
+  "schema_version": "1.0.0",
+  "artifact": "visual/social-card",
+  "modality": "visual",
+  "family": "Navigation/distribution card visual — content-card, home-featured, and social/OG preview repackaging of an article or project.",
+  "primary_job": "Help a reader recognize or choose a destination at card/social size, repackaging the canonical piece's thesis for another surface (IMAGE-GENERATION.md §1 navigation and distribution roles).",
+  "semantic_density": {
+    "level": "low",
+    "rationale": "Same thesis-first constraint as visual/thumbnail: the card's information must survive aggressive downscaling to Home Featured, content-card, and social/OG preview sizes (SUENGJ-ARTICLE-IMAGE-FAMILIES.md §3.4)."
+  },
+  "visual_density": {
+    "level": "low",
+    "rationale": "One dominant subject plus one supporting visual metaphor, sparse background motifs, and a clean text-safe region (DIAGRAMMATIC-VISUAL-LANGUAGE.md §5.4)."
+  },
+  "text_policy": {
+    "profile": "external_overlay",
+    "label_count_ceiling": 0,
+    "complexity_ceiling": "No in-artwork headline, site label, or logo; a text-safe region is reserved for deterministic overlay by the publication layer (ARTICLE-VISUAL-PUBLICATION-HANDOFF.md §1)."
+  },
+  "composition": {
+    "dominant_structure": "One dominant subject plus one supporting metaphor (DIAGRAMMATIC-VISUAL-LANGUAGE.md §5.4).",
+    "supporting_modules_max": 1,
+    "reading_path": "Single-glance recognition.",
+    "negative_space": "high, reserved for the deterministic text-safe region",
+    "chrome_level": "none"
+  },
+  "audience_adaptation": {
+    "general-reader": "Default anchor: same palette family as the website illustration, moderate contrast.",
+    "professional-generalist": "May increase focal contrast for a newsletter/feed context while preserving the same palette family (DIAGRAMMATIC-VISUAL-LANGUAGE.md §10)."
+  },
+  "renderer_preference": {
+    "order": ["generative", "hybrid", "deterministic"],
+    "rule": "Same rule as visual/thumbnail: exact values or labels never ride on the generative layer, and the text-safe region is reserved rather than generated (SUENGJ-ARTICLE-IMAGE-FAMILIES.md §3.5)."
+  },
+  "readability_gate": {
+    "applies": true,
+    "gate": {
+      "viewport": "card / social-OG preview scale",
+      "requirements": [
+        "recognizable at Home Featured and content-card scale",
+        "legible after social/OG downscale",
+        "no body-infographic-style module density"
+      ]
+    },
+    "rationale": "SUENGJ-ARTICLE-IMAGE-FAMILIES.md §3.4 names the content-card and social/OG preview scale explicitly as a readability target for this family."
+  },
+  "split_rule": {
+    "applies": false,
+    "rationale": "A card is one glance-recognition object, not a multi-question plate; the split rule is a body-infographic control (SUENGJ-ARTICLE-IMAGE-FAMILIES.md §6)."
+  },
+  "acceptance": [
+    "the destination/thesis is recognizable within 2-5 seconds at card scale",
+    "legible after social/OG downscale",
+    "no mutable text baked into the artwork",
+    "does not read as a miniature infographic"
+  ],
+  "reject": [
+    "mini dashboard",
+    "dense collage",
+    "baked-in mutable headline or date",
+    "generic stock-art metaphor unrelated to the destination"
+  ],
+  "source_authority": [
+    "editorial/IMAGE-GENERATION.md",
+    "editorial/SUENGJ-ARTICLE-IMAGE-FAMILIES.md",
+    "editorial/DIAGRAMMATIC-VISUAL-LANGUAGE.md",
+    "editorial/ARTICLE-VISUAL-PUBLICATION-HANDOFF.md"
+  ]
+}

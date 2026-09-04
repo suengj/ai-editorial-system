@@ -1,0 +1,75 @@
+{
+  "schema_version": "1.0.0",
+  "job_id": "job:agent-handoff-diagram-candidate",
+  "intent_ref": "intent:2026-09-02-agent-handoff-note",
+  "calibration_ref": null,
+  "article_ref": {
+    "article_id": "art:agent-handoff-authority-boundary",
+    "version_number": 1,
+    "content_hash": "3333333333333333333333333333333333333333333333333333333333333333",
+    "claims_hash": "4444444444444444444444444444444444444444444444444444444444444444"
+  },
+  "artifact_profile": "visual/explanatory-diagram",
+  "profile_ref": "editorial/profiles/artifact/visual-explanatory-diagram.json",
+  "audience": {
+    "value": "domain-practitioner",
+    "profile_ref": "editorial/profiles/audience/domain-practitioner.json",
+    "traits_applied": []
+  },
+  "semantic_spec": {
+    "question": "What handoff boundary exists between the planner agent and the render agent?",
+    "must_communicate": [],
+    "must_not_include": []
+  },
+  "information_gain": {
+    "adjacent_representation": {
+      "type": "code_block",
+      "summary": "A code block immediately above already shows the exact three-step handoff sequence: plan -> validate -> render, with the same nodes and arrows a diagram would draw."
+    },
+    "redundancy_test": {
+      "q1_new_perception": "Nothing concrete — the diagram would show the same three nodes and two arrows already visible in the code block.",
+      "q2_harder_without_it": "Nothing meaningful becomes harder to understand without the diagram.",
+      "q3_merely_recreates": true,
+      "q4_worth_the_interruption": false
+    },
+    "gain_type": [],
+    "integration_strategy": "skip",
+    "verdict": "skip"
+  },
+  "density_check": {
+    "profile_semantic_density": "moderate",
+    "profile_visual_density": "low",
+    "compiled_semantic_density": "moderate",
+    "compiled_visual_density": "low",
+    "match": true
+  },
+  "selected_reference_traits": {
+    "adopt": [],
+    "avoid": [],
+    "do_not_copy": []
+  },
+  "brand_profile": "suengj-com",
+  "brand_profile_version": "1.0.0",
+  "text_policy": "hybrid_template",
+  "renderer_route": "deterministic",
+  "renderer": {
+    "tool": "svg-diagram-compiler",
+    "tool_version": "1.0.0",
+    "provider": "in-house",
+    "model": "svg-diagram-compiler",
+    "model_version": "1.0.0"
+  },
+  "context_isolation": {
+    "permitted_inputs": ["semantic_spec", "artifact_profile", "audience", "selected_reference_traits", "brand_profile"],
+    "excluded": ["ambient_conversation", "unrelated_project_state", "prior_unrelated_jobs", "renderer_runtime_identity"]
+  },
+  "attempts": 0,
+  "max_attempts": 1,
+  "qa": {
+    "performed": false,
+    "information_gain_recheck": "not_yet",
+    "density_recheck": "not_yet",
+    "notes": "R1 diagram-after-identical-sequence regression signature (VISUAL-INFORMATION-GAIN.md §10). Correctly gated before any rendering cost was spent."
+  },
+  "status": "gated_skip"
+}

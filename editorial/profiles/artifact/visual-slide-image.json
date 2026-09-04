@@ -1,0 +1,73 @@
+{
+  "schema_version": "1.0.0",
+  "artifact": "visual/slide-image",
+  "modality": "visual",
+  "family": "Single sequential frame compiled from a Visual Story Plan into a slide, carousel, or scrollytelling sequence (SLIDES-AND-CAROUSELS.md).",
+  "primary_job": "Carry one primary information function — orient, assert, show evidence, explain mechanism, compare, qualify, turn, show consequence, or close — as one frame in a beat-ordered sequence (SLIDES-AND-CAROUSELS.md §1).",
+  "semantic_density": {
+    "level": "moderate",
+    "rationale": "One dominant reason for the frame to exist: assertion plus visual evidence plus only the text needed to interpret it (SLIDES-AND-CAROUSELS.md §1-2)."
+  },
+  "visual_density": {
+    "level": "low",
+    "rationale": "Visible text and chrome vary by density profile (live_narrated, video_frame, silent_carousel, reference_deck) but the default is sparse — a slide reproducing the whole beat is a documented failure (SLIDES-AND-CAROUSELS.md §4, §7, §12 'bullet transcription')."
+  },
+  "text_policy": {
+    "profile": "hybrid_template",
+    "label_count_ceiling": 5,
+    "complexity_ceiling": "Slide titles and citations that must be exact remain deterministic typography even when an illustration is generated; how much visible text is allowed is set by the active density profile, from very-low (video_frame) to medium-to-higher (reference_deck) (SLIDES-AND-CAROUSELS.md §4, §7)."
+  },
+  "composition": {
+    "dominant_structure": "Primary assertion followed by primary evidence, in that order (Assertion-Evidence profile, SLIDES-AND-CAROUSELS.md §2).",
+    "supporting_modules_max": 1,
+    "reading_path": "Assertion, then evidence, then only the interpreting text needed.",
+    "negative_space": "moderate, density-profile dependent",
+    "chrome_level": "low; layout tokens and responsive behavior belong to the renderer, not the editorial spec (SLIDES-AND-CAROUSELS.md §10)"
+  },
+  "audience_adaptation": {
+    "general-reader": "silent_carousel-style density: visible text medium, self-contained without narration (SLIDES-AND-CAROUSELS.md §4).",
+    "professional-generalist": "reference_deck-style density: stronger provenance detail, medium-to-higher visible text.",
+    "domain-expert": "reference_deck-style density with lower speaker dependency and denser provenance.",
+    "beginner-learner": "live_narrated or silent_carousel with low visible text and higher narration/self-contained-text dependency, never both omitted at once."
+  },
+  "renderer_preference": {
+    "order": ["deterministic", "hybrid", "generative"],
+    "rule": "Exact values rendered from traceable evidence remain deterministic; illustrative frames route through IMAGE-GENERATION.md and its selected visual-language module (SLIDES-AND-CAROUSELS.md §5)."
+  },
+  "readability_gate": {
+    "applies": true,
+    "gate": {
+      "viewport": "mobile / silent_carousel scale",
+      "requirements": [
+        "self-contained without narration when density profile is silent_carousel",
+        "frame-to-frame continuity is explicit",
+        "mobile legibility is critical for carousel surfaces"
+      ]
+    },
+    "rationale": "SLIDES-AND-CAROUSELS.md §4 makes mobile legibility a hard requirement of the silent_carousel density profile, and it generalizes the SUENGJ-ARTICLE-IMAGE-FAMILIES.md §5 mobile-gate principle to sequential frames."
+  },
+  "split_rule": {
+    "applies": true,
+    "rule": "One dominant reason per frame. Split a beat into two frames rather than presenting two independent visual questions on one slide — the 'tiny-dashboard slide' failure (SLIDES-AND-CAROUSELS.md §1, §12)."
+  },
+  "acceptance": [
+    "the frame's main point can be stated in one sentence",
+    "the title/assertion matches the evidence shown",
+    "the frame maps to one or more beat_id entries",
+    "the density profile (live_narrated/video_frame/silent_carousel/reference_deck) is explicit",
+    "narration dependency is explicit"
+  ],
+  "reject": [
+    "section-heading deck (article structure copied instead of argument compiled)",
+    "bullet transcription",
+    "headline/evidence mismatch",
+    "tiny-dashboard slide",
+    "faux chart illustration",
+    "voiceover transcript reproduced on screen in a narrated profile"
+  ],
+  "source_authority": [
+    "editorial/SLIDES-AND-CAROUSELS.md",
+    "editorial/VISUAL-STORY-COMPILATION.md",
+    "editorial/IMAGE-TEXT-RENDERING-PROFILES.md"
+  ]
+}

@@ -1,0 +1,120 @@
+{
+  "schema_version": "1.0.0",
+  "package_id": "pkg:synthesize-inference-pricing-margin-2026-09-02",
+  "created_at": "2026-09-02T10:00:00Z",
+  "intent_ref": "intent:2026-09-02-inference-pricing-margin",
+  "transformation": {
+    "value": "synthesize",
+    "profile_ref": "editorial/profiles/transformation/synthesize.json"
+  },
+  "content_type": {
+    "value": "research",
+    "profile_ref": "editorial/profiles/content/research.json"
+  },
+  "audience": {
+    "value": "ai-practitioner"
+  },
+  "target_surfaces": [
+    {
+      "value": "suengj-com"
+    }
+  ],
+  "sources": [
+    {
+      "source_id": "src:drive:1MarketBriefFileIdAbCdEfGh0002",
+      "uri": "https://drive.google.com/file/d/1MarketBriefFileIdAbCdEfGh0002",
+      "retrieved_at": "2026-09-02T09:00:00Z",
+      "hash": {
+        "algo": "sha256",
+        "value": "0b27c45c91b7ed7fcc2e2fd9e738746d458e8640088bed6e675d08b451560e9b"
+      },
+      "role": "primary"
+    },
+    {
+      "source_id": "src:web:example.com/inference-cost-report-2026",
+      "uri": "https://example.com/inference-cost-report-2026",
+      "retrieved_at": "2026-09-02T09:15:00Z",
+      "hash": {
+        "algo": "sha256",
+        "value": "d4fbfc1621a079d392d601bbf693b95c3ebd366192a58f88e50e1058a0648510"
+      },
+      "role": "contradicting"
+    }
+  ],
+  "article_ref": null,
+  "thesis": "Falling inference list prices do not by themselves explain reported SaaS gross-margin movement, because serving cost is not the whole COGS stack.",
+  "key_concepts": [
+    "inference pricing",
+    "gross-margin decomposition",
+    "COGS stack separability"
+  ],
+  "summary": "Published per-token inference prices fell, but the reported gross margin of an AI-native SaaS filer did not move materially over the same period, because serving cost is only one line in its cost stack.",
+  "verified_claims": [
+    {
+      "claim_id": "c1",
+      "text": "Published per-token inference prices for the mid-tier model fell over the period examined.",
+      "kind": "number",
+      "status": "verified",
+      "evidence": [
+        {
+          "url": "https://example.com/inference-cost-report-2026",
+          "title": "Inference cost report 2026",
+          "retrieved_at": "2026-09-02",
+          "authority": "primary"
+        }
+      ]
+    },
+    {
+      "claim_id": "c2",
+      "text": "The filer's reported gross margin did not change materially over the same period.",
+      "kind": "number",
+      "status": "verified",
+      "evidence": [
+        {
+          "url": "https://example.com/filer-10q-2026-q2",
+          "title": "Filer 10-Q, 2026 Q2",
+          "retrieved_at": "2026-09-02",
+          "authority": "primary"
+        }
+      ]
+    }
+  ],
+  "uncertainty": [
+    "Negotiated enterprise rates are not public; list prices overstate what large buyers actually pay.",
+    "Serving-infrastructure cost is not separable from other COGS in most filings."
+  ],
+  "reference_profile_refs": [
+    "ref:margin-chart-style-2026"
+  ],
+  "calibration_ref": "calibration:suengj-default@v3",
+  "proposed_artifacts": [
+    "text/full",
+    "visual/body-infographic"
+  ],
+  "approved_artifacts": [],
+  "lineage": {
+    "claims_hash": "7d6e32631947e8a29360665c6e30601ec5999c73890285f39d01e692f8ae2378",
+    "package_hash": "6ef48b90db88db8a82c1a55d0d14082aef28a1913a70a5f972b66d99ece102e9",
+    "supersedes": null,
+    "produced_by": {
+      "skill": {
+        "name": "plan-artifacts",
+        "version": "0.3.1"
+      },
+      "tool": {
+        "name": "editorial-package-compiler",
+        "version": "0.1.0",
+        "model": "claude-opus"
+      }
+    }
+  },
+  "rights": {
+    "quotable": true,
+    "redistributable": false,
+    "license": null,
+    "attribution": "Synthesizes a Drive market brief and a public web report; neither source body is reproduced.",
+    "transcript_shaped": false,
+    "original_framing": true,
+    "synthesis_note": "The cost-decomposition argument connecting the two sources is this package's own; no source makes it."
+  }
+}

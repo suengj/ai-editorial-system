@@ -7,7 +7,8 @@
   "additionalProperties": false,
   "required": [
     "schema_version", "evaluation_id", "ref_id", "modality", "evaluator",
-    "evaluated_at", "basis", "dimensions", "applicable_to", "authority_boundary"
+    "evaluated_at", "basis", "dimensions", "applicable_to", "authority_boundary",
+    "provenance_class"
   ],
   "properties": {
     "schema_version": { "const": "1.0.0" },
@@ -52,6 +53,34 @@
     "authority_boundary": {
       "description": "This record grants craft evidence only, never factual authority. A reference may never establish a fact.",
       "const": "craft_evidence_only"
+    },
+    "provenance_class": {
+      "description": "Where this reference actually came from. Load-bearing against self-reinforcement: as this system generates more, its own outputs become the most plentiful and most semantically relevant references, so selection that ignores origin quietly converges on its own tics.",
+      "enum": ["external", "owner_created", "generated_output"]
+    },
+    "promotion": {
+      "description": "Present only when a generated_output reference has been promoted to a reusable positive reference (i.e. carries an adopt verdict). Publication is not promotion and an L1 pass is not promotion — see references/REFERENCE-EVALUATION-PROTOCOL.md. Absent on every unpromoted record.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["authorized_by", "basis", "evidence_refs", "promoted_at"],
+      "properties": {
+        "authorized_by": {
+          "description": "Who or what authorized the promotion, e.g. \"human:owner\".",
+          "type": "string",
+          "minLength": 1
+        },
+        "basis": {
+          "description": "Why this counts as promotion evidence. \"published\" or \"L1 pass\" alone is insufficient and is rejected by scripts/registry.mjs.",
+          "type": "string",
+          "minLength": 1
+        },
+        "evidence_refs": {
+          "description": "Ids of the feedback/evaluation records or explicit owner declaration this promotion rests on. Must be non-empty.",
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "promoted_at": { "type": "string", "format": "date-time" }
+      }
     },
     "supersedes": {
       "description": "Optional pointer to an earlier evaluation_id this record follows up on. Records are append-only: this never causes the earlier record to be removed or mutated.",

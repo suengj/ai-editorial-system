@@ -48,7 +48,7 @@ Skill is how near-duplicate Skills end up chosen by coin-flip.
 When instructions conflict, the higher entry wins:
 
 1. **Editorial Constitution** — `../editorial/constitution.md`
-2. **Content-type profile** — `../editorial/profiles/<type>.json`
+2. **Content-type profile** — `../editorial/profiles/content/<type>.json`
 3. **Task Skill** — this document
 4. **Article-specific source and context**
 5. **Human instruction and approval boundary** — outside the stack entirely

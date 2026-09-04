@@ -1,0 +1,73 @@
+{
+  "schema_version": "1.0.0",
+  "modality": "audio",
+  "source_vocabulary": [
+    "editorial/AUDIO-SCRIPT.md"
+  ],
+  "notes": "Dimensions name the vocabulary already defined in AUDIO-SCRIPT.md rather than restating it, in particular the narration/delivery/segment separation (§2) and the two-pass QA split (§20).",
+  "dimensions": [
+    {
+      "id": "spoken-naturalness",
+      "asks": "Does the script sound like something written to be heard, or like an article read aloud (AUDIO-SCRIPT.md §1)?",
+      "adopt_signal": "Recompiled reasoning, not a transcript of the written piece.",
+      "imitation_risk": "low"
+    },
+    {
+      "id": "thought-breath-units",
+      "asks": "Is the spoken unit a listenably complete thought, without an artificial short-sentence quota (AUDIO-SCRIPT.md §4)?",
+      "adopt_signal": "One claim, causal step, qualification, comparison, or consequence per unit.",
+      "imitation_risk": "low"
+    },
+    {
+      "id": "transitions",
+      "asks": "Do transitions state the relationship itself (cause, limit, reversal), or announce script machinery (AUDIO-SCRIPT.md §7)?",
+      "adopt_signal": "A transition that would be missed if removed, because it carries logic.",
+      "imitation_risk": "low"
+    },
+    {
+      "id": "recurrence",
+      "asks": "When an idea returns, does it return with a new function, or as filler repetition (AUDIO-SCRIPT.md §6)?",
+      "adopt_signal": "A recurring thesis restated with a narrower or clearer consequence.",
+      "imitation_risk": "low"
+    },
+    {
+      "id": "pace",
+      "asks": "Does pace vary with the material's difficulty, or run at one uniform speed regardless of content?",
+      "adopt_signal": "Slower pacing at genuinely hard inferences, not decorative pace changes.",
+      "imitation_risk": "medium — a specific performed pace is delivery, not a rule to copy"
+    },
+    {
+      "id": "pronunciation",
+      "asks": "Are load-bearing names, acronyms, and mixed-language terms given an explicit, provider-neutral spoken form (AUDIO-SCRIPT.md §11)?",
+      "adopt_signal": "A pronunciation decision recorded as editorial metadata, not left to a backend default.",
+      "imitation_risk": "low"
+    },
+    {
+      "id": "performance-delivery",
+      "asks": "Is delivery direction augmented from what the register/audience already imply, or an invented persona (AUDIO-SCRIPT.md §12, §18)?",
+      "adopt_signal": "Compact, stable direction: register + audience + global constraints + sparse local cues.",
+      "imitation_risk": "high — a specific vocal character or persona is the reference's own performance, not a transferable technique"
+    },
+    {
+      "id": "speaker-interaction",
+      "asks": "When multiple speakers are used, does the split serve a genuine information function rather than manufacturing energy (AUDIO-SCRIPT.md §15)?",
+      "adopt_signal": "A speaker split that maps to distinct argumentative roles.",
+      "imitation_risk": "medium"
+    },
+    {
+      "id": "audience-suitability",
+      "asks": "Do assumed knowledge and aside frequency match a named audience's attention context (V2-EDITORIAL-LEARNING-CORE.md §3 table)?",
+      "adopt_signal": "Assumed-knowledge and aside choices that would change if the audience changed.",
+      "imitation_risk": "low"
+    }
+  ],
+  "not_authoritative_for": [
+    "Rendered voice identity, provider, model, or vendor-specific control syntax — those are adapter concerns per AUDIO-SCRIPT.md §19, never craft evidence.",
+    "Whether a claim spoken in the script is true or a new derived claim requires re-verification (AUDIO-SCRIPT.md §3) — this profile evaluates listening structure, not fact.",
+    "Timing/duration correctness for a specific rendering — that is Render QA (AUDIO-SCRIPT.md §20), not a reference craft trait."
+  ],
+  "selection_hints": [
+    "Match applicable_to.artifacts to the requested audio/* artifact (monologue vs dialogue vs timed-narration) before matching pace or performance style.",
+    "performance-delivery is the dimension most often do_not_copy; select it only when the evaluation explicitly marks it adopt, not merely because the reference's audio is well produced."
+  ]
+}

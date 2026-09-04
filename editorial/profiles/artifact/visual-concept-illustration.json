@@ -1,0 +1,63 @@
+{
+  "schema_version": "1.0.0",
+  "artifact": "visual/concept-illustration",
+  "modality": "visual",
+  "family": "Abstract analytical / conceptual editorial illustration — the accent lane of ARTICLE-ILLUSTRATION-ROUTING.md §4.3 (~10% of visual use).",
+  "primary_job": "Frame an abstract thesis or give an article/project a durable conceptual metaphor when the visual metaphor itself adds explanatory or identity value (ARTICLE-ILLUSTRATION-ROUTING.md §2.5, §1 'frame').",
+  "semantic_density": {
+    "level": "low",
+    "rationale": "The job is framing, not mechanism explanation: one dominant idea plus one or two supporting structures, not an argument map (SUENGJ-VISUAL-TASTE-CALIBRATION.md §4 density rule; ARTICLE-ILLUSTRATION-ROUTING.md §2.5)."
+  },
+  "visual_density": {
+    "level": "low",
+    "rationale": "Generous negative space, restrained geometry, sparse connectors — the taste-calibration anchor for the publication's illustrative work (SUENGJ-VISUAL-TASTE-CALIBRATION.md §1-2)."
+  },
+  "text_policy": {
+    "profile": "no_text",
+    "label_count_ceiling": 0,
+    "complexity_ceiling": "No readable UI labels, numerical axes, citations, or logos; the schematic concept visual default is no in-artwork text (DIAGRAMMATIC-VISUAL-LANGUAGE.md §4, §7 schematic concept prompt template)."
+  },
+  "composition": {
+    "dominant_structure": "One central structure or bounded metaphor with a small number of satellite modules and sparse connectors (DIAGRAMMATIC-VISUAL-LANGUAGE.md §5.1).",
+    "supporting_modules_max": 2,
+    "reading_path": "Single glance; not sequenced.",
+    "negative_space": "high",
+    "chrome_level": "none"
+  },
+  "audience_adaptation": {
+    "child-upper-elementary": "Use a literal, concrete depiction rather than a symbolic or schematic encoding; low abstraction (audience/child-upper-elementary.json modality_effects.visual: abstraction low).",
+    "domain-expert": "The metaphor may compress domain-specific tension without an explanatory legend; abstraction ceiling is higher.",
+    "general-reader": "Default anchor: restrained abstraction that still reads without domain background."
+  },
+  "renderer_preference": {
+    "order": ["generative", "hybrid", "deterministic"],
+    "rule": "Conceptual illustration is the generative lane by design — it is not evidence-bearing. If a version needs exact geometry to land the metaphor, use deterministic only for that element; exact values or labels never belong here at all (ARTICLE-ILLUSTRATION-ROUTING.md §2.5, §4.3)."
+  },
+  "readability_gate": {
+    "applies": false,
+    "rationale": "Used primarily as hero, section-opener, or identity placement rather than a body-facing explanatory plate; it inherits the general small-scale legibility expectation of ARTICLE-ILLUSTRATION-ROUTING.md §10 (hero: stronger silhouette, more crop tolerance) rather than the body-infographic mobile gate."
+  },
+  "split_rule": {
+    "applies": false,
+    "rationale": "A single bounded metaphor by construction; splitting would convert it into a body-infographic decision, which is out of scope for this artifact (SUENGJ-ARTICLE-IMAGE-FAMILIES.md §6 applies to body infographics only)."
+  },
+  "acceptance": [
+    "the reviewer can state which article claim or thesis the image supports (IMAGE-GENERATION.md §8)",
+    "one dominant structure, not an assembled icon library",
+    "does not imply fabricated evidence or invented data",
+    "survives the intended hero/section-opener crop"
+  ],
+  "reject": [
+    "topic-cliché noun representation instead of the actual mechanism or distinction (ARTICLE-ILLUSTRATION-ROUTING.md §9)",
+    "generic network-node wallpaper",
+    "faux dashboard or chart elements",
+    "decorative restatement of the thesis with no new framing (VISUAL-INFORMATION-GAIN.md §10 R4)"
+  ],
+  "source_authority": [
+    "editorial/ARTICLE-ILLUSTRATION-ROUTING.md",
+    "editorial/SUENGJ-VISUAL-TASTE-CALIBRATION.md",
+    "editorial/DIAGRAMMATIC-VISUAL-LANGUAGE.md",
+    "editorial/IMAGE-GENERATION.md",
+    "editorial/VISUAL-INFORMATION-GAIN.md"
+  ]
+}

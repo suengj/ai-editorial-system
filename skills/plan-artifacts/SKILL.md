@@ -1,6 +1,6 @@
 ---
 name: plan-artifacts
-version: 0.3.1
+version: 0.4.0
 description: Decide which derived artifacts an article actually warrants and emit generator-neutral plans with lineage attached.
 when_not_to_use: Do not use to render anything — this Skill plans, generators render. Do not use to decide what the article argues.
 inputs:
@@ -34,6 +34,8 @@ governed_by:
   - editorial/VISUAL-STORY-COMPILATION.md
   - editorial/AUDIO-SCRIPT.md
   - editorial/artifact-priority.json
+  - editorial/SUENGJ-ARTICLE-IMAGE-FAMILIES.md
+  - schemas/visual-job.schema.json
 allowed_tools:
   - file_read
 evidence:
@@ -43,8 +45,12 @@ evidence:
     - no planned kind is listed inappropriate by the content-type profile
     - every planned article-body visual names concrete information gain beyond the adjacent representation or explicitly replaces/repositions that representation
     - the plan carries article_ref with both hashes
+    - every non-skipped visual decision names one of the eight editorial/profiles/artifact/visual-*.json profiles before any renderer is chosen
+    - the visual has passed both pre-render gates in schemas/VISUAL-JOB-CONTRACT.md (information gain, density/profile match) before rendering is attempted, verified by `node scripts/compile-visual-prompt.mjs --validate`
   fixtures:
     - schemas/examples/artifact-plan.example.json
+    - schemas/examples/visual-job-body-infographic.example.json
+    - schemas/examples/visual-job-skip.example.json
 ---
 
 # plan-artifacts
@@ -99,7 +105,22 @@ are appropriate at all.
    hierarchy is not approved just because it is accurate. If there is no
    concrete marginal information gain, skip it or replace the redundant
    existing representation rather than stacking both. Follow
-   `editorial/VISUAL-INFORMATION-GAIN.md`.
+   `editorial/VISUAL-INFORMATION-GAIN.md`. `skip` is a first-class, non-failing
+   result here and short-circuits before any of the following: no artifact
+   profile, no renderer, no compiled prompt.
+4a. **Route every non-skipped visual to one of the eight pinned artifact
+   profiles** (`editorial/profiles/artifact/visual-*.json` — concept
+   illustration, thumbnail, body infographic, explanatory diagram, analytical
+   graphic, slide image, social card, evidence visual) before a renderer is
+   chosen. The profile fixes `semantic_density`/`visual_density` for that
+   family (`editorial/SUENGJ-ARTICLE-IMAGE-FAMILIES.md`), which is the gate
+   that keeps a thumbnail thesis-first and sparse while a body infographic
+   stays information-first — a body infographic compiled at thumbnail density
+   is a defect, not a style choice. Both pre-render gates — the information-gain
+   gate above and the density/profile match — must pass, per
+   `schemas/VISUAL-JOB-CONTRACT.md`, before a renderer or a prompt exists.
+   `scripts/compile-visual-prompt.mjs --validate` is the executable form of
+   that check; this Skill does not compile the prompt itself.
 5. **For an evidence visual**, state the single question it must answer, the
    claims and data behind it, the form, and **where it feeds back** — what it
    would mean if the visual does not show what was expected. A visual with no
@@ -200,6 +221,10 @@ that does not need it, and no content type is obliged to produce any artifact.
 - No planned kind is `inappropriate` for the content type.
 - Every planned article-body visual has a concrete information-gain rationale
   or an explicit replacement/reposition strategy for overlapping content.
+- Every non-skipped visual names one of the eight
+  `editorial/profiles/artifact/visual-*.json` profiles, and its compiled job
+  passes both pre-render gates — see `schemas/VISUAL-JOB-CONTRACT.md` and
+  `node scripts/compile-visual-prompt.mjs --validate`.
 - `article_ref` carries both hashes.
 
 Run: `npm run validate:plan`.

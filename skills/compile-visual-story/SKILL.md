@@ -80,6 +80,26 @@ Visual Story Plan
 The Skill produces semantics and mappings. It never renders and it does not
 replace `compile-audio-script`.
 
+## Inputs
+
+A human-finalized canonical article with its verified claim set, the artifact
+plan `plan-artifacts` approved, and the content-type profile. Optionally a
+semantic presentation plan and a visual-language contract when the surfaces in
+play need them.
+
+The article arrives by reference — `article_ref` with `version_number`,
+`content_hash`, and `claims_hash` — not as pasted prose. The hashes are what
+make a later beat graph decidably stale rather than merely old.
+
+## Outputs
+
+One provider-neutral **Visual Story Plan**: an argument-beat graph with stable
+`beat_id`s, each beat carrying its verified-claim and evidence references, plus
+a surface mapping for every planned slide, infographic, audio, or video output.
+
+The same claim keeps one `beat_id` across every surface. Wording, density,
+layout, and timing may differ per surface; the argument may not.
+
 ## Preconditions
 
 Refuse unless:
