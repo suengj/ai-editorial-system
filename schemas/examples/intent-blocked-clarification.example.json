@@ -1,0 +1,67 @@
+{
+  "schema_version": "2.0.0",
+  "intent_id": "intent:2026-09-05-blocked-vector-db-notes",
+  "created_at": "2026-09-05T11:30:00Z",
+  "request": {
+    "utterance": "이 벡터 DB 노트들 정리해서 뭔가 만들어줘.",
+    "language": "ko",
+    "received_by": "claude-code",
+    "received_at": "2026-09-05T11:30:00Z"
+  },
+  "axes": {
+    "transformation": {
+      "value": null,
+      "state": "missing_material",
+      "basis": "\"정리해서\" (organize/clean up) is genuinely ambiguous between compress (shorten the existing notes) and synthesize (combine them into a new argument) — the two read very differently and change what \"만들어줘\" (make something) is allowed to add."
+    },
+    "content_type": {
+      "value": null,
+      "state": "missing_material",
+      "basis": "\"뭔가 만들어줘\" (make something) names no content type; research vs. note carries a materially different evidence burden (research.json requires >=3 sources and a contradicting-role source; note.json does not)."
+    },
+    "audience": {
+      "value": "domain-practitioner",
+      "state": "assumed",
+      "profile_ref": "editorial/profiles/audience/domain-practitioner.json",
+      "basis": "the source notes are technical vector-DB material with no stated destination audience; practitioner is the safe default for this repo's usual reader and asking about it would not change much given the source material itself is already practitioner-level."
+    },
+    "surface": {
+      "value": "suengj-com",
+      "state": "assumed",
+      "profile_ref": "editorial/profiles/surface/suengj-com.json",
+      "basis": "no destination was named; suengj-com is the default publication surface (docs/architecture/V2-EDITORIAL-LEARNING-CORE.md §8)."
+    },
+    "artifacts": []
+  },
+  "inputs": {
+    "sources": [
+      { "source_id": "src:drive:1VecDbNoteA", "state": "confirmed" },
+      { "source_id": "src:drive:1VecDbNoteB", "state": "confirmed" }
+    ],
+    "references": []
+  },
+  "constraints": {},
+  "overrides": [],
+  "clarification": {
+    "required": ["axes.transformation", "axes.content_type", "axes.artifacts"],
+    "asked": [
+      {
+        "field": "axes.transformation",
+        "question": "이 노트들을 어떻게 다룰까요? 있는 내용을 더 짧게 정리(compress)할까요, 아니면 여러 노트를 하나의 새로운 관점으로 종합(synthesize)할까요?",
+        "options": ["compress", "synthesize"],
+        "default": "synthesize",
+        "answer": null
+      },
+      {
+        "field": "axes.content_type",
+        "question": "결과물은 짧은 노트(note)가 좋을까요, 아니면 근거를 갖춘 research 글이 좋을까요?",
+        "options": ["note", "research"],
+        "default": "note",
+        "answer": null
+      }
+    ],
+    "resolution": "unresolved"
+  },
+  "calibration_ref": null,
+  "status": "blocked_on_clarification"
+}

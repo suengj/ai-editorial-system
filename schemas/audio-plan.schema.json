@@ -1,0 +1,292 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://suengj.com/schemas/audio-plan.schema.json",
+  "title": "Audio Plan",
+  "description": "The pre-TTS contract (AES-V2.8 / SUE-566). Records the compiled canonical spoken script and every state a bad audio artifact must route back to — audience, artifact profile, reference traits, pronunciation, delivery, script L1 review — before an expensive render is attempted. Mirrors the lineage and gate structure of schemas/visual-job.schema.json rather than inventing a parallel one. See schemas/AUDIO-PLAN-CONTRACT.md.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version", "plan_id", "artifact_profile", "profile_ref",
+    "audience", "selected_reference_traits", "spoken_script", "recompilation",
+    "segments", "pronunciation", "delivery_intent", "timing", "script_l1",
+    "render", "attempts", "max_attempts", "qa", "cost", "status"
+  ],
+  "properties": {
+    "schema_version": { "const": "1.0.0" },
+    "plan_id": {
+      "type": "string",
+      "pattern": "^audioplan:[a-z0-9]+(-[a-z0-9]+)*$"
+    },
+    "article_ref": { "$ref": "#/$defs/article_ref" },
+    "package_ref": {
+      "description": "Editorial Package reference, when this plan is compiled from a package rather than a single article. Exactly one of article_ref/package_ref must be present — checked by scripts/lib/audio-plan-core.mjs, not by this schema.",
+      "type": "string",
+      "minLength": 1
+    },
+    "artifact_profile": {
+      "description": "One of the three pinned audio artifact profile ids.",
+      "enum": ["audio/monologue", "audio/dialogue", "audio/timed-narration"]
+    },
+    "profile_ref": {
+      "type": "string",
+      "pattern": "^editorial/profiles/artifact/"
+    },
+    "audience": { "$ref": "#/$defs/audience" },
+    "selected_reference_traits": { "$ref": "#/$defs/selected_reference_traits" },
+    "spoken_script": {
+      "description": "The canonical narration_text SSOT (AUDIO-SCRIPT.md §2). Clean spoken text only — never provider markup, stage directions, or delivery instructions.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["narration_text", "narration_hash", "script_version"],
+      "properties": {
+        "narration_text": { "type": "string", "minLength": 1 },
+        "narration_hash": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "script_version": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "recompilation": {
+      "description": "Evidence that the article was recompiled for listening rather than sent to TTS as-is (AUDIO-SCRIPT.md §1). Required so skipping this step is structurally visible.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["performed", "identical_to_source_prose"],
+      "properties": {
+        "performed": { "type": "boolean" },
+        "identical_to_source_prose": {
+          "description": "Must be false. true means the narration_text is the article prose read aloud with no listening-structure recompilation — the default failure this contract exists to prevent.",
+          "type": "boolean"
+        },
+        "structural_changes": {
+          "description": "What changed between article prose and spoken script (reordering, compression, recurrence added, transitions rewritten).",
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "segments": {
+      "description": "Semantic segment plan (AUDIO-SCRIPT.md §17). Segment boundaries are chosen by meaning first, then fit to provider limits.",
+      "type": "array",
+      "items": { "$ref": "#/$defs/segment" }
+    },
+    "pronunciation": {
+      "description": "Provider-neutral pronunciation glossary (AUDIO-SCRIPT.md §10, §11).",
+      "type": "array",
+      "items": { "$ref": "#/$defs/pronunciation_entry" }
+    },
+    "delivery_intent": { "$ref": "#/$defs/delivery_intent" },
+    "dialogue": {
+      "description": "Required and validated only when artifact_profile is audio/dialogue (checked by scripts/lib/audio-plan-core.mjs, since this schema subset has no conditional keyword).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["speaker_roles", "knowledge_asymmetry", "turn_policy", "agreement_policy", "persona_boundary_statement"],
+      "properties": {
+        "speaker_roles": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/speaker_role" }
+        },
+        "knowledge_asymmetry": { "type": "string", "minLength": 1 },
+        "turn_policy": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["turn_length", "interruption_conditions"],
+          "properties": {
+            "turn_length": { "type": "string", "minLength": 1 },
+            "interruption_conditions": { "type": "string", "minLength": 1 }
+          }
+        },
+        "agreement_policy": { "type": "string", "minLength": 1 },
+        "persona_boundary_statement": { "type": "string", "minLength": 1 }
+      }
+    },
+    "timing": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["rendering_mode"],
+      "properties": {
+        "rendering_mode": { "enum": ["free", "timed"] },
+        "target_duration_ms": { "type": ["integer", "null"], "minimum": 0 },
+        "tolerance_ms": { "type": ["integer", "null"], "minimum": 0 }
+      }
+    },
+    "script_l1": {
+      "description": "L1 spoken-naturalness review (AUDIO-SCRIPT.md §20 'Script QA'). Cheap preflight that must pass before an expensive render (docs/architecture/V2-EDITORIAL-LEARNING-CORE.md §9).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["performed", "outcome"],
+      "properties": {
+        "performed": { "type": "boolean" },
+        "outcome": { "enum": ["pass", "fail", "not_yet"] },
+        "checklist": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+        "reviewer": { "enum": ["model", "human"] }
+      }
+    },
+    "render": {
+      "description": "Rendering lineage only (provider/model/version/voice) — never editorial state. Nullable because a plan below the render gate has not rendered yet.",
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "required": ["tool", "provider", "model", "model_version", "voice_provenance_class"],
+      "properties": {
+        "tool": { "type": "string", "minLength": 1 },
+        "tool_version": { "type": "string", "minLength": 1 },
+        "provider": { "type": "string", "minLength": 1 },
+        "model": { "type": "string", "minLength": 1 },
+        "model_version": { "type": "string", "minLength": 1 },
+        "voice_id": { "type": "string", "minLength": 1 },
+        "voice_provenance_class": {
+          "description": "editorial/RIGHTS-AND-PROVENANCE.md §4 'Generated voice provenance' table.",
+          "enum": ["provider_stock", "synthetic_designed", "owner_cloned", "licensed_voice_actor", "third_party_imitation"]
+        },
+        "quality_tier": { "type": "string", "minLength": 1 }
+      }
+    },
+    "attempts": { "type": "integer", "minimum": 0 },
+    "max_attempts": { "type": "integer", "minimum": 1 },
+    "qa": {
+      "description": "Rendered-audio QA (AUDIO-SCRIPT.md §20 'Render QA'). Structurally separate from script_l1 — a correct transcript certifies nothing about pronunciation, pacing, continuity, or performance.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["performed", "pronunciation_check", "pacing_check", "continuity_check", "performance_check", "directive_leak_check"],
+      "properties": {
+        "performed": { "type": "boolean" },
+        "pronunciation_check": { "enum": ["pass", "fail", "not_yet"] },
+        "pacing_check": { "enum": ["pass", "fail", "not_yet"] },
+        "continuity_check": { "enum": ["pass", "fail", "not_yet"] },
+        "performance_check": { "enum": ["pass", "fail", "not_yet"] },
+        "directive_leak_check": { "enum": ["pass", "fail", "not_yet"] },
+        "notes": { "type": "string" }
+      }
+    },
+    "cost": {
+      "description": "Cost per accepted artifact, not raw render count (docs/architecture/V2-EDITORIAL-LEARNING-CORE.md §9).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["renders_attempted", "renders_accepted", "cost_per_accepted_artifact"],
+      "properties": {
+        "renders_attempted": { "type": "integer", "minimum": 0 },
+        "renders_accepted": { "type": "integer", "minimum": 0 },
+        "cost_per_accepted_artifact": { "type": ["number", "null"], "minimum": 0 }
+      }
+    },
+    "status": {
+      "enum": [
+        "planned", "script_compiled", "script_l1_review", "script_l1_pass", "script_l1_fail",
+        "ready_for_render", "rendering", "rendered", "qa_pass", "qa_fail", "accepted", "rejected"
+      ]
+    }
+  },
+  "$defs": {
+    "article_ref": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["article_id", "version_number", "content_hash", "claims_hash"],
+      "properties": {
+        "article_id": { "type": "string", "pattern": "^art:[a-z0-9]+(-[a-z0-9]+)*$" },
+        "version_number": { "type": "integer", "minimum": 1 },
+        "content_hash": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "claims_hash": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+      }
+    },
+    "audience": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["value", "profile_ref", "traits_applied"],
+      "properties": {
+        "value": {
+          "enum": [
+            "general-reader", "professional-generalist", "domain-practitioner",
+            "domain-expert", "beginner-learner", "child-upper-elementary"
+          ]
+        },
+        "profile_ref": { "type": "string", "pattern": "^editorial/profiles/audience/" },
+        "traits_applied": {
+          "description": "Which concrete audience.modality_effects.audio adjustments were actually applied to this plan, not the whole profile.",
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "selected_reference_traits": {
+      "description": "Traits only, never a reference body (docs/architecture/V2-EDITORIAL-LEARNING-CORE.md §2; editorial/profiles/reference/audio.json).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["adopt", "avoid", "do_not_copy"],
+      "properties": {
+        "adopt": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+        "avoid": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+        "do_not_copy": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+        "authoritative_override": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "segment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["segment_id", "narration_span_hash"],
+      "properties": {
+        "segment_id": { "type": "string", "pattern": "^seg-[a-z0-9]+(-[a-z0-9]+)*$" },
+        "beat_id": {
+          "description": "Links to the shared argument-beat graph (editorial/VISUAL-STORY-COMPILATION.md §3). Required for audio/timed-narration — checked by scripts/lib/audio-plan-core.mjs.",
+          "type": "string",
+          "pattern": "^beat-[a-z0-9]+(-[a-z0-9]+)*$"
+        },
+        "speaker": {
+          "description": "Speaking role id for audio/dialogue segments; must resolve to one of dialogue.speaker_roles[].role_id.",
+          "type": "string",
+          "minLength": 1
+        },
+        "narration_span_hash": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "previous_context": { "type": "string" },
+        "next_context": { "type": "string" },
+        "target_duration_ms": { "type": ["integer", "null"], "minimum": 0 },
+        "cues": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/performance_cue" }
+        }
+      }
+    },
+    "performance_cue": {
+      "enum": ["pause_short", "pause_medium", "emphasis", "pace_slow", "pace_fast", "pronunciation_ref", "speaker"]
+    },
+    "pronunciation_entry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["term", "spoken_form"],
+      "properties": {
+        "term": { "type": "string", "minLength": 1 },
+        "surface_text": { "type": "string", "minLength": 1 },
+        "spoken_form": { "type": "string", "minLength": 1 },
+        "pronunciation_ref": { "type": "string", "minLength": 1 }
+      }
+    },
+    "delivery_intent": {
+      "description": "Provider-neutral performance direction (AUDIO-SCRIPT.md §12, §13) — augmented from register/audience, never an invented persona. Never SSML, audio tags, or provider syntax.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["register", "pace"],
+      "properties": {
+        "register": { "type": "string", "minLength": 1 },
+        "pace": { "type": "string", "minLength": 1 },
+        "affect": { "type": "string" },
+        "global_cues": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/performance_cue" }
+        }
+      }
+    },
+    "speaker_role": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["role_id", "purpose", "knowledge_position", "persona_disclosure"],
+      "properties": {
+        "role_id": { "type": "string", "minLength": 1 },
+        "purpose": { "type": "string", "minLength": 1 },
+        "knowledge_position": { "type": "string", "minLength": 1 },
+        "persona_disclosure": {
+          "description": "AUDIO-SCRIPT.md §15: a synthetic speaker may never be presented as a real source. The only value this schema accepts is the explicit non-source disclosure — any other value fails validation structurally.",
+          "enum": ["synthetic_non_source"]
+        }
+      }
+    }
+  }
+}

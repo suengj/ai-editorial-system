@@ -1,0 +1,6 @@
+{
+  "schema_version": "1.0.0",
+  "artifact": "visual/mismatch",
+  "modality": "audio",
+  "note": "Test fixture only (scripts/test-intent.mjs). Deliberately inconsistent: its own id is namespaced visual/ but its modality field says audio, to prove validateIntent's ARTIFACT_MODALITY check fires. Not a real artifact profile and not loaded by editorial/profiles/axes.json."
+}

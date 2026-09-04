@@ -1,0 +1,67 @@
+{
+  "schema_version": "1.0.0",
+  "artifact": "audio/timed-narration",
+  "modality": "audio",
+  "family": "Timed narration for video/slide synchronization — narration bound to beat-indexed visual timing rather than free duration (AUDIO-SCRIPT.md §16 'time-constrained narration'; editorial/VISUAL-STORY-COMPILATION.md; editorial/VIDEO-STORYBOARD.md).",
+  "primary_job": "Carry the same verified argument as monologue or dialogue narration while meeting an externally imposed duration or beat-synchronization constraint, without unnatural time-stretching (AUDIO-SCRIPT.md §16).",
+  "thought_unit": {
+    "unit": "same listenably-complete-thought unit as audio/monologue (AUDIO-SCRIPT.md §4); this profile does not relax that rule to fit a clock."
+  },
+  "rhythm": {
+    "requirement": "same natural-rhythm requirement as audio/monologue (AUDIO-SCRIPT.md §4). A duration budget is met by revising the script's scope, not by mechanically compressing sentence variety."
+  },
+  "recurrence": {
+    "policy": "same recurrence discipline as audio/monologue (AUDIO-SCRIPT.md §6); a timed budget is not licence to cut a recurrence that restores orientation the visual timeline depends on."
+  },
+  "scaffolding": {
+    "level": "low",
+    "rule": "same restraint as audio/monologue (AUDIO-SCRIPT.md §7); do not add a spoken transition merely to bridge a visual cut — the transition still has to carry logic."
+  },
+  "pace": {
+    "default": "rendering_mode is timed by default for this profile; target_duration_ms and tolerance_ms must be explicit before writing begins. A time budget is an editorial input, not permission to speed-warp the finished audio (AUDIO-SCRIPT.md §16).",
+    "on_miss": "when narration is materially too long or short for its budget, revise the spoken script within the verified claim set; do not stretch or compress the render until it sounds unnatural (AUDIO-SCRIPT.md §16, §21 'timing failure')."
+  },
+  "pronunciation_policy": {
+    "requirement": "same provider-neutral pronunciation glossary requirement as audio/monologue (AUDIO-SCRIPT.md §10, §11)."
+  },
+  "renderer_preference": {
+    "order": ["single_voice_tts", "multi_voice_tts"],
+    "rule": "timed-narration is a synchronization layer over whichever narration mode the piece actually uses (monologue or dialogue), not a third voice mode of its own; renderer choice follows the underlying mode's own renderer_preference (AUDIO-SCRIPT.md §16, §23)."
+  },
+  "segment_identity": {
+    "requirement": "every segment carries a stable segment_id and a beat_id linking it to the shared argument-beat graph (editorial/VISUAL-STORY-COMPILATION.md §3 'canonical beat shape'), so a local narration or visual defect can be regenerated for one beat without recomputing the whole track (AUDIO-SCRIPT.md §17, §21)."
+  },
+  "beat_synchronization": {
+    "requirement": "narration and the visual/video timeline must agree on what is being asserted at each synchronized beat (editorial/VIDEO-STORYBOARD.md §2 'beat identity is the synchronization key'; editorial/VISUAL-STORY-COMPILATION.md §3).",
+    "boundary": "timing alignment is a separate constraint from meaning; it does not authorize a new claim, and it does not force the narration to describe every visible on-screen action (AUDIO-SCRIPT.md §16; editorial/VIDEO-STORYBOARD.md §1)."
+  },
+  "audience_adaptation": {
+    "general-reader": "same monologue/dialogue audience adaptation as the underlying narration mode (editorial/profiles/artifact/audio-monologue.json, editorial/profiles/artifact/audio-dialogue.json audience_adaptation.general-reader), with pacing additionally bounded by the segment's target_duration_ms.",
+    "professional-generalist": "same as the underlying narration mode's professional-generalist adaptation, bounded by segment timing.",
+    "domain-practitioner": "same as the underlying narration mode's domain-practitioner adaptation, bounded by segment timing.",
+    "domain-expert": "same as the underlying narration mode's domain-expert adaptation; a tight time budget for an expert audience should cut scope before it cuts density (editorial/profiles/audience/domain-expert.json anti_patterns: 'padding to reach an expected length').",
+    "beginner-learner": "same as the underlying narration mode's beginner-learner adaptation; a tight time budget must not remove the higher useful_recurrence this audience needs (editorial/profiles/audience/beginner-learner.json modality_effects.audio) — cut scope instead.",
+    "child-upper-elementary": "same as the underlying narration mode's child-upper-elementary adaptation (editorial/profiles/audience/child-upper-elementary.json modality_effects.audio); do not meet a duration budget by dropping the second, differently-worded restatement this audience needs."
+  },
+  "acceptance": [
+    "rendering_mode is explicit ('timed') with target_duration_ms and tolerance_ms recorded before compilation",
+    "every segment carries a beat_id resolving to the shared Visual Story Plan beat graph",
+    "a duration miss is resolved through script revision within the verified claim set, not through render-time stretching or compression (AUDIO-SCRIPT.md §16)",
+    "narration and the visual/video timeline agree on what is asserted at each synchronized beat"
+  ],
+  "reject": [
+    "a real duration constraint discovered only after writing and then solved by stretching or compressing the finished render",
+    "a segment with no beat_id when the destination requires beat synchronization",
+    "narration that describes every visible on-screen action instead of carrying the argument (AUDIO-SCRIPT.md §16)",
+    "free narration silently treated as timed, or the reverse, with no explicit rendering_mode recorded"
+  ],
+  "status_note": "Planning and canonical-script path only. TTS rendering and video/slide synchronization for this profile have not been exercised end to end; audio is deferred from the SUE-570 pilot and video remains 'reject for now' (docs/architecture/AUDIO-VIDEO-ROADMAP.md).",
+  "source_authority": [
+    "editorial/AUDIO-SCRIPT.md",
+    "editorial/VISUAL-STORY-COMPILATION.md",
+    "editorial/VIDEO-STORYBOARD.md",
+    "editorial/profiles/audience/ (modality_effects.audio per profile)",
+    "docs/architecture/V2-EDITORIAL-LEARNING-CORE.md",
+    "docs/architecture/AUDIO-VIDEO-ROADMAP.md"
+  ]
+}

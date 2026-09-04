@@ -53,15 +53,12 @@
       "linear_issue": "AES-V2.7 (SUE-565) / AES-V2.8 (SUE-566)",
       "filename_rule": "namespaced id, \"/\" written as \"-\" in the filename: visual/thumbnail -> visual-thumbnail.json",
       "planned": [
-        "audio/monologue",
-        "audio/dialogue",
-        "audio/timed-narration",
         "text/article",
         "text/brief",
         "text/knowledge-note",
         "text/sources"
       ],
-      "planned_note": "Declared but not yet built. audio/* lands with AES-V2.8 (SUE-566); text/* profiles are an open integration item — V1 already defines artifact kinds in schemas/artifact.schema.json, so the text artifact profiles must extend that vocabulary rather than duplicate it. A cross-reference to a planned id is reported, never silently accepted, and never treated as a typo.",
+      "planned_note": "Declared but not yet built. text/* artifact profiles are an open integration item — V1 already defines artifact kinds in schemas/artifact.schema.json and schemas/ARTICLE-ARTIFACT-CONTRACT.md records how a kind relates to a profile, so text profiles must extend that layering rather than duplicate it. A cross-reference to a planned id is reported, never silently accepted, and never treated as a typo. audio/* landed with AES-V2.8 (SUE-566).",
       "deferred": [
         "video/explainer"
       ],

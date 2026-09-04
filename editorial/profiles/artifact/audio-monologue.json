@@ -1,0 +1,71 @@
+{
+  "schema_version": "1.0.0",
+  "artifact": "audio/monologue",
+  "modality": "audio",
+  "family": "Solo narration — single-speaker spoken recompilation of a canonical article (AUDIO-SCRIPT.md §1, §15 'single speaker is the default').",
+  "primary_job": "Carry the article's verified argument to a listener in one continuous voice, reasoned for listening rather than read aloud (AUDIO-SCRIPT.md §1, §4).",
+  "thought_unit": {
+    "unit": "a listenably complete thought, not a fixed sentence length (AUDIO-SCRIPT.md §4).",
+    "rule": "one claim, causal step, qualification, comparison, or consequence per unit; a longer sentence is valid when the condition and its consequence must stay together, a short sentence is valid when a boundary needs to land cleanly (AUDIO-SCRIPT.md §4)."
+  },
+  "rhythm": {
+    "requirement": "variable, natural sentence-length rhythm; a flat, uniform cadence is a defect, not a quality attribute (AUDIO-SCRIPT.md §4).",
+    "reject_signal": "quota-driven uniformly short sentences applied regardless of the material — 'another synthetic cadence' (AUDIO-SCRIPT.md §4)."
+  },
+  "recurrence": {
+    "policy": "semantic recurrence only, and only when it restores orientation or shows how a later fact changes an earlier claim; a recurring idea should return with a new function (narrower or clearer consequence), never as verbatim repetition (AUDIO-SCRIPT.md §6).",
+    "why_audio_needs_this_and_text_does_not": "a listener cannot glance back up the page the way a reader can; recurrence restores orientation that re-reading would otherwise provide (AUDIO-SCRIPT.md §1, §6)."
+  },
+  "scaffolding": {
+    "level": "low",
+    "rule": "avoid presenter scaffolding: numbered host patter when items are not genuinely parallel, 'now let's move to...' navigation, repeated previews of what comes next, or manufactured rhetorical questions used only to create energy (AUDIO-SCRIPT.md §7). Prefer transitions that state the relationship itself — cause, limit, consequence, reversal, time shift, or unresolved condition; if the relation is already obvious, no transition is required."
+  },
+  "pace": {
+    "default": "free narration by default; pace follows the argument's own difficulty, slower at genuinely hard inferences rather than at a decorative fixed rate (AUDIO-SCRIPT.md §16; editorial/profiles/reference/audio.json 'pace' dimension).",
+    "audience_governs": "the applied pace target is set by the selected audience profile's modality_effects.audio.pace (docs/architecture/V2-EDITORIAL-LEARNING-CORE.md §3 'audience is shared across modalities'), not invented by this profile."
+  },
+  "pronunciation_policy": {
+    "requirement": "a provider-neutral pronunciation glossary is mandatory for risky names, acronyms, numbers, dates, symbols, and mixed-language terms before rendering; normalization of dates/decimals/currencies/codes must be an explicit editorial decision, never a silent backend default (AUDIO-SCRIPT.md §10, §11).",
+    "escalation": "if a provider cannot reliably realize a load-bearing pronunciation, route the artifact to another certified configuration or require a human audio fix; do not distort the terminology to accommodate one backend (AUDIO-SCRIPT.md §11)."
+  },
+  "renderer_preference": {
+    "order": ["single_voice_tts"],
+    "rule": "one certified voice for the entire artifact. A voice or provider change mid-artifact with no editorial reason (e.g. a quoted excerpt) is a lineage/continuity defect, not a stylistic choice (AUDIO-SCRIPT.md §15, §19, §22)."
+  },
+  "segment_identity": {
+    "requirement": "stable segment_id per completed reasoning beat, with previous_context/next_context recorded for continuity, so a local render defect is repaired by regenerating one semantic segment rather than the whole track (AUDIO-SCRIPT.md §17, §21 'local audio defect')."
+  },
+  "audience_adaptation": {
+    "general-reader": "thought units stay short; pace is moderate and unhurried; gloss every technical term on first use; state the main takeaway once, clearly, near the end (editorial/profiles/audience/general-reader.json modality_effects.audio).",
+    "professional-generalist": "medium thought units at a normal conversational pace; gloss method-specific jargon only, skip glossing outcomes-level vocabulary (editorial/profiles/audience/professional-generalist.json modality_effects.audio).",
+    "domain-practitioner": "medium-to-long thought units at a brisk pace; no glossing of standard domain terminology (editorial/profiles/audience/domain-practitioner.json modality_effects.audio).",
+    "domain-expert": "long, unbroken technical passages are acceptable and can run fast; no glossing — jargon-dense delivery is expected and preferred (editorial/profiles/audience/domain-expert.json modality_effects.audio).",
+    "beginner-learner": "short thought units at a pace slower than the default conversational pace; every term glossed on first use; useful_recurrence higher than any other adult audience, repeating key terms and structure to reinforce the model being built (editorial/profiles/audience/beginner-learner.json modality_effects.audio).",
+    "child-upper-elementary": "short thought units at a pace slower than the beginner-learner adult pace; the highest useful_recurrence of any audience profile — restate the key idea in a second, differently-worded way before moving on (editorial/profiles/audience/child-upper-elementary.json modality_effects.audio); simplifying for this audience must never simplify the truth or drop stated uncertainty (editorial/constitution.md §1-3; child-upper-elementary.json anti_patterns)."
+  },
+  "acceptance": [
+    "narration_text contains only listenable spoken prose — no headings, stage directions, SSML, or provider markup (AUDIO-SCRIPT.md §2, §12, §13)",
+    "sentence rhythm varies with the material; no uniform quota-driven cadence throughout",
+    "every retained claim, number, date, quotation, and named entity traces to a verified article claim (AUDIO-SCRIPT.md §3)",
+    "recurrence, where present, restates an idea with a new function rather than repeating a sentence verbatim",
+    "risky pronunciations are resolved in a provider-neutral glossary before rendering is attempted",
+    "the segment plan carries stable ids with neighbour context sufficient for local regeneration"
+  ],
+  "reject": [
+    "article prose read verbatim into TTS with no listening-structure recompilation (AUDIO-SCRIPT.md §1) — the default failure this contract exists to prevent",
+    "a flat, uniform sentence-length cadence throughout the artifact",
+    "presenter scaffolding: numbered host patter, 'now let's move to...' navigation, repeated section previews, manufactured rhetorical questions (AUDIO-SCRIPT.md §7)",
+    "a sentence repeated verbatim as a substitute for structure",
+    "a new derived calculation, comparison, conversion, or analogy spoken as fact without returning to verification (AUDIO-SCRIPT.md §3)",
+    "delivery or performance direction leaking into the narration text the renderer is expected to speak (AUDIO-SCRIPT.md §12)"
+  ],
+  "status_note": "Planning and canonical-script path only. TTS rendering for this profile has not been exercised end to end; audio is deferred from the SUE-570 pilot (docs/architecture/AUDIO-VIDEO-ROADMAP.md 'Audio — defer').",
+  "source_authority": [
+    "editorial/AUDIO-SCRIPT.md",
+    "editorial/profiles/reference/audio.json",
+    "editorial/profiles/audience/ (modality_effects.audio per profile)",
+    "editorial/constitution.md",
+    "docs/architecture/V2-EDITORIAL-LEARNING-CORE.md",
+    "docs/architecture/AUDIO-VIDEO-ROADMAP.md"
+  ]
+}

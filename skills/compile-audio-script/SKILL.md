@@ -6,16 +6,19 @@ when_not_to_use: Do not use to render speech, choose a vendor, clone a voice, or
 inputs:
   - final or published article with article_ref and verified claim set
   - non-skipped audio decision from the artifact plan
+  - selected audio artifact profile (editorial/profiles/artifact/audio-monologue.json, audio-dialogue.json, or audio-timed-narration.json)
+  - audience profile (editorial/profiles/audience/*.json modality_effects.audio)
   - content-type profile and editorial/AUDIO-SCRIPT.md
   - optional destination timing constraints when narration must synchronize to another surface
 outputs:
-  - canonical spoken-script package with narration_text, pronunciation_glossary, delivery_spec, and segment_plan
+  - "an audio plan (schemas/audio-plan.schema.json / schemas/AUDIO-PLAN-CONTRACT.md) carrying the canonical spoken-script package (narration_text, pronunciation, delivery_intent, segments)"
   - carried claim IDs and source references
   - script/version hashes suitable for downstream render lineage
   - verification findings when spoken reformulation exposes a new claim or unresolved pronunciation
 requires:
   - article state is final or published
   - the audio artifact decision is not skip
+  - an audio artifact profile (monologue, dialogue, or timed-narration) is selected before writing
   - every factual claim selected for audio is verified
   - the destination timing contract is known before writing when rendering_mode is timed
 authority:
@@ -38,19 +41,33 @@ governed_by:
   - editorial/MEDIA-STRATEGY.md
   - editorial/AUDIO-SCRIPT.md
   - editorial/RIGHTS-AND-PROVENANCE.md
+  - editorial/profiles/artifact/audio-monologue.json
+  - editorial/profiles/artifact/audio-dialogue.json
+  - editorial/profiles/artifact/audio-timed-narration.json
+  - editorial/profiles/audience/
+  - editorial/profiles/reference/audio.json
   - schemas/ARTICLE-ARTIFACT-CONTRACT.md
+  - schemas/audio-plan.schema.json
+  - schemas/AUDIO-PLAN-CONTRACT.md
 allowed_tools:
   - file_read
 evidence:
   acceptance:
     - narration_text contains only text intended to be spoken and no provider markup or stage directions
+    - recompilation.identical_to_source_prose is false — the script is not article prose sent straight through (schemas/AUDIO-PLAN-CONTRACT.md)
     - every factual claim carried by the script resolves to a verified article claim
     - pronunciation, delivery, speaker, and timing state are separate from narration_text
     - segment boundaries are semantic and every segment has a stable identity suitable for local regeneration
     - timed mode carries explicit duration budgets rather than silently time-stretching speech
+    - the selected audio artifact profile's audience_adaptation for the active audience is reflected in thought-unit length, pace, and recurrence
+    - "a dialogue plan declares a genuine knowledge asymmetry and persona_disclosure=synthetic_non_source for every role (editorial/profiles/artifact/audio-dialogue.json)"
     - no provider, model, voice ID, SSML tag, or provider-specific audio tag appears in canonical script state
+    - script_l1 is recorded before status may reach a rendering state (schemas/audio-plan.schema.json; scripts/validate-audio-plan.mjs)
   fixtures:
     - schemas/examples/article-artifact.example.json
+    - schemas/examples/audio-plan-monologue.example.json
+    - schemas/examples/audio-plan-dialogue.example.json
+    - schemas/examples/audio-plan-timed-narration.example.json
 ---
 
 # compile-audio-script
@@ -119,8 +136,10 @@ Missing any of these is a refusal, not an invitation to infer a substitute.
 
 ## Procedure
 
-1. **Read the audio decision.** Record the artifact purpose, audience/listening
-   context, carried claims, and whether the destination is free or timed.
+1. **Read the audio decision.** Select the audio artifact profile (monologue,
+   dialogue, or timed-narration) and the audience profile the article targets.
+   Record the artifact purpose, the audience's `modality_effects.audio`
+   adjustments, carried claims, and whether the destination is free or timed.
 2. **Map the listening argument.** Reorder explanation where necessary so a
    listener receives prerequisite context before a claim depends on it. Do not
    preserve article section order merely because it already exists.

@@ -1,0 +1,84 @@
+{
+  "schema_version": "1.0.0",
+  "artifact": "audio/dialogue",
+  "modality": "audio",
+  "family": "Dialogue / multi-role explanation — a genuine two-or-more-role information structure, not alternating TTS voices reading one monologue script (AUDIO-SCRIPT.md §15; docs/architecture/V2-EDITORIAL-LEARNING-CORE.md §5 'dialogue_structure').",
+  "primary_job": "Carry the article's verified argument through a knowledge-asymmetric exchange between declared roles, where the asymmetry itself does explanatory work rather than being cosmetic (docs/architecture/V2-EDITORIAL-LEARNING-CORE.md 'Dialogue concerns'; AUDIO-SCRIPT.md §15).",
+  "thought_unit": {
+    "unit": "same listenably-complete-thought unit as audio/monologue (AUDIO-SCRIPT.md §4), scoped to one speaker turn at a time.",
+    "rule": "one claim, causal step, qualification, comparison, or consequence per turn-internal unit; a turn may hold more than one unit only when the roles' exchange genuinely requires it."
+  },
+  "rhythm": {
+    "requirement": "variable sentence and turn-length rhythm across both roles; a flat cadence — including a flat turn-length pattern — is a defect (AUDIO-SCRIPT.md §4 extended to turn structure).",
+    "reject_signal": "mechanically alternating equal-length turns regardless of what each role has to say."
+  },
+  "recurrence": {
+    "policy": "semantic recurrence only, returning with a new function; a role may restate the other role's claim in order to test, extend, or qualify it — that is legitimate dialogue work, not filler repetition (AUDIO-SCRIPT.md §6)."
+  },
+  "scaffolding": {
+    "level": "low",
+    "rule": "the same restraint as audio/monologue (AUDIO-SCRIPT.md §7) applies to host/co-host framing: no manufactured 'great question!' patter, no recap-only turns, no rhetorical energy inserted only to simulate liveliness."
+  },
+  "pace": {
+    "default": "free narration by default; pace follows the exchange's own difficulty (AUDIO-SCRIPT.md §16).",
+    "audience_governs": "the applied pace target is set by the selected audience profile's modality_effects.audio.pace (docs/architecture/V2-EDITORIAL-LEARNING-CORE.md §3)."
+  },
+  "pronunciation_policy": {
+    "requirement": "same provider-neutral pronunciation glossary requirement as audio/monologue (AUDIO-SCRIPT.md §10, §11), applied per role where pronunciation habits legitimately differ (e.g. one role uses an acronym freely, the other role's turn expands it on first use)."
+  },
+  "renderer_preference": {
+    "order": ["multi_voice_tts"],
+    "rule": "one distinct certified voice per declared role, held stable for the whole artifact. A role must not silently change voice, and two roles must not share one voice in a way that erases the distinction the dialogue's knowledge asymmetry depends on (AUDIO-SCRIPT.md §15, §19, §22)."
+  },
+  "segment_identity": {
+    "requirement": "the same stable segment_id / neighbour-context discipline as audio/monologue (AUDIO-SCRIPT.md §17), with every segment additionally recording which declared role is speaking, so voice-identity continuity is checkable in Render QA (AUDIO-SCRIPT.md §20 'multi-speaker identity consistency')."
+  },
+  "speaker_roles": {
+    "requirement": "at least two roles with distinct purpose and knowledge_position (for example one role explains, the other asks or represents the listener's uncertainty). Knowledge asymmetry is the engine of the form, not a stylistic split (docs/architecture/V2-EDITORIAL-LEARNING-CORE.md 'Dialogue concerns'; AUDIO-SCRIPT.md §15).",
+    "persona_disclosure": "every declared role must record persona_disclosure: synthetic_non_source (schemas/audio-plan.schema.json enforces this at the schema level — no other value validates)."
+  },
+  "turn_policy": {
+    "turn_length": "a turn ends when its cognitive move is complete, not on a fixed line or word count.",
+    "interruption": "interruption is legitimate only when it marks a genuine correction, clarification request, or an unresolved tension the article's evidence actually supports — never inserted merely to manufacture energy (AUDIO-SCRIPT.md §15; editorial/profiles/reference/audio.json 'speaker-interaction' dimension)."
+  },
+  "agreement_policy": {
+    "rule": "agreement or disagreement between roles must be supported by the verified claim set. Manufactured debate — disagreement staged for energy rather than because the evidence diverges — is a named anti-pattern (docs/architecture/V2-EDITORIAL-LEARNING-CORE.md 'Dialogue concerns'; AUDIO-SCRIPT.md §15)."
+  },
+  "persona_boundary": {
+    "rule": "a synthetic speaker may never be presented as a sourced expert who was not recorded, a witness, an interview subject, the author of a quotation, or evidence that a conversation actually occurred. A generated dialogue is a distribution format, not a new source (AUDIO-SCRIPT.md §15).",
+    "authority": "this is a factual-integrity constraint, not a style preference — governed by editorial/constitution.md §8 ('provenance survives every transformation') and editorial/RIGHTS-AND-PROVENANCE.md §4 ('Generated media provenance' / 'Generated voice provenance').",
+    "enforcement": "schemas/audio-plan.schema.json requires every speaker_role entry to carry persona_disclosure: synthetic_non_source; any dialogue plan that presents a role as a real source fails schema validation, not merely editorial review."
+  },
+  "audience_adaptation": {
+    "general-reader": "two roles at most; short thought units, moderate unhurried pace, every technical term glossed on first use by whichever role introduces it (editorial/profiles/audience/general-reader.json modality_effects.audio).",
+    "professional-generalist": "medium thought units, normal conversational pace; glossing limited to method-specific jargon (editorial/profiles/audience/professional-generalist.json modality_effects.audio).",
+    "domain-practitioner": "brisk, terse exchange; no glossing of standard domain terminology; the asymmetry can be narrow (a specific method detail) rather than foundational (editorial/profiles/audience/domain-practitioner.json modality_effects.audio).",
+    "domain-expert": "fast, jargon-dense exchange with no glossing; the questioning role should press on genuinely open edge cases rather than re-deriving established material (editorial/profiles/audience/domain-expert.json modality_effects.audio).",
+    "beginner-learner": "short thought units, slower pace, every term glossed; the highest useful_recurrence of any adult audience — the questioning role may legitimately ask the explaining role to restate a key idea differently (editorial/profiles/audience/beginner-learner.json modality_effects.audio).",
+    "child-upper-elementary": "keep to exactly two roles with a simple, stable relationship (e.g. an explainer and a curious learner); shortest thought units and highest useful_recurrence of any audience profile (editorial/profiles/audience/child-upper-elementary.json modality_effects.audio); the curious-learner role must ask real questions, never perform confusion for effect, and simplification must never distort the mechanism or drop stated uncertainty (editorial/constitution.md §1-3; child-upper-elementary.json anti_patterns)."
+  },
+  "acceptance": [
+    "at least two speaker roles with distinct purpose and knowledge_position — a genuine asymmetry, not a cosmetic split",
+    "every speaker_role carries persona_disclosure: synthetic_non_source",
+    "agreement or disagreement between roles traces to the verified claim set",
+    "turn boundaries mark a completed cognitive move, not an arbitrary line count",
+    "the segment plan records the speaking role per segment for continuity and voice-identity QA (AUDIO-SCRIPT.md §20)"
+  ],
+  "reject": [
+    "two alternating TTS voices reading what is otherwise a monologue script — the named failure this profile exists to prevent (AUDIO-SCRIPT.md §15)",
+    "a synthetic speaker presented as a real expert, witness, interview subject, or quotation author (AUDIO-SCRIPT.md §15; editorial/RIGHTS-AND-PROVENANCE.md §4)",
+    "manufactured disagreement staged for energy with no evidentiary basis",
+    "knowledge asymmetry removed — both roles already know everything being said, so no role's questions or contributions do real work",
+    "provider markup, stage directions, or voice IDs inside narration_text (AUDIO-SCRIPT.md §12, §13)"
+  ],
+  "status_note": "Planning and canonical-script path only. TTS rendering for this profile has not been exercised end to end; audio is deferred from the SUE-570 pilot (docs/architecture/AUDIO-VIDEO-ROADMAP.md 'Audio — defer').",
+  "source_authority": [
+    "editorial/AUDIO-SCRIPT.md",
+    "editorial/constitution.md",
+    "editorial/RIGHTS-AND-PROVENANCE.md",
+    "editorial/profiles/reference/audio.json",
+    "editorial/profiles/audience/ (modality_effects.audio per profile)",
+    "docs/architecture/V2-EDITORIAL-LEARNING-CORE.md",
+    "docs/architecture/AUDIO-VIDEO-ROADMAP.md"
+  ]
+}
