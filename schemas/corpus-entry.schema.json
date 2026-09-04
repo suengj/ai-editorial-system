@@ -30,13 +30,14 @@
       "pattern": "^[a-z]{2}(-[A-Z]{2})?$"
     },
     "audience": {
-      "enum": [
-        "general-reader", "professional-generalist", "domain-practitioner",
-        "domain-expert", "beginner-learner", "child-upper-elementary"
-      ]
+      "description": "An audience id from the audience axis (editorial/profiles/axes.json, editorial/profiles/audience/*.json). Owned by that directory, not this enum (docs/architecture/V2-EDITORIAL-LEARNING-CORE.md §8) — scripts/validate-corpus.mjs resolves the id against the directory for real membership.",
+      "type": "string",
+      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
     },
     "surface": {
-      "enum": ["suengj-com", "notebooklm", "academic-paper", "newsletter", "youtube-script"]
+      "description": "A surface id from the surface axis (editorial/profiles/axes.json, editorial/profiles/surface/*.json). suengj-com is that axis's default entry, not this schema's identity — owned by the directory, not this enum. scripts/validate-corpus.mjs resolves the id against the directory for real membership.",
+      "type": "string",
+      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
     },
     "provenance_class": {
       "description": "Reuses the vocabulary already pinned by schemas/reference-evaluation.schema.json rather than inventing a second one.",
@@ -78,7 +79,7 @@
       "additionalProperties": false,
       "required": ["kind", "locator"],
       "properties": {
-        "kind": { "enum": ["suengj-com-slug", "git-commit", "drive-doc", "url", "other"] },
+        "kind": { "enum": ["publication-slug", "git-commit", "drive-doc", "url", "other"] },
         "locator": { "type": "string", "minLength": 1 },
         "content_hash": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
       }

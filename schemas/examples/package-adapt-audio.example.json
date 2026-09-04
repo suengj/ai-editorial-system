@@ -50,9 +50,11 @@
         "version": "0.1.0"
       },
       "tool": {
-        "name": "dialogue-script-compiler",
-        "version": "0.1.0",
-        "model": null
+        "tool": "dialogue-script-compiler",
+        "tool_version": "0.1.0",
+        "provider": "internal",
+        "model": "dialogue-script-compiler",
+        "model_version": "0.1.0"
       }
     }
   },

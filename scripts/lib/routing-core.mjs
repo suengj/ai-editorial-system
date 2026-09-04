@@ -5,8 +5,17 @@
  * checks feedback records (schemas/feedback-record.schema.json) against it:
  * every negative verdict must name a shared layer, name a modality layer, or
  * explicitly abstain — three distinct states that must never collapse into
- * each other — and no record may propose a mutation above the class its
- * scope can carry.
+ * each other — and the three named misroutes are caught mechanically.
+ *
+ * This module does NOT gate a record's write authority above class 3
+ * (calibration_candidate) by pattern-matching its free text. That control
+ * used to live here as an English keyword list and was deleted (AES-V2 B3):
+ * it filtered vocabulary, not authority, so it missed the same intent in
+ * Korean and flagged a legitimate abstention for naming a layer it could not
+ * pin down. The authority ceiling is structural (the feedback-record schema's
+ * `scope` enum has no value above calibration_candidate) and enforced at the
+ * actual mutation points — scripts/lib/calibration-core.mjs and
+ * scripts/lib/registry-core.mjs's promotion gates — never at the complaint.
  *
  * This module routes INTO the feedback-record contract. It does not redefine
  * routing.layer, scope, signal, verdict, or owner_verdict.
@@ -37,7 +46,6 @@ export const CODES = Object.freeze({
   ABSTAIN_CONTRADICTION: 'abstained-but-named-a-cause',
   UNKNOWN_MODALITY_LAYER: 'unknown-modality-layer',
   MISROUTE: 'misroute',
-  ESCALATION_ABOVE_CEILING: 'escalation-above-ceiling',
 });
 
 /** The routing target vocabulary fixed by V2-EDITORIAL-LEARNING-CORE.md §5. */
@@ -98,18 +106,6 @@ export function validateRoutingTable(table = loadRoutingTable()) {
   return issues;
 }
 
-/** Language that proposes a class-4-or-above change. No feedback record may express this. */
-const CLASS4_PLUS_PATTERNS = [
-  { re: /\bbrand[\s_-]?profile\b/i, label: 'a brand-profile change' },
-  { re: /\bpublication profile\b/i, label: 'a publication-profile change' },
-  { re: /\bcore rout(e|ing)\b/i, label: 'a core-routing change' },
-  { re: /\b(register|content-type) profile\b/i, label: 'a content-type/register profile change' },
-  { re: /\bconstitution\b/i, label: 'a Constitution change' },
-  { re: /\bcore invariants?\b/i, label: 'a core-invariant change' },
-  { re: /\bssot boundary\b/i, label: 'an SSOT-boundary change' },
-  { re: /\bactivat(e|ing|ion of) (a )?new (durable )?calibration/i, label: 'a calibration activation' },
-];
-
 export function validateFeedbackRecordAgainstSchema(record, schema = loadFeedbackSchema()) {
   return validate(record, schema).map((e) => issue(CODES.SCHEMA, record?.feedback_id ?? '<record>', `${e.path}: ${e.message}`));
 }
@@ -159,13 +155,17 @@ export function validateFeedbackRecordRouting(record, table = loadRoutingTable()
     }
   }
 
-  // --- authority ceiling: no record may propose class 4+ on its own -------
-  for (const p of CLASS4_PLUS_PATTERNS) {
-    if (p.re.test(text)) {
-      issues.push(issue(CODES.ESCALATION_ABOVE_CEILING, where,
-        `statement proposes ${p.label}; a feedback record's scope tops out at class 3 (calibration_candidate) — class 4 and above require explicit human activation or evidence-backed review outside this record`));
-    }
-  }
+  // --- authority ceiling: NOT enforced here. A feedback record's `scope`
+  // enum structurally tops out at "calibration_candidate" (class 3) and a
+  // record cannot itself perform a class-4+ mutation — see
+  // scripts/lib/calibration-core.mjs (promotion requires a human authorizer
+  // and repeated/owner-declared evidence) and scripts/lib/registry-core.mjs
+  // (the same for reference promotion). Pattern-matching a record's own
+  // free text for words like "brand profile" or "Constitution" used to live
+  // here; it was deleted (AES-V2 B3) because it filtered English vocabulary,
+  // not authority — it missed the same intent in Korean and flagged an
+  // exemplary abstention for naming a layer it could not distinguish. The
+  // control that actually matters is at the mutation, not the complaint.
 
   return issues;
 }

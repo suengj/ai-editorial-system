@@ -13,6 +13,8 @@ import { relative, resolve } from 'node:path';
 import { dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { ENTRIES_DIR, listEntryFiles, loadSchema, validateEntryFile } from './lib/corpus-core.mjs';
+import { checkCorpusAxisReferences } from './lib/corpus-axis-check.mjs';
+import { readFileSync } from 'node:fs';
 
 const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const dir = resolve(process.argv[2] ?? ENTRIES_DIR);
@@ -28,6 +30,19 @@ let failed = 0;
 for (const file of files) {
   const label = relative(REPO_ROOT, file);
   const issues = validateEntryFile(file, schema);
+  // I1: schema opened corpus-entry's audience/surface to axis-id-shaped
+  // strings (was a closed enum hardcoding suengj.com's surface set); real
+  // membership is checked here against editorial/profiles/{audience,surface}/,
+  // the same way scripts/validate-profiles.mjs and scripts/validate-intent.mjs
+  // resolve every other axis reference.
+  if (issues.length === 0) {
+    try {
+      const entry = JSON.parse(readFileSync(file, 'utf8'));
+      issues.push(...checkCorpusAxisReferences(entry));
+    } catch {
+      // unparseable entries are already reported by validateEntryFile above
+    }
+  }
   if (issues.length === 0) {
     console.log(`corpus: PASS — ${label}`);
     continue;

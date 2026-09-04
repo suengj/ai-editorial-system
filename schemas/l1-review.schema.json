@@ -88,7 +88,11 @@
           "minLength": 1
         },
         "provenance_class": { "enum": ["external", "owner_created", "generated_output"] },
-        "lineage_ref": { "type": "string", "minLength": 1 },
+        "lineage_ref": {
+          "description": "Semantically required whenever provenance_class is \"generated_output\" — enforced by scripts/lib/l1-core.mjs, not this schema, because json-schema-lite has no conditional (if/then) keyword. Identifies the generation lineage so the anti-collapse rule can be evaluated; its absence no longer disables that rule (AES-V2 B5) — every reference_used being generated_output triggers anti-collapse regardless of lineage_ref.",
+          "type": "string",
+          "minLength": 1
+        },
         "content_type": {
           "enum": ["research", "view", "news", "note", "project", "academic", "promotional"]
         }
@@ -139,19 +143,22 @@
       }
     },
     "evaluator": {
+      "description": "AES-V2 FIX (B7): full runtime lineage, not merely an evaluator kind. §7's model-drift contract requires L1's writer-facing counterpart — the reviewer — to be drift-detectable exactly like a renderer. Field names deliberately match visual-job.schema.json's `renderer`/`runtime` $defs.",
       "type": "object",
       "additionalProperties": false,
       "required": ["type"],
       "properties": {
         "type": { "enum": ["human", "agent"] },
         "agent": {
+          "description": "Present only when type is \"agent\". provider/model/model_version are required so a silent reviewer-model swap is detectable, never a transparent implementation detail.",
           "type": "object",
           "additionalProperties": false,
-          "required": ["runtime"],
+          "required": ["provider", "model", "model_version"],
           "properties": {
-            "runtime": { "type": "string", "minLength": 1 },
-            "model": { "type": "string" },
-            "version": { "type": "string" }
+            "provider": { "type": "string", "minLength": 1 },
+            "model": { "type": "string", "minLength": 1 },
+            "model_version": { "type": "string", "minLength": 1 },
+            "quality_tier": { "type": "string", "minLength": 1 }
           }
         }
       }

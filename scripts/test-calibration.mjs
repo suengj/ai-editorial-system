@@ -12,7 +12,7 @@ import {
   CODES, loadVersionSchema, loadExperimentSchema, loadRoutingLayerIds,
   validateVersionFile, validateLedgerFile, diffSubstantive,
   buildCurrentSnapshot, canonicalJson, checkCurrentFreshness,
-  listVersionFiles, listLedgerFiles,
+  listVersionFiles, listLedgerFiles, checkPinnedAuthority,
 } from './lib/calibration-core.mjs';
 
 let failures = 0;
@@ -64,8 +64,9 @@ const baseCandidate = loadSeed(candidatePath);
 // subdirectory so the file can always carry the correct expected filename
 // for its calibration_id without colliding with other cases.
 import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs';
+import { execFileSync } from 'node:child_process';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { join, dirname } from 'node:path';
 
 const tmpDir = mkdtempSync(join(tmpdir(), 'calibration-test-'));
 let caseCounter = 0;
@@ -238,6 +239,95 @@ check('allow: kind model_drift with a model_drift block and per-role outcomes pa
 })).length === 0);
 
 rmSync(tmpDir, { recursive: true, force: true });
+
+// --- pinned write-authority (AES-V2 B2) -------------------------------------
+// Classes 5/6 (profile / core routing / Constitution / core invariants /
+// SSOT) had no immutability guard at all — class 4 (calibration versions,
+// above) does. Built against a real, throwaway git repo so the check is
+// exercised against real `git show HEAD:` behaviour, not a mock.
+console.log('\npinned write authority (AES-V2 B2): class 5/6 files cannot change unnoticed');
+{
+  const gitDir = mkdtempSync(join(tmpdir(), 'pinned-authority-test-'));
+  const git = (...args) => execFileSync('git', args, { cwd: gitDir, encoding: 'utf8' });
+  git('init', '-q');
+  git('-c', 'user.email=test@example.com', '-c', 'user.name=Test', 'commit', '--allow-empty', '-q', '-m', 'root');
+
+  const write = (rel, content) => {
+    const abs = join(gitDir, rel);
+    mkdirSync(dirname(abs), { recursive: true });
+    writeFileSync(abs, content);
+  };
+  const commitAll = (msg) => {
+    git('add', '-A');
+    git('-c', 'user.email=test@example.com', '-c', 'user.name=Test', 'commit', '-q', '-m', msg);
+  };
+
+  write('editorial/constitution.md', 'original constitutional text\n');
+  write('editorial/feedback-routing.json', JSON.stringify({
+    layers: { shared: [{ id: 'intake' }] },
+    authority_matrix: { classes: [{ class: 0 }] },
+    unrelated_section: { note: 'not pinned' },
+  }, null, 2));
+  mkdirSync(join(gitDir, 'editorial/profiles/brand'), { recursive: true });
+  write('editorial/profiles/brand/suengj-com.v1.json', JSON.stringify({ brand: 'suengj-com', v: 1 }, null, 2));
+  mkdirSync(join(gitDir, 'calibration/ledger'), { recursive: true });
+  commitAll('seed pinned authority fixtures');
+
+  const pinned = [
+    { path: 'editorial/constitution.md', kind: 'file' },
+    { path: 'editorial/feedback-routing.json', kind: 'json-paths', jsonPaths: ['layers', 'authority_matrix'] },
+    { path: 'editorial/profiles/brand', kind: 'dir' },
+  ];
+  const ledgerDir = join(gitDir, 'calibration/ledger');
+  const runCheck = () => checkPinnedAuthority(gitDir, { pinned, ledgerDir });
+
+  check('a clean working tree (no diff from HEAD) produces no pinned-authority issues',
+    runCheck().length === 0, JSON.stringify(runCheck()));
+
+  write('editorial/constitution.md', 'a rewritten constitutional text\n');
+  check('a silently-rewritten constitution.md with no citing ledger record is rejected',
+    runCheck().some((i) => i.code === CODES.PINNED_AUTHORITY_CHANGED && i.where === 'editorial/constitution.md'));
+
+  write('calibration/ledger/experiment-citing-constitution.json', JSON.stringify({
+    experiment_id: 'experiment:constitution-review-2026-09-05',
+    note: 'Reviewed and approved a wording change to editorial/constitution.md per owner instruction.',
+  }, null, 2));
+  check('the same change with a ledger record citing the exact path is accepted',
+    runCheck().every((i) => i.code !== CODES.PINNED_AUTHORITY_CHANGED || i.where !== 'editorial/constitution.md'),
+    JSON.stringify(runCheck()));
+
+  // A brand-profile rewrite is the reviewer's other verified probe.
+  rmSync(join(gitDir, 'calibration/ledger/experiment-citing-constitution.json'));
+  write('editorial/profiles/brand/suengj-com.v1.json', JSON.stringify({ brand: 'suengj-com', v: 2, rewritten: true }, null, 2));
+  check('a silently-rewritten brand profile with no citing ledger record is rejected',
+    runCheck().some((i) => i.code === CODES.PINNED_AUTHORITY_CHANGED && i.where === 'editorial/profiles/brand/suengj-com.v1.json'));
+
+  // A brand-new file under a pinned dir, not yet committed, is not a mutation.
+  write('editorial/profiles/brand/new-brand.v1.json', JSON.stringify({ brand: 'new-brand', v: 1 }, null, 2));
+  check('a brand-new (not-yet-committed) file under a pinned directory is handled gracefully, not flagged',
+    !runCheck().some((i) => i.where === 'editorial/profiles/brand/new-brand.v1.json'));
+
+  // Only layers/authority_matrix are pinned in feedback-routing.json — an
+  // edit to an unrelated top-level section must not trip this check (that
+  // is the other Writer's normal working tree, not a class-5/6 change).
+  write('editorial/feedback-routing.json', JSON.stringify({
+    layers: { shared: [{ id: 'intake' }] },
+    authority_matrix: { classes: [{ class: 0 }] },
+    unrelated_section: { note: 'changed freely, not pinned' },
+  }, null, 2));
+  check('an edit to feedback-routing.json outside layers/authority_matrix is not flagged',
+    !runCheck().some((i) => i.where === 'editorial/feedback-routing.json'));
+
+  write('editorial/feedback-routing.json', JSON.stringify({
+    layers: { shared: [{ id: 'intake', escalates_to: 'human_activation' }] },
+    authority_matrix: { classes: [{ class: 0 }] },
+    unrelated_section: { note: 'changed freely, not pinned' },
+  }, null, 2));
+  check('an edit to feedback-routing.json INSIDE layers is flagged with no citing ledger record',
+    runCheck().some((i) => i.code === CODES.PINNED_AUTHORITY_CHANGED && i.where === 'editorial/feedback-routing.json'));
+
+  rmSync(gitDir, { recursive: true, force: true });
+}
 
 console.log(failures === 0 ? `\nPASS — ${failures} failures` : `\nFAIL — ${failures} failures`);
 process.exit(failures === 0 ? 0 : 1);

@@ -13,6 +13,7 @@ import {
   validateEvaluationFile, validateFeedbackFile,
   buildReferencesIndex, buildFeedbackIndex, canonicalJson, checkIndexFreshness,
   listEvaluationFiles, listFeedbackFiles, loadCatalogRefIds,
+  checkGeneratedOutputPromotion, resolveEvidenceRef,
 } from './lib/registry-core.mjs';
 import { validate } from './lib/json-schema-lite.mjs';
 
@@ -111,6 +112,50 @@ const evalCases = [
       promoted_at: '2026-09-05T05:00:00Z',
     };
   }],
+  // --- AES-V2 B4: the exact bypass the reviewer verified -------------------
+  // authorized_by: "agent:claude-code" with one dangling ref and a basis of
+  // vague praise used to pass outright (no human-identity check, no ref
+  // resolution). It must now fail on both grounds at once.
+  ['an agent-authorized promotion resting on a dangling ref and a vague-praise basis is rejected (not human)', CODES.PROMOTION_NOT_HUMAN, (e) => {
+    e.provenance_class = 'generated_output';
+    e.dimensions[0].verdict = 'adopt';
+    e.promotion = {
+      authorized_by: 'agent:claude-code',
+      basis: 'The L1 reviewer rated it strongly and it reads well',
+      evidence_refs: ['feedback:this-record-does-not-exist-anywhere'],
+      promoted_at: '2026-09-05T05:00:00Z',
+    };
+  }],
+  ['the same agent-authorized promotion is also rejected on evidence sufficiency (dangling ref)', CODES.PROMOTION_INSUFFICIENT, (e) => {
+    e.provenance_class = 'generated_output';
+    e.dimensions[0].verdict = 'adopt';
+    e.promotion = {
+      authorized_by: 'agent:claude-code',
+      basis: 'The L1 reviewer rated it strongly and it reads well',
+      evidence_refs: ['feedback:this-record-does-not-exist-anywhere'],
+      promoted_at: '2026-09-05T05:00:00Z',
+    };
+  }],
+  ['a human-authorized promotion with a dangling evidence ref is rejected even with 2 refs and a real basis', CODES.PROMOTION_INSUFFICIENT, (e) => {
+    e.provenance_class = 'generated_output';
+    e.dimensions[0].verdict = 'adopt';
+    e.promotion = {
+      authorized_by: 'human:owner',
+      basis: 'Owner compared this against two prior tasks and confirmed the trait generalizes.',
+      evidence_refs: ['feedback:paragraph-order-2026-09-05', 'feedback:does-not-exist-either'],
+      promoted_at: '2026-09-05T05:00:00Z',
+    };
+  }],
+  ['a single real ref with no owner-declaration language is rejected (fewer than 2 refs)', CODES.PROMOTION_INSUFFICIENT, (e) => {
+    e.provenance_class = 'generated_output';
+    e.dimensions[0].verdict = 'adopt';
+    e.promotion = {
+      authorized_by: 'human:owner',
+      basis: 'Reads well and the argument holds up.',
+      evidence_refs: ['feedback:paragraph-order-2026-09-05'],
+      promoted_at: '2026-09-05T05:00:00Z',
+    };
+  }],
 ];
 for (const [name, expected, mutate] of evalCases) {
   const e = JSON.parse(JSON.stringify(baseEval));
@@ -127,17 +172,10 @@ function evalDirectCodes(record) {
   if (hasFactualClaim(record)) codes.push(CODES.FACTUAL_CLAIM);
   if (record.evaluator?.type === 'agent' && !record.evaluator.agent) codes.push(CODES.EVALUATOR_SHAPE);
   if (record.evaluator?.type === 'human' && record.evaluator.agent) codes.push(CODES.EVALUATOR_SHAPE);
-  const isAdopted = (record.dimensions ?? []).some((d) => d.verdict === 'adopt');
-  if (record.provenance_class === 'generated_output' && isAdopted && !record.promotion) {
-    codes.push(CODES.GENERATED_OUTPUT_UNPROMOTED);
-  }
-  if (record.promotion) {
-    const refs = record.promotion.evidence_refs;
-    const noEvidence = !Array.isArray(refs) || refs.length === 0;
-    const basisAlone = typeof record.promotion.basis === 'string'
-      && /^(published|publication|l1[\s-]*pass(ed)?)$/i.test(record.promotion.basis.trim());
-    if (noEvidence || basisAlone) codes.push(CODES.PROMOTION_INSUFFICIENT);
-  }
+  // Promotion sufficiency (AES-V2 B4) is the real registry-core.mjs check,
+  // not a mirror — it needs to resolve evidence_refs against disk, which a
+  // hand-rolled duplicate would either have to reimplement or fake.
+  for (const i of checkGeneratedOutputPromotion(record, '<test-record>')) codes.push(i.code);
   return codes;
 }
 
@@ -247,12 +285,29 @@ console.log('allow cases');
   e.promotion = {
     authorized_by: 'human:owner',
     basis: 'Owner reviewed the rendered artifact directly and approved it for reuse as a positive reference, independent of its publication.',
+    evidence_refs: ['feedback:paragraph-order-2026-09-05', 'feedback:routing-unclear-2026-09-05'],
+    promoted_at: '2026-09-05T05:00:00Z',
+  };
+  const codes = evalDirectCodes(e);
+  check('a generated_output record with a real promotion block (human authorizer, 2 resolvable evidence_refs, non-trivial basis) is accepted',
+    !codes.includes(CODES.GENERATED_OUTPUT_UNPROMOTED) && !codes.includes(CODES.PROMOTION_INSUFFICIENT)
+    && !codes.includes(CODES.PROMOTION_NOT_HUMAN));
+}
+{
+  // The owner-declaration path still allows a single evidence ref, mirroring
+  // scripts/lib/calibration-core.mjs's promotion rule exactly (AES-V2 B4).
+  const e = JSON.parse(JSON.stringify(baseEval));
+  e.provenance_class = 'generated_output';
+  e.dimensions[0].verdict = 'adopt';
+  e.promotion = {
+    authorized_by: 'human:owner',
+    basis: 'explicit owner declaration that this generation should now seed future work',
     evidence_refs: ['feedback:paragraph-order-2026-09-05'],
     promoted_at: '2026-09-05T05:00:00Z',
   };
   const codes = evalDirectCodes(e);
-  check('a generated_output record with a real promotion block (evidence_refs + non-trivial basis) is accepted',
-    !codes.includes(CODES.GENERATED_OUTPUT_UNPROMOTED) && !codes.includes(CODES.PROMOTION_INSUFFICIENT));
+  check('a single resolvable evidence ref is sufficient when basis names an explicit owner declaration',
+    !codes.includes(CODES.PROMOTION_INSUFFICIENT) && !codes.includes(CODES.PROMOTION_NOT_HUMAN));
 }
 {
   const e = JSON.parse(JSON.stringify(baseEval));

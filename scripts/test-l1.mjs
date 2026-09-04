@@ -126,19 +126,55 @@ console.log('\ncompare like with like');
 }
 
 // --- anti-collapse -------------------------------------------------------------
-console.log('\nanti-collapse: a generated_output monoculture must be declared');
+// AES-V2 B5: the guard used to fire only when every reference was
+// generated_output AND all carried an identical, *present* lineage_ref —
+// which the schema does not require. The reviewer verified three bypasses:
+// (1) no lineage_ref on any ref, (2) different lineage_ref values, and
+// (3, the one case actually caught before) identical lineage_ref. All three
+// must now trigger, because the trigger is "every selected reference is
+// generated_output," full stop — identical lineage is a stronger signal
+// surfaced separately, never the condition for firing at all.
+console.log('\nanti-collapse: a generated_output monoculture must be declared, with or without lineage_ref');
 {
-  const collapsed = clone(byId['l1:example-pass']);
-  collapsed.comparison.references = [
+  const collapsedSameLineage = clone(byId['l1:example-pass']);
+  collapsedSameLineage.comparison.references = [
     { ref: 'corpus:placeholder-generated-output-lineage', provenance_class: 'generated_output', lineage_ref: 'lineage:x' },
     { ref: 'corpus:placeholder-generated-output-lineage-2', provenance_class: 'generated_output', lineage_ref: 'lineage:x' },
   ];
-  check('an undeclared all-generated-same-lineage reference set is rejected',
-    l1Codes(collapsed).includes(L1.ANTI_COLLAPSE_UNDECLARED));
+  check('(1) identical lineage_ref on every generated_output ref is rejected when undeclared',
+    l1Codes(collapsedSameLineage).includes(L1.ANTI_COLLAPSE_UNDECLARED));
 
-  collapsed.comparison.anti_collapse = { triggered: true, note: 'Both references share lineage:x; no independent GOOD reference was available for this content type yet.' };
+  collapsedSameLineage.comparison.anti_collapse = { triggered: true, note: 'Both references share lineage:x; no independent GOOD reference was available for this content type yet.' };
   check('declaring the anti-collapse condition clears the finding',
-    !l1Codes(collapsed).includes(L1.ANTI_COLLAPSE_UNDECLARED));
+    !l1Codes(collapsedSameLineage).includes(L1.ANTI_COLLAPSE_UNDECLARED));
+
+  const collapsedNoLineage = clone(byId['l1:example-pass']);
+  collapsedNoLineage.comparison.references = [
+    { ref: 'corpus:placeholder-generated-output-lineage', provenance_class: 'generated_output' },
+    { ref: 'corpus:placeholder-generated-output-lineage-2', provenance_class: 'generated_output' },
+  ];
+  check('(2) two generated_output refs with NO lineage_ref at all still trigger anti-collapse (previously bypassed it silently)',
+    l1Codes(collapsedNoLineage).includes(L1.ANTI_COLLAPSE_UNDECLARED));
+  check('a generated_output reference with no lineage_ref is separately flagged',
+    l1Codes(collapsedNoLineage).includes(L1.MISSING_LINEAGE_REF));
+
+  const collapsedDifferentLineage = clone(byId['l1:example-pass']);
+  collapsedDifferentLineage.comparison.references = [
+    { ref: 'corpus:placeholder-generated-output-lineage', provenance_class: 'generated_output', lineage_ref: 'lineage:x' },
+    { ref: 'corpus:placeholder-generated-output-lineage-2', provenance_class: 'generated_output', lineage_ref: 'lineage:y' },
+  ];
+  check('(3) two generated_output refs with DIFFERENT lineages still trigger anti-collapse (previously bypassed it silently)',
+    l1Codes(collapsedDifferentLineage).includes(L1.ANTI_COLLAPSE_UNDECLARED));
+  check('different-lineage generated_output refs are not individually flagged for missing lineage_ref',
+    !l1Codes(collapsedDifferentLineage).includes(L1.MISSING_LINEAGE_REF));
+
+  const mixedProvenance = clone(byId['l1:example-pass']);
+  mixedProvenance.comparison.references = [
+    { ref: 'corpus:placeholder-generated-output-lineage', provenance_class: 'generated_output', lineage_ref: 'lineage:x' },
+    { ref: 'corpus:placeholder-research-accepted', provenance_class: 'owner_created' },
+  ];
+  check('a mixed provenance set (not every ref generated_output) does not trigger anti-collapse',
+    !l1Codes(mixedProvenance).includes(L1.ANTI_COLLAPSE_UNDECLARED));
 }
 
 // --- routing must resolve against AES-V2.5 -------------------------------------
@@ -195,6 +231,42 @@ console.log('\na corpus entry may never carry an article body');
     const entry = JSON.parse(readFileSync(resolve(ROOT, 'evals/real-output-corpus/entries', file), 'utf8'));
     check(`${file} validates cleanly`, corpusCodes(entry).length === 0, JSON.stringify(corpusCodes(entry)));
   }
+}
+
+// --- AES-V2 B4 (path B): a generated_output entry may not declare its own
+// eligibility as a positive reference through an agent's recorded_by. This
+// is the exact bypass the reviewer verified: skills/review-l1/SKILL.md
+// treats reference_eligible: true as a legitimate GOOD reference, and the
+// schema previously let recorded_by be {type: "agent"} with no further gate.
+console.log('\na generated_output entry cannot self-declare reference_eligible via an agent recorded_by');
+{
+  const genOutputSeed = JSON.parse(readFileSync(
+    resolve(ROOT, 'evals/real-output-corpus/entries/corpus-placeholder-generated-output-lineage.json'), 'utf8',
+  ));
+
+  const agentDeclaredEligible = clone(genOutputSeed);
+  agentDeclaredEligible.reference_eligible = true;
+  agentDeclaredEligible.reference_eligible_rationale = 'This generation is strong and should be reused.';
+  agentDeclaredEligible.recorded_by = { type: 'agent', agent: { runtime: 'claude-agent-sdk', model: 'claude-sonnet-5' } };
+  check('an agent-recorded generated_output entry declaring reference_eligible:true is rejected',
+    corpusCodes(agentDeclaredEligible).includes(CORPUS.GENERATED_OUTPUT_ELIGIBLE_NOT_HUMAN));
+
+  const humanDeclaredEligible = clone(genOutputSeed);
+  humanDeclaredEligible.reference_eligible = true;
+  humanDeclaredEligible.reference_eligible_rationale = 'Owner explicitly reviewed and cited this piece as the register bar.';
+  humanDeclaredEligible.recorded_by = { type: 'human' };
+  check('the identical entry recorded_by a human is accepted',
+    !corpusCodes(humanDeclaredEligible).includes(CORPUS.GENERATED_OUTPUT_ELIGIBLE_NOT_HUMAN));
+
+  const agentDeclaredButNotEligible = clone(genOutputSeed);
+  agentDeclaredButNotEligible.recorded_by = { type: 'agent', agent: { runtime: 'claude-agent-sdk', model: 'claude-sonnet-5' } };
+  check('an agent may still record a generated_output entry as long as reference_eligible stays false',
+    !corpusCodes(agentDeclaredButNotEligible).includes(CORPUS.GENERATED_OUTPUT_ELIGIBLE_NOT_HUMAN));
+
+  const agentEligibleExternal = clone(corpusEntries); // provenance_class owner_created/external — not the gated path
+  agentEligibleExternal.recorded_by = { type: 'agent', agent: { runtime: 'claude-agent-sdk', model: 'claude-sonnet-5' } };
+  check('an agent-recorded eligible entry that is NOT generated_output is unaffected by this guard',
+    !corpusCodes(agentEligibleExternal).includes(CORPUS.GENERATED_OUTPUT_ELIGIBLE_NOT_HUMAN));
 }
 
 console.log(failures === 0 ? '\nl1/corpus tests: PASS' : `\nl1/corpus tests: FAIL (${failures})`);

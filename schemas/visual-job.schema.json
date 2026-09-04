@@ -35,12 +35,9 @@
       "minLength": 1
     },
     "artifact_profile": {
-      "description": "One of the eight pinned visual artifact profile ids.",
-      "enum": [
-        "visual/concept-illustration", "visual/thumbnail", "visual/body-infographic",
-        "visual/explanatory-diagram", "visual/analytical-graphic", "visual/slide-image",
-        "visual/social-card", "visual/evidence-visual"
-      ]
+      "description": "A visual artifact profile id from the artifact axis (editorial/profiles/axes.json, editorial/profiles/artifact/visual-*.json). The vocabulary is owned by that directory, not this enum (docs/architecture/V2-EDITORIAL-LEARNING-CORE.md §8 extension rule) — real membership is enforced by scripts/lib/visual-job-core.mjs's UNKNOWN_PROFILE check against the directory, not by this pattern alone.",
+      "type": "string",
+      "pattern": "^visual/[a-z0-9]+(-[a-z0-9]+)*$"
     },
     "profile_ref": {
       "type": "string",

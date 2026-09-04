@@ -148,6 +148,28 @@ console.log('\nother invariants');
     got.includes(CODES.PROFILE_MISSING), `got [${got.join(', ')}]`);
 }
 
+// --- B7: produced_by.tool must carry full runtime lineage --------------------
+console.log('\nproduced_by.tool runtime identity (B7)');
+{
+  const p = clone(synthesizePkg);
+  delete p.lineage.produced_by.tool.provider;
+  delete p.lineage.produced_by.tool.model_version;
+  reseal(p);
+  const got = codesOf(p);
+  check('produced_by.tool missing provider/model_version fails schema validation',
+    got.includes(CODES.SCHEMA), `got [${got.join(', ')}]`);
+}
+{
+  const p = clone(synthesizePkg);
+  const got = codesOf(p);
+  check('the unmutated example carries provider/model/model_version and validates clean',
+    got.length === 0 &&
+    typeof p.lineage.produced_by.tool.provider === 'string' &&
+    typeof p.lineage.produced_by.tool.model === 'string' &&
+    typeof p.lineage.produced_by.tool.model_version === 'string',
+    `got [${got.join(', ')}]`);
+}
+
 // --- fail-closed --------------------------------------------------------------
 console.log('\nfail-closed behaviour');
 {

@@ -8,8 +8,8 @@
  * schemas/VISUAL-JOB-CONTRACT.md.
  */
 
-import { readFileSync, readdirSync } from 'node:fs';
-import { dirname, resolve } from 'node:path';
+import { existsSync, readFileSync, readdirSync } from 'node:fs';
+import { dirname, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { validate } from './json-schema-lite.mjs';
 
@@ -18,7 +18,7 @@ const ROOT = resolve(HERE, '../..');
 
 export const VISUAL_JOB_SCHEMA = resolve(ROOT, 'schemas/visual-job.schema.json');
 export const ARTIFACT_PROFILE_DIR = resolve(ROOT, 'editorial/profiles/artifact');
-export const BRAND_PROFILE_PATH = resolve(ROOT, 'editorial/profiles/brand/suengj-com.v1.json');
+export const BRAND_PROFILE_DIR = resolve(ROOT, 'editorial/profiles/brand');
 
 const readJSON = (p) => JSON.parse(readFileSync(p, 'utf8'));
 
@@ -35,8 +35,35 @@ export function loadArtifactProfiles(dir = ARTIFACT_PROFILE_DIR) {
   return out;
 }
 
-export function loadBrandProfile(p = BRAND_PROFILE_PATH) {
-  return readJSON(p);
+/**
+ * Resolve a brand profile from the brand axis (editorial/profiles/brand/,
+ * filenames `<brand-id>.v<major>.json` per editorial/profiles/axes.json) by
+ * the job's own `brand_profile` + `brand_profile_version` fields.
+ *
+ * Fails closed: B6 (AES-V2 FIX review) found that a fixed default brand
+ * profile path made `job.brand_profile` decorative — any brand id compiled
+ * successfully against suengj.com's tokens while the lineage record claimed
+ * the requested brand had loaded. There is no fallback brand here. An
+ * unresolvable id or version throws rather than silently loading a default.
+ */
+export function resolveBrandProfile(brandId, brandProfileVersion, dir = BRAND_PROFILE_DIR) {
+  if (typeof brandId !== 'string' || !/^[a-z0-9]+(-[a-z0-9]+)*$/.test(brandId)) {
+    throw new Error(`invalid brand_profile id: ${JSON.stringify(brandId)} — expected editorial/profiles/axes.json's brand axis id_pattern`);
+  }
+  const major = /^\d+\.\d+\.\d+$/.test(String(brandProfileVersion ?? '')) ? brandProfileVersion.split('.')[0] : null;
+  if (major === null) {
+    throw new Error(`invalid brand_profile_version: ${JSON.stringify(brandProfileVersion)} for brand "${brandId}"`);
+  }
+  const filename = `${brandId}.v${major}.json`;
+  const path = resolve(dir, filename);
+  if (!existsSync(path)) {
+    throw new Error(`unknown brand profile "${brandId}"@v${major} — expected ${relative(ROOT, path)} under editorial/profiles/brand/ (fail-closed: there is no default brand fallback)`);
+  }
+  const profile = readJSON(path);
+  if (profile.brand !== brandId) {
+    throw new Error(`${relative(ROOT, path)} declares brand "${profile.brand}", expected "${brandId}"`);
+  }
+  return profile;
 }
 
 export const CODES = Object.freeze({
@@ -55,6 +82,7 @@ export const CODES = Object.freeze({
   RUNTIME_NOT_EXCLUDED: 'renderer-runtime-identity-not-declared-excluded',
   BRAND_OVERRIDE_UNAUTHORIZED: 'reference-trait-overrides-brand-without-authorization',
   BRAND_VERSION_MISMATCH: 'brand-profile-version-mismatch',
+  UNKNOWN_BRAND: 'unknown-brand-profile',
   INCONSISTENT_GAIN_VERDICT: 'information-gain-verdict-inconsistent-with-redundancy-test',
 });
 
@@ -105,7 +133,7 @@ function permittedVocabulary(job, { profiles, brand }) {
 }
 
 /** Validate a compiled visual job. Returns an array of issues; empty means PASS. */
-export function validateVisualJob(job, { schema = loadSchema(), profiles = loadArtifactProfiles(), brand = loadBrandProfile() } = {}) {
+export function validateVisualJob(job, { schema = loadSchema(), profiles = loadArtifactProfiles(), brand } = {}) {
   const issues = [];
   const where = job?.job_id ?? '<job>';
 
@@ -113,6 +141,19 @@ export function validateVisualJob(job, { schema = loadSchema(), profiles = loadA
     issues.push(issue(CODES.SCHEMA, where, `${e.path}: ${e.message}`));
   }
   if (issues.some((i) => i.code === CODES.SCHEMA)) return issues; // structurally unsound; cross-field checks would be noise
+
+  // Resolve the brand actually named on this job — never a fixed default
+  // (B6). An unresolvable brand fails closed and short-circuits the rest of
+  // the brand-dependent checks below, the same way a schema failure does.
+  let resolvedBrand = brand;
+  if (resolvedBrand === undefined) {
+    try {
+      resolvedBrand = resolveBrandProfile(job.brand_profile, job.brand_profile_version);
+    } catch (err) {
+      issues.push(issue(CODES.UNKNOWN_BRAND, where, err.message));
+      return issues;
+    }
+  }
 
   if (!job.article_ref && !job.package_ref) {
     issues.push(issue(CODES.MISSING_REF, where, 'a visual job must carry exactly one of article_ref or package_ref'));
@@ -168,9 +209,9 @@ export function validateVisualJob(job, { schema = loadSchema(), profiles = loadA
     }
   }
 
-  if (job.brand_profile === brand?.brand && job.brand_profile_version !== brand?.profile_version) {
+  if (job.brand_profile === resolvedBrand?.brand && job.brand_profile_version !== resolvedBrand?.profile_version) {
     issues.push(issue(CODES.BRAND_VERSION_MISMATCH, where,
-      `job compiled against brand_profile_version "${job.brand_profile_version}" but the current profile is "${brand?.profile_version}" — record which version was actually used, not silently the latest`));
+      `job compiled against brand_profile_version "${job.brand_profile_version}" but the resolved profile is "${resolvedBrand?.profile_version}" — record which version was actually used, not silently the latest`));
   }
 
   if (job.attempts > job.max_attempts) {
@@ -194,7 +235,7 @@ export function validateVisualJob(job, { schema = loadSchema(), profiles = loadA
     if (!(job.compiled_from?.length > 0)) {
       issues.push(issue(CODES.CONTEXT_LEAK, where, 'compiled_prompt is present without compiled_from lineage'));
     }
-    const vocabulary = permittedVocabulary(job, { profiles, brand });
+    const vocabulary = permittedVocabulary(job, { profiles, brand: resolvedBrand });
     const promptTokens = tokenize(job.compiled_prompt);
     const leaked = promptTokens.filter((t) => !vocabulary.has(t));
     if (leaked.length > 0) {
@@ -239,13 +280,18 @@ export function validateVisualJobFile(path, options = {}) {
  * Deterministic, model-free prompt assembly from declared inputs only.
  * No network call, no LLM call — pure string composition.
  */
-export function compileVisualPrompt(job, { profiles = loadArtifactProfiles(), brand = loadBrandProfile() } = {}) {
+export function compileVisualPrompt(job, { profiles = loadArtifactProfiles(), brand } = {}) {
   if (job.information_gain?.verdict === 'skip') {
     return { compiled_prompt: undefined, compiled_from: [] };
   }
 
   const profile = profiles[job.artifact_profile];
   if (!profile) throw new Error(`unknown artifact profile: ${job.artifact_profile}`);
+
+  // Resolve the brand this job actually names — never a fixed default (B6).
+  // An unresolvable brand throws here rather than silently compiling against
+  // suengj.com's tokens under a different brand's name.
+  const resolvedBrand = brand ?? resolveBrandProfile(job.brand_profile, job.brand_profile_version);
 
   const spec = job.semantic_spec ?? {};
   const refs = job.selected_reference_traits ?? { adopt: [], avoid: [], do_not_copy: [] };
@@ -259,15 +305,19 @@ export function compileVisualPrompt(job, { profiles = loadArtifactProfiles(), br
     `COMPOSITION: ${profile.composition?.dominant_structure ?? ''}`,
     audienceNote ? `AUDIENCE (${job.audience.value}): ${audienceNote}` : null,
     `TEXT POLICY: ${job.text_policy}`,
-    `BRAND (${job.brand_profile}@${job.brand_profile_version}): background ${brand.palette?.background?.family}, primary ${brand.palette?.primary_structure?.family}, accent ${brand.palette?.accent?.family}`,
+    `BRAND (${resolvedBrand.brand}@${resolvedBrand.profile_version}): background ${resolvedBrand.palette?.background?.family}, primary ${resolvedBrand.palette?.primary_structure?.family}, accent ${resolvedBrand.palette?.accent?.family}`,
     refs.adopt?.length ? `REFERENCE TRAITS — adopt: ${refs.adopt.join('; ')}` : null,
     refs.avoid?.length ? `REFERENCE TRAITS — avoid: ${refs.avoid.join('; ')}` : null,
     refs.do_not_copy?.length ? `REFERENCE TRAITS — do not copy: ${refs.do_not_copy.join('; ')}` : null,
   ].filter(Boolean);
 
+  // compiled_from records the brand actually loaded (resolvedBrand.brand /
+  // .profile_version), never job.brand_profile verbatim — the two agree
+  // whenever resolution succeeded, but only the file actually read is a
+  // truthful lineage entry (B6).
   const compiled_from = [
     job.profile_ref,
-    `${job.brand_profile}@${job.brand_profile_version}`,
+    `${resolvedBrand.brand}@${resolvedBrand.profile_version}`,
     job.audience?.profile_ref,
     'semantic_spec',
     'selected_reference_traits',

@@ -149,6 +149,21 @@ record with an `adopt` verdict and no promotion block, and rejects a promotion
 whose only stated basis is "published" or "L1 pass" or whose `evidence_refs`
 is empty.
 
+**`promotion.authorized_by` must be a human identity** (`human:...`), and
+`evidence_refs` must actually **resolve** to a real `feedback/records/*.json`
+or `references/evaluations/**/*.json` file on disk — a dangling ref is
+rejected exactly as if the block were empty. A single evidence ref is
+sufficient only when `basis` names an explicit owner declaration; otherwise
+at least two independent, resolvable refs are required. This is the same
+check `scripts/lib/calibration-core.mjs` applies to a calibration candidate
+being promoted to an active version, and `scripts/lib/corpus-core.mjs`
+applies to a real-output-corpus entry's `reference_eligible: true` — one
+shared helper (`scripts/lib/promotion-core.mjs`), so "promote a
+generated_output to positive-reference authority" cannot be weaker through
+one door than another. `authorized_by: "agent:claude-code"` with one
+dangling ref and a basis of vague praise — a bypass an earlier version of
+this gate actually accepted — is rejected on both grounds now.
+
 ### Selection must not silently collapse, and must not fake diversity
 
 `evaluate-reference`'s selection half (`skills/evaluate-reference/SKILL.md`,

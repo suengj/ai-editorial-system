@@ -24,8 +24,9 @@
       "minLength": 1
     },
     "artifact_profile": {
-      "description": "One of the three pinned audio artifact profile ids.",
-      "enum": ["audio/monologue", "audio/dialogue", "audio/timed-narration"]
+      "description": "An audio artifact profile id from the artifact axis (editorial/profiles/axes.json, editorial/profiles/artifact/audio-*.json). The vocabulary is owned by that directory, not this enum (docs/architecture/V2-EDITORIAL-LEARNING-CORE.md §8 extension rule) — real membership is enforced by scripts/lib/audio-plan-core.mjs's UNKNOWN_PROFILE check against the directory, not by this pattern alone.",
+      "type": "string",
+      "pattern": "^audio/[a-z0-9]+(-[a-z0-9]+)*$"
     },
     "profile_ref": {
       "type": "string",

@@ -124,14 +124,30 @@ Those classes require an act the record cannot itself contain: explicit human
 activation, evidence-backed review, or human authorization plus an
 independent Reviewer.
 
-`routing-core.mjs` adds one more check on top of that structural limit: a
-record whose `statement` or `routing.rationale` *proposes* a class-4-or-above
-change in words — "update the brand profile," "this should become a
-Constitution rule," "change the core router" — is rejected regardless of
-`scope` or how many `evidence_links` it cites. A single complaint, however
-well corroborated, cannot author its own promotion past class 3. This is the
-control that makes "one complaint becomes a Constitution change" impossible
-by construction rather than by discipline.
+`routing-core.mjs` deliberately does **not** add a second check on top of
+that structural limit by pattern-matching a record's `statement` or
+`routing.rationale` for English phrases like "update the brand profile" or
+"change the core router." An earlier version did exactly that, and it was
+wrong in both directions: it never fired on the identical intent expressed in
+Korean (this system's actual operating language — "이번 글만" vs "앞으로" is
+the class-discriminating distinction, and neither word is in an English
+keyword list), and it fired on a committed, exemplary *abstention* record
+merely for naming `brand-profile` as one of two layers it could not
+distinguish between. A record describing a wish for a house-style change is
+not itself an escalation; only a record that *causes* one is, and that path
+runs through calibration promotion or reference promotion
+(`scripts/lib/calibration-core.mjs`, `scripts/lib/registry-core.mjs`), which
+already require a human authorizer and either repeated independent evidence
+or an explicit owner declaration — see §5 below and
+`references/REFERENCE-EVALUATION-PROTOCOL.md` §6. The control that makes "one
+complaint becomes a Constitution change" impossible is the structural `scope`
+ceiling plus those mutation-time gates, not a regex over the complaint's
+wording. Classifying natural-language intent ("is this a one-off or a
+standing preference?") is the intake/record-author's job, done by asking one
+clarifying question when genuinely ambiguous — see
+`references/REFERENCE-EVALUATION-PROTOCOL.md` §3 and
+V2-EDITORIAL-LEARNING-CORE.md §4 and §10 — never a pattern-match performed
+after the record already exists.
 
 ## 5. Anti-overfitting policy
 

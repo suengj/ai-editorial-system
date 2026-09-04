@@ -29,6 +29,7 @@ export const CODES = Object.freeze({
   INTEGRITY_OVERRIDDEN: 'integrity-overridden-by-style',
   CROSS_TYPE_VIOLATION: 'cross-type-comparison-not-declared',
   ANTI_COLLAPSE_UNDECLARED: 'anti-collapse-undeclared',
+  MISSING_LINEAGE_REF: 'missing-lineage-ref-for-generated-output',
   ROUTE_MISMATCH: 'route-outcome-mismatch',
   UNKNOWN_ROUTE: 'route-not-in-routing-table',
   HUMAN_AUTHORITY: 'final-authority-not-human',
@@ -103,13 +104,35 @@ export function validateL1Record(record, { schema = loadSchema(), routingTable =
   }
 
   // --- anti-collapse: generated_output monoculture must be declared --------
+  // Fires on "every selected reference is generated_output", full stop.
+  // Lineage is no longer the trigger — it used to require every ref to
+  // carry an identical, *present* lineage_ref, which an optional schema
+  // field made trivial to disable: two generated_output refs with no
+  // lineage_ref at all, or with two different lineages, both slipped past
+  // silently (AES-V2 B5). A 100% self-generated comparison set is exactly
+  // the failure mode this guard exists to catch, and it is the one case a
+  // system already in that failure mode would not reliably produce matching
+  // lineage_ref values for. Identical lineage is now a *stronger* signal
+  // surfaced separately, never the condition for firing at all.
   const refs = comparison.references ?? [];
-  const allGeneratedSameLineage = refs.length > 0
-    && refs.every((r) => r.provenance_class === 'generated_output')
-    && refs.every((r) => r.lineage_ref && r.lineage_ref === refs[0].lineage_ref);
-  if (allGeneratedSameLineage && !comparison.anti_collapse?.triggered) {
+  const allGenerated = refs.length > 0 && refs.every((r) => r.provenance_class === 'generated_output');
+  if (allGenerated && !comparison.anti_collapse?.triggered) {
+    const sameLineage = refs.every((r) => r.lineage_ref && r.lineage_ref === refs[0].lineage_ref);
     issues.push(issue(CODES.ANTI_COLLAPSE_UNDECLARED, where,
-      'every selected GOOD reference is a generated_output from the same lineage; the review must say so rather than silently treating the system\'s own prior output as an independent standard'));
+      sameLineage
+        ? 'every selected GOOD reference is a generated_output from the same lineage; the review must say so rather than silently treating the system\'s own prior output as an independent standard'
+        : 'every selected GOOD reference is a generated_output (lineage not uniformly declared or not identical); the review must still declare anti_collapse.triggered rather than silently treating an all-self-generated comparison set as independent'));
+  }
+
+  // A generated_output reference with no lineage_ref cannot be checked for
+  // repeated-lineage selection at all — the schema leaves the field
+  // optional because json-schema-lite has no conditional keyword, so this
+  // module is what actually requires it.
+  for (const r of refs) {
+    if (r.provenance_class === 'generated_output' && !r.lineage_ref) {
+      issues.push(issue(CODES.MISSING_LINEAGE_REF, where,
+        `reference "${r.ref}" is provenance_class "generated_output" but carries no lineage_ref`));
+    }
   }
 
   // --- routes_to must match the outcome and resolve against AES-V2.5 -------

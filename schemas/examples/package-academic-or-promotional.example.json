@@ -50,9 +50,11 @@
         "version": "0.3.1"
       },
       "tool": {
-        "name": "editorial-package-compiler",
-        "version": "0.1.0",
-        "model": null
+        "tool": "editorial-package-compiler",
+        "tool_version": "0.1.0",
+        "provider": "internal",
+        "model": "editorial-package-compiler",
+        "model_version": "0.1.0"
       }
     }
   },

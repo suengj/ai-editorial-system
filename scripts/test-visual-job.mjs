@@ -15,8 +15,8 @@ import { readFileSync, readdirSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
-  CODES, compileVisualPrompt, loadArtifactProfiles, loadBrandProfile, loadSchema,
-  validateVisualJob,
+  CODES, compileVisualPrompt, loadArtifactProfiles, loadSchema,
+  resolveBrandProfile, validateVisualJob,
 } from './lib/visual-job-core.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -25,8 +25,10 @@ const EXAMPLES_DIR = resolve(ROOT, 'schemas/examples');
 
 const schema = loadSchema();
 const profiles = loadArtifactProfiles();
-const brand = loadBrandProfile();
-const opts = { schema, profiles, brand };
+// No fixed brand: every fixture's own brand_profile/brand_profile_version is
+// resolved fail-closed from the brand axis (B6), not defaulted to one file.
+const opts = { schema, profiles };
+const brand = resolveBrandProfile('suengj-com', '1.0.0'); // used only where a test needs the concrete profile object
 
 let failures = 0;
 const check = (name, ok, detail = '') => {
@@ -142,6 +144,50 @@ const codesOf = (job) => validateVisualJob(job, opts).map((i) => i.code);
   const job = clone(baseGood);
   job.context_isolation.excluded = job.context_isolation.excluded.filter((x) => x !== 'renderer_runtime_identity');
   check('context_isolation omits renderer_runtime_identity from excluded', codesOf(job).includes(CODES.RUNTIME_NOT_EXCLUDED));
+}
+
+// --- B6: brand_profile is resolved fail-closed, never a fixed default ------
+console.log('\nbrand resolution is fail-closed (B6)');
+{
+  // Setting an unknown brand must error rather than silently compiling
+  // against suengj.com's tokens.
+  const job = clone(baseGood);
+  job.brand_profile = 'acme-corp';
+
+  let validateThrew = false;
+  try { validateVisualJob(job, { schema, profiles }); } catch { validateThrew = true; }
+  const issues = validateThrew ? [] : validateVisualJob(job, { schema, profiles });
+  check('an unknown brand_profile is reported as an issue (or throws), never silently accepted',
+    validateThrew || issues.some((i) => i.code === CODES.UNKNOWN_BRAND),
+    issues.map((i) => i.code).join(', '));
+
+  let compileThrew = false;
+  let compiledPrompt;
+  try {
+    compiledPrompt = compileVisualPrompt(job, { profiles });
+  } catch {
+    compileThrew = true;
+  }
+  check('compileVisualPrompt errors on an unresolvable brand rather than compiling against a default brand\'s tokens',
+    compileThrew);
+  check('no compiled_prompt was produced for the unresolvable brand',
+    compileThrew && compiledPrompt === undefined);
+}
+
+{
+  // A known brand must resolve to the file actually on disk, and
+  // compiled_from must record that same brand/version, not job.brand_profile
+  // verbatim if it ever disagreed with what was actually read.
+  const job = clone(baseGood);
+  const resolved = resolveBrandProfile(job.brand_profile, job.brand_profile_version);
+  check('resolveBrandProfile("suengj-com", "1.0.0") loads editorial/profiles/brand/suengj-com.v1.json',
+    resolved.brand === 'suengj-com' && resolved.profile_version === '1.0.0');
+
+  const { compiled_prompt, compiled_from } = compileVisualPrompt(job, { profiles });
+  check('compiled_from names the exact brand@version that was actually loaded',
+    compiled_from.includes(`${resolved.brand}@${resolved.profile_version}`));
+  check('the compiled prompt carries tokens derived from the resolved brand profile (background family)',
+    compiled_prompt.includes(resolved.palette.background.family.split('/')[0].trim().split(' ')[0]));
 }
 
 // --- model/provider drift is visible in lineage, never in the prompt -------

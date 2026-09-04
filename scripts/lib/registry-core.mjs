@@ -24,6 +24,7 @@ import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { basename, dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { validate } from './json-schema-lite.mjs';
+import { checkPromotionSufficiency } from './promotion-core.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 export const ROOT = resolve(HERE, '../..');
@@ -58,11 +59,9 @@ export const CODES = Object.freeze({
   STALE_INDEX: 'stale-index',
   GENERATED_OUTPUT_UNPROMOTED: 'generated-output-unpromoted',
   PROMOTION_INSUFFICIENT: 'promotion-insufficient',
+  PROMOTION_NOT_HUMAN: 'promotion-not-human',
   OWNER_VERDICT_UNSUPPORTED: 'owner-verdict-unsupported',
 });
-
-/** Basis text that, alone, is not promotion evidence — publication and an L1 pass are not promotion. */
-const INSUFFICIENT_PROMOTION_BASIS_RE = /^(published|publication|l1[\s-]*pass(ed)?)$/i;
 
 const issue = (code, where, message) => ({ code, where, message });
 
@@ -198,11 +197,42 @@ export function validateEvaluationFile(path, { schema = loadEvaluationSchema(), 
 }
 
 /**
- * Anti-self-reinforcement guard (AES-V2.3/V2.4 delta): a generated_output
- * reference may sit in the registry as real-output evidence forever without
- * ever being promoted. It may not carry an `adopt` verdict — i.e. be treated
- * as a reusable positive reference — without an explicit promotion record,
- * and publication or an L1 pass alone is not that record.
+ * Resolve an evidence ref cited by a promotion block against the records
+ * actually on disk. A ref this cannot resolve is dangling — the reviewer's
+ * verified bypass was exactly a promotion whose only evidence_refs entry
+ * pointed nowhere. Unknown ref schemes (neither "feedback:" nor "eval:")
+ * are treated as unresolvable rather than silently accepted.
+ */
+export function resolveEvidenceRef(ref, {
+  feedbackDir = PATHS.feedbackDir,
+  evaluationsDir = PATHS.evaluationsDir,
+} = {}) {
+  if (typeof ref !== 'string') return false;
+  if (ref.startsWith('feedback:')) {
+    return existsSync(resolve(feedbackDir, `${slugAfterColon(ref)}.json`));
+  }
+  if (ref.startsWith('eval:')) {
+    return listEvaluationFiles(evaluationsDir).some((p) => basename(p) === `${slugAfterColon(ref)}.json`);
+  }
+  return false;
+}
+
+/**
+ * Anti-self-reinforcement guard (AES-V2.3/V2.4 delta, hardened AES-V2 B4):
+ * a generated_output reference may sit in the registry as real-output
+ * evidence forever without ever being promoted. It may not carry an
+ * `adopt` verdict — i.e. be treated as a reusable positive reference —
+ * without an explicit promotion record, and publication or an L1 pass
+ * alone is not that record.
+ *
+ * B4: this used to accept any non-empty `authorized_by` string and never
+ * resolved `evidence_refs`, so `authorized_by: "agent:claude-code"` with one
+ * dangling ref and a basis like "The L1 reviewer rated it strongly and it
+ * reads well" passed. It now shares the same sufficiency check as
+ * calibration-version promotion (scripts/lib/promotion-core.mjs): a human
+ * authorizer, at least two *resolvable* evidence_refs (or one plus an
+ * explicit owner declaration), and a basis that is not merely publication
+ * or an L1 pass.
  */
 function checkGeneratedOutputPromotion(data, where) {
   const issues = [];
@@ -214,17 +244,26 @@ function checkGeneratedOutputPromotion(data, where) {
   }
 
   if (data.promotion) {
-    const { basis, evidence_refs: evidenceRefs } = data.promotion;
-    const noEvidence = !Array.isArray(evidenceRefs) || evidenceRefs.length === 0;
-    const basisAlone = typeof basis === 'string' && INSUFFICIENT_PROMOTION_BASIS_RE.test(basis.trim());
-    if (noEvidence || basisAlone) {
+    const { authorized_by: authorizedBy, basis, evidence_refs: evidenceRefs } = data.promotion;
+    const result = checkPromotionSufficiency({ authorizedBy, basis, evidenceRefs }, { resolveRef: resolveEvidenceRef });
+    if (!result.isHuman) {
+      issues.push(issue(CODES.PROMOTION_NOT_HUMAN, where,
+        'promotion.authorized_by must be a human identity (e.g. "human:owner") — an agent may never authorize promotion of a generated_output to positive-reference status'));
+    }
+    if (result.insufficientEvidence) {
       issues.push(issue(CODES.PROMOTION_INSUFFICIENT, where,
-        'promotion.basis of "published" or "L1 pass" alone, or promotion with no evidence_refs, is not sufficient promotion evidence'));
+        'promotion.basis of "published" or "L1 pass" alone, promotion with no evidence_refs, or promotion resting on a single evidence ref without an explicit owner declaration, is not sufficient promotion evidence'));
+    }
+    if (result.dangling.length > 0) {
+      issues.push(issue(CODES.PROMOTION_INSUFFICIENT, where,
+        `promotion.evidence_refs contains unresolvable (dangling) reference(s): ${result.dangling.join(', ')}`));
     }
   }
 
   return issues;
 }
+
+export { checkGeneratedOutputPromotion };
 
 // --- feedback ------------------------------------------------------------
 

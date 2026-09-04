@@ -15,7 +15,7 @@ contract does not add a parallel record type:
 
 | Field | Recorded in |
 |---|---|
-| provider, model, model version / dated alias | `visual-job.schema.json` `renderer` block; `audio-plan.schema.json` `render` block; `feedback-record.schema.json` / `reference-evaluation.schema.json` / `l1-review.schema.json` `evaluator.agent` block |
+| provider, model, model version / dated alias | `visual-job.schema.json` `renderer` block; `audio-plan.schema.json` `render` block; `feedback-record.schema.json` / `reference-evaluation.schema.json` `evaluator.agent` block; `l1-review.schema.json` `reviewer.agent` block (provider/model/model_version required — AES-V2 FIX B7); `editorial-package.schema.json` `lineage.produced_by.tool` (provider/model/model_version required — AES-V2 FIX B7, closing the text-generation path this table previously omitted) |
 | reasoning/quality tier | `renderer.quality_tier` (visual), `render.quality_tier` (audio); `experiment-record.schema.json` `model_drift.previous/candidate.quality_tier` |
 | profile version | the profile file's own version field, referenced by `profile_ref` on the job/plan/intent record |
 | calibration version | `calibration_ref` on `editorial-intent.schema.json`, `visual-job.schema.json`, `audio-plan.schema.json`, `reference-evaluation.schema.json` |
@@ -76,6 +76,31 @@ there. A role held
 at `FAIL` is not deleted from the roster — it is a standing record that this
 model/role pairing has not cleared the gate, revisited when either the model
 or the gate's fixed sample changes materially.
+
+### The roster this section assumes exists
+
+"It stays pinned to the previous model until the regression record exists"
+(§2) presupposes a file recording what the previous model *was*, per role.
+[`../calibration/model-roster.json`](../calibration/model-roster.json) is
+that file (AES-V2 FIX B7): one entry per role from the same
+`model_drift.role_outcomes[].role` enum, each carrying the currently
+approved `provider`/`model`/`model_version` and the ledger record
+(`approved_by_ledger`) that approved it — `null` for a role that has not yet
+run the §1 gate, which is an honest starting state, not an error. Promoting
+a role to a new approved pin means adding a new roster entry (or updating
+this specific role's pin) once its `calibration/ledger/*.json` `model_drift`
+record clears; it is data, per `docs/architecture/V2-EDITORIAL-LEARNING-CORE.md`
+§8, never a schema or router change. It is a new file under `calibration/`
+and edits no record this fix does not own.
+
+[`../scripts/check-model-roster.mjs`](../scripts/check-model-roster.mjs)
+compares a persisted L1 review's `reviewer.agent` (role `reviewer_l1`) and an
+editorial package's `lineage.produced_by.tool` (role `writer`, the
+text-generation path) against this roster and **flags** — never fails — a
+mismatch. Flagging, not failing, is deliberate: a new model must be *usable*
+to be evaluated against it; it must simply not be silently adopted as the
+default without the §1 gate running. Run it with
+`node scripts/check-model-roster.mjs`.
 
 ## 4. The decision lives in the experiment ledger
 

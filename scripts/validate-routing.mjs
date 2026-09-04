@@ -9,7 +9,7 @@
  * Usage: node scripts/validate-routing.mjs [examples.json]
  */
 
-import { readFileSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 import { dirname, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
@@ -19,6 +19,7 @@ import {
 
 const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const examplesPath = resolve(process.argv[2] ?? resolve(REPO_ROOT, 'schemas/examples/feedback-record-routing.example.json'));
+const feedbackRecordsDir = resolve(REPO_ROOT, 'feedback/records');
 
 const table = loadRoutingTable();
 const schema = loadFeedbackSchema();
@@ -34,23 +35,34 @@ if (tableIssues.length === 0) {
   for (const i of tableIssues) console.error(`  [${i.code}] ${i.where} — ${i.message}`);
 }
 
-const { records } = JSON.parse(readFileSync(examplesPath, 'utf8'));
-const label = relative(REPO_ROOT, examplesPath);
-console.log(`\nworked examples: ${label} (${records.length} record(s))`);
-
-for (const record of records) {
-  const issues = [
-    ...validateFeedbackRecordAgainstSchema(record, schema),
-    ...validateFeedbackRecordRouting(record, table),
-  ];
-  if (issues.length === 0) {
-    console.log(`  PASS  ${record.feedback_id}`);
-  } else {
-    failed += 1;
-    console.error(`  FAIL  ${record.feedback_id} (${issues.length} issue(s))`);
-    for (const i of issues) console.error(`    [${i.code}] ${i.message}`);
+function checkRecords(records, label) {
+  console.log(`\n${label} (${records.length} record(s))`);
+  for (const record of records) {
+    const issues = [
+      ...validateFeedbackRecordAgainstSchema(record, schema),
+      ...validateFeedbackRecordRouting(record, table),
+    ];
+    if (issues.length === 0) {
+      console.log(`  PASS  ${record.feedback_id}`);
+    } else {
+      failed += 1;
+      console.error(`  FAIL  ${record.feedback_id} (${issues.length} issue(s))`);
+      for (const i of issues) console.error(`    [${i.code}] ${i.message}`);
+    }
   }
 }
+
+const { records: exampleRecords } = JSON.parse(readFileSync(examplesPath, 'utf8'));
+checkRecords(exampleRecords, `worked examples: ${relative(REPO_ROOT, examplesPath)}`);
+
+// Records actually persisted under feedback/records/ must be checked too —
+// not only the worked examples. A record that has never been run through
+// this validator is a record whose routing has never actually been checked
+// (AES-V2 B3).
+const persistedRecords = readdirSync(feedbackRecordsDir)
+  .filter((f) => f.endsWith('.json'))
+  .map((f) => JSON.parse(readFileSync(resolve(feedbackRecordsDir, f), 'utf8')));
+checkRecords(persistedRecords, `persisted records: ${relative(REPO_ROOT, feedbackRecordsDir)}/`);
 
 if (failed === 0) {
   console.log('\nrouting: PASS');

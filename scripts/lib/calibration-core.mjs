@@ -20,6 +20,7 @@ import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { basename, dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { validate } from './json-schema-lite.mjs';
+import { checkPromotionSufficiency } from './promotion-core.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 export const ROOT = resolve(HERE, '../..');
@@ -33,6 +34,33 @@ export const PATHS = Object.freeze({
   feedbackDir: resolve(ROOT, 'feedback/records'),
   routingTable: resolve(ROOT, 'editorial/feedback-routing.json'),
 });
+
+/**
+ * Pinned write-authority set (AES-V2 B2). Classes 5 (profile / core routing
+ * change — evidence-backed review) and 6 (Constitution / core invariants /
+ * SSOT — human authorization + independent Reviewer) had a git-HEAD
+ * immutability guard for NOTHING: class 4 (calibration versions, above) has
+ * one, classes 5/6 had none, so the top of the ladder could rewrite itself
+ * unnoticed while every gate exits 0.
+ *
+ * This is declared as DATA, not folded into the checker function below —
+ * pinning a new class-5/6 file is a data change here, never a code change
+ * to checkPinnedAuthority.
+ *
+ *   kind "file": the whole file at `path` is pinned.
+ *   kind "json-paths": only the named top-level keys of the JSON at `path`
+ *     are pinned (other keys in the same file may belong to a different,
+ *     unpinned authority class and change freely).
+ *   kind "dir": every file directly under `path` is pinned, including one
+ *     that does not exist yet at HEAD (a brand-new profile file is a class-5
+ *     change exactly as much as editing an existing one).
+ */
+export const PINNED_AUTHORITY = Object.freeze([
+  { path: 'editorial/constitution.md', kind: 'file' },
+  { path: 'docs/architecture/SSOT-BOUNDARIES.md', kind: 'file' },
+  { path: 'editorial/feedback-routing.json', kind: 'json-paths', jsonPaths: ['layers', 'authority_matrix'] },
+  { path: 'editorial/profiles/brand', kind: 'dir' },
+]);
 
 export const loadJson = (p) => JSON.parse(readFileSync(p, 'utf8'));
 export const loadVersionSchema = (p = PATHS.versionSchema) => loadJson(p);
@@ -49,6 +77,7 @@ export const CODES = Object.freeze({
   PROMOTION_NOT_HUMAN: 'promotion-not-human',
   MULTIPLE_ACTIVE_FOR_SCOPE: 'multiple-active-for-scope',
   MUTATED_HISTORICAL_VERSION: 'mutated-historical-version',
+  PINNED_AUTHORITY_CHANGED: 'pinned-authority-changed-without-ledger-citation',
   DUPLICATE_ID: 'duplicate-id',
   STALE_CURRENT: 'stale-current',
   UNKNOWN_TARGET_LAYER: 'unknown-target-layer',
@@ -85,11 +114,6 @@ function parseJsonFile(path) {
     return { error: err.message };
   }
 }
-
-/** Basis text that, alone, is not promotion evidence (mirrors registry-core.mjs). */
-const INSUFFICIENT_PROMOTION_BASIS_RE = /^(published|publication|l1[\s-]*pass(ed)?)$/i;
-/** Basis text naming an explicit owner declaration — the one-declaration path to promotion. */
-const OWNER_DECLARATION_BASIS_RE = /owner declaration|owner stated|explicit owner/i;
 
 // --- feedback cross-check (read-only; feedback/** is owned elsewhere) ------
 
@@ -174,14 +198,12 @@ export function validateVersionFile(path, {
   // rest on a single record unless it names an explicit owner declaration.
   if (data.promotion) {
     const { authorized_by: authorizedBy, basis, evidence_refs: evidenceRefs } = data.promotion;
-    if (typeof authorizedBy !== 'string' || !authorizedBy.startsWith('human:')) {
+    const result = checkPromotionSufficiency({ authorizedBy, basis, evidenceRefs });
+    if (!result.isHuman) {
       issues.push(issue(CODES.PROMOTION_NOT_HUMAN, where,
         'promotion.authorized_by must be a human identity — an agent may never activate the candidate it raised'));
     }
-    const refs = Array.isArray(evidenceRefs) ? evidenceRefs : [];
-    const isOwnerDeclaration = typeof basis === 'string' && OWNER_DECLARATION_BASIS_RE.test(basis);
-    const basisAlone = typeof basis === 'string' && INSUFFICIENT_PROMOTION_BASIS_RE.test(basis.trim());
-    if (refs.length === 0 || basisAlone || (refs.length < 2 && !isOwnerDeclaration)) {
+    if (result.insufficientEvidence) {
       issues.push(issue(CODES.PROMOTION_INSUFFICIENT, where,
         'a candidate cannot be promoted by a single feedback record, or by "published"/"L1 pass" alone — either repeated independent evidence (2+ evidence_refs) or an explicit owner declaration is required'));
     }
@@ -228,6 +250,104 @@ export function checkHistoricalImmutability(path, root = ROOT) {
       'substantive fields changed relative to the committed HEAD copy — only status/superseded_by may change once a version is superseded')];
   }
   return [];
+}
+
+// --- pinned authority (AES-V2 B2) -------------------------------------------
+
+function readHeadText(rel, root) {
+  try {
+    return execFileSync('git', ['show', `HEAD:${rel}`], { cwd: root, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] });
+  } catch {
+    return null; // not in HEAD — new file, nothing committed to compare against yet
+  }
+}
+
+function listDirFilesAtHead(relDir, root) {
+  try {
+    const out = execFileSync('git', ['ls-tree', '-r', '--name-only', 'HEAD', '--', relDir], {
+      cwd: root, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'],
+    });
+    return out.split('\n').map((l) => l.trim()).filter(Boolean);
+  } catch {
+    return [];
+  }
+}
+
+function listDirFilesWorkingTree(relDir, root) {
+  const abs = resolve(root, relDir);
+  if (!existsSync(abs)) return [];
+  return readdirSync(abs, { withFileTypes: true })
+    .filter((e) => e.isFile())
+    .map((e) => `${relDir}/${e.name}`);
+}
+
+/**
+ * Whether any experiment-ledger record cites `relPath` — the escape hatch
+ * for a legitimate class-5/6 change is a ledger record naming the file, not
+ * editing this checker. A plain substring search over each record's raw
+ * text: ledger fields (hypothesis, smallest_change, notes, ...) are free
+ * text, so this is the same "cite it in words" contract the rest of the
+ * ledger already relies on, not a new structured field.
+ */
+function ledgerCitesPath(relPath, ledgerDir) {
+  for (const file of listLedgerFiles(ledgerDir)) {
+    const text = readDiskText(file);
+    if (text && text.includes(relPath)) return true;
+  }
+  return false;
+}
+
+function jsonPathsChanged(headText, currentText, jsonPaths) {
+  try {
+    const headJson = JSON.parse(headText);
+    const curJson = JSON.parse(currentText);
+    const pick = (obj) => Object.fromEntries(jsonPaths.map((k) => [k, obj?.[k] ?? null]));
+    return JSON.stringify(sortKeys(pick(headJson))) !== JSON.stringify(sortKeys(pick(curJson)));
+  } catch {
+    return headText !== currentText; // unparseable — fall back to a raw diff rather than silently passing
+  }
+}
+
+function checkOnePinnedFile(rel, kind, jsonPaths, root, ledgerDir) {
+  const headText = readHeadText(rel, root);
+  if (headText === null) return []; // new file, not yet committed — nothing to have mutated
+  const currentText = readDiskText(resolve(root, rel));
+  const changed = currentText === null
+    ? true // deleted relative to HEAD
+    : kind === 'json-paths'
+      ? jsonPathsChanged(headText, currentText, jsonPaths)
+      : headText !== currentText;
+  if (!changed) return [];
+  if (ledgerCitesPath(rel, ledgerDir)) return [];
+  return [issue(CODES.PINNED_AUTHORITY_CHANGED, rel,
+    `pinned write-authority file changed relative to the committed HEAD copy with no experiment-ledger record citing "${rel}" — class 5/6 change requires a citing ledger record (calibration/ledger/), not a silent edit`)];
+}
+
+/**
+ * Real-repo check over the declared PINNED_AUTHORITY set: every file diffs
+ * its working-tree copy against HEAD (as checkHistoricalImmutability does
+ * for calibration versions) and FAILS when changed with no experiment-ledger
+ * record citing it. A brand-new file (no HEAD copy) is handled gracefully —
+ * nothing to have mutated yet — which is what keeps an ordinary uncommitted
+ * working tree from failing on unrelated in-progress work: this only ever
+ * fires on a file inside the pinned set that HEAD already has a copy of.
+ */
+export function checkPinnedAuthority(root = ROOT, { pinned = PINNED_AUTHORITY, ledgerDir = PATHS.ledgerDir } = {}) {
+  const issues = [];
+  for (const entry of pinned) {
+    if (entry.kind === 'dir') {
+      const files = new Set([
+        ...listDirFilesAtHead(entry.path, root),
+        ...listDirFilesWorkingTree(entry.path, root),
+      ]);
+      for (const rel of files) {
+        issues.push(...checkOnePinnedFile(rel, 'file', undefined, root, ledgerDir));
+      }
+    } else {
+      issues.push(...checkOnePinnedFile(entry.path, entry.kind, entry.jsonPaths, root, ledgerDir));
+    }
+  }
+  return issues;
 }
 
 // --- experiment ledger -------------------------------------------------------
@@ -392,6 +512,8 @@ export function validateAll({ checkGitImmutability = true } = {}) {
     issues.push(issue(CODES.STALE_CURRENT, 'calibration/current.json',
       'stale relative to calibration/versions/ — run `node scripts/calibration.mjs --rebuild`'));
   }
+
+  if (checkGitImmutability) issues.push(...checkPinnedAuthority());
 
   return issues;
 }

@@ -252,7 +252,7 @@
           "pattern": "^pkg:[a-z0-9]+(-[a-z0-9]+)*$"
         },
         "produced_by": {
-          "description": "Vendor-neutral, same shape as artifact.schema.json#/$defs/generator: a Skill is the orchestration contract, the tool is a replaceable worker.",
+          "description": "Vendor-neutral: a Skill is the orchestration contract, the tool is a replaceable worker. `tool` carries the same full runtime-lineage shape as visual-job.schema.json's `renderer` block (docs/architecture/V2-EDITORIAL-LEARNING-CORE.md §7 model-drift contract) rather than a second spelling of it — a package's writer/framer identity is exactly as detectable as its renderer's.",
           "type": "object",
           "additionalProperties": false,
           "required": ["skill", "tool"],
@@ -267,13 +267,17 @@
               }
             },
             "tool": {
+              "description": "Full runtime lineage. Field names deliberately match visual-job.schema.json's `renderer`/`runtime` $defs: tool/tool_version identify the compiling pipeline; provider/model/model_version identify the generative runtime, and are still recorded for a deterministic tool as the tool's own identity so the field is never blank.",
               "type": "object",
               "additionalProperties": false,
-              "required": ["name", "version"],
+              "required": ["tool", "provider", "model", "model_version"],
               "properties": {
-                "name": { "type": "string", "minLength": 1 },
-                "version": { "type": "string", "minLength": 1 },
-                "model": { "type": ["string", "null"] }
+                "tool": { "type": "string", "minLength": 1 },
+                "tool_version": { "type": "string", "minLength": 1 },
+                "provider": { "type": "string", "minLength": 1 },
+                "model": { "type": "string", "minLength": 1 },
+                "model_version": { "type": "string", "minLength": 1 },
+                "quality_tier": { "type": "string", "minLength": 1 }
               }
             }
           }

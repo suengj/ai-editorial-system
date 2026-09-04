@@ -9,7 +9,7 @@
  * brand-profile change.
  */
 
-import { readFileSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
@@ -22,6 +22,11 @@ const table = loadRoutingTable();
 const schema = loadFeedbackSchema();
 const { records } = JSON.parse(readFileSync(resolve(ROOT, 'schemas/examples/feedback-record-routing.example.json'), 'utf8'));
 const byId = Object.fromEntries(records.map((r) => [r.feedback_id, r]));
+
+const feedbackRecordsDir = resolve(ROOT, 'feedback/records');
+const persistedRecords = readdirSync(feedbackRecordsDir)
+  .filter((f) => f.endsWith('.json'))
+  .map((f) => JSON.parse(readFileSync(resolve(feedbackRecordsDir, f), 'utf8')));
 const clone = (r) => JSON.parse(JSON.stringify(r));
 
 let failures = 0;
@@ -147,28 +152,65 @@ console.log('\nthe three misroutes docs/architecture/V2-EDITORIAL-LEARNING-CORE.
     codesFor(polishMislabeledFrame).includes(CODES.MISROUTE));
 }
 
-// --- deny: authority escalation above ceiling -------------------------------
-console.log('\nno record proposes a mutation above its authorized class');
+// --- the authority ceiling lives at the mutation, not the complaint --------
+// AES-V2 B3: the English keyword-regex "escalation ceiling" that used to
+// live in routing-core.mjs is deleted. It filtered vocabulary, not
+// authority: it missed the Korean equivalent of the exact phrasing it
+// caught in English, and it flagged a committed exemplary abstention for
+// merely naming a layer it could not distinguish between. The real ceiling
+// is structural (a feedback record's `scope` enum tops out at
+// calibration_candidate) and enforced at the actual mutation point
+// (scripts/lib/calibration-core.mjs / scripts/lib/registry-core.mjs
+// promotion gates), not by pattern-matching a record's free text.
+console.log('\nthe authority ceiling is structural, not a text filter (AES-V2 B3)');
 {
-  const brandFromSingleRender = clone(byId['feedback:example-renderer-glitch']);
-  brandFromSingleRender.scope = 'calibration_candidate';
-  brandFromSingleRender.evidence_links = ['feedback:example-renderer-glitch'];
-  brandFromSingleRender.statement = 'This one render is off; we should just update the brand profile to fix it.';
-  check('proposing a brand-profile change from a single renderer defect is rejected',
-    codesFor(brandFromSingleRender).includes(CODES.ESCALATION_ABOVE_CEILING));
+  check('CODES no longer exposes an escalation-above-ceiling code',
+    !('ESCALATION_ABOVE_CEILING' in CODES));
 
-  const oneComplaintToConstitution = clone(byId['feedback:example-frame-worth']);
-  oneComplaintToConstitution.routing.rationale += ' This should really change the Constitution.';
-  check('escalating one complaint to class 5/6 language is rejected',
-    codesFor(oneComplaintToConstitution).includes(CODES.ESCALATION_ABOVE_CEILING));
+  // False negative the reviewer found: the system's own class-discriminating
+  // words ("이번 글만" vs "앞으로") are not English-keyword-detectable, and a
+  // record proposing a durable house-style change in Korean must produce
+  // exactly the same routing issues as its English equivalent — none, from
+  // this module. (The record cannot itself perform the mutation regardless;
+  // that boundary is schema-structural and enforced downstream.)
+  const koreanHouseStyleRequest = clone(byId['feedback:example-renderer-glitch']);
+  koreanHouseStyleRequest.statement = '앞으로 모든 썸네일에서 이 색과 스타일을 이렇게 바꿔주세요. 하우스 스타일 자체를 이걸로 해주세요.';
+  koreanHouseStyleRequest.routing = { layer: null, modality_layer: 'renderer', abstained: false, confidence: 'high', rationale: 'renderer defect, this run only' };
+  const englishHouseStyleRequest = clone(koreanHouseStyleRequest);
+  englishHouseStyleRequest.statement = 'From now on, change this color and style for every thumbnail. Make the house style itself this.';
+  check('a Korean durable house-style request produces the same routing-core findings as no request at all',
+    JSON.stringify(codesFor(koreanHouseStyleRequest)) === JSON.stringify(codesFor(rendererOnlyBaseline())));
+  check('its English equivalent produces the identical result — no language-specific asymmetry',
+    JSON.stringify(codesFor(koreanHouseStyleRequest)) === JSON.stringify(codesFor(englishHouseStyleRequest)));
 
-  const calibrationActivation = clone(byId['feedback:example-reference-repeated']);
-  calibrationActivation.statement += ' Let\'s just activate a new calibration version right now.';
-  check('proposing calibration activation from a feedback record is rejected',
-    codesFor(calibrationActivation).includes(CODES.ESCALATION_ABOVE_CEILING));
+  function rendererOnlyBaseline() {
+    const b = clone(byId['feedback:example-renderer-glitch']);
+    b.routing = { layer: null, modality_layer: 'renderer', abstained: false, confidence: 'high', rationale: 'renderer defect, this run only' };
+    return b;
+  }
 
-  check('a legitimate calibration_candidate with real evidence_links is not penalised',
-    !codesFor(byId['feedback:example-reference-repeated']).includes(CODES.ESCALATION_ABOVE_CEILING));
+  // False positive the reviewer found, now fixed: the committed exemplary
+  // abstention record names "brand-profile" only to say it cannot
+  // distinguish it from a renderer defect — that must never be flagged as
+  // an escalation attempt.
+  const abstainNamingBrandProfile = persistedRecords.find((r) => r.feedback_id === 'feedback:routing-unclear-2026-09-05');
+  check('an abstention naming "brand-profile" as one of two things it cannot distinguish is not flagged',
+    codesFor(abstainNamingBrandProfile).length === 0, JSON.stringify(codesFor(abstainNamingBrandProfile)));
+}
+
+// --- the committed feedback/records/ corpus is actually checked ------------
+console.log('\nfeedback/records/ is validated, not only the worked examples (AES-V2 B3)');
+{
+  check(`at least one persisted record exists to check (${persistedRecords.length} found)`,
+    persistedRecords.length > 0);
+  for (const r of persistedRecords) {
+    check(`persisted record routes cleanly: ${r.feedback_id}`, codesFor(r).length === 0, JSON.stringify(codesFor(r)));
+  }
+  const routingUnclear = persistedRecords.find((r) => r.feedback_id === 'feedback:routing-unclear-2026-09-05');
+  check('feedback:routing-unclear-2026-09-05 (the committed exemplary abstention) is found on disk',
+    Boolean(routingUnclear));
+  check('feedback:routing-unclear-2026-09-05 passes routing with 0 issues',
+    routingUnclear && codesFor(routingUnclear).length === 0, JSON.stringify(routingUnclear && codesFor(routingUnclear)));
 }
 
 console.log(failures === 0 ? '\nrouting tests: PASS' : `\nrouting tests: FAIL (${failures})`);

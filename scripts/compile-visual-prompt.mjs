@@ -19,7 +19,7 @@ import { readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
-  compileVisualPrompt, loadArtifactProfiles, loadBrandProfile, loadSchema,
+  compileVisualPrompt, loadArtifactProfiles, loadSchema,
   validateVisualJobFile,
 } from './lib/visual-job-core.mjs';
 
@@ -30,7 +30,6 @@ const EXAMPLES_DIR = resolve(ROOT, 'schemas/examples');
 function runValidate() {
   const schema = loadSchema();
   const profiles = loadArtifactProfiles();
-  const brand = loadBrandProfile();
 
   const files = readdirSync(EXAMPLES_DIR)
     .filter((f) => f.startsWith('visual-job-') && f.endsWith('.example.json'))
@@ -44,7 +43,9 @@ function runValidate() {
   let failures = 0;
   for (const f of files) {
     const path = resolve(EXAMPLES_DIR, f);
-    const issues = validateVisualJobFile(path, { schema, profiles, brand });
+    // No fixed brand passed: each job's own brand_profile/brand_profile_version
+    // is resolved from the brand axis, fail-closed, per job (B6).
+    const issues = validateVisualJobFile(path, { schema, profiles });
     const label = relative(ROOT, path);
     if (issues.length === 0) {
       console.log(`visual-job: PASS — ${label}`);
@@ -64,10 +65,10 @@ function runValidate() {
 
 function runCompile(jobPath) {
   const profiles = loadArtifactProfiles();
-  const brand = loadBrandProfile();
   const job = JSON.parse(readFileSync(jobPath, 'utf8'));
 
-  const { compiled_prompt, compiled_from } = compileVisualPrompt(job, { profiles, brand });
+  // brand is resolved from job.brand_profile/brand_profile_version, fail-closed.
+  const { compiled_prompt, compiled_from } = compileVisualPrompt(job, { profiles });
 
   const next = { ...job };
   if (compiled_prompt === undefined) {
