@@ -292,6 +292,36 @@ document is missing.
 | AES-V2.10 (SUE-568) | calibration versioning, drift, ledger, budgets | `calibration/` |
 | AES-V2.11 (SUE-569) | V2 certification, public project refresh | `docs/architecture/V2-CERTIFICATION.md` |
 
+Certification closes the Core. **Adoption is proved separately**, in the
+milestone *Post-V2 Pilot & Owner Adoption*, which runs strictly after V2.11:
+
+| Issue | Adds | Primary paths |
+|---|---|---|
+| AES-V2.12 (SUE-570) | real multi-audience text + visual pilot on canonical `suengj.com` articles, delivered as a non-published review branch | `suengj-com` review branch; evidence + feedback records here |
+| AES-V2.13 (SUE-571) | owner playbook for natural-language operation, written from pilot evidence | owner/operator documentation |
+
+The pilot is the honest test of §11: two canonical articles, each transformed
+into News / Report / child-oriented drafts from the *same* verified knowledge,
+each with a visual its audience actually needed. It answers questions the Core
+cannot answer about itself — whether one source really stops forcing one output
+structure, whether audience reaches the visual information geometry and not just
+the prose, and whether the `suengj.com` brand profile flattens three audiences
+into one picture.
+
+Two constraints on V2 design follow from it and are binding now, not later:
+
+1. **A child audience is a named profile, not a softened adult one.** Ages
+   10–12 change vocabulary ceiling, concrete-versus-abstract reasoning, example
+   choice, and attention span — and lowering the assumed knowledge level may
+   never lower factual accuracy or drop stated uncertainty.
+2. **Draft is not published.** Pilot output reaches `suengj-com` as a review
+   branch under the existing fail-closed draft contract, never as a merge and
+   never as publication. Constitution §10 and the SSOT boundary hold without
+   amendment.
+
+Audio is explicitly deferred from the pilot and must be described as deferred —
+not as working — wherever V2 capability is summarised.
+
 ## 11. The ten questions
 
 V2 is not complete while any answer is materially *no*.

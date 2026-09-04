@@ -1,0 +1,69 @@
+{
+  "schema_version": "1.0.0",
+  "description": "The axis registry (AES-V2.2 / SUE-560). Editorial Intent (schemas/editorial-intent.schema.json) resolves over independent axes; this file is the map from an axis id to where its profiles live and which intent field it fills. Adding a transformation, audience, surface, artifact class, brand, or reference profile means adding a JSON file under the matching `dir` — never editing scripts/lib/profile-core.mjs or any router. See docs/architecture/V2-EDITORIAL-LEARNING-CORE.md §3 and §7.",
+  "axes": [
+    {
+      "axis": "content",
+      "dir": "content",
+      "id_pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
+      "intent_path": "axes.content_type",
+      "owns": "Evidence burden, required fields, register, and artifact fit per content type.",
+      "populated": true,
+      "linear_issue": "AES-V2.2 (SUE-560)"
+    },
+    {
+      "axis": "transformation",
+      "dir": "transformation",
+      "id_pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
+      "intent_path": "axes.transformation",
+      "owns": "What a transformation from source to output may change and what it must preserve.",
+      "populated": true,
+      "linear_issue": "AES-V2.2 (SUE-560)"
+    },
+    {
+      "axis": "audience",
+      "dir": "audience",
+      "id_pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
+      "intent_path": "axes.audience",
+      "owns": "Who is on the other end, expressed as concrete text/visual/audio delivery adjustments.",
+      "populated": true,
+      "linear_issue": "AES-V2.2 (SUE-560)"
+    },
+    {
+      "axis": "surface",
+      "dir": "surface",
+      "id_pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
+      "intent_path": "axes.surface",
+      "owns": "Where the piece lands, who owns that destination, and what constraint that puts on the Core.",
+      "populated": true,
+      "linear_issue": "AES-V2.2 (SUE-560)"
+    },
+    {
+      "axis": "artifact",
+      "dir": "artifact",
+      "id_pattern": "^(text|visual|audio|video)/[a-z0-9]+(-[a-z0-9]+)*$",
+      "intent_path": "axes.artifacts[].value",
+      "owns": "Which medium and which shape of it — visual/audio artifact profiles, brand tokens, prompt compilation.",
+      "populated": false,
+      "linear_issue": "AES-V2.7 (SUE-565) / AES-V2.8 (SUE-566)"
+    },
+    {
+      "axis": "brand",
+      "dir": "brand",
+      "id_pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
+      "intent_path": null,
+      "owns": "Visual/voice brand tokens applied by artifact profiles. Not an editorial-intent axis field; referenced from artifact profiles.",
+      "populated": false,
+      "linear_issue": "AES-V2.7 (SUE-565)"
+    },
+    {
+      "axis": "reference",
+      "dir": "reference",
+      "id_pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
+      "intent_path": null,
+      "owns": "Modality-aware craft-reference evaluation and selection rules. Never grants factual authority (see docs/architecture/V2-EDITORIAL-LEARNING-CORE.md §2).",
+      "populated": false,
+      "linear_issue": "AES-V2.4 (SUE-562)"
+    }
+  ]
+}
