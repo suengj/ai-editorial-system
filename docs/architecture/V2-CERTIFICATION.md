@@ -211,7 +211,26 @@ real preference decision has been made.
 non-Claude model/agent route. Per SUE-569's explicit instruction — *"A
 portability failure cannot be hidden by certifying only the manager's
 preferred model"* — this is reported as `NOT_RUN`, not softened into
-`PARTIAL` or omitted. The method a future reviewer should execute is written
+`PARTIAL` or omitted.
+
+**An intra-family probe has been run, and it does not change this status.**
+[`evals/system/portability/2026-09-05-intra-family-capability.md`](../../evals/system/portability/2026-09-05-intra-family-capability.md)
+records one Korean utterance resolved by three Claude capability tiers
+(Haiku 4.5, Sonnet 5, Opus 5) against a frozen repository state, compared on
+the six semantic contracts below. Its result: the axes, the Source/Reference
+boundary, and the calibration firewall agreed unanimously; the clarification
+gate produced three different question sets, and the weakest route violated
+an explicit contract rule by substituting a plausibility judgement for the
+contract's numeric evidence-burden test.
+
+That finding was routed to the contract rather than to a prompt — the
+materiality test is now computed by `scripts/lib/materiality-core.mjs`, and
+the failing resolution is a named regression fixture.
+
+The probe is real operating evidence and is the first in this repository.
+It is **not** the cross-vendor comparison this area requires, and it is
+recorded as intra-family evidence only. Area 8 stays `NOT_RUN` until a
+genuinely different vendor's agent route resolves the same task. The method a future reviewer should execute is written
 out in full in `scripts/certify-v2.mjs`'s matrix item 8 (reproduced here for
 readers of this document who are not reading the script):
 
