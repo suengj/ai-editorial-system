@@ -400,7 +400,119 @@ one rung of the ladder, the evidence that motivated it, and validation output.
 An agent that cannot state which rung it is on, and why the rung below was
 insufficient, does not commit — it reports and asks.
 
-## 11. What V2 must not become
+## 11. Evaluating the system, not just the output
+
+The owner judges whether an article or an image is good. This section is about
+something else: whether **the system** is getting better, or merely getting
+bigger.
+
+Two axes, always read together:
+
+1. **Outcome value** — does V2 materially improve accepted output quality and
+   adaptability?
+2. **System cost and entropy** — how much complexity, context, owner effort,
+   calibration churn, and governance risk does that quality cost?
+
+A system that produces slightly better outputs by becoming dramatically harder
+to understand or operate is not an improvement. Holding both axes in view is
+the only defence against improvement-by-accumulation.
+
+### Evidence accumulates automatically; evaluation does not run automatically
+
+```text
+normal generation / feedback
+  → lightweight evidence accumulates as a side effect
+  → enough evidence exists
+  → periodic or on-demand system review
+  → snapshot / review report updated
+```
+
+The full scorecard does **not** run after every article or asset. It runs when
+the owner asks, when an evidence threshold is reached, when a major
+model/profile/architecture change warrants a before-and-after, or when the V3
+readiness gate is being considered.
+
+### Capture piggybacks — no parallel telemetry
+
+There is **no new per-output record type and no analytics database.** Every
+field the system evaluation needs already has a home, or gets one small field
+added to a record that already exists:
+
+| Evidence | Lives in |
+|---|---|
+| intent, transformation, content type, audience, surface, artifact | the Editorial Intent record |
+| sources and selected references | intent inputs + the reference selection record |
+| profile and calibration versions | intent, package, and job records |
+| provider, model, version, role | lineage (§7) |
+| L0 / L1 outcome | review records |
+| feedback and routing target | feedback records |
+| revision / replan / rerender lineage | job and package lineage |
+| owner verdict | feedback records |
+| cost / context proxy | job and review records |
+
+Duplicating every runtime event into Git would be a stop condition (§12.7), not
+a feature.
+
+### Silence is not acceptance
+
+When no owner verdict has been expressed, it is recorded as **`unknown`**.
+
+It is never inferred from publication, from an L1 PASS, or from the absence of
+complaint. An owner who said nothing may have been busy, or may not have looked.
+A system that reads silence as approval will report excellent health precisely
+when it is least observed — and it will feed that fiction into the V3 decision.
+
+### Judgement, not a score
+
+Each dimension gets one of four states, with evidence, trend, and a recommended
+action:
+
+```text
+HEALTHY   WATCH   STRUCTURAL_RISK   INSUFFICIENT_EVIDENCE
+```
+
+**No aggregate number is authoritative.** There is no `82/100`. Quantitative
+metrics support a judgement; they do not replace it. `INSUFFICIENT_EVIDENCE` is
+a legitimate, expected outcome — for most dimensions it will be the honest
+answer until the SUE-570 pilot and real operation have happened, and claiming
+health before then would be the vanity failure this section exists to prevent.
+
+The ten dimensions are defined in SUE-573: quality lift, operator friction,
+context efficiency, reference health, calibration entropy, routing
+effectiveness, cross-agent portability, governance safety, cost per accepted
+result, and architecture entropy.
+
+### One canonical surface
+
+```text
+evals/system/
+  README.md      the evaluation contract — how to review this system
+  current.json   compact dimension-level state; a summary and index, never a raw event store
+  snapshots/     versioned historical snapshots
+  reviews/       human-readable, evidence-backed review reports
+```
+
+The test this surface must pass: **a future independent reviewer — a different
+model, months later, with no access to the conversation that built any of
+this — can start here, follow the evidence references, and reach a defensible
+judgement.** If reaching that judgement requires context that lives only in
+someone's chat history, the surface has failed.
+
+### V3 is not the default outcome
+
+The review feeds the readiness gate (SUE-574), whose legal decisions are
+`KEEP_V2`, `V2_TUNE`, `V2_SIMPLIFY`, and `V3_REQUIRED`. **`V2_SIMPLIFY` is a
+first-class result**: deleting or consolidating rules, profiles, schemas, and
+gates is a real improvement, not a retreat. `V3_REQUIRED` needs repeated
+evidence of a *structural* limitation that bounded tuning cannot repair. One
+bad article, one renderer defect, or one awkward model upgrade is not V3
+evidence.
+
+No V3 design work happens before that evidence exists.
+
+---
+
+## 12. What V2 must not become
 
 Stop conditions. Any of these means the architecture is wrong, not that a
 document is missing.
@@ -417,7 +529,7 @@ document is missing.
 
 ---
 
-## 12. Issue map
+## 13. Issue map
 
 | Issue | Adds | Primary paths |
 |---|---|---|
@@ -442,7 +554,7 @@ milestone *Post-V2 Pilot & Owner Adoption*, which runs strictly after V2.11:
 | AES-V2.13 (SUE-571) | owner playbook for natural-language operation, written from pilot evidence | owner/operator documentation |
 | AES-BACKLOG (SUE-572) | real audience comprehension evidence — **non-blocking, activated only when enough comparable outputs exist** | — |
 
-The pilot is the honest test of §13: two canonical articles, each transformed
+The pilot is the honest test of §14: two canonical articles, each transformed
 into News / Report / child-oriented drafts from the *same* verified knowledge,
 each with a visual its audience actually needed. It answers questions the Core
 cannot answer about itself — whether one source really stops forcing one output
@@ -474,7 +586,7 @@ and is kept separate from owner preference, model audience-fit judgement, and
 integrity evidence — it may never silently become preference or override
 factual safeguards.
 
-## 13. The ten questions
+## 14. The ten questions
 
 V2 is not complete while any answer is materially *no*.
 
