@@ -106,6 +106,39 @@ export function validateRoutingTable(table = loadRoutingTable()) {
   return issues;
 }
 
+/**
+ * Cross-check the three independent copies of the SHARED layer vocabulary:
+ * this module's CANONICAL_LAYERS.shared, editorial/feedback-routing.json's
+ * `layers.shared` ids (via the table already checked above), and
+ * schemas/feedback-record.schema.json's `routing.layer` enum. Nothing else
+ * asserts these three agree — a schema edit that drops or renames a layer
+ * id would otherwise drift silently from the other two. See I3 (V2 tuning
+ * review): "competing routing vocabularies."
+ */
+export function validateLayerParity(table = loadRoutingTable(), schema = loadFeedbackSchema()) {
+  const issues = [];
+  const canonicalShared = CANONICAL_LAYERS.shared;
+  const tableShared = (table.layers?.shared ?? []).map((l) => l.id);
+
+  const schemaEnum = (schema.$defs?.routing?.properties?.layer?.enum ?? []).filter((v) => v !== null);
+  const schemaSorted = [...schemaEnum].sort();
+  const canonicalSorted = [...canonicalShared].sort();
+  if (JSON.stringify(schemaSorted) !== JSON.stringify(canonicalSorted)) {
+    issues.push(issue(CODES.LAYER_ID_MISMATCH, 'feedback-record.schema.json#/$defs/routing/properties/layer',
+      `expected the same SHARED ids as CANONICAL_LAYERS.shared [${canonicalShared.join(', ')}], got [${schemaEnum.join(', ')}]`));
+  }
+
+  // table vs canonical is already asserted by validateRoutingTable, but
+  // repeat it here so this function alone proves three-way parity even if
+  // called on its own.
+  if (JSON.stringify(tableShared) !== JSON.stringify(canonicalShared)) {
+    issues.push(issue(CODES.LAYER_ID_MISMATCH, 'feedback-routing.json#/layers/shared',
+      `expected [${canonicalShared.join(', ')}] per CANONICAL_LAYERS.shared, got [${tableShared.join(', ')}]`));
+  }
+
+  return issues;
+}
+
 export function validateFeedbackRecordAgainstSchema(record, schema = loadFeedbackSchema()) {
   return validate(record, schema).map((e) => issue(CODES.SCHEMA, record?.feedback_id ?? '<record>', `${e.path}: ${e.message}`));
 }

@@ -45,8 +45,10 @@ ships as the default for a role:
    dimensions** for that role (thesis-worth / prose quality for writing,
    `l1-review.schema.json`'s five required dimensions for L1, information
    gain / density match for visual planning, script-naturalness for audio
-   planning), **audience fit**, and **cost/context** (§`../editorial/CONTEXT-BUDGET.md`
-   §3-4).
+   planning), **audience fit**, and **cost/context** — `../editorial/CONTEXT-BUDGET.md`
+   §1 for what is actually enforced (bounded retry), §2 for the model-tier
+   and cost-per-accepted policy this compares against, which is not yet
+   independently validated.
 3. Record the comparison as a `calibration/ledger/*.json` record with
    `kind: "model_drift"`: `model_drift.previous`, `model_drift.candidate`,
    and `model_drift.role_outcomes`.

@@ -20,7 +20,7 @@
     "test:article": "node scripts/test-article-contract.mjs",
     "test:rights": "node scripts/test-rights-policy.mjs",
     "test:gates": "node scripts/test-quality-gates.mjs",
-    "test": "npm run test:boundary && npm run test:source && npm run test:article && npm run test:rights && npm run test:gates && npm run test:profiles && npm run test:skills && npm run test:pipeline && npm run test:eval && npm run test:presentation && npm run test:poc && npm run test:hitl && npm run test:matrix && npm run test:handoff && npm run test:package && npm run test:registry && npm run test:visual && npm run test:intent && npm run test:routing && npm run test:l1 && npm run test:audio && npm run test:calibration && npm run test:system",
+    "test": "npm run test:boundary && npm run test:source && npm run test:article && npm run test:rights && npm run test:gates && npm run test:profiles && npm run test:skills && npm run test:pipeline && npm run test:eval && npm run test:presentation && npm run test:poc && npm run test:hitl && npm run test:matrix && npm run test:handoff && npm run test:package && npm run test:registry && npm run test:visual && npm run test:intent && npm run test:routing && npm run test:l1 && npm run test:audio && npm run test:calibration && npm run test:system && npm run test:schema-parity",
     "check:profile": "node scripts/check-profile.mjs",
     "test:profiles": "node scripts/test-profiles.mjs",
     "validate:skills": "node scripts/validate-skills.mjs",
@@ -66,7 +66,8 @@
     "test:calibration": "node scripts/test-calibration.mjs",
     "test:system": "node scripts/test-system-eval.mjs",
     "validate:system": "node scripts/system-scorecard.mjs --validate",
-    "system:check": "node scripts/system-scorecard.mjs --check"
+    "system:check": "node scripts/system-scorecard.mjs --check",
+    "test:schema-parity": "node scripts/test-schema-parity.mjs"
   },
   "repository": {
     "type": "git",

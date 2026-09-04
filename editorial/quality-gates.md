@@ -19,6 +19,29 @@ draft's shape.
 A `flag` is never auto-resolved and never auto-fails. It exists because
 pretending a judgement call is mechanical is how a rubric starts lying.
 
+## Pattern gates vs. code-only gates
+
+Most gates below are driven entirely by data in `quality-gates.json`: a list
+of regex `patterns` (or, for G-09/G-10/G-12, a threshold) that the engine
+reads and applies generically. Three gates — **G-02**, **G-04**, and
+**G-11** — are structural checks that cannot be expressed as a regex against
+body text, so they are hardcoded directly in
+`scripts/lib/quality-gates-core.mjs` instead:
+
+| Gate | Why it cannot be a pattern |
+|---|---|
+| G-02 `duplicate-paragraph` | Compares every normalised paragraph against every other paragraph in the document — a whole-document pairwise comparison, not something one paragraph either matches or does not. |
+| G-04 `headline-thesis-fidelity` | Computes content-word set overlap between two structured fields (`frame.thesis`, `title`), not a match against rendered text. |
+| G-11 `uncertainty-present` | A presence/length check on a structured field (`frame.uncertainty`) — there is no prose for a regex to run against. |
+
+`quality-gates.json` still carries an entry for each of these three (marked
+`"implementation": "code"`, with no `patterns` array) so the JSON remains a
+complete registry of every gate id — but the engine does not read pattern
+data for them, because none exists. Do not add a `patterns` array to one of
+these three entries to "complete" the JSON; that would make the file claim
+behavior the engine does not execute, which is the exact failure this note
+exists to prevent.
+
 ## Mechanical gates
 
 | ID | Gate | Severity | Fires when |

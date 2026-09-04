@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0.0",
-  "description": "Machine-readable gate definitions for AES-P1.3 (SUE-440). Prose form: quality-gates.md. Engine: scripts/lib/quality-gates-core.mjs. Severity — reject: blocks materialization. fix: must be resolved before review. flag: human judgement required.",
+  "description": "Machine-readable gate definitions for AES-P1.3 (SUE-440). Prose form: quality-gates.md. Engine: scripts/lib/quality-gates-core.mjs. Severity — reject: blocks materialization. fix: must be resolved before review. flag: human judgement required. Most gates below are driven by this file's own `patterns`/thresholds; a few (`implementation: \"code\"`) are structural checks — duplicate-paragraph detection, thesis/title word overlap, a frame-field presence check — that cannot be expressed as a regex pattern and are hardcoded in the engine instead. Those entries exist here so this file remains a complete registry of every gate id, but the engine does not read a `patterns` array for them because none exists; see each entry's `rationale` for why, and quality-gates.md for the same note in prose.",
   "gates": [
     {
       "id": "G-01",
@@ -14,6 +14,13 @@
       ]
     },
     {
+      "id": "G-02",
+      "name": "duplicate-paragraph",
+      "severity": "reject",
+      "implementation": "code",
+      "rationale": "Fires when a normalised paragraph of ≥40 characters appears more than once in the body. This is a whole-document comparison across every paragraph pair, not a single regex a paragraph either matches or does not — expressing it as a `patterns` entry would misrepresent how the check works. Implemented directly in scripts/lib/quality-gates-core.mjs (the '--- G-02 duplicate paragraphs' block)."
+    },
+    {
       "id": "G-03",
       "name": "scaffolding-leak",
       "severity": "reject",
@@ -24,6 +31,13 @@
         "\\{\\{[^}]*\\}\\}",
         "(?i)\\[(insert|add|placeholder)[^\\]]*\\]"
       ]
+    },
+    {
+      "id": "G-04",
+      "name": "headline-thesis-fidelity",
+      "severity": "fix",
+      "implementation": "code",
+      "rationale": "Compares the content-word overlap between `article.frame.thesis` and `article.title`, below a two-word floor. This reads a structured field (`frame.thesis`), not the rendered body text a `patterns` regex runs against, and computes a set intersection rather than a match — not expressible as a pattern. Implemented in scripts/lib/quality-gates-core.mjs (the '--- G-04 headline fidelity to thesis' block); see quality-gates.md for why its scope is deliberately narrow."
     },
     {
       "id": "G-05",
@@ -91,6 +105,13 @@
         "시사점과 한계"
       ],
       "threshold": 2
+    },
+    {
+      "id": "G-11",
+      "name": "uncertainty-present",
+      "severity": "reject",
+      "implementation": "code",
+      "rationale": "Fires when `article.frame.uncertainty` is absent or empty. A presence/length check on a structured field, not a body-text pattern match — there is no prose for a regex to run against. Implemented in scripts/lib/quality-gates-core.mjs (the '--- G-11 uncertainty present' block)."
     }
   ],
   "thresholds": {

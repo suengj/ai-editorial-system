@@ -101,6 +101,7 @@
       "properties": {
         "type": { "enum": ["human", "agent"] },
         "agent": {
+          "description": "Present only when type is \"agent\".",
           "type": "object",
           "additionalProperties": false,
           "required": ["runtime"],

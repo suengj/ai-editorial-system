@@ -48,9 +48,10 @@ Same discipline as `references/index.json` / `feedback/index.json`
 (`scripts/registry.mjs`): `current.json` is rebuilt byte-identically from
 `versions/*.json` by `node scripts/calibration.mjs --rebuild`, and `--check`
 fails the moment it drifts from that rebuild. It carries only the **active**
-version per scope — never the history — which is also the context-budget
-contract in `../editorial/CONTEXT-BUDGET.md`: generation loads the current
-snapshot, not the calibration archive.
+version per scope — never the history — so a consumer that loads
+`current.json` gets the current snapshot without the archive by construction.
+See `../editorial/CONTEXT-BUDGET.md` §1 for what is and is not actually
+enforced about context loading beyond this one file.
 
 ## DRIFT_CANDIDATE: an agent may raise, never activate
 

@@ -12,9 +12,9 @@ editorial/profiles/
   transformation/     what a transformation may change, what it must preserve
   audience/          who is on the other end, across text/visual/audio
   surface/           where it lands and what that constrains
-  artifact/          (not populated here — AES-V2.7 / V2.8)
-  brand/             (not populated here — AES-V2.7)
-  reference/         (not populated here — AES-V2.4)
+  artifact/          which medium and which shape of it (visual/audio profiles; AES-V2.7 / V2.8)
+  brand/             visual/voice brand tokens applied by artifact profiles (AES-V2.7)
+  reference/         modality-aware craft-reference evaluation rules (AES-V2.4)
 ```
 
 Machine engine: [`../../scripts/lib/profile-core.mjs`](../../scripts/lib/profile-core.mjs)
@@ -51,9 +51,11 @@ hardcoded in the engine. `content/academic.json` and `content/promotional.json`
 exist specifically to prove this: two new content types, added as data, with
 no change to the validation code path that content types already ran through.
 
-Populating an unpopulated axis (`artifact`, `brand`, `reference`) additionally
-means flipping that axis's `populated` field to `true` in `axes.json` — that
-is still a one-line data change, not a code change.
+Populating a new axis means flipping that axis's `populated` field to `true`
+in `axes.json` — a one-line data change, not a code change. `artifact`,
+`brand`, and `reference` are populated this way; their `axes.json` entries
+still carry `planned`/`deferred` sub-lists for ids that are declared but not
+yet built (see `artifact.planned` for `text/*` profiles).
 
 ## Audience is a default, overridable per task
 

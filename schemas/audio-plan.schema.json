@@ -183,7 +183,8 @@
         "article_id": { "type": "string", "pattern": "^art:[a-z0-9]+(-[a-z0-9]+)*$" },
         "version_number": { "type": "integer", "minimum": 1 },
         "content_hash": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
-        "claims_hash": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+        "claims_hash": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "commit": { "type": "string", "pattern": "^[a-f0-9]{7,40}$" }
       }
     },
     "audience": {

@@ -72,7 +72,6 @@ See [`docs/architecture/REPOSITORY-CONTRACT.md`](docs/architecture/REPOSITORY-CO
 | `editorial/` | Constitution, voice, content-type profiles, quality gates |
 | `skills/` | Portable Skill definitions (orchestration contracts) |
 | `schemas/` | Source / Article / Artifact schemas and lineage rules |
-| `templates/` | Frame, article, brief, and artifact templates |
 | `benchmarks/` | Benchmark findings on external editorial systems and generators |
 | `references/` | Attributed pointers to third-party material — links and notes, never copies |
 | `evals/` | Golden + negative fixtures, rubric, regression method |
@@ -110,7 +109,7 @@ Absence of a finding is a PASS only when the check demonstrably ran.
 
 - **Code** (`scripts/`, tooling): MIT — see [`LICENSE`](LICENSE).
 - **Documentation and editorial rules** (`editorial/`, `docs/`, `schemas/`,
-  `templates/`, `skills/`): CC BY 4.0 — see [`LICENSE-DOCS`](LICENSE-DOCS).
+  `skills/`): CC BY 4.0 — see [`LICENSE-DOCS`](LICENSE-DOCS).
 - **Third-party material** referenced in `references/` and `benchmarks/`
   retains its own license. Nothing here relicenses it. See [`NOTICE`](NOTICE).
 
@@ -119,7 +118,7 @@ Absence of a finding is a PASS only when the check demonstrably ran.
 | | |
 |---|---|
 | Principles, voice, gates, profiles, presentation, HITL | [`editorial/`](editorial/) |
-| The five Skills and their format | [`skills/`](skills/) |
+| The eleven Skills and their format | [`skills/`](skills/) |
 | Source, Article, Artifact, Skill, plan, receipt schemas | [`schemas/`](schemas/) |
 | Fixtures, rubric, matrix, PoC artifacts | [`evals/`](evals/) |
 | Benchmarks and the reference catalog | [`benchmarks/`](benchmarks/), [`references/`](references/) |

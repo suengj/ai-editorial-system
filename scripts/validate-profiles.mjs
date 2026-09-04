@@ -124,7 +124,7 @@ for (const axis of axes) {
       fail(rel(path), 'missing schema_version');
     }
 
-    keySets.push({ file: rel(path), keys: new Set(Object.keys(profile)) });
+    keySets.push({ file: rel(path), keys: new Set(Object.keys(profile)), modality: profile.modality });
   }
 
   // --- (d) uniform required-key shape within the axis -------------------------
@@ -145,6 +145,50 @@ for (const axis of axes) {
     for (const required of mustCover) {
       if (!common.has(required)) {
         fail(label, `profiles do not share a uniform "${required}" field — not every file in ${rel(dir)} carries one`);
+      }
+    }
+  }
+
+  // --- (d2) uniform required-key shape within each modality sub-group --------
+  // The axis-wide check above (d) only guarantees uniformity across every
+  // file in the directory, which for the `artifact` axis mixes visual, audio,
+  // (planned) text, and (deferred) video profiles — their intersection is
+  // tiny (schema_version, artifact, modality, family, primary_job,
+  // renderer_preference, audience_adaptation, acceptance, reject,
+  // source_authority) and does not cover modality-specific load-bearing keys
+  // like a visual profile's `semantic_density`/`visual_density`/`text_policy`
+  // or an audio profile's `thought_unit`/`rhythm`/`pronunciation_policy`. A
+  // profile that dropped one of those previously passed this validator and
+  // crashed a consuming engine instead (e.g. visual-job-core.mjs reading
+  // `profile.semantic_density.level`) — see I9 in the V2 tuning review.
+  //
+  // This check is data-driven, not a hardcoded per-modality field list: for
+  // any axis whose profiles declare a `modality`, group by that value, and
+  // for each file, require it to carry every key its OTHER same-modality
+  // siblings all share. A field only one modality's profiles use (e.g.
+  // audio's `speaker_roles`, present only on dialogue profiles) never
+  // becomes "required" by this check, because it is not common to every
+  // sibling to begin with — only fields universal within a modality group
+  // are enforced, and which fields those are is discovered from the files
+  // themselves, not written into this function.
+  const modalityGroups = new Map();
+  for (const ks of keySets) {
+    if (!ks.modality) continue;
+    if (!modalityGroups.has(ks.modality)) modalityGroups.set(ks.modality, []);
+    modalityGroups.get(ks.modality).push(ks);
+  }
+  for (const [modality, group] of modalityGroups) {
+    if (group.length < 2) continue; // nothing to compare a lone profile against
+    for (const target of group) {
+      const siblings = group.filter((g) => g !== target);
+      let sharedBySiblings = new Set(siblings[0].keys);
+      for (const s of siblings.slice(1)) {
+        sharedBySiblings = new Set([...sharedBySiblings].filter((k) => s.keys.has(k)));
+      }
+      const missing = [...sharedBySiblings].filter((k) => !target.keys.has(k));
+      if (missing.length > 0) {
+        fail(target.file,
+          `missing ${missing.map((k) => `"${k}"`).join(', ')} — every other ${axis.axis}/${modality} profile carries ${missing.length === 1 ? 'it' : 'them'}`);
       }
     }
   }

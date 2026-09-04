@@ -194,7 +194,41 @@ What is a defect: a **negative** verdict (`verdict: "bad"`) that names no
 layer and does not abstain either. That is a router guessing silently, and
 `routing-core.mjs` rejects it — see the `abstention-required` check.
 
-## 8. Precedence this document does not override
+## 8. Crosswalk to the V1 review-record vocabulary
+
+[`../schemas/review-record.schema.json`](../schemas/review-record.schema.json)
+(AES-P5.1 / SUE-457, V1) has its own enum on `reviews[].feedback[].changes`:
+`frame`, `draft`, `verification`, `final_article`, `presentation`, `nothing`.
+It looks like a second answer to the layer question above. It is not — it
+answers a different question, and this section exists so no reader conflates
+the two.
+
+| Vocabulary | Question it answers | Scope |
+|---|---|---|
+| `review-record.changes` (V1) | **What did the human reviewer alter?** | One article's own production pipeline (frame → draft → verification → final_article → presentation) |
+| `feedback-record.routing.layer` (V2, this document) | **Which system layer caused the defect?** | Every layer in the system (§1 above), across every article |
+
+They are not unified, and unifying a V1 contract is a class-5 change (§4)
+outside this document's authority — see the Writer's report to the Manager
+for that recommendation rather than an in-place change here.
+
+Overlap and non-overlap, exhaustively:
+
+| `review-record.changes` | `feedback-record.routing.layer` equivalent |
+|---|---|
+| `frame` | `frame` — same concept: the article's thesis/frame, article-scoped in V1, system-scoped in V2 |
+| `verification` | `verification` — same concept |
+| `draft` | no shared-layer equivalent. A draft-prose problem is almost always modality-only: `layer: null` + `modality_layer` one of `writing` / `polish` / `register` |
+| `final_article` | no shared-layer equivalent. Whatever caused it (frame, draft, verification) should have already been named upstream; `final_article` in V1 marks *where a human caught it*, not *why it happened* |
+| `presentation` | no shared-layer equivalent. Routes to the VISUAL layers (`artifact_route`, `composition`, `renderer`, …) or is modality-only, depending on cause |
+| `nothing` | no equivalent. V2 has no no-op routing value — a record with no actionable cause abstains (`routing.abstained: true`, §7), it does not name `nothing` |
+
+A record that needs to speak both vocabularies (e.g. a `review-record` entry
+that also produces a `feedback-record`) states each field in its own schema's
+terms; nothing here licenses copying one enum value into the other field
+without re-deriving it against this table.
+
+## 9. Precedence this document does not override
 
 `editorial/HITL-PROTOCOL.md` and `evals/RUBRIC.md` remain the stronger
 authority wherever they already govern the same ground: integrity dimensions

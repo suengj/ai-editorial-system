@@ -44,7 +44,7 @@
       "properties": {
         "text": { "type": "string", "minLength": 1 },
         "changes": {
-          "description": "Which upstream artifact this feedback edits. Routing is the point: a thesis complaint changes the frame, not the prose.",
+          "description": "Which upstream artifact this feedback edits. Routing is the point: a thesis complaint changes the frame, not the prose. This is a V1 vocabulary answering a different question from V2's schemas/feedback-record.schema.json `routing.layer`: `changes` records WHAT A REVIEWER ALTERED (an artifact in this article's own production pipeline — frame, draft, verification, final_article, presentation, or nothing); `routing.layer` records WHICH SHARED LAYER CAUSED A DEFECT across the whole system (intake, reference, audience, frame, verification, surface, calibration). The two enums are not interchangeable and only partially overlap. Crosswalk (see editorial/FEEDBACK-ROUTING.md for the authoritative version): `frame`<->`frame` (same concept, article-scoped vs system-scoped); `verification`<->`verification` (same concept); `draft`/`final_article`/`presentation`<->no routing.layer equivalent (these are V1 artifact-pipeline stages, not V2 shared-layer causes; a draft-prose fix usually roots in `routing.layer: null` + `modality_layer: writing/polish/register`); `nothing`<->no equivalent (there is no V2 no-op routing value; a feedback record with no actionable cause abstains instead, via `routing.abstained: true`). Do not treat `changes` and `routing.layer` as the same field under different names, and do not silently map one onto the other beyond this table.",
           "enum": ["frame", "draft", "verification", "final_article", "presentation", "nothing"]
         },
         "material": {

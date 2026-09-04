@@ -14,7 +14,7 @@ import { dirname, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
   loadFeedbackSchema, loadRoutingTable, validateFeedbackRecordAgainstSchema,
-  validateFeedbackRecordRouting, validateRoutingTable,
+  validateFeedbackRecordRouting, validateLayerParity, validateRoutingTable,
 } from './lib/routing-core.mjs';
 
 const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
@@ -33,6 +33,15 @@ if (tableIssues.length === 0) {
   failed += 1;
   console.error(`routing table: FAIL (${tableIssues.length} issue(s))`);
   for (const i of tableIssues) console.error(`  [${i.code}] ${i.where} — ${i.message}`);
+}
+
+const parityIssues = validateLayerParity(table, schema);
+if (parityIssues.length === 0) {
+  console.log('layer parity: PASS — CANONICAL_LAYERS.shared == feedback-routing.json == feedback-record.schema.json');
+} else {
+  failed += 1;
+  console.error(`layer parity: FAIL (${parityIssues.length} issue(s))`);
+  for (const i of parityIssues) console.error(`  [${i.code}] ${i.where} — ${i.message}`);
 }
 
 function checkRecords(records, label) {

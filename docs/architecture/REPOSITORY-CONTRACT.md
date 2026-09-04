@@ -9,7 +9,6 @@ Directory-level ownership, admission rules, and the exclusion list that
 editorial/     Constitution, Suengj voice, content-type profiles, quality gates
 skills/        Portable Skill definitions — orchestration contracts
 schemas/       Source / Article / Artifact schemas, lineage and staleness rules
-templates/     Frame, article, brief, evidence-visual, slide templates
 benchmarks/    Findings on external editorial systems, generators, workflows
 references/    Attributed pointers to third-party material (links + notes)
 evals/         Golden corpus refs, negative fixtures, rubric, regression method
@@ -24,7 +23,6 @@ docs/          Architecture decisions and contracts
 | `editorial/` | Markdown rules, YAML gate definitions | Article prose, examples containing private material |
 | `skills/` | Skill manifests + instructions | Vendor SDK code, API keys, model-specific hardcoding |
 | `schemas/` | JSON Schema, contract docs | Populated instance data from real private sources |
-| `templates/` | Skeletons with placeholder content | Filled-in real articles |
 | `benchmarks/` | Our own analysis, quoted excerpts within fair use, citations | Copied third-party documents or datasets |
 | `references/` | URL + title + attribution + our notes | Mirrored copies of referenced works |
 | `evals/` | Fixtures that are synthetic or publicly sourced and attributed | Raw transcript corpus, private research working set |
