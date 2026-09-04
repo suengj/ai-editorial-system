@@ -252,6 +252,42 @@ A reusable instruction is:
 
 > **Keep the full approved information architecture. Simplify only the visual treatment: remove unnecessary containers, decorative icons, heavy fills, redundant labels, and high-contrast chrome while preserving every load-bearing comparison, stage, causal link, and consequence.**
 
-## 10. One-line rule
+## 10. Body-infographic role boundary — 2026-09-04
 
-> **For suengj.com infographics, preserve rich information architecture and reduce visual chrome: semantic density may stay high, but the canvas should remain airy, quiet, and publication-native.**
+This calibration now applies specifically to the **body infographic / explanatory research graphic** family defined in `SUENGJ-ARTICLE-IMAGE-FAMILIES.md`.
+
+It must not be used to justify dense thumbnail/cover images. Thumbnail assets remain thesis-first and sparse even when a body infographic for the same article carries richer semantic structure.
+
+### Mobile gate
+
+A body infographic must remain structurally understandable at roughly a 390px reading viewport without requiring zoom.
+
+This does not mean enlarging every label indiscriminately. It means the semantic architecture itself must survive downscaling:
+
+- use 2–4 strong modules rather than many tiny panels;
+- keep one clear reading path;
+- use line weights/contrast that survive mobile rendering;
+- allow stable semantic labels only when they materially improve comprehension;
+- reject pseudo-detail and ornamental micro-charts;
+- avoid horizontal overflow.
+
+### Plate split rule
+
+Use **one plate per primary question**.
+
+If a canvas starts carrying two different explanatory jobs, split it. Typical pattern:
+
+```text
+Plate A → mechanism / comparison / market structure
+Plate B → rights / governance / control / recovery
+```
+
+Do not solve a dense semantic plan by shrinking modules or labels until the graphic becomes technically complete but practically unreadable.
+
+### Denoiser benchmark interpretation
+
+Treat Denoiser-style article visuals as a benchmark for **information placement inside the reading flow** and for the idea of a visual research spread. Do not copy its look mechanically. The target remains suengj.com in surface language, with clearer information hierarchy inside body infographics than inside thumbnails.
+
+## 11. One-line rule
+
+> **For suengj.com body infographics, preserve rich information architecture and reduce visual chrome; keep one plate to one primary question, and treat mobile readability as a hard editorial gate.**
