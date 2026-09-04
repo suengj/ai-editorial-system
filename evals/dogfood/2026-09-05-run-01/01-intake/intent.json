@@ -1,0 +1,76 @@
+{
+  "schema_version": "2.0.0",
+  "intent_id": "intent:2026-09-05-ai-inference-margin-dogfood",
+  "created_at": "2026-09-05T10:00:00Z",
+  "request": {
+    "utterance": "AI 추론 가격 하락이랑 SaaS gross margin 얘기, 저번에 정리해둔 자료 바탕으로 실무자용 종합 리서치 글 하나 써줘. suengj.com에 올릴 거고, 가격이랑 마진이 벌어지는 걸 보여주는 근거 차트도 하나 넣어줘.",
+    "language": "ko",
+    "received_by": "claude-code",
+    "received_at": "2026-09-05T10:00:00Z"
+  },
+  "axes": {
+    "transformation": {
+      "value": "synthesize",
+      "state": "confirmed",
+      "profile_ref": "editorial/profiles/transformation/synthesize.json",
+      "basis": "utterance says \"저번에 정리해둔 자료 바탕으로 ... 종합 리서치 글\" (combine the previously prepared material into one synthesized research piece) — the direct sense of transformation/synthesize.json's intent field."
+    },
+    "content_type": {
+      "value": "research",
+      "state": "confirmed",
+      "profile_ref": "editorial/profiles/content/research.json",
+      "basis": "utterance names \"리서치 글\" explicitly."
+    },
+    "audience": {
+      "value": "domain-practitioner",
+      "state": "confirmed",
+      "profile_ref": "editorial/profiles/audience/domain-practitioner.json",
+      "basis": "utterance says \"실무자용\" (for practitioners) directly naming the audience.",
+      "traits": {
+        "expertise": "practitioner",
+        "attention_context": "reading"
+      }
+    },
+    "surface": {
+      "value": "suengj-com",
+      "state": "confirmed",
+      "profile_ref": "editorial/profiles/surface/suengj-com.json",
+      "basis": "utterance says \"suengj.com에 올릴 거고\" (to be published on suengj.com)."
+    },
+    "artifacts": [
+      {
+        "value": "text/article",
+        "state": "confirmed",
+        "basis": "utterance asks for a written research piece (\"글 하나 써줘\"); text/article is the planned text-artifact id in the artifact axis registry (editorial/profiles/axes.json), not yet built as a standalone profile — the article shape here is governed by article.schema.json (V1)."
+      },
+      {
+        "value": "visual/evidence-visual",
+        "state": "confirmed",
+        "profile_ref": "editorial/profiles/artifact/visual-evidence-visual.json",
+        "basis": "utterance says \"가격이랑 마진이 벌어지는 걸 보여주는 근거 차트도 하나 넣어줘\" (also add an evidence chart showing the price/margin divergence) — exact traceable values are load-bearing, which is the evidence-visual family, not a decorative illustration.",
+        "count": 1
+      }
+    ]
+  },
+  "inputs": {
+    "sources": [
+      {
+        "source_id": "src:repo:evals/fixtures/golden/G-01-synthesis.md",
+        "state": "confirmed",
+        "note": "The material the utterance calls \"저번에 정리해둔 자료\" (previously prepared material) — a real, already-committed file in this repository, used honestly as the sole named source for this dogfood run. It is itself a synthetic golden fixture (see its own header comment), so downstream framing/verification would still need real, independently verifiable data before this could become a publishable article; this intake record does not claim otherwise."
+      }
+    ],
+    "references": []
+  },
+  "constraints": {
+    "output_language": "ko"
+  },
+  "overrides": [],
+  "clarification": {
+    "required": [],
+    "asked": [],
+    "resolution": "proceeded"
+  },
+  "calibration_ref": null,
+  "status": "ready"
+}

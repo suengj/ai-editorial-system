@@ -1,0 +1,105 @@
+{
+  "schema_version": "1.0.0",
+  "job_id": "job:dogfood-ai-inference-margin-chart",
+  "intent_ref": "intent:2026-09-05-ai-inference-margin-dogfood",
+  "calibration_ref": null,
+  "article_ref": {
+    "article_id": "art:dogfood-ai-inference-pricing-and-saas-gross-margin",
+    "version_number": 1,
+    "content_hash": "8b722eac67ec19b092383dd8d7c7f0ec4953ef59416e69286937f6840bdeca48",
+    "claims_hash": "34a79afffbcc44a1d92561c631dfac69c11823b164a03aeb3e69899361f1cf6f"
+  },
+  "artifact_profile": "visual/evidence-visual",
+  "profile_ref": "editorial/profiles/artifact/visual-evidence-visual.json",
+  "audience": {
+    "value": "domain-practitioner",
+    "profile_ref": "editorial/profiles/audience/domain-practitioner.json",
+    "traits_applied": [
+      "legend shown inline as series labels rather than a separate legend block, consistent with a practitioner reader who does not need axis literacy hand-held"
+    ]
+  },
+  "semantic_spec": {
+    "question": "Did the reported margin index move while the price index fell?",
+    "must_communicate": [
+      "illustrative published price index over four quarters",
+      "illustrative reported margin index over the same four quarters",
+      "the divergence between the two series"
+    ],
+    "must_not_include": [
+      "any value not present in claims.json's two illustrative claims c1/c2"
+    ]
+  },
+  "information_gain": {
+    "adjacent_representation": {
+      "type": "prose",
+      "summary": "Adjacent prose (evals/fixtures/golden/G-01-synthesis.md) states only the conclusion — price down, margin not recovering — without showing the actual quarterly path of either series."
+    },
+    "redundancy_test": {
+      "q1_new_perception": "The reader can see the exact quarterly shape and size of the gap between the two indices, not just the stated conclusion that they diverge.",
+      "q2_harder_without_it": "Without the chart there is no way to check when in the period the divergence opens or how large it becomes by Q4.",
+      "q3_merely_recreates": false,
+      "q4_worth_the_interruption": true
+    },
+    "gain_type": [
+      "evidence",
+      "comparison"
+    ],
+    "integration_strategy": "add",
+    "verdict": "proceed"
+  },
+  "density_check": {
+    "profile_semantic_density": "high",
+    "profile_visual_density": "moderate",
+    "compiled_semantic_density": "high",
+    "compiled_visual_density": "moderate",
+    "match": true
+  },
+  "selected_reference_traits": {
+    "adopt": [],
+    "avoid": [],
+    "do_not_copy": []
+  },
+  "brand_profile": "suengj-com",
+  "brand_profile_version": "1.0.0",
+  "text_policy": "hybrid_template",
+  "renderer_route": "deterministic",
+  "renderer": {
+    "tool": "chart-compiler",
+    "tool_version": "1.0.0",
+    "provider": "in-house",
+    "model": "chart-compiler",
+    "model_version": "1.0.0"
+  },
+  "context_isolation": {
+    "permitted_inputs": [
+      "semantic_spec",
+      "artifact_profile",
+      "audience",
+      "selected_reference_traits",
+      "brand_profile"
+    ],
+    "excluded": [
+      "ambient_conversation",
+      "unrelated_project_state",
+      "prior_unrelated_jobs",
+      "renderer_runtime_identity"
+    ]
+  },
+  "attempts": 1,
+  "max_attempts": 1,
+  "qa": {
+    "performed": true,
+    "information_gain_recheck": "pass",
+    "density_recheck": "pass",
+    "notes": "Rendered evals/dogfood/2026-09-05-run-01/02-visual/rendered.svg (2737 bytes) and inspected it directly. TWO genuine, real defects found by inspection, neither fabricated: (1) RENDERER DEFECT — scripts/lib/chart-renderer.mjs line 105 unconditionally emits `(${spec.y.unit})` in the note line even when y.unit is the empty string (correct here: the series are unitless indices). The rendered SVG's second <text class=\"note\"> line (line 15 of the output) literally reads \"...기준 대비 변화율 (2025 Q1=100) ()\" — a trailing empty parenthesis pair, a real cosmetic legibility defect attributable to the renderer, not to this job's spec or the brand/density profiles. (2) DATA-PROVENANCE GAP — this job's two plotted claims (c1/c2 in claims.json) were never run through verify-claims; they are illustrative index values invented for this dogfood run and labelled as such in the chart's own source_note. The artifact profile's acceptance criterion 'every value is traceable to verified claims or source data' is therefore NOT met — this is a genuine, honest QA fail, not a rendering problem. Because of (2), this job's status is qa_fail and it must not be marked accepted; a real operating run would route this back through verify-claims before any acceptance decision. Mobile legibility at ~390px was reasoned about (viewBox scale factor ~0.54 shrinks the 11px tick/note text to an effectively small rendered size) but not empirically confirmed in a real mobile viewport, so it is recorded here as an open question rather than a claimed finding either way."
+  },
+  "status": "qa_fail",
+  "compiled_prompt": "ARTIFACT: Deterministic evidence visual (chart / table / timeline / framework) carrying exact traceable values — the artifact-plan 'evidence_visual' kind. — Answer one specific question with inspectable, traceable evidence: exact values, distributions, or exceptions from source data (schemas/artifact-plan.schema.json spec.question; VISUAL-INFORMATION-GAIN.md §1 'evidence' gain type).\nQUESTION: Did the reported margin index move while the price index fell?\nMUST COMMUNICATE: illustrative published price index over four quarters; illustrative reported margin index over the same four quarters; the divergence between the two series\nMUST NOT INCLUDE: any value not present in claims.json's two illustrative claims c1/c2\nCOMPOSITION: A chart, table, timeline, or framework answering exactly one question (schemas/artifact-plan.schema.json spec.form, spec.question).\nTEXT POLICY: hybrid_template\nBRAND (suengj-com@1.0.0): background warm off-white / cream, primary muted forest / sage green — the structural identity color, not a saturation effect, accent restrained sand / camel — accent only, never a second dominant palette",
+  "compiled_from": [
+    "editorial/profiles/artifact/visual-evidence-visual.json",
+    "suengj-com@1.0.0",
+    "editorial/profiles/audience/domain-practitioner.json",
+    "semantic_spec",
+    "selected_reference_traits"
+  ]
+}

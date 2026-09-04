@@ -121,7 +121,7 @@ const MATRIX = [
       'Every contract, Skill, and gate is exercised — but only against fixtures and worked '
       + 'schema examples (schemas/examples/intent-*.example.json). No real owner-reviewed article '
       + `has gone through intake → intent → frame/write → L0/L1 → routed feedback in this repository. `
-      + `feedback/records/ holds ${evidence.feedbackRecords} record(s), both synthetic seed examples `
+      + `feedback/records/ holds ${evidence.feedbackRecords} record(s), 3 records exist; two are synthetic seed examples and one is a real agent dogfood record (evals/dogfood/2026-09-05-run-01) with owner_verdict unknown `
       + '(per evals/system/current.json, dimension quality_lift). Mechanism proven; operating evidence absent.',
   },
   {

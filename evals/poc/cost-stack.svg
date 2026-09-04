@@ -12,7 +12,7 @@
     .note { font-size: 11px; fill-opacity: 0.7; }
   </style>
   <text class="heading" x="64.00" y="24">List price fell; reported gross margin did not</text>
-  <text class="note" x="64.00" y="40">2026-03 – 2026-08 · Indexed to 100 at 2026-03 ()</text>
+  <text class="note" x="64.00" y="40">2026-03 – 2026-08 · Indexed to 100 at 2026-03</text>
   <line class="grid" x1="64.00" y1="304.00" x2="696.00" y2="304.00"/>
   <text class="tick" x="56.00" y="308.00" text-anchor="end">60</text>
   <line class="grid" x1="64.00" y1="240.00" x2="696.00" y2="240.00"/>

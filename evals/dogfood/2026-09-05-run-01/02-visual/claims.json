@@ -1,0 +1,17 @@
+{
+  "note": "Illustrative data for the SUE-569 dogfood run's chart-rendering step (AES-V2.7 machinery test). These two claims were NOT run through verify-claims — no source document with real, checkable per-token pricing or margin figures was available in this run. They exist to give the deterministic chart renderer real, traceable numbers to plot rather than nothing, and their unverified status is the genuine defect this run's visual QA records (see qa-notes.md). Treat both as demo data, never as verified facts about any real provider or company.",
+  "claims": [
+    {
+      "claim_id": "c1-illustrative-price-index",
+      "text": "Illustrative published per-output-token price index for a mid-tier inference model, indexed to 100 at 2025 Q1, declining across four quarters.",
+      "status": "unverified",
+      "values": [100, 85, 72, 60]
+    },
+    {
+      "claim_id": "c2-illustrative-margin-index",
+      "text": "Illustrative reported SaaS gross-margin index for the same cohort and period, indexed to 100 at 2025 Q1, staying roughly flat.",
+      "status": "unverified",
+      "values": [100, 99, 101, 98]
+    }
+  ]
+}

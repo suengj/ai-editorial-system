@@ -3,6 +3,16 @@
   "generated_by": "scripts/registry.mjs --rebuild",
   "records": [
     {
+      "created_at": "2026-09-05T11:45:00Z",
+      "feedback_id": "feedback:dogfood-2026-09-05-g04-uncited-figure",
+      "path": "feedback/records/dogfood-2026-09-05-g04-uncited-figure.json",
+      "scope": "task_local",
+      "signal": "objective_quality",
+      "subject_kind": "article",
+      "subject_ref": "evals/fixtures/golden/G-04-research-native-korean.md",
+      "verdict": "mixed"
+    },
+    {
       "created_at": "2026-09-05T04:00:00Z",
       "feedback_id": "feedback:paragraph-order-2026-09-05",
       "path": "feedback/records/paragraph-order-2026-09-05.json",

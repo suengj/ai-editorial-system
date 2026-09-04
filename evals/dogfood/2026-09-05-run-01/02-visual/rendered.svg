@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 360" role="img" aria-labelledby="title desc">
+  <title id="title">추론 단가와 SaaS 마진 지수 (예시 데이터, 미검증)</title>
+  <desc id="desc">가격이 내려가는 동안 마진 지수는 거의 움직이지 않는 괴리를 보여주는 일러스트레이션용 예시 수치. Period: 2025 Q1–Q4 (예시). Source: 예시 데이터 — verify-claims 미실행, 실제 수치 아님 (dogfood run, evals/dogfood/2026-09-05-run-01/02-visual/claims.json)</desc>
+  <style>
+    .grid { stroke: currentColor; stroke-opacity: 0.15; stroke-width: 1; }
+    .axis { stroke: currentColor; stroke-opacity: 0.5; stroke-width: 1; }
+    .series { fill: none; stroke: currentColor; stroke-width: 2; }
+    text { font-family: Pretendard, system-ui, sans-serif; fill: currentColor; }
+    .tick { font-size: 11px; fill-opacity: 0.7; }
+    .label { font-size: 12px; }
+    .heading { font-size: 15px; font-weight: 600; }
+    .note { font-size: 11px; fill-opacity: 0.7; }
+  </style>
+  <text class="heading" x="64.00" y="24">추론 단가와 SaaS 마진 지수 (예시 데이터, 미검증)</text>
+  <text class="note" x="64.00" y="40">2025 Q1–Q4 (예시) · 기준 대비 변화율 (2025 Q1=100) ()</text>
+  <line class="grid" x1="64.00" y1="304.00" x2="696.00" y2="304.00"/>
+  <text class="tick" x="56.00" y="308.00" text-anchor="end">60</text>
+  <line class="grid" x1="64.00" y1="240.00" x2="696.00" y2="240.00"/>
+  <text class="tick" x="56.00" y="244.00" text-anchor="end">70</text>
+  <line class="grid" x1="64.00" y1="176.00" x2="696.00" y2="176.00"/>
+  <text class="tick" x="56.00" y="180.00" text-anchor="end">81</text>
+  <line class="grid" x1="64.00" y1="112.00" x2="696.00" y2="112.00"/>
+  <text class="tick" x="56.00" y="116.00" text-anchor="end">91</text>
+  <line class="grid" x1="64.00" y1="48.00" x2="696.00" y2="48.00"/>
+  <text class="tick" x="56.00" y="52.00" text-anchor="end">101</text>
+  <line class="axis" x1="64.00" y1="304.00" x2="696.00" y2="304.00"/>
+  <text class="tick" x="64.00" y="324.00" text-anchor="middle">1</text>
+  <text class="tick" x="696.00" y="324.00" text-anchor="middle">4</text>
+  <path class="series" stroke-dasharray="none" d="M64.00,54.24 L274.67,147.90 L485.33,229.07 L696.00,304.00"/>
+  <text class="label" x="702.00" y="308.00">발표 단가 지수</text>
+  <path class="series" stroke-dasharray="6 4" d="M64.00,54.24 L274.67,60.49 L485.33,48.00 L696.00,66.73"/>
+  <text class="label" x="702.00" y="70.73">보고 마진 지수</text>
+  <text class="note" x="64.00" y="348.00">분기 · 예시 데이터 — verify-claims 미실행, 실제 수치 아님 (dogfood run, evals/dogfood/2026-09-05-run-01/02-visual/claims.json)</text>
+</svg>
