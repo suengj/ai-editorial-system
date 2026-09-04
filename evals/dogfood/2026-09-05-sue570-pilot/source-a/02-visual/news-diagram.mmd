@@ -1,0 +1,14 @@
+%% 도구가 바뀌면 관리 대상이 바뀐다
+%% source: content/views/companies-become-like-the-tools-they-use.md 문단 2-3 요약
+flowchart LR
+  company["기업(복잡한 실체)"]
+  ss["스프레드시트"]
+  numbers["최적화 대상: 숫자"]
+  work["업무(복잡한 실체)"]
+  ai["AI"]
+  tasks["최적화 대상: 업무 자체"]
+  company -->|"표현·비교·시뮬레이션"| ss
+  ss --> numbers
+  work -->|"(해석) 같은 경로"| ai
+  ai --> tasks
+

@@ -1,0 +1,36 @@
+{
+  "schema_version": "1.0.0",
+  "feedback_id": "feedback:sue570-pilot-source-a-adapt-axis-scope-2026-09-05",
+  "created_at": "2026-09-05T00:00:00Z",
+  "subject": {
+    "kind": "article",
+    "ref": "content/editorial/sue570-pilot-tools-child.md (suengj-com pub repo)",
+    "intent_ref": "intent:2026-09-05-sue570-pilot-source-a-child"
+  },
+  "evaluator": {
+    "type": "agent",
+    "agent": {
+      "runtime": "claude-code",
+      "model": "claude-sonnet-5",
+      "version": "claude-sonnet-5"
+    }
+  },
+  "basis": "model_inference",
+  "signal": "objective_quality",
+  "verdict": "mixed",
+  "owner_verdict": "unknown",
+  "statement": "editorial/profiles/transformation/adapt.json defines 'adapt' as a cross-medium modality change (its may_change list, its typical_content_types/typical_surfaces, and schemas/examples/intent-child-explainer.example.json's own basis field all frame it as text-to-audio, text-to-slides, article-to-video). This task's child-audience variant is text-to-text: the medium does not change, only the reader's age-driven complexity ceiling does (vocabulary, concreteness, conceptual step size per audience/child-upper-elementary.json). This intent record resolved transformation to 'adapt' anyway, following the precedent already set by schemas/examples/intent-child-explainer.example.json, which makes the same same-medium choice without commenting on the mismatch. The task worked (must_preserve — uncertainty, thesis — was honored; new_claims:forbidden was honored; no new facts were introduced), so this is not reported as a broken output. It is reported because the axis registry currently gives no clear answer to a straightforward question: is a same-medium, audience-driven complexity change (a) a legitimate broad reading of 'modality' (age-appropriate reading level as a 'modality'), (b) actually the job of 'rewrite' (which explicitly allows 'register, to fit a new surface or audience' and forbids new claims, matching this task's constraints closely) combined with the audience axis doing the complexity work, or (c) a gap that should get its own transformation profile. Both existing precedent (the intake-child-explainer example) and this task chose (a) without the registry ever deciding the question explicitly.",
+  "routing": {
+    "layer": "intake",
+    "modality_layer": "TEXT transformation-axis scope",
+    "confidence": "medium",
+    "abstained": false,
+    "rationale": "editorial/feedback-routing.json's intake layer owns cases where 'the artifact axis... was read as a style request' and axis interpretation questions generally; this is the same shape of question one level up the axis stack (transformation, not artifact). Confidence is medium, not high, because the existing example fixture (schemas/examples/intent-child-explainer.example.json) already made the same choice — this may be settled precedent this feedback record simply had not seen documented as a decision, rather than a genuinely open gap. Not routed to 'audience': the audience axis correctly did its own job (child-upper-elementary.json's traits were applied without complaint); the open question is specifically about which transformation id should carry a same-medium complexity change, not about audience-profile content."
+  },
+  "scope": "task_local",
+  "calibration_ref": null,
+  "evidence_links": [
+    "intent:2026-09-05-sue570-pilot-source-a-child",
+    "schemas/examples/intent-child-explainer.example.json"
+  ]
+}

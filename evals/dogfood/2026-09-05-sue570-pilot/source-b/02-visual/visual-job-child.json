@@ -1,0 +1,102 @@
+{
+  "schema_version": "1.0.0",
+  "job_id": "job:sue570-pilot-bonds-child-bars",
+  "intent_ref": "intent:2026-09-05-sue570-pilot-bonds-child",
+  "calibration_ref": null,
+  "article_ref": {
+    "article_id": "art:sue570-pilot-bonds-child",
+    "version_number": 1,
+    "content_hash": "bdca8c81b2531437218bf74d9da1c70925920fb4c694ae3e0cb13dec05b40e86",
+    "claims_hash": "6b0d0a049eb7d40e6c8ba32efd6361f55e81d50cb22a053ac65a3965abcc7316"
+  },
+  "artifact_profile": "visual/analytical-graphic",
+  "profile_ref": "editorial/profiles/artifact/visual-analytical-graphic.json",
+  "audience": {
+    "value": "child-upper-elementary",
+    "profile_ref": "editorial/profiles/audience/child-upper-elementary.json",
+    "traits_applied": [
+      "abstraction low; literal concrete depiction over symbolic encoding",
+      "label complexity low; short plain-language labels only",
+      "first-read relation must be understandable without reading a legend at all -- no legend used",
+      "cap comparison at 2 dimensions with plain-language labels and no abstract scale (visual-analytical-graphic.json audience_adaptation.child-upper-elementary)"
+    ]
+  },
+  "semantic_spec": {
+    "question": "Did the thing that would scare people (companies failing to pay back loans) get worse, or did only the government borrowing rate stay high?",
+    "must_communicate": [
+      "US government borrowing rate stayed about the same and high between 9/1 and 9/5",
+      "the 'worry about companies failing' measure (credit spread) barely moved over the same window",
+      "these are two different things, and only one of them is a warning sign"
+    ],
+    "must_not_include": [
+      "a numeric axis or scale the reader must read to understand the comparison",
+      "the term 'OAS' or 'term premium' as a label inside the artwork",
+      "any value not reverified on 2026-09-05"
+    ]
+  },
+  "information_gain": {
+    "adjacent_representation": {
+      "type": "prose",
+      "summary": "The draft's 'is this a danger sign?' section explains in words that the borrowing rate stayed high while the worry-about-companies-failing measure barely moved."
+    },
+    "redundancy_test": {
+      "q1_new_perception": "A 10-12 year old can see two bar heights side by side and immediately grasp 'one thing changed a lot, the other barely changed' without parsing two paragraphs of percentages.",
+      "q2_harder_without_it": "Without the bars, the reader has to hold four numbers (4.80%, 4.76-4.78%, ~1%, 1.01-1.03%) in mind and compare their sizes mentally -- exactly the abstraction step this audience profile says not to assume.",
+      "q3_merely_recreates": false,
+      "q4_worth_the_interruption": true
+    },
+    "gain_type": [
+      "comparison",
+      "compression"
+    ],
+    "integration_strategy": "add",
+    "verdict": "proceed"
+  },
+  "density_check": {
+    "profile_semantic_density": "moderate",
+    "profile_visual_density": "low",
+    "compiled_semantic_density": "low",
+    "compiled_visual_density": "low",
+    "match": false
+  },
+  "selected_reference_traits": {
+    "adopt": [],
+    "avoid": [],
+    "do_not_copy": []
+  },
+  "brand_profile": "suengj-com",
+  "brand_profile_version": "1.0.0",
+  "text_policy": "hybrid_template",
+  "renderer_route": "hybrid",
+  "renderer": {
+    "tool": "hand-authored SVG, no generator script retained (evals/dogfood/2026-09-05-sue570-pilot/source-b -- the SVG at public/media/images/sue570-pilot/child-rate-vs-worry-bars.svg was authored directly; a script named gen-child-bars.mjs was referenced here previously but was never committed and does not exist in this or the publication repo -- corrected by independent review, 2026-09-05)",
+    "tool_version": "1.0.0",
+    "provider": "in-house",
+    "model": "hand-authored-svg-script",
+    "model_version": "1.0.0"
+  },
+  "context_isolation": {
+    "permitted_inputs": [
+      "semantic_spec",
+      "artifact_profile",
+      "audience",
+      "selected_reference_traits",
+      "brand_profile"
+    ],
+    "excluded": [
+      "ambient_conversation",
+      "unrelated_project_state",
+      "prior_unrelated_jobs",
+      "renderer_runtime_identity"
+    ]
+  },
+  "attempts": 1,
+  "max_attempts": 3,
+  "qa": {
+    "performed": true,
+    "information_gain_recheck": "pass",
+    "density_recheck": "fail",
+    "notes": "density_check.match is recorded false, honestly: visual-analytical-graphic.json declares profile_semantic_density 'moderate' and profile_visual_density 'low', but this compiled job intentionally lands at 'low' semantic density -- fewer comparison dimensions (2, both without abstract scale), no legend, no numeric axis -- per the same profile's own audience_adaptation.child-upper-elementary clause, which explicitly instructs capping dimensions and dropping abstract scale for this audience. This is a case where the audience_adaptation clause and the profile's base density_check numbers are in tension for this one audience; recorded as a gate finding rather than silently marking match:true to pass cleanly, and routed as a feedback item (06-feedback) rather than retried until the numbers agree, since retrying would mean re-adding abstraction the audience profile says to remove. Actual asset inspection: child-rate-vs-worry-bars.svg (2518 bytes) -- two bars, no axis or legend, first-read relation (tall bar = stayed high, short bar = barely moved) readable without any supporting text, plain-language labels only, no 'OAS' or 'term premium' string present, all four numeric labels traceable to the 2026-09-05 reverification, no horizontal overflow at 640x420 viewBox."
+  },
+  "status": "qa_fail"
+}

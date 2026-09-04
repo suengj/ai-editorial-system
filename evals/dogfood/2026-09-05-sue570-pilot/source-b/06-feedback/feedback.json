@@ -1,0 +1,36 @@
+{
+  "schema_version": "1.0.0",
+  "feedback_id": "feedback:2026-09-05-sue570-pilot-source-b",
+  "governed_by": "docs/architecture/V2-EDITORIAL-LEARNING-CORE.md §5 (routing target vocabulary)",
+  "note": "Routing observations from running the real V2 path end to end for SUE-570 Source B. None of these promote anything to reference authority or durable calibration -- overrides in the intent records were task-scoped only, and this feedback is a routing candidate for a human/owner decision, not an applied rule change.",
+  "items": [
+    {
+      "id": "fb-1",
+      "layer": "VISUAL — density · artifact profile",
+      "observed_in": "02-visual/visual-job-child.json",
+      "finding": "visual/analytical-graphic.json declares base profile_semantic_density: 'moderate' and profile_visual_density: 'low', but its own audience_adaptation.child-upper-elementary clause instructs capping comparison dimensions at 2 and dropping abstract scale for this audience -- which, followed literally, compiles to semantic_density 'low', not 'moderate'. scripts/lib/visual-job-core.mjs's density-profile-mismatch check (correctly) fails this job because it compares the compiled density against the profile's single base density value, not against the audience-adapted expectation implied by the profile's own audience_adaptation text.",
+      "reproduction": "node --input-type=module -e \"import {loadSchema,loadArtifactProfiles,validateVisualJobFile} from '/Users/suengj/Developer/PJT/p12_ai_editorial_system/scripts/lib/visual-job-core.mjs'; const schema=loadSchema(); const profiles=loadArtifactProfiles(); console.log(validateVisualJobFile('/Users/suengj/Developer/PJT/p12_ai_editorial_system/evals/dogfood/2026-09-05-sue570-pilot/source-b/02-visual/visual-job-child.json',{schema,profiles}));\" — reproduces density-profile-mismatch.",
+      "candidate_routing": "VISUAL layer, not calibration: either (a) visual-analytical-graphic.json should declare a per-audience density override alongside audience_adaptation (so a child-upper-elementary job's expected density is looked up per-audience rather than against one base value), or (b) the density_check contract itself should allow a documented audience-driven density delta to satisfy match:true when the delta is exactly what the cited audience_adaptation clause specifies. This is an owner decision, not something this pilot run may apply on its own authority.",
+      "status": "recorded, not applied",
+      "owner_verdict": "unknown"
+    },
+    {
+      "id": "fb-2",
+      "layer": "SHARED — verification / L0 tooling coverage",
+      "observed_in": "04-l0-gates/l0-result.txt",
+      "finding": "scripts/check-quality-gates.mjs's uncertainty-present gate (and any other gate keyed on article.frame.*) can only evaluate a full article-bundle.json, not a bare markdown draft. A Writer producing publication-repo markdown directly (this pilot's actual workflow for Source B, matching the shape suengj-com's content/editorial/ lane expects) cannot get a meaningful uncertainty-present result without separately constructing an article-bundle.json purely to satisfy the gate -- which this pilot declined to fabricate.",
+      "candidate_routing": "VERIFICATION or TEXT layer (tooling gap, not a content defect): scripts/check-quality-gates.mjs could offer a text-only heuristic fallback for frame-less input (e.g. detect a dedicated uncertainty/caveat section by heading pattern) explicitly marked as a weaker, heuristic check when no bundle is available, rather than unconditionally REJECTing every frame-dependent gate for markdown-only input. Alternatively, the pipeline could require an article-bundle.json artifact for every draft materialized into content/editorial/, which is a process change outside this pilot's authority to decide.",
+      "status": "recorded, not applied",
+      "owner_verdict": "unknown"
+    },
+    {
+      "id": "fb-3",
+      "layer": "VISUAL — brand profile resolution",
+      "observed_in": "02-visual/visual-job-news.json, visual-job-report.json, visual-job-child.json (qa.notes)",
+      "finding": "All three visual jobs record brand_profile: 'suengj-com' by convention id, but none of them actually resolved editorial/profiles/brand/suengj-com.v1.json's token set (palette, chrome level) into the compiled SVG -- all three assets use currentColor only for theme-safety. This is a real gap between what the visual-job schema's brand_profile field implies (a resolved brand axis) and what this pilot's renderer path actually did.",
+      "candidate_routing": "VISUAL layer: either a lightweight brand-token-to-SVG mapping utility should exist for the deterministic/hybrid renderer route (parallel to how chart-renderer.mjs handles chart specs), or the visual-job schema/contract should distinguish 'brand_profile declared' from 'brand_profile resolved into this asset' as two separate facts so a currentColor-only shortcut is visible in the record rather than implied to be full brand compliance.",
+      "status": "recorded, not applied",
+      "owner_verdict": "unknown"
+    }
+  ]
+}
