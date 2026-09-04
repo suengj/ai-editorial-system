@@ -1,0 +1,34 @@
+{
+  "schema_version": "1.0.0",
+  "transformation": "adapt",
+  "intent": "Change modality or surface — article to spoken explainer, to slides — without becoming a read-aloud or read-as-slides version of the original.",
+  "may_change": [
+    "modality (text to audio, text to slides, article to video)",
+    "pacing, segmentation, and delivery structure native to the new modality",
+    "which material is dropped because the new modality cannot carry it (e.g. a footnote-heavy citation apparatus in a spoken piece)",
+    "framing devices native to the target modality (a hook for spoken delivery, a slide's single-idea-per-frame convention)"
+  ],
+  "must_preserve": [
+    "every factual claim retained in the adaptation and its attribution",
+    "stated uncertainty",
+    "the thesis"
+  ],
+  "new_claims": {
+    "value": "forbidden",
+    "rationale": "Adapt changes the container, not the content; a claim the original did not make does not belong in the adaptation."
+  },
+  "source_fidelity": {
+    "value": "moderate",
+    "rationale": "Claims are fixed, but delivery structure is rebuilt for the target modality's own conventions rather than mirrored from the source."
+  },
+  "structure_rule": "The target modality's native structure governs, not the source's paragraph structure — a spoken adaptation is scripted for the ear, a slide adaptation is segmented for the eye, and neither is the source text reflowed.",
+  "verification_burden": "verify-claims checks that no claim was gained or lost across the modality change and that omitted material was cut for modality fit, not to avoid a hard verification.",
+  "anti_patterns": [
+    "A spoken adaptation that is the article read aloud, unpaced and unsegmented for listening (the named failure this profile exists to block)",
+    "Slides that reproduce paragraph text unbroken instead of one idea per frame",
+    "Dropping stated uncertainty because the new modality has no obvious place for a hedge",
+    "Treating a modality change as licence to compress claims (that is compress or summarize, layered on top of adapt, and must be named as such)"
+  ],
+  "typical_content_types": ["view", "research", "news"],
+  "typical_surfaces": ["notebooklm", "youtube-script"]
+}

@@ -1,0 +1,35 @@
+{
+  "schema_version": "1.0.0",
+  "transformation": "rewrite",
+  "intent": "Keep the argument; change the prose. The counterpart to recreate, which changes the argument instead.",
+  "may_change": [
+    "sentence structure, wording, and rhythm",
+    "paragraph boundaries and transitions",
+    "register, to fit a new surface or audience",
+    "length, moderately, without dropping a step in the argument"
+  ],
+  "must_preserve": [
+    "the thesis and the order of its supporting steps",
+    "every factual claim and its attribution",
+    "stated uncertainty and counterarguments",
+    "numbers, quotations, and technical terms"
+  ],
+  "new_claims": {
+    "value": "forbidden",
+    "rationale": "Rewrite changes how the argument is said, not what it argues; a new claim would mean the argument itself changed, which is recreate."
+  },
+  "source_fidelity": {
+    "value": "high",
+    "rationale": "The argument is a near-fixed target; only its prose is reworked."
+  },
+  "structure_rule": "The argument's step order is preserved; a rewrite may not silently reorder steps in a way that changes what depends on what.",
+  "verification_burden": "verify-claims re-checks that no claim, number, or attribution drifted during the prose rework — the most common failure mode of a rewrite pass.",
+  "anti_patterns": [
+    "A rewrite that quietly strengthens a hedge into a certainty",
+    "Losing a counterargument in the course of tightening prose",
+    "Reordering steps in a way that changes the causal or logical relationship between them",
+    "Treating a rewrite as licence to add a new supporting claim"
+  ],
+  "typical_content_types": ["view", "news", "note"],
+  "typical_surfaces": ["suengj-com", "newsletter"]
+}

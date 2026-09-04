@@ -1,0 +1,36 @@
+{
+  "schema_version": "1.0.0",
+  "audience": "domain-practitioner",
+  "intent": "Works in the field day to day; knows its standard methods, tools, and current state of practice.",
+  "expertise": "practitioner",
+  "domain_familiarity": "Current, hands-on familiarity with the domain's standard methods and tools.",
+  "purpose": "Wants actionable specifics: what changed relative to standard practice and what to do differently.",
+  "attention_context": "reading",
+  "jargon_tolerance": "high",
+  "assumed_knowledge": [
+    "domain-standard methods, tools, and terminology",
+    "the current state of practice the piece is measured against"
+  ],
+  "life_stage": null,
+  "modality_effects": {
+    "text": {
+      "explanation_depth": "skip definitions of standard terms and methods; explain only what is genuinely new relative to standard practice",
+      "section_granularity": "dense sections that lead with the delta from standard practice, not with background"
+    },
+    "visual": {
+      "label_density": "high; domain-standard encodings need no accompanying explanation",
+      "legend": "may be omitted for domain-standard encodings",
+      "acronym_expansion": "no in-frame expansion for standard domain acronyms"
+    },
+    "audio": {
+      "thought_unit_length": "medium to long",
+      "pace": "brisk",
+      "term_glossing": "no glossing of standard domain terminology"
+    }
+  },
+  "anti_patterns": [
+    "Re-explaining standard practice the practitioner already applies daily",
+    "Padding with background the practitioner already has instead of leading with the delta",
+    "Glossing standard domain acronyms as if for a newcomer"
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "schema_version": "1.0.0",
+  "transformation": "compress",
+  "intent": "Preserve the full claim set of the source at a lower word count. Unlike summarize, nothing is dropped for priority — everything is said more densely.",
+  "may_change": [
+    "word count, by tightening prose",
+    "sentence structure and wording",
+    "which sentence carries which clause"
+  ],
+  "must_preserve": [
+    "every claim the source makes, not a prioritized subset",
+    "attribution, numbers, and stated uncertainty for every claim",
+    "the relative weight the source gave each claim"
+  ],
+  "new_claims": {
+    "value": "forbidden",
+    "rationale": "Compression is a density operation on existing claims, not a selection or synthesis operation."
+  },
+  "source_fidelity": {
+    "value": "high",
+    "rationale": "The full claim set survives; only the words used to carry it shrink."
+  },
+  "structure_rule": "Compression may combine sentences and remove redundant restatement, but it may not remove a claim to hit a length target — that is summarize, not compress.",
+  "verification_burden": "verify-claims checks that the compressed count of distinct claims matches the source's count; a shrinking claim count under this transformation is a defect, not an efficiency.",
+  "anti_patterns": [
+    "Dropping a minor claim because it did not fit the word budget (this is summarize mislabeled as compress)",
+    "Merging two distinct claims into one sentence in a way that blurs which evidence supports which",
+    "Compressing a hedge until it reads as certain",
+    "Using compression to justify cutting attribution"
+  ],
+  "typical_content_types": ["news", "research", "project"],
+  "typical_surfaces": ["suengj-com", "newsletter"]
+}

@@ -1,0 +1,28 @@
+{
+  "schema_version": "1.0.0",
+  "surface": "academic-paper",
+  "role": "handoff",
+  "owner_system": "The receiving venue (journal, conference, or preprint server) — owned by neither this repo nor suengj-com.",
+  "authority": {
+    "surface_decides": [
+      "citation and reference formatting required by the venue",
+      "submission format, length limits, and peer-review process",
+      "acceptance and eventual publication"
+    ],
+    "core_decides": [
+      "evidence burden, verification, and voice fit up to the point of hand-off"
+    ]
+  },
+  "constraints": {
+    "citation_style": "formal, full bibliographic citation — not suengj-com's inline-link convention",
+    "register": "formal, hedged claims stated precisely; no first-person voice unless the venue's convention allows it",
+    "length_hint": "set by the venue; typically longer than any suengj-com content type",
+    "freshness": "no 30-day freshness rule; academic review timelines are long by design and the content-type profile's freshness rule (if any) does not transfer"
+  },
+  "artifact_fit": ["text/article"],
+  "publication_boundary": "Publication authority belongs entirely to the venue's own review process; neither this repo nor suengj-com holds any publication authority over this surface.",
+  "replaceable": {
+    "value": true,
+    "note": "Any academic venue with a compatible citation and submission-format profile can be substituted."
+  }
+}

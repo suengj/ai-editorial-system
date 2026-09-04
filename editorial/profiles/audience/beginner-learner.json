@@ -1,0 +1,38 @@
+{
+  "schema_version": "1.0.0",
+  "audience": "beginner-learner",
+  "intent": "An adult new to the domain, here to build a working mental model, not to make an immediate decision.",
+  "expertise": "novice",
+  "domain_familiarity": "New to the domain; no prior exposure to its vocabulary or standard methods assumed.",
+  "purpose": "Wants to build a working mental model of the domain, step by step, that later material can build on.",
+  "attention_context": "study",
+  "jargon_tolerance": "none",
+  "assumed_knowledge": [
+    "general adult literacy and reasoning",
+    "no prior exposure to the domain's vocabulary, methods, or standard debates"
+  ],
+  "life_stage": null,
+  "modality_effects": {
+    "text": {
+      "explanation_depth": "define every term on first use; build concepts in dependency order rather than assuming any can be skipped",
+      "section_granularity": "short sections with an explicit recap linking back to the previous one"
+    },
+    "visual": {
+      "label_density": "low; one concept introduced per visual",
+      "legend": "always shown and explained, not just present",
+      "acronym_expansion": "expand every acronym, and repeat the expansion the first few times it recurs"
+    },
+    "audio": {
+      "thought_unit_length": "short",
+      "pace": "slower than the default conversational pace",
+      "term_glossing": "every term glossed on first use",
+      "useful_recurrence": "higher than any other adult audience; key terms and structure are repeated across the piece to reinforce the model being built"
+    }
+  },
+  "anti_patterns": [
+    "Assuming any prior vocabulary or method familiarity",
+    "Introducing more than one genuinely new concept per unit of explanation",
+    "Rushing pace or cutting recap to fit a time or length budget",
+    "Treating the beginner-learner adult audience as equivalent to a child audience — vocabulary ceiling and reasoning mode differ; see audience/child-upper-elementary.json for the child-specific profile"
+  ]
+}

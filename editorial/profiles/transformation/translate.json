@@ -1,0 +1,34 @@
+{
+  "schema_version": "1.0.0",
+  "transformation": "translate",
+  "intent": "Carry the claim set and register across languages without changing what is claimed or how confidently it is claimed.",
+  "may_change": [
+    "language",
+    "sentence structure, to the degree the target language's grammar requires",
+    "idiom, so the target-language reader is not reading a mechanically transposed source sentence"
+  ],
+  "must_preserve": [
+    "the full claim set, unchanged in number and content",
+    "register — a formal source stays formal, a personal one stays personal",
+    "stated uncertainty and its strength",
+    "numbers, units, dates, and proper nouns"
+  ],
+  "new_claims": {
+    "value": "forbidden",
+    "rationale": "Translation carries meaning across languages; it does not add or remove what is asserted."
+  },
+  "source_fidelity": {
+    "value": "high",
+    "rationale": "The claim set and its confidence are fixed; only the language changes."
+  },
+  "structure_rule": "Paragraph and argument structure carries over; translation reorders only at the sentence level where the target language's grammar requires it.",
+  "verification_burden": "verify-claims re-checks numbers, units, and proper nouns for transcription errors, and checks that hedged claims remain hedged in the target language.",
+  "anti_patterns": [
+    "Translationese: sentences that preserve the source language's discourse order and connective scaffolding even though each sentence is grammatically correct in the target language (editorial/voice.md §5, §12 — the named failure signature this profile exists to block)",
+    "A hedge in the source rendered as a flat statement in the target language, or vice versa",
+    "Literal rendering of an idiom that changes or loses its meaning",
+    "Applying source-language rhetorical conventions (e.g. its default section headings) to a target language whose own convention differs"
+  ],
+  "typical_content_types": ["research", "news", "view", "note", "project"],
+  "typical_surfaces": ["suengj-com", "newsletter", "academic-paper"]
+}

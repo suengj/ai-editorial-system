@@ -1,0 +1,36 @@
+{
+  "schema_version": "1.0.0",
+  "audience": "professional-generalist",
+  "intent": "A working professional adjacent to the domain: follows its outcomes and implications but not its internal methods.",
+  "expertise": "informed",
+  "domain_familiarity": "Follows the domain's news, products, and outcomes; not its internal methods or standard tooling.",
+  "purpose": "Wants to understand implications for decisions adjacent to the domain — should this change what I do, buy, or recommend.",
+  "attention_context": "reading",
+  "jargon_tolerance": "moderate",
+  "assumed_knowledge": [
+    "general business or product vocabulary",
+    "high-level familiarity with the domain's major concepts and recent history, not its internal methods"
+  ],
+  "life_stage": null,
+  "modality_effects": {
+    "text": {
+      "explanation_depth": "gloss method-level or internal jargon; assume familiarity with outcomes-level vocabulary",
+      "section_granularity": "medium sections organized around decisions and implications rather than mechanism"
+    },
+    "visual": {
+      "label_density": "moderate",
+      "legend": "shown when the encoding is not self-evident to someone outside the field",
+      "acronym_expansion": "expand acronyms specific to the domain's internal practice; widely known business acronyms need no expansion"
+    },
+    "audio": {
+      "thought_unit_length": "medium",
+      "pace": "normal conversational pace",
+      "term_glossing": "gloss method-specific jargon only; skip glossing for outcomes-level vocabulary"
+    }
+  },
+  "anti_patterns": [
+    "Assuming fluency in the domain's internal methods or standard tooling",
+    "Explaining widely known business or product vocabulary as if it were domain-specific",
+    "Framing every implication as a decision when the piece is informational"
+  ]
+}

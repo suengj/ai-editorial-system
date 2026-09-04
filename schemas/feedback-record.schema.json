@@ -1,0 +1,109 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://suengj.com/schemas/feedback-record.schema.json",
+  "title": "Feedback record",
+  "description": "One append-only record of human or agent feedback on a generated output (AES-V2.3 / SUE-561). Distinct from a reference evaluation: this judges what the system produced, not third-party material. See docs/architecture/V2-EDITORIAL-LEARNING-CORE.md §5 (layers) and §6 (four separate signals, never averaged).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version", "feedback_id", "created_at", "subject", "evaluator",
+    "basis", "signal", "verdict", "statement", "routing", "scope"
+  ],
+  "properties": {
+    "schema_version": { "const": "1.0.0" },
+    "feedback_id": {
+      "description": "Stable id. On disk at feedback/records/<slug-after-feedback:>.json.",
+      "type": "string",
+      "pattern": "^feedback:[a-z0-9]+(-[a-z0-9]+)*$"
+    },
+    "created_at": { "type": "string", "format": "date-time" },
+    "subject": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "ref"],
+      "properties": {
+        "kind": { "enum": ["artifact", "article", "package"] },
+        "ref": {
+          "description": "Id or path of the generated thing this feedback is about.",
+          "type": "string",
+          "minLength": 1
+        },
+        "intent_ref": {
+          "type": "string",
+          "pattern": "^intent:[0-9]{4}-[0-9]{2}-[0-9]{2}-[a-z0-9]+(-[a-z0-9]+)*$"
+        },
+        "artifact_profile": {
+          "type": "string",
+          "pattern": "^editorial/profiles/artifact/"
+        }
+      }
+    },
+    "evaluator": { "$ref": "#/$defs/evaluator" },
+    "basis": {
+      "description": "explicit_human_feedback: the human said it. model_inference: an agent judged it.",
+      "enum": ["explicit_human_feedback", "model_inference"]
+    },
+    "signal": {
+      "description": "The four V2 signals stay separate and are never averaged into one score.",
+      "enum": ["objective_quality", "audience_fit", "publication_fit", "owner_preference"]
+    },
+    "verdict": { "enum": ["good", "bad", "mixed"] },
+    "statement": {
+      "description": "What the human actually said, verbatim where possible.",
+      "type": "string",
+      "minLength": 1
+    },
+    "routing": { "$ref": "#/$defs/routing" },
+    "scope": {
+      "description": "task_local (the safe default) or calibration_candidate. A single record may never be calibration_candidate on its own basis alone — see references/REFERENCE-EVALUATION-PROTOCOL.md and AES-V2.10, which owns promotion into durable calibration.",
+      "enum": ["task_local", "calibration_candidate"]
+    },
+    "calibration_ref": {
+      "type": ["string", "null"],
+      "pattern": "^calibration:[a-z0-9]+(-[a-z0-9]+)*@v[0-9]+$"
+    }
+  },
+  "$defs": {
+    "evaluator": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type"],
+      "properties": {
+        "type": { "enum": ["human", "agent"] },
+        "agent": {
+          "description": "Present only when type is \"agent\".",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["runtime"],
+          "properties": {
+            "runtime": { "type": "string", "minLength": 1 },
+            "model": { "type": "string" },
+            "version": { "type": "string" }
+          }
+        }
+      }
+    },
+    "routing": {
+      "description": "Which layer (docs/architecture/V2-EDITORIAL-LEARNING-CORE.md §5) produced the failure or success this feedback names. Abstention must be expressible: layer null with abstained true says the record could not tell rather than guessing.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["abstained", "rationale"],
+      "properties": {
+        "layer": {
+          "type": ["string", "null"],
+          "enum": ["intake", "reference", "audience", "frame", "verification", "surface", "calibration", null]
+        },
+        "modality_layer": {
+          "description": "Modality-specific routing detail, e.g. a TEXT/VISUAL/AUDIO sub-concern. Free text; the shared layer above is the enumerated one.",
+          "type": "string"
+        },
+        "confidence": { "enum": ["low", "medium", "high"] },
+        "abstained": {
+          "description": "True when this record cannot name a layer with confidence.",
+          "type": "boolean"
+        },
+        "rationale": { "type": "string", "minLength": 1 }
+      }
+    }
+  }
+}

@@ -259,7 +259,80 @@ The tracked figure is **cost per accepted artifact**, not generation count.
 
 ---
 
-## 9. What V2 must not become
+## 9. Agent auto-application
+
+The owner writes sentences and reads results. **The owner never translates a
+request or a complaint into a repository file.** When an agent has write
+access, it closes the loop itself — and the boundary of what it may close
+without asking is the subject of this section.
+
+Two automatic paths:
+
+```text
+natural-language request
+  → resolve the Editorial Intent axes
+  → load only the profiles that intent selects  (§8)
+  → generate / review
+  → hand back the result
+
+natural-language feedback
+  → classify: task-local correction or durable preference signal?
+  → identify the target layer                    (§5)
+  → persist the record where persistence is warranted
+  → update versioned calibration only when durable change is authorized
+  → validate
+  → commit the smallest justified change
+```
+
+No step in either path requires the owner to name a JSON file, a schema, a
+Skill, or a routing target. An agent that answers "which layer should I route
+this to?" by asking the owner has failed — classification is the system's job,
+not the reader's.
+
+### The change-scope ladder
+
+"Smallest justified change" is not a sentiment; it is an ordered ladder, and an
+agent takes the lowest rung that actually fixes the problem.
+
+| Rung | Change | Repository effect | Authorization |
+|---|---|---|---|
+| 0 | task-local override | **none** — it lives in the intent record and expires with the task | automatic |
+| 1 | feedback record | append one record, rebuild the index | automatic |
+| 2 | reference evaluation | append one record, rebuild the index | automatic when asked or clearly appropriate |
+| 3 | profile field | one field, in one profile, citing the evidence records | automatic only with repeated independent evidence; otherwise ask |
+| 4 | calibration version | new version file with supersedes lineage | **explicit human instruction only** |
+| 5 | constitution, gates, precedence | — | **never automatic**; owner decision, argued separately |
+
+Rung 0 is the default and by far the most common. Most corrections are about
+*this* piece; treating them as anything more is the overfitting failure §6
+already names.
+
+### What is automatic and what is not
+
+**Automatic, no question asked:** generating when the intent is sufficient
+(§4); revising locally when the correction is local; persisting a feedback or
+reference record the owner asked for or plainly implied; rebuilding a derived
+index; running validation.
+
+**Requires explicit human instruction:** any durable preference change — a new
+calibration version, or a profile edit that will shape every future run.
+"이번 글만" and "앞으로" are different instructions and must be resolved as
+different rungs. When the utterance is materially ambiguous between them, that
+is exactly the clarification the gate in §4 exists for: ask one question,
+offer the two readings, default to task-local.
+
+**Never automatic, at any authorization level:** publication, approval,
+finalization, or merging to a default branch. Constitution §10 is not a rung on
+this ladder — it is off it entirely.
+
+### Commit discipline
+
+An automatic commit is small, single-purpose, and legible six months later:
+one rung of the ladder, the evidence that motivated it, and validation output.
+An agent that cannot state which rung it is on, and why the rung below was
+insufficient, does not commit — it reports and asks.
+
+## 10. What V2 must not become
 
 Stop conditions. Any of these means the architecture is wrong, not that a
 document is missing.
@@ -276,7 +349,7 @@ document is missing.
 
 ---
 
-## 10. Issue map
+## 11. Issue map
 
 | Issue | Adds | Primary paths |
 |---|---|---|
@@ -300,7 +373,7 @@ milestone *Post-V2 Pilot & Owner Adoption*, which runs strictly after V2.11:
 | AES-V2.12 (SUE-570) | real multi-audience text + visual pilot on canonical `suengj.com` articles, delivered as a non-published review branch | `suengj-com` review branch; evidence + feedback records here |
 | AES-V2.13 (SUE-571) | owner playbook for natural-language operation, written from pilot evidence | owner/operator documentation |
 
-The pilot is the honest test of §11: two canonical articles, each transformed
+The pilot is the honest test of §12: two canonical articles, each transformed
 into News / Report / child-oriented drafts from the *same* verified knowledge,
 each with a visual its audience actually needed. It answers questions the Core
 cannot answer about itself — whether one source really stops forcing one output
@@ -322,7 +395,7 @@ Two constraints on V2 design follow from it and are binding now, not later:
 Audio is explicitly deferred from the pilot and must be described as deferred —
 not as working — wherever V2 capability is summarised.
 
-## 11. The ten questions
+## 12. The ten questions
 
 V2 is not complete while any answer is materially *no*.
 

@@ -1,0 +1,39 @@
+{
+  "schema_version": "1.0.0",
+  "audience": "child-upper-elementary",
+  "intent": "A child reader/listener roughly ages 10-12 (upper elementary). Pilot default for child-oriented adaptations of canonical suengj.com articles (SUE-570, Post-V2 Pilot & Owner Adoption). Named explicitly because a vague '아동용' / 'child' audience is not a usable profile — vocabulary ceiling, concrete-vs-abstract reasoning, example choice, and attention span at this age differ from an adult beginner, not merely prior knowledge (contrast audience/beginner-learner.json, whose life_stage is not material).",
+  "expertise": "novice",
+  "domain_familiarity": "No assumed exposure to the domain at all, including the general adult-world context an adult beginner would already have.",
+  "purpose": "Wants to understand what is happening and why it is interesting or important, in terms that connect to things already familiar at this age.",
+  "attention_context": "study",
+  "jargon_tolerance": "none",
+  "assumed_knowledge": [
+    "upper-elementary reading level (roughly grade 5-6)",
+    "everyday concrete experience (school, family, games, animals, money as pocket-money-scale amounts)",
+    "no assumed adult-world context (workplaces, markets, institutions) unless it is explained from scratch"
+  ],
+  "life_stage": "child, roughly ages 10-12 (upper elementary) — this is one of the rare cases where life stage materially changes communication: vocabulary ceiling, concrete-vs-abstract reasoning, and attention span are all age-bound, not just prior knowledge.",
+  "modality_effects": {
+    "text": {
+      "explanation_depth": "every term is either replaced with a plain-language equivalent or explicitly glossed on first use; no term is left unglossed on the assumption that context makes it clear",
+      "concreteness": "concrete before abstract: ground every abstract idea in a specific, familiar example before naming the general principle",
+      "section_granularity": "short conceptual steps; one new idea per step, each step short enough to hold in mind before the next"
+    },
+    "visual": {
+      "abstraction": "low; prefer literal, concrete depictions over symbolic or schematic encodings",
+      "label_complexity": "low; short, plain-language labels only",
+      "legend": "the first-read relation must be understandable without reading a legend at all; a legend may exist as backup but cannot be load-bearing"
+    },
+    "audio": {
+      "thought_unit_length": "short",
+      "pace": "slower than the beginner-learner adult pace",
+      "useful_recurrence": "higher than any other audience profile; restate the key idea in a second, differently-worded way before moving on"
+    }
+  },
+  "anti_patterns": [
+    "Baby-talk: exaggerated simplicity, sing-song register, or vocabulary well below the stated reading level",
+    "Patronizing register: praising the reader for understanding, or narrating that a topic is 'hard' before explaining it",
+    "Cute analogies that distort the mechanism they stand in for, rather than genuinely modeling it",
+    "Lowering factual accuracy or dropping stated uncertainty in exchange for simplicity — simplifying the knowledge level must never simplify the truth (editorial/constitution.md §1-3)"
+  ]
+}

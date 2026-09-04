@@ -1,0 +1,31 @@
+{
+  "schema_version": "1.0.0",
+  "transformation": "original",
+  "intent": "New material with no source to be faithful to. The absence of a source obligation raises the verification burden; it does not lower it.",
+  "may_change": [
+    "everything — there is no source structure, wording, or framing to preserve"
+  ],
+  "must_preserve": [
+    "nothing from a source, because there is no source",
+    "internal consistency between claims made within the piece itself",
+    "the distinction between fact, interpretation, and hypothesis for every claim asserted (editorial/constitution.md §2)"
+  ],
+  "new_claims": {
+    "value": "requires_verification",
+    "rationale": "Every asserted fact carries the full verification burden precisely because there is no source to inherit fidelity from."
+  },
+  "source_fidelity": {
+    "value": "reframing",
+    "rationale": "There is no source-fidelity obligation at all; this value marks the absence of one rather than a degree of one."
+  },
+  "structure_rule": "Structure is chosen entirely by the argument the piece makes; there is no source topology to avoid mirroring because there is no source.",
+  "verification_burden": "verify-claims treats every factual assertion as needing independent verification from scratch — original content gets no benefit of the doubt a source-derived transformation would.",
+  "anti_patterns": [
+    "Asserting a fact with no verification because 'it's original, not sourced material'",
+    "Presenting a hypothesis or scenario with the confidence of a finding (editorial/constitution.md §2)",
+    "Borrowing the authority of an unstated source while claiming the piece is original",
+    "An empty uncertainty list — original work usually knows less than a synthesis of existing material, not more (editorial/constitution.md §3)"
+  ],
+  "typical_content_types": ["view", "note"],
+  "typical_surfaces": ["suengj-com", "newsletter"]
+}

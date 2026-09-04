@@ -1,0 +1,122 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://suengj.com/schemas/reference-evaluation.schema.json",
+  "title": "Reference evaluation",
+  "description": "One append-only craft-evidence record about a reference (AES-V2.3 / SUE-561). A reference is evaluation context, never a template, and it may never establish a fact — see docs/architecture/V2-EDITORIAL-LEARNING-CORE.md §2 and editorial/RIGHTS-AND-PROVENANCE.md for the pointer/rights layer this record sits beside. Records are never overwritten; a later opinion is a new record with `supersedes` set.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version", "evaluation_id", "ref_id", "modality", "evaluator",
+    "evaluated_at", "basis", "dimensions", "applicable_to", "authority_boundary"
+  ],
+  "properties": {
+    "schema_version": { "const": "1.0.0" },
+    "evaluation_id": {
+      "description": "Stable id. On disk at references/evaluations/<ref-id-slug>/<slug-after-eval:>.json.",
+      "type": "string",
+      "pattern": "^eval:[a-z0-9]+(-[a-z0-9]+)*$"
+    },
+    "ref_id": {
+      "description": "Must resolve to an entry in references/catalog.json and matches the pattern used by schemas/editorial-intent.schema.json's reference_input.",
+      "type": "string",
+      "pattern": "^ref:[a-z0-9]+(-[a-z0-9]+)*$"
+    },
+    "modality": {
+      "description": "Which evaluate-reference profile under editorial/profiles/reference/ this record was produced against.",
+      "enum": ["text", "visual", "audio", "video"]
+    },
+    "evaluator": { "$ref": "#/$defs/evaluator" },
+    "evaluated_at": { "type": "string", "format": "date-time" },
+    "calibration_ref": {
+      "description": "The calibration snapshot active when this evaluation was made (AES-V2.10). Null when no calibration has been activated yet.",
+      "type": ["string", "null"],
+      "pattern": "^calibration:[a-z0-9]+(-[a-z0-9]+)*@v[0-9]+$"
+    },
+    "profile_ref": {
+      "description": "Repository path of the reference-evaluation profile used.",
+      "type": "string",
+      "pattern": "^editorial/profiles/reference/"
+    },
+    "basis": {
+      "description": "explicit_human_feedback: the human said it. model_inference: an agent judged it. Load-bearing — agent consensus may never silently stand in for human preference.",
+      "enum": ["explicit_human_feedback", "model_inference"]
+    },
+    "dimensions": {
+      "description": "Per-dimension craft verdicts. Dimension ids come from the matching modality profile's `dimensions[].id`.",
+      "type": "array",
+      "items": { "$ref": "#/$defs/dimension_verdict" }
+    },
+    "strengths": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+    "weaknesses": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+    "applicable_to": { "$ref": "#/$defs/applicability" },
+    "authority_boundary": {
+      "description": "This record grants craft evidence only, never factual authority. A reference may never establish a fact.",
+      "const": "craft_evidence_only"
+    },
+    "supersedes": {
+      "description": "Optional pointer to an earlier evaluation_id this record follows up on. Records are append-only: this never causes the earlier record to be removed or mutated.",
+      "type": "string",
+      "pattern": "^eval:[a-z0-9]+(-[a-z0-9]+)*$"
+    },
+    "notes": { "type": "string" }
+  },
+  "$defs": {
+    "evaluator": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type"],
+      "properties": {
+        "type": { "enum": ["human", "agent"] },
+        "agent": {
+          "description": "Present only when type is \"agent\".",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["runtime"],
+          "properties": {
+            "runtime": { "type": "string", "minLength": 1 },
+            "model": { "type": "string" },
+            "version": { "type": "string" }
+          }
+        }
+      }
+    },
+    "dimension_verdict": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["dimension", "verdict"],
+      "properties": {
+        "dimension": { "type": "string", "minLength": 1 },
+        "verdict": {
+          "description": "do_not_copy: the trait is admired but copying it would be imitation, not a transferable craft lesson.",
+          "enum": ["adopt", "avoid", "do_not_copy", "neutral"]
+        },
+        "note": { "type": "string" },
+        "evidence": { "type": "string" }
+      }
+    },
+    "applicability": {
+      "description": "What this evaluation is cheap to select for later. Ids are the pinned vocabularies in docs/architecture/V2-EDITORIAL-LEARNING-CORE.md.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["content_types", "audiences", "artifacts", "surfaces"],
+      "properties": {
+        "content_types": {
+          "type": "array",
+          "items": { "enum": ["research", "view", "news", "note", "project", "academic", "promotional"] }
+        },
+        "audiences": {
+          "type": "array",
+          "items": { "enum": ["general-reader", "professional-generalist", "domain-practitioner", "domain-expert", "beginner-learner"] }
+        },
+        "artifacts": {
+          "type": "array",
+          "items": { "type": "string", "pattern": "^(text|visual|audio|video)/[a-z0-9]+(-[a-z0-9]+)*$" }
+        },
+        "surfaces": {
+          "type": "array",
+          "items": { "enum": ["suengj-com", "notebooklm", "academic-paper", "newsletter", "youtube-script"] }
+        }
+      }
+    }
+  }
+}

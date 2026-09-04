@@ -1,0 +1,34 @@
+{
+  "schema_version": "1.0.0",
+  "transformation": "recreate",
+  "intent": "Keep the subject; rebuild the argument for a new audience or surface. The counterpart to rewrite, which keeps the argument and changes only the prose.",
+  "may_change": [
+    "the argument path and which evidence leads",
+    "structure and section order, built fresh for the new audience/surface",
+    "which supporting material is foregrounded or cut",
+    "register, length, and framing"
+  ],
+  "must_preserve": [
+    "the underlying factual claims that remain in scope, and their attribution",
+    "stated uncertainty attached to any claim carried forward",
+    "the subject and its verified scope — recreate does not change what the piece is about"
+  ],
+  "new_claims": {
+    "value": "requires_verification",
+    "rationale": "Rebuilding the argument for a new audience often needs new connective or supporting material; anything asserted as fact rather than restated from the original must be verified."
+  },
+  "source_fidelity": {
+    "value": "reframing",
+    "rationale": "The argument itself is rebuilt, not merely reworded; fidelity is to the verified subject matter, not to the original's structure."
+  },
+  "structure_rule": "Recreate must not mechanically mirror the original's section structure with new prose dropped in — that is a rewrite mislabeled as recreate. The new structure is built from what the new audience or surface actually needs.",
+  "verification_burden": "verify-claims checks every carried-forward claim against its original attribution and every newly asserted claim as if it were new material.",
+  "anti_patterns": [
+    "Mechanically mirroring the source article's structure while changing only vocabulary",
+    "Dropping stated uncertainty because the new structure has no obvious place for it",
+    "Treating recreate as permission to invent supporting material without verification",
+    "Recreating the subject into something the original evidence no longer supports"
+  ],
+  "typical_content_types": ["view", "research", "project"],
+  "typical_surfaces": ["newsletter", "youtube-script", "academic-paper"]
+}
