@@ -1,0 +1,316 @@
+{
+  "activation": {
+    "overall": "not_yet_sufficient",
+    "rationale": "Zero real generation/feedback cycles have occurred. Every record under feedback/, references/evaluations/, and evals/real-output-corpus/entries/ is a synthetic or explicitly-marked placeholder used to prove the record shape, not operating evidence. Running a full system review before SUE-570 would evaluate the absence of a system, not the system, which is exactly the vanity-health failure this surface exists to prevent. This judgement is deliberately revisable: a future reviewer should re-declare it, not simply extend this one, once real operating evidence starts to accumulate.",
+    "sufficiency_conditions": [
+      {
+        "description": "AES-V2.12 (SUE-570) real suengj.com multi-audience text+visual pilot has run.",
+        "id": "sue_570_pilot_complete",
+        "met": false,
+        "note": "Not started. V2 Core issues (V2.1-V2.11) precede it in the issue map (docs/architecture/V2-EDITORIAL-LEARNING-CORE.md §13)."
+      },
+      {
+        "description": "Multiple owner-reviewed text outputs exist beyond the pilot itself.",
+        "id": "multiple_owner_reviewed_text_outputs_beyond_pilot",
+        "met": false,
+        "note": "feedback/index.json currently lists 2 records, both synthetic seed examples on synthetic subjects, not real owner review."
+      },
+      {
+        "description": "Multiple accepted/rejected visual outputs exist.",
+        "id": "multiple_accepted_rejected_visuals",
+        "met": false,
+        "note": "No visual-job records exist anywhere in the repository yet."
+      },
+      {
+        "description": "Several real feedback -> routing -> revision cases exist.",
+        "id": "real_feedback_routing_revision_cases",
+        "met": false,
+        "note": "feedback/records holds 2 synthetic seed records; there is no revision/replan lineage field to trace a routing decision to an actual repair outcome (see known_gaps)."
+      },
+      {
+        "description": "At least one durable calibration decision exists, or there is enough evidence to confirm none was needed.",
+        "id": "durable_calibration_decision_or_confirmed_unnecessary",
+        "met": false,
+        "note": "AES-V2.10 (calibration/) is concurrent, in-progress work as of this snapshot; no durable, evidence-backed calibration decision has been evaluated yet."
+      },
+      {
+        "description": "Cross-agent/model comparison evidence exists.",
+        "id": "cross_agent_model_comparison_evidence",
+        "met": false,
+        "note": "AES-V2.11 (SUE-569) certification has not yet produced in-repo comparison evidence."
+      },
+      {
+        "description": "Enough operation exists to observe real reference-selection behavior.",
+        "id": "reference_selection_behavior_observed",
+        "met": false,
+        "note": "Only 3 external reference evaluations exist (references/index.json); no selection-in-production has been observed."
+      }
+    ]
+  },
+  "created_at": "2026-09-05T00:00:00Z",
+  "derived_from_snapshot": "system-eval:2026-09-05-seed",
+  "dimensions": [
+    {
+      "asks": "Does V2 materially improve accepted output quality and adaptability, using real owner-reviewed evidence rather than only synthetic evals?",
+      "evidence_refs": [
+        "feedback/index.json#records — 2 records total, both synthetic seed examples",
+        "evals/real-output-corpus/entries — 5 entries total, all synthetic or explicitly-marked placeholders per evals/real-output-corpus/README.md"
+      ],
+      "evidence_sources": [
+        "feedback/records — feedback-record.schema.json instances: signal=objective_quality, owner_verdict",
+        "feedback/index.json#records — derived per-record summary index",
+        "evals/real-output-corpus/entries — corpus-entry.schema.json instances: owner_verdict, dimensions.strong, dimensions.weak, reference_eligible",
+        "schemas/l1-review.schema.json#outcome — comparative PASS/REWORK/TIE/ABSTAIN outcome shape; no populated L1 review store exists yet",
+        "evals/rubric.json — L0 synthetic rubric baseline, structurally distinct from real owner-reviewed quality lift and never a substitute for it"
+      ],
+      "id": "quality_lift",
+      "insufficient_evidence_when": "No real owner-reviewed feedback or corpus entries exist yet — only synthetic/placeholder seed records that prove the schema shape, not system performance.",
+      "interpretation": "Every quality-relevant record currently in the repository was authored to demonstrate a schema shape, not to report a real owner judgement. There is no basis yet to say V2 is or is not lifting accepted quality.",
+      "judgement_rules": {
+        "healthy": "Multiple real owner-reviewed outputs (beyond the SUE-570 pilot) show accepted-quality improvement or materially distinct, integrity-preserving audience transformations, corroborated by L1 comparative PASS outcomes against relevant references, without synthetic-only evidence standing in for real review.",
+        "structural_risk": "Real owner-reviewed evidence shows quality flat or declining despite added machinery, or a content-type/audience transformation cannot be shown materially distinct from another without an integrity cost.",
+        "watch": "Real evidence exists but is thin, mixed, or flat — e.g. the accepted/rejected ratio is not improving, or L1 REWORK outcomes recur on the same dimension without resolution."
+      },
+      "recommended_action": "Re-evaluate once the SUE-570 pilot and subsequent real review have produced multiple owner-reviewed feedback and corpus entries with owner_verdict values other than unknown.",
+      "state": "INSUFFICIENT_EVIDENCE",
+      "trend": "not_yet_observable"
+    },
+    {
+      "asks": "Is natural-language operation actually staying simple as the system grows, measured by clarification frequency, correction cycles, and cases requiring the owner to name internal files/schemas directly?",
+      "evidence_refs": [
+        "schemas/examples/intent-blocked-clarification.example.json — a worked schema example, not a real intake record"
+      ],
+      "evidence_sources": [
+        "schemas/editorial-intent.schema.json#clarification — required/asked/resolution fields (0-3 question norm, resolution states)",
+        "schemas/examples/intent-blocked-clarification.example.json — illustrative shape only, not a real operating record",
+        "docs/architecture/V2-EDITORIAL-LEARNING-CORE.md — §4 natural-language interface principle this dimension is judged against"
+      ],
+      "id": "operator_friction",
+      "insufficient_evidence_when": "No durable, committed store of real per-task Editorial Intent records exists yet outside schema examples; clarification counts cannot be measured from repository evidence alone until real intake runs accumulate (see known_gaps).",
+      "interpretation": "The clarification contract exists and is well-specified, but no real intake session has left a durable record in this repository yet to measure against it.",
+      "judgement_rules": {
+        "healthy": "Clarification counts stay within the intake gate's own 0-3 norm across real tasks, the owner rarely names internal files/schemas, and correction cycles trend down or stay stable as the system grows.",
+        "structural_risk": "The owner must routinely make manual JSON/repository edits, or the agent recurrently fails to infer profile/routing despite sufficient stated intent.",
+        "watch": "Clarification counts creep upward, or the owner increasingly names internal artifacts (schema/skill/file names) instead of describing intent in natural language, without yet being structural."
+      },
+      "recommended_action": "Re-evaluate once real natural-language intake sessions (starting with SUE-570) leave enough durable Editorial Intent evidence to count clarification frequency and correction cycles.",
+      "state": "INSUFFICIENT_EVIDENCE",
+      "trend": "not_yet_observable"
+    },
+    {
+      "asks": "Does progressive disclosure hold as the repository grows, so a larger repository does not imply proportionally larger per-task context?",
+      "evidence_refs": [
+        "schemas/visual-job.schema.json#context_isolation — an enforced allowlist, but not a measurement of how much context was actually loaded"
+      ],
+      "evidence_sources": [
+        "docs/architecture/V2-EDITORIAL-LEARNING-CORE.md — §9 context and cost budget principle",
+        "schemas/visual-job.schema.json#context_isolation — permitted_inputs/excluded allowlist, the one enforced context-scoping mechanism that exists today"
+      ],
+      "id": "context_efficiency",
+      "insufficient_evidence_when": "No schema or record in this repository carries a token/context-size proxy field yet, so context load cannot be measured from committed evidence at all — a structural gap, not merely an observation gap (see known_gaps).",
+      "interpretation": "context_isolation proves a boundary is enforced on visual jobs; it does not measure how much context any task actually loaded. No schema in the repository currently records a context/token size, so this dimension has no quantitative evidence source at all yet, only a qualitative boundary contract.",
+      "judgement_rules": {
+        "healthy": "Per-task context/profile/reference loading stays roughly flat as the repository grows, matching the progressive-disclosure design; no whole-repo/full-history loading incidents are observed.",
+        "structural_risk": "Per-task context load grows roughly with repository size, or whole-repo/full-history loading recurs.",
+        "watch": "Occasional unnecessary-context incidents occur but are isolated and quickly corrected."
+      },
+      "recommended_action": "Do not add a new telemetry field to satisfy this dimension. Track whether a context/cost proxy lands on an existing record (per docs/architecture/V2-EDITORIAL-LEARNING-CORE.md §9/§11's evidence table) via AES-V2.10 or a later job-record contract, and re-evaluate once it does.",
+      "state": "INSUFFICIENT_EVIDENCE",
+      "trend": "not_yet_observable"
+    },
+    {
+      "asks": "Do references improve quality without the system's own outputs quietly becoming the default reference pool?",
+      "evidence_refs": [
+        "references/index.json#by_provenance_class — external: 3, owner_created: 0, generated_output: 0 as of this snapshot",
+        "references/index.json#promoted_generated_output — 0 as of this snapshot"
+      ],
+      "evidence_sources": [
+        "references/index.json#by_provenance_class — external/owner_created/generated_output counts",
+        "references/index.json#promoted_generated_output — count of generated_output references actually promoted",
+        "references/evaluations — reference-evaluation.schema.json instances: provenance_class, promotion.evidence_refs, promotion.basis",
+        "schemas/l1-review.schema.json#anti_collapse — same-lineage GOOD-reference concentration flag"
+      ],
+      "id": "reference_health",
+      "insufficient_evidence_when": "The reference pool is entirely external, small, and pre-operation, so no selection-under-pressure or self-reinforcement pattern can be observed yet.",
+      "interpretation": "Every reference evaluation currently in the registry is external and none has ever been promoted from a generated output. The anti-collapse concern this dimension exists to catch cannot yet be observed because generated_output references do not exist in the pool at all.",
+      "judgement_rules": {
+        "healthy": "The reference pool stays a healthy external/owner_created/generated_output mix, generated_output promotion always follows the evidence-backed protocol (never publication or an L1 pass alone), and the L1 anti-collapse flag never triggers on the operative comparison set.",
+        "structural_risk": "Selected GOOD references concentrate on one generation lineage as the de facto default, or a generated_output reference is found carrying an adopt verdict without a valid promotion record.",
+        "watch": "generated_output references are accumulating faster than external/owner_created ones, or the anti-collapse flag has triggered at least once without a corrective change."
+      },
+      "recommended_action": "Re-evaluate once generated_output references start entering the pool (post-pilot) and selection-in-production evidence exists to check for lineage concentration.",
+      "state": "INSUFFICIENT_EVIDENCE",
+      "trend": "not_yet_observable"
+    },
+    {
+      "asks": "Is preference change handled as versioned, evidence-backed calibration rather than accumulating silently, and does calibration entropy stay bounded?",
+      "evidence_refs": [
+        "calibration/versions — AES-V2.10 (SUE-568) is concurrent, in-progress work as of this snapshot; no durable decision has an operating history yet",
+        "calibration/ledger — no drift candidates raised-vs-approved history exists yet"
+      ],
+      "evidence_sources": [
+        "calibration/versions — durable calibration version records (AES-V2.10 / SUE-568)",
+        "calibration/ledger — experiment/drift ledger (AES-V2.10 / SUE-568)",
+        "docs/architecture/V2-EDITORIAL-LEARNING-CORE.md — §7 model drift as an editorial quality event; the learning boundary",
+        "schemas/feedback-record.schema.json#calibration_ref — links a feedback record to the calibration version active when it was made"
+      ],
+      "id": "calibration_health",
+      "insufficient_evidence_when": "No durable calibration decision has been activated and evaluated over time yet — early calibration/version records reflect initial authoring, not a tested decision with a change-frequency or reversion history.",
+      "interpretation": "Calibration versioning itself is being built concurrently with this evaluation surface. Whatever versions exist at any given moment reflect initial authoring, not a preference decision that has survived real use, reversion pressure, or contradiction with another active preference.",
+      "judgement_rules": {
+        "healthy": "Calibration changes are infrequent, each backed by repeated independent evidence or an explicit owner declaration (never a single complaint), with no reverted changes and no standing contradictions.",
+        "structural_risk": "Calibration versions change frequently, changes get reverted, contradictory active preferences coexist, or profiles exist that are never exercised.",
+        "watch": "Drift candidates are being raised but not yet resolved, or a small number of profiles show early signs of low use."
+      },
+      "recommended_action": "Re-evaluate once calibration/ledger shows drift candidates raised and either approved or rejected, and calibration/versions shows at least one version with real change-frequency history.",
+      "state": "INSUFFICIENT_EVIDENCE",
+      "trend": "not_yet_observable"
+    },
+    {
+      "asks": "When output is bad, is it repaired at the correct layer on the first targeted attempt, without misrouting into polish, brand_profile, or a content rule?",
+      "evidence_refs": [
+        "feedback/records — 2 synthetic seed records with routing decisions recorded, but no linked repair outcome"
+      ],
+      "evidence_sources": [
+        "feedback/records — routing.layer / routing.modality_layer / routing.abstained fields",
+        "schemas/feedback-record.schema.json#routing — the three-state routing contract (shared-layer / modality-only / abstention)",
+        "editorial/feedback-routing.json#authority_matrix — declared repair-layer authority classes",
+        "editorial/FEEDBACK-ROUTING.md — §3 tuning procedure: keep/revert/insufficient evidence"
+      ],
+      "id": "routing_effectiveness",
+      "insufficient_evidence_when": "No feedback record traces a routing decision to an actual repair outcome yet — the schema has no revision/replan/rerender lineage field to link a routing.layer decision to whether the fix worked (see known_gaps).",
+      "interpretation": "The routing vocabulary and misroute detection are implemented and testable (scripts/lib/routing-core.mjs), but nothing in the repository yet records whether a routed repair actually resolved the failure it targeted. Routing correctness at intake time is not the same evidence as routing effectiveness over time.",
+      "judgement_rules": {
+        "healthy": "The first targeted repair at the identified layer resolves the failure in the large majority of real cases, reroutes/escalations are rare, and none of the three named misroutes (frame-in-polish, renderer-in-brand-profile, reference-in-content-rule) are observed.",
+        "structural_risk": "A named misroute recurs, first-repair success rate trends down, or Core/Constitution escalation is attempted from evidence that does not meet the class-4+ bar.",
+        "watch": "Reroutes/escalations happen occasionally, or one of the named misroutes is observed once and then corrected."
+      },
+      "recommended_action": "Re-evaluate once revision/replan/rerender lineage lands on job/package records (owned by AES-V2.10 or a later contract, per known_gaps) and real routed-repair-then-outcome cases exist.",
+      "state": "INSUFFICIENT_EVIDENCE",
+      "trend": "not_yet_observable"
+    },
+    {
+      "asks": "Do intent interpretation, Source/Reference handling, profile/audience/calibration interpretation, and feedback routing stay consistent across agents and model versions without large model-specific prompt forks?",
+      "evidence_refs": [
+        "schemas/visual-job.schema.json#renderer — the field exists and is required, but no populated visual-job records exist yet to compare across runtimes"
+      ],
+      "evidence_sources": [
+        "docs/architecture/V2-EDITORIAL-LEARNING-CORE.md — §13 AES-V2.11 (SUE-569) certification, the intended primary evidence source for this dimension",
+        "schemas/visual-job.schema.json#renderer — provider/model/model_version runtime lineage recorded per job",
+        "schemas/feedback-record.schema.json#evaluator — evaluator.type / agent.runtime / model / version for an agent evaluator"
+      ],
+      "id": "portability",
+      "insufficient_evidence_when": "SUE-569 certification has not yet run and no multi-agent/multi-model operating history exists in this repository to compare.",
+      "interpretation": "The lineage fields needed to observe cross-agent/model consistency exist on visual-job and feedback-record, but no populated records exist yet, and SUE-569 (the issue this dimension is explicitly keyed to) has not run.",
+      "judgement_rules": {
+        "healthy": "Intent interpretation, Source/Reference handling, profile/audience/calibration interpretation, and feedback routing stay consistent across agents/models, with no growth in agent-specific workarounds.",
+        "structural_risk": "Large model-specific prompt forks are required to keep behavior consistent, or a model-version upgrade causes a routing/interpretation regression that recurs.",
+        "watch": "A small, explained set of agent-specific adapters exists but is shrinking or stable, not growing."
+      },
+      "recommended_action": "Re-evaluate once SUE-569 certification runs and/or multiple populated visual-job or feedback records with distinct evaluator.agent.runtime/model values exist to compare.",
+      "state": "INSUFFICIENT_EVIDENCE",
+      "trend": "not_yet_observable"
+    },
+    {
+      "asks": "Are write-authority boundaries actually holding in exercised cases — no local feedback silently promoted to durable preference, no mutation above authority class, no canonical/draft/publication boundary violation?",
+      "evidence_refs": [
+        "scripts/lib/registry-core.mjs#checkOwnerVerdict — exists and is exercised by scripts/test-registry.mjs, but only against synthetic fixtures, not real operating cases"
+      ],
+      "evidence_sources": [
+        "schemas/feedback-record.schema.json#scope — task_local/calibration_candidate ceiling; no field exists for class 4+ by construction",
+        "scripts/lib/registry-core.mjs#checkOwnerVerdict — mechanically enforces silence-is-not-acceptance",
+        "editorial/feedback-routing.json#authority_matrix — the seven-class write-authority ladder",
+        "docs/architecture/V2-EDITORIAL-LEARNING-CORE.md — §10 write-authority ladder definition"
+      ],
+      "id": "governance_safety",
+      "insufficient_evidence_when": "Absence of evidence is not automatically PASS (SUE-573 explicit requirement): with almost no exercised operating history, there are simply not enough real cases to inspect for a violation either way.",
+      "interpretation": "The write-authority ladder and its mechanical guards are implemented and unit-tested. That is evidence the control exists, not evidence that it has been tested against a real boundary-pressure case. This dimension is deliberately not marked HEALTHY on the strength of an untested control — see judgement_rules and SUE-573's explicit 'absence of evidence is not automatically PASS'.",
+      "judgement_rules": {
+        "healthy": "No material incident or near-miss is found on inspection: no local feedback silently promoted to durable preference, no mutation above authority class, no unreviewed Core/SSOT change, no canonical/draft/publication boundary violation.",
+        "structural_risk": "An actual authority violation reached a durable artifact — a class-4+ change made without the required human authorization/review, or generated output promoted to Reference authority without evidence.",
+        "watch": "A near-miss is found and caught by an existing mechanical guard (e.g. scripts/lib/registry-core.mjs) with no actual boundary breach reaching a durable artifact."
+      },
+      "recommended_action": "Re-evaluate once real feedback/calibration/reference activity has actually exercised the authority ladder (i.e. a real attempt at a class-4+ change occurred and was correctly blocked or correctly escalated).",
+      "state": "INSUFFICIENT_EVIDENCE",
+      "trend": "not_yet_observable"
+    },
+    {
+      "asks": "Is the system optimizing cost per accepted output, not raw generation-call count, and does cost change sensibly after a model/profile change?",
+      "evidence_refs": [
+        "schemas/audio-plan.schema.json#cost — field exists, required, but no populated audio-plan records exist yet",
+        "schemas/visual-job.schema.json#attempts — field exists, but no cost_per_accepted_artifact equivalent exists on this schema yet"
+      ],
+      "evidence_sources": [
+        "schemas/audio-plan.schema.json#cost — renders_attempted/renders_accepted/cost_per_accepted_artifact; the one modality that already carries this field",
+        "schemas/visual-job.schema.json#attempts — attempts/max_attempts as a rerender-count proxy; visual-job has no cost_per_accepted_artifact field yet"
+      ],
+      "id": "cost_per_accepted",
+      "insufficient_evidence_when": "No audio-plan or visual-job records are populated yet, and visual-job carries no cost_per_accepted_artifact field at all (see known_gaps) — there is neither data nor, for visual, a complete field to hold it.",
+      "interpretation": "Audio (deferred from the pilot per docs/architecture/V2-EDITORIAL-LEARNING-CORE.md §13) already has the right field shape but zero populated records. Visual has operating attempts/max_attempts but no accepted-cost field at all, so cost per accepted result cannot be computed for visual outputs even once records exist.",
+      "judgement_rules": {
+        "healthy": "Renders/revisions per accepted artifact trend flat or down as profiles mature, per the audio-plan cost block (and any later visual-job equivalent).",
+        "structural_risk": "Cost per accepted artifact is rising, or a model/profile change measurably raised cost without a corresponding quality gain.",
+        "watch": "Cost per accepted artifact is roughly flat but not improving despite calibration/profile investment."
+      },
+      "recommended_action": "Do not add cost_per_accepted_artifact to visual-job from this package. Flag it to the schema/contract that owns visual-job (per known_gaps) and re-evaluate once either audio-plan records populate or visual-job gains an equivalent cost block.",
+      "state": "INSUFFICIENT_EVIDENCE",
+      "trend": "not_yet_observable"
+    },
+    {
+      "asks": "Does the repository stay understandable months later — is duplicated authority avoided, are exceptions bounded, and does one change stay scoped to a small, related file set?",
+      "evidence_refs": [
+        "docs/architecture/V2-EDITORIAL-LEARNING-CORE.md — §12 names the concrete stop conditions this dimension will check against once there is enough history to check"
+      ],
+      "evidence_sources": [
+        "editorial — active authority documents under editorial/*.md, a rough proxy for architecture surface",
+        "schemas — active schema files under schemas/*.json",
+        "docs/architecture/V2-EDITORIAL-LEARNING-CORE.md — §12 'What V2 must not become' stop conditions, the direct judgement rubric for this dimension",
+        "docs/architecture/V2-EDITORIAL-LEARNING-CORE.md — §13 issue map, used to check whether one change requires touching too many unrelated files"
+      ],
+      "id": "maintainability",
+      "insufficient_evidence_when": "The Core (V2.1-V2.11) has not finished landing and the Owner Playbook (SUE-571) does not exist yet, so there is no stable baseline to compare growth against.",
+      "interpretation": "Section 12's stop conditions give this dimension a real, checkable rubric, but checking it meaningfully requires enough elapsed history to see whether authority documents/schemas are accumulating faster than capability, which does not exist yet this early in the Core's own construction.",
+      "judgement_rules": {
+        "healthy": "The number of active authority documents/profiles/schemas is stable or shrinking relative to capability, no duplicated/overlapping rules are found, and one change typically touches a small, related file set.",
+        "structural_risk": "Identifying current authority requires cross-referencing many documents, a routine change now requires touching many unrelated files, or the Owner Playbook (SUE-571) no longer matches actual behavior.",
+        "watch": "New exceptions or agent-specific adapters are appearing, or a stale/superseded file is found but not yet cleaned up."
+      },
+      "recommended_action": "Re-evaluate at the next major architecture change or at the V3 readiness gate (SUE-574), once SUE-571's Owner Playbook exists to compare against actual behavior.",
+      "state": "INSUFFICIENT_EVIDENCE",
+      "trend": "not_yet_observable"
+    }
+  ],
+  "evaluation_trigger": "initial_seed",
+  "kind": "current",
+  "known_gaps": [
+    {
+      "description": "schemas/feedback-record.schema.json has no field capturing whether a targeted repair actually resolved the problem, whether it required a reroute/escalation, or how many revision/replan/rerender cycles a task went through. routing.layer records the routing decision at the moment of feedback; nothing links it forward to the outcome of the repair it triggered.",
+      "id": "gap:no-revision-replan-lineage",
+      "limits_dimensions": [
+        "routing_effectiveness",
+        "cost_per_accepted"
+      ],
+      "owner_contract": "Job/package lineage per docs/architecture/V2-EDITORIAL-LEARNING-CORE.md §11's evidence table ('revision / replan / rerender lineage -> job and package lineage'), most likely landing via AES-V2.10 (SUE-568) or a later job-record contract. This package identifies the gap; it does not add the field."
+    },
+    {
+      "description": "Only schemas/audio-plan.schema.json carries a cost block (renders_attempted/renders_accepted/cost_per_accepted_artifact). schemas/feedback-record.schema.json, schemas/editorial-intent.schema.json, and schemas/visual-job.schema.json carry no token/context-size or reasoning-cost proxy at all.",
+      "id": "gap:no-cost-context-proxy",
+      "limits_dimensions": [
+        "cost_per_accepted",
+        "context_efficiency"
+      ],
+      "owner_contract": "Per docs/architecture/V2-EDITORIAL-LEARNING-CORE.md §9 and §11's evidence table ('cost / context proxy -> job and review records'), owned by the job/review record contracts (e.g. a visual-job cost block mirroring audio-plan's) — not this package."
+    },
+    {
+      "description": "schemas/editorial-intent.schema.json is complete and has illustrative examples under schemas/examples/, but there is no committed per-task record store analogous to feedback/records/ or references/evaluations/ — so operator_friction (clarification frequency, correction cycles) cannot be measured from repository evidence alone.",
+      "id": "gap:no-durable-intent-record-store",
+      "limits_dimensions": [
+        "operator_friction"
+      ],
+      "owner_contract": "AES-V2.1/V2.2 intake contract (SUE-559/SUE-560), or the SUE-570 pilot's own evidence capture — not this package."
+    }
+  ],
+  "schema_version": "1.0.0",
+  "snapshot_id": "system-eval:current",
+  "trigger_note": "First declaration of the system evaluation surface itself (AES-V2.14 / SUE-573). Authored before the SUE-570 pilot has run and before any real post-Core operating history exists — every record cited below is a synthetic or placeholder seed used to prove a record shape, not evidence of the system operating."
+}
