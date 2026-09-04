@@ -97,7 +97,13 @@ The visual must still work when seen as:
 
 Its information should survive aggressive downscaling.
 
-### 3.5 Reject
+### 3.5 Renderer preference
+
+Thumbnail/cover assets usually favor a **generative conceptual illustration or restrained explanatory illustration** because their job is thesis framing rather than exact evidence delivery.
+
+Use deterministic rendering when the concept itself depends on exact geometry, but do not force a data-chart or diagram renderer merely because it is easier to automate.
+
+### 3.6 Reject
 
 Reject thumbnail concepts that become:
 
@@ -157,7 +163,25 @@ Examples:
 
 Do not bake in mutable article/section titles, dates, captions, citations, or promotional copy.
 
-### 4.4 Evidence boundary
+### 4.4 Renderer preference
+
+Body infographics default toward a **deterministic or strongly structured renderer** when labels, topology, arrows, evidence, comparison rows, chronology, or exact relationships must remain stable and auditable.
+
+Use generative rendering only when the body visual is primarily qualitative and can tolerate image-model variance without weakening meaning. Do not ask an image model to reproduce dense text, exact numeric axes, or complex compliance/rights structures that are better authored deterministically.
+
+Practical default:
+
+```text
+thumbnail / cover
+→ generative conceptual illustration is often appropriate
+
+body infographic with labels / process / rights / exact structure
+→ deterministic SVG / chart / diagram preferred
+```
+
+Both may share the same suengj.com surface language.
+
+### 4.5 Evidence boundary
 
 Exact values, axes, chronology, or empirical comparisons must remain deterministic or traceable.
 
@@ -267,6 +291,7 @@ What is the reading order?
 What information gain does the plate add over adjacent prose?
 Can it remain legible on mobile without zooming?
 Should this be split into two plates instead?
+Does the structure require deterministic rendering?
 ```
 
 ## 9. Example — tokenized stocks / 24-hour finance
@@ -279,7 +304,7 @@ Primary thesis:
 
 > Removing trading hours exposes three harder bottlenecks: liquidity, rights, and incident control.
 
-Use one large system tension rather than a multi-panel report.
+Use one large system tension rather than a multi-panel report. A low-text generative conceptual illustration is appropriate if it preserves this thesis clearly.
 
 ### Body infographic A
 
@@ -294,6 +319,8 @@ Semantic modules:
 - mint/redeem availability;
 - weaker arbitrage;
 - wider spread / thinner depth / persistent price gap.
+
+Prefer deterministic SVG/diagram composition so labels, timelines, and relationships remain crisp on mobile.
 
 ### Body infographic B
 
@@ -310,7 +337,7 @@ Semantic modules:
 - pause authority;
 - recovery / resume path.
 
-If B becomes unreadable at mobile size, split it again rather than compressing it.
+Prefer deterministic/structured rendering because topology and semantic labels are load-bearing. If B becomes unreadable at mobile size, split it again rather than compressing it.
 
 ## 10. Relationship to other contracts
 
@@ -325,4 +352,4 @@ Use this document together with:
 
 ## One-line rule
 
-> **Use one publication identity but two visual functions: thumbnails are thesis-first and sparse; body infographics are information-first and modular, with mobile readability and plate splitting treated as hard constraints.**
+> **Use one publication identity but two visual functions: thumbnails are thesis-first and often generative; body infographics are information-first and usually deterministic when structure or labels are load-bearing, with mobile readability and plate splitting treated as hard constraints.**
