@@ -1,0 +1,5 @@
+gates: REVIEW — ../../../../../private/tmp/claude-501/-Users-suengj-Developer-PJT-p12-ai-editorial-system/0ea1218e-9094-42b1-a6bf-2cdf7971c019/scratchpad/suengj-com/content/editorial/sue570-pilot-tools-news.md (2 finding(s))
+  · [flag] overclaim — Absolute or certainty-asserting language that the evidence rarely supports.
+      반드시
+  · [flag] evidence-density — 23% of paragraphs carry a number, date, or citation (floor 30% for news)
+      3/13

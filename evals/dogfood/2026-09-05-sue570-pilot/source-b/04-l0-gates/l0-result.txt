@@ -1,0 +1,44 @@
+L0 mechanical gate run — node scripts/check-quality-gates.mjs <file.md>
+(control plane: /Users/suengj/Developer/PJT/p12_ai_editorial_system)
+Run at: 2026-09-05
+
+Command run against each draft body directly (no --bundle):
+
+  node scripts/check-quality-gates.mjs <path-to-draft>.md
+
+Results:
+
+  sue570-pilot-bonds-news.md    -> REJECT (1 finding): uncertainty-present
+  sue570-pilot-bonds-report.md  -> REJECT (1 finding): uncertainty-present
+  sue570-pilot-bonds-child.md   -> REJECT (1 finding): uncertainty-present
+
+Recorded honestly rather than retried until clean, per the pilot's honesty
+rules. Investigation of the gate (scripts/lib/quality-gates-core.mjs line
+~144-152) shows uncertainty-present reads `article.frame.uncertainty` from a
+parsed article-bundle object (see the schema of frame.uncertainty in the
+control plane's article schema), not from the markdown body text. Because
+this pilot produced three publication-repo markdown drafts directly rather
+than routing them through the full frame-article -> article-bundle pipeline
+that populates `frame.uncertainty` as a structured array, invoking the gate
+without `--bundle <article-bundle.json>` makes `article` null for every
+draft, so this specific gate is structurally unable to pass regardless of
+what the draft's prose actually says.
+
+This is recorded as a REJECT rather than silently treated as a false
+positive, because the gate's own contract (constitution.md §3: "An article
+with no stated uncertainty is either about something trivial or is hiding
+something") is a real requirement this pilot must still satisfy -- it is
+just not mechanically checkable without the bundle artifact this run did not
+produce. The honest cross-check performed instead: all three drafts were
+read in full and each contains an explicit uncertainty section in prose
+("확인되지 않은 부분" / "캐버트와 불확실성" / "아직 모르는 것"), so the
+underlying editorial requirement (uncertainty is stated, not smoothed) is
+met in substance; the mechanical gate result is a tooling-coverage gap for
+this pilot's shortened pipeline, not evidence the requirement was skipped.
+This gap is routed to feedback (../06-feedback/feedback.json) rather than
+patched by fabricating an article-bundle.json purely to make the gate run
+green.
+
+No other reject-severity finding was raised by check-quality-gates.mjs
+against any of the three draft bodies (citation-integrity and other
+body-text-only gates ran and did not flag any of the three files).

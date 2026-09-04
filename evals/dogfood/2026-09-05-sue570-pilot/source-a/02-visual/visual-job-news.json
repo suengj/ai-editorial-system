@@ -1,0 +1,107 @@
+{
+  "schema_version": "1.0.0",
+  "job_id": "job:sue570-pilot-source-a-news-diagram",
+  "intent_ref": "intent:2026-09-05-sue570-pilot-source-a-news",
+  "calibration_ref": null,
+  "article_ref": {
+    "article_id": "art:sue570-pilot-tools-news",
+    "version_number": 1,
+    "content_hash": "eb015f55624f2bf2ce2c7e10cb43edf9ea998d426205961352d10a7db0947bac",
+    "claims_hash": "b2c465073cef28fb49984004189a453c4c23116836533ee881700c039a63549a"
+  },
+  "artifact_profile": "visual/explanatory-diagram",
+  "profile_ref": "editorial/profiles/artifact/visual-explanatory-diagram.json",
+  "audience": {
+    "value": "general-reader",
+    "profile_ref": "editorial/profiles/audience/general-reader.json",
+    "traits_applied": [
+      "no acronym or unexplained relationship label — node labels are plain nouns (기업, 스프레드시트, AI, 최적화 대상), consistent with jargon_tolerance: low",
+      "the analogy tag ('표현·비교·시뮬레이션', '(해석) 같은 경로') is short enough to read at a glance rather than requiring a legend"
+    ]
+  },
+  "semantic_spec": {
+    "question": "스프레드시트가 숫자를 프로그래밍 가능하게 만든 것과 같은 경로로, AI는 업무 자체를 프로그래밍 가능하게 만들고 있는가?",
+    "must_communicate": [
+      "스프레드시트가 기업(숫자)에 대해 한 일: 표현·비교·시뮬레이션을 거쳐 최적화 대상으로 만듦",
+      "AI가 업무에 대해 한 일이라고 저자가 해석하는 것: 같은 경로를 거쳐 업무 자체를 최적화 대상으로 만듦",
+      "이 두 경로가 같다는 것은 저자의 해석(c1)이지 확인된 사실이 아니라는 시각적 구분(점선)"
+    ],
+    "must_not_include": [
+      "원문에 없는 새로운 수치나 사례",
+      "해석(c1)을 사실처럼 실선으로 표시하는 것"
+    ]
+  },
+  "information_gain": {
+    "adjacent_representation": {
+      "type": "prose",
+      "summary": "News draft states the analogy once in prose ('스프레드시트가 숫자를 프로그래밍 가능하게 만들었다면, AI는 업무 자체를 프로그래밍 가능한 대상으로 만들고 있다') without ever showing the two paths side by side or marking which link is asserted fact vs. which is the author's interpretive leap."
+    },
+    "redundancy_test": {
+      "q1_new_perception": "The reader sees the two paths laid out in parallel and can see exactly which single arrow (work→AI) is the interpretive leap (dashed), rather than inferring it from a single dense sentence.",
+      "q2_harder_without_it": "Without the diagram, a skimming general reader has no visual cue that the AI claim is qualitatively different in evidentiary status from the spreadsheet history it is compared to.",
+      "q3_merely_recreates": false,
+      "q4_worth_the_interruption": true
+    },
+    "gain_type": [
+      "comparison",
+      "framing"
+    ],
+    "integration_strategy": "add",
+    "verdict": "proceed"
+  },
+  "density_check": {
+    "profile_semantic_density": "moderate",
+    "profile_visual_density": "low",
+    "compiled_semantic_density": "moderate",
+    "compiled_visual_density": "low",
+    "match": true
+  },
+  "selected_reference_traits": {
+    "adopt": [],
+    "avoid": [],
+    "do_not_copy": []
+  },
+  "brand_profile": "suengj-com",
+  "brand_profile_version": "1.0.0",
+  "text_policy": "hybrid_template",
+  "renderer_route": "hybrid",
+  "renderer": {
+    "tool": "chart-renderer.renderDiagram + hand-authored SVG",
+    "tool_version": "1.0.0",
+    "provider": "in-house",
+    "model": "chart-renderer.renderDiagram",
+    "model_version": "1.0.0"
+  },
+  "context_isolation": {
+    "permitted_inputs": [
+      "semantic_spec",
+      "artifact_profile",
+      "audience",
+      "selected_reference_traits",
+      "brand_profile"
+    ],
+    "excluded": [
+      "ambient_conversation",
+      "unrelated_project_state",
+      "prior_unrelated_jobs",
+      "renderer_runtime_identity"
+    ]
+  },
+  "attempts": 1,
+  "max_attempts": 1,
+  "qa": {
+    "performed": true,
+    "information_gain_recheck": "pass",
+    "density_recheck": "pass",
+    "notes": "Real steps taken, disclosed honestly: (1) scripts/lib/chart-renderer.mjs's renderDiagram() was actually run against a `type: flow` spec (source: /tmp/news-diagram-spec.mjs, output archived at 02-visual/news-diagram.mmd) to produce the real node/edge topology — this defines which relationships exist and in what order, and is the traceable part of this job. (2) renderDiagram() only emits Mermaid flowchart source, not a raster/vector image file; per the task's constraint that no generative image provider is available, the final SVG asset (public/media/images/sue570-pilot/tools-news-diagram.svg, 3584 bytes, inspected directly) was hand-authored to realize that exact topology (same 6 nodes, same 4 edges, same edge labels) in suengj-com's brand palette, rather than run through an automated Mermaid-to-SVG renderer that was not available in this environment. This job's renderer_route is therefore recorded as 'hybrid', not 'deterministic', and the renderer field names both the tool actually run and the hand-authoring step honestly rather than claiming a single deterministic pipeline end-to-end. (3) Direct inspection of the rendered SVG confirms: 6 nodes, 4 edges matching the .mmd source; the interpretive link (work→AI) is the only dashed/accent-colored element, matching the semantic_spec's must_not_include constraint (interpretation not shown as asserted fact); viewBox is 640x300, well within a ~390px mobile reading surface without horizontal overflow. (4) One open question, recorded rather than resolved: mobile legibility of the 11-12px tick labels at true ~390px device width was reasoned about from the viewBox scale factor but not empirically rendered in a real mobile viewport — same limitation run-01's evidence-visual QA noted, and not silently claimed as verified here."
+  },
+  "status": "accepted",
+  "compiled_prompt": "ARTIFACT: Explanatory editorial diagram — primary lane of ARTICLE-ILLUSTRATION-ROUTING.md §4.1 (~70% of article-body visual use). — Make a relationship, process, or authority boundary easier to inspect than prose (ARTICLE-ILLUSTRATION-ROUTING.md §1 'explain', §2.2).\nQUESTION: 스프레드시트가 숫자를 프로그래밍 가능하게 만든 것과 같은 경로로, AI는 업무 자체를 프로그래밍 가능하게 만들고 있는가?\nMUST COMMUNICATE: 스프레드시트가 기업(숫자)에 대해 한 일: 표현·비교·시뮬레이션을 거쳐 최적화 대상으로 만듦; AI가 업무에 대해 한 일이라고 저자가 해석하는 것: 같은 경로를 거쳐 업무 자체를 최적화 대상으로 만듦; 이 두 경로가 같다는 것은 저자의 해석(c1)이지 확인된 사실이 아니라는 시각적 구분(점선)\nMUST NOT INCLUDE: 원문에 없는 새로운 수치나 사례; 해석(c1)을 사실처럼 실선으로 표시하는 것\nCOMPOSITION: One relationship, process, or authority boundary, grid-led, with sparse connectors that clarify hierarchy rather than build a dense network (ARTICLE-ILLUSTRATION-ROUTING.md §2.2; DIAGRAMMATIC-VISUAL-LANGUAGE.md §2 line behavior).\nTEXT POLICY: hybrid_template\nBRAND (suengj-com@1.0.0): background warm off-white / cream, primary muted forest / sage green — the structural identity color, not a saturation effect, accent restrained sand / camel — accent only, never a second dominant palette",
+  "compiled_from": [
+    "editorial/profiles/artifact/visual-explanatory-diagram.json",
+    "suengj-com@1.0.0",
+    "editorial/profiles/audience/general-reader.json",
+    "semantic_spec",
+    "selected_reference_traits"
+  ]
+}

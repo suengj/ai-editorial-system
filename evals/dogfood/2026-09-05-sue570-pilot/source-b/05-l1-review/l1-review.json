@@ -1,0 +1,156 @@
+{
+  "schema_version": "1.0.0",
+  "review_id": "l1:sue570-pilot-source-b-bonds",
+  "evaluator": {
+    "type": "agent",
+    "runtime_identity": {
+      "tool": "claude-code",
+      "provider": "anthropic",
+      "model": "claude-sonnet-5",
+      "model_version": "claude-sonnet-5-20260101-or-later (exact build not exposed to this runtime; recorded as the model family/alias actually in use for this session)"
+    },
+    "owner_verdict": "unknown",
+    "note": "owner_verdict is unknown for every dimension below by construction -- this is an agent self-review, not a human owner review, and nothing here may be promoted to reference authority or durable calibration per this pilot's honesty rules."
+  },
+  "subjects": [
+    {
+      "kind": "article",
+      "ref": "content/editorial/sue570-pilot-bonds-news.md (publication repo)",
+      "content_type": "news",
+      "comparison": {
+        "mode": "pairwise",
+        "reference": {
+          "ref": "evals/fixtures/golden/G-02-view.md",
+          "provenance_class": "owner_created",
+          "content_type": "view"
+        },
+        "same_content_type": false,
+        "anti_collapse": {
+          "triggered": false,
+          "note": "Reference is provenance_class owner_created (golden fixture), so generated_output-monoculture does not apply. content_type differs (view vs news) -- no news-content-type golden fixture exists in evals/fixtures/golden/ -- so this is a cross-content-type structural comparison, not a same-type quality bar; recorded as same_content_type: false rather than silently treated as equivalent."
+        }
+      },
+      "dimensions": [
+        {
+          "id": "thesis-worth",
+          "verdict": "tie",
+          "evidence_span": "Subject opens with the material change stated directly: \"일본 10년 국채금리가 9월 1일 3%를 넘었다... 그런데 사흘 뒤인 9월 5일 다시 확인해 보니... 2.9%대로 내려와 있었다.\" G-02 opens with a stance: \"Editorial 자동화에서 가장 위험한 단계는 생성이 아니라 polish라고 보고 있다.\" Both commit to a checkable claim in the first paragraph rather than scene-setting.",
+          "rationale": "News leads with a fact-plus-reversal rather than a position, which is correct for content/news.json's register (event-led), not a weakness relative to G-02's position-led register -- the two content types are supposed to open differently."
+        },
+        {
+          "id": "fact-interpretation-separation",
+          "verdict": "tie",
+          "evidence_span": "Subject: \"일본 되돌림이 새로운 하락 추세를 의미하는지... 이번 확인만으로 판단할 수 없다\" is marked as an explicit unresolved point, separate from the reverified facts above it. G-02 marks its own limit condition explicitly: \"보호 규칙 때문에 verification으로 되돌아간 사례를 모아봤을 때... 이 규칙은 비용만 만들고 있는 것이다. 그때는 보호 집합을 좁혀야 한다.\"",
+          "rationale": "Both texts keep a clearly marked boundary between what is established and what is not, per constitution.md §2-3."
+        },
+        {
+          "id": "language-native-prose",
+          "verdict": "tie",
+          "evidence_span": "Subject reads as composed Korean market commentary (\"일본은 되돌렸고, 미국은 버티고 있다\") rather than translated discourse; retains English only where domain-native (OAS, term premium is avoided entirely in this variant per its general-reader register). G-02 is similarly native, retaining only domain terms like 'polish'.",
+          "rationale": "No stilted phrasing or machine-translation tell in either."
+        },
+        {
+          "id": "audience-fit",
+          "verdict": "abstain",
+          "evidence_span": "G-02 carries no stated target audience field; the subject's audience (general-reader) is declared in 01-intake/intent-news.json but there is no audience-tagged reference to compare against.",
+          "rationale": "A real audience-fit comparison needs a named audience profile on both sides; the reference has none."
+        }
+      ],
+      "integrity": {
+        "status": "clear",
+        "evidence_span": "All six footnote markers in the subject resolve to entries in 03-verification/verification-record.json or the canonical source's own footnotes; every present-tense market figure carries a 2026-09-05 retrieval date distinct from the canonical source's 2026-09-02 date. No phantom citation found."
+      },
+      "outcome": "PASS_WITH_NOTES"
+    },
+    {
+      "kind": "article",
+      "ref": "content/editorial/sue570-pilot-bonds-report.md (publication repo)",
+      "content_type": "research",
+      "comparison": {
+        "mode": "pairwise",
+        "reference": {
+          "ref": "evals/fixtures/golden/G-01-synthesis.md",
+          "provenance_class": "owner_created",
+          "content_type": "research"
+        },
+        "same_content_type": true,
+        "anti_collapse": {
+          "triggered": false,
+          "note": "Sole reference is provenance_class owner_created; evals/real-output-corpus/ still has no populated reference_eligible entries (only corpus-placeholder-*.json exist), same gap run-01/run-02 recorded -- this remains a comparison against the one real GOOD text available, not a populated corpus."
+        }
+      },
+      "dimensions": [
+        {
+          "id": "thesis-worth",
+          "verdict": "tie",
+          "evidence_span": "Subject: \"이것은 term premium의 재가격인가, credit crisis의 전조인가.\" stated as the governing question before any evidence. G-01: \"추론 가격이 내려가도 SaaS gross margin은 회복되지 않는다.\" Both stake a falsifiable position in the opening lines.",
+          "rationale": "Neither opens by describing a topic."
+        },
+        {
+          "id": "synthesis-independence",
+          "verdict": "worse",
+          "evidence_span": "G-01 derives a mechanism the sources do not state on their own (seat-billing as amplifier: \"단가 30% 하락이 소비량 50% 증가와 만나면 COGS는 늘어난다\"). The subject's synthetic move is narrower: it re-verifies the canonical source's own diagnostic table against fresh data and reports which cell the new data falls into (\"신용스프레드는 오히려 더 강하게 확인됐다\") -- this is a verification-and-confirmation move, not a newly derived mechanism the canonical source did not already propose.",
+          "rationale": "Both go beyond restating a source, but G-01's synthesis constructs a new causal claim from disagreeing sources; the subject's synthesis validates an existing claim against new data, which is a different and slightly weaker kind of synthetic contribution by this rubric's own standard."
+        },
+        {
+          "id": "language-native-prose",
+          "verdict": "tie",
+          "evidence_span": "Subject: \"국채금리는 높은 채로 유지됐고, 신용스프레드는 안정적이었다.\" G-01: \"가격이 내려간 것은 list price이고, 마진을 결정하는 것은 seat당 실제 소비량이기 때문이다.\" Both retain English technical terms only where domain-native (OAS, term premium, discount-rate shock vs. list price, COGS, seat), per voice.md §1.",
+          "rationale": "No unglossed English noun accumulation in either."
+        },
+        {
+          "id": "formulaic-ai-shaped",
+          "verdict": "tie",
+          "evidence_span": "Subject uses one explicit contrast near the close: \"분석의 스파인이 살아남는 것과 그 스파인을 뒷받침하던 특정 스냅샷이 그대로 유지되는 것은 별개의 문제이며...\" -- a single instance, not repeated across paragraphs, so it does not cross voice.md §3's repetition threshold. G-01 similarly uses one such construction mid-argument.",
+          "rationale": "A single instance of a recognizable contrast move is a legitimate rhetorical choice in both, not a house-formula tic."
+        },
+        {
+          "id": "audience-fit",
+          "verdict": "abstain",
+          "evidence_span": "G-01 carries no stated target audience field.",
+          "rationale": "Same structural reason as run-01/run-02's own abstain here: comparing depth/jargon fit against a reference with no audience profile would be inventing the comparison."
+        }
+      ],
+      "integrity": {
+        "status": "clear",
+        "evidence_span": "All six footnote markers resolve to canonical-source footnotes or 03-verification/verification-record.json entries with retrieval dates. The reverification table's five rows are traceable one-to-one to verification-record.json claims v1-v5. No phantom citation, no fabricated figure."
+      },
+      "outcome": "ARGUMENT_REWORK",
+      "outcome_note": "Not a factual defect. The 'worse' verdict on synthesis-independence is a legitimate finding for a recreate of a source whose own synthesis is already strong -- deepening the analytical move (e.g. quantifying how much the discount-rate-shock signature strengthened, rather than only confirming it held) would close this gap without adding unverified claims. Recorded rather than smoothed over, per this pilot's instruction to report L0/L1 failures honestly."
+    },
+    {
+      "kind": "article",
+      "ref": "content/editorial/sue570-pilot-bonds-child.md (publication repo)",
+      "content_type": "view",
+      "comparison": {
+        "mode": "none",
+        "reference": null,
+        "same_content_type": null,
+        "anti_collapse": {
+          "triggered": false,
+          "note": "No golden fixture, negative fixture, or real-output-corpus entry targets a child-audience or explainer-shaped piece anywhere in this repository (evals/fixtures/golden/ has G-01 research, G-02 view, G-03 note, G-04 research; none are audience-adapted for children). Fabricating a comparison reference for this dimension would be inventing the very authority this pilot is supposed to route through, not skipping a step -- so this subject is scored on constitutional/profile compliance directly rather than pairwise comparison, and 'no reference exists for this comparison' is recorded as the honest answer rather than silently substituting an ill-fitting adult reference."
+        }
+      },
+      "dimensions": [
+        {
+          "id": "anti-pattern-check",
+          "verdict": "pass",
+          "evidence_span": "No baby-talk register found (no exaggerated simplicity or sing-song phrasing); no patronizing narration (\"이건 어려운 개념이야\" pattern absent); the requested distorting analogy (\"government borrows like lunch money\") does not appear anywhere in the draft -- the draft instead explains term premium's underlying mechanism concretely (뭘 사려는 사람이 많아지면 조건이 좋아진다는 식의 공급/수요 설명) without a collapsing metaphor standing in for it.",
+          "rationale": "Directly checked against child-upper-elementary.json's four named anti_patterns and the task's explicit forbidden-analogy instruction; none triggered."
+        },
+        {
+          "id": "factual-parity-with-adult-variants",
+          "verdict": "pass",
+          "evidence_span": "The child draft states the same five reverified figures as News/Report (Japan 10Y moved to 2.9%대, US 10Y 4.76-4.78%, corporate spread 1.01-1.03%) and marks the same claim as moved rather than current (\"이건 9월 1일에 있었던 일이야... 우리는 9월 5일에 다시 확인해 봤는데, 일본의 이자율은 그새 2.9%대로 다시 조금 내려왔어\").",
+          "rationale": "child-upper-elementary.json's anti_pattern explicitly forbids lowering factual accuracy for simplicity; this draft carries the same reverification result as the adult variants, only in simpler words, satisfying that requirement directly rather than by inference."
+        }
+      ],
+      "integrity": {
+        "status": "clear",
+        "evidence_span": "All four footnote markers resolve to canonical-source or verification-record entries with dates."
+      },
+      "outcome": "PASS_WITH_NOTES",
+      "outcome_note": "PASS_WITH_NOTES rather than a bare PASS because this subject had no comparison reference at all (see anti_collapse note) -- the outcome reflects constitutional/profile compliance, not a comparative quality judgement, and should not be read as equivalent in evidentiary weight to the News/Report pairwise outcomes above."
+    }
+  ]
+}

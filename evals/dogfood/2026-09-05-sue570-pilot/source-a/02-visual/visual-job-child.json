@@ -1,0 +1,108 @@
+{
+  "schema_version": "1.0.0",
+  "job_id": "job:sue570-pilot-source-a-child-concept",
+  "intent_ref": "intent:2026-09-05-sue570-pilot-source-a-child",
+  "calibration_ref": null,
+  "article_ref": {
+    "article_id": "art:sue570-pilot-tools-child",
+    "version_number": 1,
+    "content_hash": "64482ad1d0f9c085abbf71cc523a0e59d7074e344095e2461cd099bddd9be1ad",
+    "claims_hash": "b2c465073cef28fb49984004189a453c4c23116836533ee881700c039a63549a"
+  },
+  "artifact_profile": "visual/concept-illustration",
+  "profile_ref": "editorial/profiles/artifact/visual-concept-illustration.json",
+  "audience": {
+    "value": "child-upper-elementary",
+    "profile_ref": "editorial/profiles/audience/child-upper-elementary.json",
+    "traits_applied": [
+      "literal, concrete depiction instead of a symbolic/schematic encoding (grid shapes and varied-size circles, not an abstract network diagram with arrows and jargon labels)",
+      "abstraction: low — the visual metaphor is a shape contrast (rigid grid vs. organic varied cluster), not a labelled process",
+      "the first-read relation is understandable without a legend at all: two shapes, two targets, one dashed connector between them — the legend cannot be load-bearing here because there is no legend"
+    ]
+  },
+  "semantic_spec": {
+    "question": "도구의 생김새가 다르면 그 도구가 만드는 조직/결과물의 생김새도 달라지는가?",
+    "must_communicate": [
+      "왼쪽: 반듯하고 규칙적인 격자 모양 도구가 하나의 둥근 결과(회사)로 모인다",
+      "오른쪽: 더 다양하고 자유로운 모양의 도구가 또 다른 둥근 결과(회사)로 모인다",
+      "두 결과 모두 같은 종류의 목표(둥근 모양)로 이어지지만, 그 결과에 이르는 도구의 생김새는 다르다"
+    ],
+    "must_not_include": [
+      "글자, 라벨, 범례",
+      "로봇 얼굴, 뇌+회로 같은 AI 상투적 이미지 (editorial/profiles/brand/suengj-com.v1.json topic_cliche_rejection.ai_agents)",
+      "원문의 결론을 사실처럼 단정하는 표현(애초에 텍스트가 없으므로 이 위험 자체가 구조적으로 낮음)"
+    ]
+  },
+  "information_gain": {
+    "adjacent_representation": {
+      "type": "prose",
+      "summary": "The child draft's closing metaphor (\"도구 모양이 다르면 모이는 방식도 다르다\") exists only as a sentence appended after several concrete classroom examples; no single moment in the text lets a 10-12 year old see both 'tool shapes' side by side at once."
+    },
+    "redundancy_test": {
+      "q1_new_perception": "The reader can see, at a single glance, that a plain grid and a varied cluster of circles both lead somewhere, but the paths look different — a felt sense of 'different tool, different way of coming together' that the text's classroom analogies build up to gradually but never show in one image.",
+      "q2_harder_without_it": "Without the image, the metaphor lives only in the closing paragraph's abstract sentence, which is exactly the kind of unsupported abstraction audience/child-upper-elementary.json's concreteness rule warns against introducing without a concrete anchor.",
+      "q3_merely_recreates": false,
+      "q4_worth_the_interruption": true
+    },
+    "gain_type": [
+      "framing"
+    ],
+    "integration_strategy": "add",
+    "verdict": "proceed"
+  },
+  "density_check": {
+    "profile_semantic_density": "low",
+    "profile_visual_density": "low",
+    "compiled_semantic_density": "low",
+    "compiled_visual_density": "low",
+    "match": true
+  },
+  "selected_reference_traits": {
+    "adopt": [],
+    "avoid": [],
+    "do_not_copy": []
+  },
+  "brand_profile": "suengj-com",
+  "brand_profile_version": "1.0.0",
+  "text_policy": "no_text",
+  "renderer_route": "deterministic",
+  "renderer": {
+    "tool": "hand-authored SVG",
+    "tool_version": "n/a",
+    "provider": "in-house",
+    "model": "none — no generative image provider available in this environment",
+    "model_version": "n/a"
+  },
+  "context_isolation": {
+    "permitted_inputs": [
+      "semantic_spec",
+      "artifact_profile",
+      "audience",
+      "selected_reference_traits",
+      "brand_profile"
+    ],
+    "excluded": [
+      "ambient_conversation",
+      "unrelated_project_state",
+      "prior_unrelated_jobs",
+      "renderer_runtime_identity"
+    ]
+  },
+  "attempts": 1,
+  "max_attempts": 1,
+  "qa": {
+    "performed": true,
+    "information_gain_recheck": "pass",
+    "density_recheck": "pass",
+    "notes": "Disclosed honestly: unlike the news and report jobs, no renderDiagram() or chart-renderer.mjs call was made for this job — the artifact is a single shape contrast, not a labelled topology, so chart-renderer.mjs's flow/line spec types do not fit and running it would have been a false claim of a tool that does not apply. The SVG (public/media/images/sue570-pilot/tools-child-concept.svg, 2565 bytes) was hand-authored directly and inspected: zero text elements in the artwork (matches text_policy no_text and label_count_ceiling 0), two distinct shape clusters (9 rigid squares converging via one line to one filled circle; 7 varied-radius circles converging via five lines to a second filled circle), no legend, renderer_preference in visual-concept-illustration.json lists generative first — recorded honestly as a deviation forced by this environment's lack of a generative image provider, not a silent substitution. Palette matches brand/suengj-com.v1.json (warm off-white background, sage-green primary shape, sand-accent second shape, both flat with no gradients/shadows). Checked against topic_cliche_rejection.ai_agents (no robot face, no brain+circuitry) — passes because the AI side is represented by a shape metaphor, not a literal AI depiction at all. Not verified: how a 10-12 year old reader actually interprets the shape contrast without a caption — this QA is agent-inference only (basis: model_inference), not a real child-reader test, and is recorded as an open question rather than a confirmed finding."
+  },
+  "status": "accepted",
+  "compiled_prompt": "ARTIFACT: Abstract analytical / conceptual editorial illustration — the accent lane of ARTICLE-ILLUSTRATION-ROUTING.md §4.3 (~10% of visual use). — Frame an abstract thesis or give an article/project a durable conceptual metaphor when the visual metaphor itself adds explanatory or identity value (ARTICLE-ILLUSTRATION-ROUTING.md §2.5, §1 'frame').\nQUESTION: 도구의 생김새가 다르면 그 도구가 만드는 조직/결과물의 생김새도 달라지는가?\nMUST COMMUNICATE: 왼쪽: 반듯하고 규칙적인 격자 모양 도구가 하나의 둥근 결과(회사)로 모인다; 오른쪽: 더 다양하고 자유로운 모양의 도구가 또 다른 둥근 결과(회사)로 모인다; 두 결과 모두 같은 종류의 목표(둥근 모양)로 이어지지만, 그 결과에 이르는 도구의 생김새는 다르다\nMUST NOT INCLUDE: 글자, 라벨, 범례; 로봇 얼굴, 뇌+회로 같은 AI 상투적 이미지 (editorial/profiles/brand/suengj-com.v1.json topic_cliche_rejection.ai_agents); 원문의 결론을 사실처럼 단정하는 표현(애초에 텍스트가 없으므로 이 위험 자체가 구조적으로 낮음)\nCOMPOSITION: One central structure or bounded metaphor with a small number of satellite modules and sparse connectors (DIAGRAMMATIC-VISUAL-LANGUAGE.md §5.1).\nAUDIENCE (child-upper-elementary): Use a literal, concrete depiction rather than a symbolic or schematic encoding; low abstraction (audience/child-upper-elementary.json modality_effects.visual: abstraction low).\nTEXT POLICY: no_text\nBRAND (suengj-com@1.0.0): background warm off-white / cream, primary muted forest / sage green — the structural identity color, not a saturation effect, accent restrained sand / camel — accent only, never a second dominant palette",
+  "compiled_from": [
+    "editorial/profiles/artifact/visual-concept-illustration.json",
+    "suengj-com@1.0.0",
+    "editorial/profiles/audience/child-upper-elementary.json",
+    "semantic_spec",
+    "selected_reference_traits"
+  ]
+}

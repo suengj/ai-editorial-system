@@ -1,0 +1,96 @@
+{
+  "schema_version": "1.0.0",
+  "job_id": "job:sue570-pilot-bonds-news-timeline",
+  "intent_ref": "intent:2026-09-05-sue570-pilot-bonds-news",
+  "calibration_ref": null,
+  "article_ref": {
+    "article_id": "art:sue570-pilot-bonds-news",
+    "version_number": 1,
+    "content_hash": "cab120b72b7e100c0036319eb1e8c05c32732bd58948476f45534a6327ad0ad2",
+    "claims_hash": "29389902f394747117c4e2677fa2cb789db95de43329875ba68d51a6884c048b"
+  },
+  "artifact_profile": "visual/evidence-visual",
+  "profile_ref": "editorial/profiles/artifact/visual-evidence-visual.json",
+  "audience": {
+    "value": "general-reader",
+    "profile_ref": "editorial/profiles/audience/general-reader.json",
+    "traits_applied": [
+      "legend always shown, in plain language",
+      "expand every acronym in-frame on first appearance (10Y spelled out in the accompanying caption)"
+    ]
+  },
+  "semantic_spec": {
+    "question": "Did Japan's and the US's 10-year yields move the same way between the article's publication date and the reverification date?",
+    "must_communicate": [
+      "Japan 10Y fell back below 3% over 2026-09-01 to 2026-09-05",
+      "US 10Y stayed close to its 2026-09-01 level through 2026-09-05",
+      "the divergence between the two series is the point, not either series alone"
+    ],
+    "must_not_include": [
+      "any value not reverified on 2026-09-05 or sourced from the canonical article's own footnoted figure",
+      "a single current-tense number without its retrieval date"
+    ]
+  },
+  "information_gain": {
+    "adjacent_representation": {
+      "type": "prose",
+      "summary": "The draft's lead paragraph states in prose that Japan's yield reverted below 3% while the US yield held near its 2026-09-01 level, citing the same reverified numbers."
+    },
+    "redundancy_test": {
+      "q1_new_perception": "The reader can see the shape of the divergence — Japan sloping down, US roughly flat — across five actual days, not just read the two endpoint numbers restated in prose.",
+      "q2_harder_without_it": "Without the chart, a reader has to hold four separate numbers (JP 9/1, JP 9/5, US 9/1, US 9/5) in their head to see that one line moved and the other did not; the chart makes that comparison a single glance.",
+      "q3_merely_recreates": false,
+      "q4_worth_the_interruption": true
+    },
+    "gain_type": ["evidence", "comparison", "temporalization"],
+    "integration_strategy": "add",
+    "verdict": "proceed"
+  },
+  "density_check": {
+    "profile_semantic_density": "high",
+    "profile_visual_density": "moderate",
+    "compiled_semantic_density": "high",
+    "compiled_visual_density": "moderate",
+    "match": true
+  },
+  "selected_reference_traits": {
+    "adopt": [],
+    "avoid": [],
+    "do_not_copy": []
+  },
+  "brand_profile": "suengj-com",
+  "brand_profile_version": "1.0.0",
+  "text_policy": "hybrid_template",
+  "renderer_route": "deterministic",
+  "renderer": {
+    "tool": "chart-renderer.mjs (control-plane scripts/lib/chart-renderer.mjs, renderChart, type: line)",
+    "tool_version": "1.0.0",
+    "provider": "in-house",
+    "model": "chart-renderer",
+    "model_version": "1.0.0"
+  },
+  "context_isolation": {
+    "permitted_inputs": [
+      "semantic_spec",
+      "artifact_profile",
+      "audience",
+      "selected_reference_traits",
+      "brand_profile"
+    ],
+    "excluded": [
+      "ambient_conversation",
+      "unrelated_project_state",
+      "prior_unrelated_jobs",
+      "renderer_runtime_identity"
+    ]
+  },
+  "attempts": 3,
+  "max_attempts": 3,
+  "qa": {
+    "performed": true,
+    "information_gain_recheck": "pass",
+    "density_recheck": "pass",
+    "notes": "Honest gap: brand_profile is recorded as 'suengj-com' by convention (editorial/profiles/brand/suengj-com.v1.json's declared id/version) but the brand axis's specific token set (palette, chrome level) was not actually resolved into this job's compiled spec -- the SVG uses currentColor only, which is theme-safe but is a minimal-fit shortcut, not a full brand-axis resolution. Recorded here rather than silently claiming full brand compliance; see 06-feedback for the routing note this produces. Actual asset inspection (attempt 1): with y-axis min/max 2.5-5.0, chart-renderer's fixed toFixed(0) tick formatter produced duplicate '3%'/'4%' gridline labels because the five evenly-spaced tick values rounded to the same integers -- a real renderer defect surfaced by inspecting the rendered SVG, not a hypothetical. Fixed by widening y.min/y.max to 2/6 so all five gridlines round to distinct integers (2/3/4/5/6%); this is a renderer-input choice within this job's own compiled spec, not a change to chart-renderer.mjs itself. Attempt 2 SVG (public/media/images/sue570-pilot/news-jp-us-10y-divergence.svg) was recorded at this point as inspected at 2474 bytes: five distinct gridlines, two dash-differentiated series (no color-only distinction), title/desc carry retrieval date, no horizontal overflow at the 720x360 viewBox. That recorded byte count (2474 B) did not match the file actually shipped (2712 B) -- the inspection note was written against a pre-final draft of the render and never reconciled against what was committed. Routed to the renderer layer per docs/architecture/V2-EDITORIAL-LEARNING-CORE.md §5, not silently retried without recording the defect.\n\nCORRECTION (independent review, 2026-09-05, post-publish): the shipped 2712-byte attempt-2 SVG plotted a fourth x-position (x=696, the '2026-09-05' tick) on both series. For the US 10Y series this point was y=126.72, decoding to approximately 4.77% -- a value that appears nowhere in verification-record.json, in any draft, or in any source; it sits at roughly the midpoint of the drafts' '4.76~4.78%' range and was never itself observed or reverified. This violated this job's own semantic_spec.must_not_include ('any value not reverified on 2026-09-05'). Independent review caught this before the pilot's findings were finalized. Attempt 3 (current, accepted) drops the fourth x-position entirely and plots only the three dated, reverified observations (2026-09-01, 2026-09-03, 2026-09-04), each value matching verification-record.json exactly (JP: 3.00% / 2.96% / 2.90%; US: 4.796% / 4.78% / 4.76%); the x-axis now ends at 9/4 rather than implying a 9/5 observation that was never taken. The corrected SVG is 3243 bytes. This correction is recorded rather than overwriting the attempt-2 history above, per the pilot's rule that a caught error is itself evidence worth keeping."
+  },
+  "status": "accepted"
+}

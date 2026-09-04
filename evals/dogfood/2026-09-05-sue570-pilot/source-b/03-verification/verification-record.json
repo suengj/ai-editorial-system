@@ -1,0 +1,112 @@
+{
+  "schema_version": "1.0.0",
+  "record_id": "verify:2026-09-05-sue570-pilot-bonds",
+  "governed_by": "skills/verify-claims/SKILL.md",
+  "subject": {
+    "canonical_source": "content/views/japan-us-global-bond-selloff.md",
+    "canonical_source_date": "2026-09-02",
+    "current_date": "2026-09-05",
+    "note": "Every time-sensitive market-state claim below is 3 days stale relative to the current date at write time. verify-claims.SKILL.md requires fresh retrieval for any time-sensitive claim and refuses to fall back to the stale source alone; this record is that fresh retrieval, performed once and shared across all three Source B variants (news/report/child) rather than repeated per variant."
+  },
+  "method": {
+    "tools": ["WebSearch", "WebFetch"],
+    "retrieved_at": "2026-09-05",
+    "notes": "Four claims were checked via WebSearch against aggregator quote pages (TradingEconomics, CNBC); one claim (long US corporate OAS) was checked via WebFetch directly against FRED's own CSV endpoint (fredgraph.csv?id=BAMLC8A0C15PY) to get a primary-source last-observation value rather than a paraphrased aggregator summary."
+  },
+  "claims": [
+    {
+      "claim_id": "v1",
+      "text": "Japan's 10-year government bond yield exceeded 3% on 2026-09-01 for the first time since 1996.",
+      "class": "time-sensitive",
+      "canonical_value": "3% 돌파 (2026-09-01)",
+      "verification_method": "WebSearch",
+      "evidence": [
+        {
+          "url": "https://tradingeconomics.com/japan/government-bond-yield",
+          "title": "Japan 10 Year Government Bond Yield",
+          "retrieved_at": "2026-09-05"
+        }
+      ],
+      "reverified_value": "Fell to approximately 2.90% on the session reported as 2026-09-04, having already pulled back from approximately 2.96% the prior session (~2026-09-03) -- second consecutive down session from the >3% peak.",
+      "verdict": "moved",
+      "rationale": "The claim was true at its stated date but is no longer true as a present-tense statement 3 days later. This is reported as news (the level moved), not silently restated as still-current, and not treated as invalidating the canonical source's own dated claim."
+    },
+    {
+      "claim_id": "v2",
+      "text": "US 10-year Treasury yield was near 4.80% (specifically 4.796%, per Reuters) on 2026-09-01.",
+      "class": "time-sensitive",
+      "canonical_value": "4.796% (2026-09-01, Reuters)",
+      "verification_method": "WebSearch",
+      "evidence": [
+        {
+          "url": "https://tradingeconomics.com/united-states/government-bond-yield",
+          "title": "US 10 Year Treasury Note Yield",
+          "retrieved_at": "2026-09-05"
+        }
+      ],
+      "reverified_value": "Held around 4.76% on the session reported as 2026-09-04; 4.78% on the session reported as 2026-09-03.",
+      "verdict": "confirmed",
+      "rationale": "Within about 2 basis points of the original figure across 3-4 days -- effectively unchanged, restated with a fresh retrieval date rather than reusing the 2026-09-01 figure as if freshly observed."
+    },
+    {
+      "claim_id": "v3",
+      "text": "US 30-year Treasury yield was in the 5% range on 2026-09-01.",
+      "class": "time-sensitive",
+      "canonical_value": "5%대 (2026-09-01)",
+      "verification_method": "WebSearch",
+      "evidence": [
+        {
+          "url": "https://www.cnbc.com/quotes/US30Y",
+          "title": "U.S. 30 Year Treasury (US30Y)",
+          "retrieved_at": "2026-09-05"
+        }
+      ],
+      "reverified_value": "Approximately 5.24-5.27% on sessions reported as 2026-09-02/09-03.",
+      "verdict": "confirmed",
+      "rationale": "Still squarely in the 5% range; the canonical source's qualitative claim ('5%대') holds under reverification."
+    },
+    {
+      "claim_id": "v4",
+      "text": "Brent crude was near $95/barrel on 2026-09-01.",
+      "class": "time-sensitive",
+      "canonical_value": "약 $95 (2026-09-01)",
+      "verification_method": "WebSearch",
+      "evidence": [
+        {
+          "url": "https://tradingeconomics.com/commodity/brent-crude-oil",
+          "title": "Brent oil",
+          "retrieved_at": "2026-09-05"
+        }
+      ],
+      "reverified_value": "$95.23 on the session reported as 2026-09-04; slightly above $96 on the session reported as 2026-09-03.",
+      "verdict": "confirmed",
+      "rationale": "Held in the same $95-96 band across 3-4 days."
+    },
+    {
+      "claim_id": "v5",
+      "text": "Long-maturity (15Y+) US investment-grade corporate credit spreads (OAS) were around 1% at end-August 2026, and had not widened materially, supporting a term-premium-repricing (not credit-crisis) reading.",
+      "class": "time-sensitive",
+      "canonical_value": "약 1% (2026년 8월 말)",
+      "verification_method": "WebFetch (FRED CSV endpoint, direct primary-source retrieval)",
+      "evidence": [
+        {
+          "url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=BAMLC8A0C15PY",
+          "title": "ICE BofA 15+ Year US Corporate Index Option-Adjusted Spread (BAMLC8A0C15PY) -- raw CSV",
+          "retrieved_at": "2026-09-05"
+        }
+      ],
+      "reverified_value": "1.01 (2026-08-31), 1.02 (2026-09-01), 1.03 (2026-09-02), 1.03 (2026-09-03) -- last four observations in the series as of retrieval.",
+      "verdict": "confirmed",
+      "rationale": "This is the single most load-bearing claim in the Report variant's spine (term-premium repricing vs. credit crisis). It is not only confirmed but strengthened: three additional trading days show the spread essentially flat at ~1%, while Treasury yields (v2, v3) stayed elevated over the same window -- exactly the 'Treasury yield up + spread stable = discount-rate shock' pattern the canonical source's own diagnostic table names. This claim was checked against FRED's primary CSV rather than an aggregator summary, per verify-claims.SKILL.md step 4 (primary and official evidence weighted above derivative commentary where a primary source exists)."
+    }
+  ],
+  "contradictions": [],
+  "overall_finding": "Four of five time-sensitive claims are confirmed essentially unchanged 3-4 days after the canonical source's publication date. One (Japan 10Y) has moved and is reported as such rather than restated as current. No claim was verified against a stale source alone, and no claim is asserted in the present tense in any of the three drafts without its own retrieval date attached.",
+  "no_restatement_check": {
+    "rule": "Never restate a stale number in the present tense as though it had been freshly checked.",
+    "original_audit": "Grepped all three published drafts (sue570-pilot-bonds-news.md, sue570-pilot-bonds-report.md, sue570-pilot-bonds-child.md) for every reverified figure: each instance of a 2026-09-01/09-02 figure is paired in the same sentence or adjacent sentence with its 2026-09-05 reverified figure and an explicit date. No draft asserts a 2026-09-01 figure alone as a present-tense 'is' statement.",
+    "original_result": "pass",
+    "result": "failed as originally claimed -- amended after independent review found the miss, then corrected",
+    "amended_audit": "AMENDED (independent review, 2026-09-05, post-publish): the original grep-based audit missed one instance. sue570-pilot-bonds-child.md contained the sentence '그런데 이제 일본 이자율도 3%까지 올라가니까...' -- present tense ('이제 ... 올라가니까', roughly 'now that the rate has risen to 3%') restating the stale 2026-09-01 3%-breach figure as current, ten lines after the same draft correctly states the reverified 2.9%-range figure. This is exactly the pattern this check exists to catch, and the original audit did not catch it; independent review did. The sentence has been corrected in the draft to unambiguous past tense ('일본 이자율도 3% 가까이 올라갔으니까'). The original 'pass' claim above (now 'original_result') is left in place rather than deleted, so the record shows both what the audit claimed and what was actually found. An audit that claims an exhaustive check and misses the one hit it exists to catch is a worse failure than the hit itself, and is recorded as such here."
+  }
+}

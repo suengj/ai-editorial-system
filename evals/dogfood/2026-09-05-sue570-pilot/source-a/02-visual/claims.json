@@ -1,0 +1,21 @@
+{
+  "source": "content/views/companies-become-like-the-tools-they-use.md",
+  "claims": [
+    {
+      "id": "c1",
+      "text": "스프레드시트가 계산을 프로그래밍 가능하게 만들었다면, AI는 업무 자체를 프로그래밍 가능한 대상으로 만들고 있다.",
+      "kind": "interpretation"
+    },
+    {
+      "id": "c2",
+      "text": "AI로 관리 범위가 넓어지면 조직은 더 flat해지는 동시에 더 centralized해질 수 있다.",
+      "kind": "interpretation"
+    },
+    {
+      "id": "c3",
+      "text": "AI가 스프레드시트보다 반드시 더 환원주의적인 조직을 만든다고 볼 이유는 없다.",
+      "kind": "interpretation"
+    }
+  ],
+  "note": "No new claims were introduced by any of the three source-a variants (news/report/child). All three carry forward exactly these three claims from the canonical, already-published source, unmodified, still kind: interpretation. This file's sha256 is used as article_ref.claims_hash on all three visual-job records for that reason — the claim set they are scoped to is identical."
+}

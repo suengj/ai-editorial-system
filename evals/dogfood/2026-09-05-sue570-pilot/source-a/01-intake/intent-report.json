@@ -1,0 +1,77 @@
+{
+  "schema_version": "2.0.0",
+  "intent_id": "intent:2026-09-05-sue570-pilot-source-a-report",
+  "created_at": "2026-09-05T00:00:00Z",
+  "request": {
+    "utterance": "SUE-570 파일럿: 같은 글을 실무자용 분석 글로 재구성해줘. 원문의 counterarguments를 정면으로 다루고, 메커니즘과 근거를 밀도 있게 보여줘. suengj.com 편집 레인 초안.",
+    "language": "ko",
+    "received_by": "claude-code",
+    "received_at": "2026-09-05T00:00:00Z"
+  },
+  "axes": {
+    "transformation": {
+      "value": "recreate",
+      "state": "confirmed",
+      "profile_ref": "editorial/profiles/transformation/recreate.json",
+      "basis": "utterance asks the argument to be rebuilt with a new structure (mechanism decomposition, explicit mapping table, counterargument-by-counterargument engagement) rather than merely reworded — recreate, not rewrite; per recreate.json must_preserve, the underlying claims (c1/c2/c3) and their stated uncertainty are carried forward unchanged."
+    },
+    "content_type": {
+      "value": "research",
+      "state": "confirmed",
+      "profile_ref": "editorial/profiles/content/research.json",
+      "basis": "utterance asks for an evidence-first analysis answering a stated question, matching research.json's intent; its required_frame_fields (thesis, source_weighting, verification_needs, uncertainty) and its explicit demand to confront counterargument/boundary evidence fit research.json's evidence_burden.min_source_roles including 'contradicting' directly."
+    },
+    "audience": {
+      "value": "domain-practitioner",
+      "state": "confirmed",
+      "profile_ref": "editorial/profiles/audience/domain-practitioner.json",
+      "basis": "utterance says \"실무자용\" (for practitioners) directly naming the audience; high jargon_tolerance is used to keep the source's own technical vocabulary (span of control, shadow IT, Goal/Task/Context/Tool/Permission/Evaluation/Agent) unglossed.",
+      "traits": {
+        "expertise": "practitioner",
+        "attention_context": "reading",
+        "jargon_tolerance": "high"
+      }
+    },
+    "surface": {
+      "value": "suengj-com",
+      "state": "confirmed",
+      "profile_ref": "editorial/profiles/surface/suengj-com.json",
+      "basis": "utterance says \"suengj.com 편집 레인\" naming the publication surface directly."
+    },
+    "artifacts": [
+      {
+        "value": "text/article",
+        "state": "confirmed",
+        "basis": "utterance asks for a written analysis; text/article is the planned text-artifact id in editorial/profiles/axes.json."
+      },
+      {
+        "value": "visual/body-infographic",
+        "state": "confirmed",
+        "profile_ref": "editorial/profiles/artifact/visual-body-infographic.json",
+        "basis": "the research register's higher information density and explicit engagement with the source's counterarguments call for a multi-module synthesis (mechanism, authority shift, the flat-vs-centralized interpretation, and the understand-vs-delegate tension) — matches body-infographic's 'high semantic density, low visual density, 2-4 modules, one reading path' target directly, unlike the single-relationship explanatory-diagram used for the news variant.",
+        "count": 1
+      }
+    ]
+  },
+  "inputs": {
+    "sources": [
+      {
+        "source_id": "src:repo:content/views/companies-become-like-the-tools-they-use.md",
+        "state": "confirmed",
+        "note": "The canonical, already-published (status: published) source. Not modified by this pilot. answer.claims (c1, c2, c3, kind: interpretation) is the factual-integrity baseline; counterarguments front matter block is treated as real material to engage, per the task brief."
+      }
+    ],
+    "references": []
+  },
+  "constraints": {
+    "output_language": "ko"
+  },
+  "overrides": [],
+  "clarification": {
+    "required": [],
+    "asked": [],
+    "resolution": "proceeded"
+  },
+  "calibration_ref": null,
+  "status": "ready"
+}

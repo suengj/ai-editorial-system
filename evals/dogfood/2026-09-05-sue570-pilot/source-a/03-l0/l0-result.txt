@@ -1,0 +1,67 @@
+L0 gate results — SUE-570 pilot, Source A, 2026-09-05
+Command: node scripts/check-quality-gates.mjs --bundle <bundle-*.json> --type <content_type> <draft.md>
+Bundles are minimal hand-built article-bundle wrappers (bundle-news.json, bundle-report.json,
+bundle-child.json in this directory) supplying only `article.content_type` and
+`article.frame.uncertainty` — both quoting real, already-written sentences from the drafts —
+because these three pilot pieces are recreations/adaptations of an already-published canonical
+source, not fresh output of the frame-article/write-article pipeline, so no full V1
+Article Frame exists for them. Running the gate on the raw .md file with no bundle at all
+always REJECTs on uncertainty-present (frame is undefined, so `frame?.uncertainty?.length > 0`
+is always false) regardless of how much uncertainty the prose actually states — this is a
+structural gap in check-quality-gates.mjs, not a defect in the drafts, and is noted here as a
+feedback candidate. CORRECTION (independent review, 2026-09-05): this previously pointed at
+../05-feedback/, a directory that does not exist and was never created. Only two feedback
+candidates from this pilot were actually persisted as feedback records, and this bundle-requirement
+observation is not one of them -- see feedback/records/sue570-pilot-source-a-adapt-axis-scope-2026-09-05.json
+and feedback/records/sue570-pilot-source-a-body-infographic-module-count-2026-09-05.json for the
+two that were. This observation remains recorded only in this L0 result file.
+
+--- News (content_type: news, general-reader, recreate) ---
+gates: REVIEW (2 findings)
+  [flag] overclaim — matched "반드시"
+    Real but a false positive: "반드시" appears inside a negated interpretive claim carried
+    forward from the canonical source ("...만든다고 볼 이유는 없다" — "there is no reason it
+    must necessarily..."), not as an unhedged certainty assertion. The keyword-pattern gate
+    does not parse negation scope.
+  [flag] evidence-density — 23% of paragraphs carry a number/date/citation (floor 30% for news)
+    Real: this news brief is argument-relevance-led by design (no fabricated news peg per the
+    task brief), so it carries fewer numbers/dates than an event-led news piece would.
+  No reject-severity finding.
+
+--- Report (content_type: research, domain-practitioner, recreate) ---
+gates: REVIEW (2 findings)
+  [flag] overclaim — matched "반드시" (same false-positive pattern as News, same source claim c3)
+  [flag] evidence-density — 35% of paragraphs carry a number/date/citation (floor 40% for research)
+    Real: below the research floor. The report is dense in argument structure (two tables, a
+    4-step mechanism, per-counterargument analysis) but this pilot introduced no new verified
+    facts (recreate/adapt forbid or gate new claims), so it cannot manufacture new
+    number/date/citation-bearing paragraphs to clear a floor calibrated against fact-finding
+    research pieces.
+  No reject-severity finding.
+
+--- Child (content_type: news [proxy — no "explainer" content-type profile exists in
+    editorial/profiles/content/ as of this run], child-upper-elementary, adapt) ---
+gates: REVIEW (2 findings)
+  [flag] overclaim — matched "반드시" (same false-positive pattern)
+  [flag] evidence-density — 24% of paragraphs carry a number/date/citation (floor 30%, news
+    profile used as the nearest proxy)
+    Real, and arguably a mismatched floor: a child explainer that leans on concrete analogies
+    (classroom, pocket money) rather than numbers/dates is being measured against a floor
+    calibrated for adult news writing. Recorded as a feedback candidate — content_type axis has
+    no "explainer"/"note-for-child" profile with its own evidence_density_floor.
+  No reject-severity finding.
+
+Summary: 0/3 REJECT, 3/3 REVIEW. No draft passed clean. This is disclosed honestly per the
+task's instruction that a pilot where everything passes first time is less credible, not more.
+Two genuine, disclosed gate-mechanics issues were found (not fabricated): (1) the overclaim
+gate's "반드시" pattern does not parse negation, producing a false positive on all three drafts
+because they all carry forward the same source claim (c3); (2) check-quality-gates.mjs run
+without a --bundle always rejects G-11 uncertainty-present regardless of prose content, which
+would have produced a false REJECT for all three drafts had minimal bundles not been hand-built
+for this run. CORRECTION (independent review, 2026-09-05): this previously said both were
+"routed to ../05-feedback/", a directory that does not exist and was never created. Neither of
+these two gate-mechanics issues was actually persisted as a feedback record; they remain
+recorded only here. The two feedback candidates from this pilot that were persisted are the
+transformation/adapt axis-scope question and the visual/body-infographic module-count ambiguity
+-- see feedback/records/sue570-pilot-source-a-adapt-axis-scope-2026-09-05.json and
+feedback/records/sue570-pilot-source-a-body-infographic-module-count-2026-09-05.json.

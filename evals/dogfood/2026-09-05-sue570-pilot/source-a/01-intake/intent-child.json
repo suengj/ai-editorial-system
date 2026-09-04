@@ -1,0 +1,78 @@
+{
+  "schema_version": "2.0.0",
+  "intent_id": "intent:2026-09-05-sue570-pilot-source-a-child",
+  "created_at": "2026-09-05T00:00:00Z",
+  "request": {
+    "utterance": "SUE-570 파일럿: 같은 글을 10~12살 아이가 읽을 수 있게 설명글로 각색해줘. 지식 수준은 낮추되 '이건 확실한 사실이 아니라 생각'이라는 부분은 절대 지우지 마. 그림 하나, 글자 없이.",
+    "language": "ko",
+    "received_by": "claude-code",
+    "received_at": "2026-09-05T00:00:00Z"
+  },
+  "axes": {
+    "transformation": {
+      "value": "adapt",
+      "state": "confirmed",
+      "profile_ref": "editorial/profiles/transformation/adapt.json",
+      "basis": "utterance asks to re-render an existing piece for a different reader/reading level rather than synthesize new material — same sense used in schemas/examples/intent-child-explainer.example.json. Recorded honestly: adapt.json's own definition and typical examples center on cross-medium modality change (text to audio/slides); this run applies it to a same-medium (text-to-text), age-driven complexity change instead. This tension is recorded as a feedback candidate at feedback/records/sue570-pilot-source-a-adapt-axis-scope-2026-09-05.json, not silently resolved here. (CORRECTION, independent review, 2026-09-05: this previously pointed at evals/dogfood/2026-09-05-sue570-pilot/source-a/05-feedback/, a directory that does not exist and was never created.)"
+    },
+    "content_type": {
+      "value": "note",
+      "state": "assumed",
+      "profile_ref": "editorial/profiles/content/note.json",
+      "basis": "a short child-facing explainer derived from one existing published piece carries a lighter evidence burden than the source's own content type (view); note.json fits and nothing in the utterance argues for a heavier content type. Mirrors schemas/examples/intent-child-explainer.example.json's same resolution."
+    },
+    "audience": {
+      "value": "child-upper-elementary",
+      "state": "confirmed",
+      "profile_ref": "editorial/profiles/audience/child-upper-elementary.json",
+      "basis": "utterance says \"10~12살\" (ages 10-12) explicitly, matching audience/child-upper-elementary.json's stated age range exactly — the named profile per docs/architecture/V2-EDITORIAL-LEARNING-CORE.md §12, not a softened adult preset.",
+      "traits": {
+        "expertise": "novice",
+        "attention_context": "study",
+        "jargon_tolerance": "none",
+        "life_stage": "child, roughly ages 10-12 (upper elementary)"
+      }
+    },
+    "surface": {
+      "value": "suengj-com",
+      "state": "assumed",
+      "profile_ref": "editorial/profiles/surface/suengj-com.json",
+      "basis": "no new destination was named; this pilot's own task brief places all three variants in the same suengj-com editorial draft lane as the news and report variants."
+    },
+    "artifacts": [
+      {
+        "value": "text/article",
+        "state": "confirmed",
+        "basis": "utterance asks for a rewritten explainer text; text/article is the planned text-artifact id in editorial/profiles/axes.json."
+      },
+      {
+        "value": "visual/concept-illustration",
+        "state": "confirmed",
+        "profile_ref": "editorial/profiles/artifact/visual-concept-illustration.json",
+        "basis": "utterance says \"그림 하나, 글자 없이\" (one picture, no text) — matches visual/concept-illustration.json's text_policy.profile: no_text and its explicit child-upper-elementary audience_adaptation calling for a literal, concrete depiction over schematic abstraction, unlike the body-infographic the audience profile flags as inappropriate by default for a genuinely child-targeted piece.",
+        "count": 1
+      }
+    ]
+  },
+  "inputs": {
+    "sources": [
+      {
+        "source_id": "src:repo:content/views/companies-become-like-the-tools-they-use.md",
+        "state": "confirmed",
+        "note": "The canonical, already-published (status: published) source. Not modified by this pilot. answer.claims (c1, c2, c3, kind: interpretation) is the factual-integrity baseline — the utterance's own constraint ('이건 확실한 사실이 아니라 생각'이라는 부분은 절대 지우지 마') restates exactly what recreate/adapt's must_preserve already requires: stated uncertainty is preserved even as knowledge level drops (audience/child-upper-elementary.json anti_patterns)."
+      }
+    ],
+    "references": []
+  },
+  "constraints": {
+    "output_language": "ko"
+  },
+  "overrides": [],
+  "clarification": {
+    "required": [],
+    "asked": [],
+    "resolution": "proceeded"
+  },
+  "calibration_ref": null,
+  "status": "ready"
+}

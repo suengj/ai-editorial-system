@@ -1,0 +1,109 @@
+{
+  "schema_version": "1.0.0",
+  "job_id": "job:sue570-pilot-source-a-report-infographic",
+  "intent_ref": "intent:2026-09-05-sue570-pilot-source-a-report",
+  "calibration_ref": null,
+  "article_ref": {
+    "article_id": "art:sue570-pilot-tools-report",
+    "version_number": 1,
+    "content_hash": "9db7677185376ce265f879c77d7bf884137b3afacd827ff8832f29af6750eae1",
+    "claims_hash": "b2c465073cef28fb49984004189a453c4c23116836533ee881700c039a63549a"
+  },
+  "artifact_profile": "visual/body-infographic",
+  "profile_ref": "editorial/profiles/artifact/visual-body-infographic.json",
+  "audience": {
+    "value": "domain-practitioner",
+    "profile_ref": "editorial/profiles/audience/domain-practitioner.json",
+    "traits_applied": [
+      "moderate label density with brief glossing on first use (per body-infographic's domain-practitioner audience_adaptation) — module internals use short domain phrases (표현/비교/시뮬레이션/최적화 대상화, Central IT/AI, Shadow IT → Shadow workflow) without a separate legend block"
+    ]
+  },
+  "semantic_spec": {
+    "question": "원문의 스프레드시트 메커니즘, 권한 이동, flat/centralized 해석, 이해-위임 긴장이라는 네 조각이 어떻게 하나의 미해결 질문으로 수렴하는가?",
+    "must_communicate": [
+      "메커니즘: 표현 → 비교 → 시뮬레이션 → 최적화 대상화",
+      "권한 이동: Central IT/AI → End-user 도구 → Shadow IT/workflow",
+      "핵심 해석(c2, 미검증): 관리 범위 확대가 조직을 flat하게 만들면서 동시에 centralized하게 만들 수 있음",
+      "반론이 만든 긴장: AI가 이해할 수 있는 것 ≠ AI에게 맡길 수 있는 것",
+      "네 조각이 하나의 결론이 아니라 미해결 질문(점선 상자)으로 수렴한다는 것"
+    ],
+    "must_not_include": [
+      "원문에 없는 새로운 실증 데이터나 사례",
+      "c2 또는 긴장을 해결된 결론처럼 실선 상자로 표시하는 것"
+    ]
+  },
+  "information_gain": {
+    "adjacent_representation": {
+      "type": "prose",
+      "summary": "The report draft states each of the four pieces in separate prose sections (mechanism table, mapping table, c2 discussion, counterargument discussion) but never shows all four converging on the same open question in one glance — a practitioner has to hold four sections in mind to see the convergence the draft's own closing paragraph asserts in one sentence."
+    },
+    "redundancy_test": {
+      "q1_new_perception": "The reader sees, in one image, that two independent argument lines (mechanism/authority-shift vs. the interpretive claim/tension) both terminate at the same unresolved question, rather than inferring that convergence from reading two separate sections and the closing paragraph.",
+      "q2_harder_without_it": "Without the diagram there is no single artifact showing that C and D are not resolved into the mechanism, i.e. that the report's own conclusion is genuinely open rather than a restated summary.",
+      "q3_merely_recreates": false,
+      "q4_worth_the_interruption": true
+    },
+    "gain_type": [
+      "comparison",
+      "framing",
+      "structure"
+    ],
+    "integration_strategy": "add",
+    "verdict": "proceed"
+  },
+  "density_check": {
+    "profile_semantic_density": "high",
+    "profile_visual_density": "low",
+    "compiled_semantic_density": "high",
+    "compiled_visual_density": "low",
+    "match": true
+  },
+  "selected_reference_traits": {
+    "adopt": [],
+    "avoid": [],
+    "do_not_copy": []
+  },
+  "brand_profile": "suengj-com",
+  "brand_profile_version": "1.0.0",
+  "text_policy": "hybrid_template",
+  "renderer_route": "hybrid",
+  "renderer": {
+    "tool": "chart-renderer.renderDiagram + hand-authored SVG",
+    "tool_version": "1.0.0",
+    "provider": "in-house",
+    "model": "chart-renderer.renderDiagram",
+    "model_version": "1.0.0"
+  },
+  "context_isolation": {
+    "permitted_inputs": [
+      "semantic_spec",
+      "artifact_profile",
+      "audience",
+      "selected_reference_traits",
+      "brand_profile"
+    ],
+    "excluded": [
+      "ambient_conversation",
+      "unrelated_project_state",
+      "prior_unrelated_jobs",
+      "renderer_runtime_identity"
+    ]
+  },
+  "attempts": 1,
+  "max_attempts": 1,
+  "qa": {
+    "performed": true,
+    "information_gain_recheck": "pass",
+    "density_recheck": "fail",
+    "notes": "Real steps taken, disclosed honestly: (1) scripts/lib/chart-renderer.mjs's renderDiagram() was actually run against a `type: flow` spec with 8 nodes and 7 edges (source: /tmp/report-diagram-spec.mjs, output archived at 02-visual/report-diagram.mmd) to establish the real topology. (2) visual/body-infographic.json's composition.supporting_modules_max is 4, but the raw topology has 8 nodes. This job's hand-authored SVG (public/media/images/sue570-pilot/tools-report-infographic.svg, 5567 bytes) collapses the 8 nodes into 4 top-level bordered modules (A mechanism, B authority-shift, C interpretation, D tension), each containing 2-4 internal short-label steps rather than being its own top-level module — an interpretation of 'module', not something the profile text states explicitly. GENUINE, DISCLOSED GATE FAILURE: the profile does not define whether 'module' means top-level box or leaf node, so this job cannot honestly claim a clean density_recheck pass against a criterion the profile text leaves ambiguous — density_recheck is recorded as 'fail' and status as 'qa_fail' rather than silently rounding an ambiguous case up to 'pass'. This is a real, disclosed gap, not a fabricated defect, and it is recorded at feedback/records/sue570-pilot-source-a-body-infographic-module-count-2026-09-05.json for a human calibration decision rather than resolved unilaterally here. (CORRECTION, independent review, 2026-09-05: this previously pointed at evals/dogfood/2026-09-05-sue570-pilot/source-a/05-feedback/, a directory that does not exist and was never created.) (3) Direct inspection of the rendered SVG confirms: 4 visually distinct bordered modules, one shared dashed-border convergence box explicitly styled differently (dashed, muted fill) from the four solid-border source modules so it reads as 'open question' rather than 'resolved answer'; viewBox 720x460 has no horizontal overflow at a ~390px scaled reading surface, though — as with the news job — true mobile-viewport rendering was not empirically tested, only reasoned about from the viewBox scale factor. (4) Renderer_route recorded as 'hybrid' for the same reason as the news job: renderDiagram() only emits Mermaid source, not a raster/vector file, and no generative image provider was available in this environment, so the final asset was hand-authored to the topology's node/edge structure rather than auto-rendered end to end."
+  },
+  "status": "qa_fail",
+  "compiled_prompt": "ARTIFACT: Body infographic / explanatory research graphic — Family B of SUENGJ-ARTICLE-IMAGE-FAMILIES.md. — Explain a mechanism, comparison, process, governance structure, boundary, sequence, or cross-section synthesis more efficiently than prose alone.\nQUESTION: 원문의 스프레드시트 메커니즘, 권한 이동, flat/centralized 해석, 이해-위임 긴장이라는 네 조각이 어떻게 하나의 미해결 질문으로 수렴하는가?\nMUST COMMUNICATE: 메커니즘: 표현 → 비교 → 시뮬레이션 → 최적화 대상화; 권한 이동: Central IT/AI → End-user 도구 → Shadow IT/workflow; 핵심 해석(c2, 미검증): 관리 범위 확대가 조직을 flat하게 만들면서 동시에 centralized하게 만들 수 있음; 반론이 만든 긴장: AI가 이해할 수 있는 것 ≠ AI에게 맡길 수 있는 것; 네 조각이 하나의 결론이 아니라 미해결 질문(점선 상자)으로 수렴한다는 것\nMUST NOT INCLUDE: 원문에 없는 새로운 실증 데이터나 사례; c2 또는 긴장을 해결된 결론처럼 실선 상자로 표시하는 것\nCOMPOSITION: One primary question, answered by 2-4 strong semantic modules, one explicit reading path, and a consequence/tension/output when needed (SUENGJ-ARTICLE-IMAGE-FAMILIES.md §4.2).\nAUDIENCE (domain-practitioner): Moderate label density with brief glossing on first use.\nTEXT POLICY: hybrid_template\nBRAND (suengj-com@1.0.0): background warm off-white / cream, primary muted forest / sage green — the structural identity color, not a saturation effect, accent restrained sand / camel — accent only, never a second dominant palette",
+  "compiled_from": [
+    "editorial/profiles/artifact/visual-body-infographic.json",
+    "suengj-com@1.0.0",
+    "editorial/profiles/audience/domain-practitioner.json",
+    "semantic_spec",
+    "selected_reference_traits"
+  ]
+}

@@ -41,6 +41,26 @@
       "subject_kind": "artifact",
       "subject_ref": "artifact:example-body-infographic-001",
       "verdict": "mixed"
+    },
+    {
+      "created_at": "2026-09-05T00:00:00Z",
+      "feedback_id": "feedback:sue570-pilot-source-a-adapt-axis-scope-2026-09-05",
+      "path": "feedback/records/sue570-pilot-source-a-adapt-axis-scope-2026-09-05.json",
+      "scope": "task_local",
+      "signal": "objective_quality",
+      "subject_kind": "article",
+      "subject_ref": "content/editorial/sue570-pilot-tools-child.md (suengj-com pub repo)",
+      "verdict": "mixed"
+    },
+    {
+      "created_at": "2026-09-05T00:00:00Z",
+      "feedback_id": "feedback:sue570-pilot-source-a-body-infographic-module-count-2026-09-05",
+      "path": "feedback/records/sue570-pilot-source-a-body-infographic-module-count-2026-09-05.json",
+      "scope": "task_local",
+      "signal": "objective_quality",
+      "subject_kind": "artifact",
+      "subject_ref": "evals/dogfood/2026-09-05-sue570-pilot/source-a/02-visual/visual-job-report.json",
+      "verdict": "mixed"
     }
   ],
   "schema_version": "1.0.0"

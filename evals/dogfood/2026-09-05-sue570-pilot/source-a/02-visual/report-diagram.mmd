@@ -1,0 +1,19 @@
+%% 스프레드시트 메커니즘과 AI 사상(mapping), 그리고 갈라지는 지점
+%% source: content/views/companies-become-like-the-tools-they-use.md 전체 구조 요약 (실무자용 분석)
+flowchart LR
+  repr["표현: 회사를 변수로"]
+  comp["비교"]
+  sim["시뮬레이션: What if 비용↓"]
+  opt["최적화 대상화"]
+  central["Central IT/AI"]
+  enduser["End-user spreadsheet/agent"]
+  shadow["Shadow IT → Shadow workflow"]
+  tension["긴장: 이해 가능 ≠ 위임 가능"]
+  repr --> comp
+  comp --> sim
+  sim -->|"(원문 c1의 유비 대상)"| opt
+  central -->|"권한 이동"| enduser
+  enduser -->|"통제 밖 확산"| shadow
+  opt --> tension
+  shadow --> tension
+

@@ -1,0 +1,89 @@
+{
+  "schema_version": "2.0.0",
+  "intent_id": "intent:2026-09-05-sue570-pilot-bonds-report",
+  "created_at": "2026-09-05T09:05:00Z",
+  "request": {
+    "utterance": "SUE-570 파일럿 Source B: 같은 canonical source(content/views/japan-us-global-bond-selloff.md, 2026-09-02)를 리포트 변형으로 recreate 해줘. 대상은 domain-practitioner, 표면은 suengj.com, editorial_product는 analysis. 원문의 핵심 구분 — credit crisis가 아니라 term premium repricing이며 그 근거는 신용스프레드가 벌어지지 않았다는 것 — 을 정확히 보존하고, 오늘(2026-09-05) 기준으로 신용스프레드와 금리 수치를 재확인해줘.",
+    "language": "ko",
+    "received_by": "claude-code",
+    "received_at": "2026-09-05T09:05:00Z"
+  },
+  "axes": {
+    "transformation": {
+      "value": "recreate",
+      "state": "confirmed",
+      "profile_ref": "editorial/profiles/transformation/recreate.json",
+      "basis": "utterance says \"리포트 변형으로 recreate 해줘\", and explicitly names what must survive (the term-premium-vs-credit-crisis distinction) — matching recreate.json's must_preserve (\"the underlying factual claims that remain in scope, and their attribution\")."
+    },
+    "content_type": {
+      "value": "research",
+      "state": "confirmed",
+      "profile_ref": "editorial/profiles/content/research.json",
+      "basis": "utterance asks for higher density, explicit mechanism/evidence, and caveats for a practitioner audience with editorial_product \"analysis\" — matches research.json's evidence-first intent more closely than news.json's event-led register, and recreate.json lists \"research\" as a typical_content_type."
+    },
+    "audience": {
+      "value": "domain-practitioner",
+      "state": "confirmed",
+      "profile_ref": "editorial/profiles/audience/domain-practitioner.json",
+      "basis": "utterance says \"대상은 domain-practitioner\" directly.",
+      "traits": {
+        "expertise": "practitioner",
+        "attention_context": "reading"
+      }
+    },
+    "surface": {
+      "value": "suengj-com",
+      "state": "confirmed",
+      "profile_ref": "editorial/profiles/surface/suengj-com.json",
+      "basis": "utterance says \"표면은 suengj.com\" directly."
+    },
+    "artifacts": [
+      {
+        "value": "text/article",
+        "state": "confirmed",
+        "basis": "utterance asks for a recreated written report; text/article is the planned text-artifact id, governed by article.schema.json (V1)."
+      },
+      {
+        "value": "visual/analytical-graphic",
+        "state": "confirmed",
+        "profile_ref": "editorial/profiles/artifact/visual-analytical-graphic.json",
+        "basis": "the article's central analytical move is a comparison across a 2x2 diagnostic condition (Treasury yield direction x credit-spread behavior) already present as a table in the canonical source; visual/analytical-graphic.json's primary_job (\"let the reader compare several states ... using aligned regions, matrices\") is the direct match, and its renderer_preference keeps the exact reverified OAS value deterministic.",
+        "count": 1
+      }
+    ]
+  },
+  "inputs": {
+    "sources": [
+      {
+        "source_id": "src:local:content/views/japan-us-global-bond-selloff.md",
+        "state": "confirmed",
+        "note": "Canonical source, publication repo suengj-com, type: view, status: published, date 2026-09-02. The diagnostic table (Treasury yield x credit spread -> discount-rate shock / financing stress / credit-and-growth shock) is the analytical spine to preserve precisely."
+      }
+    ],
+    "references": []
+  },
+  "constraints": {
+    "output_language": "ko"
+  },
+  "overrides": [
+    {
+      "field": "preserve_claim",
+      "value": "term-premium-repricing-not-credit-crisis, evidenced by stable credit spreads",
+      "rationale": "Task-specific override naming which single claim is most load-bearing and must survive recreate's structural freedom intact — recreate.json's must_preserve list already covers this generically; this override names the specific claim for this run so a reviewer can check it directly rather than inferring it.",
+      "stated_by": "upstream_contract"
+    },
+    {
+      "field": "freshness",
+      "value": "reverify_before_restate",
+      "rationale": "Same freshness override as the News intent for this pilot: today is 2026-09-05, three days after the canonical source; every present-tense market-state number must be reverified with a visible retrieval date, not merely carried forward.",
+      "stated_by": "upstream_contract"
+    }
+  ],
+  "clarification": {
+    "required": [],
+    "asked": [],
+    "resolution": "proceeded"
+  },
+  "calibration_ref": null,
+  "status": "ready"
+}
