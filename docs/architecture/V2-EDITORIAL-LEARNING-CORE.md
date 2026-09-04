@@ -538,7 +538,7 @@ document is missing.
 | AES-V2.3 (SUE-561) | reference + feedback registry | `references/`, `feedback/` |
 | AES-V2.4 (SUE-562) | modality-aware reference evaluation and selection | `skills/evaluate-reference/`, `editorial/profiles/reference/` |
 | AES-V2.5 (SUE-563) | failure routing and targeted tuning policy | `editorial/FEEDBACK-ROUTING.md` |
-| AES-V2.6 (SUE-564) | real-output corpus, comparative L1 reviewer | `evals/corpus/`, `skills/review-l1/` |
+| AES-V2.6 (SUE-564) | real-output corpus, comparative L1 reviewer | `evals/real-output-corpus/`, `skills/review-l1/` |
 | AES-V2.7 (SUE-565) | visual artifact profiles, brand tokens, prompt compilation | `editorial/profiles/artifact/`, `editorial/profiles/brand/` |
 | AES-V2.8 (SUE-566) | audience-aware spoken artifacts | `editorial/profiles/artifact/audio-*`, `skills/compile-audio-script/` |
 | AES-V2.9 (SUE-567) | transformation profiles, Editorial Package | `editorial/profiles/transformation/`, `schemas/editorial-package.schema.json` |

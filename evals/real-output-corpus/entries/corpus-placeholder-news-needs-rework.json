@@ -1,0 +1,24 @@
+{
+  "schema_version": "1.0.0",
+  "entry_id": "corpus:placeholder-news-needs-rework",
+  "content_type": "news",
+  "transformation": "recreate",
+  "language": "ko",
+  "audience": "professional-generalist",
+  "surface": "suengj-com",
+  "provenance_class": "owner_created",
+  "source_ref": {
+    "kind": "other",
+    "locator": "SYNTHETIC PLACEHOLDER — no real suengj.com article. Demonstrates a needs_rework entry ahead of the SUE-570 pilot."
+  },
+  "owner_verdict": "needs_rework",
+  "reference_eligible": false,
+  "dimensions": {
+    "strong": ["citation integrity"],
+    "weak": ["synthesis — walked the sources in publication order", "language-native prose — translated discourse skeleton"]
+  },
+  "failure_labels": ["source-tour", "translationese"],
+  "recorded_at": "2026-09-05T10:05:00Z",
+  "recorded_by": { "type": "human" },
+  "notes": "Placeholder entry. reference_eligible is false: a needs_rework verdict never qualifies for comparison-reference status regardless of any individual strong dimension."
+}

@@ -1,0 +1,25 @@
+{
+  "schema_version": "1.0.0",
+  "entry_id": "corpus:placeholder-view-unknown",
+  "content_type": "view",
+  "transformation": "adapt",
+  "language": "en",
+  "audience": "general-reader",
+  "surface": "newsletter",
+  "provenance_class": "owner_created",
+  "source_ref": {
+    "kind": "other",
+    "locator": "SYNTHETIC PLACEHOLDER — no real suengj.com article. Demonstrates the required unknown-verdict shape: silence is never read as acceptance."
+  },
+  "owner_verdict": "unknown",
+  "reference_eligible": false,
+  "reference_eligible_rationale": "No owner verdict has been expressed at all. Eligibility is withheld rather than inferred from publication or from the absence of complaint — see V2-EDITORIAL-LEARNING-CORE.md §11, 'Silence is not acceptance'.",
+  "dimensions": {
+    "strong": [],
+    "weak": []
+  },
+  "failure_labels": [],
+  "recorded_at": "2026-09-05T10:10:00Z",
+  "recorded_by": { "type": "agent", "agent": { "runtime": "claude-agent-sdk", "model": "claude-sonnet-5" } },
+  "notes": "Placeholder entry demonstrating that an agent may record an entry, but may never write anything but unknown into owner_verdict when the owner has not actually said."
+}

@@ -1,0 +1,26 @@
+{
+  "schema_version": "1.0.0",
+  "entry_id": "corpus:placeholder-generated-output-lineage",
+  "content_type": "research",
+  "transformation": "synthesize",
+  "language": "ko",
+  "audience": "domain-practitioner",
+  "surface": "suengj-com",
+  "provenance_class": "generated_output",
+  "lineage_ref": "lineage:frame-article@0.3.0+write-article@0.4.0",
+  "source_ref": {
+    "kind": "other",
+    "locator": "SYNTHETIC PLACEHOLDER — no real suengj.com article. Demonstrates a generated_output entry with a lineage_ref, used by the L1 anti-collapse test."
+  },
+  "owner_verdict": "accepted",
+  "reference_eligible": false,
+  "reference_eligible_rationale": "Accepted, but a generated_output from this system's own pipeline is not promoted to reference-quality by acceptance alone — promotion requires the protocol in references/REFERENCE-EVALUATION-PROTOCOL.md, which this entry deliberately does not carry.",
+  "dimensions": {
+    "strong": ["evidence density"],
+    "weak": ["voice-fit — a signature contrast construction repeated across paragraphs"]
+  },
+  "failure_labels": ["overapplied-voice"],
+  "recorded_at": "2026-09-05T10:15:00Z",
+  "recorded_by": { "type": "human" },
+  "notes": "Placeholder entry. Exists so an L1 review comparing only against generated_output entries sharing this lineage_ref must declare the anti-collapse condition rather than treat this as an independent standard."
+}

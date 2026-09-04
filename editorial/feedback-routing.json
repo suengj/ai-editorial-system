@@ -1,0 +1,490 @@
+{
+  "schema_version": "1.0.0",
+  "description": "Machine routing table for AES-V2.5 (SUE-563). Layer ids are the routing target vocabulary fixed by docs/architecture/V2-EDITORIAL-LEARNING-CORE.md §5. Prose contract: editorial/FEEDBACK-ROUTING.md. Engine: scripts/lib/routing-core.mjs. This table routes INTO schemas/feedback-record.schema.json's routing.layer / routing.modality_layer / scope fields; it does not redefine them.",
+  "layers": {
+    "shared": [
+      {
+        "id": "intake",
+        "group": "shared",
+        "owns": "The editorial intent was extracted wrongly from the natural-language request: the wrong transformation, content type, audience, surface, or artifact axis was inferred, or a confirmed value was silently overwritten by an assumption.",
+        "symptoms": [
+          "output answers a different transformation than the one requested",
+          "an axis is recorded assumed where the human actually confirmed it",
+          "a missing_material field was treated as safe to infer instead of raising clarification",
+          "the artifact axis (e.g. thumbnail vs body infographic) was read as a style request"
+        ],
+        "repair": "Correct the axis value on the Editorial Intent record for this task. If the same phrasing pattern misclassifies repeatedly, that pattern becomes calibration evidence for the intake heuristics — never a same-task prompt patch pretending to be a fix.",
+        "do_not": [
+          {
+            "target": "audience",
+            "note": "An intake misread (wrong artifact or transformation axis) is not the same failure as a correctly-extracted intent applied to the wrong audience profile. Fix the axis that was actually misread."
+          }
+        ],
+        "authority_class": 0,
+        "escalates_to": "calibration"
+      },
+      {
+        "id": "reference",
+        "group": "shared",
+        "owns": "The wrong reference was selected for craft evidence, or a selected reference was misread — treated as more applicable, more authoritative, or more current than its evaluation supports.",
+        "symptoms": [
+          "the reference is topically on-subject but visually or structurally nothing like what the surface actually publishes",
+          "a reference evaluation's applicable_to scope was ignored when the reference was selected",
+          "a reference was used as if it were a source (it dictated a fact, not a craft choice)",
+          "the same mismatch recurs for one content type or artifact class"
+        ],
+        "repair": "Append or correct a reference evaluation record under the validated protocol (references/REFERENCE-EVALUATION-PROTOCOL.md). This is the shared layer whose own default automatic repair already sits at class 2 — appending evaluation metadata is the normal fix, not an exception to it.",
+        "do_not": [
+          {
+            "target": "writing",
+            "trigger_keywords": [
+              "wrong reference", "reference (was|is) selected", "picked the wrong (example|reference)",
+              "reference (didn't|did not) match", "reference-selection", "reference lookup"
+            ],
+            "note": "A reference-selection failure must not become a content rule. Fixing the lookup that picked a bad reference is a reference-layer repair; writing a new prose rule to compensate for a bad reference is how the system accumulates rules for a lookup bug — see docs/architecture/V2-EDITORIAL-LEARNING-CORE.md §5, misroute 3."
+          }
+        ],
+        "authority_class": 2,
+        "escalates_to": "calibration"
+      },
+      {
+        "id": "audience",
+        "group": "shared",
+        "owns": "Audience fit was misjudged: depth, jargon tolerance, purpose framing, or attention budget did not match the profile the intent actually named.",
+        "symptoms": [
+          "explanation depth does not match the audience profile's domain-expertise trait",
+          "jargon is unglossed for a beginner-learner or glossed unnecessarily for a domain-expert",
+          "the output resolves a different decision than the audience's purpose/decision context calls for",
+          "length or segment granularity ignores the audience's attention-context trait"
+        ],
+        "repair": "Re-run generation against the correct audience profile trait for this task. A repeated mismatch for one audience profile across tasks is calibration evidence for that profile, not a per-task rewrite.",
+        "do_not": [
+          {
+            "target": "frame",
+            "note": "An audience-fit miss is about who the piece is for, not whether the thesis is worth arguing. Do not rewrite the argument to fix a depth or jargon mismatch."
+          }
+        ],
+        "authority_class": 0,
+        "escalates_to": "calibration"
+      },
+      {
+        "id": "frame",
+        "group": "shared",
+        "owns": "Thesis, argument path, or article-worthiness: no falsifiable position, a position the piece does not actually argue, or source order standing in for an argument.",
+        "symptoms": [
+          "no sentence carries a falsifiable thesis",
+          "the piece could be replaced by reading the sources in order",
+          "headings walk the source or repository topology component by component",
+          "the strongest counterargument is absent or answered only in a token paragraph",
+          "the piece reads correctly but demonstrates coverage instead of deciding what the reader needs"
+        ],
+        "repair": "Re-frame: state or restate the thesis and argument path before any prose is regenerated. This is the layer `frame-article` and the HITL `frame` stage exist to catch — see editorial/HITL-PROTOCOL.md.",
+        "do_not": [
+          {
+            "target": "polish",
+            "trigger_keywords": [
+              "no thesis", "no argument", "not worth (an article|writing)", "source[- ]tour",
+              "source order", "walks? the (source|repository)", "reads like documentation",
+              "sequential summary", "no falsifiable"
+            ],
+            "note": "A frame failure repaired in polish leaves the argument wrong while making it read better. This is the misroute docs/architecture/V2-EDITORIAL-LEARNING-CORE.md §5 names first."
+          }
+        ],
+        "authority_class": 0,
+        "escalates_to": "calibration"
+      },
+      {
+        "id": "verification",
+        "group": "shared",
+        "owns": "Factual support, freshness, or provenance: an unsupported material claim, an interpretation presented as verified, a stale time-sensitive claim, or a citation that resolves but does not support.",
+        "symptoms": [
+          "a citation resolves but does not support the claim beside it",
+          "an interpretation is marked or treated as a verified fact",
+          "a time-sensitive claim rests on a stale source",
+          "a material fact changed after a verification review with no re-verification recorded"
+        ],
+        "repair": "Route to verify-claims. A material correction after verification forces a new verification review per editorial/HITL-PROTOCOL.md — polish or any other stage may report the problem but may not fix it.",
+        "do_not": [
+          {
+            "target": "polish",
+            "note": "Polish may not resolve a factual problem by rewording around it; that is a verification-layer finding wearing a prose fix."
+          }
+        ],
+        "authority_class": 0,
+        "escalates_to": "calibration"
+      },
+      {
+        "id": "surface",
+        "group": "shared",
+        "owns": "Publication or destination constraint: the output does not fit the surface it targets — length, format, materialization, or a publication-profile rule.",
+        "symptoms": [
+          "the artifact violates a surface-specific constraint (length ceiling, format, renderer target)",
+          "the output would need reformatting before it could reach its declared surface",
+          "a surface-specific rule was applied to the wrong surface"
+        ],
+        "repair": "Fix the per-task materialization for this surface. A durable surface rule change is a publication-profile edit — class 5, evidence-backed review — never an automatic escalation from one task.",
+        "do_not": [
+          {
+            "target": "calibration",
+            "note": "A one-off surface mismatch is not evidence that the evaluator or the active calibration snapshot is wrong; it is evidence about this task's materialization."
+          }
+        ],
+        "authority_class": 0,
+        "escalates_to": "human_review"
+      },
+      {
+        "id": "calibration",
+        "group": "shared",
+        "owns": "The evaluator's judgement was wrong, or the currently active calibration snapshot itself no longer matches owner preference.",
+        "symptoms": [
+          "repeated independent evidence disagrees with what the active calibration snapshot currently encodes",
+          "an L1 or L0 verdict is contradicted by a human verdict on the same dimension across multiple tasks",
+          "the owner states the preference itself has changed, not that one output missed it"
+        ],
+        "repair": "Raise a DRIFT_CANDIDATE record (class 3, automatic). Only a human activates a new calibration version (class 4) — see docs/architecture/V2-EDITORIAL-LEARNING-CORE.md §6–§7 and AES-V2.10.",
+        "do_not": [
+          {
+            "target": "frame",
+            "note": "A single disliked output is evidence toward calibration, not license to rewrite this task's frame as if the house style itself had already changed."
+          }
+        ],
+        "authority_class": 3,
+        "escalates_to": "human_activation"
+      }
+    ],
+    "text": [
+      {
+        "id": "writing",
+        "group": "text",
+        "owns": "Prose execution: sentence-level clarity, rhythm, and density independent of whether the underlying argument is right.",
+        "symptoms": [
+          "a paragraph does not change what the reader knows or understands (constitution.md §9)",
+          "flow is uneven without any protected fact having moved",
+          "the prose is mechanically correct but empty or over-compressed"
+        ],
+        "repair": "Regenerate the affected passage. Writing-layer fixes never touch the thesis, a fact, or stated uncertainty — those are frame or verification findings.",
+        "do_not": [
+          { "target": "frame", "note": "Rewriting sentences does not fix a missing or wrong thesis; see the frame layer's own do_not." }
+        ],
+        "authority_class": 0,
+        "escalates_to": "calibration"
+      },
+      {
+        "id": "polish",
+        "group": "text",
+        "owns": "A polish-pass regression: rhythm, connective, or word-choice change that altered a protected span, or a translationese/formulaic surface the polish pass should have caught.",
+        "symptoms": [
+          "a protected span (number, date, citation, quotation, technical term) changed across a polish pass",
+          "translationese discourse scaffolding survives polish (editorial/voice.md §5, §12)",
+          "a signature rhetorical move is repeated until the house style becomes visible instead of the argument"
+        ],
+        "repair": "Re-run polish with the specific finding named. A protected-span change is always a defect, never a style choice — see `polish-invariants` (I-2, hard gate).",
+        "do_not": [
+          {
+            "target": "verification",
+            "note": "If removing a translationese pattern would require changing a protected span, polish has found a verification or terminology problem and must report it rather than silently rewrite it (editorial/voice.md, 'Protected against style-only rewrite')."
+          },
+          {
+            "target": "frame",
+            "trigger_keywords": [
+              "protected span", "translationese", "polish pass",
+              "repeated (rhetorical|signature) (move|construction)", "over-?applied (voice|signature)"
+            ],
+            "note": "A polish-shaped defect (a protected-span change, translationese, or an over-applied signature move) is not itself evidence that the thesis or argument path is wrong. Labelling it with the shared layer frame re-creates misroute 1 from the other direction: this is a prose-execution finding, not a frame finding. A genuine polish-only defect belongs at layer: null with modality_layer: \"polish\" — see editorial/FEEDBACK-ROUTING.md §1."
+          }
+        ],
+        "authority_class": 0,
+        "escalates_to": "calibration"
+      },
+      {
+        "id": "register",
+        "group": "text",
+        "owns": "Content-type register mismatch: a Research piece sounds like a translated paper, a Note borrows Research's evidence cadence, or one content type's register was imported into another.",
+        "symptoms": [
+          "the piece meets its profile's evidence burden but reads in the wrong register for that content type",
+          "the profile's `avoid` list is violated (editorial/profiles/content/*.json)",
+          "voice invariants are intact but the content-type-specific defaults are not"
+        ],
+        "repair": "Correct against the content-type profile's register defaults for this task. A durable register change is a content-type-profile edit — class 5, evidence-backed review.",
+        "do_not": [
+          { "target": "reference", "note": "A register mismatch is not evidence that the wrong reference was selected; check the profile before touching reference selection." }
+        ],
+        "authority_class": 0,
+        "durable_form_class": 5,
+        "escalates_to": "human_review"
+      }
+    ],
+    "visual": [
+      {
+        "id": "artifact_route",
+        "group": "visual",
+        "owns": "The wrong artifact class was chosen for this intent — e.g. a thumbnail request routed as a body infographic, or vice versa.",
+        "symptoms": [
+          "the artifact axis of the editorial intent does not match what was actually produced",
+          "information density or semantic load implied by the chosen artifact class does not fit the request"
+        ],
+        "repair": "Re-route to the correct artifact profile under editorial/profiles/artifact/. This is an intake-layer error surfacing at the visual pipeline, not a renderer or brand defect.",
+        "do_not": [
+          { "target": "renderer", "note": "A wrong artifact route is not a rendering defect; re-routing fixes it, re-rendering the same wrong route does not." }
+        ],
+        "authority_class": 0,
+        "escalates_to": "calibration"
+      },
+      {
+        "id": "semantic_spec",
+        "group": "visual",
+        "owns": "The visual's semantic specification does not carry the information the piece needs — wrong comparison chosen, wrong information gain, or a spec the image cannot honestly satisfy.",
+        "symptoms": [
+          "the visual does not add information beyond the prose (fails the information-gain gate)",
+          "the semantic spec asks for a comparison the underlying data cannot support",
+          "the visual argument does not match the article's thesis"
+        ],
+        "repair": "Rewrite the semantic spec before re-rendering. Cost ordering requires the semantic-spec gate to pass before image generation (§9).",
+        "do_not": [
+          { "target": "composition", "note": "A bad semantic spec produces a correctly-composed image of the wrong thing; fixing layout does not fix the spec." }
+        ],
+        "authority_class": 0,
+        "escalates_to": "calibration"
+      },
+      {
+        "id": "information_density",
+        "group": "visual",
+        "owns": "Too much or too little information for the audience's glance-time budget and label-density tolerance.",
+        "symptoms": [
+          "a legend is needed but absent, or present when the audience did not need one",
+          "the visual is cluttered past the audience's stated attention-context trait",
+          "acronyms are unexpanded for an audience that needed them expanded"
+        ],
+        "repair": "Adjust density against the audience profile's visual traits for this task.",
+        "do_not": [
+          { "target": "brand_profile", "note": "A density mismatch for one audience is not evidence the brand's default density should change." }
+        ],
+        "authority_class": 0,
+        "escalates_to": "calibration"
+      },
+      {
+        "id": "composition",
+        "group": "visual",
+        "owns": "Layout and arrangement: the composition does not clarify the semantic spec it was given, independent of brand tokens or rendering mechanics.",
+        "symptoms": [
+          "the reader cannot find the load-bearing comparison at a glance",
+          "composition fragments the visual argument instead of clarifying it",
+          "the layout is correct per brand tokens but wrong for this specific comparison"
+        ],
+        "repair": "Re-compose against the same semantic spec. A composition fix does not touch brand tokens.",
+        "do_not": [
+          { "target": "brand_profile", "note": "A single bad layout is a composition finding, not evidence the house style's layout rules are wrong." }
+        ],
+        "authority_class": 0,
+        "escalates_to": "calibration"
+      },
+      {
+        "id": "brand_profile",
+        "group": "visual",
+        "owns": "The house visual style itself — brand tokens, palette, type system, or the composition rules defined at the brand-profile level (editorial/profiles/brand/).",
+        "symptoms": [
+          "repeated, independent evidence across multiple tasks that the brand tokens themselves misfire",
+          "an explicit owner declaration that the house visual style should change"
+        ],
+        "repair": "A durable brand-profile change is a major profile edit: class 5, evidence-backed review. It is never justified by one render.",
+        "do_not": [
+          { "target": "renderer", "note": "Do not fix a single bad render by editing the brand profile; fix the render." }
+        ],
+        "authority_class": 0,
+        "durable_form_class": 5,
+        "escalates_to": "human_review"
+      },
+      {
+        "id": "renderer",
+        "group": "visual",
+        "owns": "A local, mechanical defect in one render — garbled text, a dropped element, a tool-specific artifact — that is not a defect in the spec, composition, or brand tokens it was given.",
+        "symptoms": [
+          "one render has a mechanical defect (garbled text, cropped element) that a re-render of the same spec would not reproduce",
+          "the defect is specific to the rendering tool or model version, not to the instructions it received"
+        ],
+        "repair": "Re-render from the same spec. If the same tool defect recurs across independent renders, that is calibration evidence for the renderer choice — still never a brand-profile change.",
+        "do_not": [
+          {
+            "target": "brand_profile",
+            "trigger_keywords": [
+              "renderer", "rendering", "one (render|image)", "this (specific )?(render|image)", "single render", "garbled", "cropped", "render(ed)? artifact"
+            ],
+            "note": "A renderer defect promoted to a brand-profile change rewrites the global visual style because of one bad render. See docs/architecture/V2-EDITORIAL-LEARNING-CORE.md §5, misroute 2."
+          }
+        ],
+        "authority_class": 1,
+        "escalates_to": "calibration"
+      }
+    ],
+    "audio": [
+      {
+        "id": "spoken_script",
+        "group": "audio",
+        "owns": "The spoken script's own argument or structure — not whether the recorded delivery lands it.",
+        "symptoms": [
+          "the script's argument path does not match the article's thesis",
+          "the script is a read-aloud transcript of prose rather than something written to be heard"
+        ],
+        "repair": "Rewrite the script structure against the frame. This precedes TTS per the cost ordering in §9: script L1 before TTS.",
+        "do_not": [
+          { "target": "delivery", "note": "A structurally wrong script does not become right through better delivery." }
+        ],
+        "authority_class": 0,
+        "escalates_to": "calibration"
+      },
+      {
+        "id": "dialogue_structure",
+        "group": "audio",
+        "owns": "Turn-taking and role assignment in a multi-voice script: who speaks, when, and whether the roles carry distinct functions.",
+        "symptoms": [
+          "one role does all the work and the other is decorative",
+          "turns do not advance the argument, only alternate speakers mechanically"
+        ],
+        "repair": "Rebalance roles against the script's argument path.",
+        "do_not": [
+          { "target": "pacing", "note": "A dialogue-structure problem is not fixed by changing how fast the (still wrong) turns are delivered." }
+        ],
+        "authority_class": 0,
+        "escalates_to": "calibration"
+      },
+      {
+        "id": "pronunciation",
+        "group": "audio",
+        "owns": "Term normalization for speech: a technical term, name, or number rendered incorrectly or ambiguously by TTS.",
+        "symptoms": [
+          "a domain term or proper name is mispronounced by the TTS voice",
+          "a number or unit is read in a way that changes its meaning"
+        ],
+        "repair": "Add or correct a pronunciation normalization entry. Recurrence across tasks for the same term is calibration evidence for the pronunciation lexicon.",
+        "do_not": [
+          { "target": "spoken_script", "note": "A pronunciation defect is not a script-structure problem; do not rewrite the script to avoid a term the lexicon should handle." }
+        ],
+        "authority_class": 1,
+        "escalates_to": "calibration"
+      },
+      {
+        "id": "pacing",
+        "group": "audio",
+        "owns": "Speed and segment length against the audience's attention-context trait.",
+        "symptoms": [
+          "segments run long past the audience's stated attention budget",
+          "pace does not match the audience's assumed-knowledge trait (too fast for a beginner, padded for an expert)"
+        ],
+        "repair": "Adjust segmentation and pace against the audience profile.",
+        "do_not": [
+          { "target": "delivery", "note": "Pacing is a script/segmentation property, not a performance quality; do not treat one as the other's fix." }
+        ],
+        "authority_class": 0,
+        "escalates_to": "calibration"
+      },
+      {
+        "id": "delivery",
+        "group": "audio",
+        "owns": "Performance quality of the rendered voice: tone, emphasis, and naturalness independent of what the script says.",
+        "symptoms": [
+          "flat or misplaced emphasis that a correct script still reads badly",
+          "tone mismatched to content type (e.g. News read as casual Note)"
+        ],
+        "repair": "Adjust delivery parameters for the same script and re-render.",
+        "do_not": [
+          { "target": "tts_render", "note": "A performance-quality complaint is not the same as a rendering/encoding defect; check which one is actually present before filing either." }
+        ],
+        "authority_class": 0,
+        "escalates_to": "calibration"
+      },
+      {
+        "id": "tts_render",
+        "group": "audio",
+        "owns": "A local, mechanical TTS rendering defect: dropped audio, encoding artifact, or tool-specific failure not present in the script or delivery parameters it was given.",
+        "symptoms": [
+          "one rendered file has an artifact a re-render of the same script and parameters would not reproduce",
+          "the defect is specific to the TTS engine or voice model, not to the script"
+        ],
+        "repair": "Re-render from the same script and delivery parameters.",
+        "do_not": [
+          { "target": "delivery", "note": "A one-off render defect is not evidence the delivery parameters are wrong." }
+        ],
+        "authority_class": 1,
+        "escalates_to": "calibration"
+      }
+    ]
+  },
+  "authority_matrix": {
+    "description": "The seven semantic write-authority classes from docs/architecture/V2-EDITORIAL-LEARNING-CORE.md §10. Keyed by mutation meaning, never by filename — a path can be renamed and the authority must survive the rename. This is the executable form of that ladder; the ladder itself is authoritative and cited, not restated.",
+    "classes": [
+      {
+        "class": 0,
+        "name": "task-local override",
+        "durable_mutation": "task-local override / draft or artifact correction",
+        "repository_effect": "none — lives in the intent record, expires with the task",
+        "authorization": "automatic"
+      },
+      {
+        "class": 1,
+        "name": "feedback or evaluation record append",
+        "durable_mutation": "feedback or evaluation record append",
+        "repository_effect": "append one record, rebuild index",
+        "authorization": "automatic"
+      },
+      {
+        "class": 2,
+        "name": "reference evaluation metadata",
+        "durable_mutation": "reference evaluation metadata",
+        "repository_effect": "append one record, rebuild index",
+        "authorization": "automatic under the validated protocol"
+      },
+      {
+        "class": 3,
+        "name": "calibration candidate",
+        "durable_mutation": "calibration candidate / DRIFT_CANDIDATE",
+        "repository_effect": "append a candidate; activates nothing",
+        "authorization": "automatic"
+      },
+      {
+        "class": 4,
+        "name": "calibration activation",
+        "durable_mutation": "activation of durable owner preference — a new current calibration version",
+        "repository_effect": "new version file with supersedes lineage",
+        "authorization": "explicit human intent; clarification when ambiguous"
+      },
+      {
+        "class": 5,
+        "name": "profile or core routing change",
+        "durable_mutation": "publication profile, core routing, or major profile change",
+        "repository_effect": "profile/router edit with cited evidence",
+        "authorization": "evidence-backed review"
+      },
+      {
+        "class": 6,
+        "name": "Constitution or SSOT boundary",
+        "durable_mutation": "Constitution, core invariants, SSOT boundary",
+        "repository_effect": "—",
+        "authorization": "explicit human authorization + independent Reviewer approval"
+      }
+    ],
+    "impossible_by_construction": [
+      "A feedback record's scope enum (task_local, calibration_candidate) structurally tops out at class 3. No feedback record can express class 4, 5, or 6 by itself — those require an act outside the record (human activation, evidence-backed review, or human authorization plus independent Reviewer).",
+      "A single feedback record naming class-4-or-above language in its statement or rationale (e.g. proposing a brand-profile, publication-profile, core-routing, register/content-type-profile, or Constitution change) is rejected by scripts/lib/routing-core.mjs regardless of scope or evidence_links — see the escalation-above-ceiling check."
+    ]
+  },
+  "misroutes": [
+    {
+      "id": "frame-to-polish",
+      "problem_layer": "frame",
+      "wrongly_routed_to": "polish",
+      "rationale": "The article stays wrong and reads better. See docs/architecture/V2-EDITORIAL-LEARNING-CORE.md §5, misroute 1."
+    },
+    {
+      "id": "renderer-to-brand-profile",
+      "problem_layer": "renderer",
+      "wrongly_routed_to": "brand_profile",
+      "rationale": "One bad render rewrites the house style. See docs/architecture/V2-EDITORIAL-LEARNING-CORE.md §5, misroute 2."
+    },
+    {
+      "id": "reference-to-content-rule",
+      "problem_layer": "reference",
+      "wrongly_routed_to": "writing",
+      "rationale": "The system accumulates prose rules for a lookup bug. See docs/architecture/V2-EDITORIAL-LEARNING-CORE.md §5, misroute 3."
+    }
+  ]
+}

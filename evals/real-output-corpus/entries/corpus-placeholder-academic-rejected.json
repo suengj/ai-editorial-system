@@ -1,0 +1,24 @@
+{
+  "schema_version": "1.0.0",
+  "entry_id": "corpus:placeholder-academic-rejected",
+  "content_type": "academic",
+  "transformation": "summarize",
+  "language": "en",
+  "audience": "domain-expert",
+  "surface": "academic-paper",
+  "provenance_class": "external",
+  "source_ref": {
+    "kind": "other",
+    "locator": "SYNTHETIC PLACEHOLDER — no real suengj.com article. Demonstrates a rejected entry with an integrity-class failure label."
+  },
+  "owner_verdict": "rejected",
+  "reference_eligible": false,
+  "dimensions": {
+    "strong": ["method transparency"],
+    "weak": ["claim-support — an interpretation was presented as a verified finding"]
+  },
+  "failure_labels": ["overclaiming", "unsupported-material-claim"],
+  "recorded_at": "2026-09-05T10:20:00Z",
+  "recorded_by": { "type": "human" },
+  "notes": "Placeholder entry. A rejected entry is retained in the corpus as evidence — rejection is not deletion."
+}
