@@ -1,0 +1,38 @@
+{
+  "schema_version": "1.0.0",
+  "experiment_id": "experiment:feedback-routing-authority-claim-correction-2026-09-05",
+  "created_at": "2026-09-05T00:00:00Z",
+  "kind": "targeted_tuning",
+  "hypothesis": "editorial/feedback-routing.json's authority_matrix.impossible_by_construction advertised a text-matching enforcement in scripts/lib/routing-core.mjs (\"a single feedback record naming class-4-or-above language ... is rejected ... see the escalation-above-ceiling check\") that had already been deliberately deleted from that module (AES-V2 B3): it matched English regexes against a complaint's free text, missed the same intent in Korean, and false-positived on a committed exemplary abstention. A machine-readable authority file advertising a control that does not exist is itself the failure this repository exists to prevent.",
+  "failure_evidence": [
+    "scripts/test-routing.mjs:167 (\"the authority ceiling is structural, not a text filter\" — asserts CODES no longer exposes ESCALATION_ABOVE_CEILING)",
+    "independent merge-readiness review of PR #8, FU-1 (2026-09-05): flagged editorial/feedback-routing.json:467 as describing a deleted enforcement path"
+  ],
+  "target_layer": "calibration",
+  "smallest_change": "Replaced the false enforcement bullet in editorial/feedback-routing.json's authority_matrix.impossible_by_construction with the accurate structural claim already stated in scripts/lib/routing-core.mjs's header comment: the ceiling is the feedback-record schema's scope enum topping out at calibration_candidate, enforced at the actual mutation points (scripts/lib/calibration-core.mjs and scripts/lib/registry-core.mjs's promotion gates), never by pattern-matching a record's free text. No code changed; the deletion of the text-matching check predates this record (AES-V2 B3).",
+  "evaluation_set": {
+    "fixtures": ["scripts/test-routing.mjs"],
+    "references": [],
+    "real_outputs": []
+  },
+  "quality_result": {
+    "summary": "npm run validate and npm test both pass after the edit; scripts/test-routing.mjs's existing regression guard (CODES no longer exposes ESCALATION_ABOVE_CEILING) continues to pass unchanged, confirming the corrected prose now matches the module it describes.",
+    "integrity_impact": "Removes a false claim of enforcement from a machine-readable authority file; no behavioral change.",
+    "audience_fit_impact": "none"
+  },
+  "cost_result": {
+    "summary": "Documentation-only edit; no generation or rendering cost incurred."
+  },
+  "decision": "keep",
+  "calibration_ref": null,
+  "authored_by": {
+    "type": "agent",
+    "identity": "agent:claude-code",
+    "agent": {
+      "runtime": "claude-code",
+      "model": "claude-sonnet",
+      "version": "5"
+    }
+  },
+  "notes": "This is a prose-accuracy correction to a pinned write-authority file (editorial/feedback-routing.json), which is why it requires a citing ledger record under the pinned-authority guard (scripts/lib/calibration-core.mjs checkPinnedAuthority) rather than a silent edit. The underlying enforcement mechanism did not change; only the file's description of where enforcement actually lives changed, to match scripts/lib/routing-core.mjs's own header comment."
+}

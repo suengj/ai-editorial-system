@@ -67,7 +67,8 @@
     "test:system": "node scripts/test-system-eval.mjs",
     "validate:system": "node scripts/system-scorecard.mjs --validate",
     "system:check": "node scripts/system-scorecard.mjs --check",
-    "test:schema-parity": "node scripts/test-schema-parity.mjs"
+    "test:schema-parity": "node scripts/test-schema-parity.mjs",
+    "check:model-roster": "node scripts/check-model-roster.mjs"
   },
   "repository": {
     "type": "git",

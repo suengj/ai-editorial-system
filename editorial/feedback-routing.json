@@ -464,7 +464,7 @@
     ],
     "impossible_by_construction": [
       "A feedback record's scope enum (task_local, calibration_candidate) structurally tops out at class 3. No feedback record can express class 4, 5, or 6 by itself — those require an act outside the record (human activation, evidence-backed review, or human authorization plus independent Reviewer).",
-      "A single feedback record naming class-4-or-above language in its statement or rationale (e.g. proposing a brand-profile, publication-profile, core-routing, register/content-type-profile, or Constitution change) is rejected by scripts/lib/routing-core.mjs regardless of scope or evidence_links — see the escalation-above-ceiling check."
+      "The authority ceiling is structural, not a text filter on the record: the feedback-record schema's scope enum has no value above calibration_candidate, and the ceiling is enforced at the actual mutation points — scripts/lib/calibration-core.mjs and scripts/lib/registry-core.mjs's promotion gates — never by matching keywords in the complaint's statement or rationale."
     ]
   },
   "misroutes": [

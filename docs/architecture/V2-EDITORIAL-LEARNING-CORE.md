@@ -382,13 +382,23 @@ and 6 — the top of the ladder, where the stakes are highest — had none: a
 brand profile, `feedback-routing.json`'s layer/authority-matrix data, the
 Constitution, or `SSOT-BOUNDARIES.md` could be rewritten by anything with
 write access, including the ladder's own automation, and every validation
-gate would still exit 0. `checkPinnedAuthority` in the same module closes
-that gap: it diffs each file in a declared pinned-authority set against its
-committed `git show HEAD:` copy and fails when one changed with no
-experiment-ledger record (§6, §9) citing it by path. A brand-new file is not
-flagged — there is nothing to have mutated yet — and an ordinary working
-tree fails only when it actually touches one of these files without the
-citation that makes the change legitimate.
+gate would still exit 0. `checkPinnedAuthority` in the same module narrows
+that gap, but does not close it: it diffs each file in a declared
+pinned-authority set against its committed `git show HEAD:` copy and fails
+when one changed with no experiment-ledger record (§6, §9) citing it by path.
+A brand-new file is not flagged — there is nothing to have mutated yet — and
+an ordinary working tree fails only when it actually touches one of these
+files without the citation that makes the change legitimate.
+
+Because the diff base is `HEAD`, this only catches an *uncommitted* change
+validated before it is committed. The same workflow this document tells
+agents to follow — make the change, then commit (see "commit the smallest
+justified change" above) — moves the new content into `HEAD` itself; validate
+run *after* that commit sees no diff and passes, citation or not. The guard
+is real and worth having, but it is a pre-commit tripwire, not an
+after-the-fact audit: a class 5/6 change that is committed before (or
+without) being validated is not caught. Changing the diff base to catch that
+case is a design decision outside this pass.
 
 ### What is automatic and what is not
 

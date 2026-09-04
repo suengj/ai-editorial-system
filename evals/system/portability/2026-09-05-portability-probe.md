@@ -132,6 +132,14 @@ This probe is recorded as intra-family evidence only.
 
 # Addendum — cross-vendor route, same day
 
+Repository state: `812c1d7` — later than the Claude-tier phase's `b3bf4f2`.
+`scripts/lib/materiality-core.mjs` did not exist at `b3bf4f2`; it was added in
+`164e787`, which also amended `EDITORIAL-INTENT-CONTRACT.md` and
+`intake-request/SKILL.md`. The two phases in this document therefore ran
+against two different repository states, not one frozen state — see "Method
+caveat, stated plainly" below for what that does and does not change about
+the comparison.
+
 The claim above that a cross-vendor run was unavailable **was wrong, and is
 corrected here.** The machine had non-Anthropic routes installed; that was
 asserted without being checked. Checking took one command.
@@ -152,8 +160,22 @@ in-context** rather than navigated. That makes this a weaker test than the
 Claude routes faced: it measures contract *interpretation* but not contract
 *discovery*. The supplied bundle was spine §2–§5, the materiality test, the
 axis profile id lists, the routing layer ids, and each content profile's
-`evidence_burden` plus `artifacts.inappropriate` — the same material the Claude
-routes actually read.
+`evidence_burden` plus `artifacts.inappropriate` — assembled from files as
+they stood at `812c1d7`, not the same commit the Claude routes read
+(`b3bf4f2`). The two phases are comparable in *content* (both bundles state
+the same axis model, layer vocabulary, and materiality rule in substance),
+but they are not the same contract state, and this document should not be
+read as claiming they are.
+
+Separately: no route transcripts were retained for either phase. What is
+recorded here is this run report — the routes' resolved answers and this
+Writer's contemporaneous scoring of them against the six semantic contracts —
+not a replayable artifact of the actual model calls. That is a materially
+different evidentiary standing from the dogfood runs elsewhere in this PR
+(`evals/dogfood/2026-09-05-run-01`, `.../run-02`), which persisted their real
+inputs and outputs as committed files and are reproducible by inspection. A
+reader should weigh this probe's scores accordingly: they rest on this
+report, not on an artifact a second reviewer could independently replay.
 
 ## Result — gpt-oss:120b (non-Anthropic)
 

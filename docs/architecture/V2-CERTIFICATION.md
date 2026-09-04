@@ -18,12 +18,29 @@ already reads `INSUFFICIENT_EVIDENCE` on all ten SUE-573 dimensions, for the
 same reason: there is essentially no real operating history yet. A
 certification that reported clean `PASS` rows here would contradict that
 surface, and a contradiction between two certifications this repository
-publishes is worse than either being honestly incomplete. This document is
-consistent with `evals/system/current.json`, not more optimistic than it.
+publishes is worse than either being honestly incomplete.
+
+`evals/system/current.json` is derived from a single snapshot
+(`evals/system/snapshots/2026-09-05-seed.json`) authored before the dogfood
+runs and portability probe landed in this PR; it has not been rebuilt since.
+Its bottom-line verdict — `not_yet_sufficient`, all ten dimensions
+`INSUFFICIENT_EVIDENCE` — still holds even accounting for that new evidence:
+two agent dogfood runs with no owner verdict and one intra-family-plus-one-
+cross-vendor-route portability probe do not clear any of the seven
+sufficiency conditions, which require multiple owner-reviewed outputs, a
+durable calibration decision, or comparable operating history. But several of
+the snapshot's per-condition *evidence notes* are now stale prose rather than
+current fact — e.g. it still says feedback/index.json lists "2 records, both
+synthetic seed examples" (it now holds 4, two of them real dogfood records)
+and that "no visual-job records exist anywhere in the repository yet" and
+that "SUE-569 certification has not yet run." Read the scorecard's verdict
+(not_yet_sufficient) as current; read its per-condition prose as a snapshot
+of 2026-09-05 pre-dogfood, not a live description. This document is
+consistent with that verdict, not more optimistic than it.
 
 ## Result
 
-**24/24 mechanical gates passing. 0 pass, 6 partial, 1 deferred, 1 not_run —
+**24/24 mechanical gates passing. 0 pass, 7 partial, 1 deferred, 0 not_run —
 of 8 certification areas.**
 
 | | Area | Status |
@@ -67,11 +84,13 @@ examples in `schemas/examples/feedback-record-routing.example.json` cover
 frame-worth, abstain-on-unclear, reference-repeated, renderer-glitch, and
 verification-material cases.
 
-What is missing: a real, owner-reviewed piece of writing that actually
+What is missing: a real, *owner*-reviewed piece of writing that actually
 traversed intake → Editorial Intent → frame/write → L0/L1 → a feedback record
-with a real routing decision. `feedback/records/` holds two records; both are
-synthetic seed examples, not output of a real session (confirmed by
-`evals/system/current.json`'s `quality_lift` dimension). Every
+with a real routing decision. `feedback/records/` holds four records: two are
+synthetic seed examples, and two are real agent dogfood output
+(`evals/dogfood/2026-09-05-run-01`, `.../run-02`) — but the evaluator on both
+is the agent's own L1 self-review, with `owner_verdict: "unknown"` on each
+(confirmed by `evals/system/current.json`'s `quality_lift` dimension). Every
 `schemas/examples/intent-*.example.json` file is an illustrative shape, not a
 captured intake record — three of the five carry a `NOTE` from
 `validate-intent.mjs` that `text/article` in the artifact axis is declared
@@ -177,11 +196,14 @@ What is missing: whether an agent has actually taken a natural-language
 utterance from the owner ("this paragraph reads out of order") and, without
 the owner touching a JSON file, classified it, persisted a feedback record,
 and routed it — end to end, in one real session. No such session exists on
-record. Both feedback records in the repository were authored directly as
-seed data to exercise the schema and validators, not produced by an agent
-interpreting spoken/written feedback. The write-authority mechanism (class 0
-vs. class 1 in the §10 ladder) is proven capable; it has not been exercised
-against a real natural-language trigger.
+record. Two of the four feedback records in the repository were authored
+directly as seed data to exercise the schema and validators; the other two
+are real agent dogfood output, but they are the agent's own L1 self-review
+persisted as feedback — not a natural-language utterance from the *owner*
+classified, persisted, and routed without the owner touching JSON. The
+write-authority mechanism (class 0 vs. class 1 in the §10 ladder) is proven
+capable; it has not been exercised against a real owner-originated
+natural-language trigger.
 
 ## 7. Calibration/tuning record — real keep-or-change decision
 
@@ -208,13 +230,19 @@ real preference decision has been made.
 ## 8. Cross-agent portability / interpretation regression
 
 **PARTIAL.** A genuine non-Anthropic route (OpenAI open-weights `gpt-oss:120b`
-via ollama) resolved the same task against the same contract state and was
-scored on all six semantic contracts. Four axes and the routing layer id
-agreed across the vendor boundary; the content-type materiality gate failed,
-and failed by fabricating a schema default that does not exist — the same
-failure point, and the same fabrication behaviour, as the weakest Claude
-route. That is contract evidence, not a model quirk, and the shipped
-`materiality-core.mjs` fix catches it.
+via ollama) resolved the same task and was scored on all six semantic
+contracts. It ran against a later repository state (`812c1d7`) than the
+three-Claude-tier phase (`b3bf4f2`) — the two phases are not the same
+contract state, and the cross-vendor bundle was assembled from files as they
+stood at the later commit; see the probe's own addendum for the exact pin and
+why it matters. Four axes and the routing layer id agreed across the vendor
+boundary despite that; the content-type materiality gate failed, and failed
+by fabricating a schema default that does not exist — the same failure point,
+and the same fabrication behaviour, as the weakest Claude route. That is
+contract evidence, not a model quirk, and the shipped `materiality-core.mjs`
+fix catches it. No route transcripts were retained for either phase — the
+scores rest on the probe's own run report, not a replayable artifact, unlike
+the dogfood runs elsewhere in this certification.
 
 Not upgraded past `PARTIAL`: the ollama route cannot browse a filesystem, so
 contracts were supplied in-context rather than discovered; only one of three
@@ -241,12 +269,19 @@ That finding was routed to the contract rather than to a prompt — the
 materiality test is now computed by `scripts/lib/materiality-core.mjs`, and
 the failing resolution is a named regression fixture.
 
-The probe is real operating evidence and is the first in this repository.
-It is **not** the cross-vendor comparison this area requires, and it is
-recorded as intra-family evidence only. A full-strength repeat with repository navigation (not supplied context) remains the
-bar for moving this to `PASS`. The method a future reviewer should execute is written
-out in full in `scripts/certify-v2.mjs`'s matrix item 8 (reproduced here for
-readers of this document who are not reading the script):
+This three-tier Claude phase is real operating evidence and is the first in
+this repository. On its own it is **not** the cross-vendor comparison this
+area requires — three Claude tiers are intra-family evidence only. That
+comparison is what the ollama phase reported above (§8, "A genuine
+non-Anthropic route") supplies: it completed, against the same task and
+contract state, and its result is folded into this area's `PARTIAL` verdict
+above. What remains outstanding, per that section, is a *full-strength*
+cross-vendor run — one with repository navigation rather than supplied
+context, and ideally the still-quota-blocked `codex` route — which is the
+bar for moving this area to `PASS`. The method a future reviewer should
+execute for that full-strength run is written out in full in
+`scripts/certify-v2.mjs`'s matrix item 8 (reproduced here for readers of this
+document who are not reading the script):
 
 **Task.** Resolve one small, representative Editorial Intent from a
 natural-language request with a materially ambiguous transformation/audience/

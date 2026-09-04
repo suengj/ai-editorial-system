@@ -188,9 +188,14 @@ console.log('historical immutability');
 
 // --- experiment ledger deny cases -------------------------------------------
 console.log('experiment ledger invariants');
-const baseExperiment = loadSeed(listLedgerFiles()[0]);
-const codesForExperiment = (path) => validateLedgerFile(path, { schema: experimentSchema, layerIds }).map((i) => i.code);
 const EXPERIMENT_FILENAME = 'reference-selection-2026-09-05.json';
+// Pick this seed explicitly by name, not listLedgerFiles()[0] — the ledger
+// directory is not guaranteed to sort this file first as more experiment
+// records accumulate, and EXPERIMENT_FILENAME below is pinned to it.
+const baseExperiment = loadSeed(
+  listLedgerFiles().find((p) => p.endsWith(`/${EXPERIMENT_FILENAME}`)) ?? listLedgerFiles()[0],
+);
+const codesForExperiment = (path) => validateLedgerFile(path, { schema: experimentSchema, layerIds }).map((i) => i.code);
 const withTempLedger = (data) => {
   const dir = join(tmpDir, `case-${caseCounter += 1}`);
   mkdirSync(dir, { recursive: true });

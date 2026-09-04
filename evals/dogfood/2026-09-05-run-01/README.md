@@ -81,21 +81,23 @@ already used by `evals/poc/cost-stack.svg`.
 Both were found by reading the rendered SVG and the artifact profile's own
 acceptance criteria, not invented to have something to report.
 
-1. **Renderer defect (cosmetic, reproducible).**
-   `scripts/lib/chart-renderer.mjs` line 105 unconditionally emits
-   `(${spec.y.unit})` in the chart's note line even when `y.unit` is an
-   empty string — correct here, since the plotted series are unitless
-   indices. The rendered SVG's note line literally reads
+1. **Renderer defect (cosmetic, reproducible), found and fixed.**
+   `scripts/lib/chart-renderer.mjs` line 105 unconditionally emitted
+   `(${spec.y.unit})` in the chart's note line even when `y.unit` was an
+   empty string — wrong here, since the plotted series are unitless
+   indices. The rendered SVG's note line literally read
    `...기준 대비 변화율 (2025 Q1=100) ()` — a trailing empty parenthesis
-   pair. This is deterministic (every job with an empty `y.unit` will
-   reproduce it identically), so it does not cleanly fit
+   pair. This was deterministic (every job with an empty `y.unit` would
+   reproduce it identically), so it did not cleanly fit
    `editorial/feedback-routing.json`'s `visual/renderer` layer definition,
    which is specifically scoped to non-reproducible, one-off render
    artifacts ("a re-render of the same spec would not reproduce"). It is
    recorded here, in `02-visual/visual-job.json#qa.notes`, as an honest
    engineering observation rather than forced into a feedback-routing
-   record it does not fit — a human/engineer should decide whether to patch
-   the renderer.
+   record it does not fit. This same commit patched the renderer at the
+   source (the smallest correct place) and regenerated the affected
+   committed artifact, `evals/poc/cost-stack.svg`, which had carried the
+   same defect since it was certified.
 2. **Data-provenance gap (the real QA fail).** The artifact profile
    `visual/evidence-visual`'s own `acceptance` list requires "every value is
    traceable to verified claims or source data." This job's two claims were
@@ -145,16 +147,16 @@ dimensions off `INSUFFICIENT_EVIDENCE` — `evals/system/current.json`'s own
 run and remains the honest read. **No file under `evals/system/` was
 modified by this run.**
 
-One honest caveat for whoever runs the next system review:
-`scripts/certify-v2.mjs`'s area 6 narrative currently says
-`feedback/records/` holds records that are "both synthetic seed examples" —
-that sentence predates this run and is now stale (there are 3 records, and
-the third is this run's real, non-synthetic, agent-authored-but-real
-observation). This Writer did not edit `scripts/certify-v2.mjs` to update
-that prose, since doing so was not asked for and the script's narrative
-carries a lot of careful, specific caveat language that deserves a
-deliberate edit, not an incidental one from this run. Flagging it here so
-the Manager or the next reviewer can decide.
+One honest note on this run's own footprint: `scripts/certify-v2.mjs`'s
+area 1 narrative said `feedback/records/` held records that were "both
+synthetic seed examples" — that sentence predated this run and was stale the
+moment this run's real, non-synthetic, agent-authored observation landed in
+`feedback/records/`. This Writer *did* edit `scripts/certify-v2.mjs` in this
+same commit to update that prose accordingly, alongside the renderer fix and
+the regenerated `evals/poc/cost-stack.svg`. (That prose has since been
+revised again by later work, to stay current as more records were added —
+see `docs/architecture/V2-CERTIFICATION.md` and `scripts/certify-v2.mjs`
+directly for the current count.)
 
 ## Files in this run
 
@@ -178,9 +180,9 @@ canonical `feedback/records/` store, not under this directory, per
 - Run `verify-claims` against real source material before any chart like
   `02-visual/rendered.svg` could carry real numbers instead of the
   explicitly-labelled illustrative ones.
-- Decide whether the renderer's empty-unit cosmetic defect (finding 1
-  above) is worth a code fix, and make it — this run only observed and
-  recorded it.
+- Nothing further on the renderer's empty-unit defect (finding 1 above): it
+  was already patched at the source in this same commit, and the affected
+  committed artifact was regenerated. No outstanding human decision here.
 - Read `feedback/records/dogfood-2026-09-05-g04-uncited-figure.json` and
   decide whether G-04, as an existing V1 golden fixture, should itself be
   patched with a citation or a disclaimer — this run has no authority to

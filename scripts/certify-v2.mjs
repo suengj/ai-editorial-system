@@ -89,6 +89,7 @@ const all = (...names) => names.every((n) => gates[n]);
 /** Real (non-synthetic, non-placeholder) evidence counters, read honestly. */
 const evidence = {
   feedbackRecords: countFiles('feedback/records', /\.json$/),
+  feedbackRecordsDogfood: countFiles('feedback/records', /^dogfood-.*\.json$/),
   calibrationLedgerRecords: countFiles('calibration/ledger', /\.json$/),
   calibrationVersions: countFiles('calibration/versions', /\.json$/),
   referenceEvaluationsExternal: (() => {
@@ -121,8 +122,10 @@ const MATRIX = [
       'Every contract, Skill, and gate is exercised — but only against fixtures and worked '
       + 'schema examples (schemas/examples/intent-*.example.json). No real owner-reviewed article '
       + `has gone through intake → intent → frame/write → L0/L1 → routed feedback in this repository. `
-      + `feedback/records/ holds ${evidence.feedbackRecords} record(s), 3 records exist; two are synthetic seed examples and one is a real agent dogfood record (evals/dogfood/2026-09-05-run-01) with owner_verdict unknown `
-      + '(per evals/system/current.json, dimension quality_lift). Mechanism proven; operating evidence absent.',
+      + `feedback/records/ holds ${evidence.feedbackRecords} record(s): ${evidence.feedbackRecordsDogfood} real `
+      + `agent dogfood record(s) (evals/dogfood/) and ${evidence.feedbackRecords - evidence.feedbackRecordsDogfood} `
+      + 'synthetic seed example(s), all with owner_verdict unknown (per evals/system/current.json, dimension '
+      + 'quality_lift). Mechanism proven; operating evidence absent.',
   },
   {
     id: 2,
@@ -137,9 +140,14 @@ const MATRIX = [
     caveat:
       'The two pre-render gates (context isolation, information gain) and the brand-profile/renderer '
       + 'lineage are real, executable contracts covered by allow/deny fixtures — not aspirational '
-      + 'documentation. But no actual image has been rendered or inspected anywhere in this repository '
-      + 'or its history. SUE-569 explicitly asks for actual asset QA; that has not happened. Everything '
-      + 'downstream of "compiled_prompt" is untested by this certification.',
+      + 'documentation. This is not virgin territory for rendering in general: evals/poc/cost-stack.svg '
+      + 'predates this branch, and evals/dogfood/2026-09-05-run-01 compiled a real compiled_prompt through '
+      + 'a real visual job and rendered and inspected the resulting chart through the existing V1 '
+      + '(deterministic, code-driven) chart renderer. But no *generative* image — one produced by an '
+      + 'image-generation model rather than a deterministic renderer, which is what most visual-job '
+      + 'artifact classes (e.g. thumbnail-concept) actually call for — has ever been rendered or inspected '
+      + 'anywhere in this repository or its history. SUE-569 explicitly asks for that asset QA; it has not '
+      + 'happened for the generative path.',
   },
   {
     id: 3,
@@ -202,8 +210,10 @@ const MATRIX = [
       + 'record and rebuilding the index is a mechanically checked path, not aspiration. But this is '
       + 'a separate claim from "an agent has taken a natural-language utterance from the owner and '
       + 'persisted + routed it end to end without the owner touching JSON." No such session is on '
-      + `record; both feedback records in the repository were authored directly as seed/fixture data. `
-      + 'The mechanism is proven; the natural-language-to-persisted-record loop is not.',
+      + `record: ${evidence.feedbackRecordsDogfood} of ${evidence.feedbackRecords} feedback record(s) are real agent `
+      + 'dogfood output (agent-authored L1 self-review, owner_verdict unknown), and the rest are seed/fixture data — '
+      + 'none originates from an owner’s natural-language utterance persisted and routed without the owner '
+      + 'touching JSON. The mechanism is proven; the owner-utterance-to-persisted-record loop is not.',
   },
   {
     id: 7,
