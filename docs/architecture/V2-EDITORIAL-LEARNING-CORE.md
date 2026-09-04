@@ -208,7 +208,61 @@ calibration version.
 
 ---
 
-## 7. Generic Core, replaceable edges
+## 7. The learning boundary
+
+`Learning` in this system means **controlled change to external editorial
+memory**. It does not mean changing a model.
+
+```text
+human / output feedback
+  → structured records          references/, feedback/
+  → reference selection · profiles · calibration · routing
+  → future generation context
+```
+
+Everything durable the system learns is a file: inspectable, versioned, and
+reversible by reverting a commit. That property is the whole reason the loop
+is safe to run automatically.
+
+**What V2 explicitly does not do:** mutate foundation-model weights, train on
+owner content, or carry a hidden preference-training pipeline. No Skill and no
+adapter may treat model training as a side effect of a generation or feedback
+run. If fine-tuning is ever justified, it arrives as a separate program with
+its own data-rights, evaluation, rollback, and cost decision — it is not
+implied by, and may not be smuggled into, this architecture.
+
+### Model drift is an editorial quality event
+
+Output quality can change while prompts, profiles, references, and calibration
+are all unchanged, because the model underneath moved. Treating that as a
+transparent implementation detail is how a system silently stops being the
+system that was calibrated.
+
+So the runtime identity is part of lineage, recorded wherever the runtime
+exposes it: provider, model, model version or dated alias, reasoning/quality
+tier, profile version, calibration version, reference set or its hash, and the
+task/output identity.
+
+Changing the default model for framing, writing, L1 review, or high-value
+visual and audio planning is a **quality-change event**, not an upgrade. It
+runs a small fixed regression sample first, comparing integrity, the target
+editorial dimensions, audience fit, and cost/context — and the decision is
+recorded in the experiment ledger (§9, V2.10).
+
+Approval is **per role**. A new model may pass for routing and be held for
+writing:
+
+```text
+new model  →  routing PASS  ·  Writer HOLD  ·  Reviewer PASS
+```
+
+"Newer" is not a reason to replace every role at once. Nor is any model frozen
+forever: the goal is controlled portability with detectable drift, not vendor
+lock-in in either direction.
+
+---
+
+## 8. Generic Core, replaceable edges
 
 ```text
 P03 / Drive / GitHub / Web      ingestion — source availability
@@ -232,7 +286,7 @@ argued as one, in this document.
 
 ---
 
-## 8. Context and cost are budgeted
+## 9. Context and cost are budgeted
 
 Loading everything is the default failure mode of a system that has learned a
 lot. Context is disclosed progressively:
@@ -259,7 +313,7 @@ The tracked figure is **cost per accepted artifact**, not generation count.
 
 ---
 
-## 9. Agent auto-application
+## 10. Agent auto-application
 
 The owner writes sentences and reads results. **The owner never translates a
 request or a complaint into a repository file.** When an agent has write
@@ -271,7 +325,7 @@ Two automatic paths:
 ```text
 natural-language request
   → resolve the Editorial Intent axes
-  → load only the profiles that intent selects  (§8)
+  → load only the profiles that intent selects  (§9)
   → generate / review
   → hand back the result
 
@@ -289,41 +343,55 @@ Skill, or a routing target. An agent that answers "which layer should I route
 this to?" by asking the owner has failed — classification is the system's job,
 not the reader's.
 
-### The change-scope ladder
+### The write-authority ladder
 
-"Smallest justified change" is not a sentiment; it is an ordered ladder, and an
-agent takes the lowest rung that actually fixes the problem.
+Natural-language operation does not mean uniform write access. Authority is
+defined by **semantic mutation class**, never by filename — a path can be
+renamed, and the authority must survive the rename.
 
-| Rung | Change | Repository effect | Authorization |
+An agent takes the lowest class that actually fixes the problem.
+
+| Class | Durable mutation | Repository effect | Authorization |
 |---|---|---|---|
-| 0 | task-local override | **none** — it lives in the intent record and expires with the task | automatic |
-| 1 | feedback record | append one record, rebuild the index | automatic |
-| 2 | reference evaluation | append one record, rebuild the index | automatic when asked or clearly appropriate |
-| 3 | profile field | one field, in one profile, citing the evidence records | automatic only with repeated independent evidence; otherwise ask |
-| 4 | calibration version | new version file with supersedes lineage | **explicit human instruction only** |
-| 5 | constitution, gates, precedence | — | **never automatic**; owner decision, argued separately |
+| 0 | task-local override / draft or artifact correction | **none** — lives in the intent record, expires with the task | automatic |
+| 1 | feedback or evaluation record append | append one record, rebuild index | automatic |
+| 2 | reference evaluation metadata | append one record, rebuild index | automatic under the validated protocol |
+| 3 | calibration candidate / `DRIFT_CANDIDATE` | append a candidate; activates nothing | automatic |
+| 4 | activation of durable owner preference — a new current calibration version | new version file with supersedes lineage | **explicit human intent**; clarification when ambiguous |
+| 5 | publication profile, core routing, or major profile change | profile/router edit with cited evidence | **evidence-backed review** |
+| 6 | Constitution, core invariants, SSOT boundary | — | **explicit human authorization + independent Reviewer approval** |
 
-Rung 0 is the default and by far the most common. Most corrections are about
+Class 0 is the default and by far the most common. Most corrections are about
 *this* piece; treating them as anything more is the overfitting failure §6
 already names.
+
+Two escalations the ladder exists to make impossible:
+
+1. **One complaint becoming a Constitution change.** There is no path from a
+   single disliked output to class 5 or 6. Class 3 lets an agent *record* that
+   something may be shifting; only a human activates it.
+2. **Automation acquiring publication authority.** Publication, approval,
+   finalization, and merging to a default branch are not on this ladder at all.
+   Constitution §10 sits outside the automation stack rather than at the top
+   of it.
 
 ### What is automatic and what is not
 
 **Automatic, no question asked:** generating when the intent is sufficient
 (§4); revising locally when the correction is local; persisting a feedback or
-reference record the owner asked for or plainly implied; rebuilding a derived
-index; running validation.
+reference record the owner asked for or plainly implied; raising a drift
+candidate; rebuilding a derived index; running validation.
 
-**Requires explicit human instruction:** any durable preference change — a new
-calibration version, or a profile edit that will shape every future run.
-"이번 글만" and "앞으로" are different instructions and must be resolved as
-different rungs. When the utterance is materially ambiguous between them, that
-is exactly the clarification the gate in §4 exists for: ask one question,
-offer the two readings, default to task-local.
+**Requires explicit human instruction:** activating any durable preference.
+"이번 글만" and "앞으로" are different instructions and resolve to different
+classes. When an utterance is materially ambiguous between them, that is
+exactly the clarification the gate in §4 exists for: ask one question, offer
+the two readings, default to task-local.
 
-**Never automatic, at any authorization level:** publication, approval,
-finalization, or merging to a default branch. Constitution §10 is not a rung on
-this ladder — it is off it entirely.
+**Requires review beyond the owner's say-so:** class 5 needs evidence, and
+class 6 needs an independent Reviewer in addition to human authorization. A
+Core invariant is not something the owner and one agent should be able to move
+between them in a single conversation.
 
 ### Commit discipline
 
@@ -332,7 +400,7 @@ one rung of the ladder, the evidence that motivated it, and validation output.
 An agent that cannot state which rung it is on, and why the rung below was
 insufficient, does not commit — it reports and asks.
 
-## 10. What V2 must not become
+## 11. What V2 must not become
 
 Stop conditions. Any of these means the architecture is wrong, not that a
 document is missing.
@@ -349,7 +417,7 @@ document is missing.
 
 ---
 
-## 11. Issue map
+## 12. Issue map
 
 | Issue | Adds | Primary paths |
 |---|---|---|
@@ -363,7 +431,7 @@ document is missing.
 | AES-V2.8 (SUE-566) | audience-aware spoken artifacts | `editorial/profiles/artifact/audio-*`, `skills/compile-audio-script/` |
 | AES-V2.9 (SUE-567) | transformation profiles, Editorial Package | `editorial/profiles/transformation/`, `schemas/editorial-package.schema.json` |
 | AES-V2.10 (SUE-568) | calibration versioning, drift, ledger, budgets | `calibration/` |
-| AES-V2.11 (SUE-569) | V2 certification, public project refresh | `docs/architecture/V2-CERTIFICATION.md` |
+| AES-V2.11 (SUE-569) | V2 certification, cross-agent portability, public project refresh | `docs/architecture/V2-CERTIFICATION.md` |
 
 Certification closes the Core. **Adoption is proved separately**, in the
 milestone *Post-V2 Pilot & Owner Adoption*, which runs strictly after V2.11:
@@ -372,8 +440,9 @@ milestone *Post-V2 Pilot & Owner Adoption*, which runs strictly after V2.11:
 |---|---|---|
 | AES-V2.12 (SUE-570) | real multi-audience text + visual pilot on canonical `suengj.com` articles, delivered as a non-published review branch | `suengj-com` review branch; evidence + feedback records here |
 | AES-V2.13 (SUE-571) | owner playbook for natural-language operation, written from pilot evidence | owner/operator documentation |
+| AES-BACKLOG (SUE-572) | real audience comprehension evidence — **non-blocking, activated only when enough comparable outputs exist** | — |
 
-The pilot is the honest test of §12: two canonical articles, each transformed
+The pilot is the honest test of §13: two canonical articles, each transformed
 into News / Report / child-oriented drafts from the *same* verified knowledge,
 each with a visual its audience actually needed. It answers questions the Core
 cannot answer about itself — whether one source really stops forcing one output
@@ -395,7 +464,17 @@ Two constraints on V2 design follow from it and are binding now, not later:
 Audio is explicitly deferred from the pilot and must be described as deferred —
 not as working — wherever V2 capability is summarised.
 
-## 12. The ten questions
+SUE-572 is deliberately **not** a V2 blocker. An L1 model reporting
+`audience fit = good` is still a model judging itself; real-reader or credible
+proxy evidence can contradict it, particularly for child-oriented, novice, and
+specialist adaptations. But that evidence only becomes worth gathering once
+enough comparable outputs exist. **Do not add real-user study infrastructure to
+V2.** When it is activated, reader evidence enters as its own evaluator class
+and is kept separate from owner preference, model audience-fit judgement, and
+integrity evidence — it may never silently become preference or override
+factual safeguards.
+
+## 13. The ten questions
 
 V2 is not complete while any answer is materially *no*.
 
