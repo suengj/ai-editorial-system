@@ -1,0 +1,94 @@
+{
+  "schema_version": "2.0.0",
+  "intent_id": "intent:2026-09-05-npm-chaindrop-hardening-gap",
+  "created_at": "2026-09-05T12:00:00Z",
+  "request": {
+    "utterance": "npm 공급망 공격 관련해서 실무자용 리서치 하나 써줘. GitHub/npm이 2025년 말부터 trusted publishing이랑 npm v12 스크립트 기본 차단 같은 걸로 계속 방어를 강화했다고 했는데, 8월에 터진 CHAINDROP(Shai-Hulud 계열) 웜은 그 방어가 정확히 겨냥했던 preinstall 스크립트 경로로 뚫었잖아. 공개된 공식 발표랑 실제 인시던트 리포트들 찾아서, 방어 강화랑 이번 침해가 실제로 어떻게 맞물리는지(또는 안 맞물리는지) 근거 기반으로 정리해줘. suengj.com에 올릴 글이고, 화면에 넣을 차트는 필요 없어.",
+    "language": "ko",
+    "received_by": "claude-code",
+    "received_at": "2026-09-05T12:00:00Z"
+  },
+  "axes": {
+    "transformation": {
+      "value": "synthesize",
+      "state": "confirmed",
+      "profile_ref": "editorial/profiles/transformation/synthesize.json",
+      "basis": "utterance asks to take multiple separately-published sources (npm's hardening announcements and independent incident reports) and \"근거 기반으로 정리해줘\" (put together, evidence-based) how they relate — combining material into one synthesized reading, not summarizing one document."
+    },
+    "content_type": {
+      "value": "research",
+      "state": "confirmed",
+      "profile_ref": "editorial/profiles/content/research.json",
+      "basis": "utterance names \"리서치\" explicitly and asks for an evidence-first answer to a stated tension (does the hardening actually cover this incident), matching research.json's intent field."
+    },
+    "audience": {
+      "value": "domain-practitioner",
+      "state": "confirmed",
+      "profile_ref": "editorial/profiles/audience/domain-practitioner.json",
+      "basis": "utterance says \"실무자용\" (for practitioners) directly, and the request assumes familiarity with npm publishing mechanics, CI/CD, and lifecycle scripts without needing them defined from scratch.",
+      "traits": {
+        "expertise": "practitioner",
+        "attention_context": "reading"
+      }
+    },
+    "surface": {
+      "value": "suengj-com",
+      "state": "confirmed",
+      "profile_ref": "editorial/profiles/surface/suengj-com.json",
+      "basis": "utterance says \"suengj.com에 올릴 글\" (a piece to publish on suengj.com)."
+    },
+    "artifacts": [
+      {
+        "value": "text/article",
+        "state": "confirmed",
+        "basis": "utterance asks for a written research piece (\"리서치 하나 써줘\"); text/article is the planned text-artifact id in the artifact axis registry (editorial/profiles/axes.json), not yet built as a standalone profile — governed here by article.schema.json (V1), same as run-01's intake record."
+      }
+    ]
+  },
+  "inputs": {
+    "sources": [
+      {
+        "source_id": "src:web:github.blog/our-plan-for-a-more-secure-npm-supply-chain",
+        "state": "confirmed",
+        "note": "GitHub's own Sept 2025 mitigation plan — the utterance's \"trusted publishing\" reference."
+      },
+      {
+        "source_id": "src:web:github.blog/2026-06-09-upcoming-breaking-changes-for-npm-v12",
+        "state": "confirmed",
+        "note": "GitHub's June 2026 announcement of npm v12's install-script defaults changing — the utterance's \"npm v12 스크립트 기본 차단\" reference."
+      },
+      {
+        "source_id": "src:web:github.blog/2026-07-08-npm-install-time-security-and-gat-bypass2fa-deprecation",
+        "state": "confirmed",
+        "note": "GitHub's July 8, 2026 changelog confirming npm v12 shipped with the announced defaults live."
+      },
+      {
+        "source_id": "src:web:elastic.co/security-labs/shai-hulud-chaindrop-npm-supply-chain",
+        "state": "confirmed",
+        "note": "Elastic Security Labs' Aug 6, 2026 incident report on CHAINDROP — the utterance's \"8월에 터진 CHAINDROP\" reference and primary source for the incident itself."
+      },
+      {
+        "source_id": "src:web:stepsecurity.io/blog/chaindrop-npm-worm",
+        "state": "confirmed",
+        "note": "Independent Aug 4, 2026 incident analysis, used to cross-check Elastic's package count and to check whether npm v12 was discussed."
+      },
+      {
+        "source_id": "src:web:unit42.paloaltonetworks.com/chaindrop-npm-worm-analysis",
+        "state": "confirmed",
+        "note": "Third independent Aug 6, 2026 incident analysis, used as a second cross-check on the same two questions."
+      }
+    ],
+    "references": []
+  },
+  "constraints": {
+    "output_language": "ko"
+  },
+  "overrides": [],
+  "clarification": {
+    "required": [],
+    "asked": [],
+    "resolution": "proceeded"
+  },
+  "calibration_ref": null,
+  "status": "ready"
+}

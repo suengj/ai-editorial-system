@@ -1,0 +1,3 @@
+gates: REJECT — evals/dogfood/2026-09-05-run-02/04-draft-excerpt/excerpt.md (1 finding(s))
+  ✗ [reject] citation-integrity — citation URL repeated 3 times, inflating the apparent evidence base
+      https://www.elastic.co/security-labs/shai-hulud-chaindrop-npm-supply-chain

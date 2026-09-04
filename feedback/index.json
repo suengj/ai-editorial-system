@@ -13,6 +13,16 @@
       "verdict": "mixed"
     },
     {
+      "created_at": "2026-09-05T16:15:00Z",
+      "feedback_id": "feedback:dogfood-2026-09-05-run-02-chaindrop-synthesis-gap",
+      "path": "feedback/records/dogfood-2026-09-05-run-02-chaindrop-synthesis-gap.json",
+      "scope": "task_local",
+      "signal": "objective_quality",
+      "subject_kind": "article",
+      "subject_ref": "evals/dogfood/2026-09-05-run-02/04-draft-excerpt/excerpt.md",
+      "verdict": "mixed"
+    },
+    {
       "created_at": "2026-09-05T04:00:00Z",
       "feedback_id": "feedback:paragraph-order-2026-09-05",
       "path": "feedback/records/paragraph-order-2026-09-05.json",

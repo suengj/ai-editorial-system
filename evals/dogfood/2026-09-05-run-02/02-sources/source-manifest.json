@@ -1,0 +1,216 @@
+{
+  "schema_version": "1.0.0",
+  "generated_at": "2026-09-05T12:30:00Z",
+  "sources": [
+    {
+      "source_id": "src:web:github.blog/our-plan-for-a-more-secure-npm-supply-chain",
+      "kind": "web_reference",
+      "origin": "web",
+      "origin_ref": {
+        "url": "https://github.blog/security/supply-chain-security/our-plan-for-a-more-secure-npm-supply-chain/"
+      },
+      "title": "Our plan for a more secure npm supply chain",
+      "language": "en",
+      "source_created_at": "2025-09-22",
+      "ingested_at": "2026-09-05T12:15:00Z",
+      "content_observed_at": "2026-09-05T12:15:00Z",
+      "content_hash": {
+        "algo": "sha256",
+        "value": "feebc7801a68acba10aa9e1310438d2729089d0bb6ddc8c7be7e296d9c78d4b9"
+      },
+      "revision": 1,
+      "disposition": "used",
+      "disposition_authority": "ai_recommended",
+      "disposition_changed_at": "2026-09-05T13:00:00Z",
+      "used_by": [
+        {
+          "article_id": "art:npm-chaindrop-hardening-gap",
+          "role": "primary",
+          "first_used_at": "2026-09-05T13:00:00Z"
+        }
+      ],
+      "rights": {
+        "license": null,
+        "quotable": true,
+        "redistributable": false,
+        "attribution": "GitHub Blog (github.blog), official corporate publication. Quoted, not reproduced."
+      },
+      "notes": "content_hash computed over the raw HTML fetched via curl on 2026-09-05, discarded after hashing per this repo's no-source-bodies rule. GitHub's own stated npm hardening plan: trusted publishing, granular short-lived tokens, FIDO-based 2FA, tokens disallowed by default."
+    },
+    {
+      "source_id": "src:web:github.blog/2026-06-09-upcoming-breaking-changes-for-npm-v12",
+      "kind": "web_reference",
+      "origin": "web",
+      "origin_ref": {
+        "url": "https://github.blog/changelog/2026-06-09-upcoming-breaking-changes-for-npm-v12/"
+      },
+      "title": "Upcoming breaking changes for npm v12",
+      "language": "en",
+      "source_created_at": "2026-06-09",
+      "ingested_at": "2026-09-05T12:16:00Z",
+      "content_observed_at": "2026-09-05T12:16:00Z",
+      "content_hash": {
+        "algo": "sha256",
+        "value": "494a5d88a7c55b7d894a9fe90f1ab26bafc6f91d1326f77a4680075ae667b3af"
+      },
+      "revision": 1,
+      "disposition": "used",
+      "disposition_authority": "ai_recommended",
+      "disposition_changed_at": "2026-09-05T13:00:00Z",
+      "used_by": [
+        {
+          "article_id": "art:npm-chaindrop-hardening-gap",
+          "role": "primary",
+          "first_used_at": "2026-09-05T13:00:00Z"
+        }
+      ],
+      "rights": {
+        "license": null,
+        "quotable": true,
+        "redistributable": false,
+        "attribution": "GitHub Changelog (github.blog/changelog), official corporate publication. Quoted, not reproduced."
+      },
+      "notes": "content_hash computed the same way as the sibling GitHub source above. Announces install-time lifecycle scripts (preinstall/install/postinstall) and non-registry dependency resolution becoming opt-in in npm v12, available behind warnings from npm 11.16.0."
+    },
+    {
+      "source_id": "src:web:github.blog/2026-07-08-npm-install-time-security-and-gat-bypass2fa-deprecation",
+      "kind": "web_reference",
+      "origin": "web",
+      "origin_ref": {
+        "url": "https://github.blog/changelog/2026-07-08-npm-install-time-security-and-gat-bypass2fa-deprecation/"
+      },
+      "title": "npm install-time security and GAT bypass2fa deprecation",
+      "language": "en",
+      "source_created_at": "2026-07-08",
+      "ingested_at": "2026-09-05T12:17:00Z",
+      "content_observed_at": "2026-09-05T12:17:00Z",
+      "content_hash": {
+        "algo": "sha256",
+        "value": "c315a100050116543828cf93d342685664f8539603897e07e20b37f9c73bce89"
+      },
+      "revision": 1,
+      "disposition": "used",
+      "disposition_authority": "ai_recommended",
+      "disposition_changed_at": "2026-09-05T13:00:00Z",
+      "used_by": [
+        {
+          "article_id": "art:npm-chaindrop-hardening-gap",
+          "role": "primary",
+          "first_used_at": "2026-09-05T13:00:00Z"
+        }
+      ],
+      "rights": {
+        "license": null,
+        "quotable": true,
+        "redistributable": false,
+        "attribution": "GitHub Changelog (github.blog/changelog), official corporate publication. Quoted, not reproduced."
+      },
+      "notes": "content_hash computed the same way as the sibling GitHub sources above. Confirms npm v12 shipped July 8, 2026 with install-time script defaults live."
+    },
+    {
+      "source_id": "src:web:elastic.co/security-labs/shai-hulud-chaindrop-npm-supply-chain",
+      "kind": "web_reference",
+      "origin": "web",
+      "origin_ref": {
+        "url": "https://www.elastic.co/security-labs/shai-hulud-chaindrop-npm-supply-chain"
+      },
+      "title": "Shai-Hulud strikes again: CHAINDROP worm hits 400+ npm packages",
+      "language": "en",
+      "source_created_at": "2026-08-06",
+      "ingested_at": "2026-09-05T12:18:00Z",
+      "content_observed_at": "2026-09-05T12:18:00Z",
+      "content_hash": {
+        "algo": "sha256",
+        "value": "78f874f8ae8a2f0a129e439f94dd0e4d59972f0cc76996702739c0ea46a2e6bc"
+      },
+      "revision": 1,
+      "disposition": "used",
+      "disposition_authority": "ai_recommended",
+      "disposition_changed_at": "2026-09-05T13:00:00Z",
+      "used_by": [
+        {
+          "article_id": "art:npm-chaindrop-hardening-gap",
+          "role": "contradicting",
+          "first_used_at": "2026-09-05T13:00:00Z"
+        }
+      ],
+      "rights": {
+        "license": null,
+        "quotable": true,
+        "redistributable": false,
+        "attribution": "Elastic Security Labs (elastic.co/security-labs), primary incident responder. Quoted, not reproduced."
+      },
+      "notes": "content_hash computed the same way as above. role: contradicting because this is the incident that tests, and undercuts, the GitHub-sourced hardening narrative — it reports over 400 packages compromised via a preinstall hook, the exact mechanism npm v12 disables by default a month earlier, with no discussion of why the default did not stop it."
+    },
+    {
+      "source_id": "src:web:stepsecurity.io/blog/chaindrop-npm-worm",
+      "kind": "web_reference",
+      "origin": "web",
+      "origin_ref": {
+        "url": "https://www.stepsecurity.io/blog/chaindrop-npm-worm"
+      },
+      "title": "ChainDrop npm Worm: Bun-loaded CI/CD credential harvester with Ethereum dead-drop C2",
+      "language": "en",
+      "source_created_at": "2026-08-04",
+      "ingested_at": "2026-09-05T12:19:00Z",
+      "content_observed_at": "2026-09-05T12:19:00Z",
+      "content_hash": {
+        "algo": "sha256",
+        "value": "be8f107b2abd815e518db66ada0fcd99bda040d5704e147e4c74b6f4ace14d51"
+      },
+      "revision": 1,
+      "disposition": "used",
+      "disposition_authority": "ai_recommended",
+      "disposition_changed_at": "2026-09-05T13:00:00Z",
+      "used_by": [
+        {
+          "article_id": "art:npm-chaindrop-hardening-gap",
+          "role": "supporting",
+          "first_used_at": "2026-09-05T13:00:00Z"
+        }
+      ],
+      "rights": {
+        "license": null,
+        "quotable": true,
+        "redistributable": false,
+        "attribution": "StepSecurity (stepsecurity.io), independent security vendor incident analysis. Quoted, not reproduced."
+      },
+      "notes": "content_hash computed the same way as above. Independent count: 444 packages / 2,212 versions in under four hours — used to cross-check Elastic's 'over 400' figure and confirmed, on direct question, not to discuss npm v12's script defaults at all."
+    },
+    {
+      "source_id": "src:web:unit42.paloaltonetworks.com/chaindrop-npm-worm-analysis",
+      "kind": "web_reference",
+      "origin": "web",
+      "origin_ref": {
+        "url": "https://unit42.paloaltonetworks.com/chaindrop-npm-worm-analysis/"
+      },
+      "title": "ChainDrop: Inside a Self-Propagating npm Worm",
+      "language": "en",
+      "source_created_at": "2026-08-06",
+      "ingested_at": "2026-09-05T12:20:00Z",
+      "content_observed_at": "2026-09-05T12:20:00Z",
+      "content_hash": {
+        "algo": "sha256",
+        "value": "f17632bcc5a998a17aba69ff2c4fb954ab4c785357cebf819f1fd0d17a90cfee"
+      },
+      "revision": 1,
+      "disposition": "used",
+      "disposition_authority": "ai_recommended",
+      "disposition_changed_at": "2026-09-05T13:00:00Z",
+      "used_by": [
+        {
+          "article_id": "art:npm-chaindrop-hardening-gap",
+          "role": "background",
+          "first_used_at": "2026-09-05T13:00:00Z"
+        }
+      ],
+      "rights": {
+        "license": null,
+        "quotable": true,
+        "redistributable": false,
+        "attribution": "Unit 42, Palo Alto Networks (unit42.paloaltonetworks.com), independent security vendor incident analysis. Quoted, not reproduced."
+      },
+      "notes": "content_hash computed the same way as above. Third independent confirmation of the preinstall-hook vector and of the same silence on npm v12's script defaults."
+    }
+  ]
+}

@@ -1,0 +1,35 @@
+{
+  "schema_version": "1.0.0",
+  "feedback_id": "feedback:dogfood-2026-09-05-run-02-chaindrop-synthesis-gap",
+  "created_at": "2026-09-05T16:15:00Z",
+  "subject": {
+    "kind": "article",
+    "ref": "evals/dogfood/2026-09-05-run-02/04-draft-excerpt/excerpt.md",
+    "intent_ref": "intent:2026-09-05-npm-chaindrop-hardening-gap"
+  },
+  "evaluator": {
+    "type": "agent",
+    "agent": {
+      "runtime": "claude-code",
+      "model": "claude-sonnet-5",
+      "version": "claude-sonnet-5"
+    }
+  },
+  "basis": "model_inference",
+  "signal": "objective_quality",
+  "verdict": "mixed",
+  "owner_verdict": "unknown",
+  "statement": "During this run's L1 comparative review (l1:dogfood-2026-09-05-run-02-npm-chaindrop-vs-g01, dimension synthesis-independence, verdict worse), the subject's central synthetic move was found to be weaker than the reference's: G-01 derives a positive causal mechanism its sources do not state on their own (seat-based billing as a cost amplifier). This draft's synthesis is instead an absence-observation — that three independent incident reports name the exact vector npm v12 disables by default without discussing that relationship at all. That is a real, checked connection (each of the three reports was read for this specific question), but naming a gap across sources is a weaker synthetic move than deriving a mechanism from them. Thesis-worth, language-native-prose, and formulaic-ai-shaped were all tie on the same review, so this is not a wholesale quality problem — it is one specific, identifiable argument-construction gap.",
+  "routing": {
+    "layer": "frame",
+    "modality_layer": "TEXT argument / synthesis construction",
+    "confidence": "medium",
+    "abstained": false,
+    "rationale": "editorial/feedback-routing.json's frame layer owns 'Thesis, argument path, or article-worthiness' and the L1 outcome this run produced (ARGUMENT_REWORK) routes to exactly this layer by the review-l1 SKILL's own decision procedure (step 5: a synthesis-independence loss routes ARGUMENT_REWORK -> frame). Confidence is medium rather than high because the comparison rests on a single reference text (G-01) and a single dimension finding, not repeated independent evidence — consistent with this run's own anti_collapse note about the thinness of evals/real-output-corpus/. Not routed to writing or polish: per the frame layer's own do_not entry, an argument-construction gap repaired by rewriting sentences would leave the underlying synthesis unchanged while making it read better."
+  },
+  "scope": "task_local",
+  "calibration_ref": null,
+  "evidence_links": [
+    "l1:dogfood-2026-09-05-run-02-npm-chaindrop-vs-g01"
+  ]
+}

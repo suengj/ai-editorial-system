@@ -1,0 +1,73 @@
+{
+  "schema_version": "1.0.0",
+  "review_id": "l1:dogfood-2026-09-05-run-02-npm-chaindrop-vs-g01",
+  "subject": {
+    "kind": "article",
+    "ref": "evals/dogfood/2026-09-05-run-02/04-draft-excerpt/excerpt.md",
+    "content_type": "research"
+  },
+  "comparison": {
+    "mode": "pairwise",
+    "references": [
+      {
+        "ref": "evals/fixtures/golden/G-01-synthesis.md",
+        "provenance_class": "owner_created",
+        "content_type": "research"
+      }
+    ],
+    "same_content_type": true,
+    "anti_collapse": {
+      "triggered": false,
+      "note": "The sole reference is provenance_class owner_created (a golden fixture authored directly for this repository, not an agent-generated output), so the generated_output-monoculture rule does not apply. Recorded honestly, as in run-01's L1 review: evals/real-output-corpus/ still has no populated reference_eligible entries, so this is a comparison against the one real GOOD text available, not a populated corpus."
+      }
+  },
+  "dimensions": [
+    {
+      "id": "thesis-worth",
+      "verdict": "tie",
+      "evidence_span": "Subject opens with a falsifiable position stated before any evidence: \"GitHub가 npm 공급망을 지키겠다며 내놓은 조치와, 실제로 뚫린 사고는 서로 다른 이야기가 아니다. 같은 문 이야기다.\" Reference (G-01) opens the same way: \"추론 가격이 내려가도 SaaS gross margin은 회복되지 않는다.\" Both name a position a reader could disagree with in the first two sentences, before any citation appears.",
+      "rationale": "Neither piece opens by describing a topic; both stake a checkable claim immediately."
+    },
+    {
+      "id": "synthesis-independence",
+      "verdict": "worse",
+      "evidence_span": "G-01 constructs a positive causal mechanism none of its sources states on its own: \"seat 기반 과금이 완충 장치가 아니라 증폭 장치로 작동한다... 단가 30% 하락이 소비량 50% 증가와 만나면 COGS는 늘어난다.\" The subject's synthesis is an absence-observation rather than a constructed mechanism: \"이 사고를 분석한 세 개의 독립된 리포트... 중 어느 것도 피해 환경이 npm v12 이상을 쓰고 있었는지... 다루지 않는다.\" — this connects two real, independently-checked facts (the mitigation's target vector and the incident reports' silence about it) but the connective move is naming a gap, not deriving a new mechanism the way G-01's seat-billing amplifier is derived.",
+      "rationale": "Both syntheses go beyond restating a source, but G-01's is a stronger synthetic move (a derived causal mechanism) than the subject's (an observed absence across three sources)."
+    },
+    {
+      "id": "language-native-prose",
+      "verdict": "tie",
+      "evidence_span": "Both read as composed Korean rather than translated discourse — subject: \"이것은 방어가 실패했다는 증거가 아니다. 방어가 실제로 작동했는지조차 아직 아무도 확인하지 않았다는 증거다.\" uses the same natural clause-final reasoning as G-01's \"단가가 내려간 것은 list price이고, 마진을 결정하는 것은 seat당 실제 소비량이기 때문이다.\" Both retain English technical terms only where domain-native (subject: trusted publishing, preinstall, opt-in, CI 러너; G-01: gross margin, list price, COGS) per editorial/voice.md §1, rather than translating them awkwardly or leaving unnecessary English noun strings elsewhere.",
+      "rationale": "No stilted phrasing or unglossed machine-translation tell found in either text; English-term retention follows the same domain-native pattern in both."
+    },
+    {
+      "id": "formulaic-ai-shaped",
+      "verdict": "tie",
+      "evidence_span": "The subject uses one \"A가 아니라 B다\" contrast: \"여기서 눈에 띄는 것은 침해 자체가 아니라 침묵이다... 이것은 방어가 실패했다는 증거가 아니다. 방어가 실제로 작동했는지조차 아직 아무도 확인하지 않았다는 증거다.\" — this appears once, at the close, not repeated across successive paragraphs, so it does not cross editorial/voice.md §3's threshold (\"repeated constructions... across successive paragraphs make the writer visible\"). G-01 similarly uses one contrast move mid-argument (\"가격이 내려간 것은... 마진을 결정하는 것은...\") without repeating it.",
+      "rationale": "A single instance of a recognizable contrast move is a legitimate rhetorical choice in both texts, not a quota-driven signature; neither shows repetition."
+    },
+    {
+      "id": "audience-fit",
+      "verdict": "abstain",
+      "evidence_span": "The reference, evals/fixtures/golden/G-01-synthesis.md, carries no stated target audience (it is an L0 golden fixture demonstrating article shape, not an artifact tied to an Editorial Intent audience axis). The subject does carry a declared audience in 03-frame-and-article/article-bundle.json#frame.audience (\"npm/CI 파이프라인을 직접 운영하는 백엔드·플랫폼 엔지니어\"), but comparing depth/jargon fit against a reference with no audience profile at all would be inventing the comparison rather than observing it.",
+      "rationale": "audience-fit requires a named audience profile on both sides to be a real comparison; the reference has none, matching run-01's own abstain here for the same structural reason."
+    }
+  ],
+  "integrity": {
+    "status": "clear",
+    "evidence_span": "Every citation marker in the subject ([^c1]-[^c6]) resolves to a claim in 03-frame-and-article/article-bundle.json#verification.claims whose evidence URL was actually fetched and read for this run (02-sources/source-manifest.json). No phantom citation or fabricated figure was found. This is a distinct question from the L0 mechanical gate result below, which this record does not override."
+  },
+  "outcome": "ARGUMENT_REWORK",
+  "routes_to": "frame",
+  "reviewed_at": "2026-09-05T16:00:00Z",
+  "reviewer": {
+    "type": "agent",
+    "agent": {
+      "provider": "anthropic",
+      "model": "claude-sonnet-5",
+      "model_version": "claude-sonnet-5"
+    }
+  },
+  "final_authority": "human",
+  "notes": "SUE-569 run-02 (evals/dogfood/2026-09-05-run-02/). Agent-run comparative review with no human review behind it; final_authority stays human per schema regardless of outcome. Separately from this L1 record, node scripts/check-quality-gates.mjs (05-l0-gates/l0-result.txt) REJECTed the same subject excerpt on the citation-integrity gate: the Elastic Security Labs URL is reused across three distinct verified claims (c3, c4, c5), which the mechanical gate reads as an inflated evidence base regardless of whether each individual citation supports its adjacent claim (this review's integrity.status: clear judges exactly that narrower question, and both readings are recorded rather than reconciled into one score). The genuine defect this run carries into feedback (07-feedback/) is the L0 citation-integrity REJECT, not an L1 finding — the synthesis-independence 'worse' verdict above is a real but non-blocking stylistic comparison, not the run's headline defect."
+}
