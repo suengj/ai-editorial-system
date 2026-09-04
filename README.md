@@ -1,24 +1,42 @@
 # ai-editorial-system
 
-**Editorial Control Plane** for [suengj.com](https://suengj.com).
+**Editorial Learning Core.** A portable, reviewable definition of **how**
+natural-language editorial requests become framed, verified, audience-fit
+text/visual/audio output — and how the system gets better from what actually
+came out, without a human ever having to edit a JSON file by hand.
 
-This repository holds the *rules, contracts, skills, and evaluations* that turn
-reviewed sources into verifiable articles and derived artifacts. It holds no
-sources, no article archive, and no publication machinery.
+[suengj.com](https://suengj.com) is this Core's **default publication
+profile**, not its identity. It is one entry in
+`editorial/profiles/surface/`, alongside `academic-paper`, `newsletter`,
+`notebooklm`, and `youtube-script` — swappable data, never core logic.
+
+This repository holds the *rules, contracts, Skills, profiles, and
+evaluations*. It holds no sources, no article archive, and no publication
+machinery.
 
 ## What this repository is
 
-An editorial control plane: the portable, reviewable definition of **how** an
-article gets framed, verified, written, polished, finalized by a human, and
-compiled into derived artifacts.
-
 ```
-Source → Framing → Research/Verification → Writing → Polish
-       → HITL Final → Canonical Article → Brief / Visual / Slides → suengj.com
+Source / Reference
+        ↓
+Natural-language intake  →  Editorial Intent (five axes: transformation,
+        ↓                   content type, audience, surface, artifact)
+Frame / Plan
+        ↓
+Generate  —  text (V1 Skills) · visual (profiles + brand + pre-render gates)
+        ↓    · audio (planning + script, rendering deferred)
+L0 / L1 / Human evaluation
+        ↓
+Failure routing  →  targeted tuning  →  versioned calibration
+        ↓
+suengj.com · NotebookLM · academic · newsletter · …   (adapters)
 ```
 
-The pipeline stages live here as **contracts and Skills**. The things flowing
-through them live elsewhere, by design.
+Every axis, gate, and routing decision above is an executable contract, not
+prose. `suengj.com` is one adapter this Core hands articles off to; it is not
+where the Core's authority lives. See
+[`docs/architecture/V2-EDITORIAL-LEARNING-CORE.md`](docs/architecture/V2-EDITORIAL-LEARNING-CORE.md)
+for the full architecture.
 
 ## What this repository is NOT
 
@@ -67,17 +85,24 @@ Every contract in this repository is executable. Nothing here is enforced by
 convention alone.
 
 ```bash
-npm run validate    # every contract: boundary, source, article, rights,
-                    # skills, plan, presentation, HITL, artifacts, handoff
-npm test            # fourteen regression suites
-npm run eval        # editorial scorecard over the fixture corpus
-npm run matrix      # three source classes through one control plane
-npm run certify     # the V1 certification matrix
+npm run validate         # every V1 + V2 contract: boundary, source, article,
+                         # rights, skills, plan, presentation, HITL, package,
+                         # registry, visual, intent, routing, corpus, audio
+npm test                 # V1 + V2 regression suites
+npm run eval             # editorial scorecard over the fixture corpus
+npm run matrix           # three source classes through one control plane
+npm run certify          # the V1 certification matrix
+node scripts/certify-v2.mjs        # the V2 certification matrix (on demand)
+node scripts/system-scorecard.mjs --validate   # evals/system/ — is the Core itself improving?
 ```
 
-`npm run certify` is the one to read first. It runs every gate and maps the
-results onto the certification matrix, reporting what cannot be proved from
-this repository as **BLOCKED with a reason** rather than passing it quietly.
+`npm run certify` and `node scripts/certify-v2.mjs` are the ones to read
+first. Each runs every gate for its generation and maps the results onto a
+certification matrix, reporting what cannot be proved from this repository
+as **BLOCKED**/**NOT_RUN** with a reason rather than passing it quietly. V2's
+certification is honestly a mix of `PASS`, `PARTIAL`, `DEFERRED`, and
+`NOT_RUN` — see
+[`docs/architecture/V2-CERTIFICATION.md`](docs/architecture/V2-CERTIFICATION.md).
 
 Absence of a finding is a PASS only when the check demonstrably ran.
 
@@ -100,11 +125,19 @@ Absence of a finding is a PASS only when the check demonstrably ran.
 | Benchmarks and the reference catalog | [`benchmarks/`](benchmarks/), [`references/`](references/) |
 | Architecture decisions | [`docs/architecture/`](docs/architecture/) |
 
-Start with [`docs/architecture/V1-CERTIFICATION.md`](docs/architecture/V1-CERTIFICATION.md)
-for what is proved, what is caveated, and what is still open.
+Start with [`docs/architecture/V2-EDITORIAL-LEARNING-CORE.md`](docs/architecture/V2-EDITORIAL-LEARNING-CORE.md)
+for the architecture, and
+[`docs/architecture/V2-CERTIFICATION.md`](docs/architecture/V2-CERTIFICATION.md)
+for what is proved, what is partial, what is deferred, and what has not run
+yet. [`docs/architecture/V1-CERTIFICATION.md`](docs/architecture/V1-CERTIFICATION.md)
+remains the record for V1, which V2 builds on rather than replaces.
 
 ## Status
 
-V1 complete on every item that can be certified from this repository; one item
-is blocked on owner action (see the certification). Work, scope, and acceptance
-are tracked in Linear under *Suengj.com · AI Editorial System*.
+V1 is complete on every item that can be certified from this repository. V2
+(the Editorial Learning Core) is architecturally complete and
+fixture-exercised, honestly certified as a mix of partial, deferred, and
+not-yet-run — real operating evidence is the subject of the adoption
+milestone that follows (owner playbook and real pilot evidence land there,
+not here). Work, scope, and acceptance are tracked in Linear under
+*Suengj.com · AI Editorial System*.

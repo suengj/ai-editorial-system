@@ -1,5 +1,16 @@
 # V1 certification (AES-P6.4 / SUE-462)
 
+> **Status note (AES-V2.11 / SUE-569).** V1 remains valid and was not
+> superseded by V2. `docs/architecture/V2-EDITORIAL-LEARNING-CORE.md` states
+> this directly: "Nothing in V1 is retired. The Constitution, voice,
+> content-type profiles, source/article/artifact contracts, Skills, HITL
+> protocol, quality gates, lineage rules, and the L0 fixture corpus remain the
+> authorities they were. V2 adds the layers around them." `npm run certify`
+> still passes 10/10 as of this note. V2's own certification — a separate,
+> honestly more partial result — lives in
+> [`V2-CERTIFICATION.md`](V2-CERTIFICATION.md); nothing below this line was
+> rewritten for it.
+
 ```bash
 npm run certify
 ```
