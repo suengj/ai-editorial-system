@@ -143,7 +143,7 @@ Exactly one Editorial Intent record. `status` is one of:
    (`evaluateContentTypeMateriality`, `evaluateReferenceMateriality`,
    `evaluateAudienceMateriality`, `evaluateArtifactMateriality`) rather than
    reasoning about evidence burden by eye — a portability probe
-   (`evals/system/portability/2026-09-05-intra-family-capability.md`, P2/P3)
+   (`evals/system/portability/2026-09-05-portability-probe.md`, P2/P3)
    found a capable model substitute a plausibility call for the contract's
    own numeric test and invent a justification the contract never states.
    The module reads the same data `schemas/EDITORIAL-INTENT-CONTRACT.md`

@@ -225,12 +225,25 @@ const MATRIX = [
   {
     id: 8,
     name: 'Cross-agent portability / interpretation regression',
-    status: () => 'NOT_RUN',
-    evidence: 'No evidence exists to cite. This is the honest state, not an oversight.',
+    status: () => 'PARTIAL',
+    evidence:
+      'evals/system/portability/2026-09-05-portability-probe.md — one utterance, one frozen '
+      + 'contract state, four routes scored on all six semantic contracts. Three Claude tiers '
+      + '(Haiku 4.5 / Sonnet 5 / Opus 5) plus one genuine non-Anthropic route (OpenAI '
+      + 'open-weights gpt-oss:120b via ollama). Transformation, audience, surface, artifact id '
+      + 'and the routing layer id agreed ACROSS the vendor boundary. The content-type '
+      + 'materiality gate failed on the weakest Claude route and on the cross-vendor route, '
+      + 'both by fabricating an authority the contract does not contain — routed to the '
+      + 'contract, not to a prompt, and fixed by scripts/lib/materiality-core.mjs.',
     caveat:
-      'No task in this repository has ever been executed through a non-Claude model/agent route. '
-      + 'SUE-569 requires this NOT be softened or hidden by certifying only the manager\'s preferred '
-      + 'model — so it is reported NOT_RUN with the exact method a later reviewer should execute:\n'
+      'PARTIAL, not PASS, for three stated reasons: the completed non-Anthropic route (ollama) '
+      + 'cannot browse a filesystem, so contracts were supplied in-context rather than discovered, '
+      + 'which tests interpretation but not discovery; only one of three non-Anthropic routes '
+      + 'completed (gemini needs interactive auth, deepseek returned nothing); and the strongest '
+      + 'vendor route, OpenAI codex — authenticated on this machine — is quota-blocked until '
+      + '2026-09-07 and should be rerun then for a full-strength result. An earlier draft recorded '
+      + 'this area NOT_RUN on the stated grounds that no non-Claude route was available; that was '
+      + 'asserted without checking the machine and was wrong. The full-strength method remains:\n'
       + '    Task: resolve one small, representative Editorial Intent from a natural-language request\n'
       + '    that has a materially ambiguous transformation/audience/surface read (e.g. the §3 example\n'
       + '    "make it a thumbnail" case, or a request that could be task-local vs durable feedback),\n'

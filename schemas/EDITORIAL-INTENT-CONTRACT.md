@@ -97,7 +97,7 @@ cost.** Concretely:
   and present it as settled.
 
 **This test is executable, not a judgement call.** A portability probe
-(`evals/system/portability/2026-09-05-intra-family-capability.md`, P2/P3)
+(`evals/system/portability/2026-09-05-portability-probe.md`, P2/P3)
 found a capable model substitute a plausibility read for the content-type
 comparison above and invent a justification the contract never states, and
 found three routes produce three different clarification sets from the same

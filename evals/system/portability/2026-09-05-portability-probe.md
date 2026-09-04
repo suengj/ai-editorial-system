@@ -126,3 +126,74 @@ a fix that makes the system *less* dependent on model strength rather than more.
 
 Certification effect: area 8 stays **`NOT_RUN`** for cross-vendor portability.
 This probe is recorded as intra-family evidence only.
+
+
+---
+
+# Addendum — cross-vendor route, same day
+
+The claim above that a cross-vendor run was unavailable **was wrong, and is
+corrected here.** The machine had non-Anthropic routes installed; that was
+asserted without being checked. Checking took one command.
+
+## Routes attempted
+
+| Route | Vendor | Outcome |
+|---|---|---|
+| `codex` (gpt-5.6-terra) | OpenAI | **blocked** — account usage limit, retryable 2026-09-07 |
+| `gemini` 0.3.2 | Google | **blocked** — requires interactive browser auth, unusable non-interactively |
+| `ollama gpt-oss:120b-cloud` | OpenAI open-weights | **completed** |
+| `ollama deepseek-v3.1:671b-cloud` | DeepSeek | **failed** — empty response |
+
+## Method caveat, stated plainly
+
+The ollama routes cannot browse a filesystem, so the contracts were **supplied
+in-context** rather than navigated. That makes this a weaker test than the
+Claude routes faced: it measures contract *interpretation* but not contract
+*discovery*. The supplied bundle was spine §2–§5, the materiality test, the
+axis profile id lists, the routing layer ids, and each content profile's
+`evidence_burden` plus `artifacts.inappropriate` — the same material the Claude
+routes actually read.
+
+## Result — gpt-oss:120b (non-Anthropic)
+
+| Contract | Cross-vendor | Claude A/B/C | Agreement |
+|---|---|---|---|
+| Transformation | `synthesize` | `synthesize` ×3 | **4/4** |
+| Audience | `domain-practitioner` | same ×3 | **4/4** |
+| Surface | `suengj-com` | same ×3 | **4/4** |
+| Artifact | `visual/body-infographic` | same ×3 | **4/4** |
+| Routing layer | `information_density`, exact id | B, C exact; A paraphrased | **3/4 exact** |
+| Content-type materiality | **`note`, assumed** | A assumed; B, C `missing_material` | **2/4** |
+
+## The finding, sharpened
+
+**Four axes and the routing layer id agreed across a vendor boundary.** The
+Source/Reference split, the axis model, and the layer vocabulary are portable
+in the way SUE-569 actually cares about — a different vendor, different
+training, no shared house idiom, same answers.
+
+**The content-type gate failed again, and failed worse.** The cross-vendor
+route chose `note` — a reading that is *mechanically excluded*, because
+`note.json` lists `infographic` under `artifacts.inappropriate` and an
+infographic was requested. It then justified the choice by citing a
+"default for `content_type` when missing" in `editorial-intent.schema.json`.
+**No such default exists.** Like the weakest Claude route, it fabricated an
+authority for a judgement the contract had already decided numerically.
+
+Two independent vendors invented a rationale at exactly the same point. That
+is not a model quirk; it is a contract leaving a decision to judgement that it
+had the data to compute.
+
+**The fix already shipped catches this case.** `materiality-core.mjs` excludes
+`note` mechanically on the artifact-inappropriateness rule before any evidence
+burden is compared — the exact reasoning step both fabricating routes skipped.
+
+## Certification effect
+
+Area 8 moves from `NOT_RUN` to **`PARTIAL`**: one genuine non-Anthropic route
+completed against the same contract state and was scored on all six semantic
+contracts. It is not upgraded further because contracts were supplied rather
+than discovered, only one of three non-Anthropic routes completed, and the
+strongest available vendor route (OpenAI `codex`) is quota-blocked until
+2026-09-07. A full-strength repeat should run `codex` after that date.

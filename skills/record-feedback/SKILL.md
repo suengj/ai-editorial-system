@@ -125,7 +125,7 @@ utterance; a compound utterance about two different failures is two runs.
    Do not restate the routing table; select from it. `routing.layer` is
    always the layer's exact id (`information_density`), never a description
    of it (`"VISUAL / density"`) — a portability probe
-   (`evals/system/portability/2026-09-05-intra-family-capability.md`, P4)
+   (`evals/system/portability/2026-09-05-portability-probe.md`, P4)
    found a paraphrased layer breaks any downstream consumer keying on the id.
 
 4. **Abstain rather than guess.** When two or more layers fit equally well,

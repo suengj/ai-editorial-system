@@ -35,7 +35,7 @@ of 8 certification areas.**
 | 5 | Non-suengj.com profile / genuinely generic capability | PARTIAL |
 | 6 | Feedback persisted and routed without manual JSON editing | PARTIAL |
 | 7 | Calibration/tuning record — real keep-or-change decision | PARTIAL |
-| 8 | Cross-agent portability / interpretation regression | **NOT_RUN** |
+| 8 | Cross-agent portability / interpretation regression | **PARTIAL** |
 
 **No PASS is recorded on any of the eight areas.** Every mechanical gate that
 exists (validators, unit/regression tests, the fixture eval, `npm run
@@ -207,14 +207,28 @@ real preference decision has been made.
 
 ## 8. Cross-agent portability / interpretation regression
 
-**NOT_RUN.** No task in this repository has ever been run through a
-non-Claude model/agent route. Per SUE-569's explicit instruction — *"A
-portability failure cannot be hidden by certifying only the manager's
-preferred model"* — this is reported as `NOT_RUN`, not softened into
-`PARTIAL` or omitted.
+**PARTIAL.** A genuine non-Anthropic route (OpenAI open-weights `gpt-oss:120b`
+via ollama) resolved the same task against the same contract state and was
+scored on all six semantic contracts. Four axes and the routing layer id
+agreed across the vendor boundary; the content-type materiality gate failed,
+and failed by fabricating a schema default that does not exist — the same
+failure point, and the same fabrication behaviour, as the weakest Claude
+route. That is contract evidence, not a model quirk, and the shipped
+`materiality-core.mjs` fix catches it.
 
-**An intra-family probe has been run, and it does not change this status.**
-[`evals/system/portability/2026-09-05-intra-family-capability.md`](../../evals/system/portability/2026-09-05-intra-family-capability.md)
+Not upgraded past `PARTIAL`: the ollama route cannot browse a filesystem, so
+contracts were supplied in-context rather than discovered; only one of three
+non-Anthropic routes completed; and the strongest vendor route (OpenAI
+`codex`, authenticated on this machine) is quota-blocked until 2026-09-07 and
+should be rerun then.
+
+Earlier drafts of this document recorded this area as `NOT_RUN` on the stated
+grounds that no non-Claude route was available from this session. That was
+asserted without checking the machine and was wrong; `codex`, `gemini`, and
+`ollama` were all installed.
+
+**Full probe record, both phases:**
+[`evals/system/portability/2026-09-05-portability-probe.md`](../../evals/system/portability/2026-09-05-portability-probe.md)
 records one Korean utterance resolved by three Claude capability tiers
 (Haiku 4.5, Sonnet 5, Opus 5) against a frozen repository state, compared on
 the six semantic contracts below. Its result: the axes, the Source/Reference
@@ -229,8 +243,8 @@ the failing resolution is a named regression fixture.
 
 The probe is real operating evidence and is the first in this repository.
 It is **not** the cross-vendor comparison this area requires, and it is
-recorded as intra-family evidence only. Area 8 stays `NOT_RUN` until a
-genuinely different vendor's agent route resolves the same task. The method a future reviewer should execute is written
+recorded as intra-family evidence only. A full-strength repeat with repository navigation (not supplied context) remains the
+bar for moving this to `PASS`. The method a future reviewer should execute is written
 out in full in `scripts/certify-v2.mjs`'s matrix item 8 (reproduced here for
 readers of this document who are not reading the script):
 
