@@ -252,6 +252,7 @@ marketing infographic
 
 Use this calibration together with:
 
+- `SUENGJ-ARTICLE-IMAGE-FAMILIES.md` — explicit thumbnail vs body-infographic functional split;
 - `DIAGRAMMATIC-VISUAL-LANGUAGE.md` — durable visual grammar;
 - `ARTICLE-ILLUSTRATION-ROUTING.md` — information type → visual family;
 - `VISUAL-INFORMATION-GAIN.md` — whether the visual adds enough new information;
@@ -260,6 +261,22 @@ Use this calibration together with:
 
 If a future owner review produces a materially different preference ranking, update this calibration document rather than rewriting the durable editorial constitution.
 
+## 9. Functional split — 2026-09-04
+
+The taste calibration is now explicitly separated from image function.
+
+```text
+same suengj.com surface language
+≠
+same internal composition
+```
+
+Thumbnail / cover / intro visuals are **thesis-first**: sparse, low-text, high-negative-space, and optimized for first-read recognition at small sizes.
+
+Body infographic / explanatory research graphics are **information-first**: modular, capable of higher semantic density, and allowed to use stable semantic labels when needed. They must remain readable on mobile and should split into multiple plates when a single canvas starts answering multiple primary questions.
+
+Do not make a thumbnail denser merely because the infographic rules allow richer information. Do not make a body infographic weaker merely because the thumbnail style is visually sparse. The authoritative family contract is `SUENGJ-ARTICLE-IMAGE-FAMILIES.md`.
+
 ## One-line rule
 
-> **For suengj.com, refinement comes from space, thin structure, muted natural color, and subtle material depth; use fewer, stronger groups, and treat infographic as a synthesis geometry that must add cross-section information rather than a denser version of the same diagram.**
+> **For suengj.com, refinement comes from space, thin structure, muted natural color, and subtle material depth; apply that shared surface differently by function: sparse thesis-first thumbnails, information-first mobile-readable body infographics.**
