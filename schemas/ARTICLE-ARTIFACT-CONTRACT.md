@@ -159,3 +159,41 @@ choice.
 8. Distribution artifacts require an article in `final` or `published`
 9. Fact-bearing artifacts require `source_references` resolving to verified claims
 10. Staleness level is consistent with the two hashes — it cannot be asserted by hand
+
+## Artifact `kind` and artifact profile are different layers (AES-V2.7 / V2.8)
+
+V2 adds artifact **profiles** under `editorial/profiles/artifact/`. They do not
+replace `kind`, and the two are not competing vocabularies for the same thing.
+
+| | `artifact.kind` (V1, here) | artifact profile (V2) |
+|---|---|---|
+| Answers | *what is this artifact* | *how is this artifact planned and generated* |
+| Used by | the Article/Artifact contract, lineage, staleness, artifact fit by content type | intake, planning, prompt/script compilation, pre-render gates |
+| Granularity | coarse — eight kinds | fine — one per generation contract |
+| Cardinality | one per artifact | one `kind` may have several profiles |
+
+The relationship is many-to-one, and some profiles map to no `kind` at all:
+
+```text
+infographic      ← visual/body-infographic
+evidence_visual  ← visual/evidence-visual · visual/analytical-graphic · visual/explanatory-diagram
+slides           ← visual/slide-image
+audio            ← audio/monologue · audio/dialogue · audio/timed-narration
+video            ← (no V2 profile; VIDEO-STORYBOARD.md remains the authority)
+—                ← visual/thumbnail · visual/social-card · visual/concept-illustration
+```
+
+The last row is deliberate. A cover image, a social card, and an editorial
+concept illustration are **publication-surface assets**, not artifacts that
+assert facts on their own. They therefore have no `kind`, do not enter the
+staleness or `source_references` machinery above, and are governed by
+`editorial/ARTICLE-VISUAL-PUBLICATION-HANDOFF.md` instead.
+
+That distinction is load-bearing rather than bookkeeping: an artifact with a
+`kind` carries factual assertions and must tie them to verified claims, while a
+surface asset must not be making claims in the first place. If a thumbnail
+starts asserting a number, it has become an `evidence_visual` and acquires the
+whole contract above — a routing decision, not a styling one.
+
+Adding a profile never changes `kind`. Adding a `kind` is a change to this
+contract and is governed accordingly.
