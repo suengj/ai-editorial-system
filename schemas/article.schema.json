@@ -117,7 +117,7 @@
       "$ref": "#/$defs/transformation"
     },
     "type_fields": {
-      "description": "Fields required or permitted by the content-type profile (editorial/profiles/*.json). Shape varies by type; enforced by scripts/lib/profile-core.mjs rather than by this schema.",
+      "description": "Fields required or permitted by the content-type profile (editorial/profiles/content/*.json). Shape varies by type; enforced by scripts/lib/profile-core.mjs rather than by this schema.",
       "type": "object"
     },
     "answer": {

@@ -1,0 +1,34 @@
+{
+  "schema_version": "1.0.0",
+  "feedback_id": "feedback:dogfood-2026-09-05-g04-uncited-figure",
+  "created_at": "2026-09-05T11:45:00Z",
+  "subject": {
+    "kind": "article",
+    "ref": "evals/fixtures/golden/G-04-research-native-korean.md"
+  },
+  "evaluator": {
+    "type": "agent",
+    "agent": {
+      "runtime": "claude-code",
+      "model": "claude-sonnet-5",
+      "version": "claude-sonnet-5"
+    }
+  },
+  "basis": "model_inference",
+  "signal": "objective_quality",
+  "verdict": "mixed",
+  "owner_verdict": "unknown",
+  "statement": "During the SUE-569 dogfood run's L1 comparative review (l1:dogfood-2026-09-05-g04-vs-g01), a specific uncited figure was found in this text: \"한 보존 프로그램은 2001년 이후 약 20년에 걸쳐 550만 권가량을 처리했고\" — no footnote, named institution, or source note anywhere in the fixture supports the \"약 20년\" / \"550만 권\" numbers. Thesis-worth and language-native-prose were tie on the same review, so this is not a wholesale quality problem — it is one specific, identifiable factual-support gap.",
+  "routing": {
+    "layer": "verification",
+    "modality_layer": "TEXT factual support / citation",
+    "confidence": "high",
+    "abstained": false,
+    "rationale": "A specific, precise figure asserted with no citation or attributable source is exactly editorial/feedback-routing.json's verification layer symptom \"an unsupported material claim\" — not a frame, audience, or prose issue. It is not routed to polish: rewording around an unsupported number would hide the problem rather than fix it (verification layer's own do_not entry against polish)."
+  },
+  "scope": "task_local",
+  "calibration_ref": null,
+  "evidence_links": [
+    "l1:dogfood-2026-09-05-g04-vs-g01"
+  ]
+}

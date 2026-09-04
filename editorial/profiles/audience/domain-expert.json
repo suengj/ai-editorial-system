@@ -1,0 +1,37 @@
+{
+  "schema_version": "1.0.0",
+  "audience": "domain-expert",
+  "intent": "Authoritative in the field; frequently knows more about the specifics than the piece will cover.",
+  "expertise": "expert",
+  "domain_familiarity": "Authoritative: publishes, reviews, or sets standard practice in the field.",
+  "purpose": "Wants the specific new claim, evidence, or method detail — nothing that re-derives what they already know.",
+  "attention_context": "study",
+  "jargon_tolerance": "high",
+  "assumed_knowledge": [
+    "the full domain vocabulary and its method literature",
+    "edge cases and known failure modes of standard approaches"
+  ],
+  "life_stage": null,
+  "modality_effects": {
+    "text": {
+      "explanation_depth": "state the claim and its evidence directly; no scaffolding explanation of established concepts",
+      "section_granularity": "may be a single dense section; no obligation to segment for pacing"
+    },
+    "visual": {
+      "label_density": "higher label density is acceptable than for any other audience",
+      "legend": "legend may be omitted for domain-standard encodings",
+      "acronym_expansion": "acronyms need no in-frame expansion"
+    },
+    "audio": {
+      "thought_unit_length": "long, unbroken technical passages are acceptable",
+      "pace": "can run fast",
+      "term_glossing": "no glossing; jargon-dense delivery is expected and preferred"
+    }
+  },
+  "anti_patterns": [
+    "Explaining what the expert already knows",
+    "Hedging an established fact to make the piece read as more accessible",
+    "Padding to reach an expected length instead of stopping when the new claim is made",
+    "Adding a legend or acronym expansion the expert audience does not need, diluting information density"
+  ]
+}

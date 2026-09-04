@@ -1,0 +1,172 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://suengj.com/schemas/system-snapshot.schema.json",
+  "title": "System evaluation snapshot",
+  "description": "One dimension-level evaluation of the Editorial Learning Core itself (AES-V2.14 / SUE-573), distinct from any article/artifact quality record. Judges whether V2 is getting better or merely bigger, never with one aggregate number. Both evals/system/current.json (kind: current, a derived index over the newest snapshot) and every file under evals/system/snapshots/ (kind: snapshot) conform to this schema. See evals/system/README.md for the evaluation contract and docs/architecture/V2-EDITORIAL-LEARNING-CORE.md §11 for the spine this implements. Deliberately carries no field capable of expressing an aggregate/overall score — scripts/lib/system-eval-core.mjs additionally rejects any disallowed score-shaped key found anywhere in the document, since additionalProperties:false alone cannot forbid a badly-named string value.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version", "snapshot_id", "kind", "derived_from_snapshot", "created_at",
+    "evaluation_trigger", "trigger_note", "activation", "dimensions", "known_gaps"
+  ],
+  "properties": {
+    "schema_version": { "const": "1.0.0" },
+    "snapshot_id": {
+      "description": "Stable id. A real snapshot lives on disk at evals/system/snapshots/<slug-after-system-eval:>.json. The single current.json instance always carries the sentinel id system-eval:current.",
+      "type": "string",
+      "pattern": "^system-eval:[a-z0-9]+(-[a-z0-9]+)*$"
+    },
+    "kind": {
+      "description": "snapshot: one immutable, dated evaluation under snapshots/. current: the derived, rebuildable summary at current.json — always identical to the newest snapshot's judgement, never hand-edited independently of one.",
+      "enum": ["snapshot", "current"]
+    },
+    "derived_from_snapshot": {
+      "description": "Required non-null when kind is current: the snapshot_id current.json was rebuilt from. Required null when kind is snapshot: a snapshot is authored directly, never derived.",
+      "type": ["string", "null"],
+      "pattern": "^system-eval:[a-z0-9]+(-[a-z0-9]+)*$"
+    },
+    "created_at": { "type": "string", "format": "date-time" },
+    "evaluation_trigger": {
+      "description": "Why this evaluation ran. The scorecard never runs after every article or asset (docs/architecture/V2-EDITORIAL-LEARNING-CORE.md §11) — only on one of these declared triggers.",
+      "enum": ["initial_seed", "owner_request", "evidence_threshold", "architecture_change", "v3_readiness_gate"]
+    },
+    "trigger_note": {
+      "description": "One or two sentences on the concrete circumstance behind evaluation_trigger — never left to be inferred later from a date alone.",
+      "type": "string",
+      "minLength": 1
+    },
+    "activation": { "$ref": "#/$defs/activation" },
+    "dimensions": {
+      "description": "Exactly the ten SUE-573 dimensions, each appearing exactly once. scripts/lib/system-eval-core.mjs enforces the count and the fixed id set — this schema's item shape cannot by itself (no minItems/uniqueItems in this repo's JSON-Schema subset).",
+      "type": "array",
+      "items": { "$ref": "#/$defs/dimension" }
+    },
+    "known_gaps": {
+      "description": "Evidence gaps recorded honestly instead of papered over with an invented field or store. At minimum the two gaps named in evals/system/README.md (no revision/replan lineage; no cost/context proxy) must appear somewhere across the surface's known_gaps.",
+      "type": "array",
+      "items": { "$ref": "#/$defs/gap" }
+    },
+    "notes": { "type": "string" }
+  },
+  "$defs": {
+    "activation": {
+      "description": "The SUE-573 activation/sufficiency judgement: not a rigid quota, a declared and revisable read of whether repeated patterns can yet be distinguished from one-off incidents.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["sufficiency_conditions", "overall", "rationale"],
+      "properties": {
+        "sufficiency_conditions": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/sufficiency_condition" }
+        },
+        "overall": {
+          "enum": ["not_yet_sufficient", "sufficient"]
+        },
+        "rationale": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "sufficiency_condition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "description", "met", "note"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "description": { "type": "string", "minLength": 1 },
+        "met": { "type": "boolean" },
+        "note": { "type": "string", "minLength": 1 }
+      }
+    },
+    "dimension": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id", "asks", "evidence_sources", "judgement_rules", "insufficient_evidence_when",
+        "state", "evidence_refs", "trend", "interpretation", "recommended_action"
+      ],
+      "properties": {
+        "id": {
+          "description": "Verbatim SUE-573 dimension id.",
+          "enum": [
+            "quality_lift", "operator_friction", "context_efficiency", "reference_health",
+            "calibration_health", "routing_effectiveness", "portability", "governance_safety",
+            "cost_per_accepted", "maintainability"
+          ]
+        },
+        "asks": {
+          "description": "The question this dimension answers, in one sentence.",
+          "type": "string",
+          "minLength": 1
+        },
+        "evidence_sources": {
+          "description": "The static, load-bearing declaration: which real repository paths and record fields this dimension is ever allowed to read from. Each entry is `<repo-relative-path>[#<field-or-key>][ — <note>]`; scripts/lib/system-eval-core.mjs resolves the path (and, when present, checks the field/key text actually appears in that path) rather than trusting the string. A dimension with no real evidence source yet must say so here and in insufficient_evidence_when — never invent a field or a file to look measurable.",
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "judgement_rules": { "$ref": "#/$defs/judgement_rules" },
+        "insufficient_evidence_when": {
+          "description": "What makes INSUFFICIENT_EVIDENCE the honest answer for this dimension right now (or in general, structurally).",
+          "type": "string",
+          "minLength": 1
+        },
+        "state": {
+          "enum": ["HEALTHY", "WATCH", "STRUCTURAL_RISK", "INSUFFICIENT_EVIDENCE"]
+        },
+        "evidence_refs": {
+          "description": "The actual evidence this specific judgement rests on, drawn only from evidence_sources above. Every non-INSUFFICIENT_EVIDENCE state requires at least one entry here (scripts/lib/system-eval-core.mjs rejects a HEALTHY/WATCH/STRUCTURAL_RISK claim with none). Each entry uses the same `path[#field][ — note]` convention as evidence_sources and must resolve to a real path.",
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "trend": {
+          "enum": ["improving", "stable", "degrading", "not_yet_observable"]
+        },
+        "interpretation": {
+          "description": "What the evidence actually shows, in plain language a reviewer with no chat history can check against the cited refs.",
+          "type": "string",
+          "minLength": 1
+        },
+        "recommended_action": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "judgement_rules": {
+      "description": "What distinguishes each state for this dimension. Quantitative signals may be named here, but the rule is always a judgement a human or reviewer applies, never a formula that outputs a score.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["healthy", "watch", "structural_risk"],
+      "properties": {
+        "healthy": { "type": "string", "minLength": 1 },
+        "watch": { "type": "string", "minLength": 1 },
+        "structural_risk": { "type": "string", "minLength": 1 }
+      }
+    },
+    "gap": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "description", "limits_dimensions", "owner_contract"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "description": { "type": "string", "minLength": 1 },
+        "limits_dimensions": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "quality_lift", "operator_friction", "context_efficiency", "reference_health",
+              "calibration_health", "routing_effectiveness", "portability", "governance_safety",
+              "cost_per_accepted", "maintainability"
+            ]
+          }
+        },
+        "owner_contract": {
+          "description": "Which existing or planned contract should own filling this gap. This package identifies gaps; it does not resolve them by adding fields of its own.",
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    }
+  }
+}

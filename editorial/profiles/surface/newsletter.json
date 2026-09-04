@@ -1,0 +1,27 @@
+{
+  "schema_version": "1.0.0",
+  "surface": "newsletter",
+  "role": "publication",
+  "owner_system": "The newsletter distribution platform (external, or a suengj-com distribution component) — not this repo.",
+  "authority": {
+    "surface_decides": [
+      "send schedule and cadence",
+      "subject line and preview-text convention"
+    ],
+    "core_decides": [
+      "editorial content, verification, and voice fit"
+    ]
+  },
+  "constraints": {
+    "length_hint": "short; compressed for scan-reading in an inbox",
+    "front_matter": "none — plain body plus minimal metadata, unlike suengj-com's editorial front matter",
+    "citation_style": "inline links only, no footnote apparatus",
+    "freshness": "tight; newsletter cadence assumes near-term relevance regardless of the content-type profile's own freshness rule"
+  },
+  "artifact_fit": ["text/brief"],
+  "publication_boundary": "Whoever owns the newsletter platform's send action controls publication; this repo may never trigger a send.",
+  "replaceable": {
+    "value": true,
+    "note": "Substitutable across newsletter platforms provided the length and citation constraints above hold."
+  }
+}

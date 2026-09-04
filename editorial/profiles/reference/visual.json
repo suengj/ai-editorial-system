@@ -1,0 +1,82 @@
+{
+  "schema_version": "1.0.0",
+  "modality": "visual",
+  "source_vocabulary": [
+    "editorial/SUENGJ-VISUAL-TASTE-CALIBRATION.md",
+    "editorial/VISUAL-INFORMATION-GAIN.md",
+    "editorial/SUENGJ-ARTICLE-IMAGE-FAMILIES.md"
+  ],
+  "notes": "Dimensions name the vocabulary already defined in the three files above rather than restating it — in particular the thumbnail-vs-body-infographic functional split (SUENGJ-ARTICLE-IMAGE-FAMILIES.md) and the marginal-information-gain test (VISUAL-INFORMATION-GAIN.md), which a visual evaluation must not contradict.",
+  "dimensions": [
+    {
+      "id": "semantic-density",
+      "asks": "How many distinct information units does the image carry, relative to its family (thumbnail: 1 dominant idea + 1-2 supports; body infographic: 2-4 modules)?",
+      "adopt_signal": "Density matched to the family's target, not maximized.",
+      "imitation_risk": "low — a target range, not an expression"
+    },
+    {
+      "id": "visual-density",
+      "asks": "How much visual chrome (icons, cards, mini-charts) competes for attention independent of the information it carries?",
+      "adopt_signal": "Low-to-medium chrome even when semantic density is medium/high (SUENGJ-ARTICLE-IMAGE-FAMILIES.md §4.2).",
+      "imitation_risk": "low"
+    },
+    {
+      "id": "hierarchy",
+      "asks": "Is there one clear reading path, or several competing first-reads?",
+      "adopt_signal": "A first-read payload legible in 2-5 seconds (VISUAL-INFORMATION-GAIN.md §5).",
+      "imitation_risk": "low — hierarchy discipline transfers across unrelated subject matter"
+    },
+    {
+      "id": "composition",
+      "asks": "Does the arrangement feel designed as one composition, or assembled from independent parts?",
+      "adopt_signal": "Fewer, larger compositional groups; asymmetry that still balances (SUENGJ-VISUAL-TASTE-CALIBRATION.md §1).",
+      "imitation_risk": "high — a specific composition is usually the reference's own expression, not a transferable principle"
+    },
+    {
+      "id": "spacing",
+      "asks": "Does negative space do work, or is it filled to look complete?",
+      "adopt_signal": "Generous negative space that is not filled merely because it is empty (SUENGJ-VISUAL-TASTE-CALIBRATION.md §4).",
+      "imitation_risk": "low"
+    },
+    {
+      "id": "palette-colour-role",
+      "asks": "Does color carry a semantic role (structure, accent, warning), or is it decorative?",
+      "adopt_signal": "A restrained, role-based palette (SUENGJ-VISUAL-TASTE-CALIBRATION.md §2).",
+      "imitation_risk": "high — an exact palette is usually a house identity, not a reusable principle; note the role it plays instead of the hex values"
+    },
+    {
+      "id": "line-weight-materiality",
+      "asks": "Is linework thin and quiet, and is any material depth subtle rather than glossy/cinematic?",
+      "adopt_signal": "Thin structural rules, no heavy shadow or glossy 3D (SUENGJ-VISUAL-TASTE-CALIBRATION.md §2).",
+      "imitation_risk": "medium"
+    },
+    {
+      "id": "label-text-strategy",
+      "asks": "Does the family's text rule hold — no baked-in mutable copy in a thumbnail, stable semantic labels only where they earn their place in a body infographic (SUENGJ-ARTICLE-IMAGE-FAMILIES.md §3.3, §4.3)?",
+      "adopt_signal": "Text used exactly where the family contract allows it.",
+      "imitation_risk": "low"
+    },
+    {
+      "id": "artifact-suitability",
+      "asks": "What is this reference actually authoritative for — thumbnail, body infographic, both, or neither?",
+      "adopt_signal": "A named artifact family this evaluation's evidence actually supports.",
+      "imitation_risk": "low — this dimension exists to bound the other dimensions, not to be adopted itself"
+    },
+    {
+      "id": "audience-suitability",
+      "asks": "Does information density and label/legend use match a named audience's expertise (V2-EDITORIAL-LEARNING-CORE.md §3 table)?",
+      "adopt_signal": "Density that would change if the audience changed.",
+      "imitation_risk": "low"
+    }
+  ],
+  "not_authoritative_for": [
+    "A good thumbnail is not evidence about body-infographic density, and vice versa — see SUENGJ-ARTICLE-IMAGE-FAMILIES.md §1.",
+    "Exact evidence values, axes, or chronology — those remain deterministic per SUENGJ-ARTICLE-IMAGE-FAMILIES.md §4.5 and editorial/RIGHTS-AND-PROVENANCE.md §3; a visual reference may inform style, never invent evidence.",
+    "Whether a visual should exist at all — that is the information-gain gate in VISUAL-INFORMATION-GAIN.md, not this profile."
+  ],
+  "selection_hints": [
+    "Match applicable_to.artifacts to the requested visual/* artifact before matching palette or composition — a body-infographic evaluation is weak selection evidence for a thumbnail request.",
+    "Prefer evaluations whose dimensions include at least one adopt verdict specific to the requested artifact family; a reference evaluated only as do_not_copy across the board is evidence to avoid imitation, not evidence to select toward generation.",
+    "composition and palette-colour-role are the two dimensions most often do_not_copy; do not select a reference primarily for these unless the evaluation explicitly marks them adopt."
+  ]
+}

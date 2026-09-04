@@ -1,0 +1,21 @@
+{
+  "type": "line",
+  "title": "추론 단가와 SaaS 마진 지수 (예시 데이터, 미검증)",
+  "description": "가격이 내려가는 동안 마진 지수는 거의 움직이지 않는 괴리를 보여주는 일러스트레이션용 예시 수치.",
+  "period": "2025 Q1–Q4 (예시)",
+  "source_note": "예시 데이터 — verify-claims 미실행, 실제 수치 아님 (dogfood run, evals/dogfood/2026-09-05-run-01/02-visual/claims.json)",
+  "x": { "label": "분기" },
+  "y": { "label": "기준 대비 변화율 (2025 Q1=100)", "unit": "" },
+  "series": [
+    {
+      "name": "발표 단가 지수",
+      "claim": "c1-illustrative-price-index",
+      "points": [[1, 100], [2, 85], [3, 72], [4, 60]]
+    },
+    {
+      "name": "보고 마진 지수",
+      "claim": "c2-illustrative-margin-index",
+      "points": [[1, 100], [2, 99], [3, 101], [4, 98]]
+    }
+  ]
+}

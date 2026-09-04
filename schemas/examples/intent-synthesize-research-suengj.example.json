@@ -1,0 +1,74 @@
+{
+  "schema_version": "2.0.0",
+  "intent_id": "intent:2026-09-05-synthesize-research-suengj",
+  "created_at": "2026-09-05T09:12:00Z",
+  "request": {
+    "utterance": "이 세 개 자료 종합해서 suengj.com에 올릴 research 글 하나 써줘. 본문에 들어갈 body infographic도 하나 만들어줘.",
+    "language": "ko",
+    "received_by": "claude-code",
+    "received_at": "2026-09-05T09:12:00Z"
+  },
+  "axes": {
+    "transformation": {
+      "value": "synthesize",
+      "state": "confirmed",
+      "profile_ref": "editorial/profiles/transformation/synthesize.json",
+      "basis": "utterance says \"세 개 자료 종합해서\" (combine these three sources) — the direct sense of transformation/synthesize.json's intent field."
+    },
+    "content_type": {
+      "value": "research",
+      "state": "confirmed",
+      "profile_ref": "editorial/profiles/content/research.json",
+      "basis": "utterance names \"research 글\" explicitly."
+    },
+    "audience": {
+      "value": "domain-practitioner",
+      "state": "assumed",
+      "profile_ref": "editorial/profiles/audience/domain-practitioner.json",
+      "basis": "suengj-com research pieces default to the practitioner audience per prior calibration; the utterance did not name an audience and none was needed to change the delivery.",
+      "traits": {
+        "expertise": "practitioner",
+        "attention_context": "reading"
+      }
+    },
+    "surface": {
+      "value": "suengj-com",
+      "state": "confirmed",
+      "profile_ref": "editorial/profiles/surface/suengj-com.json",
+      "basis": "utterance says \"suengj.com에 올릴\" (to publish on suengj.com)."
+    },
+    "artifacts": [
+      {
+        "value": "text/article",
+        "state": "confirmed",
+        "basis": "utterance asks for a written research piece; text/article is the planned text-artifact id in the artifact axis registry (editorial/profiles/axes.json), not yet built as a standalone profile — the article shape here is governed by article.schema.json (V1)."
+      },
+      {
+        "value": "visual/body-infographic",
+        "state": "confirmed",
+        "profile_ref": "editorial/profiles/artifact/visual-body-infographic.json",
+        "basis": "utterance says \"본문에 들어갈 body infographic도 하나 만들어줘\" (also make a body infographic for the body).",
+        "count": 1
+      }
+    ]
+  },
+  "inputs": {
+    "sources": [
+      { "source_id": "src:drive:1AbCResearchOne", "state": "confirmed", "note": "first of the three source files named in the utterance" },
+      { "source_id": "src:drive:1AbCResearchTwo", "state": "confirmed" },
+      { "source_id": "src:github:suengj/p05_finance", "state": "confirmed", "note": "third source; a repository cited as project SSOT" }
+    ],
+    "references": []
+  },
+  "constraints": {
+    "output_language": "ko"
+  },
+  "overrides": [],
+  "clarification": {
+    "required": [],
+    "asked": [],
+    "resolution": "proceeded"
+  },
+  "calibration_ref": null,
+  "status": "ready"
+}

@@ -1,0 +1,35 @@
+{
+  "schema_version": "1.0.0",
+  "transformation": "summarize",
+  "intent": "Prioritize and compress the source: keep what matters to the stated purpose, drop the rest.",
+  "may_change": [
+    "length, by omission of lower-priority material",
+    "ordering, re-ranked by importance rather than the source's order",
+    "framing and emphasis, within what the source supports",
+    "register and wording"
+  ],
+  "must_preserve": [
+    "accuracy of every claim that is retained",
+    "attribution for retained claims",
+    "stated uncertainty attached to a retained claim",
+    "the direction and magnitude of any retained number or finding"
+  ],
+  "new_claims": {
+    "value": "forbidden",
+    "rationale": "Summarizing only removes material; it does not add a conclusion the source did not support."
+  },
+  "source_fidelity": {
+    "value": "high",
+    "rationale": "Nothing is invented. The editorial work is selection, not composition of new material."
+  },
+  "structure_rule": "Retained material may be reordered by importance to the stated purpose; this reordering must not reverse a comparison, a causal claim, or a piece of stated uncertainty from the source.",
+  "verification_burden": "verify-claims checks that omission did not silently change what a retained claim means once its context is gone.",
+  "anti_patterns": [
+    "Dropping a caveat while keeping the claim it qualified",
+    "Compressing a hedge into a flat statement",
+    "Summarizing the source's framing device instead of its content",
+    "Treating every sentence as equally important and summarizing proportionally instead of by priority"
+  ],
+  "typical_content_types": ["news", "research", "note"],
+  "typical_surfaces": ["suengj-com", "newsletter", "notebooklm"]
+}

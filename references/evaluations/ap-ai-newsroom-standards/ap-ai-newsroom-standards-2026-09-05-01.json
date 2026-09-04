@@ -1,0 +1,59 @@
+{
+  "schema_version": "1.0.0",
+  "evaluation_id": "eval:ap-ai-newsroom-standards-2026-09-05-01",
+  "ref_id": "ref:ap-ai-newsroom-standards",
+  "modality": "text",
+  "evaluator": {
+    "type": "agent",
+    "agent": {
+      "runtime": "claude-code",
+      "model": "claude-sonnet-5"
+    }
+  },
+  "evaluated_at": "2026-09-05T02:00:00Z",
+  "calibration_ref": null,
+  "profile_ref": "editorial/profiles/reference/text.json",
+  "basis": "model_inference",
+  "dimensions": [
+    {
+      "dimension": "argument-structure",
+      "verdict": "adopt",
+      "note": "Draws the human/assisted boundary around a function (reporting, sourcing, editorial judgement, verification stay human) rather than around a tool. Useful structural move for register decisions elsewhere in this system.",
+      "evidence": "catalog observation: 'Draws the human line around a function rather than a tool ... Confirms verification and polish as structurally different activities.'"
+    },
+    {
+      "dimension": "content-type-fit",
+      "verdict": "do_not_copy",
+      "note": "The staffing model behind the AP standard assumes a multi-desk newsroom. Copying that structure into a single-author publication would be imitating an org chart this system does not have.",
+      "evidence": "catalog observation: 'The staffing model behind it does not transfer to a single-author publication.'"
+    },
+    {
+      "dimension": "citation-behaviour",
+      "verdict": "neutral",
+      "note": "This record studies a paraphrased secondary account, not the AP standard's own citation practice; no craft evidence about citation behaviour to carry forward."
+    }
+  ],
+  "strengths": [
+    "Names a defensible human/assisted boundary by function rather than by tool, which transfers cleanly to a Skill's authority.may_not list."
+  ],
+  "weaknesses": [
+    "Institutional multi-desk staffing context does not transfer to a single-author publication."
+  ],
+  "applicable_to": {
+    "content_types": [
+      "news"
+    ],
+    "audiences": [
+      "professional-generalist"
+    ],
+    "artifacts": [
+      "text/article"
+    ],
+    "surfaces": [
+      "suengj-com"
+    ]
+  },
+  "authority_boundary": "craft_evidence_only",
+  "notes": "See editorial/voice.md for the voice vocabulary this evaluation deliberately does not restate.",
+  "provenance_class": "external"
+}

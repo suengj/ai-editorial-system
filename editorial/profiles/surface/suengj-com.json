@@ -1,0 +1,31 @@
+{
+  "schema_version": "1.0.0",
+  "surface": "suengj-com",
+  "role": "publication",
+  "owner_system": "suengj-com. This repo is the Generic Core; suengj-com owns publication and never the reverse — see docs/architecture/SSOT-BOUNDARIES.md.",
+  "authority": {
+    "surface_decides": [
+      "whether and when a candidate article's status becomes published",
+      "canonical slug and global slug uniqueness",
+      "rendering, routing, build, and deploy"
+    ],
+    "core_decides": [
+      "editorial content: evidence burden, verification, thesis, voice fit",
+      "which content-type, transformation, and audience profile governed the piece"
+    ]
+  },
+  "constraints": {
+    "url_shape": "/content/{slug}, canonical — see docs/architecture/SSOT-BOUNDARIES.md 'Consistency anchors', AEO-V1-IA-ROUTES.md in suengj-com",
+    "status_lifecycle": "status: draft | published | archived, fail-closed — see suengj-com CONTENT_CONTRACT.md, 'Publication status (fail-closed)', cited in docs/architecture/SSOT-BOUNDARIES.md",
+    "front_matter": "editorial front matter plus a provenance block is required for type: editorial — see suengj-com CONTENT_CONTRACT.md",
+    "citation_style": "inline links plus source_set lineage; no footnote apparatus",
+    "language": "ko or en per piece; no surface-level override of constraints.output_language",
+    "freshness": "governed by the content-type profile, not by this surface"
+  },
+  "artifact_fit": ["text/article", "visual/evidence-visual", "visual/body-infographic"],
+  "publication_boundary": "Only a human, through suengj-com's own approval gate (SUE-398-HUMAN-APPROVAL.md, cited in docs/architecture/SSOT-BOUNDARIES.md), may set status: published; nothing in this repo may do so.",
+  "replaceable": {
+    "value": false,
+    "note": "suengj-com is the default publication surface, not the Core's identity (docs/architecture/V2-EDITORIAL-LEARNING-CORE.md §7), but it is not currently an interchangeable adapter the way notebooklm is."
+  }
+}

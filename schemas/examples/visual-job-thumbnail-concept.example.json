@@ -1,0 +1,104 @@
+{
+  "schema_version": "1.0.0",
+  "job_id": "job:tokenized-stocks-thumbnail",
+  "intent_ref": "intent:2026-09-04-tokenized-stocks-liquidity",
+  "calibration_ref": null,
+  "article_ref": {
+    "article_id": "art:tokenized-stocks-instant-payments-liquidity-rights",
+    "version_number": 2,
+    "content_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "claims_hash": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+  },
+  "artifact_profile": "visual/thumbnail",
+  "profile_ref": "editorial/profiles/artifact/visual-thumbnail.json",
+  "audience": {
+    "value": "general-reader",
+    "profile_ref": "editorial/profiles/audience/general-reader.json",
+    "traits_applied": []
+  },
+  "semantic_spec": {
+    "question": "What single relation should a reader recognize immediately?",
+    "must_communicate": [
+      "removing trading hours exposes harder bottlenecks in liquidity, rights, and incident control"
+    ],
+    "must_not_include": [
+      "article title, section title, publication date, site label, caption, citation, CTA",
+      "any of the load-bearing modules from the body infographic"
+    ]
+  },
+  "information_gain": {
+    "adjacent_representation": {
+      "type": "none",
+      "summary": "This is a hero/identity placement, not a body visual placed beside a specific paragraph; the framing exception applies (VISUAL-INFORMATION-GAIN.md §6)."
+    },
+    "redundancy_test": {
+      "q1_new_perception": "A durable visual metaphor for the article's thesis before any prose is read.",
+      "q2_harder_without_it": "First-read recognition at card/social size becomes harder without it.",
+      "q3_merely_recreates": false,
+      "q4_worth_the_interruption": true
+    },
+    "gain_type": [
+      "framing"
+    ],
+    "integration_strategy": "add",
+    "verdict": "proceed"
+  },
+  "density_check": {
+    "profile_semantic_density": "low",
+    "profile_visual_density": "low",
+    "compiled_semantic_density": "low",
+    "compiled_visual_density": "low",
+    "match": true
+  },
+  "selected_reference_traits": {
+    "adopt": [],
+    "avoid": [
+      "taste-calibration variant 1 icon-library density"
+    ],
+    "do_not_copy": []
+  },
+  "brand_profile": "suengj-com",
+  "brand_profile_version": "1.0.0",
+  "text_policy": "external_overlay",
+  "renderer_route": "generative",
+  "renderer": {
+    "tool": "editorial-illustration-generator",
+    "tool_version": "2026-09",
+    "provider": "anthropic",
+    "model": "claude-image-gen",
+    "model_version": "2026-09-01",
+    "quality_tier": "standard"
+  },
+  "context_isolation": {
+    "permitted_inputs": [
+      "semantic_spec",
+      "artifact_profile",
+      "audience",
+      "selected_reference_traits",
+      "brand_profile"
+    ],
+    "excluded": [
+      "ambient_conversation",
+      "unrelated_project_state",
+      "prior_unrelated_jobs",
+      "renderer_runtime_identity"
+    ]
+  },
+  "attempts": 1,
+  "max_attempts": 2,
+  "qa": {
+    "performed": true,
+    "information_gain_recheck": "pass",
+    "density_recheck": "pass",
+    "notes": "Legible after aggressive downscale to card/social preview."
+  },
+  "status": "accepted",
+  "compiled_prompt": "ARTIFACT: Thumbnail / cover / intro visual — Family A of SUENGJ-ARTICLE-IMAGE-FAMILIES.md. — Communicate the article's thesis, tension, or framing at first glance, before the reader reads any prose.\nQUESTION: What single relation should a reader recognize immediately?\nMUST COMMUNICATE: removing trading hours exposes harder bottlenecks in liquidity, rights, and incident control\nMUST NOT INCLUDE: article title, section title, publication date, site label, caption, citation, CTA; any of the load-bearing modules from the body infographic\nCOMPOSITION: One system tension, one transformation, one contrast, one bounded metaphor, or one large relationship between two domains (SUENGJ-ARTICLE-IMAGE-FAMILIES.md §3.2).\nTEXT POLICY: external_overlay\nBRAND (suengj-com@1.0.0): background warm off-white / cream, primary muted forest / sage green — the structural identity color, not a saturation effect, accent restrained sand / camel — accent only, never a second dominant palette\nREFERENCE TRAITS — avoid: taste-calibration variant 1 icon-library density",
+  "compiled_from": [
+    "editorial/profiles/artifact/visual-thumbnail.json",
+    "suengj-com@1.0.0",
+    "editorial/profiles/audience/general-reader.json",
+    "semantic_spec",
+    "selected_reference_traits"
+  ]
+}

@@ -1,0 +1,39 @@
+{
+  "schema_version": "1.0.0",
+  "experiment_id": "experiment:reference-selection-2026-09-05",
+  "created_at": "2026-09-05T00:00:00Z",
+  "kind": "targeted_tuning",
+  "hypothesis": "The reference-selection lookup for AP-style newsroom pieces was returning a reference whose applicable_to scope did not actually cover the requested content type, producing a structural mismatch flagged as 'reference did not match'.",
+  "failure_evidence": [
+    "feedback:paragraph-order-2026-09-05"
+  ],
+  "target_layer": "reference",
+  "smallest_change": "None made. Investigation showed the single available feedback record traces to a prose/paragraph-order issue, not a reference-selection defect — the reference layer was not actually implicated. No change was applied to the reference-selection lookup or any profile.",
+  "evaluation_set": {
+    "fixtures": [],
+    "references": [
+      "eval:ap-ai-newsroom-standards-2026-09-05-01"
+    ],
+    "real_outputs": []
+  },
+  "quality_result": {
+    "summary": "No measurable before/after quality delta because no change was made — this record exists to document that the reference layer was investigated and cleared, not to report a tuning win.",
+    "integrity_impact": "none",
+    "audience_fit_impact": "none"
+  },
+  "cost_result": {
+    "summary": "No rendering or generation cost incurred; this was a routing investigation only."
+  },
+  "decision": "insufficient_evidence",
+  "calibration_ref": null,
+  "authored_by": {
+    "type": "agent",
+    "identity": "agent:claude-code",
+    "agent": {
+      "runtime": "claude-code",
+      "model": "claude-sonnet",
+      "version": "5"
+    }
+  },
+  "notes": "SHAPE DEMONSTRATION (AES-V2.10 / SUE-568 seed) of an honest insufficient_evidence decision — the point this record exists to prove is that 'we looked and could not yet justify a change' is a legitimate, first-class ledger entry, not a gap. Answering 'why does the reference-selection lookup still look the way it does, months later': because the one feedback record available at the time did not actually implicate that layer, and no second corroborating record has arrived since. Revisit if a second, genuinely reference-layer-shaped complaint arrives."
+}

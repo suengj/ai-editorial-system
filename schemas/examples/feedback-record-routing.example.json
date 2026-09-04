@@ -1,0 +1,106 @@
+{
+  "description": "Worked feedback-record examples for AES-V2.5 routing (SUE-563). Each record validates against schemas/feedback-record.schema.json and routes cleanly under editorial/feedback-routing.json. Used by scripts/validate-routing.mjs and scripts/test-routing.mjs. Not part of the feedback/ registry — these are illustrative fixtures, never real feedback.",
+  "records": [
+    {
+      "schema_version": "1.0.0",
+      "feedback_id": "feedback:example-frame-worth",
+      "created_at": "2026-09-05T09:00:00Z",
+      "subject": { "kind": "article", "ref": "art:example-piece" },
+      "evaluator": { "type": "human" },
+      "basis": "explicit_human_feedback",
+      "signal": "objective_quality",
+      "verdict": "bad",
+      "owner_verdict": "needs_rework",
+      "statement": "This piece never actually argues anything — it restates the sources in order and there is no thesis a reader could disagree with.",
+      "routing": {
+        "layer": "frame",
+        "confidence": "high",
+        "abstained": false,
+        "rationale": "No falsifiable thesis and no connective argument; the source order became the article order. This is a frame failure, not a prose failure."
+      },
+      "scope": "task_local"
+    },
+    {
+      "schema_version": "1.0.0",
+      "feedback_id": "feedback:example-abstain-unclear",
+      "created_at": "2026-09-05T09:05:00Z",
+      "subject": { "kind": "artifact", "ref": "artifact:example-thumbnail-01" },
+      "evaluator": { "type": "agent", "agent": { "runtime": "claude-agent-sdk", "model": "claude-sonnet-5" } },
+      "basis": "model_inference",
+      "signal": "audience_fit",
+      "verdict": "bad",
+      "owner_verdict": "unknown",
+      "statement": "The owner said 'this doesn't feel right' with no further detail and has not responded to a follow-up question.",
+      "routing": {
+        "layer": null,
+        "abstained": true,
+        "rationale": "The complaint is too underspecified to distinguish an audience-fit failure from a composition failure from a brand-fit failure; naming a layer here would be a guess."
+      },
+      "scope": "task_local"
+    },
+    {
+      "schema_version": "1.0.0",
+      "feedback_id": "feedback:example-reference-repeated",
+      "created_at": "2026-09-05T09:10:00Z",
+      "subject": { "kind": "article", "ref": "art:example-second-piece" },
+      "evaluator": { "type": "human" },
+      "basis": "explicit_human_feedback",
+      "signal": "objective_quality",
+      "verdict": "bad",
+      "owner_verdict": "needs_rework",
+      "statement": "For the third time this month the picked reference sample is technically on-topic but visually nothing like what we publish, specifically for the research register.",
+      "routing": {
+        "layer": "reference",
+        "modality_layer": "reference-selection",
+        "confidence": "high",
+        "abstained": false,
+        "rationale": "The reference lookup for the research register consistently ranks topical similarity over craft fit; three independent instances now."
+      },
+      "scope": "calibration_candidate",
+      "evidence_links": ["feedback:example-reference-first", "feedback:example-reference-second"]
+    },
+    {
+      "schema_version": "1.0.0",
+      "feedback_id": "feedback:example-renderer-glitch",
+      "created_at": "2026-09-05T09:15:00Z",
+      "subject": {
+        "kind": "artifact",
+        "ref": "artifact:example-infographic-04",
+        "artifact_profile": "editorial/profiles/artifact/visual-body-infographic.json"
+      },
+      "evaluator": { "type": "human" },
+      "basis": "explicit_human_feedback",
+      "signal": "objective_quality",
+      "verdict": "bad",
+      "owner_verdict": "rejected",
+      "statement": "This one output has garbled Korean text in the bottom-right label; everything else about the layout matches what we normally ship.",
+      "routing": {
+        "layer": null,
+        "modality_layer": "renderer",
+        "confidence": "high",
+        "abstained": false,
+        "rationale": "No shared layer applies — this is not a publication-constraint failure, it is a modality-specific rendering defect. layer: null with abstained: false is not abstention: we know exactly what failed. A single mechanical text-rendering defect; nothing about the composition or brand tokens is implicated, and a re-render is expected to clear it."
+      },
+      "scope": "task_local"
+    },
+    {
+      "schema_version": "1.0.0",
+      "feedback_id": "feedback:example-verification-material",
+      "created_at": "2026-09-05T09:20:00Z",
+      "subject": { "kind": "article", "ref": "art:example-third-piece" },
+      "evaluator": { "type": "human" },
+      "basis": "explicit_human_feedback",
+      "signal": "objective_quality",
+      "verdict": "bad",
+      "owner_verdict": "needs_rework",
+      "statement": "The citation next to the revenue figure resolves but is about a different fiscal year; it does not support the claim beside it.",
+      "routing": {
+        "layer": "verification",
+        "confidence": "high",
+        "abstained": false,
+        "rationale": "A phantom citation — resolves but does not support the specific claim. Routes to verify-claims, not to a prose fix."
+      },
+      "scope": "task_local"
+    }
+  ]
+}

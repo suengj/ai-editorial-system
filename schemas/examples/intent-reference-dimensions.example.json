@@ -1,0 +1,78 @@
+{
+  "schema_version": "2.0.0",
+  "intent_id": "intent:2026-09-05-reference-dimensions-custody-diagram",
+  "created_at": "2026-09-05T15:02:00Z",
+  "request": {
+    "utterance": "커스터디 구조 설명하는 evidence visual 하나 만들어줘. 첨부한 이 이미지 참고해서 — 정보 구조는 좋은데 색감은 싫어, 그건 우리 브랜드 팔레트로 가자.",
+    "language": "ko",
+    "received_by": "claude-code",
+    "received_at": "2026-09-05T15:02:00Z"
+  },
+  "axes": {
+    "transformation": {
+      "value": "original",
+      "state": "confirmed",
+      "profile_ref": "editorial/profiles/transformation/original.json",
+      "basis": "utterance asks to make a new evidence visual explaining an existing article's mechanism; the reference is craft guidance only, not source material to transform."
+    },
+    "content_type": {
+      "value": "research",
+      "state": "assumed",
+      "profile_ref": "editorial/profiles/content/research.json",
+      "basis": "the custody-structure article this visual supports is already framed as research; no separate content-type statement was needed for a supporting visual."
+    },
+    "audience": {
+      "value": "domain-practitioner",
+      "state": "assumed",
+      "profile_ref": "editorial/profiles/audience/domain-practitioner.json",
+      "basis": "inherits the audience of the article the visual is attached to; not restated in this utterance."
+    },
+    "surface": {
+      "value": "suengj-com",
+      "state": "assumed",
+      "profile_ref": "editorial/profiles/surface/suengj-com.json",
+      "basis": "inherits the surface of the article the visual is attached to."
+    },
+    "artifacts": [
+      {
+        "value": "visual/evidence-visual",
+        "state": "confirmed",
+        "profile_ref": "editorial/profiles/artifact/visual-evidence-visual.json",
+        "basis": "utterance explicitly says \"evidence visual 하나 만들어줘\".",
+        "count": 1
+      }
+    ]
+  },
+  "inputs": {
+    "sources": [
+      { "source_id": "src:drive:1CustodyResearchDraft", "state": "confirmed" }
+    ],
+    "references": [
+      {
+        "ref_id": "ref:custody-diagram-attached-2026-09-05",
+        "state": "confirmed",
+        "modality": "visual",
+        "dimensions": ["hierarchy", "composition"],
+        "note": "utterance says \"정보 구조는 좋은데\" (the information structure is good) — the human wants the reading-path/hierarchy and compositional grouping adopted, not the reference's palette. See editorial/profiles/reference/visual.json for the dimension vocabulary."
+      }
+    ]
+  },
+  "constraints": {
+    "output_language": "ko"
+  },
+  "overrides": [
+    {
+      "field": "artifact.palette",
+      "value": "brand:suengj-com",
+      "stated_by": "human",
+      "rationale": "utterance says \"색감은 싫어, 그건 우리 브랜드 팔레트로 가자\" (dislikes the reference's colors, use our brand palette instead) — a task-scoped override, not adoption of the reference's palette-colour-role dimension."
+    }
+  ],
+  "clarification": {
+    "required": [],
+    "asked": [],
+    "resolution": "proceeded"
+  },
+  "calibration_ref": null,
+  "status": "ready"
+}

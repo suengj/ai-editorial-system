@@ -1,0 +1,38 @@
+{
+  "schema_version": "1.0.0",
+  "audience": "general-reader",
+  "intent": "An educated adult reader with no assumed familiarity with the piece's specific domain. Default preset when no audience is stated; see editorial/profiles/README.md for the override rule.",
+  "expertise": "novice",
+  "domain_familiarity": "No assumed prior exposure to the domain's vocabulary or internal debates.",
+  "purpose": "Wants to understand what happened or what is being argued, and why it matters, without needing to become a practitioner.",
+  "attention_context": "reading",
+  "jargon_tolerance": "low",
+  "assumed_knowledge": [
+    "general adult literacy and reasoning",
+    "no assumed familiarity with the domain's technical vocabulary or standard practice"
+  ],
+  "life_stage": null,
+  "modality_effects": {
+    "text": {
+      "explanation_depth": "define a technical term in plain language the first time it appears",
+      "section_granularity": "short sections, one idea developed per section",
+      "sentence_complexity": "prefer single-clause sentences; unpack multi-step inferences rather than compressing them"
+    },
+    "visual": {
+      "label_density": "low; only labels that are load-bearing for the point",
+      "legend": "always shown, in plain language",
+      "acronym_expansion": "expand every acronym in-frame on first appearance"
+    },
+    "audio": {
+      "thought_unit_length": "short",
+      "pace": "moderate, unhurried",
+      "term_glossing": "gloss every technical term on first use",
+      "useful_recurrence": "state the main takeaway once, clearly, near the end"
+    }
+  },
+  "anti_patterns": [
+    "Talking down: over-explaining concepts a general adult reader already grasps by analogy to daily life",
+    "Assuming domain vocabulary without ever having introduced it",
+    "Burying the point under qualification the reader has no context to weigh"
+  ]
+}

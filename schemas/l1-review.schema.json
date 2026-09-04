@@ -1,0 +1,167 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://suengj.com/schemas/l1-review.schema.json",
+  "title": "L1 comparative review record",
+  "description": "One comparative L1 review (AES-V2.6 / SUE-564): a subject output compared pairwise against a relevant GOOD reference, never scored as one opaque number. Evidence spans are mandatory. tie and abstain are first-class outcomes. Integrity failures dominate stylistic wins — enforced by scripts/lib/l1-core.mjs, not merely stated. final_authority is always human: this record informs routing, it never grants publication or preference authority — see editorial/HITL-PROTOCOL.md, which stays the stronger authority.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version", "review_id", "subject", "comparison", "dimensions",
+    "integrity", "outcome", "routes_to", "reviewed_at", "reviewer", "final_authority"
+  ],
+  "properties": {
+    "schema_version": { "const": "1.0.0" },
+    "review_id": {
+      "type": "string",
+      "pattern": "^l1:[a-z0-9]+(-[a-z0-9]+)*$"
+    },
+    "subject": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "ref", "content_type"],
+      "properties": {
+        "kind": { "enum": ["article", "artifact", "corpus_entry"] },
+        "ref": { "type": "string", "minLength": 1 },
+        "content_type": {
+          "enum": ["research", "view", "news", "note", "project", "academic", "promotional"]
+        }
+      }
+    },
+    "comparison": { "$ref": "#/$defs/comparison" },
+    "dimensions": {
+      "description": "At minimum: thesis-worth, synthesis-independence, language-native-prose, formulaic-ai-shaped, audience-fit. Additional dimensions may be added; none of the required five may be omitted.",
+      "type": "array",
+      "items": { "$ref": "#/$defs/dimension_finding" }
+    },
+    "integrity": { "$ref": "#/$defs/integrity" },
+    "outcome": {
+      "description": "PASS, TIE, and ABSTAIN carry no rework. The four REWORK outcomes route into AES-V2.5's layer vocabulary via routes_to.",
+      "enum": ["PASS", "ARGUMENT_REWORK", "FACT_REWORK", "PROSE_REWORK", "AUDIENCE_REWORK", "TIE", "ABSTAIN"]
+    },
+    "routes_to": {
+      "description": "Must be one of AES-V2.5's layer ids (editorial/feedback-routing.json), or null for PASS/TIE/ABSTAIN. Cross-checked against that table by scripts/lib/l1-core.mjs so the two packages cannot drift apart.",
+      "type": ["string", "null"]
+    },
+    "reviewed_at": { "type": "string", "format": "date-time" },
+    "reviewer": { "$ref": "#/$defs/evaluator" },
+    "final_authority": {
+      "description": "Always human. L1 is advisory: it can recommend rework and it can recommend PASS, but it never accepts, publishes, or overrides an owner preference. See editorial/HITL-PROTOCOL.md and the may_not boundary in skills/review-l1/SKILL.md.",
+      "const": "human"
+    },
+    "notes": { "type": "string" }
+  },
+  "$defs": {
+    "comparison": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["mode", "references", "same_content_type"],
+      "properties": {
+        "mode": {
+          "description": "pairwise is the default. tie and abstain are recorded here when no reference produced a decidable comparison at all, distinct from a per-dimension tie/abstain verdict.",
+          "enum": ["pairwise", "tie", "abstain"]
+        },
+        "references": {
+          "description": "The GOOD reference(s) compared against. Empty only when mode is abstain.",
+          "type": "array",
+          "items": { "$ref": "#/$defs/reference_used" }
+        },
+        "same_content_type": {
+          "description": "Whether every reference shares the subject's content_type. Compare like with like: Research to Research, News to News.",
+          "type": "boolean"
+        },
+        "cross_cutting_dimension": {
+          "description": "Required when same_content_type is false. The only dimension genuinely cross-cutting enough to justify a cross-type reference, e.g. language-native-prose.",
+          "type": "string",
+          "minLength": 1
+        },
+        "anti_collapse": { "$ref": "#/$defs/anti_collapse" }
+      }
+    },
+    "reference_used": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["ref", "provenance_class"],
+      "properties": {
+        "ref": {
+          "description": "A reference evaluation id, corpus entry id, or article id used as the comparison GOOD.",
+          "type": "string",
+          "minLength": 1
+        },
+        "provenance_class": { "enum": ["external", "owner_created", "generated_output"] },
+        "lineage_ref": {
+          "description": "Semantically required whenever provenance_class is \"generated_output\" — enforced by scripts/lib/l1-core.mjs, not this schema, because json-schema-lite has no conditional (if/then) keyword. Identifies the generation lineage so the anti-collapse rule can be evaluated; its absence no longer disables that rule (AES-V2 B5) — every reference_used being generated_output triggers anti-collapse regardless of lineage_ref.",
+          "type": "string",
+          "minLength": 1
+        },
+        "content_type": {
+          "enum": ["research", "view", "news", "note", "project", "academic", "promotional"]
+        }
+      }
+    },
+    "anti_collapse": {
+      "description": "The anti-collapse rule: if every selected GOOD reference is a generated_output from the same lineage, the review must say so rather than silently treating the system's own prior outputs as an independent standard.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["triggered"],
+      "properties": {
+        "triggered": { "type": "boolean" },
+        "note": { "type": "string", "minLength": 1 }
+      }
+    },
+    "dimension_finding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "verdict", "evidence_span"],
+      "properties": {
+        "id": {
+          "enum": ["thesis-worth", "synthesis-independence", "language-native-prose", "formulaic-ai-shaped", "audience-fit"]
+        },
+        "verdict": {
+          "description": "better/worse are relative to the reference. tie and abstain are first-class, never forced into a false preference.",
+          "enum": ["better", "worse", "tie", "abstain"]
+        },
+        "evidence_span": {
+          "description": "A quoted sentence, named paragraph, or measured observation from the subject (and the reference, where relevant). Mandatory for every verdict, including tie: a verdict with no observable evidence is not a verdict. A genuine abstain still names what could not be observed.",
+          "type": "string",
+          "minLength": 1
+        },
+        "rationale": { "type": "string" }
+      }
+    },
+    "integrity": {
+      "description": "Integrity failures dominate stylistic wins, always. A better-written piece that is less true loses.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status"],
+      "properties": {
+        "status": { "enum": ["clear", "concern", "fail"] },
+        "evidence_span": {
+          "description": "Required whenever status is not clear.",
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "evaluator": {
+      "description": "AES-V2 FIX (B7): full runtime lineage, not merely an evaluator kind. §7's model-drift contract requires L1's writer-facing counterpart — the reviewer — to be drift-detectable exactly like a renderer. Field names deliberately match visual-job.schema.json's `renderer`/`runtime` $defs.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type"],
+      "properties": {
+        "type": { "enum": ["human", "agent"] },
+        "agent": {
+          "description": "Present only when type is \"agent\". provider/model/model_version are required so a silent reviewer-model swap is detectable, never a transparent implementation detail.",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["provider", "model", "model_version"],
+          "properties": {
+            "provider": { "type": "string", "minLength": 1 },
+            "model": { "type": "string", "minLength": 1 },
+            "model_version": { "type": "string", "minLength": 1 },
+            "quality_tier": { "type": "string", "minLength": 1 }
+          }
+        }
+      }
+    }
+  }
+}

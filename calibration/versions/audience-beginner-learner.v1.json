@@ -1,0 +1,45 @@
+{
+  "schema_version": "1.0.0",
+  "calibration_id": "calibration:audience-beginner-learner@v1",
+  "status": "active",
+  "scope": {
+    "modality": "text",
+    "profile_ref": "editorial/profiles/audience/beginner-learner.json",
+    "axis": "audience.beginner-learner"
+  },
+  "effective_from": "2026-09-05T00:00:00Z",
+  "supersedes": null,
+  "superseded_by": null,
+  "authorized_by": {
+    "type": "human",
+    "identity": "human:owner"
+  },
+  "signals": {
+    "objective_quality": {
+      "statement": "No change to factual/integrity bar for this audience — a beginner-learner piece is held to the same verification standard as any other, only vocabulary and pacing differ.",
+      "rationale": "docs/architecture/V2-EDITORIAL-LEARNING-CORE.md §6: objective quality dominates and may not be traded for audience fit.",
+      "evidence_refs": []
+    },
+    "audience_fit": {
+      "statement": "Beginner-learner prose keeps jargon glossed inline and caps section length below the professional-generalist default.",
+      "rationale": "First calibration snapshot for this scope — shape demonstration seeded ahead of real pilot evidence (SUE-570), not a distilled history of real owner feedback.",
+      "evidence_refs": [
+        "feedback:paragraph-order-2026-09-05"
+      ]
+    },
+    "publication_fit": {
+      "statement": "No surface-specific override for this audience yet; suengj-com defaults apply unchanged.",
+      "rationale": "No publication-fit evidence has been recorded for this scope.",
+      "evidence_refs": []
+    },
+    "owner_preference": {
+      "statement": "No durable owner-preference override recorded beyond the audience-fit signal above.",
+      "rationale": "Owner preference is deliberately left thin here rather than inferred from one task-local correction.",
+      "evidence_refs": []
+    }
+  },
+  "evidence_refs": [
+    "feedback:paragraph-order-2026-09-05"
+  ],
+  "notes": "SHAPE DEMONSTRATION (AES-V2.10 / SUE-568 seed). This is the first calibration version ever written for this scope and is illustrative of the record shape, not a distilled history of real owner decisions — calibration/README.md and CALIBRATION-PROTOCOL.md say so explicitly. The one real feedback record it cites (feedback:paragraph-order-2026-09-05) is genuine; the audience_fit statement it supports is a plausible placeholder pending real SUE-570 pilot evidence."
+}

@@ -1,0 +1,48 @@
+{
+  "counts": {
+    "by_provenance_class": {
+      "external": 3,
+      "generated_output": 0,
+      "owner_created": 0
+    },
+    "promoted_generated_output": 0
+  },
+  "evaluations": [
+    {
+      "basis": "model_inference",
+      "evaluated_at": "2026-09-05T02:00:00Z",
+      "evaluation_id": "eval:ap-ai-newsroom-standards-2026-09-05-01",
+      "evaluator_type": "agent",
+      "modality": "text",
+      "path": "references/evaluations/ap-ai-newsroom-standards/ap-ai-newsroom-standards-2026-09-05-01.json",
+      "promoted": false,
+      "provenance_class": "external",
+      "ref_id": "ref:ap-ai-newsroom-standards"
+    },
+    {
+      "basis": "explicit_human_feedback",
+      "evaluated_at": "2026-09-05T03:00:00Z",
+      "evaluation_id": "eval:ap-ai-newsroom-standards-2026-09-05-02",
+      "evaluator_type": "human",
+      "modality": "text",
+      "path": "references/evaluations/ap-ai-newsroom-standards/ap-ai-newsroom-standards-2026-09-05-02.json",
+      "promoted": false,
+      "provenance_class": "external",
+      "ref_id": "ref:ap-ai-newsroom-standards"
+    },
+    {
+      "basis": "model_inference",
+      "evaluated_at": "2026-09-05T02:15:00Z",
+      "evaluation_id": "eval:denoiser-consumption-architecture-2026-09-05-01",
+      "evaluator_type": "agent",
+      "modality": "visual",
+      "path": "references/evaluations/denoiser-consumption-architecture/denoiser-consumption-architecture-2026-09-05-01.json",
+      "promoted": false,
+      "provenance_class": "external",
+      "ref_id": "ref:denoiser-consumption-architecture"
+    }
+  ],
+  "generated": true,
+  "generated_by": "scripts/registry.mjs --rebuild",
+  "schema_version": "1.0.0"
+}

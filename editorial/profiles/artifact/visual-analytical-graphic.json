@@ -1,0 +1,72 @@
+{
+  "schema_version": "1.0.0",
+  "artifact": "visual/analytical-graphic",
+  "modality": "visual",
+  "family": "Structured analytical graphic — comparison/framework lane of ARTICLE-ILLUSTRATION-ROUTING.md §2.4, §4.1.",
+  "primary_job": "Let the reader compare several states, methods, models, strategies, or trade-offs at once using aligned regions, matrices, or paired structures (ARTICLE-ILLUSTRATION-ROUTING.md §1 'compare', §2.4).",
+  "semantic_density": {
+    "level": "moderate",
+    "rationale": "Preserves comparison dimensions the way a comparative matrix does (SUENGJ-INFOGRAPHIC-CALIBRATION.md §3), but is scoped to one comparison rather than a full mechanism synthesis, so it sits below visual/body-infographic on this control."
+  },
+  "visual_density": {
+    "level": "low",
+    "rationale": "Aligned regions and shared rules rather than a card or fill per cell; quiet green primary with a restrained accent (SUENGJ-INFOGRAPHIC-CALIBRATION.md §4, §6)."
+  },
+  "text_policy": {
+    "profile": "hybrid_template",
+    "label_count_ceiling": 10,
+    "complexity_ceiling": "Short row/column labels composited deterministically; exact observed values inside the matrix remain deterministic and traceable (ARTICLE-ILLUSTRATION-ROUTING.md §2.4)."
+  },
+  "composition": {
+    "dominant_structure": "One aligned comparison matrix, scale, or paired structure (SUENGJ-INFOGRAPHIC-CALIBRATION.md §3 comparative matrix).",
+    "supporting_modules_max": 5,
+    "reading_path": "Row-by-row or column-by-column, single direction.",
+    "negative_space": "moderate",
+    "chrome_level": "low"
+  },
+  "audience_adaptation": {
+    "domain-expert": "Denser comparison rows without in-frame glossing; legend optional.",
+    "domain-practitioner": "Moderate row count with brief glossing on first use.",
+    "beginner-learner": "Fewer comparison dimensions, concrete units, and an always-shown legend.",
+    "child-upper-elementary": "Avoid unless the comparison itself is the point; if used, cap at 2 comparison dimensions with plain-language labels and no abstract scale."
+  },
+  "renderer_preference": {
+    "order": ["deterministic", "hybrid", "generative"],
+    "rule": "If the comparison contains exact observed values, those marks remain deterministic; generative rendering is reserved for the qualitative framing around the matrix, never the values themselves (ARTICLE-ILLUSTRATION-ROUTING.md §2.4)."
+  },
+  "readability_gate": {
+    "applies": true,
+    "gate": {
+      "viewport": "~390px reading surface",
+      "requirements": [
+        "comparison rows/columns remain legible without shrinking below readable size",
+        "no micro-panel-per-cell density",
+        "one clear reading direction",
+        "no horizontal page overflow"
+      ]
+    },
+    "rationale": "A comparison matrix is exactly the shape SUENGJ-ARTICLE-IMAGE-FAMILIES.md §5 warns collapses into faint lines and tiny labels on mobile if not disciplined."
+  },
+  "split_rule": {
+    "applies": true,
+    "rule": "Split when the comparison dimensions exceed what fits legibly in one plate — mirrors the SUENGJ-ARTICLE-IMAGE-FAMILIES.md §6 trigger of more than 4 major modules competing for attention."
+  },
+  "acceptance": [
+    "comparison dimensions match what the article actually establishes; none are invented",
+    "one reading direction, not a forked comparison",
+    "legible at ~390px without zoom",
+    "passes VISUAL-INFORMATION-GAIN.md 'comparison' gain type against adjacent prose"
+  ],
+  "reject": [
+    "icon-per-cell wallpaper",
+    "invented or unsupported comparison values",
+    "more than one comparison question on a single plate",
+    "faux precision (implying a finer distinction than the source supports)"
+  ],
+  "source_authority": [
+    "editorial/ARTICLE-ILLUSTRATION-ROUTING.md",
+    "editorial/SUENGJ-INFOGRAPHIC-CALIBRATION.md",
+    "editorial/SUENGJ-ARTICLE-IMAGE-FAMILIES.md",
+    "editorial/VISUAL-INFORMATION-GAIN.md"
+  ]
+}

@@ -1,0 +1,35 @@
+{
+  "schema_version": "1.0.0",
+  "transformation": "synthesize",
+  "intent": "Combine multiple sources around an independent question the sources do not answer individually. The V1 constitution's core transformation (editorial/constitution.md §4).",
+  "may_change": [
+    "the organizing question and argument path, which is the author's, not any source's",
+    "which sources are placed in relation to which others",
+    "framing, ordering, register, and length"
+  ],
+  "must_preserve": [
+    "the factual claims attributed to each source",
+    "provenance back to the specific source for each retained claim",
+    "stated uncertainty carried over from any source",
+    "the distinction between a source's claim and the synthesis's own connective reasoning"
+  ],
+  "new_claims": {
+    "value": "requires_verification",
+    "rationale": "New connective reasoning across sources is the point of synthesis, but any new factual claim the connection implies must be verified before it is asserted as fact rather than as interpretation."
+  },
+  "source_fidelity": {
+    "value": "moderate",
+    "rationale": "Individual source claims stay faithful; the argument built across them is new and belongs to the synthesis, not to any one source."
+  },
+  "structure_rule": "Source topology is never output topology: a repository tree, README order, search-result order, or the order sources were read is an inventory of material, not an outline (editorial/constitution.md §4). The synthesis's structure follows its own argument.",
+  "verification_burden": "verify-claims checks every claim attributed to a source against that source, and separately checks any new claim the synthesis itself asserts as fact rather than as marked interpretation.",
+  "anti_patterns": [
+    "Sequential restatement of each source in turn (a literature review, not a synthesis)",
+    "Letting the source that was read first or most anchor the structure",
+    "Presenting the synthesis's own inference with the same certainty as a sourced claim",
+    "Manufacturing a binary debate solely to satisfy a contradicting-evidence requirement",
+    "A piece that could be replaced by reading the sources in order (editorial/constitution.md §4)"
+  ],
+  "typical_content_types": ["research", "view", "academic"],
+  "typical_surfaces": ["suengj-com", "academic-paper"]
+}

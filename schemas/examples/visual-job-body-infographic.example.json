@@ -1,0 +1,111 @@
+{
+  "schema_version": "1.0.0",
+  "job_id": "job:tokenized-stocks-liquidity-plate-a",
+  "intent_ref": "intent:2026-09-04-tokenized-stocks-liquidity",
+  "calibration_ref": null,
+  "article_ref": {
+    "article_id": "art:tokenized-stocks-instant-payments-liquidity-rights",
+    "version_number": 2,
+    "content_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "claims_hash": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+  },
+  "artifact_profile": "visual/body-infographic",
+  "profile_ref": "editorial/profiles/artifact/visual-body-infographic.json",
+  "audience": {
+    "value": "domain-practitioner",
+    "profile_ref": "editorial/profiles/audience/domain-practitioner.json",
+    "traits_applied": [
+      "moderate label density with brief glossing on first use"
+    ]
+  },
+  "semantic_spec": {
+    "question": "Why does removing market hours reveal liquidity risk?",
+    "must_communicate": [
+      "token market trades 24/7 while the underlying market has closed windows",
+      "mint/redeem availability narrows during closed windows",
+      "arbitrage weakens, producing wider spread, thinner depth, and a persistent price gap"
+    ],
+    "must_not_include": [
+      "article title, publication date, or citation text",
+      "exact numeric spread/depth values not present in verified claims"
+    ]
+  },
+  "information_gain": {
+    "adjacent_representation": {
+      "type": "prose",
+      "summary": "The article states in prose that continuous token trading against a closed underlying market weakens arbitrage."
+    },
+    "redundancy_test": {
+      "q1_new_perception": "The reader can see the closed-window overlap and the resulting arbitrage gap spatially, across the three mechanism steps, rather than inferring it from one sentence.",
+      "q2_harder_without_it": "Seeing why the gap specifically opens during closed windows becomes materially harder without the module boundaries.",
+      "q3_merely_recreates": false,
+      "q4_worth_the_interruption": true
+    },
+    "gain_type": [
+      "structure",
+      "relation",
+      "temporalization"
+    ],
+    "integration_strategy": "add",
+    "verdict": "proceed"
+  },
+  "density_check": {
+    "profile_semantic_density": "high",
+    "profile_visual_density": "low",
+    "compiled_semantic_density": "high",
+    "compiled_visual_density": "low",
+    "match": true
+  },
+  "selected_reference_traits": {
+    "adopt": [
+      "denoiser-style information placement inside the reading flow"
+    ],
+    "avoid": [
+      "denoiser's literal visual skin"
+    ],
+    "do_not_copy": []
+  },
+  "brand_profile": "suengj-com",
+  "brand_profile_version": "1.0.0",
+  "text_policy": "hybrid_template",
+  "renderer_route": "deterministic",
+  "renderer": {
+    "tool": "svg-diagram-compiler",
+    "tool_version": "1.0.0",
+    "provider": "in-house",
+    "model": "svg-diagram-compiler",
+    "model_version": "1.0.0"
+  },
+  "context_isolation": {
+    "permitted_inputs": [
+      "semantic_spec",
+      "artifact_profile",
+      "audience",
+      "selected_reference_traits",
+      "brand_profile"
+    ],
+    "excluded": [
+      "ambient_conversation",
+      "unrelated_project_state",
+      "prior_unrelated_jobs",
+      "renderer_runtime_identity"
+    ]
+  },
+  "attempts": 1,
+  "max_attempts": 2,
+  "qa": {
+    "performed": true,
+    "information_gain_recheck": "pass",
+    "density_recheck": "pass",
+    "notes": "Mobile check at 390px: 3 modules, one reading path, no horizontal overflow."
+  },
+  "status": "accepted",
+  "compiled_prompt": "ARTIFACT: Body infographic / explanatory research graphic — Family B of SUENGJ-ARTICLE-IMAGE-FAMILIES.md. — Explain a mechanism, comparison, process, governance structure, boundary, sequence, or cross-section synthesis more efficiently than prose alone.\nQUESTION: Why does removing market hours reveal liquidity risk?\nMUST COMMUNICATE: token market trades 24/7 while the underlying market has closed windows; mint/redeem availability narrows during closed windows; arbitrage weakens, producing wider spread, thinner depth, and a persistent price gap\nMUST NOT INCLUDE: article title, publication date, or citation text; exact numeric spread/depth values not present in verified claims\nCOMPOSITION: One primary question, answered by 2-4 strong semantic modules, one explicit reading path, and a consequence/tension/output when needed (SUENGJ-ARTICLE-IMAGE-FAMILIES.md §4.2).\nAUDIENCE (domain-practitioner): Moderate label density with brief glossing on first use.\nTEXT POLICY: hybrid_template\nBRAND (suengj-com@1.0.0): background warm off-white / cream, primary muted forest / sage green — the structural identity color, not a saturation effect, accent restrained sand / camel — accent only, never a second dominant palette\nREFERENCE TRAITS — adopt: denoiser-style information placement inside the reading flow\nREFERENCE TRAITS — avoid: denoiser's literal visual skin",
+  "compiled_from": [
+    "editorial/profiles/artifact/visual-body-infographic.json",
+    "suengj-com@1.0.0",
+    "editorial/profiles/audience/domain-practitioner.json",
+    "semantic_spec",
+    "selected_reference_traits"
+  ]
+}

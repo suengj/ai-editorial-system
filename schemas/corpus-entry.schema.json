@@ -1,0 +1,117 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://suengj.com/schemas/corpus-entry.schema.json",
+  "title": "Real-output corpus entry",
+  "description": "One compact record about a real, owner-reviewed output (AES-V2.6 / SUE-564). Canonical content stays in its own SSOT — this record carries refs, a commit or content hash, and evaluation metadata, never the article or artifact body. additionalProperties is false by design: a field that would carry a body has nowhere to go, so an archive attempt fails schema validation rather than needing a separate detector. `reference_eligible` is a separate judgement from `owner_verdict` — published does not mean reference-quality, and an L1 PASS does not either.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version", "entry_id", "content_type", "transformation", "language",
+    "audience", "surface", "provenance_class", "source_ref", "owner_verdict",
+    "reference_eligible", "dimensions", "recorded_at"
+  ],
+  "properties": {
+    "schema_version": { "const": "1.0.0" },
+    "entry_id": {
+      "description": "Stable id. On disk at evals/real-output-corpus/entries/<slug-after-corpus:>.json.",
+      "type": "string",
+      "pattern": "^corpus:[a-z0-9]+(-[a-z0-9]+)*$"
+    },
+    "content_type": {
+      "enum": ["research", "view", "news", "note", "project", "academic", "promotional"]
+    },
+    "transformation": {
+      "description": "The transformation axis this output demonstrates, e.g. summarize, synthesize, adapt, recreate. Free text — the transformation profile vocabulary is owned by AES-V2.9, not duplicated here.",
+      "type": "string",
+      "minLength": 1
+    },
+    "language": {
+      "type": "string",
+      "pattern": "^[a-z]{2}(-[A-Z]{2})?$"
+    },
+    "audience": {
+      "description": "An audience id from the audience axis (editorial/profiles/axes.json, editorial/profiles/audience/*.json). Owned by that directory, not this enum (docs/architecture/V2-EDITORIAL-LEARNING-CORE.md §8) — scripts/validate-corpus.mjs resolves the id against the directory for real membership.",
+      "type": "string",
+      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+    },
+    "surface": {
+      "description": "A surface id from the surface axis (editorial/profiles/axes.json, editorial/profiles/surface/*.json). suengj-com is that axis's default entry, not this schema's identity — owned by the directory, not this enum. scripts/validate-corpus.mjs resolves the id against the directory for real membership.",
+      "type": "string",
+      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+    },
+    "provenance_class": {
+      "description": "Reuses the vocabulary already pinned by schemas/reference-evaluation.schema.json rather than inventing a second one.",
+      "enum": ["external", "owner_created", "generated_output"]
+    },
+    "lineage_ref": {
+      "description": "Present when provenance_class is generated_output: identifies the generation lineage (e.g. a Skill/profile/calibration combination) so repeated selection from the same lineage can be detected — see the L1 anti-collapse rule in schemas/l1-review.schema.json.",
+      "type": "string",
+      "minLength": 1
+    },
+    "source_ref": { "$ref": "#/$defs/source_ref" },
+    "owner_verdict": {
+      "description": "unknown is the required default when no owner acceptance/rejection has actually been expressed. Never inferred from publication, from an L1 pass, or from silence — see V2-EDITORIAL-LEARNING-CORE.md §11.",
+      "enum": ["accepted", "rejected", "needs_rework", "unknown"]
+    },
+    "reference_eligible": {
+      "description": "Whether this output is eligible for later selection as a comparison GOOD reference. Published does not automatically mean reference-quality, and an L1 PASS does not either — this is a distinct, explicit judgement and is never derived automatically from owner_verdict or from any pass/fail result.",
+      "type": "boolean"
+    },
+    "reference_eligible_rationale": {
+      "description": "Required whenever reference_eligible is true: why this specific output earns eligibility, not merely that it was accepted or passed.",
+      "type": "string",
+      "minLength": 1
+    },
+    "dimensions": { "$ref": "#/$defs/dimensions" },
+    "failure_labels": {
+      "description": "Named failure shapes observed, where applicable — e.g. 'source-tour', 'translationese', 'formulaic-voice'. Free text so a new failure shape never requires a schema change.",
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "recorded_at": { "type": "string", "format": "date-time" },
+    "recorded_by": { "$ref": "#/$defs/evaluator" },
+    "notes": { "type": "string" }
+  },
+  "$defs": {
+    "source_ref": {
+      "description": "A pointer to the canonical content, never a copy of it.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "locator"],
+      "properties": {
+        "kind": { "enum": ["publication-slug", "git-commit", "drive-doc", "url", "other"] },
+        "locator": { "type": "string", "minLength": 1 },
+        "content_hash": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+      }
+    },
+    "dimensions": {
+      "description": "Which dimensions this output is strong or weak on. Free-text dimension names so the corpus can note a finding before a rubric dimension formally exists for it.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["strong", "weak"],
+      "properties": {
+        "strong": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+        "weak": { "type": "array", "items": { "type": "string", "minLength": 1 } }
+      }
+    },
+    "evaluator": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type"],
+      "properties": {
+        "type": { "enum": ["human", "agent"] },
+        "agent": {
+          "description": "Present only when type is \"agent\".",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["runtime"],
+          "properties": {
+            "runtime": { "type": "string", "minLength": 1 },
+            "model": { "type": "string" },
+            "version": { "type": "string" }
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,155 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://suengj.com/schemas/experiment-record.schema.json",
+  "title": "Experiment ledger record",
+  "description": "One append-only record of a material tuning or model-drift change (AES-V2.10 / SUE-568). The test this record must pass: it answers \"why does this rule/profile/model decision exist?\" months later. decision \"insufficient_evidence\" is a first-class outcome, never a failure to decide. On disk at calibration/ledger/<experiment-id-slug>.json. See docs/architecture/V2-EDITORIAL-LEARNING-CORE.md §6, §9, §7 (model drift) and schemas/MODEL-DRIFT-CONTRACT.md.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version", "experiment_id", "created_at", "kind", "hypothesis",
+    "failure_evidence", "target_layer", "smallest_change", "evaluation_set",
+    "quality_result", "cost_result", "decision", "authored_by", "calibration_ref"
+  ],
+  "properties": {
+    "schema_version": { "const": "1.0.0" },
+    "experiment_id": {
+      "type": "string",
+      "pattern": "^experiment:[a-z0-9]+(-[a-z0-9]+)*$"
+    },
+    "created_at": { "type": "string", "format": "date-time" },
+    "kind": {
+      "description": "targeted_tuning: a smallest-justified-change against one layer (AES-V2.5). model_drift: the regression gate run before changing a default model/provider for a role (docs/architecture/V2-EDITORIAL-LEARNING-CORE.md §7). Both share this ledger rather than two parallel record types.",
+      "enum": ["targeted_tuning", "model_drift"]
+    },
+    "hypothesis": {
+      "description": "What was believed wrong and why, stated before the change was made.",
+      "type": "string",
+      "minLength": 1
+    },
+    "failure_evidence": {
+      "description": "The feedback / L1 / corpus record ids that motivated this experiment. Non-empty is enforced by scripts/lib/calibration-core.mjs, not this schema.",
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "target_layer": {
+      "description": "Must be a declared layer id from editorial/feedback-routing.json (cross-checked by scripts/lib/calibration-core.mjs against that table, never restated here). For kind model_drift, this is the role/layer whose default model was regression-tested, e.g. \"writing\" or \"calibration\".",
+      "type": "string",
+      "minLength": 1
+    },
+    "smallest_change": {
+      "description": "The actual smallest justified change made — not the full set of things that could have been changed.",
+      "type": "string",
+      "minLength": 1
+    },
+    "evaluation_set": { "$ref": "#/$defs/evaluation_set" },
+    "quality_result": { "$ref": "#/$defs/quality_result" },
+    "cost_result": { "$ref": "#/$defs/cost_result" },
+    "model_drift": {
+      "description": "Required (checked by scripts/lib/calibration-core.mjs, not this schema) when kind is model_drift. Per-role approval: a new model may pass for one role and be held for another.",
+      "$ref": "#/$defs/model_drift"
+    },
+    "decision": {
+      "description": "insufficient_evidence is a legitimate, expected outcome, not a failure to decide.",
+      "enum": ["keep", "revert", "insufficient_evidence"]
+    },
+    "calibration_ref": {
+      "description": "The calibration version this experiment produced or fed into, if any. Null when the experiment did not result in a calibration change (e.g. decision revert or insufficient_evidence with no candidate raised).",
+      "type": ["string", "null"],
+      "pattern": "^calibration:[a-z0-9]+(-[a-z0-9]+)*@v[0-9]+$"
+    },
+    "authored_by": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "identity"],
+      "properties": {
+        "type": { "enum": ["human", "agent"] },
+        "identity": { "type": "string", "minLength": 1 },
+        "agent": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["runtime"],
+          "properties": {
+            "runtime": { "type": "string", "minLength": 1 },
+            "model": { "type": "string" },
+            "version": { "type": "string" }
+          }
+        }
+      }
+    },
+    "notes": { "type": "string" }
+  },
+  "$defs": {
+    "evaluation_set": {
+      "description": "What was actually rerun. At least one of the three must be non-empty — checked by scripts/lib/calibration-core.mjs.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["fixtures", "references", "real_outputs"],
+      "properties": {
+        "fixtures": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+        "references": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+        "real_outputs": { "type": "array", "items": { "type": "string", "minLength": 1 } }
+      }
+    },
+    "quality_result": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["summary"],
+      "properties": {
+        "summary": { "type": "string", "minLength": 1 },
+        "integrity_impact": { "type": "string" },
+        "audience_fit_impact": { "type": "string" },
+        "dimension_deltas": { "type": "array", "items": { "type": "string", "minLength": 1 } }
+      }
+    },
+    "cost_result": {
+      "description": "Cost per accepted artifact, not raw call count (docs/architecture/V2-EDITORIAL-LEARNING-CORE.md §9).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["summary"],
+      "properties": {
+        "summary": { "type": "string", "minLength": 1 },
+        "cost_per_accepted_artifact_before": { "type": ["number", "null"], "minimum": 0 },
+        "cost_per_accepted_artifact_after": { "type": ["number", "null"], "minimum": 0 },
+        "context_tokens_before": { "type": ["integer", "null"], "minimum": 0 },
+        "context_tokens_after": { "type": ["integer", "null"], "minimum": 0 }
+      }
+    },
+    "model_drift": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["previous", "candidate", "role_outcomes"],
+      "properties": {
+        "previous": { "$ref": "#/$defs/model_identity" },
+        "candidate": { "$ref": "#/$defs/model_identity" },
+        "role_outcomes": {
+          "description": "Per-role approval, e.g. routing PASS, writer HOLD, reviewer PASS — \"newer\" is not a reason to replace every role at once.",
+          "type": "array",
+          "items": { "$ref": "#/$defs/role_outcome" }
+        }
+      }
+    },
+    "model_identity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["provider", "model", "model_version"],
+      "properties": {
+        "provider": { "type": "string", "minLength": 1 },
+        "model": { "type": "string", "minLength": 1 },
+        "model_version": { "type": "string", "minLength": 1 },
+        "quality_tier": { "type": "string" }
+      }
+    },
+    "role_outcome": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["role", "outcome"],
+      "properties": {
+        "role": {
+          "enum": ["routing", "framing", "writer", "reviewer_l1", "visual_planning", "audio_planning", "renderer"]
+        },
+        "outcome": { "enum": ["PASS", "HOLD", "FAIL"] },
+        "note": { "type": "string" }
+      }
+    }
+  }
+}

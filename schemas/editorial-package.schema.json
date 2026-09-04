@@ -1,0 +1,288 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://suengj.com/schemas/editorial-package.schema.json",
+  "title": "Editorial Package",
+  "description": "The destination-neutral handoff object for AES-V2.9 (SUE-567). Carries the minimum reusable semantics of one verified body of work — enough for it to reach several surfaces (suengj.com, NotebookLM, an academic export, a promotional channel) without duplicating source truth or the Article contract. Not an Article: where an Article already exists, this package cites it by `article_ref` rather than copying its frame or claims. See schemas/EDITORIAL-PACKAGE-CONTRACT.md for the rules this schema cannot express.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version", "package_id", "created_at", "intent_ref",
+    "transformation", "content_type", "audience", "target_surfaces",
+    "sources", "article_ref", "thesis", "key_concepts", "summary",
+    "verified_claims", "uncertainty", "lineage"
+  ],
+  "properties": {
+    "schema_version": { "const": "1.0.0" },
+
+    "package_id": {
+      "description": "Stable identity. Lineage anchor for downstream adapters and feedback.",
+      "type": "string",
+      "pattern": "^pkg:[a-z0-9]+(-[a-z0-9]+)*$"
+    },
+    "created_at": { "type": "string", "format": "date-time" },
+
+    "intent_ref": {
+      "description": "The `intent_id` of the editorial-intent record this package fulfils. Same pattern as editorial-intent.schema.json#/properties/intent_id — the package is downstream of intake, never a second intake.",
+      "type": "string",
+      "pattern": "^intent:[0-9]{4}-[0-9]{2}-[0-9]{2}-[a-z0-9]+(-[a-z0-9]+)*$"
+    },
+
+    "transformation": {
+      "description": "What this package's content may claim to have done to its sources. Semantics live in editorial/profiles/transformation/<value>.json (owned there, not here) — this field only names and points at the profile.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["value", "profile_ref"],
+      "properties": {
+        "value": {
+          "enum": [
+            "extract", "summarize", "compress", "synthesize",
+            "rewrite", "recreate", "translate", "adapt", "original"
+          ]
+        },
+        "profile_ref": {
+          "type": "string",
+          "pattern": "^editorial/profiles/transformation/"
+        }
+      }
+    },
+
+    "content_type": { "$ref": "#/$defs/axis_ref_content" },
+    "audience": { "$ref": "#/$defs/axis_ref_audience" },
+
+    "target_surfaces": {
+      "description": "A package may legitimately serve more than one surface — that is the reason it exists instead of an Article. Non-empty is a validator rule (json-schema-lite cannot express minItems).",
+      "type": "array",
+      "items": { "$ref": "#/$defs/axis_ref_surface" }
+    },
+
+    "sources": {
+      "description": "Refs and provenance only. Never a source body — enforced structurally: this object has no field capable of holding one.",
+      "type": "array",
+      "items": { "$ref": "#/$defs/source_ref" }
+    },
+
+    "article_ref": {
+      "description": "Set when a V1 Article already carries the verified frame and claims this package draws on. Same shape as artifact.schema.json#/$defs/article_ref. When set, thesis/key_concepts/summary/verified_claims are null/empty on this package — the article is cited, not copied. null when there is no article (a package that exists because no Article was warranted, e.g. a P03 summarize-to-note).",
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "required": ["article_id", "version_number", "content_hash", "claims_hash"],
+      "properties": {
+        "article_id": { "type": "string", "pattern": "^art:[a-z0-9]+(-[a-z0-9]+)*$" },
+        "version_number": { "type": "integer", "minimum": 1 },
+        "content_hash": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "claims_hash": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "commit": { "type": "string", "pattern": "^[a-f0-9]{7,40}$" }
+      }
+    },
+
+    "thesis": {
+      "description": "Required (non-null) when this package is the sole carrier of a new argument — synthesize/original with no article_ref. null when article_ref is set (the article's frame.thesis is the thesis) or when the transformation does not produce one (extract, translate).",
+      "type": ["string", "null"],
+      "minLength": 1
+    },
+    "key_concepts": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "summary": {
+      "description": "One self-contained compression, capped like the Article AnswerUnit so it stays a summary rather than a second article.",
+      "type": ["string", "null"],
+      "maxLength": 400
+    },
+
+    "verified_claims": {
+      "description": "Same field names and semantics as article.schema.json#/$defs/verification/properties/claims — the same contract expressed at package scope, never a second claim model. Empty when article_ref is set: the claims live in the article and are cited via lineage.claims_hash, not restated here.",
+      "type": "array",
+      "items": { "$ref": "#/$defs/verified_claim" }
+    },
+
+    "uncertainty": {
+      "description": "What is not known. May not be empty for synthesize/original packages — a validator rule (schemas/EDITORIAL-PACKAGE-CONTRACT.md), not expressible here.",
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+
+    "reference_profile_refs": {
+      "description": "Which reference material's craft evidence was active while this package's content was produced. Never a factual source — see V2-EDITORIAL-LEARNING-CORE.md section 2.",
+      "type": "array",
+      "items": { "type": "string", "pattern": "^ref:[a-z0-9]+(-[a-z0-9]+)*$" }
+    },
+    "calibration_ref": {
+      "description": "The calibration version active when this package's content was produced. Same pattern as editorial-intent.schema.json#/properties/calibration_ref.",
+      "type": ["string", "null"],
+      "pattern": "^calibration:[a-z0-9]+(-[a-z0-9]+)*@v[0-9]+$"
+    },
+
+    "proposed_artifacts": {
+      "description": "Artifact ids this package could still produce, namespaced by modality so text/visual/audio/video generation contracts stay separate.",
+      "type": "array",
+      "items": { "$ref": "#/$defs/artifact_ref" }
+    },
+    "approved_artifacts": {
+      "description": "Artifact ids a human has approved for handoff to an adapter.",
+      "type": "array",
+      "items": { "$ref": "#/$defs/artifact_ref" }
+    },
+
+    "lineage": { "$ref": "#/$defs/lineage" },
+
+    "rights": {
+      "description": "Carries forward source.schema.json's rights fields and article.schema.json's transformation record rather than inventing a third rights model. Optional: a package built entirely from original, unsourced synthesis may omit it.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "quotable": { "type": "boolean" },
+        "redistributable": { "type": "boolean" },
+        "license": { "type": ["string", "null"] },
+        "attribution": { "type": "string" },
+        "transcript_shaped": {
+          "description": "Same meaning as article.schema.json#/$defs/transformation/properties/transcript_shaped. True blocks handoff to any adapter — see the contract doc.",
+          "type": "boolean"
+        },
+        "original_framing": { "type": "boolean" },
+        "synthesis_note": { "type": "string", "minLength": 1 }
+      }
+    }
+  },
+
+  "$defs": {
+    "axis_ref_content": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["value"],
+      "properties": {
+        "value": { "type": "string", "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$" },
+        "profile_ref": { "type": "string", "pattern": "^editorial/profiles/content/" }
+      }
+    },
+    "axis_ref_audience": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["value"],
+      "properties": {
+        "value": { "type": "string", "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$" },
+        "profile_ref": { "type": "string", "pattern": "^editorial/profiles/audience/" }
+      }
+    },
+    "axis_ref_surface": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["value"],
+      "properties": {
+        "value": { "type": "string", "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$" },
+        "profile_ref": { "type": "string", "pattern": "^editorial/profiles/surface/" }
+      }
+    },
+
+    "source_ref": {
+      "description": "Reference and provenance only — mirrors source.schema.json identity fields. No field here can carry a source body.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source_id", "role"],
+      "properties": {
+        "source_id": {
+          "type": "string",
+          "pattern": "^src:(drive|github|web|local):[a-zA-Z0-9._@/-]{3,200}$"
+        },
+        "uri": { "type": "string", "minLength": 1 },
+        "retrieved_at": { "type": "string", "format": "date-time" },
+        "hash": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["algo", "value"],
+          "properties": {
+            "algo": { "const": "sha256" },
+            "value": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+          }
+        },
+        "role": { "enum": ["primary", "supporting", "contradicting", "background"] }
+      }
+    },
+
+    "verified_claim": {
+      "description": "Field-for-field mirror of article.schema.json#/$defs/verification/properties/claims/items.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["claim_id", "text", "kind", "status"],
+      "properties": {
+        "claim_id": { "type": "string", "minLength": 1 },
+        "text": { "type": "string", "minLength": 1 },
+        "kind": { "enum": ["number", "date", "quotation", "attribution", "assertion"] },
+        "status": { "enum": ["verified", "unverified", "contradicted", "not_applicable"] },
+        "evidence": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["url", "retrieved_at"],
+            "properties": {
+              "url": { "type": "string", "minLength": 1 },
+              "title": { "type": "string" },
+              "retrieved_at": { "type": "string", "format": "date" },
+              "authority": { "enum": ["primary", "secondary", "aggregator"] }
+            }
+          }
+        }
+      }
+    },
+
+    "artifact_ref": {
+      "type": "string",
+      "pattern": "^(text|visual|audio|video)/[a-z0-9]+(-[a-z0-9]+)*(#[a-z0-9]+(-[a-z0-9]+)*)?$"
+    },
+
+    "lineage": {
+      "description": "Consistent with the V1 staleness rule (ARTICLE-ARTIFACT-CONTRACT.md): claims_hash unchanged means cosmetic drift, changed means material drift and dependent artifacts are stale.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["claims_hash", "package_hash", "supersedes", "produced_by"],
+      "properties": {
+        "claims_hash": {
+          "description": "sha256 over the ordered verified-claim set (id, text, status) — same convention as article.schema.json#/$defs/version/properties/claims_hash. When article_ref is set, must equal article_ref.claims_hash: the package does not compute a second claims_hash for claims it does not hold. null only when this package carries no claims at all (e.g. a pure translate/adapt of non-factual material).",
+          "type": ["string", "null"],
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "package_hash": {
+          "description": "sha256 over this package's own normalised content (everything except this lineage block). Lets a consumer detect a changed package without a diff.",
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "supersedes": {
+          "type": ["string", "null"],
+          "pattern": "^pkg:[a-z0-9]+(-[a-z0-9]+)*$"
+        },
+        "produced_by": {
+          "description": "Vendor-neutral: a Skill is the orchestration contract, the tool is a replaceable worker. `tool` carries the same full runtime-lineage shape as visual-job.schema.json's `renderer` block (docs/architecture/V2-EDITORIAL-LEARNING-CORE.md §7 model-drift contract) rather than a second spelling of it — a package's writer/framer identity is exactly as detectable as its renderer's.",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["skill", "tool"],
+          "properties": {
+            "skill": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["name", "version"],
+              "properties": {
+                "name": { "type": "string", "minLength": 1 },
+                "version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" }
+              }
+            },
+            "tool": {
+              "description": "Full runtime lineage. Field names deliberately match visual-job.schema.json's `renderer`/`runtime` $defs: tool/tool_version identify the compiling pipeline; provider/model/model_version identify the generative runtime, and are still recorded for a deterministic tool as the tool's own identity so the field is never blank.",
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["tool", "provider", "model", "model_version"],
+              "properties": {
+                "tool": { "type": "string", "minLength": 1 },
+                "tool_version": { "type": "string", "minLength": 1 },
+                "provider": { "type": "string", "minLength": 1 },
+                "model": { "type": "string", "minLength": 1 },
+                "model_version": { "type": "string", "minLength": 1 },
+                "quality_tier": { "type": "string", "minLength": 1 }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

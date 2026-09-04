@@ -1,0 +1,123 @@
+{
+  "description": "Worked L1 review records for AES-V2.6 (SUE-564). Used by scripts/validate-corpus.mjs's sibling and scripts/test-l1.mjs. Not real editorial judgements.",
+  "records": [
+    {
+      "schema_version": "1.0.0",
+      "review_id": "l1:example-pass",
+      "subject": {
+        "kind": "article",
+        "ref": "art:example-fourth-piece",
+        "content_type": "research"
+      },
+      "comparison": {
+        "mode": "pairwise",
+        "references": [
+          {
+            "ref": "corpus:placeholder-research-accepted",
+            "provenance_class": "owner_created",
+            "content_type": "research"
+          }
+        ],
+        "same_content_type": true
+      },
+      "dimensions": [
+        {
+          "id": "thesis-worth",
+          "verdict": "tie",
+          "evidence_span": "Both carry a falsifiable thesis in the first two paragraphs."
+        },
+        {
+          "id": "synthesis-independence",
+          "verdict": "better",
+          "evidence_span": "The subject connects a 2025 pricing filing to a 2023 API change the reference does not mention."
+        },
+        {
+          "id": "language-native-prose",
+          "verdict": "tie",
+          "evidence_span": "Neither shows translated discourse scaffolding in the sampled paragraphs."
+        },
+        {
+          "id": "formulaic-ai-shaped",
+          "verdict": "worse",
+          "evidence_span": "Two consecutive paragraphs open with '이 지점에서', a repeated meta-connective the reference does not use."
+        },
+        {
+          "id": "audience-fit",
+          "verdict": "tie",
+          "evidence_span": "Both gloss the acronym on first use for a domain-practitioner reader."
+        }
+      ],
+      "integrity": {
+        "status": "clear"
+      },
+      "outcome": "PROSE_REWORK",
+      "routes_to": "writing",
+      "reviewed_at": "2026-09-05T11:00:00Z",
+      "reviewer": {
+        "type": "agent",
+        "agent": {
+          "provider": "anthropic",
+          "model": "claude-sonnet-5",
+          "model_version": "2026-05-01"
+        }
+      },
+      "final_authority": "human"
+    },
+    {
+      "schema_version": "1.0.0",
+      "review_id": "l1:example-abstain",
+      "subject": {
+        "kind": "article",
+        "ref": "art:example-fifth-piece",
+        "content_type": "note"
+      },
+      "comparison": {
+        "mode": "abstain",
+        "references": [],
+        "same_content_type": true
+      },
+      "dimensions": [
+        {
+          "id": "thesis-worth",
+          "verdict": "abstain",
+          "evidence_span": "No Note-register GOOD reference exists in the corpus yet to compare against; abstaining rather than borrowing a Research-register reference for a non-cross-cutting dimension."
+        },
+        {
+          "id": "synthesis-independence",
+          "verdict": "abstain",
+          "evidence_span": "Same absence of a comparable reference."
+        },
+        {
+          "id": "language-native-prose",
+          "verdict": "tie",
+          "evidence_span": "Judged directly against editorial/voice.md without a reference; no translationese pattern observed."
+        },
+        {
+          "id": "formulaic-ai-shaped",
+          "verdict": "abstain",
+          "evidence_span": "Same absence of a comparable reference."
+        },
+        {
+          "id": "audience-fit",
+          "verdict": "abstain",
+          "evidence_span": "Same absence of a comparable reference."
+        }
+      ],
+      "integrity": {
+        "status": "clear"
+      },
+      "outcome": "ABSTAIN",
+      "routes_to": null,
+      "reviewed_at": "2026-09-05T11:05:00Z",
+      "reviewer": {
+        "type": "agent",
+        "agent": {
+          "provider": "anthropic",
+          "model": "claude-sonnet-5",
+          "model_version": "2026-05-01"
+        }
+      },
+      "final_authority": "human"
+    }
+  ]
+}

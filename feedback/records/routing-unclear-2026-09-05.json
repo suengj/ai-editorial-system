@@ -1,0 +1,29 @@
+{
+  "schema_version": "1.0.0",
+  "feedback_id": "feedback:routing-unclear-2026-09-05",
+  "created_at": "2026-09-05T04:30:00Z",
+  "subject": {
+    "kind": "artifact",
+    "ref": "artifact:example-body-infographic-001"
+  },
+  "evaluator": {
+    "type": "agent",
+    "agent": {
+      "runtime": "claude-code",
+      "model": "claude-sonnet-5"
+    }
+  },
+  "basis": "model_inference",
+  "signal": "publication_fit",
+  "verdict": "mixed",
+  "statement": "Mobile legibility looks borderline but it cannot be told whether this is a renderer defect or a density/brand-profile choice without inspecting the rendered asset at native size.",
+  "routing": {
+    "layer": null,
+    "confidence": "low",
+    "abstained": true,
+    "rationale": "Insufficient evidence to attribute between the VISUAL renderer and VISUAL brand-profile sub-concerns without the rendered artifact in hand. Naming a shared layer here would be a guess, and abstention must be expressible rather than forced."
+  },
+  "scope": "task_local",
+  "calibration_ref": null,
+  "owner_verdict": "unknown"
+}

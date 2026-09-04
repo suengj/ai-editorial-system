@@ -1,0 +1,25 @@
+{
+  "schema_version": "1.0.0",
+  "entry_id": "corpus:placeholder-research-accepted",
+  "content_type": "research",
+  "transformation": "synthesize",
+  "language": "ko",
+  "audience": "domain-practitioner",
+  "surface": "suengj-com",
+  "provenance_class": "owner_created",
+  "source_ref": {
+    "kind": "other",
+    "locator": "SYNTHETIC PLACEHOLDER — no real suengj.com article. Demonstrates the entry shape ahead of the SUE-570 pilot, which fills the real corpus."
+  },
+  "owner_verdict": "accepted",
+  "reference_eligible": true,
+  "reference_eligible_rationale": "Owner explicitly cited this piece as the register bar for future Research pieces in a review conversation, not merely accepted for publication — acceptance and reference-quality are judged separately.",
+  "dimensions": {
+    "strong": ["synthesis across disagreeing sources", "native Korean discourse order", "counterargument at full strength"],
+    "weak": ["evidence density in the closing section"]
+  },
+  "failure_labels": [],
+  "recorded_at": "2026-09-05T10:00:00Z",
+  "recorded_by": { "type": "human" },
+  "notes": "Placeholder entry. Do not treat as a real owner verdict on a real article."
+}

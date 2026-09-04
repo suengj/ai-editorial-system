@@ -1,0 +1,80 @@
+{
+  "schema_version": "1.0.0",
+  "modality": "text",
+  "source_vocabulary": [
+    "editorial/voice.md"
+  ],
+  "notes": "Dimensions name the failure-signature and craft vocabulary already defined in editorial/voice.md rather than restating it. See voice.md §12 (Failure signatures) and 'Protected against style-only rewrite' for the invariants a text evaluation must not contradict.",
+  "dimensions": [
+    {
+      "id": "thesis",
+      "asks": "Does the piece hold a position it is willing to state, rather than surveying a topic?",
+      "adopt_signal": "A stated, defensible position the piece actually argues for.",
+      "imitation_risk": "low — a thesis is a structural habit to learn from, not a sentence to copy"
+    },
+    {
+      "id": "argument-structure",
+      "asks": "Does the structure follow the argument's logic, or the source material's running order?",
+      "adopt_signal": "Section order derived from what the reader needs to believe next.",
+      "imitation_risk": "low — structural logic transfers across unrelated subjects"
+    },
+    {
+      "id": "synthesis",
+      "asks": "Does the piece combine multiple sources or observations into a claim none of them states alone?",
+      "adopt_signal": "A synthesis that would not exist if any one input were removed.",
+      "imitation_risk": "medium — the synthesis move is learnable, but the specific synthesis belongs to that piece"
+    },
+    {
+      "id": "original-reasoning",
+      "asks": "Is there inference here beyond restating or recombining its sources?",
+      "adopt_signal": "A causal or evaluative claim the sources do not themselves make.",
+      "imitation_risk": "high — original reasoning is the one thing that cannot be adopted without becoming derivative"
+    },
+    {
+      "id": "information-density",
+      "asks": "Does each paragraph carry load, or pad toward a length?",
+      "adopt_signal": "Numbers and specifics appear because the claim depends on them (voice.md §10), not to look evidence-dense.",
+      "imitation_risk": "low — a density habit, not an expression"
+    },
+    {
+      "id": "language-naturalness",
+      "asks": "Does the prose read as fluently produced in its own language, or as translationese / synthetic rhythm (voice.md §12)?",
+      "adopt_signal": "Sentence joints a native-fluent writer would actually produce.",
+      "imitation_risk": "low — a craft skill, not a signature"
+    },
+    {
+      "id": "paragraph-sentence-rhythm",
+      "asks": "Does paragraph and sentence length vary with the thought, or fall into a mechanical pattern (voice.md §5, §12 'synthetic rhythm')?",
+      "adopt_signal": "Rhythm that tracks where a thought needs more room and where it doesn't.",
+      "imitation_risk": "medium — rhythm becomes a signature move if copied wholesale; adopt the principle, not the cadence"
+    },
+    {
+      "id": "citation-behaviour",
+      "asks": "Are claims traced to something that observed them, and is a citation checked against the specific claim beside it?",
+      "adopt_signal": "Citations that support the exact claim they sit next to, not merely resolve.",
+      "imitation_risk": "low — this is a verification discipline, not an expressive trait"
+    },
+    {
+      "id": "content-type-fit",
+      "asks": "Does the register match a specific content type (research / view / news / note / project), or is it a generic explainer shell?",
+      "adopt_signal": "Register decisions traceable to the content type's evidence burden and structure, not habit.",
+      "imitation_risk": "medium — a register can be adopted per content type; an institutional staffing or publishing model behind it usually cannot"
+    },
+    {
+      "id": "audience-suitability",
+      "asks": "Does explanation depth and term-glossing match a named audience's expertise and jargon tolerance?",
+      "adopt_signal": "Depth and glossing that would change if the audience changed.",
+      "imitation_risk": "low — a calibration skill, not a voice"
+    }
+  ],
+  "not_authoritative_for": [
+    "visual composition, palette, or density",
+    "spoken/audio delivery",
+    "whether a claim is factually true — that is verify-claims, never this profile"
+  ],
+  "selection_hints": [
+    "Prefer 1-3 evaluations whose applicable_to.content_types or .audiences overlaps the current Editorial Intent.",
+    "A text evaluation with no dimensions above `neutral` is weak selection evidence; do not select it merely because it is the only one available.",
+    "original-reasoning and synthesis are almost never adopt-as-template; they are evidence that the reference is worth reading, not a structure to reuse."
+  ]
+}

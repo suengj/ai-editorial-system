@@ -1,0 +1,26 @@
+{
+  "schema_version": "1.0.0",
+  "feedback_id": "feedback:paragraph-order-2026-09-05",
+  "created_at": "2026-09-05T04:00:00Z",
+  "subject": {
+    "kind": "article",
+    "ref": "article:example-synthetic-draft-001"
+  },
+  "evaluator": {
+    "type": "human"
+  },
+  "basis": "explicit_human_feedback",
+  "signal": "objective_quality",
+  "verdict": "bad",
+  "statement": "이 결과 별로야, 문단이 소스 순서대로야",
+  "routing": {
+    "layer": "frame",
+    "modality_layer": "TEXT structure / argument path",
+    "confidence": "high",
+    "abstained": false,
+    "rationale": "Paragraphs mirror the source's running order rather than an argument this piece owns. A frame failure repaired as polish would leave the article structurally wrong while making it read better — see docs/architecture/V2-EDITORIAL-LEARNING-CORE.md §5, routing error #1."
+  },
+  "scope": "task_local",
+  "calibration_ref": null,
+  "owner_verdict": "rejected"
+}

@@ -1,0 +1,17 @@
+{
+  "active": [
+    {
+      "calibration_id": "calibration:audience-beginner-learner@v1",
+      "effective_from": "2026-09-05T00:00:00Z",
+      "path": "calibration/versions/audience-beginner-learner.v1.json",
+      "scope": {
+        "axis": "audience.beginner-learner",
+        "modality": "text",
+        "profile_ref": "editorial/profiles/audience/beginner-learner.json"
+      }
+    }
+  ],
+  "generated": true,
+  "generated_by": "scripts/calibration.mjs --rebuild",
+  "schema_version": "1.0.0"
+}

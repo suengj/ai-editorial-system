@@ -1,0 +1,69 @@
+{
+  "schema_version": "1.0.0",
+  "description": "AES-V2 FIX (B7): the per-role approved-model roster schemas/MODEL-DRIFT-CONTRACT.md §2 assumes exists but that no file previously recorded — 'it stays pinned to the previous model until the regression record exists' was unimplementable with nothing recording what the previous model was. Data, not code: a new role or a new approved pin is a new entry here, never a schema or router change (docs/architecture/V2-EDITORIAL-LEARNING-CORE.md §8). This is a NEW file under calibration/ — no existing file under this directory is edited by this fix, per the FIX package boundary. The role vocabulary is owned by schemas/experiment-record.schema.json's model_drift.role_outcomes[].role enum and is not repeated as an independent list here; every `role` value below must be a member of it.",
+  "roster": [
+    {
+      "role": "routing",
+      "provider": "anthropic",
+      "model": "claude-sonnet-5",
+      "model_version": "2026-05-01",
+      "approved_at": "2026-09-05",
+      "approved_by_ledger": null,
+      "note": "Initial default pin recorded to make this roster non-empty. No calibration/ledger/*.json model_drift record has run the §2 regression gate for this role yet — this entry documents the current default, not a completed drift decision. The first real model change proposed for this role must run the gate and, on PASS, supersede this entry with approved_by_ledger citing that record."
+    },
+    {
+      "role": "framing",
+      "provider": "anthropic",
+      "model": "claude-sonnet-5",
+      "model_version": "2026-05-01",
+      "approved_at": "2026-09-05",
+      "approved_by_ledger": null,
+      "note": "Initial default pin; no model_drift ledger record exists for this role yet. See routing's note."
+    },
+    {
+      "role": "writer",
+      "provider": "anthropic",
+      "model": "claude-sonnet-5",
+      "model_version": "2026-05-01",
+      "approved_at": "2026-09-05",
+      "approved_by_ledger": null,
+      "note": "Initial default pin; no model_drift ledger record exists for this role yet. §7's worked example ('new model -> routing PASS, Writer HOLD, Reviewer PASS') names this exact role as the one most often held — a real HOLD decision, once it exists, supersedes this entry rather than editing it in place."
+    },
+    {
+      "role": "reviewer_l1",
+      "provider": "anthropic",
+      "model": "claude-sonnet-5",
+      "model_version": "2026-05-01",
+      "approved_at": "2026-09-05",
+      "approved_by_ledger": null,
+      "note": "Initial default pin; no model_drift ledger record exists for this role yet."
+    },
+    {
+      "role": "visual_planning",
+      "provider": "anthropic",
+      "model": "claude-sonnet-5",
+      "model_version": "2026-05-01",
+      "approved_at": "2026-09-05",
+      "approved_by_ledger": null,
+      "note": "Initial default pin; no model_drift ledger record exists for this role yet. Distinct from the visual-job renderer role, which carries its own runtime lineage on visual-job.schema.json's `renderer` block per job, not a single roster pin."
+    },
+    {
+      "role": "audio_planning",
+      "provider": "anthropic",
+      "model": "claude-sonnet-5",
+      "model_version": "2026-05-01",
+      "approved_at": "2026-09-05",
+      "approved_by_ledger": null,
+      "note": "Initial default pin; no model_drift ledger record exists for this role yet."
+    },
+    {
+      "role": "renderer",
+      "provider": "anthropic",
+      "model": "claude-sonnet-5",
+      "model_version": "2026-05-01",
+      "approved_at": "2026-09-05",
+      "approved_by_ledger": null,
+      "note": "The renderer role's actual runtime is recorded per job on visual-job.schema.json's `renderer` block and per plan on audio-plan.schema.json's `render` block, not read from this roster at generation time. This entry exists so the role still has a named approved pin for the flagging check in scripts/check-model-roster.mjs to compare individual jobs/plans against."
+    }
+  ]
+}

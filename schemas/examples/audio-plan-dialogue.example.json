@@ -1,0 +1,150 @@
+{
+  "schema_version": "1.0.0",
+  "plan_id": "audioplan:tokenized-money-markets-dialogue-v1",
+  "article_ref": {
+    "article_id": "art:tokenized-money-markets",
+    "version_number": 3,
+    "content_hash": "6221d012edc4a68c865297394d3ebb29d145dc16c95d8eb86d4c81f964afb8fe",
+    "claims_hash": "c31221ee3cf26d8ffb8e788a6dfe5c161aaa8dbe3e4c4fbe805afa8a5daee37a"
+  },
+  "artifact_profile": "audio/dialogue",
+  "profile_ref": "editorial/profiles/artifact/audio-dialogue.json",
+  "audience": {
+    "value": "beginner-learner",
+    "profile_ref": "editorial/profiles/audience/beginner-learner.json",
+    "traits_applied": [
+      "modality_effects.audio.thought_unit_length=short",
+      "modality_effects.audio.pace=slower than the default conversational pace",
+      "modality_effects.audio.term_glossing=every term glossed on first use",
+      "modality_effects.audio.useful_recurrence=higher than any other adult audience"
+    ]
+  },
+  "selected_reference_traits": {
+    "adopt": [
+      "speaker-interaction",
+      "audience-suitability"
+    ],
+    "avoid": [],
+    "do_not_copy": [
+      "performance-delivery"
+    ]
+  },
+  "spoken_script": {
+    "narration_text": "So a tokenized money-market fund just means the fund gives you a token instead of a line in a spreadsheet? That's the mechanism, but the token isn't the interesting part. The interesting part is who can create or destroy that token. Isn't that just the fund company, same as before? Usually yes, and that's exactly the catch. The speed of the token makes settlement feel instant, but the person who controls redemption hasn't actually changed. So if everyone tries to cash out at once? Then you're back to the same limit the underlying market has always had, a repo market that can't deliver cash instantly. The token never removed that limit, it just made it easier to forget it exists.",
+    "narration_hash": "81e0d6e5b11ed436e5c8fcad33a6466b8d1db28a0411daf76918e0ce5f981e35",
+    "script_version": 1
+  },
+  "recompilation": {
+    "performed": true,
+    "identical_to_source_prose": false,
+    "structural_changes": [
+      "converted the article's linear explanation into a question/answer exchange between two roles",
+      "the questioning role's uncertainty stands in for a beginner-learner reader who has not seen the term 'repo market' before",
+      "removed inline citation markers",
+      "speaker attribution lives in segments[].speaker, never as an inline label inside narration_text — a spoken 'HOST:'/'LEARNER:' prefix would otherwise be read aloud by the renderer"
+    ]
+  },
+  "segments": [
+    {
+      "segment_id": "seg-open-question",
+      "speaker": "host",
+      "narration_span_hash": "4b3ab39803dc2bf779d0703216a617708a2896d5f1560b8682b53af8b0f59e62",
+      "previous_context": "",
+      "next_context": "learner reframes what actually matters",
+      "cues": []
+    },
+    {
+      "segment_id": "seg-control-explanation",
+      "speaker": "learner",
+      "narration_span_hash": "1c3e7895c0004ba224f3ea92f268f8893f8ada4a9be5a452f0e7765445e6c19e",
+      "previous_context": "host asked whether the token changes the mechanism",
+      "next_context": "host asks about a stress scenario",
+      "cues": [
+        "pause_short"
+      ]
+    },
+    {
+      "segment_id": "seg-redemption-limit",
+      "speaker": "learner",
+      "narration_span_hash": "3cbc9004bdb26fff02a4b588c826c2bb03f781b3ab7ea0c9be7b17d5dc27dffc",
+      "previous_context": "host asks what happens if everyone redeems at once",
+      "next_context": "",
+      "cues": [
+        "emphasis"
+      ]
+    }
+  ],
+  "pronunciation": [
+    {
+      "term": "repo market",
+      "spoken_form": "repo market",
+      "pronunciation_ref": "repo-market"
+    }
+  ],
+  "delivery_intent": {
+    "register": "warm, curious two-role explainer register",
+    "pace": "slower than the default conversational pace, beginner-learner target",
+    "affect": "genuinely curious, not performed confusion",
+    "global_cues": [
+      "pause_short",
+      "emphasis"
+    ]
+  },
+  "timing": {
+    "rendering_mode": "free",
+    "target_duration_ms": null,
+    "tolerance_ms": null
+  },
+  "dialogue": {
+    "speaker_roles": [
+      {
+        "role_id": "host",
+        "purpose": "asks the questions a beginner-learner reader would actually have",
+        "knowledge_position": "asking",
+        "persona_disclosure": "synthetic_non_source"
+      },
+      {
+        "role_id": "learner",
+        "purpose": "carries the article's verified explanation and evidence",
+        "knowledge_position": "informed",
+        "persona_disclosure": "synthetic_non_source"
+      }
+    ],
+    "knowledge_asymmetry": "the 'learner' role holds the article's verified mechanism and evidence; the 'host' role holds only the beginner-learner's starting assumptions, and its questions do real explanatory work by exposing what a beginner would misunderstand.",
+    "turn_policy": {
+      "turn_length": "each turn ends when its question or its answer is complete, not on a fixed line count",
+      "interruption_conditions": "no interruption in this exchange; both roles complete their turns because the material does not require a correction or a clarification mid-turn"
+    },
+    "agreement_policy": "no disagreement is staged; the host's questions are corrected/refined by the learner using only the article's verified claims, never a manufactured debate",
+    "persona_boundary_statement": "both roles are synthetic and disclosed as such; neither role is presented as a real named expert, witness, or interview subject, and no claim is attributed to a real person who did not make it (editorial/RIGHTS-AND-PROVENANCE.md §4)."
+  },
+  "script_l1": {
+    "performed": true,
+    "outcome": "pass",
+    "checklist": [
+      "thesis fidelity",
+      "genuine knowledge asymmetry, not a cosmetic split",
+      "no synthetic speaker presented as a real source",
+      "no unverified derived numbers or analogies",
+      "clean narration text separated from delivery instructions"
+    ],
+    "reviewer": "model"
+  },
+  "render": null,
+  "attempts": 0,
+  "max_attempts": 3,
+  "qa": {
+    "performed": false,
+    "pronunciation_check": "not_yet",
+    "pacing_check": "not_yet",
+    "continuity_check": "not_yet",
+    "performance_check": "not_yet",
+    "directive_leak_check": "not_yet"
+  },
+  "cost": {
+    "renders_attempted": 0,
+    "renders_accepted": 0,
+    "cost_per_accepted_artifact": null
+  },
+  "status": "script_l1_pass"
+}

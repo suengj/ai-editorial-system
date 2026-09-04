@@ -1,0 +1,73 @@
+{
+  "schema_version": "1.0.0",
+  "artifact": "visual/explanatory-diagram",
+  "modality": "visual",
+  "family": "Explanatory editorial diagram — primary lane of ARTICLE-ILLUSTRATION-ROUTING.md §4.1 (~70% of article-body visual use).",
+  "primary_job": "Make a relationship, process, or authority boundary easier to inspect than prose (ARTICLE-ILLUSTRATION-ROUTING.md §1 'explain', §2.2).",
+  "semantic_density": {
+    "level": "moderate",
+    "rationale": "One claim or mechanism per image, held to a compact set of groups — richer than a thumbnail's single tension but narrower than a body infographic's multi-module synthesis (ARTICLE-ILLUSTRATION-ROUTING.md §4.1)."
+  },
+  "visual_density": {
+    "level": "low",
+    "rationale": "Grid-led composition, sparse connectors, clear first-read hierarchy, low decorative density (ARTICLE-ILLUSTRATION-ROUTING.md §4.1)."
+  },
+  "text_policy": {
+    "profile": "hybrid_template",
+    "label_count_ceiling": 6,
+    "complexity_ceiling": "Deterministic short relationship/boundary labels only; mutable copy (titles, dates, captions, citations) stays outside the artwork (ARTICLE-VISUAL-PUBLICATION-HANDOFF.md §1)."
+  },
+  "composition": {
+    "dominant_structure": "One relationship, process, or authority boundary, grid-led, with sparse connectors that clarify hierarchy rather than build a dense network (ARTICLE-ILLUSTRATION-ROUTING.md §2.2; DIAGRAMMATIC-VISUAL-LANGUAGE.md §2 line behavior).",
+    "supporting_modules_max": 4,
+    "reading_path": "Single inspection path along the relationship or process.",
+    "negative_space": "generous",
+    "chrome_level": "low"
+  },
+  "audience_adaptation": {
+    "domain-expert": "Legend optional; technical relationship vocabulary allowed without expansion.",
+    "beginner-learner": "Decompose the relationship into fewer, explicitly labeled steps; expand every acronym on first use.",
+    "child-upper-elementary": "Use concrete, literal depictions of the relationship rather than schematic abstraction; the legend cannot be load-bearing (audience/child-upper-elementary.json modality_effects.visual)."
+  },
+  "renderer_preference": {
+    "order": ["deterministic", "hybrid", "generative"],
+    "rule": "Topology and relationship arrows that carry a factual boundary must stay deterministic and traceable; generative rendering is reserved for illustrative connective tissue and must never invent topology (ARTICLE-ILLUSTRATION-ROUTING.md §2.2, §12 renderer integrity)."
+  },
+  "readability_gate": {
+    "applies": true,
+    "gate": {
+      "viewport": "~390px reading surface",
+      "requirements": [
+        "module boundaries readable after downscaling",
+        "one clear reading path",
+        "line weight/contrast that survives mobile rendering",
+        "no horizontal page overflow",
+        "no reliance on hover or desktop-only interaction"
+      ]
+    },
+    "rationale": "A body-placed explanatory diagram is a body-facing visual and inherits the SUENGJ-ARTICLE-IMAGE-FAMILIES.md §5 mobile gate."
+  },
+  "split_rule": {
+    "applies": true,
+    "rule": "If the diagram begins carrying more than one relationship/process/boundary, split it into separate diagrams rather than compressing labels (generalization of SUENGJ-ARTICLE-IMAGE-FAMILIES.md §6 to the single-relationship case)."
+  },
+  "acceptance": [
+    "the reviewer can state which relationship, process, or boundary the diagram makes inspectable",
+    "one dominant relation, not an assembled set of unrelated nodes",
+    "passes VISUAL-INFORMATION-GAIN.md — the diagram is not a redraw of an immediately preceding sequence or pairing",
+    "legible at ~390px without zoom"
+  ],
+  "reject": [
+    "diagram-after-identical-sequence (VISUAL-INFORMATION-GAIN.md §10 R1)",
+    "generic network-node wallpaper with no thesis (DIAGRAMMATIC-VISUAL-LANGUAGE.md §12)",
+    "ornamental nodes that add no relation",
+    "paragraph-to-icons transcription with one label per noun and no new relation (VISUAL-INFORMATION-GAIN.md §10 R3)"
+  ],
+  "source_authority": [
+    "editorial/ARTICLE-ILLUSTRATION-ROUTING.md",
+    "editorial/VISUAL-INFORMATION-GAIN.md",
+    "editorial/DIAGRAMMATIC-VISUAL-LANGUAGE.md",
+    "editorial/SUENGJ-ARTICLE-IMAGE-FAMILIES.md",
+    "editorial/ARTICLE-VISUAL-PUBLICATION-HANDOFF.md"
+  ]
+}

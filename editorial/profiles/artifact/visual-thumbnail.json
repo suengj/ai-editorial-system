@@ -1,0 +1,65 @@
+{
+  "schema_version": "1.0.0",
+  "artifact": "visual/thumbnail",
+  "modality": "visual",
+  "family": "Thumbnail / cover / intro visual — Family A of SUENGJ-ARTICLE-IMAGE-FAMILIES.md.",
+  "primary_job": "Communicate the article's thesis, tension, or framing at first glance, before the reader reads any prose.",
+  "semantic_density": {
+    "level": "low",
+    "rationale": "Thesis-first and sparse by construction; a thumbnail is not responsible for explaining the whole article. Carrying body-infographic-level argument structure here is the documented failure mode (SUENGJ-ARTICLE-IMAGE-FAMILIES.md §1-3; SUENGJ-VISUAL-TASTE-CALIBRATION.md §9)."
+  },
+  "visual_density": {
+    "level": "low",
+    "rationale": "High negative space, thin quiet linework, low textual density, one dominant idea plus at most two supporting structures (SUENGJ-ARTICLE-IMAGE-FAMILIES.md §3.2; SUENGJ-VISUAL-TASTE-CALIBRATION.md §1, §4)."
+  },
+  "text_policy": {
+    "profile": "external_overlay",
+    "label_count_ceiling": 0,
+    "complexity_ceiling": "No readable mutable text in-artwork (title, section title, date, site label, caption, citation, CTA/status/badge stay outside). Stable semantic symbols or extremely small intrinsic labels are allowed only when the concept becomes materially less legible without them (SUENGJ-ARTICLE-IMAGE-FAMILIES.md §3.3)."
+  },
+  "composition": {
+    "dominant_structure": "One system tension, one transformation, one contrast, one bounded metaphor, or one large relationship between two domains (SUENGJ-ARTICLE-IMAGE-FAMILIES.md §3.2).",
+    "supporting_modules_max": 2,
+    "reading_path": "Single glance; no forced sequence or reading order.",
+    "negative_space": "high",
+    "chrome_level": "none"
+  },
+  "audience_adaptation": {
+    "child-upper-elementary": "Use a concrete, literal metaphor grounded in familiar things rather than an abstract system tension; do not rely on a symbolic encoding the reader has not been taught (audience/child-upper-elementary.json modality_effects.visual: low abstraction).",
+    "domain-expert": "The bounded metaphor may reference domain-specific tension without expansion; no glossary or legend required.",
+    "beginner-learner": "Prefer a metaphor with an everyday anchor point over a domain-internal one; the thumbnail should orient before any vocabulary is introduced."
+  },
+  "renderer_preference": {
+    "order": ["generative", "hybrid", "deterministic"],
+    "rule": "Thumbnails usually favor a generative conceptual illustration because the job is thesis framing, not exact evidence delivery. Use deterministic rendering only when the concept itself depends on exact geometry — never force a chart/diagram renderer merely because it is easier to automate, and exact values or labels never ride on the generative layer (SUENGJ-ARTICLE-IMAGE-FAMILIES.md §3.5)."
+  },
+  "readability_gate": {
+    "applies": false,
+    "rationale": "The body-infographic mobile gate (SUENGJ-ARTICLE-IMAGE-FAMILIES.md §5) does not apply here. A thumbnail instead carries a distinct small-scale legibility requirement: it must remain legible as a Home Featured image, content-card image, social/OG preview, and article intro/hero visual, and its information must survive aggressive downscaling (SUENGJ-ARTICLE-IMAGE-FAMILIES.md §3.4)."
+  },
+  "split_rule": {
+    "applies": false,
+    "rationale": "One plate per primary question is a body-infographic control. A thumbnail is inherently one idea and is never decomposed into plates (SUENGJ-ARTICLE-IMAGE-FAMILIES.md §6)."
+  },
+  "acceptance": [
+    "a reader can state the single dominant idea within 2-5 seconds",
+    "remains legible after aggressive downscale to card/social/OG size",
+    "no baked-in mutable text (title, date, caption, citation, CTA)",
+    "does not require a legend to grasp the tension"
+  ],
+  "reject": [
+    "mini dashboard",
+    "multi-panel report",
+    "dense infographic collage",
+    "tiny chart collection",
+    "icon-per-concept grid",
+    "title card with baked-in article copy",
+    "decorative stock-art metaphor unrelated to the article's thesis"
+  ],
+  "source_authority": [
+    "editorial/SUENGJ-ARTICLE-IMAGE-FAMILIES.md",
+    "editorial/SUENGJ-VISUAL-TASTE-CALIBRATION.md",
+    "editorial/DIAGRAMMATIC-VISUAL-LANGUAGE.md",
+    "editorial/IMAGE-TEXT-RENDERING-PROFILES.md"
+  ]
+}

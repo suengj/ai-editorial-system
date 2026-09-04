@@ -1,0 +1,105 @@
+{
+  "schema_version": "1.0.0",
+  "job_id": "job:ai-inference-pricing-margin-chart",
+  "intent_ref": "intent:2026-09-03-ai-inference-pricing",
+  "calibration_ref": null,
+  "article_ref": {
+    "article_id": "art:ai-inference-pricing-and-saas-gross-margin",
+    "version_number": 3,
+    "content_hash": "1111111111111111111111111111111111111111111111111111111111111111",
+    "claims_hash": "2222222222222222222222222222222222222222222222222222222222222222"
+  },
+  "artifact_profile": "visual/evidence-visual",
+  "profile_ref": "editorial/profiles/artifact/visual-evidence-visual.json",
+  "audience": {
+    "value": "professional-generalist",
+    "profile_ref": "editorial/profiles/audience/professional-generalist.json",
+    "traits_applied": [
+      "legend always shown and explained"
+    ]
+  },
+  "semantic_spec": {
+    "question": "Did reported gross margin move while list prices fell?",
+    "must_communicate": [
+      "published per-token price series over time",
+      "reported gross margin series over the same period",
+      "the divergence between the two series"
+    ],
+    "must_not_include": [
+      "any value not present in the two verified data claims c1 and c2"
+    ]
+  },
+  "information_gain": {
+    "adjacent_representation": {
+      "type": "prose",
+      "summary": "Prose states that volatility/margin did not track the published price cuts."
+    },
+    "redundancy_test": {
+      "q1_new_perception": "The reader can inspect the actual traceable time series showing when and how much the two series diverged, not just the stated conclusion.",
+      "q2_harder_without_it": "Verifying the claim against the underlying data becomes impossible without the chart.",
+      "q3_merely_recreates": false,
+      "q4_worth_the_interruption": true
+    },
+    "gain_type": [
+      "evidence",
+      "comparison"
+    ],
+    "integration_strategy": "add",
+    "verdict": "proceed"
+  },
+  "density_check": {
+    "profile_semantic_density": "high",
+    "profile_visual_density": "moderate",
+    "compiled_semantic_density": "high",
+    "compiled_visual_density": "moderate",
+    "match": true
+  },
+  "selected_reference_traits": {
+    "adopt": [],
+    "avoid": [],
+    "do_not_copy": []
+  },
+  "brand_profile": "suengj-com",
+  "brand_profile_version": "1.0.0",
+  "text_policy": "hybrid_template",
+  "renderer_route": "deterministic",
+  "renderer": {
+    "tool": "chart-compiler",
+    "tool_version": "1.0.0",
+    "provider": "in-house",
+    "model": "chart-compiler",
+    "model_version": "1.0.0"
+  },
+  "context_isolation": {
+    "permitted_inputs": [
+      "semantic_spec",
+      "artifact_profile",
+      "audience",
+      "selected_reference_traits",
+      "brand_profile"
+    ],
+    "excluded": [
+      "ambient_conversation",
+      "unrelated_project_state",
+      "prior_unrelated_jobs",
+      "renderer_runtime_identity"
+    ]
+  },
+  "attempts": 1,
+  "max_attempts": 1,
+  "qa": {
+    "performed": true,
+    "information_gain_recheck": "pass",
+    "density_recheck": "pass",
+    "notes": "Values traced to c1/c2; feedback_point: if margin tracks price after all, the thesis fails and the piece returns to framing."
+  },
+  "status": "accepted",
+  "compiled_prompt": "ARTIFACT: Deterministic evidence visual (chart / table / timeline / framework) carrying exact traceable values — the artifact-plan 'evidence_visual' kind. — Answer one specific question with inspectable, traceable evidence: exact values, distributions, or exceptions from source data (schemas/artifact-plan.schema.json spec.question; VISUAL-INFORMATION-GAIN.md §1 'evidence' gain type).\nQUESTION: Did reported gross margin move while list prices fell?\nMUST COMMUNICATE: published per-token price series over time; reported gross margin series over the same period; the divergence between the two series\nMUST NOT INCLUDE: any value not present in the two verified data claims c1 and c2\nCOMPOSITION: A chart, table, timeline, or framework answering exactly one question (schemas/artifact-plan.schema.json spec.form, spec.question).\nTEXT POLICY: hybrid_template\nBRAND (suengj-com@1.0.0): background warm off-white / cream, primary muted forest / sage green — the structural identity color, not a saturation effect, accent restrained sand / camel — accent only, never a second dominant palette",
+  "compiled_from": [
+    "editorial/profiles/artifact/visual-evidence-visual.json",
+    "suengj-com@1.0.0",
+    "editorial/profiles/audience/professional-generalist.json",
+    "semantic_spec",
+    "selected_reference_traits"
+  ]
+}

@@ -1,0 +1,73 @@
+{
+  "schema_version": "1.0.0",
+  "review_id": "l1:dogfood-2026-09-05-g04-vs-g01",
+  "subject": {
+    "kind": "corpus_entry",
+    "ref": "evals/fixtures/golden/G-04-research-native-korean.md",
+    "content_type": "research"
+  },
+  "comparison": {
+    "mode": "pairwise",
+    "references": [
+      {
+        "ref": "evals/fixtures/golden/G-01-synthesis.md",
+        "provenance_class": "owner_created",
+        "content_type": "research"
+      }
+    ],
+    "same_content_type": true,
+    "anti_collapse": {
+      "triggered": false,
+      "note": "The one comparison reference is provenance_class owner_created (a golden fixture authored directly for this repository, not an agent-generated output), so the generated_output-monoculture rule does not apply. Recorded honestly: this is still a comparison against exactly one fixture, not a real corpus of independently produced GOOD references — evals/real-output-corpus/ has no populated entries yet, so this dogfood run compares the two real prose texts that were actually available in the repository rather than fabricating a broader reference set."
+    }
+  },
+  "dimensions": [
+    {
+      "id": "thesis-worth",
+      "verdict": "tie",
+      "evidence_span": "Subject (G-04) opens with a falsifiable thesis: \"오래된 책의 종이가 손끝에서 부서질 정도가 되면 탈산 처리는 이미 늦었을 수 있다.\" Reference (G-01) opens with an equally falsifiable thesis: \"추론 가격이 내려가도 SaaS gross margin은 회복되지 않는다.\" Both name a position a reader could disagree with in the first sentence.",
+      "rationale": "Neither piece merely describes a topic; both stake a checkable claim before any supporting material is introduced."
+    },
+    {
+      "id": "synthesis-independence",
+      "verdict": "worse",
+      "evidence_span": "G-01 introduces an explanatory mechanism the two source facts do not state themselves: \"여기서 seat 기반 과금이 완충 장치가 아니라 증폭 장치로 작동한다... 단가 30% 하락이 소비량 50% 증가와 만나면 COGS는 늘어난다.\" G-04's synthesis instead narrows the applicability of one program's results against a second study's findings — \"이 결과는 대규모 탈산이 효과가 없다는 반론이라기보다 적용 범위를 좁힌다\" — which reconciles two sources but does not construct a new causal mechanism connecting them the way G-01's seat-billing-as-amplifier argument does.",
+      "rationale": "Both pieces synthesize rather than list, but G-01's synthesis produces an argument neither source states on its own; G-04's synthesis mainly draws a boundary between two sources' claims."
+    },
+    {
+      "id": "language-native-prose",
+      "verdict": "tie",
+      "evidence_span": "Both read as native, hedged Korean expository prose rather than translated or mechanically templated text — e.g. G-04's \"종이 안의 산을 중화하는 것과 끊어진 셀룰로오스 사슬을 되돌리는 일은 같지 않기 때문이다\" and G-01's \"단가가 내려간 것은 list price이고, 마진을 결정하는 것은 seat당 실제 소비량이기 때문이다\" both use natural clause-final reasoning constructions (\"~때문이다\") consistent with editorial/voice.md's register rather than an awkward calque.",
+      "rationale": "No stilted phrasing, unnatural word order, or machine-translation tell was found in either subject or reference."
+    },
+    {
+      "id": "formulaic-ai-shaped",
+      "verdict": "abstain",
+      "evidence_span": "Both pieces close on a bolded reframing sentence — G-04: \"**아직 남아 있는 시간을 덜 빠르게 쓰게 만드는 보존 조치**\"; G-01 bolds mid-argument rather than at the close (\"**list price**\"), so the shapes are not actually identical. With only these two texts available in this dogfood run, there is not enough of a corpus to tell whether a bolded-closing-reframe is a genuine repeated house-style tic or a coincidence of two fixtures.",
+      "rationale": "A real judgement here needs more than n=2 texts; abstaining is honest rather than declaring a pattern from one pair."
+    },
+    {
+      "id": "audience-fit",
+      "verdict": "abstain",
+      "evidence_span": "Neither evals/fixtures/golden/G-01-synthesis.md nor evals/fixtures/golden/G-04-research-native-korean.md carries a stated target audience (both are L0 golden fixtures demonstrating article shape, not artifacts tied to an Editorial Intent audience axis).",
+      "rationale": "audience-fit is judged against a named audience profile's traits; with no audience declared for either text, any verdict here would be an invented comparison, not an observation."
+    }
+  ],
+  "integrity": {
+    "status": "concern",
+    "evidence_span": "Subject (G-04) states a specific, precise figure with no citation or source attribution at all: \"한 보존 프로그램은 2001년 이후 약 20년에 걸쳐 550만 권가량을 처리했고\" — no footnote marker, named institution, or source note anywhere in the text supports the \"약 20년\" / \"550만 권\" figures. (For context: the reference, G-01, at least carries footnote markers [^1][^2][^3] next to its load-bearing claims, even though this dogfood run did not resolve where those footnotes point either.)"
+  },
+  "outcome": "FACT_REWORK",
+  "routes_to": "verification",
+  "reviewed_at": "2026-09-05T11:30:00Z",
+  "reviewer": {
+    "type": "agent",
+    "agent": {
+      "provider": "anthropic",
+      "model": "claude-sonnet-5",
+      "model_version": "claude-sonnet-5"
+    }
+  },
+  "final_authority": "human",
+  "notes": "SUE-569 dogfood run (evals/dogfood/2026-09-05-run-01/). This is an agent-run comparative review with no human review behind it — nothing here is or implies owner acceptance, and final_authority stays human per schema. The comparison set is thin (one fixture as the sole GOOD reference); this is disclosed in comparison.anti_collapse.note rather than treated as a populated corpus. The genuine integrity concern found on the subject (an uncited specific figure) is the observation carried into this run's record-feedback step."
+}

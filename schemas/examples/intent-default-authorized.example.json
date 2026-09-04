@@ -1,0 +1,62 @@
+{
+  "schema_version": "2.0.0",
+  "intent_id": "intent:2026-09-05-default-authorized-market-brief",
+  "created_at": "2026-09-05T13:40:00Z",
+  "request": {
+    "utterance": "오늘 마켓 브리프 자료로 글 하나 써줘. 나머지는 알아서 해.",
+    "language": "ko",
+    "received_by": "claude-code",
+    "received_at": "2026-09-05T13:40:00Z"
+  },
+  "axes": {
+    "transformation": {
+      "value": "synthesize",
+      "state": "assumed",
+      "profile_ref": "editorial/profiles/transformation/synthesize.json",
+      "basis": "\"알아서 해\" (use your judgement) authorized an assumed value for this run; a single day's market brief read into one piece is ordinarily a synthesis across its items rather than a straight extract."
+    },
+    "content_type": {
+      "value": "news",
+      "state": "assumed",
+      "profile_ref": "editorial/profiles/content/news.json",
+      "basis": "default_authorized; a same-day market brief is time-sensitive and news.json's freshness burden matches the source material better than research.json's."
+    },
+    "audience": {
+      "value": "professional-generalist",
+      "state": "assumed",
+      "profile_ref": "editorial/profiles/audience/professional-generalist.json",
+      "basis": "default_authorized; suengj-com's usual daily-market-note reader, absent any stated audience."
+    },
+    "surface": {
+      "value": "suengj-com",
+      "state": "assumed",
+      "profile_ref": "editorial/profiles/surface/suengj-com.json",
+      "basis": "default_authorized; no destination was named, and suengj-com is the default publication surface (docs/architecture/V2-EDITORIAL-LEARNING-CORE.md §8)."
+    },
+    "artifacts": [
+      {
+        "value": "text/article",
+        "state": "assumed",
+        "basis": "default_authorized; the utterance asked for a written piece (\"글 하나 써줘\") and named no other artifact."
+      }
+    ]
+  },
+  "inputs": {
+    "sources": [
+      { "source_id": "src:drive:1MarketBriefToday", "state": "confirmed" }
+    ],
+    "references": []
+  },
+  "constraints": {
+    "output_language": "ko"
+  },
+  "overrides": [],
+  "clarification": {
+    "required": [],
+    "asked": [],
+    "resolution": "default_authorized",
+    "note": "human said \"알아서 해\" before any question was asked; every non-source axis above resolved to assumed under that authorization rather than through a question-and-answer exchange. Per docs/architecture/V2-EDITORIAL-LEARNING-CORE.md §4, this authorizes assumed for this run only — none of these values may inform durable calibration (V2.10)."
+  },
+  "calibration_ref": "calibration:suengj-com-voice@v3",
+  "status": "ready"
+}

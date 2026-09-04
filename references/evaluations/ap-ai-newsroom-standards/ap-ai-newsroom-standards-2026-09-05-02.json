@@ -1,0 +1,41 @@
+{
+  "schema_version": "1.0.0",
+  "evaluation_id": "eval:ap-ai-newsroom-standards-2026-09-05-02",
+  "ref_id": "ref:ap-ai-newsroom-standards",
+  "modality": "text",
+  "evaluator": {
+    "type": "human"
+  },
+  "evaluated_at": "2026-09-05T03:00:00Z",
+  "calibration_ref": null,
+  "profile_ref": "editorial/profiles/reference/text.json",
+  "basis": "explicit_human_feedback",
+  "dimensions": [
+    {
+      "dimension": "content-type-fit",
+      "verdict": "do_not_copy",
+      "note": "Owner confirms: keep as evidence for the human/assisted boundary, never as a structural template for register or section order.",
+      "evidence": "Owner review of eval:ap-ai-newsroom-standards-2026-09-05-01."
+    }
+  ],
+  "strengths": [],
+  "weaknesses": [],
+  "applicable_to": {
+    "content_types": [
+      "news"
+    ],
+    "audiences": [
+      "professional-generalist"
+    ],
+    "artifacts": [
+      "text/article"
+    ],
+    "surfaces": [
+      "suengj-com"
+    ]
+  },
+  "authority_boundary": "craft_evidence_only",
+  "supersedes": "eval:ap-ai-newsroom-standards-2026-09-05-01",
+  "notes": "Append-only follow-up: a human evaluator narrowing an earlier agent evaluation. The earlier record is not edited or removed.",
+  "provenance_class": "external"
+}

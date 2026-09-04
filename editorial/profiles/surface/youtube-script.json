@@ -1,0 +1,27 @@
+{
+  "schema_version": "1.0.0",
+  "surface": "youtube-script",
+  "role": "handoff",
+  "owner_system": "YouTube and the channel/presenter recording the video — outside this repo and outside suengj-com.",
+  "authority": {
+    "surface_decides": [
+      "on-camera visual pacing and delivery choices",
+      "platform metadata: title, description, thumbnail"
+    ],
+    "core_decides": [
+      "script content, verification, and voice fit"
+    ]
+  },
+  "constraints": {
+    "format": "a spoken-delivery script, not prose meant to be read",
+    "citation_style": "verbal attribution or an on-screen citation card; no inline links",
+    "length_hint": "paced to a target runtime, not a word count",
+    "register": "conversational spoken register; must not read as an article read aloud (see editorial/profiles/transformation/adapt.json anti-patterns)"
+  },
+  "artifact_fit": ["audio/dialogue", "video/explainer"],
+  "publication_boundary": "Upload and publish authority belongs to whoever owns the channel; this repo produces the script only.",
+  "replaceable": {
+    "value": true,
+    "note": "Substitutable for other spoken-video platforms with compatible script constraints."
+  }
+}

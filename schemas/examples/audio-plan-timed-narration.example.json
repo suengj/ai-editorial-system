@@ -1,0 +1,113 @@
+{
+  "schema_version": "1.0.0",
+  "plan_id": "audioplan:quarterly-liquidity-explainer-timed-v1",
+  "article_ref": {
+    "article_id": "art:quarterly-liquidity-explainer",
+    "version_number": 2,
+    "content_hash": "03162e8cea189b69a901863f9d610b9cde54a9fb80d7db023896e9427823da12",
+    "claims_hash": "1cc5226af649a70b4a7af0d359f574e0eeba2fdde5f8f1946ed66164c2a45d57"
+  },
+  "artifact_profile": "audio/timed-narration",
+  "profile_ref": "editorial/profiles/artifact/audio-timed-narration.json",
+  "audience": {
+    "value": "general-reader",
+    "profile_ref": "editorial/profiles/audience/general-reader.json",
+    "traits_applied": [
+      "modality_effects.audio.thought_unit_length=short",
+      "modality_effects.audio.pace=moderate, unhurried",
+      "modality_effects.audio.term_glossing=gloss every technical term on first use"
+    ]
+  },
+  "selected_reference_traits": {
+    "adopt": [
+      "pace"
+    ],
+    "avoid": [],
+    "do_not_copy": [
+      "performance-delivery"
+    ]
+  },
+  "spoken_script": {
+    "narration_text": "Every quarter, a fund has to prove it can pay redemptions without selling its best assets at a loss. That proof is a liquidity buffer, cash and near-cash instruments held aside for exactly this moment. This quarter's buffer covers redemptions up to a level the fund has not approached in three years. The real test is not the number itself, it is whether the buffer would still hold if two of the fund's largest holders redeemed on the same day.",
+    "narration_hash": "37a978e8c2a9590dd25af440ab04868ac82d68825e4854f4c3a06ce23adbfc99",
+    "script_version": 1
+  },
+  "recompilation": {
+    "performed": true,
+    "identical_to_source_prose": false,
+    "structural_changes": [
+      "compressed the article's methodology section into one orienting sentence sized to its video beat",
+      "moved the stress-test caveat earlier so it lands on the beat where the visual shows the concentration chart"
+    ]
+  },
+  "segments": [
+    {
+      "segment_id": "seg-buffer-purpose",
+      "beat_id": "beat-01",
+      "narration_span_hash": "a18378bbb1ac1a00a0827925716593b59ba29361ced6195fc78dd25f862ec697",
+      "previous_context": "",
+      "next_context": "this quarter's buffer level",
+      "target_duration_ms": 6000,
+      "cues": []
+    },
+    {
+      "segment_id": "seg-stress-test-caveat",
+      "beat_id": "beat-02",
+      "narration_span_hash": "f5c45f6ffede6bb96355cfbcfc4d41b7841ee60116b4b46a51aea708c11c5f18",
+      "previous_context": "buffer purpose and this quarter's level",
+      "next_context": "",
+      "target_duration_ms": 7000,
+      "cues": [
+        "pause_short",
+        "emphasis"
+      ]
+    }
+  ],
+  "pronunciation": [
+    {
+      "term": "near-cash",
+      "spoken_form": "near cash"
+    }
+  ],
+  "delivery_intent": {
+    "register": "general-reader explanatory register, moderate and unhurried",
+    "pace": "moderate, unhurried, matched to a 13-second video beat pair",
+    "affect": "measured",
+    "global_cues": [
+      "pause_short"
+    ]
+  },
+  "timing": {
+    "rendering_mode": "timed",
+    "target_duration_ms": 13000,
+    "tolerance_ms": 1500
+  },
+  "script_l1": {
+    "performed": true,
+    "outcome": "pass",
+    "checklist": [
+      "thesis fidelity",
+      "segment/time budgets explicit for a constrained destination",
+      "narration and visual timeline agree on what is asserted at each beat",
+      "no unverified derived numbers or analogies"
+    ],
+    "reviewer": "model"
+  },
+  "render": null,
+  "attempts": 0,
+  "max_attempts": 3,
+  "qa": {
+    "performed": false,
+    "pronunciation_check": "not_yet",
+    "pacing_check": "not_yet",
+    "continuity_check": "not_yet",
+    "performance_check": "not_yet",
+    "directive_leak_check": "not_yet"
+  },
+  "cost": {
+    "renders_attempted": 0,
+    "renders_accepted": 0,
+    "cost_per_accepted_artifact": null
+  },
+  "status": "script_l1_pass"
+}

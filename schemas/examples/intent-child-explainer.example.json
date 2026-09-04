@@ -1,0 +1,75 @@
+{
+  "schema_version": "2.0.0",
+  "intent_id": "intent:2026-09-05-child-explainer-stablecoins",
+  "created_at": "2026-09-05T10:05:00Z",
+  "request": {
+    "utterance": "이 스테이블코인 리서치 글을 초등학교 5학년 딸한테 읽어줄 수 있게 어린이용으로 다시 써줘. 그림 하나만 곁들여서.",
+    "language": "ko",
+    "received_by": "claude-code",
+    "received_at": "2026-09-05T10:05:00Z"
+  },
+  "axes": {
+    "transformation": {
+      "value": "adapt",
+      "state": "confirmed",
+      "profile_ref": "editorial/profiles/transformation/adapt.json",
+      "basis": "utterance asks to re-render an existing piece for a different reader, not to synthesize new material — the direct sense of transformation/adapt.json."
+    },
+    "content_type": {
+      "value": "note",
+      "state": "assumed",
+      "profile_ref": "editorial/profiles/content/note.json",
+      "basis": "a short child-facing explainer derived from one existing research piece carries a lighter evidence burden than the source research type; note.json fits and nothing in the utterance argued for a heavier content type."
+    },
+    "audience": {
+      "value": "child-upper-elementary",
+      "state": "confirmed",
+      "profile_ref": "editorial/profiles/audience/child-upper-elementary.json",
+      "basis": "utterance says \"초등학교 5학년\" (5th grade) and \"어린이용\" (for a child) — matches audience/child-upper-elementary.json's stated ages 10-12 exactly; this is the named profile per docs/architecture/V2-EDITORIAL-LEARNING-CORE.md §12, not a softened adult one.",
+      "traits": {
+        "expertise": "novice",
+        "attention_context": "study",
+        "jargon_tolerance": "none",
+        "life_stage": "child, roughly age 10-11 (5th grade)"
+      }
+    },
+    "surface": {
+      "value": "suengj-com",
+      "state": "assumed",
+      "profile_ref": "editorial/profiles/surface/suengj-com.json",
+      "basis": "no new destination was named; the source article lives on suengj-com and a personal read-aloud draft carries no separate publication intent."
+    },
+    "artifacts": [
+      {
+        "value": "text/article",
+        "state": "confirmed",
+        "basis": "utterance asks to \"다시 써줘\" (rewrite it) — a text artifact; text/article is the planned text-artifact id in editorial/profiles/axes.json."
+      },
+      {
+        "value": "visual/concept-illustration",
+        "state": "confirmed",
+        "profile_ref": "editorial/profiles/artifact/visual-concept-illustration.json",
+        "basis": "utterance says \"그림 하나만 곁들여서\" (add just one picture) — a single supporting image, not the mechanism-explaining body infographic the audience profile flags as inappropriate by default for a child audience.",
+        "count": 1
+      }
+    ]
+  },
+  "inputs": {
+    "sources": [
+      { "source_id": "src:local:stablecoin-research-draft", "state": "confirmed", "note": "the existing research article being adapted" }
+    ],
+    "references": []
+  },
+  "constraints": {
+    "output_language": "ko",
+    "length_hint": "short enough to read aloud in one sitting"
+  },
+  "overrides": [],
+  "clarification": {
+    "required": [],
+    "asked": [],
+    "resolution": "proceeded"
+  },
+  "calibration_ref": null,
+  "status": "ready"
+}

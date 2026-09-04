@@ -1,0 +1,127 @@
+{
+  "schema_version": "1.0.0",
+  "plan_id": "audioplan:tokenized-money-markets-monologue-v1",
+  "article_ref": {
+    "article_id": "art:tokenized-money-markets",
+    "version_number": 3,
+    "content_hash": "6221d012edc4a68c865297394d3ebb29d145dc16c95d8eb86d4c81f964afb8fe",
+    "claims_hash": "c31221ee3cf26d8ffb8e788a6dfe5c161aaa8dbe3e4c4fbe805afa8a5daee37a"
+  },
+  "artifact_profile": "audio/monologue",
+  "profile_ref": "editorial/profiles/artifact/audio-monologue.json",
+  "audience": {
+    "value": "professional-generalist",
+    "profile_ref": "editorial/profiles/audience/professional-generalist.json",
+    "traits_applied": [
+      "modality_effects.audio.thought_unit_length=medium",
+      "modality_effects.audio.pace=normal conversational pace",
+      "modality_effects.audio.term_glossing=method-specific jargon only"
+    ]
+  },
+  "selected_reference_traits": {
+    "adopt": [
+      "thought-breath-units",
+      "transitions"
+    ],
+    "avoid": [],
+    "do_not_copy": [
+      "performance-delivery"
+    ]
+  },
+  "spoken_script": {
+    "narration_text": "Tokenized money-market funds let an investor hold a claim on short-term government debt as an on-chain token instead of a fund-ledger entry. That single change moves settlement from a multi-day batch process to something close to real time. It also moves custody risk somewhere new: instead of trusting a transfer agent's books, the investor is trusting whoever controls the smart contract's mint and redeem functions. When those two functions are held by the same custodian that already ran the fund, the tokenized layer adds speed without changing who the investor is actually relying on. The open question the industry has not settled is what happens when a token holder wants to redeem faster than the underlying repo market can actually deliver cash. That mismatch, not the blockchain itself, is where the real risk in this structure lives.",
+    "narration_hash": "ea97607f686002bfab471a064f49b74dc4334403239c187bff45c4a8c34b330c",
+    "script_version": 1
+  },
+  "recompilation": {
+    "performed": true,
+    "identical_to_source_prose": false,
+    "structural_changes": [
+      "collapsed three article subsections (mechanism, custody, redemption risk) into one continuous spoken argument",
+      "removed inline citation markers and replaced attribution with verbal framing",
+      "added one semantic recurrence: the custody claim returns at the end with a narrower consequence about redemption timing"
+    ]
+  },
+  "segments": [
+    {
+      "segment_id": "seg-mechanism",
+      "narration_span_hash": "d4f2506dea9e5458338bad8521868d5544f182c4d4f521cb4a390e8b534463f6",
+      "previous_context": "",
+      "next_context": "custody risk follows the mechanism explanation",
+      "cues": []
+    },
+    {
+      "segment_id": "seg-custody-risk",
+      "narration_span_hash": "57dae7080c457c77fffb1c161f311475e3a2438e7ace8058ccaed24bd95dd998",
+      "previous_context": "mechanism: token replaces ledger entry",
+      "next_context": "redemption mismatch is the closing consequence",
+      "cues": [
+        "pause_short"
+      ]
+    },
+    {
+      "segment_id": "seg-redemption-mismatch",
+      "narration_span_hash": "9c6c687735abdec47315d2dc0b4c49fa64e3b00fe8723175c1e779bd42c6f5dc",
+      "previous_context": "custody risk: same custodian controls mint/redeem",
+      "next_context": "",
+      "cues": [
+        "emphasis"
+      ]
+    }
+  ],
+  "pronunciation": [
+    {
+      "term": "repo market",
+      "spoken_form": "repo market",
+      "pronunciation_ref": "repo-market"
+    },
+    {
+      "term": "on-chain",
+      "surface_text": "on-chain",
+      "spoken_form": "on chain"
+    }
+  ],
+  "delivery_intent": {
+    "register": "professional-generalist explanatory register, unhurried but not slow",
+    "pace": "normal conversational pace with a brief pause before the redemption-mismatch consequence",
+    "affect": "measured, analytical",
+    "global_cues": [
+      "pause_short",
+      "emphasis"
+    ]
+  },
+  "timing": {
+    "rendering_mode": "free",
+    "target_duration_ms": null,
+    "tolerance_ms": null
+  },
+  "script_l1": {
+    "performed": true,
+    "outcome": "pass",
+    "checklist": [
+      "thesis fidelity",
+      "claim and citation carry-through",
+      "no unverified derived numbers or analogies",
+      "no presenter scaffolding",
+      "clean narration text separated from delivery instructions"
+    ],
+    "reviewer": "model"
+  },
+  "render": null,
+  "attempts": 0,
+  "max_attempts": 3,
+  "qa": {
+    "performed": false,
+    "pronunciation_check": "not_yet",
+    "pacing_check": "not_yet",
+    "continuity_check": "not_yet",
+    "performance_check": "not_yet",
+    "directive_leak_check": "not_yet"
+  },
+  "cost": {
+    "renders_attempted": 0,
+    "renders_accepted": 0,
+    "cost_per_accepted_artifact": null
+  },
+  "status": "script_l1_pass"
+}

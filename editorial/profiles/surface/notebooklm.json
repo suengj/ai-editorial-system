@@ -1,0 +1,31 @@
+{
+  "schema_version": "1.0.0",
+  "surface": "notebooklm",
+  "role": "consumption",
+  "owner_system": "NotebookLM (Google), an external vendor product outside this repo and outside suengj-com.",
+  "authority": {
+    "surface_decides": [
+      "internal rendering of the audio overview or notebook UX it generates",
+      "voice and pacing of its generated audio, within what the supplied source material supports"
+    ],
+    "core_decides": [
+      "all editorial content, claim selection, and verification — NotebookLM never adds a fact"
+    ]
+  },
+  "constraints": {
+    "input_format": "accepts uploaded text/PDF as notebook sources; does not accept this repo's schemas directly",
+    "output_control": "no control over the vendor's generated script phrasing beyond the source content and framing supplied",
+    "editorial_authority": "none — see docs/architecture/V2-EDITORIAL-LEARNING-CORE.md §7, 'NotebookLM is an adapter and may never become editorial authority or a runtime dependency'"
+  },
+  "artifact_fit": [
+    "audio/dialogue"
+  ],
+  "publication_boundary": "NotebookLM never marks anything published; it is not a publication surface and holds no publication authority at all.",
+  "replaceable": {
+    "value": true,
+    "note": "NotebookLM is an adapter, not editorial authority (docs/architecture/V2-EDITORIAL-LEARNING-CORE.md §7, and stop condition §9 item 8), and may be swapped for another notebook/audio-overview vendor without a Core change."
+  },
+  "notes": {
+    "artifact_vocabulary": "NotebookLM markets this as an 'audio overview'. That is a vendor product name, not our artifact vocabulary; its editorial shape is a two-host dialogue, so it maps to audio/dialogue. Naming it after the vendor would let an adapter's branding leak into Core semantics."
+  }
+}

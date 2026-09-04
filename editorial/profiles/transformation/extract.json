@@ -1,0 +1,36 @@
+{
+  "schema_version": "1.0.0",
+  "transformation": "extract",
+  "intent": "Pull stated material out of the source with minimal reordering of meaning.",
+  "may_change": [
+    "which spans are included (the excerpt boundary)",
+    "surface formatting (headings, list vs. prose) to fit the output surface",
+    "whitespace, punctuation, and typographic normalization",
+    "minor register smoothing where the excerpt is stitched into surrounding text"
+  ],
+  "must_preserve": [
+    "exact wording within an extracted span",
+    "the factual claims the span makes",
+    "attribution and provenance of the excerpt",
+    "numbers, quotations, and technical terms verbatim",
+    "the internal order of ideas within a single extracted span"
+  ],
+  "new_claims": {
+    "value": "forbidden",
+    "rationale": "Extraction adds no assertion that was not already in the source; if the output says something the source did not, it has stopped being an extract."
+  },
+  "source_fidelity": {
+    "value": "high",
+    "rationale": "The output is the source, minus what was cut. Fidelity is near-verbatim by definition."
+  },
+  "structure_rule": "An extracted span keeps the source's own internal order; the only editorial decision is where the excerpt begins and ends.",
+  "verification_burden": "verify-claims confirms the excerpt is not truncated in a way that reverses or hedges the original meaning, and that attribution survived the cut.",
+  "anti_patterns": [
+    "Paraphrasing presented as extraction",
+    "Cutting a qualifying clause so the excerpt reads more strongly than the source intended",
+    "Stitching together non-adjacent spans without marking the cut",
+    "Extracting a number or quotation without its immediate qualifying context"
+  ],
+  "typical_content_types": ["research", "news", "project"],
+  "typical_surfaces": ["suengj-com", "newsletter"]
+}

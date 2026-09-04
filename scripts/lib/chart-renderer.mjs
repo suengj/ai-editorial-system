@@ -102,7 +102,7 @@ export function renderChart(spec) {
     .note { font-size: 11px; fill-opacity: 0.7; }
   </style>
   <text class="heading" x="${n(PAD.left)}" y="24">${esc(spec.title)}</text>
-  <text class="note" x="${n(PAD.left)}" y="40">${esc(spec.period)} · ${esc(spec.y.label)} (${esc(spec.y.unit)})</text>
+  <text class="note" x="${n(PAD.left)}" y="40">${esc(spec.period)} · ${esc(spec.y.label)}${spec.y.unit ? ` (${esc(spec.y.unit)})` : ''}</text>
 ${gridLines}
   <line class="axis" x1="${n(PAD.left)}" y1="${n(PAD.top + PLOT.h)}" x2="${n(PAD.left + PLOT.w)}" y2="${n(PAD.top + PLOT.h)}"/>
 ${xTicks}

@@ -1,0 +1,70 @@
+{
+  "schema_version": "1.0.0",
+  "package_id": "pkg:adapt-inference-pricing-audio-2026-09-03",
+  "created_at": "2026-09-03T11:00:00Z",
+  "intent_ref": "intent:2026-09-03-inference-pricing-audio-adapt",
+  "transformation": {
+    "value": "adapt",
+    "profile_ref": "editorial/profiles/transformation/adapt.json"
+  },
+  "content_type": {
+    "value": "research",
+    "profile_ref": "editorial/profiles/content/research.json"
+  },
+  "audience": {
+    "value": "finance-beginner"
+  },
+  "target_surfaces": [
+    {
+      "value": "youtube"
+    }
+  ],
+  "sources": [],
+  "article_ref": {
+    "article_id": "art:ai-inference-pricing-and-saas-gross-margin",
+    "version_number": 4,
+    "content_hash": "d345cc94a0eed27c9d32796ef2a0f556a59c1366915c23faf6f7c8c575cb8b97",
+    "claims_hash": "76f13be6d99981075028dc7e2f64689db50281564572a41f3548bf227282ccfa",
+    "commit": "a1b2c3d"
+  },
+  "thesis": null,
+  "key_concepts": [],
+  "summary": "A two-voice dialogue script compressing the verified article for a finance-beginner audience: cheaper AI does not automatically repair a SaaS margin problem.",
+  "verified_claims": [],
+  "uncertainty": [],
+  "reference_profile_refs": [
+    "ref:dialogue-pacing-2026"
+  ],
+  "calibration_ref": "calibration:suengj-default@v3",
+  "proposed_artifacts": [
+    "audio/dialogue"
+  ],
+  "approved_artifacts": [],
+  "lineage": {
+    "claims_hash": "76f13be6d99981075028dc7e2f64689db50281564572a41f3548bf227282ccfa",
+    "package_hash": "8a29b63786a7be70beca83d67da8d48099434fd2bb62a3f82f54c904a7369978",
+    "supersedes": null,
+    "produced_by": {
+      "skill": {
+        "name": "compile-audio-script",
+        "version": "0.1.0"
+      },
+      "tool": {
+        "tool": "dialogue-script-compiler",
+        "tool_version": "0.1.0",
+        "provider": "internal",
+        "model": "dialogue-script-compiler",
+        "model_version": "0.1.0"
+      }
+    }
+  },
+  "rights": {
+    "quotable": true,
+    "redistributable": true,
+    "license": null,
+    "attribution": "",
+    "transcript_shaped": false,
+    "original_framing": true,
+    "synthesis_note": "Rebuilds the article's argument as a paced two-voice script for listening; introduces no claim the article does not already carry."
+  }
+}

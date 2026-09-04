@@ -13,13 +13,45 @@ import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
-export const PROFILE_DIR = resolve(HERE, '../../editorial/profiles');
+export const PROFILES_ROOT = resolve(HERE, '../../editorial/profiles');
+export const PROFILE_DIR = resolve(PROFILES_ROOT, 'content');
+export const AXES_FILE = resolve(PROFILES_ROOT, 'axes.json');
 
 export function loadProfiles(dir = PROFILE_DIR) {
   const out = {};
   for (const f of readdirSync(dir).filter((n) => n.endsWith('.json'))) {
     const p = JSON.parse(readFileSync(resolve(dir, f), 'utf8'));
     out[p.content_type] = p;
+  }
+  return out;
+}
+
+/**
+ * The axis registry (AES-V2.2 / SUE-560): every axis this system recognises,
+ * whether or not it is populated yet. Adding an axis is adding a row here,
+ * never a code change — nothing below hardcodes an axis id.
+ */
+export function loadAxes(file = AXES_FILE) {
+  const registry = JSON.parse(readFileSync(file, 'utf8'));
+  return registry.axes;
+}
+
+/**
+ * Load every profile file under an axis's declared directory, keyed by the
+ * profile's own id field. Which field that is comes from axes.json's
+ * `id_field` for that axis, so no axis id or field name is hardcoded here.
+ */
+export function loadAxisProfiles(axisId, { axes = loadAxes(), root = PROFILES_ROOT } = {}) {
+  const axis = axes.find((a) => a.axis === axisId);
+  if (!axis) throw new Error(`unknown axis "${axisId}"`);
+  if (!axis.populated) return {};
+
+  const dir = resolve(root, axis.dir);
+  const out = {};
+  for (const f of readdirSync(dir).filter((n) => n.endsWith('.json'))) {
+    const profile = JSON.parse(readFileSync(resolve(dir, f), 'utf8'));
+    const id = profile[axis.id_field] ?? f.replace(/\.json$/, '');
+    out[id] = profile;
   }
   return out;
 }

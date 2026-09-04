@@ -1,0 +1,74 @@
+{
+  "schema_version": "1.0.0",
+  "artifact": "visual/evidence-visual",
+  "modality": "visual",
+  "family": "Deterministic evidence visual (chart / table / timeline / framework) carrying exact traceable values — the artifact-plan 'evidence_visual' kind.",
+  "primary_job": "Answer one specific question with inspectable, traceable evidence: exact values, distributions, or exceptions from source data (schemas/artifact-plan.schema.json spec.question; VISUAL-INFORMATION-GAIN.md §1 'evidence' gain type).",
+  "semantic_density": {
+    "level": "high",
+    "rationale": "The entire purpose is to expose exact patterns, values, or exceptions the reader cannot get from prose alone; overlap with a prose conclusion is acceptable specifically because the evidence payload is new (VISUAL-INFORMATION-GAIN.md §1, §8 evidence visual exception)."
+  },
+  "visual_density": {
+    "level": "moderate",
+    "rationale": "Axis, legend, and annotation chrome is functional rather than decorative, but must not accumulate ornamental detail beyond what the evidence requires (ARTICLE-ILLUSTRATION-ROUTING.md §2.1, §12 renderer integrity)."
+  },
+  "text_policy": {
+    "profile": "hybrid_template",
+    "label_count_ceiling": null,
+    "complexity_ceiling": "As many exact labels, axis values, or citations as the evidence dimensions require, but every one must be traceable to source data — never plausible-looking generated text (IMAGE-TEXT-RENDERING-PROFILES.md invariant 2). The whole artifact is deterministically authored rather than generative-raster-composited; hybrid_template is the nearest fit because structure and text are produced together, exactly."
+  },
+  "composition": {
+    "dominant_structure": "A chart, table, timeline, or framework answering exactly one question (schemas/artifact-plan.schema.json spec.form, spec.question).",
+    "supporting_modules_max": 1,
+    "reading_path": "Axis-guided inspection.",
+    "negative_space": "functional, not decorative",
+    "chrome_level": "as required by the evidence form; never padded for visual completeness"
+  },
+  "audience_adaptation": {
+    "domain-expert": "Legend optional; may show raw units, uncertainty bands, or unglossed methodology notes.",
+    "general-reader": "Legend always shown and explained, not merely present (audience/general-reader.json-style default).",
+    "beginner-learner": "Legend always shown and explained; expand every axis/unit term on first use.",
+    "child-upper-elementary": "Usually skip; if used, the legend cannot be load-bearing and axis literacy must not be assumed (audience/child-upper-elementary.json modality_effects.visual)."
+  },
+  "renderer_preference": {
+    "order": ["deterministic"],
+    "rule": "A generated raster image must not impersonate computed evidence. Exact values, axes, dates, citations, rankings, or statistical comparisons must never ride on a generative model (IMAGE-GENERATION.md §1, §2; ARTICLE-ILLUSTRATION-ROUTING.md §2.1). Hybrid is tolerated only for a non-evidentiary illustrative frame placed around a deterministic evidence core; generative alone is never an acceptable route for this artifact."
+  },
+  "readability_gate": {
+    "applies": true,
+    "gate": {
+      "viewport": "~390px reading surface",
+      "requirements": [
+        "legible on mobile without zoom",
+        "no horizontal overflow",
+        "axis/legend text survives mobile rendering"
+      ]
+    },
+    "rationale": "Body-placed evidence visuals inherit the SUENGJ-ARTICLE-IMAGE-FAMILIES.md §5 mobile-gate principle, and the artifact-plan spec.feedback_point discipline requires the visual to remain inspectable, not merely present."
+  },
+  "split_rule": {
+    "applies": true,
+    "rule": "One question per visual — schemas/artifact-plan.schema.json spec.question is singular by construction. If a candidate evidence visual tries to answer two questions, split into two visuals rather than overlaying a second axis or series family (mirrors SUENGJ-ARTICLE-IMAGE-FAMILIES.md §6 one-plate-one-question)."
+  },
+  "acceptance": [
+    "answers exactly the stated question",
+    "every value is traceable to verified claims or source data",
+    "passes the VISUAL-INFORMATION-GAIN.md §8 evidence exception test rather than merely restating the prose conclusion",
+    "legible at ~390px without zoom",
+    "the plan's feedback_point is stated: what it would mean if the visual does not show what was expected"
+  ],
+  "reject": [
+    "fabricated axes, values, or citations",
+    "faux chart illustration (SLIDES-AND-CAROUSELS.md §12)",
+    "a generative-only route asked to carry exact values",
+    "more than one question answered on a single plate"
+  ],
+  "source_authority": [
+    "editorial/ARTICLE-ILLUSTRATION-ROUTING.md",
+    "editorial/IMAGE-GENERATION.md",
+    "editorial/VISUAL-INFORMATION-GAIN.md",
+    "editorial/SUENGJ-ARTICLE-IMAGE-FAMILIES.md",
+    "schemas/artifact-plan.schema.json",
+    "schemas/artifact.schema.json"
+  ]
+}
