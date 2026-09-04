@@ -36,9 +36,12 @@ _private/
 *.internal.*
 
 # --- Canonical article archive (belongs in suengj-com) --------------------
-articles/
-content/
-published/
+# Anchored to the repository root. An unanchored `content/` also matched
+# editorial/profiles/content/, which silently excluded two committed content-type
+# profiles from the repository and broke validation on a fresh clone.
+/articles/
+/content/
+/published/
 
 # --- Generated media (large binaries) --------------------------------------
 *.mp4

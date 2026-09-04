@@ -1,0 +1,76 @@
+{
+  "schema_version": "1.0.0",
+  "content_type": "promotional",
+  "intent": "Persuasive material for a product, service, or project, with its persuasive intent disclosed and every factual claim it makes still verified.",
+  "register": {
+    "default": "Persuasive but not misleading. Enthusiasm is earned by a specific, verified claim, not asserted by adjective.",
+    "avoid": [
+      "unfalsifiable superlatives",
+      "implying a claim is proven when it is a stated opinion of quality",
+      "leaving the persuasive intent undisclosed so the piece reads as neutral analysis"
+    ]
+  },
+  "evidence_burden": {
+    "min_sources": 1,
+    "min_verified_claims": 1,
+    "min_source_roles": [],
+    "rationale": "Persuasive framing does not lower the verification bar on any factual claim it makes; it simply carries fewer claims than a research piece by design."
+  },
+  "required_frame_fields": [
+    "thesis",
+    "original_value_add",
+    "uncertainty"
+  ],
+  "required_type_fields": [
+    "disclosure",
+    "call_to_action"
+  ],
+  "optional_type_fields": [
+    "audience_segment"
+  ],
+  "typical_structure": [
+    "The problem or want the audience already has",
+    "What this offers",
+    "Evidence for the claim",
+    "Call to action"
+  ],
+  "flexibility": "Structure is a default and may compress for a short piece; the disclosure and the verification of every factual claim may not be relaxed.",
+  "artifacts": {
+    "default": [
+      "brief"
+    ],
+    "optional": [
+      "slides",
+      "infographic",
+      "evidence_visual"
+    ],
+    "inappropriate": []
+  },
+  "anti_patterns": [
+    "Unfalsifiable superlatives ('the best', 'revolutionary') with no measurable claim behind them",
+    "Persuasive intent left undisclosed, so the piece reads as neutral analysis",
+    "A verified claim quietly strengthened past what its evidence supports",
+    "A call to action stated without the reader knowing the piece is promotional material"
+  ],
+  "quality_gates": {
+    "evidence_density_floor": 0.15,
+    "rationale": "Lower than News by design — persuasive material properly carries fewer citations per paragraph — but any number it uses must still be a real, checkable number."
+  },
+  "semantic_roles": {
+    "recommended": [
+      "key_point"
+    ],
+    "allowed": [
+      "evidence",
+      "comparison",
+      "example"
+    ],
+    "usually_avoid": [
+      "data_table",
+      "procedure",
+      "code_example",
+      "timeline"
+    ],
+    "rationale": "Persuasive register works in short declarative claims backed by verified evidence; heavy structural blocks read as a spec sheet rather than persuasion."
+  }
+}

@@ -1,0 +1,86 @@
+{
+  "schema_version": "1.0.0",
+  "content_type": "academic",
+  "intent": "A formal scholarly treatment: a claim supported by transparent method and citation, hedged precisely rather than confidently overstated.",
+  "register": {
+    "default": "Formal and method-transparent. A hedge is a correct description of what the evidence supports, not a weakness to be edited toward confidence.",
+    "avoid": [
+      "confident phrasing that outruns what the method supports",
+      "first-person narrative voice",
+      "citation used as decoration rather than as a load-bearing claim of what the cited work found",
+      "informal register borrowed from suengj-com's other content types"
+    ]
+  },
+  "evidence_burden": {
+    "min_sources": 5,
+    "min_verified_claims": 6,
+    "min_source_roles": [
+      "primary",
+      "contradicting"
+    ],
+    "rationale": "The highest citation burden of any content type: a scholarly claim is only as strong as the method and the literature trail behind it, and must confront material that could narrow it."
+  },
+  "required_frame_fields": [
+    "thesis",
+    "source_weighting",
+    "verification_needs",
+    "uncertainty"
+  ],
+  "required_type_fields": [
+    "research_question",
+    "method_note"
+  ],
+  "optional_type_fields": [
+    "limitations_section",
+    "preregistration_ref"
+  ],
+  "typical_structure": [
+    "Question and prior work",
+    "Method",
+    "Results or evidence",
+    "Limitations",
+    "Conclusion bounded strictly by the evidence"
+  ],
+  "flexibility": "Structure is a default; the method section and the limitations section may not be omitted, because both are what makes a hedge checkable rather than decorative.",
+  "artifacts": {
+    "default": [
+      "sources"
+    ],
+    "optional": [
+      "evidence_visual",
+      "full"
+    ],
+    "inappropriate": [
+      "audio",
+      "video",
+      "infographic"
+    ]
+  },
+  "anti_patterns": [
+    "Overstating confidence beyond what the stated method supports",
+    "Omitting method detail needed for a reader to assess validity",
+    "Treating a correctly hedged claim as weak prose and editing the hedge away — a correctly hedged claim is stronger than an overstated one",
+    "Citing a source without checking that it actually says what it is cited for"
+  ],
+  "quality_gates": {
+    "evidence_density_floor": 0.45,
+    "rationale": "Highest floor of any content type: a scholarly claim is only as strong as the method and citation trail carried in the prose that argues from it."
+  },
+  "semantic_roles": {
+    "recommended": [
+      "evidence",
+      "data_table",
+      "comparison"
+    ],
+    "allowed": [
+      "key_point",
+      "caution",
+      "timeline"
+    ],
+    "usually_avoid": [
+      "procedure",
+      "code_example"
+    ],
+    "rationale": "Method and evidence carry the argument; procedural or code blocks are rarely the load-bearing unit in a scholarly claim."
+  }
+}
