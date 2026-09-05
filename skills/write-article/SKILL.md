@@ -1,12 +1,13 @@
 ---
 name: write-article
-version: 0.4.0
+version: 0.5.0
 description: Draft a review-state article from an approved frame and a verified claim set, arguing the thesis rather than walking the sources.
 when_not_to_use: Do not use without a frame — inventing a thesis while drafting is the failure this Skill exists to prevent. Do not use for voice polishing, which is editorial-polish.
 inputs:
   - article frame
   - verified claim set
   - content-type profile
+  - source-target delta plan when the task adapts an incumbent/source into a materially different target
   - evidence visuals produced during research
 outputs:
   - review draft in Markdown, with citation anchors intact
@@ -34,6 +35,8 @@ governed_by:
   - editorial/profiles/
   - editorial/quality-gates.json
   - editorial/presentation.md
+  - docs/architecture/SOURCE-TARGET-DELTA-PLANNING.md
+  - docs/architecture/WRITER-MODEL-ROUTING.md
 allowed_tools:
   - file_read
 evidence:
@@ -64,12 +67,22 @@ module in a repository does not make the repository tree a narrative. The
 Writer is rewarded for the minimum set of material that earns the thesis, not
 for demonstrating coverage.
 
+The Writer is also a **load-bearing quality surface**. A Manager can specify the
+thesis, audience, evidence burden, and prohibited moves, but it does not choose
+every collocation, particle, omission, sentence boundary, connective, or
+paragraph rhythm. Those decisions are realised here. For owner-facing or
+publication-intent prose, the orchestration layer must therefore satisfy the
+`PROSE_HIGH` capability contract in
+`docs/architecture/WRITER-MODEL-ROUTING.md`; a stronger Manager or Reviewer is
+not a reason to downgrade the Writer.
+
 ## Inputs
 
-The frame, the verified claim set, the content-type profile, and any evidence
-visuals produced during research. Only these — the constitution, the voice,
-and the one relevant profile. Not every profile, and not the source bodies
-again as prose exemplars.
+The frame, the verified claim set, the content-type profile, the source→target
+delta plan when material adaptation is involved, and any evidence visuals
+produced during research. Only the context needed to make the target coherent —
+the constitution, the voice, the relevant profiles, and the load-bearing source
+truth. Not every profile, and not source bodies reloaded as prose exemplars.
 
 Sources supply evidence. They do **not** supply the sentence order, section
 order, or coverage target the Writer should reproduce.
@@ -86,10 +99,41 @@ The frame exists and carries a thesis. The claim set exists and has been
 through `verify-claims`. The profile is loaded, because it sets both the
 structure default, the register, and the evidence burden.
 
+When the task transforms an incumbent/source into a different genre, audience,
+depth, register, or information structure, the Source→Target Delta plan exists
+and the owning upstream layer has already performed any required P2/P3 work.
+This Skill must not silently turn a P2/P3 transformation into prose-level
+polish.
+
+For owner-facing or publication-intent prose, the orchestration route identifies
+a Writer capable of native long-context prose judgment (`PROSE_HIGH` or an
+equivalent runtime class). Capability class is provider-neutral; the rule is
+about the work, not a model brand.
+
 The frame must be able to answer the reader contract: who the piece is for,
 what understanding changes, what one sentence should survive, and the minimum
 argument path that earns it. If drafting reveals that these are not actually
 clear, return to framing rather than improvise an outline from the sources.
+
+## Capability contract
+
+`Manager`, `Writer`, and `Reviewer` are authority roles, not a model-quality
+ranking.
+
+- A strong Manager does not make Writer realization quality interchangeable.
+- A strong Reviewer can diagnose weak prose but does not improve the accepted
+  artifact unless a capable Writer is invoked again.
+- One coherent prose pass has one Writer authority. Parallel alternatives are
+  allowed, but paragraph-level outputs are not mechanically stitched together.
+- Context is part of capability. The Writer receives the approved frame,
+  verified source truth, target profile, relevant delta plan, and applicable
+  owner evidence rather than reconstructing them from a long chat transcript.
+- Cost optimisation may use cheaper models for SUPPORT work around drafting;
+  it must not automatically demote the final prose Writer.
+
+If repeated review cycles return the same native-fluency/readability/register
+failure, the Manager must consider Writer-capability escalation instead of
+adding more style rules or looping the same weak realization indefinitely.
 
 ## Procedure
 
@@ -100,58 +144,61 @@ clear, return to framing rather than improvise an outline from the sources.
 2. **Write from the reader contract.** The draft should move the intended
    reader from their starting understanding to the frame's core message. A
    section exists only when that movement needs it.
-3. **Ignore source topology while composing.** README headings, repository
+3. **Respect the delta plan.** Preserve axes already at LOW/P0. Realise the
+   upstream P2/P3 decisions that have already been made; do not re-expand scope
+   simply because the Writer is capable of doing so.
+4. **Ignore source topology while composing.** README headings, repository
    directories, report chapters, search-result order, interview order, and
    research-note order are not draft scaffolds. Use them only when the
    relationship they encode is itself part of the thesis.
-4. **Load the profile's register before choosing prose shape.** Research is
+5. **Load the profile's register before choosing prose shape.** Research is
    evidence-led, View owns its judgment, News is compressed and event-led,
    Note may be loose, and Project is decision-oriented. Shared voice does not
    mean shared sentence architecture.
-5. **Build around the work the argument actually needs.** A mechanism,
+6. **Build around the work the argument actually needs.** A mechanism,
    boundary, consequence, comparison, chronology, example, or clarification
    may organise a passage. A distinction is one possible move, not the default.
    Do not create `A is not B` constructions to imitate a recognisable house
    style.
-6. **Treat the subject as evidence when the larger claim demands it.** In a
+7. **Treat the subject as evidence when the larger claim demands it.** In a
    project-introduction or source-derived essay, the project may be the case
    through which a broader problem becomes concrete. Do not turn that into a
    feature inventory unless the Project profile and the reader's question
    genuinely require one.
-7. **Let consulted material disappear.** A source that shaped the research but
+8. **Let consulted material disappear.** A source that shaped the research but
    does no load-bearing work in the final argument need not appear in a
    paragraph or heading. Citation completeness means every used claim is
    traceable, not every consulted source is displayed.
-8. **Compose in the publication language.** For Korean pieces, write the
+9. **Compose in the publication language.** For Korean pieces, write the
    reasoning in Korean rather than translating source-language discourse order.
    Keep an English term only when it is the domain-native professional usage or
    when translation loses precision. Remove English noun accumulation that
    exists only to make the prose look technical.
-9. **Mark the epistemic register.** Sourced fact, our interpretation, and
-   hypothesis are distinguishable sentence by sentence, in wording as well as
-   structure.
-10. **Let explanation earn space.** Density is not compression. A paragraph may
+10. **Mark the epistemic register.** Sourced fact, our interpretation, and
+    hypothesis are distinguishable sentence by sentence, in wording as well as
+    structure.
+11. **Let explanation earn space.** Density is not compression. A paragraph may
     slow down to make a difficult inference legible without adding another
     citation, number, or rhetorical contrast.
-11. **Let the evidence visuals argue.** A chart built during research may
+12. **Let the evidence visuals argue.** A chart built during research may
     reorder the piece or expose a problem in the frame. If a visual contradicts
     a drafted claim, report the claim problem; do not smooth around it.
-12. **Carry the anchors.** Every claim keeps its citation from the claim set.
+13. **Carry the anchors.** Every claim keeps its citation from the claim set.
     Anchors are copied, never re-derived.
-13. **Use an analogue only if it sharpens the thesis** and is itself verified.
+14. **Use an analogue only if it sharpens the thesis** and is itself verified.
     An unverified analogue is a decorative claim.
-14. **Run the section-necessity test.** For every section, ask: if this section
+15. **Run the section-necessity test.** For every section, ask: if this section
     disappears, does the thesis lose evidence, mechanism, boundary, consequence,
     or necessary explanation? If not, cut it. "It was in the repository" and
     "we researched it" are not reasons to keep it.
-15. **Run the topology test.** Read only the headings. If they could plausibly
+16. **Run the topology test.** Read only the headings. If they could plausibly
     be a README table of contents, source list, product feature list, or report
     chapter list, the draft is probably a tour. Rebuild the structure around
     the argument before polish.
-16. **Report the gaps.** A connective claim the argument needs and the claim
+17. **Report the gaps.** A connective claim the argument needs and the claim
     set lacks goes back to `verify-claims`. It is not written as though
     supported, and it is not smoothed into a hedge.
-17. **Optionally assign semantic roles.** Where a passage's information
+18. **Optionally assign semantic roles.** Where a passage's information
     function is not prose — a comparison, a caution, an ordered procedure — it
     may carry a role from the presentation vocabulary. This is optional, never
     required by length, and the plan must satisfy the losslessness rule:
@@ -159,7 +206,7 @@ clear, return to framing rather than improvise an outline from the sources.
 
     Roles only. No colour, no CSS, no component name — the schema cannot
     express them and the validator rejects them in the text.
-18. **Hand off** to `editorial-polish` in `drafted` state.
+19. **Hand off** to `editorial-polish` in `drafted` state.
 
 ## Invariants
 
@@ -173,6 +220,9 @@ clear, return to framing rather than improvise an outline from the sources.
   frame.
 - The profile's register remains recognisable; content types do not converge on
   one generic analytical voice.
+- A stronger Manager/Reviewer never widens the Writer's authority and never
+  removes the final-prose capability floor.
+- One accepted coherent prose pass has one identifiable Writer authority.
 - No rhetorical move has a quota. A Writer that repeats a corpus tendency to
   signal authorship has failed `voice-fit` even when each sentence is locally
   acceptable.
@@ -196,6 +246,12 @@ This Skill stops rather than drafting when:
   fails visibly; it is not papered over with a hedge.
 - The evidence available cannot meet the profile's burden. The correct
   response is to return to framing, not to write a thinner piece.
+- A material source→target gap is still owned by Audience/Genre/Transformation
+  and has not been resolved upstream. Prose realization cannot substitute for
+  an absent P2/P3 decision.
+- The orchestration route explicitly assigns publication-intent prose to a
+  SUPPORT-only Writer lane. Re-route instead of pretending a detailed Manager
+  prompt removes the capability gap.
 - The frame can be satisfied only by turning challenge evidence into a fake
   binary opposition or by overstating what one side establishes.
 - The only available outline mirrors source order, repository topology, or a
@@ -210,6 +266,9 @@ This Skill stops rather than drafting when:
   and every block's fallback lossless.
 - `npm run test:eval` — includes `G-04` alternate Research prose, `N-04`
   translationese, `N-05` style overfit, and `N-06` source-tour failure.
+- `evals/dogfood/2026-09-05-strong-writer-routing/README.md` — owner evidence
+  that Writer capability/context remains load-bearing even under strong
+  orchestration; explicitly not a controlled vendor/model benchmark.
 - Every citation anchor resolves to a `verified` claim.
 - Resulting state is `drafted`.
 
