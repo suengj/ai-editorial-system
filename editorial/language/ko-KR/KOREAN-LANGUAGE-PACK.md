@@ -20,9 +20,13 @@ derived from. That validation is SUE-604's job. Claiming `active` before
 then would assert something false about how much is actually known.
 
 The authority registry this pack draws on is
-`references/korean-language-authorities.md`. Every `authority_ref` in the
-JSON resolves to an entry there. This document does not re-derive that
-registry; it explains what each cited authority is used for.
+`references/korean-language-authorities.md`. Every `authority_ref` in the JSON
+resolves to an entry in the pack's own `authorities[]`, and that is checked
+mechanically (`scripts/validate-language.mjs`). The onward correspondence
+between those entries and the registry document was verified by hand and is
+**not** machine-checked: the registry is prose and carries no ids. This
+document does not re-derive the registry; it explains what each cited
+authority is used for.
 
 ---
 

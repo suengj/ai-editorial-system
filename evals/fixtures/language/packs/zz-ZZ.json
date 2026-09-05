@@ -11,16 +11,27 @@
       "title": "Fixture Standards Body Orthography Guide",
       "issuer": "Fixture Standards Body",
       "source_class": "NORMATIVE_STANDARD",
-      "governs": ["orthography", "spacing"],
-      "does_not_govern": ["literary style", "genre form"]
+      "governs": [
+        "orthography",
+        "spacing"
+      ],
+      "does_not_govern": [
+        "literary style",
+        "genre form"
+      ]
     },
     {
       "id": "corpus-ref",
       "title": "Fixture Well-Edited Corpus",
       "issuer": "Fixture Publisher",
       "source_class": "EMPIRICAL_REFERENCE",
-      "governs": ["craft evidence for native fluency"],
-      "does_not_govern": ["correctness", "facts"]
+      "governs": [
+        "craft evidence for native fluency"
+      ],
+      "does_not_govern": [
+        "correctness",
+        "facts"
+      ]
     }
   ],
   "rules": [
@@ -39,8 +50,12 @@
       "layer": "native_fluency",
       "statement": "Fixture native-quality observation, scoped to one genre.",
       "checkability": "review_guidance",
-      "generality": "genre_local",
-      "scope": { "content_types": ["news"] }
+      "generality": "source_local",
+      "scope": {
+        "content_types": [
+          "news"
+        ]
+      }
     },
     {
       "id": "shared-native-rule",
@@ -49,7 +64,10 @@
       "statement": "Fixture native-quality trait promoted to shared with sufficient evidence.",
       "checkability": "review_guidance",
       "generality": "shared",
-      "evidence_refs": ["eval:discovery-record", "eval:discovery-record-two"],
+      "evidence_refs": [
+        "eval:discovery-record",
+        "eval:discovery-record-two"
+      ],
       "holdout_result": "improved"
     },
     {
@@ -58,8 +76,12 @@
       "layer": "register",
       "statement": "Fixture genre convention for news leads.",
       "checkability": "review_guidance",
-      "generality": "genre_local",
-      "scope": { "content_types": ["news"] }
+      "generality": "source_local",
+      "scope": {
+        "content_types": [
+          "news"
+        ]
+      }
     },
     {
       "id": "audience-rule",
@@ -67,8 +89,12 @@
       "layer": "audience",
       "statement": "Fixture audience constraint for a young reader.",
       "checkability": "review_guidance",
-      "generality": "audience_local",
-      "scope": { "audiences": ["child-upper-elementary"] }
+      "generality": "source_local",
+      "scope": {
+        "audiences": [
+          "child-upper-elementary"
+        ]
+      }
     }
   ],
   "terminology": [
@@ -79,9 +105,17 @@
       "rendering": "fixture-widget",
       "rendering_policy": "translate",
       "audience_aliases": [
-        { "audience": "child-upper-elementary", "surface_form": "small helper thing", "gloss_required": true }
+        {
+          "audience": "child-upper-elementary",
+          "surface_form": "small helper thing",
+          "gloss_required": true
+        }
       ]
     }
   ],
-  "not_authoritative_for": ["facts", "other languages", "publication"]
+  "not_authoritative_for": [
+    "facts",
+    "other languages",
+    "publication"
+  ]
 }

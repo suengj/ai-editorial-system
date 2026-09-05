@@ -254,10 +254,38 @@
         "do_not": [
           {
             "target": "native_fluency",
+            "trigger_keywords": [
+              "맞춤법",
+              "띄어쓰기",
+              "오타",
+              "문장부호",
+              "표기(법)?",
+              "비표준어",
+              "misspell",
+              "mis-?spelling",
+              "spacing error",
+              "typo",
+              "punctuation",
+              "orthograph"
+            ],
             "note": "A misspelling is not an unnaturalness finding. Correctness and fluency are different authorities and a normative defect repaired as \"make the Korean more natural\" leaves the error in place while rewriting prose that was fine."
           },
           {
             "target": "owner_voice",
+            "trigger_keywords": [
+              "맞춤법",
+              "띄어쓰기",
+              "오타",
+              "문장부호",
+              "표기(법)?",
+              "비표준어",
+              "misspell",
+              "mis-?spelling",
+              "spacing error",
+              "typo",
+              "punctuation",
+              "orthograph"
+            ],
             "note": "Owner preference sits below NORMATIVE in the precedence order (docs/architecture/LANGUAGE-QUALITY-ARCHITECTURE.md §2). \"The owner likes it this way\" never makes an incorrect form correct."
           }
         ],
@@ -292,6 +320,18 @@
           },
           {
             "target": "owner_voice",
+            "trigger_keywords": [
+              "unnatural",
+              "awkward",
+              "translationese",
+              "not native",
+              "어색",
+              "번역투",
+              "reads like a translation",
+              "문장이 이상",
+              "말이 안 붙",
+              "원어민"
+            ],
             "note": "Awkward language misfiled as owner preference is the specific failure SUE-607 exists to prevent: it makes a quality baseline defect look like taste, and taste is the one layer the owner is expected to arbitrate."
           },
           {

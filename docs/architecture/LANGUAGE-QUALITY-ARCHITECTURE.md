@@ -333,6 +333,16 @@ Adding a language is a data change: one directory under
 `editorial/profiles/language/` and one registry entry. No router, no script,
 and no schema changes.
 
+**One known soft spot in that boundary.** `editorial/feedback-routing.json`
+is shared across every language, and its misroute `trigger_keywords` are
+currently Korean and English strings, because those are the languages the
+owner actually writes feedback in. That is correct today and will stop being
+correct the moment a second language pack exists — at which point the keyword
+lists belong in the packs, keyed by the language of the *feedback*, not of
+the output. Recorded here rather than pre-built: a per-language keyword store
+with one language in it is the speculative infrastructure this section
+otherwise forbids.
+
 ---
 
 ## 10. Versioning and revert

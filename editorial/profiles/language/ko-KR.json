@@ -156,8 +156,8 @@
       "id": "norm-auxiliary-verb-spacing",
       "authority_class": "NORMATIVE",
       "layer": "normative",
-      "statement": "보조 용언은 원칙적으로 띄어 쓰되('먹어 보다'), 붙여 쓰는 것도 허용된다('먹어보다'). 한 문서 안에서는 하나의 방식으로 일관되게 적용한다.",
-      "rationale": "규범이 허용 범위를 두고 있어 정오 판정이 아니라 문서 내 일관성 점검이 된다.",
+      "statement": "보조 용언은 띄어 씀을 원칙으로 하되 붙여 씀도 허용된다('먹어 보다' / '먹어보다'). 따라서 둘 중 어느 쪽도 맞춤법 오류로 지적해서는 안 된다.",
+      "rationale": "규범이 두 형태를 모두 허용하므로 이 규칙의 실효는 오탐 방지다 — 허용된 형태를 오류로 표시하는 것이 여기서 실제로 일어나는 유일한 정오 문제다. 문서 내 표기 일관성은 규범이 정한 바가 없는 편집 관행이므로 NORMATIVE로 주장하지 않는다.",
       "checkability": "review_guidance",
       "generality": "shared",
       "authority_ref": "nikl-korean-norms"
@@ -219,7 +219,7 @@
       "authority_class": "NATIVE_QUALITY",
       "layer": "native_fluency",
       "statement": "이중피동(예: '잊혀지다', '보여지다', '만들어지게 되다')을 피하고 단일 피동형('잊히다', '보이다') 또는 능동형으로 쓴다.",
-      "rationale": "공공언어 지침(nikl-public-language-guide, STRONG_GUIDANCE, 공공기관 대상)의 진단을 일반 에디토리얼 한국어로 확장한 것 — 이 확장은 언어팩 자신의 경험적 주장이며 해당 지침의 권위가 그대로 미치는 것이 아니다. 그런 이유로 authority_ref를 두지 않는다.",
+      "rationale": "국립국어원 공공언어 지침(references/korean-language-authorities.md §2, STRONG_GUIDANCE, 공공기관 문서 대상)의 진단을 일반 에디토리얼 한국어로 확장한 것 — 이 확장은 언어팩 자신의 경험적 주장이며 해당 지침의 권위가 그대로 미치는 것이 아니다. 그런 이유로 authority_ref를 두지 않고, 해당 지침도 이 팩의 authorities[]에 넣지 않는다.",
       "checkability": "review_guidance",
       "generality": "shared",
       "adopt_verdict": "avoid",
@@ -661,7 +661,7 @@
     "어떤 주장이나 수치의 사실 여부 — 이 언어팩은 언어와 표현에 대해서만 권위를 가지며 클레임의 진위에는 권위가 없다(Source ≠ Reference, V2-EDITORIAL-LEARNING-CORE.md §2)",
     "한국어 이외의 모든 언어 — en-US/en-GB 등 다른 로케일에는 이 팩의 어떤 규칙도 일반화되지 않는다",
     "게시 여부 결정 — 이 언어팩은 언어 품질에 대한 판단만 제공하며 발행 승인 권한이 없다",
-    "editorial/voice.md가 아직 기록하지 않은 오너 취향 — 이 언어팩은 voice.md가 이미 preference로 명시한 것만 옮기며 새로운 취향을 발명하지 않는다",
+    "editorial/voice.md가 아직 기록하지 않은 오너 취향 — 이 언어팩은 voice.md가 이미 preference 또는 observed tendency로 기록한 것만 옮기며 새로운 취향을 발명하지 않는다. voice.md가 invariant로 표시한 항목은 취향이 아니므로 OWNER_PREFERENCE로 내려 쓰지 않는다.",
     "장르(콘텐츠 타입) 자체의 정의와 요구사항 — editorial/profiles/content/*.json의 소관이며 이 언어팩은 그 위에 언어 오버레이만 얹는다",
     "독자층(오디언스) 프로필 자체의 정의 — editorial/profiles/audience/*.json의 소관"
   ],

@@ -46,6 +46,7 @@ export const CODES = Object.freeze({
   LANGUAGE_DIMENSION_DUPLICATED: 'language-dimension-duplicated',
   LANGUAGE_DIMENSION_MISSING_EVIDENCE: 'language-dimension-missing-evidence-span',
   LANGUAGE_INTEGRITY_OVERRIDDEN: 'language-integrity-overridden-by-outcome',
+  LANGUAGE_FAIL_HIDDEN_BY_OUTCOME: 'language-fail-hidden-by-pass-shaped-outcome',
   LANGUAGE_DIMENSION_ROUTE_REQUIRED: 'language-dimension-fail-with-no-route',
   LANGUAGE_DIMENSION_UNKNOWN_ROUTE: 'language-dimension-route-not-in-routing-table',
   LANGUAGE_DIMENSION_MISROUTE: 'language-dimension-routed-to-wrong-layer',
@@ -89,7 +90,12 @@ export const OUTCOME_ROUTES = Object.freeze({
   ABSTAIN: [null],
   ARGUMENT_REWORK: ['frame'],
   FACT_REWORK: ['verification'],
-  PROSE_REWORK: ['writing', 'polish'],
+  // AES-V2.17 (SUE-607) widened this: the language layers are prose-layer
+  // rework targets too. Without them a record could report a
+  // normative/native_fluency/register/terminology FAIL per dimension and
+  // have no legal record-level outcome to carry it, which is how the
+  // finding used to disappear at the record boundary.
+  PROSE_REWORK: ['writing', 'polish', 'register', 'normative', 'native_fluency', 'domain_terminology', 'owner_voice'],
   AUDIENCE_REWORK: ['audience', 'frame'],
 });
 
@@ -232,6 +238,22 @@ export function validateL1Record(record, { schema = loadSchema(), routingTable =
     if (semanticIntegrity?.verdict === 'FAIL' && PASS_SHAPED_OUTCOMES.has(record?.outcome)) {
       issues.push(issue(CODES.LANGUAGE_INTEGRITY_OVERRIDDEN, where,
         `language_quality.semantic_integrity is FAIL but outcome is "${record?.outcome}"; a pass-shaped outcome may not stand alongside a semantic-integrity failure`));
+    }
+
+    // --- a language FAIL may not be hidden behind a pass-shaped record ------
+    // LANGUAGE-QUALITY-ARCHITECTURE.md §8: "the review output *is* the
+    // routing input". Downstream consumers read the record-level
+    // outcome/routes_to; a record whose outcome is PASS while a language
+    // dimension is FAIL reports "nothing to do" and loses the finding at
+    // exactly the boundary where it was supposed to become an action. The
+    // per-dimension routes_to keeps the detail; this rule keeps the record
+    // from contradicting it. Reported once per record, listing every failing
+    // dimension, so one bad outcome does not produce seven near-identical
+    // issues.
+    const failing = lqDims.filter((d) => d.verdict === 'FAIL' && d.id !== 'semantic_integrity');
+    if (failing.length > 0 && PASS_SHAPED_OUTCOMES.has(record?.outcome)) {
+      issues.push(issue(CODES.LANGUAGE_FAIL_HIDDEN_BY_OUTCOME, where,
+        `outcome is "${record?.outcome}" but language_quality reports FAIL on ${failing.map((d) => d.id).join(', ')}; a pass-shaped outcome tells every downstream consumer there is nothing to route, which contradicts the dimension's own routes_to`));
     }
 
     // --- routing: a FAIL must route to its one legal layer; anything else

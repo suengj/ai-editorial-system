@@ -203,6 +203,35 @@ console.log('check 7: shared promotion sufficiency');
   const { issues, notes } = checkSharedPromotion(basePack, 'zz-ZZ');
   check('sufficient shared-promotion evidence passes', issues.length === 0 && notes.length === 0, JSON.stringify({ issues, notes }));
 }
+{
+  // SUE-607 reviewer finding I2: the gate must cover every empirical rule
+  // that reaches past the one source it was observed in, not only
+  // generality "shared". A genre_local rule asserts a whole genre on one
+  // institution's evidence — the same promotion failure one level down.
+  const bad = clone(basePack);
+  bad.rules[3].generality = 'genre_local'; // GENRE_CONVENTION, 0 evidence_refs
+  const { issues } = checkSharedPromotion(bad, 'zz-ZZ');
+  check('an unproven genre_local empirical rule fails with the empirical-promotion code',
+    hasCode(issues, CODES.EMPIRICAL_PROMOTION_INSUFFICIENT), JSON.stringify(issues));
+}
+{
+  const bad = clone(basePack);
+  bad.rules[4].generality = 'audience_local'; // AUDIENCE_CONSTRAINT, 0 evidence_refs
+  bad.status = 'draft';
+  const { issues, notes } = checkSharedPromotion(bad, 'zz-ZZ');
+  check('the same rule in a draft pack is a NOTE, not a failure',
+    hasCode(notes, CODES.EMPIRICAL_PROMOTION_INSUFFICIENT) && issues.length === 0, JSON.stringify({ issues, notes }));
+}
+{
+  // source_local is the honest default for a one-source trait: it makes no
+  // promotion claim, so there is nothing for evidence to license.
+  const ok = clone(basePack);
+  ok.rules[3].generality = 'source_local';
+  ok.rules[3].evidence_refs = [];
+  const { issues, notes } = checkSharedPromotion(ok, 'zz-ZZ');
+  check('a source_local empirical rule with no evidence_refs is exempt',
+    issues.length === 0 && notes.length === 0, JSON.stringify({ issues, notes }));
+}
 
 // --- 8. genre ⊥ audience -------------------------------------------------------
 console.log('check 8: genre and audience are orthogonal');

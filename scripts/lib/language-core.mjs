@@ -47,6 +47,7 @@ export const CODES = Object.freeze({
   NORMATIVE_BACKED_BY_WEAKER_SOURCE: 'normative-backed-by-weaker-source',
   UNBACKED_MECHANICAL_CLAIM: 'unbacked-mechanical-empirical-claim',
   SHARED_PROMOTION_INSUFFICIENT: 'shared-promotion-insufficient',
+  EMPIRICAL_PROMOTION_INSUFFICIENT: 'empirical-promotion-insufficient',
   GENRE_CARRIES_AUDIENCE: 'genre-rule-carries-audience-scope',
   AUDIENCE_CARRIES_GENRE: 'audience-rule-carries-genre-scope',
   UNKNOWN_CONTENT_TYPE: 'unknown-content-type-scope',
@@ -180,30 +181,49 @@ export function checkUnbackedMechanicalClaim(pack, where) {
 }
 
 /**
- * §6: promotion of an empirical trait to `generality: "shared"` requires
- * multi-source evidence (reused from scripts/lib/promotion-core.mjs, the one
- * place the repo's promotion-sufficiency rule lives) and a holdout result of
- * improved/neutral. While the pack is still `draft`, an insufficiently
- * proven shared rule is downgraded to a NOTE — a draft pack is explicitly
- * allowed to hold not-yet-validated rules (schemas/language-pack.schema.json
- * `status`); an `active` pack is not.
+ * §6: an empirical trait (NATIVE_QUALITY / GENRE_CONVENTION /
+ * AUDIENCE_CONSTRAINT) that claims to reach past the one source it was
+ * observed in requires multi-source evidence (reused from
+ * scripts/lib/promotion-core.mjs, the one place the repo's
+ * promotion-sufficiency rule lives) and a holdout result of improved or
+ * neutral. §6 states that bar for *every* empirical class, not only for
+ * cross-genre promotion, so this gate is keyed on "reaches past one source",
+ * not on `generality: "shared"` alone: an unproven `genre_local` rule
+ * asserts a whole genre on one institution's evidence, which is the same
+ * promotion failure one level down.
+ *
+ * `source_local` is deliberately exempt. It is the honest default for a
+ * trait seen in one publisher and scoped there — it makes no promotion
+ * claim, so there is nothing for evidence to license.
+ *
+ * `shared` keeps its own code because it is the stronger claim (cross-genre,
+ * §6.3); everything else reports EMPIRICAL_PROMOTION_INSUFFICIENT. While the
+ * pack is `draft`, both are downgraded to NOTEs — a draft pack is explicitly
+ * allowed to hold not-yet-validated rules
+ * (schemas/language-pack.schema.json `status`); an `active` pack is not.
  */
 export function checkSharedPromotion(pack, where) {
   const issues = [];
   const notes = [];
   const isDraft = pack.status === 'draft';
   for (const rule of pack.rules ?? []) {
-    if (rule.generality !== 'shared' || !EMPIRICAL_AUTHORITY_CLASSES.has(rule.authority_class)) continue;
+    if (!EMPIRICAL_AUTHORITY_CLASSES.has(rule.authority_class)) continue;
+    if (rule.generality === 'source_local') continue;
     const ruleWhere = `${where}:${rule.id}`;
     const { insufficientEvidence } = checkPromotionSufficiency({ evidenceRefs: rule.evidence_refs });
     const holdoutOk = HOLDOUT_OK.has(rule.holdout_result);
     if (insufficientEvidence || !holdoutOk) {
+      const isShared = rule.generality === 'shared';
+      const code = isShared ? CODES.SHARED_PROMOTION_INSUFFICIENT : CODES.EMPIRICAL_PROMOTION_INSUFFICIENT;
       const reasons = [];
       if (insufficientEvidence) reasons.push('fewer than two evidence_refs');
       if (!holdoutOk) reasons.push(`holdout_result is "${rule.holdout_result ?? 'undefined'}", not improved/neutral`);
-      const message = `generality "shared" on empirical authority_class "${rule.authority_class}" requires at least two evidence_refs and a holdout_result of improved or neutral (${reasons.join('; ')}) — LANGUAGE-QUALITY-ARCHITECTURE.md §6/§7`;
-      if (isDraft) notes.push(issue(CODES.SHARED_PROMOTION_INSUFFICIENT, ruleWhere, `${message} — reported as a NOTE because pack status is "draft"`));
-      else issues.push(issue(CODES.SHARED_PROMOTION_INSUFFICIENT, ruleWhere, message));
+      const reach = isShared
+        ? 'generality "shared" claims the trait holds across genres'
+        : `generality "${rule.generality}" claims the trait reaches past the source it was observed in`;
+      const message = `${reach}; on empirical authority_class "${rule.authority_class}" that requires at least two evidence_refs and a holdout_result of improved or neutral (${reasons.join('; ')}) — LANGUAGE-QUALITY-ARCHITECTURE.md §6/§7. Scope it "source_local" until the evidence exists.`;
+      if (isDraft) notes.push(issue(code, ruleWhere, `${message} — reported as a NOTE because pack status is "draft"`));
+      else issues.push(issue(code, ruleWhere, message));
     }
   }
   return { issues, notes };
@@ -264,9 +284,11 @@ export function checkScopeIdsResolve(pack, where, { contentIds, audienceIds }) {
  * evidence_ref that resolves to an actual reference-evaluation record on
  * disk is checked; a ref that resolves to nothing is dangling and is
  * reported, never silently passed. A record carrying no corpus_role at all
- * is "unassigned" (another agent is adding the field to
- * schemas/reference-evaluation.schema.json concurrently) — not a leak, but
- * reported as a NOTE so it does not go unnoticed once the field lands.
+ * is "unassigned" — `corpus_role` is optional on
+ * schemas/reference-evaluation.schema.json, and every record written before
+ * AES-V2.17 predates the field. That is not a leak, but it is reported as a
+ * NOTE: an unassigned reference is one nobody has decided the role of yet,
+ * and §7 requires the decision to be made *before* traits are extracted.
  */
 export function checkHoldoutLeakage(pack, where, {
   evaluationsDir = REGISTRY_PATHS.evaluationsDir,

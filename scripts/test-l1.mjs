@@ -275,11 +275,24 @@ console.log('\nlanguage_quality routing: each dimension has exactly one legal la
   check('native_fluency FAIL routed to "writing" (the wrong layer) is rejected with the mis-routing code',
     l1Codes(misrouted).includes(L1.LANGUAGE_DIMENSION_MISROUTE));
 
+  // A dimension FAIL must not be hidden behind a pass-shaped record outcome:
+  // downstream consumers read the record-level outcome/routes_to, so PASS
+  // there reports "nothing to route" while the dimension says otherwise.
+  const hiddenFail = clone(lqById['l1:example-language-quality-pass']);
+  const nfHidden = hiddenFail.language_quality.dimensions.find((d) => d.id === 'native_fluency');
+  nfHidden.verdict = 'FAIL';
+  nfHidden.evidence_span = 'Paragraph 4 opens with a calqued discourse connective the reference does not use.';
+  nfHidden.routes_to = 'native_fluency';
+  check('a language FAIL alongside a pass-shaped record outcome is rejected',
+    l1Codes(hiddenFail).includes(L1.LANGUAGE_FAIL_HIDDEN_BY_OUTCOME));
+
   const correctlyRoutedLq = clone(lqById['l1:example-language-quality-pass']);
   const nfOk = correctlyRoutedLq.language_quality.dimensions.find((d) => d.id === 'native_fluency');
   nfOk.verdict = 'FAIL';
   nfOk.evidence_span = 'Paragraph 4 opens with a calqued discourse connective the reference does not use.';
   nfOk.routes_to = 'native_fluency';
+  correctlyRoutedLq.outcome = 'PROSE_REWORK';
+  correctlyRoutedLq.routes_to = 'native_fluency';
   check('native_fluency FAIL routed to "native_fluency" is accepted',
     l1Codes(correctlyRoutedLq).length === 0, JSON.stringify(l1Codes(correctlyRoutedLq)));
 
