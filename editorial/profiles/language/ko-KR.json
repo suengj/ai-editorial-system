@@ -395,7 +395,8 @@
       "holdout_refs": [
         "eval:asiae-public-institution-reform-2026-09-05-01",
         "eval:mt-public-institution-reform-2026-09-05-01"
-      ]
+      ],
+      "notes": "SUE-604 홀드아웃 평가: 실제 화자가 있는 단 한 건(국토교통부 발표)에서만 제대로 작동했고, 나머지에서는 인용을 만들어 냈다 — tools-news의 문서 귀속 6건, bonds-news에서 원문의 '붕괴'를 '위기'로 바꿔 인용부호에 넣은 허위 인용 1건, housing-news의 출처 없는 '지적이 나온다' 2건. 증거가 없는 것이 아니라 나쁘다. 코퍼스 근거 자체도 하루치 한 사건의 보도 4건이다."
     },
     {
       "id": "reg-report-hedge-language",
@@ -411,14 +412,15 @@
         ]
       },
       "authority_ref": "bok-published-reports",
-      "holdout_result": "not_yet_tested",
+      "holdout_result": "neutral",
       "evidence_refs": [
         "eval:kdi-economic-outlook-report-2026-09-05-01"
       ],
       "holdout_refs": [
         "eval:kcmi-capital-market-focus-2026-09-05-01",
         "eval:kiet-economy-industry-outlook-2026-09-05-01"
-      ]
+      ],
+      "notes": "SUE-604 홀드아웃 평가: 미학습 주제로 전이되기는 했으나 무엇이 나아졌는지 보여주는 관찰이 없었고, 홀드아웃에서 행위자 없는 전망 술어를 만들어 냈다. 퇴행은 아니므로 neutral."
     },
     {
       "id": "reg-report-outline-vs-narrative",
@@ -577,8 +579,9 @@
       "holdout_refs": [
         "eval:kiet-economy-industry-outlook-2026-09-05-01"
       ],
-      "holdout_result": "not_yet_tested",
-      "adopt_verdict": "adopt"
+      "holdout_result": "improved",
+      "adopt_verdict": "adopt",
+      "notes": "SUE-604 홀드아웃 평가: 미학습 주제(서울 주택 공급)에서 튜닝된 두 주제보다 오히려 더 자연스럽고 밀도 있게 배치되었다. 코퍼스 적합이 아니라 실제 전이로 판단."
     },
     {
       "id": "aud-concrete-before-abstract",
@@ -602,7 +605,8 @@
         "eval:bok-easy-economics-elementary-2026-09-05-01"
       ],
       "holdout_result": "not_yet_tested",
-      "adopt_verdict": "adopt"
+      "adopt_verdict": "adopt",
+      "notes": "SUE-604 홀드아웃 평가: 측정 가능한 개선 델타가 어디에서도 관찰되지 않았다. 두 child 베이스라인 모두 이 보정이 존재하기 전에 이미 구체 우선으로 시작하고 있었기 때문이다. 규칙이 틀렸다는 뜻이 아니라, 이 실행이 그것을 검증하지 못했다는 뜻이다."
     },
     {
       "id": "aud-child-label-is-not-adaptation",

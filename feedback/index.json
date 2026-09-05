@@ -43,6 +43,16 @@
       "verdict": "mixed"
     },
     {
+      "created_at": "2026-09-05T13:05:00Z",
+      "feedback_id": "feedback:sue604-attribution-manufactured-quotation-2026-09-05",
+      "path": "feedback/records/sue604-attribution-manufactured-quotation-2026-09-05.json",
+      "scope": "task_local",
+      "signal": "objective_quality",
+      "subject_kind": "article",
+      "subject_ref": "suengj-com content/editorial/sue604-bonds-news.md (SUE-604)",
+      "verdict": "bad"
+    },
+    {
       "created_at": "2026-09-05T12:30:00Z",
       "feedback_id": "feedback:sue604-attribution-rule-needs-a-speaker-2026-09-05",
       "path": "feedback/records/sue604-attribution-rule-needs-a-speaker-2026-09-05.json",
