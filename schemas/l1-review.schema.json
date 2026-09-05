@@ -58,6 +58,11 @@
           "type": ["string", "null"],
           "minLength": 1
         },
+        "polish_decision_ref": {
+          "description": "AES-V2.18 / SUE-610. Optional: present when this L1 review is reviewing a draft that already went through the conservative polish execution contract (schemas/polish-decision.schema.json) — points at the `decision_id` of the polish decision under review. Absent when no polish decision exists yet for this subject, e.g. a pre-polish review. Not cross-validated by scripts/lib/l1-core.mjs; it is a pointer, not a gate.",
+          "type": ["string", "null"],
+          "minLength": 1
+        },
         "dimensions": {
           "description": "Exactly the seven dimensions named in docs/architecture/LANGUAGE-QUALITY-ARCHITECTURE.md §8, each exactly once. json-schema-lite has no minItems/uniqueItems, so completeness and non-duplication are enforced by scripts/lib/l1-core.mjs.",
           "type": "array",

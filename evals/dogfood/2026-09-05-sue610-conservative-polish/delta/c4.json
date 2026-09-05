@@ -1,0 +1,109 @@
+{
+  "description": "SUE-610 C4 — bonds-child, no-double-authoring proof.",
+  "records": [
+    {
+      "schema_version": "1.0.0",
+      "delta_plan_id": "delta:c4-bonds-child",
+      "created_at": "2026-09-05T10:00:00Z",
+      "source": {
+        "kind": "article",
+        "ref": "p02_com:content/editorial/sue570-pilot-bonds-child.md",
+        "content_type": "news"
+      },
+      "target": {
+        "content_type": "news",
+        "audience": "child-upper-elementary",
+        "language": "ko-KR"
+      },
+      "basis": "model_inference",
+      "source_profile": {
+        "language_quality": "해체 종결('~야', '~거든', '~해')이 일관되고 조사·띄어쓰기 오류가 없으나, 문장 첫머리에 접속부사 '그리고'를 붙이는 자리가 한 곳 있다.",
+        "genre": "개념 설명(국채/이자율) → 사건 서술 → 원인 3가지 나열 → 위험 여부 판단 → 모르는 것 → 한 줄 정리라는 explainer 구조.",
+        "audience": "학급 예산 비유 없이도 국채 개념을 구체적 상황으로 먼저 제시하고, 전문용어를 쓰기 전에 항상 풀어 설명하며, '물가(인플레이션)'처럼 원 개념을 용어와 함께 병기해 보존한다.",
+        "knowledge_depth": "3가지 원인만 나열하고 각각을 한 문장짜리 인과로 제한하며 복합 통계나 시나리오 매트릭스는 다루지 않는다.",
+        "register": "'~야', '~거든', '~해' 같은 다정한 구어체가 처음부터 끝까지 유지된다.",
+        "information_structure": "'무슨 일이 있었을까' 다음에 '왜 갑자기 이렇게 됐을까'가 오는 호기심-우선 순서.",
+        "terminology": "'국채', '이자율', '신용스프레드' 모두 등장 즉시 풀어 설명하고 이후 문단에서도 같은 쉬운 표현을 반복해 쓴다."
+      },
+      "target_profile": {
+        "language_quality": "child-upper-elementary 대상 explainer는 이미 이 수준의 자연스러운 해체 구어를 요구하며, 추가 개선 여지는 국소적 수준에 그친다.",
+        "genre": "target도 동일한 explainer 구조를 요구한다.",
+        "audience": "target도 동일한 child-upper-elementary이며, Audience/Transformation이 이 초안 생성 시점에 이미 그 적응 작업을 수행했다.",
+        "knowledge_depth": "target도 이 정도의 얕은 인과 설명만 요구한다.",
+        "register": "target도 동일한 다정한 구어체를 요구한다.",
+        "information_structure": "target도 동일한 호기심-우선 순서를 요구한다.",
+        "terminology": "target도 동일한 풀어쓰기 관행을 요구한다."
+      },
+      "axis_deltas": [
+        {
+          "axis": "language_quality",
+          "delta": "LOW",
+          "intervention": "P1_LOCAL_POLISH",
+          "owning_layer": null,
+          "source_observation": "해체 종결이 일관되고 오류가 없으나, '그리고 일본이 이자율을 올린 것도 영향을 줬어.'처럼 문장 첫머리에 접속부사 '그리고'를 붙이는 자리가 한 곳 있다.",
+          "target_requirement": "child-upper-elementary explainer는 이미 이 수준의 자연스러운 해체 구어를 요구하며, 남은 개선 여지는 이 정도의 국소적 수준에 그친다.",
+          "evidence": "'그리고 일본이 이자율을 올린 것도 영향을 줬어.'"
+        },
+        {
+          "axis": "genre",
+          "delta": "LOW",
+          "intervention": "P0_PRESERVE",
+          "owning_layer": null,
+          "source_observation": "개념 설명 → 사건 서술 → 원인 3가지 나열 → 위험 여부 판단 → 모르는 것 → 한 줄 정리라는 explainer 구조를 이미 갖췄다.",
+          "target_requirement": "target도 동일한 explainer 구조를 요구하며 이미 충족되어 있다.",
+          "evidence": "소제목 순서 '먼저 국채랑 이자율이 뭔지부터 → 무슨 일이 있었을까 → 왜 갑자기 이렇게 됐을까 → 이게 위험한 신호일까? → 아직 모르는 것 → 한 줄 정리'."
+        },
+        {
+          "axis": "audience",
+          "delta": "LOW",
+          "intervention": "P0_PRESERVE",
+          "owning_layer": "audience",
+          "source_observation": "'나라도 가끔 돈이 모자랄 때가 있어'처럼 구체적 상황을 먼저 제시하고 전문용어를 쓰기 전에 항상 풀어 설명하며(aud-concrete-before-abstract 이미 충족), '물가(인플레이션)'처럼 용어를 병기해 원 개념을 보존한다.",
+          "target_requirement": "target도 동일한 child-upper-elementary이며, Audience/Transformation이 이 초안을 만들 때 그 적응 작업을 이미 올바르게 수행했다.",
+          "evidence": "'나라도 가끔 돈이 모자랄 때가 있어. 그럴 때 나라는 사람들한테 ... 이 종이를 국채라고 불러.' — 개념 도입 전에 구체적 상황 선행."
+        },
+        {
+          "axis": "knowledge_depth",
+          "delta": "LOW",
+          "intervention": "P0_PRESERVE",
+          "owning_layer": null,
+          "source_observation": "3가지 원인만 나열하고 각각을 한 문장짜리 인과로 제한하며, 복합 통계나 시나리오 매트릭스는 다루지 않는다.",
+          "target_requirement": "target도 이 정도의 얕은 인과 설명만 요구한다.",
+          "evidence": "'세 가지가 한꺼번에 겹쳤어' 다음에 1·2·3 번호 목록, 각 항목이 한두 문장으로 종결됨."
+        },
+        {
+          "axis": "register",
+          "delta": "LOW",
+          "intervention": "P0_PRESERVE",
+          "owning_layer": null,
+          "source_observation": "'~야', '~거든', '~해' 같은 다정한 구어체가 처음부터 끝까지 유지된다.",
+          "target_requirement": "target도 동일한 다정한 구어체를 요구하며 이미 충족되어 있다.",
+          "evidence": "'이자율이 높다는 건, 돈을 빌려주는 사람이 ... 요구한다는 뜻이고' — 해체 구어체 일관."
+        },
+        {
+          "axis": "information_structure",
+          "delta": "LOW",
+          "intervention": "P0_PRESERVE",
+          "owning_layer": null,
+          "source_observation": "'무슨 일이 있었을까' 다음에 '왜 갑자기 이렇게 됐을까'가 오는 호기심-우선 순서를 이미 따른다.",
+          "target_requirement": "target도 동일한 순서를 요구하며 이미 충족되어 있다.",
+          "evidence": "소제목 순서가 사건 서술 다음에 원인 설명이 옴 — findings-first가 아니라 curiosity-first."
+        },
+        {
+          "axis": "terminology",
+          "delta": "LOW",
+          "intervention": "P0_PRESERVE",
+          "owning_layer": null,
+          "source_observation": "'국채', '이자율', '신용스프레드' 모두 등장 즉시 풀어 설명하고, 이후 문단에서도 같은 쉬운 표현을 반복해 쓴다.",
+          "target_requirement": "target도 동일한 풀어쓰기 관행을 요구하며 이미 충족되어 있다.",
+          "evidence": "'신용스프레드라고 불러'로 도입한 뒤 이후 문단에서도 '추가 이자'로 계속 풀어 지칭."
+        }
+      ],
+      "plan_intervention": {
+        "value": "P1_LOCAL_POLISH",
+        "rationale": "language_quality만 LOW를 넘지 않는 국소적 결함(P1) 하나를 갖고 있고 나머지 여섯 축은 모두 P0이므로 천장은 P1_LOCAL_POLISH다 — 최댓값이며 축을 합산한 값이 아니다."
+      },
+      "notes": "audience 축이 LOW로 측정되는 이유를 명시적으로 기록한다: 이 축의 P3 수준 재구성(전문용어 해체, 학급 예산류 도입부, 구체-후-추상 순서)은 이미 이 초안을 생성한 시점에 Audience/Transformation이 올바르게 수행했다. SUE-604가 저지른 실패는 이미 끝난 이 작업을 언어 폴리시가 다시 수행하려 한 것이었다(semantic_integrity 회귀와 '국채 금리'라는 다시 등장하지 않는 용어 추가 포함) — LANGUAGE-QUALITY-ARCHITECTURE.md §15 '델타 게이트에 대한 존중'이 금지하는 이중 저작이다. 이 레코드는 그 작업을 반복하지 않는다."
+    }
+  ]
+}

@@ -1,0 +1,60 @@
+{
+  "description": "SUE-610 C4 polish decision.",
+  "records": [
+    {
+      "schema_version": "1.0.0",
+      "decision_id": "polish:c4-bonds-child",
+      "decided_at": "2026-09-05T10:10:00Z",
+      "draft_ref": {
+        "kind": "article",
+        "ref": "p02_com:content/editorial/sue570-pilot-bonds-child.md"
+      },
+      "language": "ko-KR",
+      "pack_ref": "editorial/profiles/language/ko-KR.json",
+      "delta_plan_ref": "delta:c4-bonds-child",
+      "reviewer": {
+        "type": "agent",
+        "agent": {
+          "runtime": "claude-code",
+          "model": "claude-sonnet-5",
+          "version": "2026-09-05"
+        }
+      },
+      "basis": "model_inference",
+      "action": "KEEP",
+      "edits": [
+        {
+          "edit_id": "edit-01",
+          "rule_ref": "nq-connective-adverb-overuse",
+          "authority_class": "NATIVE_QUALITY",
+          "application_mode": "soft_detector",
+          "defect": "문장 첫머리에 접속부사 '그리고'를 붙이는 자리가 감지됨.",
+          "span_original": "그리고 일본이 이자율을 올린 것도 영향을 줬어.",
+          "span_candidate": "일본이 이자율을 올린 것도 영향을 줬어.",
+          "pairwise": {
+            "continuous_readability": "same",
+            "native_naturalness": "same",
+            "rhythm": "worse",
+            "repetition": "same",
+            "over_explication": "same",
+            "stiffness": "same",
+            "information_loss": "same",
+            "semantic_integrity": "same",
+            "genre_preservation": "same",
+            "audience_preservation": "same",
+            "domain_terminology_preservation": "same"
+          },
+          "verdict": "revert",
+          "revert_reason": "continuous_readability와 native_naturalness가 모두 same이라 A1을 만족하지 못한다. 앞선 1·2·3번 원인 목록에서 추가 원인으로 넘어가는 자리이므로 '그리고'는 어린이 독자에게 전환을 알리는 발판 역할을 하며, 제거하면 rhythm이 오히려 worse — 결함이 아니라 이 레지스터에 맞는 정상적 연결어였다."
+        }
+      ],
+      "edit_surface": {
+        "unit": "characters",
+        "original_total": 2953,
+        "changed_total": 0,
+        "note": "유일한 후보 편집이 A1 미충족으로 revert됨. audience 축의 P3 수준 적응 작업은 이미 생성 시점에 끝나 있었고 여기서 다시 수행하지 않았다 — SUE-604의 이중 저작 실패를 재발시키지 않았다는 것이 이 레코드의 핵심 증거다."
+      },
+      "upstream_route": null
+    }
+  ]
+}

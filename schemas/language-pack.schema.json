@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://suengj.com/schemas/language-pack.schema.json",
   "title": "Language pack",
-  "description": "One language's (optionally one locale's) contribution to language quality: which external bodies are authoritative for what, which durable rules the pack asserts, and how domain terms are rendered. AES-V2.17 / SUE-607. The methodology this pack plugs into is language-agnostic and lives in docs/architecture/LANGUAGE-QUALITY-ARCHITECTURE.md; nothing in that document may be restated here, and nothing here may be generalised to another language. A pack grants craft and correctness authority over language only. It never grants factual authority over a claim (Source is not Reference, V2-EDITORIAL-LEARNING-CORE.md §2).",
+  "description": "One language's (optionally one locale's) contribution to language quality: which external bodies are authoritative for what, which durable rules the pack asserts, and how domain terms are rendered. AES-V2.17 / SUE-607, amended AES-V2.18 / SUE-610 (schema_version 1.1.0: every rule now carries `application_mode` — see $defs.rule below and docs/architecture/LANGUAGE-QUALITY-ARCHITECTURE.md §12). The methodology this pack plugs into is language-agnostic and lives in docs/architecture/LANGUAGE-QUALITY-ARCHITECTURE.md; nothing in that document may be restated here, and nothing here may be generalised to another language. A pack grants craft and correctness authority over language only. It never grants factual authority over a claim (Source is not Reference, V2-EDITORIAL-LEARNING-CORE.md §2).",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -17,7 +17,7 @@
   ],
   "properties": {
     "schema_version": {
-      "const": "1.0.0"
+      "const": "1.1.0"
     },
     "pack_id": {
       "description": "BCP-47-style id. Also the filename stem under editorial/profiles/language/.",
@@ -217,7 +217,8 @@
         "layer",
         "statement",
         "checkability",
-        "generality"
+        "generality",
+        "application_mode"
       ],
       "properties": {
         "id": {
@@ -229,6 +230,16 @@
         },
         "layer": {
           "$ref": "#/$defs/layer"
+        },
+        "application_mode": {
+          "description": "AES-V2.18 / SUE-610, docs/architecture/LANGUAGE-QUALITY-ARCHITECTURE.md §12. A rule's existence does not authorize an edit — application_mode is the field that decides whether it may. hard_local_correction: a high-confidence deterministic local fix (orthography, spacing, exact-quotation mismatch, authoritative terminology correction) that a polish pass may apply directly. soft_detector: a signal for detection and review; produces a CANDIDATE edit that must survive the pairwise gate (§13) and is never a mandatory rewrite. upstream_guidance: guidance owned by Audience / Genre / Transformation; informs generation, never authorizes a polish edit. local_observation: observed in the corpus but not yet supported well enough to act on anywhere. deprecated_as_instruction: retained as a research record; explicitly withdrawn as an instruction (requires a non-empty `notes` saying what withdrew it — guard L4). Guards L1-L5 (scripts/lib/language-core.mjs) tie the mode to what the rule actually is, most importantly L3: a rule whose layer is `audience` must be upstream_guidance or local_observation, never a mode a polish pass can act on directly.",
+          "enum": [
+            "hard_local_correction",
+            "soft_detector",
+            "upstream_guidance",
+            "local_observation",
+            "deprecated_as_instruction"
+          ]
         },
         "statement": {
           "description": "What the rule asserts, written so a Writer can act on it and a Reviewer can falsify it. Not a slogan.",

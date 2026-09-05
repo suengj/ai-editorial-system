@@ -1,0 +1,108 @@
+{
+  "description": "SUE-610 C6 — japan-us-global-bond-selloff, incumbent already excellent.",
+  "records": [
+    {
+      "schema_version": "1.0.0",
+      "delta_plan_id": "delta:c6-japan-us-view",
+      "created_at": "2026-09-05T10:40:00Z",
+      "source": {
+        "kind": "article",
+        "ref": "p02_com:content/views/japan-us-global-bond-selloff.md",
+        "content_type": "view"
+      },
+      "target": {
+        "content_type": "view",
+        "audience": "professional-generalist",
+        "language": "ko-KR"
+      },
+      "basis": "model_inference",
+      "source_profile": {
+        "language_quality": "능동형 서술('장기금리는 미래의 정책금리 평균만 반영하지 않는다')이 처음부터 끝까지 이어지고 오류가 없다.",
+        "genre": "'핵심 판단 → 번호 매긴 분석 절 → Scenario map 표 → Watchlist → Bottom line'까지 View 장르가 요구하는 판단-근거-불확실성 구조를 완비했다.",
+        "audience": "'term premium', 'OAS', 'carry trade' 같은 용어를 처음 쓸 때 최소한의 문맥(예: '기간 프리미엄')을 붙이되 매번 재설명하지 않는, 금융에 관심 있는 독자 수준의 진입장벽을 유지한다.",
+        "knowledge_depth": "Treasury yield·spread 조합별 3단 분류(discount-rate shock / financing stress / 경기·신용 충격)처럼 이미 상당한 메커니즘 깊이를 갖췄다.",
+        "register": "1인칭·구어체 없이 분석적 서술형이 처음부터 끝까지 일관된다.",
+        "information_structure": "'핵심 판단'을 최상단에 배치하고 번호 매긴 근거, Scenario map, Watchlist, Bottom line 순으로 확장하는 하이라키를 갖췄다.",
+        "terminology": "'term premium', 'OAS', 'carry trade' 등 실무 용어를 시종일관 동일한 형태로 유지한다."
+      },
+      "target_profile": {
+        "language_quality": "target은 이 View를 그대로 발행하는 것이므로 이미 갖춘 언어 품질 이상을 요구하지 않는다.",
+        "genre": "target은 동일한 View를 그대로 발행하는 것이므로 동일 구조를 요구할 뿐이다.",
+        "audience": "target은 이 View를 그 독자층 그대로 발행하는 것이며 새로운 독자층으로 바꾸는 요청이 아니다.",
+        "knowledge_depth": "target은 이미 갖춰진 깊이를 그대로 요구한다.",
+        "register": "target도 동일한 분석적 서술형을 요구한다.",
+        "information_structure": "target도 동일한 위계를 요구한다.",
+        "terminology": "target도 동일한 용어 유지 방식을 요구한다."
+      },
+      "axis_deltas": [
+        {
+          "axis": "language_quality",
+          "delta": "LOW",
+          "intervention": "P0_PRESERVE",
+          "owning_layer": null,
+          "source_observation": "'장기금리는 미래의 정책금리 평균만 반영하지 않는다. 투자자가 오랫동안 자금을 묶는 데 요구하는 term premium도 포함한다.'처럼 능동형 서술이 이어지고 표본 문단에서 오류가 발견되지 않는다.",
+          "target_requirement": "target은 이 View를 그대로 발행하는 것이므로 이미 갖춘 수준 이상을 요구하지 않는다.",
+          "evidence": "위 인용문 — 능동형, 오류 없음."
+        },
+        {
+          "axis": "genre",
+          "delta": "LOW",
+          "intervention": "P0_PRESERVE",
+          "owning_layer": null,
+          "source_observation": "'핵심 판단 → 번호 매긴 분석 절 → Scenario map 표 → Watchlist → Bottom line'까지 View 장르가 요구하는 구조를 완비했다.",
+          "target_requirement": "target도 동일한 View 장르이므로 동일 구조를 요구할 뿐이다.",
+          "evidence": "소제목·표 목록 '핵심 판단 / 1~6절 / Scenario map / Watchlist / Bottom line'."
+        },
+        {
+          "axis": "audience",
+          "delta": "LOW",
+          "intervention": "P0_PRESERVE",
+          "owning_layer": null,
+          "source_observation": "'term premium', 'OAS', 'carry trade' 용어를 처음 쓸 때 최소한의 문맥을 붙이되 매번 재설명하지 않는 진입장벽을 유지한다.",
+          "target_requirement": "target은 이 View를 그 독자층 그대로 발행하는 것이며 새로운 독자층으로 바꾸는 요청이 아니다.",
+          "evidence": "'투자자가 오랫동안 자금을 묶는 데 요구하는 term premium도 포함한다' — 용어 도입 시 짧은 동격구만 붙이고 이후 재설명하지 않음."
+        },
+        {
+          "axis": "knowledge_depth",
+          "delta": "LOW",
+          "intervention": "P0_PRESERVE",
+          "owning_layer": null,
+          "source_observation": "Treasury yield·spread 조합별 3단 분류(discount-rate shock / financing stress / 경기·신용 충격)처럼 이미 상당한 메커니즘 깊이를 갖췄다.",
+          "target_requirement": "target은 이미 갖춰진 이 깊이를 그대로 요구할 뿐이다.",
+          "evidence": "'Treasury yield 상승 + spread 안정: discount-rate shock' 등 3단 분류 목록."
+        },
+        {
+          "axis": "register",
+          "delta": "LOW",
+          "intervention": "P0_PRESERVE",
+          "owning_layer": null,
+          "source_observation": "1인칭·구어체 없이 분석적 서술형이 처음부터 끝까지 일관된다.",
+          "target_requirement": "target도 동일한 분석적 서술형을 요구하며 이미 충족되어 있다.",
+          "evidence": "'현재는 credit crisis로 보기 어렵다. 신용스프레드가 장기금리 상승만큼 급격히 벌어지지 않았기 때문이다.'"
+        },
+        {
+          "axis": "information_structure",
+          "delta": "LOW",
+          "intervention": "P0_PRESERVE",
+          "owning_layer": null,
+          "source_observation": "'핵심 판단'을 최상단에 배치하고 번호 매긴 근거, Scenario map, Watchlist, Bottom line 순으로 확장하는 하이라키를 갖췄다.",
+          "target_requirement": "target도 동일한 위계를 요구하며 이미 충족되어 있다.",
+          "evidence": "문서 순서: 핵심 판단 → 1~6절 → Scenario map → Watchlist → Bottom line."
+        },
+        {
+          "axis": "terminology",
+          "delta": "LOW",
+          "intervention": "P0_PRESERVE",
+          "owning_layer": null,
+          "source_observation": "'term premium', 'OAS', 'carry trade' 등 실무 용어를 시종일관 동일한 형태로 유지한다.",
+          "target_requirement": "target도 동일한 용어 유지 방식을 요구하며 이미 충족되어 있다.",
+          "evidence": "'term premium'이 핵심 판단부터 Bottom line까지 동일한 형태로 반복 사용됨."
+        }
+      ],
+      "plan_intervention": {
+        "value": "P0_PRESERVE",
+        "rationale": "일곱 축 모두 LOW/P0로 측정되어 천장은 P0_PRESERVE다 — 이미 발행된 승재의 View를 그대로 발행하는 것이 target이므로 편집 근거가 존재하지 않는다."
+      }
+    }
+  ]
+}

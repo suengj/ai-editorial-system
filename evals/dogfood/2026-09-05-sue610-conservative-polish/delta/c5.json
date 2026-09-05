@@ -1,0 +1,109 @@
+{
+  "description": "SUE-610 C5 — tokenized-stocks fresh unseen-topic generation.",
+  "records": [
+    {
+      "schema_version": "1.0.0",
+      "delta_plan_id": "delta:c5-tokenized-stocks-news",
+      "created_at": "2026-09-05T10:20:00Z",
+      "source": {
+        "kind": "draft",
+        "ref": "suengj-com:content/editorial/sue610-c5-before.md",
+        "content_type": "news"
+      },
+      "target": {
+        "content_type": "news",
+        "audience": "general-reader",
+        "language": "ko-KR"
+      },
+      "basis": "model_inference",
+      "source_profile": {
+        "language_quality": "ko-KR 언어팩을 적용하지 않고 생성된 초안으로, '상품마다 다르게 되어 있어서', '우려가 제기되고 있다'처럼 피동·사동이 겹치거나 명사화된 구문이 여러 곳에서 반복된다.",
+        "genre": "'지금 무슨 일이 있나/왜 중요한가/배경/확인되지 않은 부분' 뉴스 브리프 구조를 이미 갖췄다.",
+        "audience": "FedNow·Coinbase·WFE 같은 고유명사를 등장 시 즉시 풀어 설명하며 별도 사전지식을 요구하지 않는다.",
+        "knowledge_depth": "'토큰 가격이 실제로 무엇에 근거하고 있는지 불분명해질 수 있다'는 한 단계짜리 설명에 그치고, 차익거래 메커니즘이나 발행·상환 구조의 세부는 다루지 않는다.",
+        "register": "사실 진술형 종결이 대체로 일관되며 구어체나 과장된 감탄이 없다.",
+        "information_structure": "리드 문단이 관찰로 시작해 결과를 먼저 제시하는 뉴스 리드 관행을 따른다.",
+        "terminology": "'세계거래소연맹(WFE)'처럼 약어를 완전한 명칭과 병기한다."
+      },
+      "target_profile": {
+        "language_quality": "general-reader 뉴스 브리프는 자연스러운 능동형 한국어를 요구하며, 이 초안은 ko-KR 팩 미적용 상태라 그 기준에 이르기 전에 국소적 손질이 필요하다.",
+        "genre": "target도 동일한 뉴스 브리프 장르를 요구하며 이미 충족되어 있다.",
+        "audience": "target도 동일한 general-reader이며, 미답(unseen) 소재라 어휘 적응이 특정 소재에 튜닝될 위험이 없다.",
+        "knowledge_depth": "target도 뉴스 브리프 수준의 얕은 깊이만 요구한다.",
+        "register": "target도 동일한 사실 진술형 레지스터를 요구한다.",
+        "information_structure": "target도 결과-우선 뉴스 리드 위계를 요구한다.",
+        "terminology": "target도 동일한 수준의 약어 병기만 요구한다."
+      },
+      "axis_deltas": [
+        {
+          "axis": "language_quality",
+          "delta": "MATERIAL",
+          "intervention": "P1_LOCAL_POLISH",
+          "owning_layer": null,
+          "source_observation": "'토큰을 가진 사람이 실제 주주와 동일한 권리 ... 를 가지고 있는지도 상품마다 다르게 되어 있어서'와 '결제가 빨라지는 것에 대해서도 비슷한 우려가 제기되고 있다'처럼 피동·사동이 겹치거나 '~에 대해서도 ... 되고 있다' 식 명사화 구문이 반복된다.",
+          "target_requirement": "general-reader 뉴스 브리프는 자연스러운 능동형 한국어를 요구하며, ko-KR 팩 미적용 상태로 생성된 이 초안은 그 기준에 이르기 전 국소적 손질을 필요로 한다.",
+          "evidence": "'상품마다 다르게 되어 있어서, 세계거래소연맹(WFE)은 ... 요청한 바 있다.' / '결제가 빨라지는 것에 대해서도 비슷한 우려가 제기되고 있다.'"
+        },
+        {
+          "axis": "genre",
+          "delta": "LOW",
+          "intervention": "P0_PRESERVE",
+          "owning_layer": null,
+          "source_observation": "'지금 무슨 일이 있나/왜 중요한가/배경/확인되지 않은 부분' 구조를 이미 뉴스 브리프 관행대로 갖췄다.",
+          "target_requirement": "target도 동일한 뉴스 브리프 장르를 요구하며 이미 충족되어 있다.",
+          "evidence": "소제목 목록 '지금 무슨 일이 있나 / 왜 중요한가 / 배경 / 확인되지 않은 부분'."
+        },
+        {
+          "axis": "audience",
+          "delta": "LOW",
+          "intervention": "P0_PRESERVE",
+          "owning_layer": null,
+          "source_observation": "FedNow·Coinbase·WFE 같은 고유명사를 등장 시 즉시 풀어 설명하며 별도 사전지식을 요구하지 않는다.",
+          "target_requirement": "target도 동일한 general-reader이며, 이미 그 기준을 충족한다.",
+          "evidence": "'세계거래소연맹(WFE)은 규제당국에 주식 토큰화를 서두르지 말라고 요청한 바 있다.' — 약어 등장 즉시 완전한 명칭 병기."
+        },
+        {
+          "axis": "knowledge_depth",
+          "delta": "LOW",
+          "intervention": "P0_PRESERVE",
+          "owning_layer": null,
+          "source_observation": "'그 가격이 실제로 무엇에 근거하고 있는지가 불분명해질 수 있다'는 한 단계짜리 설명에 그치고, 차익거래 메커니즘이나 발행·상환 구조의 세부는 다루지 않는다.",
+          "target_requirement": "target도 뉴스 브리프 수준의 얕은 깊이만 요구한다.",
+          "evidence": "발행·상환 메커니즘, 스프레드 계산 방식 등은 본문에 등장하지 않음."
+        },
+        {
+          "axis": "register",
+          "delta": "LOW",
+          "intervention": "P0_PRESERVE",
+          "owning_layer": null,
+          "source_observation": "사실 진술형 종결이 대체로 일관되며 구어체나 과장된 감탄이 없다.",
+          "target_requirement": "target도 동일한 사실 진술형 레지스터를 요구하며 이미 충족되어 있다.",
+          "evidence": "'FedNow는 2026년 2분기에 약 500만 건 ... 송금을 처리하였으며' — 사실 진술형 종결."
+        },
+        {
+          "axis": "information_structure",
+          "delta": "LOW",
+          "intervention": "P0_PRESERVE",
+          "owning_layer": null,
+          "source_observation": "리드 문단이 '~하고 있는 것으로 보인다'는 관찰로 시작해 결과를 먼저 제시하는 뉴스 리드 관행을 따른다.",
+          "target_requirement": "target도 결과-우선 뉴스 리드 위계를 요구하며 이미 충족되어 있다.",
+          "evidence": "첫 문단이 FedNow·Coinbase·LSEG의 24시간화 흐름을 먼저 제시한 뒤 배경을 하단에 배치."
+        },
+        {
+          "axis": "terminology",
+          "delta": "LOW",
+          "intervention": "P0_PRESERVE",
+          "owning_layer": null,
+          "source_observation": "'세계거래소연맹(WFE)'처럼 약어를 즉시 완전한 명칭과 병기한다.",
+          "target_requirement": "target도 동일한 수준의 약어 병기만 요구하며 이미 충족되어 있다.",
+          "evidence": "'세계거래소연맹(WFE)' — 약어 등장 즉시 완전한 명칭 병기."
+        }
+      ],
+      "plan_intervention": {
+        "value": "P1_LOCAL_POLISH",
+        "rationale": "language_quality만 MATERIAL로 측정되었고 그 개입 수준이 P1이며 나머지 여섯 축은 모두 P0이므로 천장은 P1_LOCAL_POLISH다 — 최댓값이며 합산이 아니다."
+      },
+      "notes": "SUE-604 발견 코퍼스와 하우징 홀드아웃 모두에 없는 미답 소재(tokenized-stocks-instant-payments-liquidity-rights)이므로, 여기서 나오는 개선은 특정 소재에 튜닝된 어휘 적응이 아니라 일반적인 언어 품질 개선이다."
+    }
+  ]
+}

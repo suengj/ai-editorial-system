@@ -30,7 +30,7 @@ import {
   checkSchema, checkFilenameAndId, checkDocRef, checkLayers,
   checkNormativeAuthority, checkUnbackedMechanicalClaim, checkSharedPromotion,
   checkGenreAudienceOrthogonality, checkScopeIdsResolve, checkHoldoutLeakage,
-  checkPointlessAliases, validatePack, validatePackFile, validateAll,
+  checkPointlessAliases, checkApplicationMode, validatePack, validatePackFile, validateAll,
 } from './lib/language-core.mjs';
 import { loadAxisProfiles } from './lib/profile-core.mjs';
 import { listEvaluationFiles } from './lib/registry-core.mjs';
@@ -341,6 +341,73 @@ console.log('check 11: pointless audience alias (surface_form == canonical/rende
 {
   const notes = checkPointlessAliases(basePack, 'zz-ZZ');
   check('an alias distinct from canonical and rendering carries no note', notes.length === 0, JSON.stringify(notes));
+}
+
+// --- 12. application_mode guards L1-L5 (AES-V2.18 / SUE-610) ------------------
+console.log('check 12: application_mode guards L1-L5');
+{
+  const issues = checkApplicationMode(basePack, 'zz-ZZ');
+  check('the base fixture pack\'s application_mode values all pass L1-L5', issues.length === 0, JSON.stringify(issues));
+}
+// L1: hard_local_correction requires INTEGRITY/NORMATIVE/DOMAIN_TERMINOLOGY + mechanical, and a NORMATIVE rule needs authority_ref.
+{
+  const bad = clone(basePack);
+  bad.rules[1].application_mode = 'hard_local_correction'; // native-quality-rule: NATIVE_QUALITY
+  const issues = checkApplicationMode(bad, 'zz-ZZ');
+  check('hard_local_correction on a NATIVE_QUALITY rule is rejected (wrong authority class)', hasCode(issues, CODES.L1_HARD_LOCAL_AUTHORITY), JSON.stringify(issues));
+}
+{
+  const bad = clone(basePack);
+  bad.rules[0].checkability = 'review_guidance'; // spacing-rule stays application_mode hard_local_correction
+  const issues = checkApplicationMode(bad, 'zz-ZZ');
+  check('hard_local_correction with checkability other than mechanical is rejected', hasCode(issues, CODES.L1_HARD_LOCAL_MECHANICAL), JSON.stringify(issues));
+}
+{
+  const bad = clone(basePack);
+  bad.rules[0].authority_ref = null; // spacing-rule: NORMATIVE + hard_local_correction
+  const issues = checkApplicationMode(bad, 'zz-ZZ');
+  check('a NORMATIVE hard_local_correction rule with no authority_ref is rejected', hasCode(issues, CODES.L1_NORMATIVE_HARD_LOCAL_NO_AUTHORITY_REF), JSON.stringify(issues));
+}
+// L2: empirical/preference authority classes may never be hard_local_correction.
+{
+  const bad = clone(basePack);
+  bad.rules[3].application_mode = 'hard_local_correction'; // genre-rule: GENRE_CONVENTION
+  const issues = checkApplicationMode(bad, 'zz-ZZ');
+  check('hard_local_correction on a GENRE_CONVENTION rule is rejected', hasCode(issues, CODES.L2_EMPIRICAL_MAY_NOT_HARD_LOCAL), JSON.stringify(issues));
+}
+// L3: a rule whose layer is "audience" must be upstream_guidance or local_observation.
+{
+  const bad = clone(basePack);
+  bad.rules[4].application_mode = 'soft_detector'; // audience-rule: layer audience
+  const issues = checkApplicationMode(bad, 'zz-ZZ');
+  check('a layer:"audience" rule with application_mode soft_detector is rejected — the child-case fix', hasCode(issues, CODES.L3_AUDIENCE_LAYER_MODE), JSON.stringify(issues));
+}
+{
+  const bad = clone(basePack);
+  bad.rules[4].application_mode = 'local_observation';
+  const issues = checkApplicationMode(bad, 'zz-ZZ');
+  check('a layer:"audience" rule may legally be local_observation', !hasCode(issues, CODES.L3_AUDIENCE_LAYER_MODE), JSON.stringify(issues));
+}
+// L4: deprecated_as_instruction requires non-empty notes.
+{
+  const bad = clone(basePack);
+  bad.rules[2].application_mode = 'deprecated_as_instruction'; // shared-native-rule: no notes field
+  const issues = checkApplicationMode(bad, 'zz-ZZ');
+  check('deprecated_as_instruction with no notes is rejected', hasCode(issues, CODES.L4_DEPRECATED_NEEDS_NOTES), JSON.stringify(issues));
+}
+{
+  const ok = clone(basePack);
+  ok.rules[2].application_mode = 'deprecated_as_instruction';
+  ok.rules[2].notes = 'Withdrawn: superseded by a corroborated shared rule; retained as a research record only.';
+  const issues = checkApplicationMode(ok, 'zz-ZZ');
+  check('deprecated_as_instruction WITH non-empty notes passes L4', !hasCode(issues, CODES.L4_DEPRECATED_NEEDS_NOTES), JSON.stringify(issues));
+}
+// L5: generality "source_local" may not be hard_local_correction.
+{
+  const bad = clone(basePack);
+  bad.rules[1].application_mode = 'hard_local_correction'; // native-quality-rule: generality source_local
+  const issues = checkApplicationMode(bad, 'zz-ZZ');
+  check('hard_local_correction on a source_local rule is rejected', hasCode(issues, CODES.L5_SOURCE_LOCAL_MAY_NOT_HARD_LOCAL), JSON.stringify(issues));
 }
 
 // --- validateAll wiring smoke test ---------------------------------------------

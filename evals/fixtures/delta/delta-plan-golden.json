@@ -1,0 +1,104 @@
+{
+  "schema_version": "1.0.0",
+  "delta_plan_id": "delta:fixture-golden",
+  "created_at": "2026-09-05T09:00:00Z",
+  "source": {
+    "kind": "article",
+    "ref": "art:fixture-source-draft",
+    "content_type": "research"
+  },
+  "target": {
+    "content_type": "research",
+    "audience": "general-reader",
+    "language": "ko-KR"
+  },
+  "basis": "model_inference",
+  "source_profile": {
+    "language_quality": "Fixture: the draft is fluent and free of translationese in the sampled paragraphs.",
+    "genre": "Fixture: written in a dense practitioner register with numbered findings.",
+    "audience": "Fixture: addressed to a domain-practitioner, acronyms unglossed.",
+    "knowledge_depth": "Fixture: carries mechanism and two quantified measurements.",
+    "register": "Fixture: formal third-person exposition, already close to the target register.",
+    "information_structure": "Fixture: findings-first hierarchy; not yet checked against the target's expected shape.",
+    "terminology": "Fixture: uses the field's technical terms in standard professional form."
+  },
+  "target_profile": {
+    "language_quality": "Fixture: the target requires correct, fluent Korean, which the source already is.",
+    "genre": "Fixture: the target audience needs a warmer, less dense treatment of the same genre.",
+    "audience": "Fixture: a general-reader audience needs acronyms glossed and less assumed prerequisite knowledge.",
+    "knowledge_depth": "Fixture: the target audience needs the mechanism explained without the two quantified measurements.",
+    "register": "Fixture: the target register is close to the source's already-formal register.",
+    "information_structure": "Fixture: whether the target expects findings-first or curiosity-first ordering has not yet been confirmed against the audience profile.",
+    "terminology": "Fixture: the target audience needs a plain-language surface form for the field's technical terms."
+  },
+  "axis_deltas": [
+    {
+      "axis": "language_quality",
+      "delta": "LOW",
+      "intervention": "P0_PRESERVE",
+      "owning_layer": null,
+      "source_observation": "Fixture: the sampled paragraphs show no misspelling or translationese scaffolding.",
+      "target_requirement": "Fixture: the target requires correct, fluent Korean.",
+      "evidence": "Fixture: paragraphs 1-2 checked against the ko-KR pack's normative rules show zero defects."
+    },
+    {
+      "axis": "genre",
+      "delta": "MATERIAL",
+      "intervention": "P2_CONTROLLED_ADAPT",
+      "owning_layer": "register",
+      "source_observation": "Fixture: numbered findings and hedged claims throughout.",
+      "target_requirement": "Fixture: the target audience needs a warmer treatment of the same Research genre.",
+      "evidence": "Fixture: section 2 opens with a numbered-finding construction."
+    },
+    {
+      "axis": "audience",
+      "delta": "LARGE",
+      "intervention": "P3_RECOMPOSE",
+      "owning_layer": "audience",
+      "source_observation": "Fixture: acronyms unglossed, prerequisite knowledge assumed throughout.",
+      "target_requirement": "Fixture: the general-reader audience needs every acronym glossed.",
+      "evidence": "Fixture: the opening sentence uses two unglossed acronyms."
+    },
+    {
+      "axis": "knowledge_depth",
+      "delta": "MATERIAL",
+      "intervention": "P2_CONTROLLED_ADAPT",
+      "owning_layer": "frame",
+      "source_observation": "Fixture: carries two quantified measurements beyond a surface-level claim.",
+      "target_requirement": "Fixture: the target audience needs the mechanism explained without the measurements.",
+      "evidence": "Fixture: paragraph 3 states two numeric qualifiers in one sentence."
+    },
+    {
+      "axis": "register",
+      "delta": "LOW",
+      "intervention": "P1_LOCAL_POLISH",
+      "owning_layer": null,
+      "source_observation": "Fixture: the draft is already formal and close to the target register.",
+      "target_requirement": "Fixture: the target register is close to what the source already is.",
+      "evidence": "Fixture: sampled paragraphs show only minor local register friction."
+    },
+    {
+      "axis": "information_structure",
+      "delta": "UNKNOWN",
+      "intervention": "P0_PRESERVE",
+      "owning_layer": null,
+      "source_observation": "Fixture: findings-first hierarchy observed, but the target's expected shape has not been confirmed.",
+      "target_requirement": "Fixture: whether curiosity-first ordering is actually required has not been checked against the audience profile.",
+      "evidence": "Fixture: no audience-profile review of expected information-structure ordering has been performed yet.",
+      "what_would_resolve_it": "Fixture: reading the general-reader audience profile's stated ordering preference would resolve this."
+    },
+    {
+      "axis": "terminology",
+      "delta": "MATERIAL",
+      "intervention": "P2_CONTROLLED_ADAPT",
+      "owning_layer": "audience",
+      "source_observation": "Fixture: uses the field's technical terms in standard professional form.",
+      "target_requirement": "Fixture: the general-reader audience needs a plain-language surface form.",
+      "evidence": "Fixture: the technical term appears three times with no gloss."
+    }
+  ],
+  "plan_intervention": {
+    "value": "P3_RECOMPOSE",
+    "rationale": "Fixture: audience is the only LARGE axis, so P3_RECOMPOSE is the ceiling — a maximum, never a sum or average."
+  }
+}

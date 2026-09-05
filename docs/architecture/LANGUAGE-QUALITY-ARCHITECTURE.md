@@ -288,6 +288,15 @@ Rules:
 Dimension-level results are what make §5 routing possible at all: the review
 output *is* the routing input.
 
+The seven dimensions answer **what is wrong**. They do not, on their own,
+answer **how much may change** — that is a separate question, decided
+upstream by the delta gate in
+[`SOURCE-TARGET-DELTA-PLANNING.md`](SOURCE-TARGET-DELTA-PLANNING.md). SUE-604
+conflated the two: a dimension being checkable was read as permission to
+edit whatever it flagged, at whatever scope the available rule reached. That
+conflation is what produced the rejected pass. A dimension verdict is a
+diagnosis. It is never, by itself, a rewrite order.
+
 ---
 
 ## 9. The language pack boundary
@@ -365,7 +374,279 @@ expires, by construction.
 
 ---
 
-## 11. What this architecture must not become
+## 11. The conservative polish execution contract (AES-V2.18 / SUE-610)
+
+A polish pass produces exactly one of three actions:
+
+```text
+KEEP                       LOCAL_POLISH                UPSTREAM_REPLAN_REQUIRED
+```
+
+**P1 — `KEEP` requires zero accepted edits.** `KEEP` is the default, and it is
+a first-class success. A draft that needed no edit is not an incomplete run of
+the polish layer; it is the polish layer doing its job correctly on a draft
+that already satisfied the target. `KEEP` applies whenever no candidate edit
+survives the pairwise gate below — which, per §7's polarity note and the
+accept rule, is the ordinary outcome for prose that was already close to
+correct. Mechanically: action `KEEP` and any edit with verdict `accept` may
+never both appear in the same record (`scripts/lib/delta-core.mjs`).
+`bonds-news` (`evals/dogfood/2026-09-05-sue604-recalibration/EVALUATION.md`
+§2.4) is the case that should have produced `KEEP` and did not.
+
+**P2 — `LOCAL_POLISH` requires at least one accepted edit.** `LOCAL_POLISH`
+applies when at least one candidate edit survives the pairwise gate: a
+bounded local defect was found, a candidate fix was generated, and it
+demonstrably left the draft better without making anything worse. This is the
+only action that may report an `accept` verdict on any edit, and it must
+report at least one.
+
+**P3 — `UPSTREAM_REPLAN_REQUIRED` requires a named route and zero accepted
+edits.** `UPSTREAM_REPLAN_REQUIRED` applies when the polish layer detects a
+defect it is not authorized to fix — the defect is real, but the fix is not a
+local language edit. It reports zero accepted edits and names, in
+`upstream_route`, the owning layer and a reason:
+
+| Defect observed at polish time | Routes to |
+|---|---|
+| Wrong audience depth (too advanced or too simple for the stated reader) | Audience |
+| Wrong information hierarchy (the piece foregrounds the wrong thing for its genre) | Genre / Transformation |
+| Missing conceptual explanation (a term or mechanism is used but never explained) | Audience / Frame |
+| A source or claim problem (a claim the language can't repair without changing meaning) | Verification / Frame |
+| Wrong domain concept (not a wording issue — the underlying concept is wrong) | Domain terminology / Source integrity |
+
+A polish pass that tries to fix any row in that table locally is doing
+upstream work under polish authority, which is exactly the overreach
+[`SOURCE-TARGET-DELTA-PLANNING.md`](SOURCE-TARGET-DELTA-PLANNING.md) G1
+prohibits at the routing level; this table is the language-specific
+instance of that same prohibition, stated for the moment the defect is
+actually found rather than the moment scope is planned.
+
+---
+
+## 12. Hard vs soft application
+
+Every language-pack rule carries exactly one `application_mode` (five
+values, fixed):
+
+```text
+hard_local_correction       high-confidence deterministic local fix
+                             (orthography, spacing, exact-quotation mismatch,
+                             authoritative terminology correction)
+soft_detector                a signal for detection and review; produces a
+                             CANDIDATE that must survive the pairwise gate;
+                             never a mandatory rewrite
+upstream_guidance            guidance owned by Audience / Genre /
+                             Transformation; informs generation, never
+                             authorizes a polish edit
+local_observation             observed, not yet supported well enough to act
+                             on anywhere
+deprecated_as_instruction     retained as research record; explicitly
+                             withdrawn as an instruction
+```
+
+The headline sentence of this section, because SUE-604 is the record of what
+happens without it: **a rule's existence does not authorize an edit.** A rule
+being calibrated, corroborated, and present in an active pack answers the
+question "is this a real phenomenon in the language." It does not answer "does
+this specific draft need it changed," which is a question about this text,
+not about the rule's general validity.
+
+The pack guards enforcing this live in `scripts/lib/language-core.mjs`, fixed
+ids L1-L5:
+
+- **L1.** `hard_local_correction` requires `authority_class` ∈ `{INTEGRITY,
+  NORMATIVE, DOMAIN_TERMINOLOGY}` and `checkability: "mechanical"`. A
+  `NORMATIVE` rule in this mode additionally requires a non-null
+  `authority_ref`.
+- **L2.** `authority_class` ∈ `{NATIVE_QUALITY, GENRE_CONVENTION,
+  AUDIENCE_CONSTRAINT, OWNER_PREFERENCE}` — empirical or preference-based —
+  may **not** be `hard_local_correction`.
+- **L3.** A rule whose `layer` is `audience` must be `upstream_guidance` or
+  `local_observation` — never a mode a polish pass can act on directly. This
+  is the child-case fix, and it is the single most important guard in this
+  issue: audience adaptation is Audience/Transformation work, and a
+  polish-layer rule that quietly performs it produces a draft that was never
+  actually adapted, dressed as one that was.
+- **L4.** `deprecated_as_instruction` requires a non-empty `notes` saying what
+  withdrew it.
+- **L5.** `generality: "source_local"` may not be `hard_local_correction` — a
+  trait scoped to one publisher has not earned a deterministic, no-review
+  correction status.
+
+Together, L1/L2 tie the mode to what kind of authority the rule actually is
+(only mechanically checkable, high-authority rules may be
+`hard_local_correction`; empirical native-quality and preference-class rules
+may not).
+
+The soft native-fluency traits — passive/causative overuse, nominalization
+density, connective frequency, subject omission, rhythm, report compression,
+attribution placement — are `soft_detector` by construction. They are
+detectors and reviewer signals first. Each one may propose a candidate edit;
+none may apply itself. Whether a candidate survives is decided by the gate in
+§13, not by the detector that raised it.
+
+---
+
+## 13. The pairwise gate
+
+Every candidate edit is judged against the draft it would replace. The
+incumbent candidate is called **ORIGINAL** — not "before," which implies the
+edit is presumptively an improvement; ORIGINAL is simply the other option the
+gate is choosing between.
+
+Eleven criteria, fixed, each taking exactly one of `better | same | worse |
+not_applicable`:
+
+```text
+continuous_readability     native_naturalness        rhythm
+repetition                 over_explication          stiffness
+information_loss           semantic_integrity        genre_preservation
+audience_preservation      domain_terminology_preservation
+```
+
+**Polarity note**, because it is the easiest thing here to get backwards: for
+`repetition`, `over_explication`, `stiffness`, and `information_loss`,
+`better` means the edited version has **less** of it. These four are named
+after defects, not after qualities — a "better" repetition score is a
+quieter one.
+
+**Accept rule.** An edit's verdict may be `accept` only when all of:
+
+- **A1.** at least one of `continuous_readability` or `native_naturalness` is
+  `better`;
+- **A2.** none of `semantic_integrity`, `information_loss`,
+  `genre_preservation`, `audience_preservation`, or
+  `domain_terminology_preservation` is `worse`;
+- **A3.** none of `repetition`, `over_explication`, or `stiffness` is
+  `worse`.
+
+Otherwise the verdict is `revert`, and ORIGINAL stands. **Ambiguity reverts.**
+An edit that cannot be shown to satisfy every clause is not a marginal
+accept; it is a revert, because the burden sits with the edit, not with the
+incumbent text (see the preservation-first principle in
+[`SOURCE-TARGET-DELTA-PLANNING.md`](SOURCE-TARGET-DELTA-PLANNING.md) §7).
+
+**P4.** A `soft_detector` edit must carry the full eleven-criterion pairwise
+block — no criterion may be absent. An edit missing one is invalid, not
+accepted; it never reaches the accept rule at all.
+
+**P5.** An edit whose `application_mode` is `upstream_guidance`,
+`local_observation`, or `deprecated_as_instruction` may never carry verdict
+`accept`. Those three modes do not authorize a polish edit at all, regardless
+of what the pairwise block would otherwise show — this is what makes the
+pack/record mode cross-check (guard B, `scripts/lib/delta-core.mjs`)
+load-bearing: P5 only ever inspects the `application_mode` the edit itself
+asserts; it cannot, by itself, catch an edit that asserts a mode other than
+the one §12's pack guards actually license for the rule it cites.
+
+**P6 — the `hard_local_correction` carve-out.** A `hard_local_correction`
+edit may omit the full pairwise block entirely and record only
+`semantic_integrity`; `worse` there is rejected outright, not merely blocked
+from `accept`. This exists because a deterministic correction (a spacing
+fix, a doeda/dwaeda distinction) is not judged on readability gain — its
+justification is correctness, not a comparative literary judgment — so
+holding it to the full eleven-criterion block would make every
+`hard_local_correction` edit fail P4 by construction. The accept rule's A1
+clause is correspondingly read as satisfied for a `hard_local_correction`
+edit when `continuous_readability`/`native_naturalness` are both absent
+(there is nothing to be "better" than when the criterion was never asked
+for); A2/A3 still apply to whatever criteria the edit does carry, and an
+absent criterion never counts as `worse`.
+
+**This carve-out is also the premise the critical exploit used.** A record
+citing an `upstream_guidance` audience rule while asserting
+`application_mode: "hard_local_correction"` gets the benefit of the P6
+carve-out — a bare `semantic_integrity` block, no readability evidence
+required — and, absent a check that the asserted mode actually matches what
+the pack declares for the cited rule, sails through both P5 (which only ever
+looks at the asserted mode) and the accept rule's A1 exemption. The
+pack/record mode cross-check is what closes this: it verifies the mode
+against the pack before P4/P5/P6 or the accept rule ever run, so an edit
+cannot claim the `hard_local_correction` carve-out for a rule the pack does
+not actually license that way.
+
+A local rule-compliance gain can never offset a holistic readability
+regression. Notice what is deliberately absent from the eleven criteria:
+**rule compliance is not one of them.** An edit that correctly executes a
+pack rule but reads worse fails the gate regardless of how faithfully it
+followed the rule, because the gate is judging the draft, not grading the
+edit's adherence to instructions. A rule is a hypothesis about what makes
+language better; the pairwise gate is where that hypothesis is actually
+tested against this text, and a rule "working as designed" is not evidence
+if the resulting prose is worse.
+
+---
+
+## 14. Churn is a quality risk — edit-surface observability
+
+Every polish record carries an `edit_surface` measurement: how much of the
+original text changed, in characters or sentences. This is recorded so a
+broad rewrite is visible as a broad rewrite, not laundered into a series of
+individually-defensible small edits that add up to something nobody signed
+off on.
+
+One advisory constant governs it: `ADVISORY_EDIT_SURFACE_BAND = 0.20`.
+Crossing it does not fail the draft — it is not a gate. Crossing it requires
+the record to carry a non-empty `large_edit_justification` naming the
+concrete defect that justified editing that much of the text, and to state
+whether `UPSTREAM_REPLAN_REQUIRED` was considered instead of a large local
+pass.
+
+The owner's "last 5–6%" figure is design posture: it describes roughly how
+much of a well-targeted draft should typically still need at the polish
+stage. **It is not a threshold, and it is explicitly documented as not a
+threshold in as many words**, because encoding it as a numeric gate is the
+obvious next mistake once edit-surface data exists to compute one from. A
+gate built on that number would fail exactly the kind of draft this
+architecture is supposed to accommodate — a `P3_RECOMPOSE` target that
+correctly needed heavy upstream work and now legitimately needs a
+correspondingly large polish surface — while missing the actual failure mode,
+which is an unjustified edit at any surface size.
+
+---
+
+## 15. Deference to the delta gate
+
+Intervention magnitude is not decided here. It is decided upstream, per axis,
+by [`SOURCE-TARGET-DELTA-PLANNING.md`](SOURCE-TARGET-DELTA-PLANNING.md),
+before this layer runs. Polish executes inside the ceiling the delta gate
+already set; it does not compute or override that ceiling, and no verdict
+produced by this architecture's seven dimensions may be read as license to
+widen it.
+
+Concretely: polish runs *after* delta-driven upstream work, not instead of
+it, and it must not repeat that work. In the age 10–12 case worked through in
+[`SOURCE-TARGET-DELTA-PLANNING.md`](SOURCE-TARGET-DELTA-PLANNING.md) §6, once
+Audience/Transformation has legitimately recomposed a Report into
+child-appropriate language, the polish pass that follows must not re-run that
+adaptation merely because child-register traits exist somewhere in the
+language pack. A polish layer that "helpfully" re-simplifies an already
+age-appropriate draft is not adding safety margin — it is duplicating a
+decision a higher-authority layer already made correctly, and every
+duplicate pass is another chance to introduce the kind of unforced error
+`bonds-child` recorded
+(`evals/dogfood/2026-09-05-sue604-recalibration/EVALUATION.md` §2.6: a
+causal denial the source never made, and a caption whose stated-uncertainty
+span existed nowhere in the AFTER draft).
+
+---
+
+## 16. Portability
+
+The execution contract in §11–§15 — detect a candidate defect, generate a
+bounded candidate edit, judge it against ORIGINAL on eleven fixed criteria,
+keep or revert — is generic methodology. Nothing in it is Korean. A future
+language pack supplies its own defect signals (its own native-fluency
+phenomena, its own genre conventions, its own terminology authorities, per
+§4 and §9 above); the execution contract that turns a detected signal into an
+accepted or reverted edit does not change with the language. This mirrors the
+portability claim already made for the seven dimensions in §9: a second pack
+is cheap to add and inherits none of Korean's phenomena, because the
+methodology was never coupled to them.
+
+---
+
+## 17. What this architecture must not become
 
 - **A style checker.** Mechanically decidable normative checks are welcome
   where they genuinely are decidable. Most of `native_fluency` is not, and
@@ -380,3 +661,12 @@ expires, by construction.
   ledger. Nothing here has its own evaluation loop.
 - **A multilingual platform.** One pack exists. The architecture makes a
   second one cheap; it does not make a second one exist.
+- **A rewriter.** A language-quality layer that re-authors readable prose has
+  stopped measuring language and started generating it. This layer's job is
+  to detect defects and judge candidate fixes against the incumbent text —
+  `KEEP` is the expected outcome for a draft that already satisfies the
+  target, not a shortfall to be corrected by finding something, anything, to
+  change. SUE-604 is the record of what happens when that boundary is
+  crossed: rules that were applicable were treated as rules that were due,
+  and an already-acceptable draft (`bonds-news`) came out worse for having
+  been run through a pass with rules available and no defect to repair.

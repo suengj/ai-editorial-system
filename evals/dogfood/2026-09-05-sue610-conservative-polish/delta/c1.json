@@ -1,0 +1,108 @@
+{
+  "description": "SUE-610 C1 — bonds-news churn control.",
+  "records": [
+    {
+      "schema_version": "1.0.0",
+      "delta_plan_id": "delta:c1-bonds-news",
+      "created_at": "2026-09-05T09:00:00Z",
+      "source": {
+        "kind": "article",
+        "ref": "p02_com:content/editorial/sue570-pilot-bonds-news.md",
+        "content_type": "news"
+      },
+      "target": {
+        "content_type": "news",
+        "audience": "general-reader",
+        "language": "ko-KR"
+      },
+      "basis": "model_inference",
+      "source_profile": {
+        "language_quality": "능동태 대구('일본은 되돌렸고, 미국은 버티고 있다')를 쓰고 조사·띄어쓰기 오류가 없는 이미 다듬어진 한국어.",
+        "genre": "'지금 무슨 일이 있었나/왜 중요한가/배경/확인되지 않은 부분' 소제목으로 사실을 먼저 제시하는 뉴스 브리프 구조.",
+        "audience": "전문 배경지식 없이 수치를 문장 안에 그대로 풀어 쓰는 general-reader 대상 서술.",
+        "knowledge_depth": "신용스프레드를 '기업 부도 위험을 걱정하기 시작했다는 신호'라는 한 문장짜리 비유로만 설명하는 얕은 깊이.",
+        "register": "'~다/~였다' 종결의 절제된 사실 진술형 레지스터.",
+        "information_structure": "리드 문단이 결과부터 제시하고 배경은 하단 별도 섹션으로 격리하는 뉴스 리드형 위계.",
+        "terminology": "'신용스프레드(OAS)'처럼 실무 약어를 괄호 병기하는 정도의 용어 처리."
+      },
+      "target_profile": {
+        "language_quality": "target도 동일하게 정확하고 자연스러운 한국어만 요구하며 추가 상승분을 요구하지 않는다.",
+        "genre": "target도 동일한 뉴스 브리프 장르이므로 동일 구조를 요구한다.",
+        "audience": "target도 동일한 general-reader이므로 배경지식 없이 읽히는 서술을 요구한다.",
+        "knowledge_depth": "target도 뉴스 브리프 수준의 얕은 깊이만 요구한다.",
+        "register": "target도 동일한 절제된 사실 진술형 레지스터를 요구한다.",
+        "information_structure": "target도 결과-우선 뉴스 리드 위계를 요구한다.",
+        "terminology": "target도 동일한 수준의 약어 병기만 요구한다."
+      },
+      "axis_deltas": [
+        {
+          "axis": "language_quality",
+          "delta": "LOW",
+          "intervention": "P0_PRESERVE",
+          "owning_layer": null,
+          "source_observation": "본문은 '일본은 되돌렸고, 미국은 버티고 있다'처럼 능동형 대구를 쓰고, 표본 문단 전체에서 조사·띄어쓰기 오류가 발견되지 않는다.",
+          "target_requirement": "일반 독자용 뉴스 브리프는 정확하고 자연스러운 한국어를 요구할 뿐, 그 이상의 언어 품질 상승을 요구하지 않는다.",
+          "evidence": "'일본은 되돌렸고, 미국은 버티고 있다 — 이번 주 채권시장을 한 줄로 요약하면 이렇다.' — 능동형 대구, 오류 없음."
+        },
+        {
+          "axis": "genre",
+          "delta": "LOW",
+          "intervention": "P0_PRESERVE",
+          "owning_layer": null,
+          "source_observation": "'지금 무슨 일이 있었나 / 왜 중요한가 / 배경 / 확인되지 않은 부분' 순서로 사실을 먼저 제시하고 해설이 뒤따르는 뉴스 브리프 관행을 이미 따른다.",
+          "target_requirement": "target도 동일한 뉴스 브리프 장르이므로 이 구조를 그대로 유지하면 충분하다.",
+          "evidence": "소제목 목록 '지금 무슨 일이 있었나 / 왜 중요한가 / 배경 / 확인되지 않은 부분'."
+        },
+        {
+          "axis": "audience",
+          "delta": "LOW",
+          "intervention": "P0_PRESERVE",
+          "owning_layer": null,
+          "source_observation": "'2.9%대로 내려와 있었다', '4.76~4.78%' 같은 재확인 수치를 별도 배경지식 요구 없이 본문 문장에 그대로 녹여 쓴다.",
+          "target_requirement": "target 독자도 동일한 general-reader이므로 이미 그 기준을 충족한다.",
+          "evidence": "'일본 10년물은 3%를 다시 내주고 2.9%대로 내려와 있었다.' — 수치가 문맥 안에서 바로 이해되도록 서술됨."
+        },
+        {
+          "axis": "knowledge_depth",
+          "delta": "LOW",
+          "intervention": "P0_PRESERVE",
+          "owning_layer": null,
+          "source_observation": "신용스프레드(OAS) 개념을 '기업 부도 위험을 걱정하기 시작했다는 신호'라는 한 문장짜리 해석으로만 제시하고, 그 이상의 계량적 메커니즘은 다루지 않는다.",
+          "target_requirement": "뉴스 브리프는 이 정도 깊이만 요구하며 그 이상을 요구하지 않는다.",
+          "evidence": "'이 조합은 보통 ... 신호로 읽힌다.' — 단일 해석 문장, 추가 메커니즘 전개 없음."
+        },
+        {
+          "axis": "register",
+          "delta": "LOW",
+          "intervention": "P0_PRESERVE",
+          "owning_layer": null,
+          "source_observation": "'~다/~였다' 종결의 절제된 사실 진술형 문장이 소제목마다 사실→해석 순서로 일관되게 이어진다.",
+          "target_requirement": "target도 동일한 절제된 뉴스 브리프 레지스터를 요구하며 이미 충족되어 있다.",
+          "evidence": "'일본 10년 국채금리가 9월 1일 3%를 넘었다. 1996년 이후 처음이었다.' — 절제된 사실 진술형 종결."
+        },
+        {
+          "axis": "information_structure",
+          "delta": "LOW",
+          "intervention": "P0_PRESERVE",
+          "owning_layer": null,
+          "source_observation": "리드 문단이 '일본 10년 국채금리가 9월 1일 3%를 넘었다'는 결과부터 제시하고, 배경 설명은 별도 하단 섹션에 격리해 둔다.",
+          "target_requirement": "target도 동일한 결과-우선 뉴스 리드 위계를 요구하며 이미 충족되어 있다.",
+          "evidence": "본문 첫 문장이 결과를 제시하고, '배경' 섹션이 최상단이 아니라 하단에 별도로 배치됨."
+        },
+        {
+          "axis": "terminology",
+          "delta": "LOW",
+          "intervention": "P0_PRESERVE",
+          "owning_layer": null,
+          "source_observation": "'신용스프레드(OAS)'처럼 실무 약어를 완전한 한국어 설명과 괄호 병기하는 방식을 이미 쓰고 있다.",
+          "target_requirement": "target도 general-reader 대상이므로 이 정도의 용어 처리로 충분하다.",
+          "evidence": "'만기 15년 이상 미국 우량 회사채의 신용스프레드(OAS)는' — 약어 병기 이미 존재."
+        }
+      ],
+      "plan_intervention": {
+        "value": "P0_PRESERVE",
+        "rationale": "일곱 축 모두 LOW/P0로 측정되어 천장은 P0_PRESERVE다 — 합산이나 평균이 아니라 최댓값."
+      }
+    }
+  ]
+}

@@ -1,5 +1,5 @@
 {
-  "schema_version": "1.0.0",
+  "schema_version": "1.1.0",
   "pack_id": "zz-ZZ",
   "language": "zz",
   "status": "active",
@@ -42,7 +42,8 @@
       "statement": "Fixture spacing rule statement, falsifiable and actionable.",
       "checkability": "mechanical",
       "generality": "shared",
-      "authority_ref": "std-body"
+      "authority_ref": "std-body",
+      "application_mode": "hard_local_correction"
     },
     {
       "id": "native-quality-rule",
@@ -55,7 +56,8 @@
         "content_types": [
           "news"
         ]
-      }
+      },
+      "application_mode": "soft_detector"
     },
     {
       "id": "shared-native-rule",
@@ -71,7 +73,8 @@
       "holdout_refs": [
         "eval:holdout-record"
       ],
-      "holdout_result": "improved"
+      "holdout_result": "improved",
+      "application_mode": "soft_detector"
     },
     {
       "id": "genre-rule",
@@ -84,7 +87,8 @@
         "content_types": [
           "news"
         ]
-      }
+      },
+      "application_mode": "soft_detector"
     },
     {
       "id": "audience-rule",
@@ -97,7 +101,8 @@
         "audiences": [
           "child-upper-elementary"
         ]
-      }
+      },
+      "application_mode": "upstream_guidance"
     }
   ],
   "terminology": [

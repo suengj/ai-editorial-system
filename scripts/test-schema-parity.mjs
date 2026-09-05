@@ -97,6 +97,7 @@ console.log('\n$defs.evaluator parity (human/agent evaluator group; l1-review is
     'schemas/corpus-entry.schema.json',
     'schemas/feedback-record.schema.json',
     'schemas/reference-evaluation.schema.json',
+    'schemas/polish-decision.schema.json',
   ];
   const shapes = files.map((f) => ({ file: f, shape: load(f).$defs.evaluator }));
   for (const { file, shape } of shapes) {
@@ -186,6 +187,42 @@ console.log('\naxis vocabulary copies in schemas/');
           `enum copies the ${axis} axis but is missing ${JSON.stringify(missing)} — add them, or the axis profile exists and nothing can reference it`);
       }
     }
+  }
+}
+
+// --- authority_class / application_mode parity (AMENDMENT 1 item F) --------
+// polish-decision.schema.json hand-copies these two enums from
+// language-pack.schema.json ($defs.authority_class and rules[].application_mode)
+// because json-schema-lite forbids cross-file $ref. Nothing previously
+// checked the copies stayed identical, and application_mode is the single
+// most load-bearing vocabulary in this issue: it is exactly the field guard B
+// (scripts/lib/delta-core.mjs) cross-checks between a polish edit and the
+// pack rule it cites, so a silently-drifted copy here would make an edit's
+// self-asserted mode unverifiable against a pack that spells the value
+// slightly differently.
+console.log('\nauthority_class / application_mode enum parity (polish-decision.schema.json copies language-pack.schema.json)');
+{
+  const languagePack = load('schemas/language-pack.schema.json');
+  const polishDecision = load('schemas/polish-decision.schema.json');
+
+  const languagePackAuthorityClass = languagePack.$defs?.authority_class?.enum;
+  const polishAuthorityClass = polishDecision.$defs?.authority_class?.enum;
+  check('polish-decision.schema.json $defs.authority_class present', Boolean(polishAuthorityClass));
+  check('language-pack.schema.json $defs.authority_class present', Boolean(languagePackAuthorityClass));
+  if (languagePackAuthorityClass && polishAuthorityClass) {
+    check('polish-decision.schema.json $defs.authority_class matches language-pack.schema.json $defs.authority_class (8 values)',
+      same(languagePackAuthorityClass, polishAuthorityClass),
+      `language-pack: ${JSON.stringify(languagePackAuthorityClass)}, polish-decision: ${JSON.stringify(polishAuthorityClass)}`);
+  }
+
+  const languagePackApplicationMode = languagePack.$defs?.rule?.properties?.application_mode?.enum;
+  const polishApplicationMode = polishDecision.$defs?.application_mode?.enum;
+  check('language-pack.schema.json rules[].application_mode enum present', Boolean(languagePackApplicationMode));
+  check('polish-decision.schema.json $defs.application_mode present', Boolean(polishApplicationMode));
+  if (languagePackApplicationMode && polishApplicationMode) {
+    check('polish-decision.schema.json $defs.application_mode matches language-pack.schema.json rules[].application_mode (5 values)',
+      same(languagePackApplicationMode, polishApplicationMode),
+      `language-pack: ${JSON.stringify(languagePackApplicationMode)}, polish-decision: ${JSON.stringify(polishApplicationMode)}`);
   }
 }
 

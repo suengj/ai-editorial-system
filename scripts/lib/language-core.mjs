@@ -59,7 +59,21 @@ export const CODES = Object.freeze({
   DANGLING_EVIDENCE_REF: 'dangling-evidence-ref',
   UNASSIGNED_CORPUS_ROLE: 'unassigned-corpus-role',
   POINTLESS_ALIAS: 'pointless-audience-alias',
+  L1_HARD_LOCAL_AUTHORITY: 'l1-hard-local-correction-requires-integrity-normative-domain-terminology-authority',
+  L1_HARD_LOCAL_MECHANICAL: 'l1-hard-local-correction-requires-mechanical-checkability',
+  L1_NORMATIVE_HARD_LOCAL_NO_AUTHORITY_REF: 'l1-normative-hard-local-correction-requires-authority-ref',
+  L2_EMPIRICAL_MAY_NOT_HARD_LOCAL: 'l2-empirical-authority-class-may-not-be-hard-local-correction',
+  L3_AUDIENCE_LAYER_MODE: 'l3-audience-layer-requires-upstream-guidance-or-local-observation',
+  L4_DEPRECATED_NEEDS_NOTES: 'l4-deprecated-as-instruction-requires-notes',
+  L5_SOURCE_LOCAL_MAY_NOT_HARD_LOCAL: 'l5-source-local-generality-may-not-be-hard-local-correction',
 });
+
+/** authority_class values whose empirical basis may never authorize a hard_local_correction — guard L2. */
+const EMPIRICAL_OR_PREFERENCE_CLASSES = new Set(['NATIVE_QUALITY', 'GENRE_CONVENTION', 'AUDIENCE_CONSTRAINT', 'OWNER_PREFERENCE']);
+/** authority_class values allowed to back a hard_local_correction rule — guard L1. */
+const HARD_LOCAL_CORRECTION_AUTHORITY_CLASSES = new Set(['INTEGRITY', 'NORMATIVE', 'DOMAIN_TERMINOLOGY']);
+/** application_modes a rule whose layer is `audience` may legally carry — guard L3. */
+const AUDIENCE_LAYER_ALLOWED_MODES = new Set(['upstream_guidance', 'local_observation']);
 
 const issue = (code, where, message) => ({ code, where, message });
 
@@ -165,7 +179,7 @@ export function checkNormativeAuthority(pack, where) {
 }
 
 /**
- * §6/§11: NATIVE_QUALITY / GENRE_CONVENTION / AUDIENCE_CONSTRAINT are
+ * §6/§17: NATIVE_QUALITY / GENRE_CONVENTION / AUDIENCE_CONSTRAINT are
  * empirical. Declaring one "mechanical" without an authority_ref to point at
  * is an empirical claim dressed up as something a validator can decide —
  * the reverse of the normative failure above.
@@ -176,7 +190,7 @@ export function checkUnbackedMechanicalClaim(pack, where) {
     if (!EMPIRICAL_AUTHORITY_CLASSES.has(rule.authority_class)) continue;
     if (rule.checkability === 'mechanical' && rule.authority_ref == null) {
       issues.push(issue(CODES.UNBACKED_MECHANICAL_CLAIM, `${where}:${rule.id}`,
-        `authority_class "${rule.authority_class}" is empirical and claims checkability "mechanical" with no authority_ref — an unbacked mechanical claim is exactly the confident-wrong-verdict failure mode LANGUAGE-QUALITY-ARCHITECTURE.md §11 warns against`));
+        `authority_class "${rule.authority_class}" is empirical and claims checkability "mechanical" with no authority_ref — an unbacked mechanical claim is exactly the confident-wrong-verdict failure mode LANGUAGE-QUALITY-ARCHITECTURE.md §17 ("A style checker") warns against`));
     }
   }
   return issues;
@@ -377,6 +391,56 @@ export function checkPointlessAliases(pack, where) {
   return notes;
 }
 
+/**
+ * L1-L5 — AES-V2.18 / SUE-610, docs/architecture/LANGUAGE-QUALITY-ARCHITECTURE.md
+ * §12. A rule's existence does not authorize an edit; application_mode ties
+ * the mode to what the rule actually is. L3 is the single most important
+ * guard in this issue: a rule whose layer is `audience` must never be a mode
+ * a polish pass can act on directly — that is the child-case fix.
+ */
+export function checkApplicationMode(pack, where) {
+  const issues = [];
+  for (const rule of pack.rules ?? []) {
+    const ruleWhere = `${where}:${rule.id}`;
+
+    if (rule.application_mode === 'hard_local_correction') {
+      if (!HARD_LOCAL_CORRECTION_AUTHORITY_CLASSES.has(rule.authority_class)) {
+        issues.push(issue(CODES.L1_HARD_LOCAL_AUTHORITY, ruleWhere,
+          `application_mode "hard_local_correction" requires authority_class INTEGRITY, NORMATIVE, or DOMAIN_TERMINOLOGY, got "${rule.authority_class}" (LANGUAGE-QUALITY-ARCHITECTURE.md §12 L1)`));
+      }
+      if (rule.checkability !== 'mechanical') {
+        issues.push(issue(CODES.L1_HARD_LOCAL_MECHANICAL, ruleWhere,
+          `application_mode "hard_local_correction" requires checkability "mechanical", got "${rule.checkability}" (LANGUAGE-QUALITY-ARCHITECTURE.md §12 L1)`));
+      }
+      if (rule.authority_class === 'NORMATIVE' && rule.authority_ref == null) {
+        issues.push(issue(CODES.L1_NORMATIVE_HARD_LOCAL_NO_AUTHORITY_REF, ruleWhere,
+          'a NORMATIVE rule in application_mode "hard_local_correction" requires a non-null authority_ref (LANGUAGE-QUALITY-ARCHITECTURE.md §12 L1)'));
+      }
+    }
+
+    if (EMPIRICAL_OR_PREFERENCE_CLASSES.has(rule.authority_class) && rule.application_mode === 'hard_local_correction') {
+      issues.push(issue(CODES.L2_EMPIRICAL_MAY_NOT_HARD_LOCAL, ruleWhere,
+        `authority_class "${rule.authority_class}" is empirical/preference-based and may not be application_mode "hard_local_correction" (LANGUAGE-QUALITY-ARCHITECTURE.md §12 L2)`));
+    }
+
+    if (rule.layer === 'audience' && !AUDIENCE_LAYER_ALLOWED_MODES.has(rule.application_mode)) {
+      issues.push(issue(CODES.L3_AUDIENCE_LAYER_MODE, ruleWhere,
+        `a rule whose layer is "audience" must be application_mode "upstream_guidance" or "local_observation", got "${rule.application_mode}" — audience adaptation is Audience/Transformation work, and this is the child-case fix, the single most important guard in this issue (LANGUAGE-QUALITY-ARCHITECTURE.md §12 L3)`));
+    }
+
+    if (rule.application_mode === 'deprecated_as_instruction' && (!rule.notes || rule.notes.trim().length === 0)) {
+      issues.push(issue(CODES.L4_DEPRECATED_NEEDS_NOTES, ruleWhere,
+        'application_mode "deprecated_as_instruction" requires a non-empty notes field saying what withdrew it (LANGUAGE-QUALITY-ARCHITECTURE.md §12 L4)'));
+    }
+
+    if (rule.generality === 'source_local' && rule.application_mode === 'hard_local_correction') {
+      issues.push(issue(CODES.L5_SOURCE_LOCAL_MAY_NOT_HARD_LOCAL, ruleWhere,
+        'generality "source_local" may not be application_mode "hard_local_correction" (LANGUAGE-QUALITY-ARCHITECTURE.md §12 L5)'));
+    }
+  }
+  return issues;
+}
+
 // --- top-level ------------------------------------------------------------
 
 /**
@@ -406,6 +470,7 @@ export function validatePack(pack, filePath, opts = {}) {
   issues.push(...checkLayers(pack, where, routingLayerIds));
   issues.push(...checkNormativeAuthority(pack, where));
   issues.push(...checkUnbackedMechanicalClaim(pack, where));
+  issues.push(...checkApplicationMode(pack, where));
 
   const promotion = checkSharedPromotion(pack, where);
   issues.push(...promotion.issues);

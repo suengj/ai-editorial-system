@@ -1,0 +1,106 @@
+{
+  "description": "SUE-610 C5 polish decision.",
+  "records": [
+    {
+      "schema_version": "1.0.0",
+      "decision_id": "polish:c5-tokenized-stocks-news",
+      "decided_at": "2026-09-05T10:30:00Z",
+      "draft_ref": {
+        "kind": "draft",
+        "ref": "suengj-com:content/editorial/sue610-c5-before.md"
+      },
+      "language": "ko-KR",
+      "pack_ref": "editorial/profiles/language/ko-KR.json",
+      "delta_plan_ref": "delta:c5-tokenized-stocks-news",
+      "reviewer": {
+        "type": "agent",
+        "agent": {
+          "runtime": "claude-code",
+          "model": "claude-sonnet-5",
+          "version": "2026-09-05"
+        }
+      },
+      "basis": "model_inference",
+      "action": "LOCAL_POLISH",
+      "edits": [
+        {
+          "edit_id": "edit-01",
+          "rule_ref": "nq-passive-causative-overuse",
+          "authority_class": "NATIVE_QUALITY",
+          "application_mode": "soft_detector",
+          "defect": "'다르게 되어 있어서'(사동+피동 중첩)와 '요청한 바 있다'(격식투 완료 표지)가 겹친 긴 문장 하나에 두 결함이 동시에 있음.",
+          "span_original": "또한 토큰을 가진 사람이 실제 주주와 동일한 권리 — 배당, 의결권, 상환 등 — 를 가지고 있는지도 상품마다 다르게 되어 있어서, 세계거래소연맹(WFE)은 규제당국에 주식 토큰화를 서두르지 말라고 요청한 바 있다.",
+          "span_candidate": "또한 토큰을 가진 사람이 실제 주주와 동일한 권리 — 배당, 의결권, 상환 등 — 를 갖는지는 상품마다 다르다. 그래서 세계거래소연맹(WFE)은 규제당국에 주식 토큰화를 서두르지 말라고 요청했다.",
+          "pairwise": {
+            "continuous_readability": "better",
+            "native_naturalness": "better",
+            "rhythm": "better",
+            "repetition": "same",
+            "over_explication": "same",
+            "stiffness": "better",
+            "information_loss": "same",
+            "semantic_integrity": "same",
+            "genre_preservation": "same",
+            "audience_preservation": "same",
+            "domain_terminology_preservation": "same"
+          },
+          "verdict": "accept"
+        },
+        {
+          "edit_id": "edit-02",
+          "rule_ref": "nq-excessive-nominalization",
+          "authority_class": "NATIVE_QUALITY",
+          "application_mode": "soft_detector",
+          "defect": "'~에 대해서도 ... 제기되고 있다' 식 명사화+피동 구문.",
+          "span_original": "결제가 빨라지는 것에 대해서도 비슷한 우려가 제기되고 있다.",
+          "span_candidate": "결제가 빨라지는 것도 비슷한 우려를 낳는다.",
+          "pairwise": {
+            "continuous_readability": "better",
+            "native_naturalness": "better",
+            "rhythm": "better",
+            "repetition": "same",
+            "over_explication": "same",
+            "stiffness": "better",
+            "information_loss": "same",
+            "semantic_integrity": "same",
+            "genre_preservation": "same",
+            "audience_preservation": "same",
+            "domain_terminology_preservation": "same"
+          },
+          "verdict": "accept"
+        },
+        {
+          "edit_id": "edit-03",
+          "rule_ref": "nq-redundant-expression",
+          "authority_class": "NATIVE_QUALITY",
+          "application_mode": "soft_detector",
+          "defect": "이중부정 '무관하지 않다'가 번역투로 오탐지되어 후보로 제안됨.",
+          "span_original": "이 흐름은 결제와 거래의 속도를 높이려는 오랜 시도의 연장선에 있는 것으로, 미국 연준이 올해 잭슨홀 심포지엄의 주제를 금융혁신과 결제정책으로 정한 것도 이와 무관하지 않다.",
+          "span_candidate": "이 흐름은 결제와 거래 속도를 높이려는 오랜 시도의 연장선에 있다. 미국 연준이 올해 잭슨홀 심포지엄의 주제를 금융혁신과 결제정책으로 정한 것도 같은 맥락이다.",
+          "pairwise": {
+            "continuous_readability": "same",
+            "native_naturalness": "same",
+            "rhythm": "same",
+            "repetition": "same",
+            "over_explication": "same",
+            "stiffness": "same",
+            "information_loss": "same",
+            "semantic_integrity": "same",
+            "genre_preservation": "same",
+            "audience_preservation": "same",
+            "domain_terminology_preservation": "same"
+          },
+          "verdict": "revert",
+          "revert_reason": "재검토 결과 '~이와 무관하지 않다'는 실제로는 번역투가 아니라 한국어 사설·분석 기사에서 흔히 쓰는 정상적인 완곡 표현이다. native_naturalness와 continuous_readability가 모두 same이라 A1을 만족하지 못한다 — 최초 탐지가 과잉이었다."
+        }
+      ],
+      "edit_surface": {
+        "unit": "characters",
+        "original_total": 954,
+        "changed_total": 153,
+        "note": "accept된 edit-01(120자)과 edit-02(33자)의 원본 스팬 합계만 변경됨 — 전체의 16.0%로 자문 밴드(20%) 이내. edit-03은 revert되어 원문이 그대로 유지됨."
+      },
+      "upstream_route": null
+    }
+  ]
+}
