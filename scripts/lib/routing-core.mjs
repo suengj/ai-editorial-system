@@ -51,7 +51,7 @@ export const CODES = Object.freeze({
 /** The routing target vocabulary fixed by V2-EDITORIAL-LEARNING-CORE.md §5. */
 export const CANONICAL_LAYERS = Object.freeze({
   shared: ['intake', 'reference', 'audience', 'frame', 'verification', 'surface', 'calibration'],
-  text: ['writing', 'polish', 'register'],
+  text: ['writing', 'polish', 'register', 'normative', 'native_fluency', 'domain_terminology', 'owner_voice'],
   visual: ['artifact_route', 'semantic_spec', 'information_density', 'composition', 'brand_profile', 'renderer'],
   audio: ['spoken_script', 'dialogue_structure', 'pronunciation', 'pacing', 'delivery', 'tts_render'],
 });

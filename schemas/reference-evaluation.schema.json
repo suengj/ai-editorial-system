@@ -87,6 +87,15 @@
       "type": "string",
       "pattern": "^eval:[a-z0-9]+(-[a-z0-9]+)*$"
     },
+    "corpus_role": {
+      "description": "AES-V2.17 / SUE-607, docs/architecture/LANGUAGE-QUALITY-ARCHITECTURE.md §7. discovery: traits may be derived from this reference. holdout: this reference validates a trait already derived elsewhere and must never have informed one. The assignment is made before trait extraction begins, never chosen afterwards to suit a result — a reference that has informed a trait can never be moved into holdout. Optional because not every reference feeds a language calibration.",
+      "enum": ["discovery", "holdout"]
+    },
+    "language": {
+      "description": "The BCP-47-style language subtag this reference is evidence about, e.g. ko or ko-KR. Optional because a non-text reference (visual, audio, video) may not be about a language at all.",
+      "type": "string",
+      "pattern": "^[a-z]{2}(-[A-Z]{2})?$"
+    },
     "notes": { "type": "string" }
   },
   "$defs": {

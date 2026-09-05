@@ -122,6 +122,7 @@ Absence of a finding is a PASS only when the check demonstrably ran.
 | Source, Article, Artifact, Skill, plan, receipt schemas | [`schemas/`](schemas/) |
 | Fixtures, rubric, matrix, PoC artifacts | [`evals/`](evals/) |
 | Benchmarks and the reference catalog | [`benchmarks/`](benchmarks/), [`references/`](references/) |
+| Language quality: authority classes, overlays, discovery/holdout | [`docs/architecture/LANGUAGE-QUALITY-ARCHITECTURE.md`](docs/architecture/LANGUAGE-QUALITY-ARCHITECTURE.md), [`editorial/profiles/language/`](editorial/profiles/language/) |
 | Architecture decisions | [`docs/architecture/`](docs/architecture/) |
 
 Start with [`docs/architecture/V2-EDITORIAL-LEARNING-CORE.md`](docs/architecture/V2-EDITORIAL-LEARNING-CORE.md)

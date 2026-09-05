@@ -1,0 +1,213 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://suengj.com/schemas/language-pack.schema.json",
+  "title": "Language pack",
+  "description": "One language's (optionally one locale's) contribution to language quality: which external bodies are authoritative for what, which durable rules the pack asserts, and how domain terms are rendered. AES-V2.17 / SUE-607. The methodology this pack plugs into is language-agnostic and lives in docs/architecture/LANGUAGE-QUALITY-ARCHITECTURE.md; nothing in that document may be restated here, and nothing here may be generalised to another language. A pack grants craft and correctness authority over language only. It never grants factual authority over a claim (Source is not Reference, V2-EDITORIAL-LEARNING-CORE.md §2).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version", "pack_id", "language", "status", "doc_ref",
+    "authorities", "rules", "not_authoritative_for"
+  ],
+  "properties": {
+    "schema_version": { "const": "1.0.0" },
+    "pack_id": {
+      "description": "BCP-47-style id. Also the filename stem under editorial/profiles/language/.",
+      "type": "string",
+      "pattern": "^[a-z]{2}(-[A-Z]{2})?$"
+    },
+    "language": {
+      "description": "ISO 639-1 language subtag. Separate from pack_id so a future en-US and en-GB share a language while differing as locales.",
+      "type": "string",
+      "pattern": "^[a-z]{2}$"
+    },
+    "status": {
+      "description": "draft — written but not yet governing generation. active — governing, and therefore requiring a calibration version to change materially.",
+      "enum": ["draft", "active"]
+    },
+    "doc_ref": {
+      "description": "Repo-relative path to the pack's prose contract. The JSON is the machine surface; the prose explains the phenomena and must not contradict it.",
+      "type": "string",
+      "minLength": 1
+    },
+    "calibration_ref": {
+      "description": "The calibration version that activated the pack's current empirical content, or null while status is draft. Normative rules do not need one — a standards body is not calibration evidence.",
+      "type": ["string", "null"]
+    },
+    "authorities": {
+      "description": "External bodies and works this pack rests on. Each records what it governs AND what it does not, so a public-language guide cannot quietly become a literary style authority.",
+      "type": "array",
+      "items": { "$ref": "#/$defs/authority" }
+    },
+    "rules": {
+      "description": "Durable language statements. Every rule carries exactly one authority class and routes to exactly one layer.",
+      "type": "array",
+      "items": { "$ref": "#/$defs/rule" }
+    },
+    "terminology": {
+      "description": "Domain terms: the canonical concept, its accepted rendering in this language, and any audience-facing surface form. An audience alias changes the wording, never the concept it maps to.",
+      "type": "array",
+      "items": { "$ref": "#/$defs/term" }
+    },
+    "not_authoritative_for": {
+      "description": "Explicit non-scope. A pack that claims authority over facts, over another language, or over publication is misdeclared.",
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "notes": { "type": "string" }
+  },
+  "$defs": {
+    "authority_class": {
+      "description": "What kind of thing would have to change for a statement to stop being true. Precedence is fixed in docs/architecture/LANGUAGE-QUALITY-ARCHITECTURE.md §2 and is not restated per rule.",
+      "enum": [
+        "INTEGRITY",
+        "NORMATIVE",
+        "NATIVE_QUALITY",
+        "GENRE_CONVENTION",
+        "AUDIENCE_CONSTRAINT",
+        "DOMAIN_TERMINOLOGY",
+        "OWNER_PREFERENCE",
+        "TASK_OVERRIDE"
+      ]
+    },
+    "source_class": {
+      "description": "What an external work can establish. NORMATIVE_STANDARD is codified correctness. STRONG_GUIDANCE is official but advisory. EMPIRICAL_REFERENCE is well-edited example material — evidence of craft, never of correctness. TERMINOLOGY_AUTHORITY is a canonical term list.",
+      "enum": [
+        "NORMATIVE_STANDARD",
+        "STRONG_GUIDANCE",
+        "EMPIRICAL_REFERENCE",
+        "TERMINOLOGY_AUTHORITY"
+      ]
+    },
+    "layer": {
+      "description": "The feedback-routing layer a failure against this rule routes to. Ids are owned by editorial/feedback-routing.json and are not redefined here.",
+      "enum": [
+        "normative",
+        "native_fluency",
+        "register",
+        "audience",
+        "domain_terminology",
+        "owner_voice"
+      ]
+    },
+    "generality": {
+      "description": "How far a rule's evidence actually reaches. shared requires cross-genre evidence; the *_local values keep a trait scoped to where it was observed. source_local is the default for anything seen in one publisher or institution and is never promoted as a side effect of being useful.",
+      "enum": ["shared", "genre_local", "audience_local", "domain_local", "source_local"]
+    },
+    "checkability": {
+      "description": "mechanical — a validator can decide it. review_guidance — a human or judge decides, and a confident automated verdict would be wrong. Declaring review guidance as mechanical is the failure this field exists to prevent.",
+      "enum": ["mechanical", "review_guidance"]
+    },
+    "authority": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "title", "issuer", "source_class", "governs", "does_not_govern"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$" },
+        "title": { "type": "string", "minLength": 1 },
+        "issuer": { "type": "string", "minLength": 1 },
+        "uri": { "type": "string" },
+        "source_class": { "$ref": "#/$defs/source_class" },
+        "governs": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "does_not_govern": {
+          "description": "Mandatory and substantive. The commonest way this architecture fails is an authority silently widening past its remit.",
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "accessed": { "type": "string", "format": "date" },
+        "rights_note": { "type": "string" }
+      }
+    },
+    "scope": {
+      "description": "Where a rule applies. Genre and audience are independent axes and are listed independently; an empty or absent list means the rule is not scoped by that axis. A rule scoped to one audience is not thereby a genre rule.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "content_types": { "type": "array", "items": { "type": "string" } },
+        "audiences": { "type": "array", "items": { "type": "string" } },
+        "domains": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "rule": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "authority_class", "layer", "statement", "checkability", "generality"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$" },
+        "authority_class": { "$ref": "#/$defs/authority_class" },
+        "layer": { "$ref": "#/$defs/layer" },
+        "statement": {
+          "description": "What the rule asserts, written so a Writer can act on it and a Reviewer can falsify it. Not a slogan.",
+          "type": "string",
+          "minLength": 1
+        },
+        "rationale": { "type": "string" },
+        "checkability": { "$ref": "#/$defs/checkability" },
+        "generality": { "$ref": "#/$defs/generality" },
+        "scope": { "$ref": "#/$defs/scope" },
+        "authority_ref": {
+          "description": "The `authorities[].id` this rule derives from. Required in practice for every NORMATIVE rule: a normative rule with no standards body behind it is a corpus observation wearing a normative label.",
+          "type": ["string", "null"]
+        },
+        "evidence_refs": {
+          "description": "Reference-evaluation or corpus refs supporting an empirical rule. Independent sources, per LANGUAGE-QUALITY-ARCHITECTURE.md §6. A NORMATIVE rule does not need these and is not made stronger by them.",
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "holdout_result": {
+          "description": "How the rule fared against material never used to derive it. not_yet_tested is honest; passing it off as validated is not.",
+          "enum": ["improved", "neutral", "regressed", "not_yet_tested"]
+        },
+        "adopt_verdict": {
+          "description": "adopt — apply it. avoid — the opposite behaviour is the defect signature. do_not_copy — the trait is recognizable wording or a house signature and must not be reproduced even though it was observed in good writing.",
+          "enum": ["adopt", "avoid", "do_not_copy"]
+        },
+        "supersedes": { "type": ["string", "null"] },
+        "notes": { "type": "string" }
+      }
+    },
+    "term": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "canonical", "domain", "rendering_policy"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$" },
+        "canonical": {
+          "description": "The concept's authoritative name. This is what every alias must still map to.",
+          "type": "string",
+          "minLength": 1
+        },
+        "domain": { "type": "string", "minLength": 1 },
+        "rendering": {
+          "description": "The accepted form in this language, where one exists and differs from the canonical name.",
+          "type": "string"
+        },
+        "rendering_policy": {
+          "description": "keep_source — the source-language form is what a competent practitioner uses. translate — the localised form is. either — both are current and the piece may choose. See editorial/voice.md §1: the test is which form a reader in the field reaches for without mentally translating.",
+          "enum": ["keep_source", "translate", "either"]
+        },
+        "audience_aliases": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/audience_alias" }
+        },
+        "authority_ref": { "type": ["string", "null"] },
+        "notes": { "type": "string" }
+      }
+    },
+    "audience_alias": {
+      "description": "A plainer surface form for one audience. The alias replaces the wording; `canonical` above still fixes the concept, and an alias that names a different concept is a domain_terminology defect, not an audience adaptation.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["audience", "surface_form"],
+      "properties": {
+        "audience": { "type": "string", "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$" },
+        "surface_form": { "type": "string", "minLength": 1 },
+        "gloss_required": { "type": "boolean" },
+        "notes": { "type": "string" }
+      }
+    }
+  }
+}

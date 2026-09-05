@@ -24,6 +24,7 @@ The only legal routing targets are the ones fixed by
 ```text
 SHARED       intake · reference · audience · frame · verification · surface · calibration
 TEXT         writing · polish · register
+             normative · native_fluency · domain_terminology · owner_voice
 VISUAL       artifact_route · semantic_spec · information_density · composition · brand_profile · renderer
 AUDIO        spoken_script · dialogue_structure · pronunciation · pacing · delivery · tts_render
 ```
@@ -59,7 +60,7 @@ For each layer, `feedback-routing.json` encodes:
 | `authority_class` | The write-authority class (§4 below) this layer's default automatic repair sits in |
 | `escalates_to` | The next layer, or a human-authorization sentinel, when evidence accumulates beyond a single-task fix |
 
-## 2. The three misroutes this vocabulary exists to prevent
+## 2. The four misroutes this vocabulary exists to prevent
 
 Encoded as explicit `do_not` entries with machine-checkable trigger keywords
 where the spine names them directly:
@@ -72,6 +73,12 @@ where the spine names them directly:
 3. **A reference-selection failure promoted to a content rule**
    (`reference.do_not → writing`). The system accumulates prose rules for a
    lookup bug.
+4. **A language-quality failure recorded as owner preference**
+   (`owner_voice.do_not → native_fluency`, and its mirror
+   `native_fluency.do_not → owner_voice`). Unidiomatic language filed as taste
+   stops being a quality baseline and becomes something only the owner can
+   arbitrate. Added with the four language layers by AES-V2.17 (SUE-607); the
+   layers carry the routing, a language pack carries the rules.
 
 `scripts/lib/routing-core.mjs` detects these mechanically: when a record names
 a `do_not` target layer while its statement matches the *problem* layer's own
@@ -92,8 +99,8 @@ failure evidence
 
 A frame problem is never hidden by a polish fix. A renderer defect never
 rewrites the global visual style. A reference-selection failure never becomes
-a content rule. These are not aspirations — they are the three `do_not`
-entries above, enforced.
+a content rule. Awkward language never becomes owner taste. These are not
+aspirations — they are the `do_not` entries above, enforced.
 
 ## 4. The write-authority matrix
 
@@ -218,7 +225,7 @@ Overlap and non-overlap, exhaustively:
 |---|---|
 | `frame` | `frame` — same concept: the article's thesis/frame, article-scoped in V1, system-scoped in V2 |
 | `verification` | `verification` — same concept |
-| `draft` | no shared-layer equivalent. A draft-prose problem is almost always modality-only: `layer: null` + `modality_layer` one of `writing` / `polish` / `register` |
+| `draft` | no shared-layer equivalent. A draft-prose problem is almost always modality-only: `layer: null` + `modality_layer` one of the TEXT layers — `writing` / `polish` / `register` / `normative` / `native_fluency` / `domain_terminology` / `owner_voice` |
 | `final_article` | no shared-layer equivalent. Whatever caused it (frame, draft, verification) should have already been named upstream; `final_article` in V1 marks *where a human caught it*, not *why it happened* |
 | `presentation` | no shared-layer equivalent. Routes to the VISUAL layers (`artifact_route`, `composition`, `renderer`, …) or is modality-only, depending on cause |
 | `nothing` | no equivalent. V2 has no no-op routing value — a record with no actionable cause abstains (`routing.abstained: true`, §7), it does not name `nothing` |

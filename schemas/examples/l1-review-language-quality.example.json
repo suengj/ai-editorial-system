@@ -1,0 +1,108 @@
+{
+  "description": "Worked 1.1.0 L1 review record carrying the SUE-607 / AES-V2.17 `language_quality` block. Used by scripts/test-l1.mjs. Not a real editorial judgement. New file (not an edit to l1-review.example.json) so schema-owning agents keep that file untouched.",
+  "records": [
+    {
+      "schema_version": "1.1.0",
+      "review_id": "l1:example-language-quality-pass",
+      "subject": {
+        "kind": "article",
+        "ref": "art:example-sixth-piece",
+        "content_type": "research"
+      },
+      "comparison": {
+        "mode": "pairwise",
+        "references": [
+          {
+            "ref": "corpus:placeholder-research-accepted",
+            "provenance_class": "owner_created",
+            "content_type": "research"
+          }
+        ],
+        "same_content_type": true
+      },
+      "dimensions": [
+        {
+          "id": "thesis-worth",
+          "verdict": "tie",
+          "evidence_span": "Both carry a falsifiable thesis in the first two paragraphs."
+        },
+        {
+          "id": "synthesis-independence",
+          "verdict": "tie",
+          "evidence_span": "Both connect the same two filings independently."
+        },
+        {
+          "id": "language-native-prose",
+          "verdict": "tie",
+          "evidence_span": "Neither shows translated discourse scaffolding in the sampled paragraphs."
+        },
+        {
+          "id": "formulaic-ai-shaped",
+          "verdict": "tie",
+          "evidence_span": "Neither repeats a meta-connective across paragraphs."
+        },
+        {
+          "id": "audience-fit",
+          "verdict": "tie",
+          "evidence_span": "Both gloss the acronym on first use for a domain-practitioner reader."
+        }
+      ],
+      "integrity": {
+        "status": "clear"
+      },
+      "outcome": "PASS",
+      "routes_to": null,
+      "language_quality": {
+        "language": "ko-KR",
+        "pack_ref": "editorial/profiles/language/ko-KR.json",
+        "dimensions": [
+          {
+            "id": "semantic_integrity",
+            "verdict": "PASS",
+            "evidence_span": "The translated claim in paragraph 3 preserves the source filing's magnitude and date."
+          },
+          {
+            "id": "normative_correctness",
+            "verdict": "PASS",
+            "evidence_span": "Spacing and particle attachment across the sampled paragraphs match the ko-KR pack's normative rules."
+          },
+          {
+            "id": "native_fluency",
+            "verdict": "PASS",
+            "evidence_span": "No translationese scaffolding (e.g. calqued discourse connectives) observed in the sampled paragraphs."
+          },
+          {
+            "id": "genre_fit",
+            "verdict": "PASS",
+            "evidence_span": "Register matches the Research content-type's established register bar."
+          },
+          {
+            "id": "audience_fit",
+            "verdict": "PASS",
+            "evidence_span": "The acronym is glossed once on first use, matching the domain-practitioner audience profile."
+          },
+          {
+            "id": "domain_terminology_fit",
+            "verdict": "PASS",
+            "evidence_span": "Every domain term used matches the ko-KR pack's terminology table (keep_source policy applied to \"API\")."
+          },
+          {
+            "id": "owner_voice_fit",
+            "verdict": "UNKNOWN",
+            "evidence_span": "No human owner-voice review has been recorded for this subject yet; owner_voice_fit stays UNKNOWN until a human says otherwise."
+          }
+        ]
+      },
+      "reviewed_at": "2026-09-05T11:10:00Z",
+      "reviewer": {
+        "type": "agent",
+        "agent": {
+          "provider": "anthropic",
+          "model": "claude-sonnet-5",
+          "model_version": "2026-05-01"
+        }
+      },
+      "final_authority": "human"
+    }
+  ]
+}

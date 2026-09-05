@@ -38,8 +38,12 @@
           {
             "target": "writing",
             "trigger_keywords": [
-              "wrong reference", "reference (was|is) selected", "picked the wrong (example|reference)",
-              "reference (didn't|did not) match", "reference-selection", "reference lookup"
+              "wrong reference",
+              "reference (was|is) selected",
+              "picked the wrong (example|reference)",
+              "reference (didn't|did not) match",
+              "reference-selection",
+              "reference lookup"
             ],
             "note": "A reference-selection failure must not become a content rule. Fixing the lookup that picked a bad reference is a reference-layer repair; writing a new prose rule to compensate for a bad reference is how the system accumulates rules for a lookup bug — see docs/architecture/V2-EDITORIAL-LEARNING-CORE.md §5, misroute 3."
           }
@@ -83,9 +87,15 @@
           {
             "target": "polish",
             "trigger_keywords": [
-              "no thesis", "no argument", "not worth (an article|writing)", "source[- ]tour",
-              "source order", "walks? the (source|repository)", "reads like documentation",
-              "sequential summary", "no falsifiable"
+              "no thesis",
+              "no argument",
+              "not worth (an article|writing)",
+              "source[- ]tour",
+              "source order",
+              "walks? the (source|repository)",
+              "reads like documentation",
+              "sequential summary",
+              "no falsifiable"
             ],
             "note": "A frame failure repaired in polish leaves the argument wrong while making it read better. This is the misroute docs/architecture/V2-EDITORIAL-LEARNING-CORE.md §5 names first."
           }
@@ -156,7 +166,7 @@
       {
         "id": "writing",
         "group": "text",
-        "owns": "Prose execution: sentence-level clarity, rhythm, and density independent of whether the underlying argument is right.",
+        "owns": "Prose execution: sentence-level clarity, rhythm, and density independent of whether the underlying argument is right, and independent of whether the language itself is correct, idiomatic, or correctly termed.",
         "symptoms": [
           "a paragraph does not change what the reader knows or understands (constitution.md §9)",
           "flow is uneven without any protected fact having moved",
@@ -164,7 +174,14 @@
         ],
         "repair": "Regenerate the affected passage. Writing-layer fixes never touch the thesis, a fact, or stated uncertainty — those are frame or verification findings.",
         "do_not": [
-          { "target": "frame", "note": "Rewriting sentences does not fix a missing or wrong thesis; see the frame layer's own do_not." }
+          {
+            "target": "frame",
+            "note": "Rewriting sentences does not fix a missing or wrong thesis; see the frame layer's own do_not."
+          },
+          {
+            "target": "native_fluency",
+            "note": "Since AES-V2.17 (SUE-607), language-quality defects have their own layers: correctness routes to `normative`, unidiomatic-but-correct language to `native_fluency`, and term choice to `domain_terminology`. `writing` keeps what is left — clarity, rhythm, and density in language that is already correct and fluent. Routing a language defect here is how one \"improve the prose\" edit ends up changing four layers at once."
+          }
         ],
         "authority_class": 0,
         "escalates_to": "calibration"
@@ -187,10 +204,17 @@
           {
             "target": "frame",
             "trigger_keywords": [
-              "protected span", "translationese", "polish pass",
-              "repeated (rhetorical|signature) (move|construction)", "over-?applied (voice|signature)"
+              "protected span",
+              "translationese",
+              "polish pass",
+              "repeated (rhetorical|signature) (move|construction)",
+              "over-?applied (voice|signature)"
             ],
             "note": "A polish-shaped defect (a protected-span change, translationese, or an over-applied signature move) is not itself evidence that the thesis or argument path is wrong. Labelling it with the shared layer frame re-creates misroute 1 from the other direction: this is a prose-execution finding, not a frame finding. A genuine polish-only defect belongs at layer: null with modality_layer: \"polish\" — see editorial/FEEDBACK-ROUTING.md §1."
+          },
+          {
+            "target": "native_fluency",
+            "note": "Translationese found *across a polish pass* is a polish regression and stays here. Translationese present in the draft before polish ran is a native_fluency finding. The distinction is which stage introduced it, not what it looks like."
           }
         ],
         "authority_class": 0,
@@ -207,10 +231,131 @@
         ],
         "repair": "Correct against the content-type profile's register defaults for this task. A durable register change is a content-type-profile edit — class 5, evidence-backed review.",
         "do_not": [
-          { "target": "reference", "note": "A register mismatch is not evidence that the wrong reference was selected; check the profile before touching reference selection." }
+          {
+            "target": "reference",
+            "note": "A register mismatch is not evidence that the wrong reference was selected; check the profile before touching reference selection."
+          }
         ],
         "authority_class": 0,
         "durable_form_class": 5,
+        "escalates_to": "human_review"
+      },
+      {
+        "id": "normative",
+        "group": "text",
+        "owns": "Codified correctness in the output language: orthography, spacing, punctuation, standard-language form, and loanword/transliteration convention. Decided by the language's standards body, never by how often a construction appears in a reference corpus.",
+        "symptoms": [
+          "a misspelling, spacing error, or wrong punctuation form against the language pack's NORMATIVE rules",
+          "a non-standard form used where the standard form is the correct one",
+          "a foreign name or term transliterated against the codified convention",
+          "the defect is present in the source language's own edited press and is still incorrect"
+        ],
+        "repair": "Correct against the language pack's NORMATIVE rule and cite the authority it derives from (editorial/profiles/language/*.json, `authority_ref`). Adding or changing a NORMATIVE rule is a language-pack edit — class 5 — and requires a standards body behind it, not corpus evidence.",
+        "do_not": [
+          {
+            "target": "native_fluency",
+            "note": "A misspelling is not an unnaturalness finding. Correctness and fluency are different authorities and a normative defect repaired as \"make the Korean more natural\" leaves the error in place while rewriting prose that was fine."
+          },
+          {
+            "target": "owner_voice",
+            "note": "Owner preference sits below NORMATIVE in the precedence order (docs/architecture/LANGUAGE-QUALITY-ARCHITECTURE.md §2). \"The owner likes it this way\" never makes an incorrect form correct."
+          }
+        ],
+        "authority_class": 0,
+        "durable_form_class": 5,
+        "escalates_to": "human_review"
+      },
+      {
+        "id": "native_fluency",
+        "group": "text",
+        "owns": "Prose that is correct and still not what a fluent writer of the language would produce: lexical choice and collocation, clause construction and order, subject/object handling and repetition, predicate choice, connective logic, nominalization density, and the translated-source constructions that survive a correct translation.",
+        "symptoms": [
+          "every sentence is grammatical and the paragraph reads as translated rather than written",
+          "collocations are individually valid words in a combination a native writer would not reach for",
+          "connective scaffolding narrates the structure of the argument instead of making the connection (editorial/voice.md §5)",
+          "the same defect appears across genres and audiences, which is what distinguishes it from a register or audience miss"
+        ],
+        "repair": "Regenerate the affected passage against the language pack's NATIVE_QUALITY rules for this language. A durable change here requires cross-source empirical evidence and a holdout result (docs/architecture/LANGUAGE-QUALITY-ARCHITECTURE.md §6-7) — one awkward draft is evidence, not a rule.",
+        "do_not": [
+          {
+            "target": "register",
+            "trigger_keywords": [
+              "unnatural",
+              "awkward",
+              "translationese",
+              "not native",
+              "어색",
+              "번역투",
+              "reads like a translation"
+            ],
+            "note": "Unidiomatic language is not a genre mismatch. Repairing it as a register change makes the piece a different genre and leaves it unidiomatic. Genre convention is the `register` layer and only applies once the language is already fluent."
+          },
+          {
+            "target": "owner_voice",
+            "note": "Awkward language misfiled as owner preference is the specific failure SUE-607 exists to prevent: it makes a quality baseline defect look like taste, and taste is the one layer the owner is expected to arbitrate."
+          },
+          {
+            "target": "normative",
+            "note": "Fluency evidence is empirical and cannot establish correctness. A construction observed across many good sources is not thereby normative — see LANGUAGE-QUALITY-ARCHITECTURE.md §6."
+          }
+        ],
+        "authority_class": 0,
+        "durable_form_class": 5,
+        "escalates_to": "human_review"
+      },
+      {
+        "id": "domain_terminology",
+        "group": "text",
+        "owns": "Which term names the concept: the canonical term, its accepted rendering in the output language, whether the source-language form is retained, and whether an audience-facing alias still maps to the same concept.",
+        "symptoms": [
+          "a technical term is rendered in a form no competent practitioner in that field uses (editorial/voice.md §1)",
+          "an English term is retained because it looks technical rather than because it is the normal professional usage",
+          "an audience-facing simplification names a different concept rather than a plainer surface form for the same one",
+          "the same concept is called two different things within one piece"
+        ],
+        "repair": "Correct against the language pack's `terminology` entry and its authority. Where no entry exists, add one citing a terminology authority — an agent may not invent a canonical rendering.",
+        "do_not": [
+          {
+            "target": "audience",
+            "note": "Choosing a plainer word for a young or novice reader is an audience adaptation and is legitimate. Choosing a word that means something else is a terminology defect. The test is whether the alias still maps to the recorded canonical concept, not how simple it is."
+          },
+          {
+            "target": "verification",
+            "note": "If the wrong term changed what the sentence claims, the finding has crossed into semantic integrity and routes to verification. Terminology owns the name of the concept, never the truth of the claim."
+          }
+        ],
+        "authority_class": 0,
+        "durable_form_class": 5,
+        "escalates_to": "human_review"
+      },
+      {
+        "id": "owner_voice",
+        "group": "text",
+        "owns": "Prose that is correct, fluent, in the right genre, at the right reading level, and using the right terms — and the owner still wants it different. Preference, explicitly lower authority than every dimension above it, and temporal.",
+        "symptoms": [
+          "the objective language dimensions all pass and the owner says it does not sound like them",
+          "a construction the owner has repeatedly asked against, with no defect on any higher layer",
+          "a `preference` in editorial/voice.md is unmet while every `invariant` holds"
+        ],
+        "repair": "Record the preference as feedback. A durable change is a calibration version — human-activated, class 4 — never an in-place edit to voice.md on the strength of one disliked output. A single dislike is task-local and expires.",
+        "do_not": [
+          {
+            "target": "native_fluency",
+            "trigger_keywords": [
+              "owner (dislikes|prefers|wants)",
+              "not my (voice|style)",
+              "취향",
+              "이건 내 스타일이 아니"
+            ],
+            "note": "An owner dislike is not evidence that the language was unnatural. Routing taste into the native-fluency layer teaches the system a quality rule from one person's preference, which is exactly how a shared baseline becomes a house style."
+          },
+          {
+            "target": "register",
+            "note": "Owner preference is not the content type's register. If the piece is in the wrong register for its content type, that is a `register` finding regardless of whether the owner also dislikes it."
+          }
+        ],
+        "authority_class": 0,
+        "durable_form_class": 4,
         "escalates_to": "human_review"
       }
     ],
@@ -225,7 +370,10 @@
         ],
         "repair": "Re-route to the correct artifact profile under editorial/profiles/artifact/. This is an intake-layer error surfacing at the visual pipeline, not a renderer or brand defect.",
         "do_not": [
-          { "target": "renderer", "note": "A wrong artifact route is not a rendering defect; re-routing fixes it, re-rendering the same wrong route does not." }
+          {
+            "target": "renderer",
+            "note": "A wrong artifact route is not a rendering defect; re-routing fixes it, re-rendering the same wrong route does not."
+          }
         ],
         "authority_class": 0,
         "escalates_to": "calibration"
@@ -241,7 +389,10 @@
         ],
         "repair": "Rewrite the semantic spec before re-rendering. Cost ordering requires the semantic-spec gate to pass before image generation (§9).",
         "do_not": [
-          { "target": "composition", "note": "A bad semantic spec produces a correctly-composed image of the wrong thing; fixing layout does not fix the spec." }
+          {
+            "target": "composition",
+            "note": "A bad semantic spec produces a correctly-composed image of the wrong thing; fixing layout does not fix the spec."
+          }
         ],
         "authority_class": 0,
         "escalates_to": "calibration"
@@ -257,7 +408,10 @@
         ],
         "repair": "Adjust density against the audience profile's visual traits for this task.",
         "do_not": [
-          { "target": "brand_profile", "note": "A density mismatch for one audience is not evidence the brand's default density should change." }
+          {
+            "target": "brand_profile",
+            "note": "A density mismatch for one audience is not evidence the brand's default density should change."
+          }
         ],
         "authority_class": 0,
         "escalates_to": "calibration"
@@ -273,7 +427,10 @@
         ],
         "repair": "Re-compose against the same semantic spec. A composition fix does not touch brand tokens.",
         "do_not": [
-          { "target": "brand_profile", "note": "A single bad layout is a composition finding, not evidence the house style's layout rules are wrong." }
+          {
+            "target": "brand_profile",
+            "note": "A single bad layout is a composition finding, not evidence the house style's layout rules are wrong."
+          }
         ],
         "authority_class": 0,
         "escalates_to": "calibration"
@@ -288,7 +445,10 @@
         ],
         "repair": "A durable brand-profile change is a major profile edit: class 5, evidence-backed review. It is never justified by one render.",
         "do_not": [
-          { "target": "renderer", "note": "Do not fix a single bad render by editing the brand profile; fix the render." }
+          {
+            "target": "renderer",
+            "note": "Do not fix a single bad render by editing the brand profile; fix the render."
+          }
         ],
         "authority_class": 0,
         "durable_form_class": 5,
@@ -307,7 +467,14 @@
           {
             "target": "brand_profile",
             "trigger_keywords": [
-              "renderer", "rendering", "one (render|image)", "this (specific )?(render|image)", "single render", "garbled", "cropped", "render(ed)? artifact"
+              "renderer",
+              "rendering",
+              "one (render|image)",
+              "this (specific )?(render|image)",
+              "single render",
+              "garbled",
+              "cropped",
+              "render(ed)? artifact"
             ],
             "note": "A renderer defect promoted to a brand-profile change rewrites the global visual style because of one bad render. See docs/architecture/V2-EDITORIAL-LEARNING-CORE.md §5, misroute 2."
           }
@@ -327,7 +494,10 @@
         ],
         "repair": "Rewrite the script structure against the frame. This precedes TTS per the cost ordering in §9: script L1 before TTS.",
         "do_not": [
-          { "target": "delivery", "note": "A structurally wrong script does not become right through better delivery." }
+          {
+            "target": "delivery",
+            "note": "A structurally wrong script does not become right through better delivery."
+          }
         ],
         "authority_class": 0,
         "escalates_to": "calibration"
@@ -342,7 +512,10 @@
         ],
         "repair": "Rebalance roles against the script's argument path.",
         "do_not": [
-          { "target": "pacing", "note": "A dialogue-structure problem is not fixed by changing how fast the (still wrong) turns are delivered." }
+          {
+            "target": "pacing",
+            "note": "A dialogue-structure problem is not fixed by changing how fast the (still wrong) turns are delivered."
+          }
         ],
         "authority_class": 0,
         "escalates_to": "calibration"
@@ -357,7 +530,10 @@
         ],
         "repair": "Add or correct a pronunciation normalization entry. Recurrence across tasks for the same term is calibration evidence for the pronunciation lexicon.",
         "do_not": [
-          { "target": "spoken_script", "note": "A pronunciation defect is not a script-structure problem; do not rewrite the script to avoid a term the lexicon should handle." }
+          {
+            "target": "spoken_script",
+            "note": "A pronunciation defect is not a script-structure problem; do not rewrite the script to avoid a term the lexicon should handle."
+          }
         ],
         "authority_class": 1,
         "escalates_to": "calibration"
@@ -372,7 +548,10 @@
         ],
         "repair": "Adjust segmentation and pace against the audience profile.",
         "do_not": [
-          { "target": "delivery", "note": "Pacing is a script/segmentation property, not a performance quality; do not treat one as the other's fix." }
+          {
+            "target": "delivery",
+            "note": "Pacing is a script/segmentation property, not a performance quality; do not treat one as the other's fix."
+          }
         ],
         "authority_class": 0,
         "escalates_to": "calibration"
@@ -387,7 +566,10 @@
         ],
         "repair": "Adjust delivery parameters for the same script and re-render.",
         "do_not": [
-          { "target": "tts_render", "note": "A performance-quality complaint is not the same as a rendering/encoding defect; check which one is actually present before filing either." }
+          {
+            "target": "tts_render",
+            "note": "A performance-quality complaint is not the same as a rendering/encoding defect; check which one is actually present before filing either."
+          }
         ],
         "authority_class": 0,
         "escalates_to": "calibration"
@@ -402,7 +584,10 @@
         ],
         "repair": "Re-render from the same script and delivery parameters.",
         "do_not": [
-          { "target": "delivery", "note": "A one-off render defect is not evidence the delivery parameters are wrong." }
+          {
+            "target": "delivery",
+            "note": "A one-off render defect is not evidence the delivery parameters are wrong."
+          }
         ],
         "authority_class": 1,
         "escalates_to": "calibration"

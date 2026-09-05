@@ -1,0 +1,43 @@
+{
+  "schema_version": "1.0.0",
+  "experiment_id": "experiment:language-quality-layer-vocabulary-2026-09-05",
+  "created_at": "2026-09-05T00:00:00Z",
+  "kind": "targeted_tuning",
+  "hypothesis": "The text routing group (writing / polish / register) could not express the failure SUE-570 actually produced. The Korean was grammatically correct, the News/Report/Child tone separation worked, and the prose still did not read like professionally edited Korean. With only three text layers, that finding had exactly three homes and all of them are wrong: `writing` routes it to rhythm and density, `polish` routes it to a regression that did not happen, `register` routes it to a genre mismatch that was not the defect. In practice such a finding lands on whichever layer the reviewer reaches for, and the two most damaging misroutes are specific and repeatable — unidiomatic language recorded as owner taste (which makes a quality-baseline defect look like something only the owner can arbitrate), and a spelling or spacing error repaired as \"make the Korean more natural\" (which leaves the error and rewrites prose that was fine).",
+  "failure_evidence": [
+    "SUE-570 owner review (2026-09-05): News/Report/Child macro tone differentiation worked directionally; Korean lexical choice and sentence construction still did not read like professionally edited native Korean. Owner stated explicitly that this is NOT primarily owner taste.",
+    "evals/dogfood/2026-09-05-sue570-pilot/ — both pilot L1 reviews routed to `frame` (ARGUMENT_REWORK); neither could express a language-quality verdict at all, because no dimension and no layer existed for one.",
+    "SUE-607 / AES-V2.17 acceptance: \"Korean-language quality is decomposed into correctness, native fluency, genre, audience, domain terminology, owner voice and task-local dimensions\"; \"L1/review can report dimension-level Korean quality rather than one opaque score.\""
+  ],
+  "target_layer": "calibration",
+  "smallest_change": "Added four text layers to editorial/feedback-routing.json — `normative`, `native_fluency`, `domain_terminology`, `owner_voice` — carving the language-quality dimensions out of what `writing` previously absorbed, and narrowed `writing`'s own `owns` sentence plus one `do_not` entry to say what it no longer owns. Added one `do_not` to `polish` fixing the boundary the two layers genuinely share: translationese introduced *across* a polish pass stays a polish regression, translationese present before polish ran is a native_fluency finding — the distinction is which stage introduced it, not what it looks like. No existing layer was renamed, removed, or reordered, so every committed feedback record and every `routes_to` value in the repository still resolves. The language rules themselves are NOT here: they live in a language pack (editorial/profiles/language/), and the language-agnostic methodology lives in docs/architecture/LANGUAGE-QUALITY-ARCHITECTURE.md. This record covers the routing vocabulary change only. Three companion files were updated in the same change because they are the same vocabulary stated in three places and are cross-checked against each other: scripts/lib/routing-core.mjs (CANONICAL_LAYERS.text, which validate-routing.mjs diffs the table against), docs/architecture/V2-EDITORIAL-LEARNING-CORE.md §5 (the vocabulary's authority, plus a fourth named misroute), and editorial/FEEDBACK-ROUTING.md (its prose contract). Leaving any of them behind would have been the exact defect the previous ledger record on this file was written to correct: an authority file describing a control that does not match the code.",
+  "evaluation_set": {
+    "fixtures": [
+      "scripts/test-routing.mjs",
+      "scripts/test-l1.mjs",
+      "scripts/test-calibration.mjs"
+    ],
+    "references": [],
+    "real_outputs": []
+  },
+  "quality_result": {
+    "summary": "Vocabulary-only change: four layer definitions appended, one `owns` sentence narrowed, two `do_not` entries added. No generation behaviour changes until a language pack is activated, which is a separate class-4 act requiring a human. The existing routing regression suite passes unchanged, which is the specific thing worth proving here — the four new ids are additive and do not disturb the layers already in use.",
+    "integrity_impact": "none — no integrity layer was altered. `verification` keeps sole ownership of semantic integrity, and the new `domain_terminology` layer carries an explicit do_not routing any term error that changed a claim back to `verification`.",
+    "audience_fit_impact": "none — the shared `audience` layer is unchanged. The new layers deliberately do not duplicate it: audience-level language rules in a pack route to the existing `audience` layer rather than to a new text-group twin of it."
+  },
+  "cost_result": {
+    "summary": "Documentation and routing-table edit; no generation or rendering cost incurred."
+  },
+  "decision": "keep",
+  "calibration_ref": null,
+  "authored_by": {
+    "type": "agent",
+    "identity": "agent:claude-code",
+    "agent": {
+      "runtime": "claude-code",
+      "model": "claude-opus",
+      "version": "5"
+    }
+  },
+  "notes": "editorial/feedback-routing.json is a pinned write-authority file (scripts/lib/calibration-core.mjs, PINNED_AUTHORITY, json-paths `layers` and `authority_matrix`). Editing the `layers` key therefore requires a ledger record citing \"editorial/feedback-routing.json\" — this record is that citation, not a formality. Recording one limitation honestly: the four new layers were derived from a single pilot's evidence. That is enough to justify a routing vocabulary — a vocabulary only has to be able to *express* a finding — but it is not enough to justify any durable Korean rule, and none is asserted here. The Korean pack ships with status `draft` and every empirical rule marked `not_yet_tested` for exactly that reason; SUE-604 is where cross-source and holdout evidence has to arrive before anything in it may be activated."
+}

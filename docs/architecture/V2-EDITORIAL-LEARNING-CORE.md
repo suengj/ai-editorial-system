@@ -157,6 +157,7 @@ SHARED
   calibration       the evaluator or the active calibration was wrong
 
 TEXT              writing · polish · content-type register
+                  normative · native fluency · domain terminology · owner voice
 VISUAL            artifact route · semantic spec · density · composition · brand profile · renderer
 AUDIO             spoken script · dialogue structure · pronunciation · pacing · delivery · TTS render
 ```
@@ -172,6 +173,12 @@ Three routing errors this vocabulary exists to prevent:
    render rewrites the house style.
 3. A **reference-selection** failure promoted to a **content rule** — the
    system accumulates prose rules for a lookup bug.
+4. A **language-quality** failure recorded as **owner preference** — a
+   correctness or fluency defect becomes taste, and taste is the one layer
+   the owner is expected to arbitrate. The four language layers were added by
+   AES-V2.17 (SUE-607) to make that misroute expressible as an error; the
+   rules they carry live in a language pack, never here. See
+   [`LANGUAGE-QUALITY-ARCHITECTURE.md`](LANGUAGE-QUALITY-ARCHITECTURE.md).
 
 ---
 
