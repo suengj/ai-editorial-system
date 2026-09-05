@@ -68,6 +68,9 @@
         "eval:discovery-record",
         "eval:discovery-record-two"
       ],
+      "holdout_refs": [
+        "eval:holdout-record"
+      ],
       "holdout_result": "improved"
     },
     {

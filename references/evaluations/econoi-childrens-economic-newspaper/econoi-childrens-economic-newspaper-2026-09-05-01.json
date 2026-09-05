@@ -1,0 +1,56 @@
+{
+  "schema_version": "1.0.0",
+  "evaluation_id": "eval:econoi-childrens-economic-newspaper-2026-09-05-01",
+  "ref_id": "ref:econoi-childrens-economic-newspaper",
+  "modality": "text",
+  "evaluator": {
+    "type": "agent",
+    "agent": {
+      "runtime": "claude-code",
+      "model": "claude-sonnet-5"
+    }
+  },
+  "evaluated_at": "2026-09-05T04:00:00Z",
+  "calibration_ref": null,
+  "profile_ref": "editorial/profiles/reference/text.json",
+  "basis": "model_inference",
+  "corpus_role": "discovery",
+  "language": "ko-KR",
+  "dimensions": [
+    {
+      "dimension": "audience-suitability",
+      "verdict": "adopt",
+      "note": "Two articles read in full ('매매(賣買)' on buying/selling, '디폴트, 기본값이 아니라고?' on default) both open on a familiar scene or a familiar-but-wrong reading of the target word before naming the economic concept. '매매' opens by naming the everyday native-Korean verb 사고팔다 before introducing the 한자어 매매, then explains the 한자 by decomposing each character into a concrete pictographic story (물건이 나가는 모습, 그물에 담는 모습) rather than a dictionary gloss. '디폴트' opens by voicing the reader's likely wrong guess (컴퓨터를 기본값으로 되돌리는 것) and a concrete scene of a friend borrowing money and refusing to repay, then corrects to the financial sense (채무불이행) via the same 한자 decomposition move. This is the audience-level trait worth carrying: name a concrete, already-known scene or word first, let the reader's existing guess surface (including a plausible wrong one), then attach the technical term to it — never introduce the term cold.",
+      "evidence": "'매매' article: \"'팔 매'(賣), '살 매'(買). 우리말 표현인 '사고팔다'라는 말이 더 익숙할 거예요.\" — '디폴트' article poses the reader's likely misreading before correcting it: \"뭔가 전산 문제가 있어 기본값으로 되돌렸다는 뜻일까요?\""
+    },
+    {
+      "dimension": "audience-suitability",
+      "verdict": "adopt",
+      "note": "'물가 오르는데 경기까지 침체되나요?' (on stagflation) is written as direct Q&A addressed to the child reader, and the answer is hedged rather than flattened to a flat yes: the piece answers with a stated probability, not a certainty, before walking through the mechanism (rate rises pulling back investment). This is the specific behaviour the audience profile and the constitution both require: simplifying the register must not simplify the epistemic status of the claim. Worth extracting as its own trait, separate from the concreteness trait above, because a piece could get concreteness right and still flatten uncertainty.",
+      "evidence": "\"Q. 우리 경제가 나빠지나요? A. 그럴 가능성이 높아요.\" — hedged (가능성이 높아요), not asserted as settled fact."
+    },
+    {
+      "dimension": "content-type-fit",
+      "verdict": "neutral",
+      "note": "This is a dedicated children's newspaper, so its house genre conventions (Q&A boxes, a recurring 한자어 word-of-the-day column, a running family cast) are its own institutional format, not evidence about how 'news' or 'note' as content types should register a child audience generically. The transferable finding is scoped to audience-suitability above, not to content-type-fit."
+    }
+  ],
+  "strengths": [
+    "Concrete/familiar-word-first sequencing: names the everyday native-Korean word or the reader's most likely (even if wrong) guess before attaching the technical 한자어 term to it, rather than defining the term cold.",
+    "한자어 decomposition as an explanation device: breaks a Sino-Korean economic term into its component characters and gives each a concrete, visualisable origin-story rather than a dictionary paraphrase — this both explains the word and anchors it in something the reader can picture.",
+    "Uncertainty survives simplification: a Q&A-format answer to a genuinely uncertain economic question is hedged ('가능성이 높아요') rather than rounded to a flat yes/no, even though the surrounding register is fully child-plain."
+  ],
+  "weaknesses": [
+    "The recurring family-character device and the '동화경제'/'시사용어' column formats are this outlet's own recognizable house structure; adopting the underlying concreteness and hedging moves is fine, but reproducing the column format or character names would be imitation, not craft transfer — do_not_copy, not adopt.",
+    "Only two articles were read in full (out of a much larger archive); the traits above are corroborated twice within this single source, not yet against an independent institution at the time this record was written — that independent corroboration is what the paired holdout record (ref:bok-easy-economics-elementary) is for."
+  ],
+  "applicable_to": {
+    "content_types": ["news", "note"],
+    "audiences": ["child-upper-elementary", "beginner-learner"],
+    "artifacts": ["text/article"],
+    "surfaces": ["suengj-com"]
+  },
+  "authority_boundary": "craft_evidence_only",
+  "provenance_class": "external",
+  "notes": "This record is evidence about the child-upper-elementary AUDIENCE (editorial/profiles/audience/child-upper-elementary.json), not about a genre — the traits (concrete-before-abstract sequencing, 고유어-before-한자어 term introduction, hedged uncertainty) are meant to compose with whatever content type a child-facing piece actually is (a news brief, a report explainer), not to define a 'children's magazine' register. applicable_to.audiences now lists 'child-upper-elementary' first, per SUE-604 correction: this is the audience this corpus is actually evidence about; 'beginner-learner' is retained second only because the 고유어-before-한자어 term-introduction move and the hedging-under-simplification move plausibly transfer to an adult novice too, not because the record's primary scope is adult. Doing so requires schemas/reference-evaluation.schema.json's applicability.audiences enum to admit 'child-upper-elementary' (it does not yet, as of this writing) — flagging again for the Manager to extend the pinned vocabulary as part of SUE-607/SUE-604; until that lands this record is not schema-valid and the Manager should apply the enum change in the same pass as the catalog merge. Simplifying language must never simplify a fact or drop stated uncertainty (editorial/constitution.md §1-3); the hedging finding above is the positive case of that rule holding under real audience adaptation. No article body was reproduced beyond the single-sentence fragments quoted as evidence, consistent with editorial/RIGHTS-AND-PROVENANCE.md's fail-to-reference rule."
+}

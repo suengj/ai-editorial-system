@@ -1,0 +1,56 @@
+{
+  "schema_version": "1.0.0",
+  "evaluation_id": "eval:khan-public-institution-reform-2026-09-05-01",
+  "ref_id": "ref:khan-public-institution-reform",
+  "modality": "text",
+  "evaluator": {
+    "type": "agent",
+    "agent": {
+      "runtime": "claude-code",
+      "model": "claude-sonnet-5"
+    }
+  },
+  "evaluated_at": "2026-09-05T06:10:00Z",
+  "calibration_ref": null,
+  "profile_ref": "editorial/profiles/reference/text.json",
+  "basis": "model_inference",
+  "corpus_role": "discovery",
+  "language": "ko-KR",
+  "dimensions": [
+    {
+      "dimension": "argument-structure",
+      "verdict": "adopt",
+      "note": "The lead sentence compresses who/what/when into a single clause before any background follows: actor (정부), specific action (세종특별자치시 이전 추진), named targets (법무부와 성평등가족부 등), and a start date (2027년 상반기부터) all land in one sentence, with the wider context (역대 최대 규모인 109개 공공기관 감축 등) held for the very next sentence rather than front-loaded. Classic inverted-pyramid lead compression — worth carrying as a structural habit for news-shaped writing generally.",
+      "evidence": "\"정부가 2027년 상반기부터 법무부와 성평등가족부 등 수도권 소재 중앙행정기관의 세종특별자치시 이전을 추진한다.\" — single-sentence who/what/when lead."
+    },
+    {
+      "dimension": "citation-behaviour",
+      "verdict": "adopt",
+      "note": "The official's quote is nested two layers deep: a paraphrased setup clause ending in '~라며' introduces the topic, followed by a second, separately quoted clause closed with '고 밝혔다'. This two-layer nesting (paraphrase-then-quote, both attributed to the same named speaker in one sentence) is a distinct citation move from a flat single quotation, and it appeared independently in a different outlet's coverage of the same event (see ref:asiae-public-institution-reform and ref:mt-public-institution-reform for the same nested-quote pattern) — worth carrying as a genre convention, not a house habit.",
+      "evidence": "\"한성숙 국무총리는 3일 정부서울청사에서 ... 기자회견을 열고 \\\"세종시는 균형발전의 상징이자 중심축\\\"이라며 \\\"세종시를 국정 운영의 중심으로 행정중심복합도시를 완성해 나가겠다\\\"고 밝혔다.\" — two separately quoted clauses chained by '~이라며 ... 고 밝혔다', both attributed to the one named speaker."
+    },
+    {
+      "dimension": "information-density",
+      "verdict": "adopt",
+      "note": "The lead sentence stacks three abstract-noun outcomes into one predicate ('감축하고 ... 이전도 본격 추진한다'), a nominalization-dense construction (이전, 감축, 통합 as bare nouns rather than restated as full verb phrases) that packs several policy actions per clause rather than spreading them across separate sentences. This is a real density device, but it is also the trait most likely to read as bureaucratic/translationese if overused outside a hard-news lead — flagged for calibration, not blanket adoption.",
+      "evidence": "\"발전 5개사를 하나로 통합하는 등 역대 최대 규모인 109개 공공기관을 감축하고 내년 상반기부터 공공기관 이전도 본격 추진한다.\" — 통합, 감축, 이전 stacked as nominalized actions in one sentence."
+    }
+  ],
+  "strengths": [
+    "Inverted-pyramid lead compression: actor, concrete action, named targets, and a date all land in the opening sentence, background held for later.",
+    "Two-layer nested quotation ('~라며 \"...\" 고 밝혔다') attributing both a paraphrased framing clause and a separately quoted clause to one named speaker in a single sentence — corroborated independently in other outlets' coverage of the same event."
+  ],
+  "weaknesses": [
+    "The nominalization-stacked lead sentence (three policy-action nouns in one predicate) risks reading as administrative/translationese-adjacent density if the device is used outside a hard-news lead; this is noted as a calibration flag, not a general prescription.",
+    "Only the article's lead and one official quote were read, not the full piece; paragraph-level background compression beyond the opening is unverified."
+  ],
+  "applicable_to": {
+    "content_types": ["news"],
+    "audiences": ["general-reader", "professional-generalist"],
+    "artifacts": ["text/article"],
+    "surfaces": ["suengj-com"]
+  },
+  "authority_boundary": "craft_evidence_only",
+  "provenance_class": "external",
+  "notes": "corpus_role: discovery, assigned before reading. This record was read directly at the originating outlet (khan.co.kr), no mirror needed. Source: https://www.khan.co.kr/article/202609031641001/. Traits here (lead compression, nested quotation) are corroborated independently across the holdout records (ref:asiae-public-institution-reform, ref:mt-public-institution-reform), which cover the same news event from different outlets — see those records' notes for the specific corroborating sentences. No article text reproduced beyond the sentence fragments quoted as evidence, consistent with editorial/RIGHTS-AND-PROVENANCE.md's fail-to-reference rule."
+}

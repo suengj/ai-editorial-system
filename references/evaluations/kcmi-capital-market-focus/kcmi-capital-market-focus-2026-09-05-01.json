@@ -1,0 +1,49 @@
+{
+  "schema_version": "1.0.0",
+  "evaluation_id": "eval:kcmi-capital-market-focus-2026-09-05-01",
+  "ref_id": "ref:kcmi-capital-market-focus",
+  "modality": "text",
+  "evaluator": {
+    "type": "agent",
+    "agent": {
+      "runtime": "claude-code",
+      "model": "claude-sonnet-5"
+    }
+  },
+  "evaluated_at": "2026-09-05T05:40:00Z",
+  "calibration_ref": null,
+  "profile_ref": "editorial/profiles/reference/text.json",
+  "basis": "model_inference",
+  "corpus_role": "holdout",
+  "language": "ko-KR",
+  "dimensions": [
+    {
+      "dimension": "language-naturalness",
+      "verdict": "adopt",
+      "note": "자본시장연구원's '2026년 거시경제 주요 이슈' 자본시장포커스 article independently corroborates the graded-hedging trait already found at KDI (ref:kdi-economic-outlook-report, discovery), at a third institution and in a different subgenre (capital-markets commentary rather than a national macro forecast or an industry outlook). It reaches for the same family of evidential/probabilistic closing predicates rather than flat assertion: '것으로 전망된다' (projected/forecast to), '모습이다' (appears to be), and a stacked conditional-plus-modal caution ('~할 수 있다는 점에 유의해야 할 것이다'). This record validates the hedging trait; it does not originate it.",
+      "evidence": "\"2026년 국내 경제는 2.0%의 성장률로 완만한 회복세를 이어갈 것으로 전망된다.\" / \"...경제주체들의 불안도 커진 모습이다.\" / \"...RP시장의 위험이 증가할 수 있다는 점에 유의해야 할 것이다.\""
+    },
+    {
+      "dimension": "language-naturalness",
+      "verdict": "do_not_copy",
+      "note": "The stacked double-hedge on the risk-warning sentence ('~할 수 있다는 점에 유의해야 할 것이다' — modal possibility + a nominalized 'point to note' + a further modal obligation, three hedging layers in one clause) reads as house-specific caution-formula phrasing rather than a general report-genre convention; it was not observed at KDI or KIET in this pass. Flagging it as a publisher-local quirk, not something to reproduce as if it were how Korean institutional hedging generally works.",
+      "evidence": "\"금리 급등 및 변동성 확대 시 전술한 경로를 통해 RP시장의 위험이 증가할 수 있다는 점에 유의해야 할 것이다.\" — three stacked hedges plus a translationese-adjacent nominal phrase ('전술한 경로를 통해')."
+    }
+  ],
+  "strengths": [
+    "Independent-institution corroboration (a third institution, capital-markets subgenre) of graded causal/probabilistic hedging in report register: forecasts and risk claims close on evidential predicates ('것으로 전망된다', '모습이다') rather than flat declaratives, consistent with the same discipline found at KDI."
+  ],
+  "weaknesses": [
+    "The triple-stacked hedge-plus-caution formula on the RP-market risk sentence is this outlet's own house phrasing, not a corroborated cross-institution report convention — do_not_copy, not adopt, and it should not be generalized past this one document.",
+    "Only one 자본시장포커스 issue was read; broader claims about KCMI's register across its full publication series are not supported by this record."
+  ],
+  "applicable_to": {
+    "content_types": ["research", "academic"],
+    "audiences": ["domain-practitioner", "professional-generalist"],
+    "artifacts": ["text/article"],
+    "surfaces": ["suengj-com"]
+  },
+  "authority_boundary": "craft_evidence_only",
+  "provenance_class": "external",
+  "notes": "corpus_role: holdout, assigned before reading, per docs/architecture/LANGUAGE-QUALITY-ARCHITECTURE.md §7 — this record validates the graded-hedging trait found independently at ref:kdi-economic-outlook-report (and echoed at ref:kiet-economy-industry-outlook) and must never be read as originating it. Source: https://www.kcmi.re.kr/publications/pub_detail_view?syear=2026&zcd=002001016&zno=1897&cno=6716 ('2026년 거시경제 주요 이슈', 자본시장포커스). No article text reproduced beyond the three sentence fragments quoted as evidence, consistent with editorial/RIGHTS-AND-PROVENANCE.md's fail-to-reference rule."
+}

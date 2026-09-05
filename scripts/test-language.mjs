@@ -179,6 +179,7 @@ console.log('check 7: shared promotion sufficiency');
 {
   const bad = clone(basePack);
   bad.rules[2].evidence_refs = ['eval:only-one'];
+  bad.rules[2].holdout_refs = [];
   bad.rules[2].holdout_result = 'not_yet_tested';
   const { issues, notes } = checkSharedPromotion(bad, 'zz-ZZ');
   check('an active pack: insufficient shared-promotion evidence is a FAILURE', hasCode(issues, CODES.SHARED_PROMOTION_INSUFFICIENT), JSON.stringify(issues));
@@ -188,6 +189,7 @@ console.log('check 7: shared promotion sufficiency');
   const bad = clone(basePack);
   bad.status = 'draft';
   bad.rules[2].evidence_refs = ['eval:only-one'];
+  bad.rules[2].holdout_refs = [];
   bad.rules[2].holdout_result = 'not_yet_tested';
   const { issues, notes } = checkSharedPromotion(bad, 'zz-ZZ');
   check('a draft pack: the same insufficiency is downgraded to a NOTE', hasCode(notes, CODES.SHARED_PROMOTION_INSUFFICIENT), JSON.stringify(notes));
@@ -231,6 +233,25 @@ console.log('check 7: shared promotion sufficiency');
   const { issues, notes } = checkSharedPromotion(ok, 'zz-ZZ');
   check('a source_local empirical rule with no evidence_refs is exempt',
     issues.length === 0 && notes.length === 0, JSON.stringify({ issues, notes }));
+}
+
+{
+  // Derivation and validation may not be mixed: a holdout record listed as
+  // evidence destroys the holdout; a discovery record listed as corroboration
+  // "confirms" the rule with the material that produced it.
+  const bad = clone(basePack);
+  bad.rules[2].holdout_refs = ['eval:discovery-record'];
+  const { issues } = checkHoldoutLeakage(bad, 'zz-ZZ', { evaluationsDir: EVAL_FIXTURES_DIR, evaluationFiles: fixtureEvalFiles });
+  check('a discovery record listed under holdout_refs is rejected',
+    hasCode(issues, CODES.HOLDOUT_REF_NOT_HOLDOUT), JSON.stringify(issues));
+}
+{
+  const bad = clone(basePack);
+  bad.rules[2].evidence_refs = ['eval:discovery-record', 'eval:discovery-record-two'];
+  bad.rules[2].holdout_refs = [];
+  const { issues } = checkSharedPromotion(bad, 'zz-ZZ');
+  check('two derivation refs with no independent holdout corroboration still fail promotion',
+    hasCode(issues, CODES.SHARED_PROMOTION_INSUFFICIENT), JSON.stringify(issues));
 }
 
 // --- 8. genre ⊥ audience -------------------------------------------------------

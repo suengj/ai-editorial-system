@@ -42,7 +42,7 @@
  * excluded from this parity group rather than silently treated as a match.
  */
 
-import { readFileSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -119,6 +119,73 @@ console.log('\n$defs.evaluator parity (human/agent evaluator group; l1-review is
     check('schemas/l1-review.schema.json: $defs.evaluator is deliberately NOT identical to the plain human/agent evaluator (full runtime lineage instead)',
       !same(first.shape, l1Evaluator),
       'l1-review.schema.json#/$defs/evaluator now matches the plain evaluator shape — if this was intentional, update this test\'s comment and expectation together, do not just flip the assertion');
+  }
+}
+
+// --- axis-vocabulary parity ---------------------------------------------------
+// A second class of copy: json-schema-lite cannot read editorial/profiles/,
+// so any schema enumerating profile ids holds a hand-maintained copy of an
+// axis's vocabulary. That copy drifts silently — SUE-570 added the
+// `child-upper-elementary` audience profile and
+// reference-evaluation.schema.json's `applicable_to.audiences` enum was not
+// updated, so five valid corpus records failed schema validation months
+// later with a message that read like the records were wrong.
+//
+// Rule: if a schema enum contains ANY id from an axis, it must contain ALL
+// of them. An enum that overlaps an axis is a copy of it; a partial copy is
+// drift, not a deliberate subset. (A genuinely intended subset would need a
+// different justification than this test allows — say so here and exempt it
+// explicitly rather than letting it look like drift.)
+console.log('\naxis vocabulary copies in schemas/');
+{
+  const axisIds = (dir) => new Set(
+    readdirSync(resolve(ROOT, `editorial/profiles/${dir}`))
+      .filter((f) => f.endsWith('.json'))
+      .map((f) => f.replace(/\.json$/, '')));
+
+  const axes = { audience: axisIds('audience'), content: axisIds('content'), surface: axisIds('surface') };
+
+  // Known, deliberately-unfixed drift. Listed by exact path so it stays
+  // visible instead of being silently tolerated, and so a NEW drift in the
+  // same file still fails.
+  //
+  // article.schema.json predates the `academic` and `promotional` content
+  // profiles (added with V2's axis registry). Widening V1's article contract
+  // enum is a change to a certified V1 authority whose per-type required
+  // fields live in scripts/lib/article-contract-core.mjs — it needs its own
+  // issue and its own evidence, not a drive-by edit inside SUE-607/604.
+  // Consequence while it stands: an `academic` or `promotional` content
+  // profile cannot be carried by an Article, so those two profiles are
+  // reachable from L1 and corpus records but not from the article contract.
+  const KNOWN_DRIFT = new Set([
+    'schemas/article.schema.json/properties/content_type::content',
+  ]);
+
+  const enums = [];
+  const walk = (node, path) => {
+    if (Array.isArray(node)) { node.forEach((n) => walk(n, path)); return; }
+    if (!node || typeof node !== 'object') return;
+    if (Array.isArray(node.enum)) enums.push({ path, values: node.enum.filter((v) => typeof v === 'string') });
+    for (const [k, v] of Object.entries(node)) walk(v, `${path}/${k}`);
+  };
+
+  for (const file of readdirSync(resolve(ROOT, 'schemas')).filter((f) => f.endsWith('.json')).sort()) {
+    enums.length = 0;
+    walk(load(`schemas/${file}`), '');
+    for (const { path, values } of enums) {
+      const present = new Set(values);
+      for (const [axis, ids] of Object.entries(axes)) {
+        const overlap = [...present].filter((v) => ids.has(v));
+        if (overlap.length === 0) continue;
+        const missing = [...ids].filter((v) => !present.has(v)).sort();
+        if (KNOWN_DRIFT.has(`schemas/${file}${path}::${axis}`)) {
+          console.log(`  KNOWN  schemas/${file}${path}: missing ${JSON.stringify(missing)} from the ${axis} axis — recorded gap, see KNOWN_DRIFT`);
+          continue;
+        }
+        check(`schemas/${file}${path}: covers every ${axis}-axis id`, missing.length === 0,
+          `enum copies the ${axis} axis but is missing ${JSON.stringify(missing)} — add them, or the axis profile exists and nothing can reference it`);
+      }
+    }
   }
 }
 

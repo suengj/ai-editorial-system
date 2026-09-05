@@ -6,12 +6,22 @@
   "type": "object",
   "additionalProperties": false,
   "required": [
-    "schema_version", "evaluation_id", "ref_id", "modality", "evaluator",
-    "evaluated_at", "basis", "dimensions", "applicable_to", "authority_boundary",
+    "schema_version",
+    "evaluation_id",
+    "ref_id",
+    "modality",
+    "evaluator",
+    "evaluated_at",
+    "basis",
+    "dimensions",
+    "applicable_to",
+    "authority_boundary",
     "provenance_class"
   ],
   "properties": {
-    "schema_version": { "const": "1.0.0" },
+    "schema_version": {
+      "const": "1.0.0"
+    },
     "evaluation_id": {
       "description": "Stable id. On disk at references/evaluations/<ref-id-slug>/<slug-after-eval:>.json.",
       "type": "string",
@@ -24,13 +34,26 @@
     },
     "modality": {
       "description": "Which evaluate-reference profile under editorial/profiles/reference/ this record was produced against.",
-      "enum": ["text", "visual", "audio", "video"]
+      "enum": [
+        "text",
+        "visual",
+        "audio",
+        "video"
+      ]
     },
-    "evaluator": { "$ref": "#/$defs/evaluator" },
-    "evaluated_at": { "type": "string", "format": "date-time" },
+    "evaluator": {
+      "$ref": "#/$defs/evaluator"
+    },
+    "evaluated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
     "calibration_ref": {
       "description": "The calibration snapshot active when this evaluation was made (AES-V2.10). Null when no calibration has been activated yet.",
-      "type": ["string", "null"],
+      "type": [
+        "string",
+        "null"
+      ],
       "pattern": "^calibration:[a-z0-9]+(-[a-z0-9]+)*@v[0-9]+$"
     },
     "profile_ref": {
@@ -40,29 +63,57 @@
     },
     "basis": {
       "description": "explicit_human_feedback: the human said it. model_inference: an agent judged it. Load-bearing — agent consensus may never silently stand in for human preference.",
-      "enum": ["explicit_human_feedback", "model_inference"]
+      "enum": [
+        "explicit_human_feedback",
+        "model_inference"
+      ]
     },
     "dimensions": {
       "description": "Per-dimension craft verdicts. Dimension ids come from the matching modality profile's `dimensions[].id`.",
       "type": "array",
-      "items": { "$ref": "#/$defs/dimension_verdict" }
+      "items": {
+        "$ref": "#/$defs/dimension_verdict"
+      }
     },
-    "strengths": { "type": "array", "items": { "type": "string", "minLength": 1 } },
-    "weaknesses": { "type": "array", "items": { "type": "string", "minLength": 1 } },
-    "applicable_to": { "$ref": "#/$defs/applicability" },
+    "strengths": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "weaknesses": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "applicable_to": {
+      "$ref": "#/$defs/applicability"
+    },
     "authority_boundary": {
       "description": "This record grants craft evidence only, never factual authority. A reference may never establish a fact.",
       "const": "craft_evidence_only"
     },
     "provenance_class": {
       "description": "Where this reference actually came from. Load-bearing against self-reinforcement: as this system generates more, its own outputs become the most plentiful and most semantically relevant references, so selection that ignores origin quietly converges on its own tics.",
-      "enum": ["external", "owner_created", "generated_output"]
+      "enum": [
+        "external",
+        "owner_created",
+        "generated_output"
+      ]
     },
     "promotion": {
       "description": "Present only when a generated_output reference has been promoted to a reusable positive reference (i.e. carries an adopt verdict). Publication is not promotion and an L1 pass is not promotion — see references/REFERENCE-EVALUATION-PROTOCOL.md. Absent on every unpromoted record.",
       "type": "object",
       "additionalProperties": false,
-      "required": ["authorized_by", "basis", "evidence_refs", "promoted_at"],
+      "required": [
+        "authorized_by",
+        "basis",
+        "evidence_refs",
+        "promoted_at"
+      ],
       "properties": {
         "authorized_by": {
           "description": "Who or what authorized the promotion, e.g. \"human:owner\".",
@@ -77,9 +128,15 @@
         "evidence_refs": {
           "description": "Ids of the feedback/evaluation records or explicit owner declaration this promotion rests on. Must be non-empty.",
           "type": "array",
-          "items": { "type": "string", "minLength": 1 }
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
         },
-        "promoted_at": { "type": "string", "format": "date-time" }
+        "promoted_at": {
+          "type": "string",
+          "format": "date-time"
+        }
       }
     },
     "supersedes": {
@@ -89,31 +146,52 @@
     },
     "corpus_role": {
       "description": "AES-V2.17 / SUE-607, docs/architecture/LANGUAGE-QUALITY-ARCHITECTURE.md §7. discovery: traits may be derived from this reference. holdout: this reference validates a trait already derived elsewhere and must never have informed one. The assignment is made before trait extraction begins, never chosen afterwards to suit a result — a reference that has informed a trait can never be moved into holdout. Optional because not every reference feeds a language calibration.",
-      "enum": ["discovery", "holdout"]
+      "enum": [
+        "discovery",
+        "holdout"
+      ]
     },
     "language": {
       "description": "The BCP-47-style language subtag this reference is evidence about, e.g. ko or ko-KR. Optional because a non-text reference (visual, audio, video) may not be about a language at all.",
       "type": "string",
       "pattern": "^[a-z]{2}(-[A-Z]{2})?$"
     },
-    "notes": { "type": "string" }
+    "notes": {
+      "type": "string"
+    }
   },
   "$defs": {
     "evaluator": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["type"],
+      "required": [
+        "type"
+      ],
       "properties": {
-        "type": { "enum": ["human", "agent"] },
+        "type": {
+          "enum": [
+            "human",
+            "agent"
+          ]
+        },
         "agent": {
           "description": "Present only when type is \"agent\".",
           "type": "object",
           "additionalProperties": false,
-          "required": ["runtime"],
+          "required": [
+            "runtime"
+          ],
           "properties": {
-            "runtime": { "type": "string", "minLength": 1 },
-            "model": { "type": "string" },
-            "version": { "type": "string" }
+            "runtime": {
+              "type": "string",
+              "minLength": 1
+            },
+            "model": {
+              "type": "string"
+            },
+            "version": {
+              "type": "string"
+            }
           }
         }
       }
@@ -121,38 +199,88 @@
     "dimension_verdict": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["dimension", "verdict"],
+      "required": [
+        "dimension",
+        "verdict"
+      ],
       "properties": {
-        "dimension": { "type": "string", "minLength": 1 },
+        "dimension": {
+          "type": "string",
+          "minLength": 1
+        },
         "verdict": {
           "description": "do_not_copy: the trait is admired but copying it would be imitation, not a transferable craft lesson.",
-          "enum": ["adopt", "avoid", "do_not_copy", "neutral"]
+          "enum": [
+            "adopt",
+            "avoid",
+            "do_not_copy",
+            "neutral"
+          ]
         },
-        "note": { "type": "string" },
-        "evidence": { "type": "string" }
+        "note": {
+          "type": "string"
+        },
+        "evidence": {
+          "type": "string"
+        }
       }
     },
     "applicability": {
-      "description": "What this evaluation is cheap to select for later. Ids are the pinned vocabularies in docs/architecture/V2-EDITORIAL-LEARNING-CORE.md.",
+      "description": "What this evaluation is cheap to select for later. Ids are the profile-axis vocabularies in editorial/profiles/ — content_types, audiences, and surfaces each enumerate exactly the ids that axis holds. json-schema-lite cannot read the axis registry, so these enums are copies; scripts/test-schema-parity.mjs asserts they have not drifted from it. child-upper-elementary was added to the audience axis by SUE-570 and this copy was missed, which is the drift that guard now exists to catch.",
       "type": "object",
       "additionalProperties": false,
-      "required": ["content_types", "audiences", "artifacts", "surfaces"],
+      "required": [
+        "content_types",
+        "audiences",
+        "artifacts",
+        "surfaces"
+      ],
       "properties": {
         "content_types": {
           "type": "array",
-          "items": { "enum": ["research", "view", "news", "note", "project", "academic", "promotional"] }
+          "items": {
+            "enum": [
+              "research",
+              "view",
+              "news",
+              "note",
+              "project",
+              "academic",
+              "promotional"
+            ]
+          }
         },
         "audiences": {
           "type": "array",
-          "items": { "enum": ["general-reader", "professional-generalist", "domain-practitioner", "domain-expert", "beginner-learner"] }
+          "items": {
+            "enum": [
+              "beginner-learner",
+              "child-upper-elementary",
+              "domain-expert",
+              "domain-practitioner",
+              "general-reader",
+              "professional-generalist"
+            ]
+          }
         },
         "artifacts": {
           "type": "array",
-          "items": { "type": "string", "pattern": "^(text|visual|audio|video)/[a-z0-9]+(-[a-z0-9]+)*$" }
+          "items": {
+            "type": "string",
+            "pattern": "^(text|visual|audio|video)/[a-z0-9]+(-[a-z0-9]+)*$"
+          }
         },
         "surfaces": {
           "type": "array",
-          "items": { "enum": ["suengj-com", "notebooklm", "academic-paper", "newsletter", "youtube-script"] }
+          "items": {
+            "enum": [
+              "suengj-com",
+              "notebooklm",
+              "academic-paper",
+              "newsletter",
+              "youtube-script"
+            ]
+          }
         }
       }
     }

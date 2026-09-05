@@ -54,6 +54,8 @@ export const CODES = Object.freeze({
   UNKNOWN_AUDIENCE: 'unknown-audience-scope',
   UNKNOWN_ALIAS_AUDIENCE: 'unknown-alias-audience',
   HOLDOUT_LEAKAGE: 'holdout-leakage',
+  HOLDOUT_REF_NOT_HOLDOUT: 'holdout-ref-is-not-a-holdout-record',
+  NO_HOLDOUT_CORROBORATION: 'promotion-without-holdout-corroboration',
   DANGLING_EVIDENCE_REF: 'dangling-evidence-ref',
   UNASSIGNED_CORPUS_ROLE: 'unassigned-corpus-role',
   POINTLESS_ALIAS: 'pointless-audience-alias',
@@ -210,18 +212,31 @@ export function checkSharedPromotion(pack, where) {
     if (!EMPIRICAL_AUTHORITY_CLASSES.has(rule.authority_class)) continue;
     if (rule.generality === 'source_local') continue;
     const ruleWhere = `${where}:${rule.id}`;
-    const { insufficientEvidence } = checkPromotionSufficiency({ evidenceRefs: rule.evidence_refs });
+    // Two independent institutions, at least one of which never informed the
+    // rule. The count is taken across BOTH ref lists on purpose: a trait
+    // derived from one discovery source and confirmed at an independent
+    // holdout institution rests on two institutions, which is what the
+    // multi-source rule is actually about. Requiring two *discovery* refs
+    // instead would have forced the corroborating source into the derivation
+    // set — destroying the holdout to satisfy a count.
+    const derivation = (rule.evidence_refs ?? []).filter((r) => typeof r === 'string');
+    const validation = (rule.holdout_refs ?? []).filter((r) => typeof r === 'string');
+    const { insufficientEvidence } = checkPromotionSufficiency({ evidenceRefs: [...derivation, ...validation] });
     const holdoutOk = HOLDOUT_OK.has(rule.holdout_result);
-    if (insufficientEvidence || !holdoutOk) {
+    const noDerivation = derivation.length === 0;
+    const noCorroboration = validation.length === 0;
+    if (insufficientEvidence || !holdoutOk || noDerivation || noCorroboration) {
       const isShared = rule.generality === 'shared';
       const code = isShared ? CODES.SHARED_PROMOTION_INSUFFICIENT : CODES.EMPIRICAL_PROMOTION_INSUFFICIENT;
       const reasons = [];
-      if (insufficientEvidence) reasons.push('fewer than two evidence_refs');
+      if (insufficientEvidence) reasons.push('fewer than two supporting refs across evidence_refs + holdout_refs');
+      if (noDerivation) reasons.push('no evidence_refs — nothing records where the trait came from');
+      if (noCorroboration) reasons.push('no holdout_refs — nothing independent has confirmed it');
       if (!holdoutOk) reasons.push(`holdout_result is "${rule.holdout_result ?? 'undefined'}", not improved/neutral`);
       const reach = isShared
         ? 'generality "shared" claims the trait holds across genres'
         : `generality "${rule.generality}" claims the trait reaches past the source it was observed in`;
-      const message = `${reach}; on empirical authority_class "${rule.authority_class}" that requires at least two evidence_refs and a holdout_result of improved or neutral (${reasons.join('; ')}) — LANGUAGE-QUALITY-ARCHITECTURE.md §6/§7. Scope it "source_local" until the evidence exists.`;
+      const message = `${reach}; on empirical authority_class "${rule.authority_class}" that requires derivation evidence, independent holdout corroboration, and a holdout_result of improved or neutral (${reasons.join('; ')}) — LANGUAGE-QUALITY-ARCHITECTURE.md §6/§7. Scope it "source_local" until the evidence exists.`;
       if (isDraft) notes.push(issue(code, ruleWhere, `${message} — reported as a NOTE because pack status is "draft"`));
       else issues.push(issue(code, ruleWhere, message));
     }
@@ -301,11 +316,19 @@ export function checkHoldoutLeakage(pack, where, {
 
   for (const rule of pack.rules ?? []) {
     const ruleWhere = `${where}:${rule.id}`;
-    for (const ref of rule.evidence_refs ?? []) {
+    // Both ref lists are walked, and each is checked against the role it is
+    // allowed to name: evidence_refs (derivation) may never be holdout;
+    // holdout_refs (validation) must be. Mixing them in either direction
+    // collapses the split that makes the holdout mean anything.
+    const refs = [
+      ...(rule.evidence_refs ?? []).map((r) => ({ ref: r, field: 'evidence_refs' })),
+      ...(rule.holdout_refs ?? []).map((r) => ({ ref: r, field: 'holdout_refs' })),
+    ];
+    for (const { ref, field } of refs) {
       if (typeof ref !== 'string') continue;
       const resolved = resolveEvidenceRef(ref, { evaluationsDir, feedbackDir });
       if (!resolved) {
-        issues.push(issue(CODES.DANGLING_EVIDENCE_REF, ruleWhere, `evidence_refs "${ref}" does not resolve to a record on disk`));
+        issues.push(issue(CODES.DANGLING_EVIDENCE_REF, ruleWhere, `${field} "${ref}" does not resolve to a record on disk`));
         continue;
       }
       if (!ref.startsWith('eval:')) continue; // not a reference-evaluation record; no corpus_role to check
@@ -318,12 +341,15 @@ export function checkHoldoutLeakage(pack, where, {
       } catch {
         continue; // unparseable evaluation file is reported by the registry validator, not here
       }
-      if (record.corpus_role === 'holdout') {
+      if (record.corpus_role == null) {
+        notes.push(issue(CODES.UNASSIGNED_CORPUS_ROLE, ruleWhere,
+          `${field} "${ref}" resolves to a reference-evaluation record with no corpus_role — not yet assigned, not a leak, but should be reported`));
+      } else if (field === 'evidence_refs' && record.corpus_role === 'holdout') {
         issues.push(issue(CODES.HOLDOUT_LEAKAGE, ruleWhere,
           `evidence_refs "${ref}" resolves to a reference-evaluation record with corpus_role "holdout" — a trait derived from holdout material has destroyed the holdout (LANGUAGE-QUALITY-ARCHITECTURE.md §7)`));
-      } else if (record.corpus_role == null) {
-        notes.push(issue(CODES.UNASSIGNED_CORPUS_ROLE, ruleWhere,
-          `evidence_refs "${ref}" resolves to a reference-evaluation record with no corpus_role — not yet assigned, not a leak, but should be reported`));
+      } else if (field === 'holdout_refs' && record.corpus_role !== 'holdout') {
+        issues.push(issue(CODES.HOLDOUT_REF_NOT_HOLDOUT, ruleWhere,
+          `holdout_refs "${ref}" resolves to a record with corpus_role "${record.corpus_role}" — holdout_refs names what the rule was TESTED against, and a discovery record cannot test a rule it helped derive`));
       }
     }
   }

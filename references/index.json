@@ -1,7 +1,7 @@
 {
   "counts": {
     "by_provenance_class": {
-      "external": 3,
+      "external": 17,
       "generated_output": 0,
       "owner_created": 0
     },
@@ -32,6 +32,39 @@
     },
     {
       "basis": "model_inference",
+      "evaluated_at": "2026-09-05T06:20:00Z",
+      "evaluation_id": "eval:asiae-public-institution-reform-2026-09-05-01",
+      "evaluator_type": "agent",
+      "modality": "text",
+      "path": "references/evaluations/asiae-public-institution-reform/asiae-public-institution-reform-2026-09-05-01.json",
+      "promoted": false,
+      "provenance_class": "external",
+      "ref_id": "ref:asiae-public-institution-reform"
+    },
+    {
+      "basis": "model_inference",
+      "evaluated_at": "2026-09-05T04:10:00Z",
+      "evaluation_id": "eval:bok-easy-economics-elementary-2026-09-05-01",
+      "evaluator_type": "agent",
+      "modality": "text",
+      "path": "references/evaluations/bok-easy-economics-elementary/bok-easy-economics-elementary-2026-09-05-01.json",
+      "promoted": false,
+      "provenance_class": "external",
+      "ref_id": "ref:bok-easy-economics-elementary"
+    },
+    {
+      "basis": "model_inference",
+      "evaluated_at": "2026-09-05T05:00:00Z",
+      "evaluation_id": "eval:bok-economic-outlook-report-2026-09-05-01",
+      "evaluator_type": "agent",
+      "modality": "text",
+      "path": "references/evaluations/bok-economic-outlook-report/bok-economic-outlook-report-2026-09-05-01.json",
+      "promoted": false,
+      "provenance_class": "external",
+      "ref_id": "ref:bok-economic-outlook-report"
+    },
+    {
+      "basis": "model_inference",
       "evaluated_at": "2026-09-05T02:15:00Z",
       "evaluation_id": "eval:denoiser-consumption-architecture-2026-09-05-01",
       "evaluator_type": "agent",
@@ -40,6 +73,127 @@
       "promoted": false,
       "provenance_class": "external",
       "ref_id": "ref:denoiser-consumption-architecture"
+    },
+    {
+      "basis": "model_inference",
+      "evaluated_at": "2026-09-05T04:00:00Z",
+      "evaluation_id": "eval:econoi-childrens-economic-newspaper-2026-09-05-01",
+      "evaluator_type": "agent",
+      "modality": "text",
+      "path": "references/evaluations/econoi-childrens-economic-newspaper/econoi-childrens-economic-newspaper-2026-09-05-01.json",
+      "promoted": false,
+      "provenance_class": "external",
+      "ref_id": "ref:econoi-childrens-economic-newspaper"
+    },
+    {
+      "basis": "model_inference",
+      "evaluated_at": "2026-09-05T06:00:00Z",
+      "evaluation_id": "eval:joongang-ilbo-public-institution-reform-2026-09-05-01",
+      "evaluator_type": "agent",
+      "modality": "text",
+      "path": "references/evaluations/joongang-ilbo-public-institution-reform/joongang-ilbo-public-institution-reform-2026-09-05-01.json",
+      "promoted": false,
+      "provenance_class": "external",
+      "ref_id": "ref:joongang-ilbo-public-institution-reform"
+    },
+    {
+      "basis": "model_inference",
+      "evaluated_at": "2026-09-05T05:40:00Z",
+      "evaluation_id": "eval:kcmi-capital-market-focus-2026-09-05-01",
+      "evaluator_type": "agent",
+      "modality": "text",
+      "path": "references/evaluations/kcmi-capital-market-focus/kcmi-capital-market-focus-2026-09-05-01.json",
+      "promoted": false,
+      "provenance_class": "external",
+      "ref_id": "ref:kcmi-capital-market-focus"
+    },
+    {
+      "basis": "model_inference",
+      "evaluated_at": "2026-09-05T05:20:00Z",
+      "evaluation_id": "eval:kdi-economic-outlook-report-2026-09-05-01",
+      "evaluator_type": "agent",
+      "modality": "text",
+      "path": "references/evaluations/kdi-economic-outlook-report/kdi-economic-outlook-report-2026-09-05-01.json",
+      "promoted": false,
+      "provenance_class": "external",
+      "ref_id": "ref:kdi-economic-outlook-report"
+    },
+    {
+      "basis": "model_inference",
+      "evaluated_at": "2026-09-05T06:10:00Z",
+      "evaluation_id": "eval:khan-public-institution-reform-2026-09-05-01",
+      "evaluator_type": "agent",
+      "modality": "text",
+      "path": "references/evaluations/khan-public-institution-reform/khan-public-institution-reform-2026-09-05-01.json",
+      "promoted": false,
+      "provenance_class": "external",
+      "ref_id": "ref:khan-public-institution-reform"
+    },
+    {
+      "basis": "model_inference",
+      "evaluated_at": "2026-09-05T05:30:00Z",
+      "evaluation_id": "eval:kiet-economy-industry-outlook-2026-09-05-01",
+      "evaluator_type": "agent",
+      "modality": "text",
+      "path": "references/evaluations/kiet-economy-industry-outlook/kiet-economy-industry-outlook-2026-09-05-01.json",
+      "promoted": false,
+      "provenance_class": "external",
+      "ref_id": "ref:kiet-economy-industry-outlook"
+    },
+    {
+      "basis": "model_inference",
+      "evaluated_at": "2026-09-05T05:00:00Z",
+      "evaluation_id": "eval:kma-kids-weather-classroom-2026-09-05-01",
+      "evaluator_type": "agent",
+      "modality": "text",
+      "path": "references/evaluations/kma-kids-weather-classroom/kma-kids-weather-classroom-2026-09-05-01.json",
+      "promoted": false,
+      "provenance_class": "external",
+      "ref_id": "ref:kma-kids-weather-classroom"
+    },
+    {
+      "basis": "model_inference",
+      "evaluated_at": "2026-09-05T05:20:00Z",
+      "evaluation_id": "eval:mofe-kids-economics-classroom-2026-09-05-01",
+      "evaluator_type": "agent",
+      "modality": "text",
+      "path": "references/evaluations/mofe-kids-economics-classroom/mofe-kids-economics-classroom-2026-09-05-01.json",
+      "promoted": false,
+      "provenance_class": "external",
+      "ref_id": "ref:mofe-kids-economics-classroom"
+    },
+    {
+      "basis": "model_inference",
+      "evaluated_at": "2026-09-05T06:30:00Z",
+      "evaluation_id": "eval:mt-public-institution-reform-2026-09-05-01",
+      "evaluator_type": "agent",
+      "modality": "text",
+      "path": "references/evaluations/mt-public-institution-reform/mt-public-institution-reform-2026-09-05-01.json",
+      "promoted": false,
+      "provenance_class": "external",
+      "ref_id": "ref:mt-public-institution-reform"
+    },
+    {
+      "basis": "model_inference",
+      "evaluated_at": "2026-09-05T05:10:00Z",
+      "evaluation_id": "eval:nabo-economic-outlook-report-2026-09-05-01",
+      "evaluator_type": "agent",
+      "modality": "text",
+      "path": "references/evaluations/nabo-economic-outlook-report/nabo-economic-outlook-report-2026-09-05-01.json",
+      "promoted": false,
+      "provenance_class": "external",
+      "ref_id": "ref:nabo-economic-outlook-report"
+    },
+    {
+      "basis": "model_inference",
+      "evaluated_at": "2026-09-05T05:10:00Z",
+      "evaluation_id": "eval:nibr-bris-child-biology-encyclopedia-2026-09-05-01",
+      "evaluator_type": "agent",
+      "modality": "text",
+      "path": "references/evaluations/nibr-bris-child-biology-encyclopedia/nibr-bris-child-biology-encyclopedia-2026-09-05-01.json",
+      "promoted": false,
+      "provenance_class": "external",
+      "ref_id": "ref:nibr-bris-child-biology-encyclopedia"
     }
   ],
   "generated": true,

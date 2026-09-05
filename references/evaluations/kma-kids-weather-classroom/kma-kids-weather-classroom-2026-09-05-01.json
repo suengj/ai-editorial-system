@@ -1,0 +1,52 @@
+{
+  "schema_version": "1.0.0",
+  "evaluation_id": "eval:kma-kids-weather-classroom-2026-09-05-01",
+  "ref_id": "ref:kma-kids-weather-classroom",
+  "modality": "text",
+  "evaluator": {
+    "type": "agent",
+    "agent": {
+      "runtime": "claude-code",
+      "model": "claude-sonnet-5"
+    }
+  },
+  "evaluated_at": "2026-09-05T05:00:00Z",
+  "calibration_ref": null,
+  "profile_ref": "editorial/profiles/reference/text.json",
+  "basis": "model_inference",
+  "corpus_role": "discovery",
+  "language": "ko-KR",
+  "dimensions": [
+    {
+      "dimension": "audience-suitability",
+      "verdict": "avoid",
+      "note": "기상청 어린이 기상교실 (kma.go.kr/kids) is explicitly labelled a children's section, yet the '태풍이란?' entry defines the concept with an unglossed technical threshold definition, not a concrete scene. No familiar image (wind, rain, a spinning cloud) precedes the term; the term is defined by its meteorological diagnostic criteria directly. This is the anti-pattern the audience profile names under a different guise: not baby-talk, but the opposite failure — a page that carries a 'child' label without any of the audience-suitability adaptation (concreteness, glossing, hedging) the label implies. Worth extracting precisely because it shows what 'labelled child, not actually adapted' looks like at the sentence level, as distinct from adult prose that was never meant for children.",
+      "evidence": "'태풍이란?' page (kma.go.kr/kids/221.jsp): \"태풍은 열대저기압 중에서 중심기압이 950헥토파스칼 이하이고 최대풍속이 17m/s 이상인 폭풍을 말합니다.\" — defines by numeric meteorological thresholds (헥토파스칼, m/s) with no everyday-scene lead-in and no gloss of 열대저기압."
+    },
+    {
+      "dimension": "audience-suitability",
+      "verdict": "avoid",
+      "note": "A second passage found via search under the same children's section explains typhoon formation using unglossed physical-geography vocabulary (저위도/고위도 열에너지 불균형, 대류구름, 태양의 고도각) with no concrete scene, no analogy, and no restatement — this is denser and more abstract than the '태풍이란?' definition itself, suggesting the density issue is not an isolated slip but a pattern across this section's explanatory copy.",
+      "evidence": "\"지구는 구형으로 되어 있어 저위도와 고위도 사이에는 열에너지 불균형이 나타나며, 태양의 고도각이 높아 많은 에너지를 축적한 적도부근의 바다에서는 대류구름들이 만들어집니다.\""
+    },
+    {
+      "dimension": "content-type-fit",
+      "verdict": "neutral",
+      "note": "This is a government agency's own kids micro-site (Q&A-organized weather facts), not a news or note piece; the finding above is scoped to audience-suitability, not to how a content type should register for a child audience."
+    }
+  ],
+  "strengths": [],
+  "weaknesses": [
+    "Institutional-register default under a 'child' label: a page explicitly addressed to children defines a phenomenon by its technical diagnostic thresholds (기압, 풍속 in specialist units) rather than a concrete scene, and a related passage layers additional unglossed physical-geography vocabulary on top with no restatement — the opposite failure from baby-talk, but an audience-suitability failure all the same, and a repeatable one worth checking for in any 'official child page' before treating its label as evidence of adaptation.",
+    "No hedging behaviour was observed to evaluate either way in the passages read; this record makes no claim about how this source handles uncertainty."
+  ],
+  "applicable_to": {
+    "content_types": ["news", "note"],
+    "audiences": ["child-upper-elementary"],
+    "artifacts": ["text/article"],
+    "surfaces": ["suengj-com"]
+  },
+  "authority_boundary": "craft_evidence_only",
+  "provenance_class": "external",
+  "notes": "This record is evidence about the child-upper-elementary AUDIENCE, not a genre: the finding is that an institution's own 'child' label does not certify audience-suitability, and that mismatch is what a child-facing piece on any content type must guard against, not something specific to a weather micro-site. 'beginner-learner' is deliberately omitted from applicable_to.audiences here because an adult beginner would generally tolerate this register (specialist thresholds and physical-geography vocabulary are ordinary for an adult general reader); the failure is age-specific, not novice-specific, so scoping to 'beginner-learner' would misstate the finding. Requires the applicability.audiences enum in schemas/reference-evaluation.schema.json to admit 'child-upper-elementary' (flagged on the SUE-604 discovery/holdout pair already in this corpus; not yet present as of this writing). Only two short passages were read (each under two sentences); this is not a survey of the whole kids.kma.go.kr section, and no article body was reproduced beyond the quoted evidence fragments, consistent with editorial/RIGHTS-AND-PROVENANCE.md's fail-to-reference rule. corpus_role: discovery, assigned before extraction; ref:nibr-bris-child-biology-encyclopedia is the paired holdout that independently corroborates this same anti-pattern from a different institution (National Institute of Biological Resources vs. Korea Meteorological Administration)."
+}

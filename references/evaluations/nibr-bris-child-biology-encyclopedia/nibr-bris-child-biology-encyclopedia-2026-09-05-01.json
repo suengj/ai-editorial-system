@@ -1,0 +1,46 @@
+{
+  "schema_version": "1.0.0",
+  "evaluation_id": "eval:nibr-bris-child-biology-encyclopedia-2026-09-05-01",
+  "ref_id": "ref:nibr-bris-child-biology-encyclopedia",
+  "modality": "text",
+  "evaluator": {
+    "type": "agent",
+    "agent": {
+      "runtime": "claude-code",
+      "model": "claude-sonnet-5"
+    }
+  },
+  "evaluated_at": "2026-09-05T05:10:00Z",
+  "calibration_ref": null,
+  "profile_ref": "editorial/profiles/reference/text.json",
+  "basis": "model_inference",
+  "corpus_role": "holdout",
+  "language": "ko-KR",
+  "dimensions": [
+    {
+      "dimension": "audience-suitability",
+      "verdict": "avoid",
+      "note": "국립생물자원관's 어린이 생물도감 (BRIS child illustrated-encyclopedia entries, e.g. the 가는갯능쟁이 species entry) reads as an unmodified taxonomic-description register: classification-family-name, distribution, then morphology, with 한자어 terms left unglossed. This independently corroborates ref:kma-kids-weather-classroom's finding from a different institution (National Institute of Biological Resources, a species-data agency, vs. Korea Meteorological Administration) and a different domain (botany vs. meteorology): a resource explicitly labelled for children can carry an entirely unmodified specialist register with no concrete-scene lead-in, no gloss, and no restatement. This record was assigned holdout before reading and does not originate this finding; it validates the trait already found at ref:kma-kids-weather-classroom.",
+      "evidence": "가는갯능쟁이 (Atriplex gmelinii) entry: \"명아주과 1년생 초본으로 우리나라 중부 이남 해변에 분포한다.\" — opens with family classification (명아주과) and lifecycle term (1년생 초본) before any concrete image of the plant, and 명아주과/1년생 초본 are not glossed anywhere in the passage read."
+    },
+    {
+      "dimension": "audience-suitability",
+      "verdict": "neutral",
+      "note": "Only a single short species entry was read (one to two sentences); the finding above is limited to that entry's register and should not be read as a survey of every entry in this encyclopedia, some of which may vary in adaptation quality. Sentence length, clause depth, and hedging under uncertainty were not assessable from the fragment available."
+    }
+  ],
+  "strengths": [],
+  "weaknesses": [
+    "Same institutional-register-under-a-child-label anti-pattern as ref:kma-kids-weather-classroom: a resource titled '어린이' opens a species description with unglossed taxonomic classification rather than a concrete, familiar image of the organism, which is the opposite of the concrete-before-abstract sequencing the audience profile requires.",
+    "Evidence base is thin (one entry, one sentence); this record cannot support claims beyond the single anti-pattern instance it validates."
+  ],
+  "applicable_to": {
+    "content_types": ["note"],
+    "audiences": ["child-upper-elementary"],
+    "artifacts": ["text/article"],
+    "surfaces": ["suengj-com"]
+  },
+  "authority_boundary": "craft_evidence_only",
+  "provenance_class": "external",
+  "notes": "corpus_role: holdout, assigned before any reading of this reference began, per docs/architecture/LANGUAGE-QUALITY-ARCHITECTURE.md §7 — this record validates the 'labelled child, register unadapted' finding originated at ref:kma-kids-weather-classroom and must never be treated as having originated it itself. This is evidence about the child-upper-elementary AUDIENCE, not a genre or a biology-content-type finding: the mismatch (a taxonomy register under a child label) is a general risk for any institutional reference material addressed to children, not specific to species encyclopedias. 'beginner-learner' is deliberately omitted from applicable_to.audiences for the same reason as the paired discovery record: this register would be unremarkable, not a failure, for an adult general reader — the failure is age-specific. Requires the applicability.audiences enum in schemas/reference-evaluation.schema.json to admit 'child-upper-elementary' (flagged already on the SUE-604 discovery/holdout pair in this corpus; not yet present as of this writing). No encyclopedia content was reproduced beyond the single quoted sentence, consistent with editorial/RIGHTS-AND-PROVENANCE.md's fail-to-reference rule."
+}

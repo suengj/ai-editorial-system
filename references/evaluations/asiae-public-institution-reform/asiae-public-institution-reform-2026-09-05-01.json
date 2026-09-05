@@ -1,0 +1,50 @@
+{
+  "schema_version": "1.0.0",
+  "evaluation_id": "eval:asiae-public-institution-reform-2026-09-05-01",
+  "ref_id": "ref:asiae-public-institution-reform",
+  "modality": "text",
+  "evaluator": {
+    "type": "agent",
+    "agent": {
+      "runtime": "claude-code",
+      "model": "claude-sonnet-5"
+    }
+  },
+  "evaluated_at": "2026-09-05T06:20:00Z",
+  "calibration_ref": null,
+  "profile_ref": "editorial/profiles/reference/text.json",
+  "basis": "model_inference",
+  "corpus_role": "holdout",
+  "language": "ko-KR",
+  "dimensions": [
+    {
+      "dimension": "citation-behaviour",
+      "verdict": "adopt",
+      "note": "Independently corroborates the two-layer nested-quotation pattern already found at 경향신문 (ref:khan-public-institution-reform, discovery): a paraphrased setup clause ending '~지적하며' followed by a separately reported clause closed with '지시한 바 있다' (an evidential-perfective closing rather than a plain quote verb, used for background/history rather than a live quote). Different outlet, different specific closing form, same underlying move — paraphrase-then-second-clause, both attributed to the one named actor. This record validates the nesting trait; it does not originate it.",
+      "evidence": "\"이 대통령은 지난해 8월 나라재정 절약 간담회에서 '공공기관이 너무 많다'고 지적하며 통폐합 태스크포스(TF) 구성을 지시한 바 있다.\" — nested '~고 지적하며 ... 지시한 바 있다', historical/background framing rather than a live announcement quote."
+    },
+    {
+      "dimension": "citation-behaviour",
+      "verdict": "adopt",
+      "note": "A quote from a non-government stakeholder (a labor-union official) is used to carry the story's countervailing claim, with a specific quantified figure inside the quotation rather than paraphrased by the reporter — attributing not just an opinion but a number to a named, titled source. This is a distinct, worthwhile citation move from the two government-quote records above: numeric/factual claims that are contested or unverified are kept inside attributed quotation rather than stated as the reporter's own fact.",
+      "evidence": "\"허인무 인천국제공항공사 노동조합 사무처장은 '환승객과 환적 화물에서 발생하는 약 6조원의 경제 가치 중 최대 4조원이 사라질 수 있다'고 말했다.\" — a specific, contestable figure (최대 4조원) is kept inside the named source's quotation, not asserted directly."
+    }
+  ],
+  "strengths": [
+    "Second-source corroboration of nested paraphrase-then-quote attribution, with a variant closing form ('지적하며 ... 지시한 바 있다') used specifically for background/history rather than a live announcement quote — shows the nesting device flexes by function, not just by habit.",
+    "Contested or unverifiable numeric claims from a non-government stakeholder are kept inside a named, titled attribution rather than stated as fact by the reporter — a citation discipline worth carrying regardless of which side of a policy debate the source is on."
+  ],
+  "weaknesses": [
+    "This record was assigned holdout before reading and validates traits already derived from ref:khan-public-institution-reform and ref:joongang-ilbo-public-institution-reform; it must not be treated as having originated the nested-quotation finding.",
+    "Only four sentences from one article were read; claims about this outlet's overall register or sentence rhythm are not supported by this record."
+  ],
+  "applicable_to": {
+    "content_types": ["news"],
+    "audiences": ["general-reader", "professional-generalist"],
+    "artifacts": ["text/article"],
+    "surfaces": ["suengj-com"]
+  },
+  "authority_boundary": "craft_evidence_only",
+  "provenance_class": "external",
+  "notes": "corpus_role: holdout, assigned before reading, per docs/architecture/LANGUAGE-QUALITY-ARCHITECTURE.md §7 — validates the nested-quotation citation trait found independently at ref:khan-public-institution-reform and ref:joongang-ilbo-public-institution-reform, never originates it. Access note: biz.chosun.com and other target holdout candidates could not be verified in the time available for this pass; 아시아경제(Asia Economy) was substituted as a genuinely verifiable independent outlet rather than guessing at an unverified one, per SUE-604's substitution guidance. URL is a verified mirror at v.daum.net/v/7Js2JlQ9cH carrying 아시아경제's own byline ('임온유 기자') and dateline; the catalog attribution names 아시아경제 as the originating outlet. No article text reproduced beyond the sentence fragments quoted as evidence, consistent with editorial/RIGHTS-AND-PROVENANCE.md's fail-to-reference rule."
+}

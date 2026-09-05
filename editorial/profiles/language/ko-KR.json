@@ -378,8 +378,8 @@
       "id": "reg-news-attribution-placement",
       "authority_class": "GENRE_CONVENTION",
       "layer": "register",
-      "statement": "인용·출처는 발화 내용 뒤에 '~라고 밝혔다', '~라고 말했다' 형태로 붙인다. 화자명을 인용문 앞에 얹어 문장을 시작하는 구조를 기본형으로 삼지 않는다.",
-      "rationale": "한국어 뉴스 특유의 인용 배치 관행. 보고서 장르의 출처 표기 방식과는 별개다.",
+      "statement": "인용은 화자를 먼저 세우고 발화를 뒤에 놓되, 발화의 성격을 나타내는 절('~라며', '~라고 지적하며')과 실제 인용문을 한 문장 안에 겹쳐 쓰고 마지막에 발화 동사('~고 밝혔다', '~고 말했다')로 닫는다. 기자의 해석은 인용문 밖의 별도 절에 두고, 비유·색채 표현은 인용부호 안에 남겨 화자에게 귀속시킨다.",
+      "rationale": "SUE-604 정정. 원래 규칙은 '화자명을 인용문 앞에 얹는 구조를 기본형으로 삼지 않는다'고 서술했으나, 실제 한국 뉴스룸 4곳의 같은 날 같은 사안 보도에서 화자 선행이 예외가 아니라 기본형으로 관찰되었다. 직관으로 쓴 규칙이 코퍼스 증거로 교정된 사례이며, 교정 방향은 '금지'가 아니라 '실제 관찰된 중첩 구조의 기술'이다. benchmarks/KOREAN-LANGUAGE-CORPUS.md 참조.",
       "checkability": "review_guidance",
       "generality": "genre_local",
       "scope": {
@@ -388,14 +388,21 @@
         ]
       },
       "holdout_result": "not_yet_tested",
-      "evidence_refs": []
+      "evidence_refs": [
+        "eval:khan-public-institution-reform-2026-09-05-01",
+        "eval:joongang-ilbo-public-institution-reform-2026-09-05-01"
+      ],
+      "holdout_refs": [
+        "eval:asiae-public-institution-reform-2026-09-05-01",
+        "eval:mt-public-institution-reform-2026-09-05-01"
+      ]
     },
     {
       "id": "reg-report-hedge-language",
       "authority_class": "GENRE_CONVENTION",
       "layer": "register",
       "statement": "보고서에서 확정되지 않은 판단은 '~로 보인다', '~가능성이 있다', '~로 추정된다'와 같은 완곡 표현으로 서술하고, 근거 없는 단정형 종결어미로 마무리하지 않는다.",
-      "rationale": "한국은행 등 발간 보고서(EMPIRICAL_REFERENCE)에서 관찰되는 관용적 헤지 표현. 이 기관들의 문체가 규범은 아니며, 여기서는 장르 관행의 증거로만 쓴다.",
+      "rationale": "KDI 전망 요약문(discovery)에서 도출하고 KCMI·KIET(holdout)에서 독립 확인된 보고서 레지스터의 단계적 증거성 헤지. 단정형과 헤지 중 어느 쪽을 쓰느냐가 그 문장의 인식적 지위를 나타내므로, 이는 문체 선호가 아니라 장르 규약이다.",
       "checkability": "review_guidance",
       "generality": "genre_local",
       "scope": {
@@ -405,7 +412,13 @@
       },
       "authority_ref": "bok-published-reports",
       "holdout_result": "not_yet_tested",
-      "evidence_refs": []
+      "evidence_refs": [
+        "eval:kdi-economic-outlook-report-2026-09-05-01"
+      ],
+      "holdout_refs": [
+        "eval:kcmi-capital-market-focus-2026-09-05-01",
+        "eval:kiet-economy-industry-outlook-2026-09-05-01"
+      ]
     },
     {
       "id": "reg-report-outline-vs-narrative",
@@ -542,6 +555,77 @@
       "adopt_verdict": "avoid",
       "holdout_result": "not_yet_tested",
       "evidence_refs": []
+    },
+    {
+      "id": "reg-report-bare-noun-compression",
+      "authority_class": "GENRE_CONVENTION",
+      "layer": "register",
+      "statement": "보고서의 전망·추세 요약 절은 종결어미 없이 명사로 끝맺을 수 있다('...확대 전망', '...성장 견인'). 이 압축형은 해당 절의 지위가 사실이 아니라 전망임을 명사 자체로 표시할 때에만 쓰고, 이미 관측된 사실을 서술하는 절에는 쓰지 않는다.",
+      "rationale": "KDI(discovery)에서 도출하고 KIET(holdout)에서 다른 기관·다른 주제로 독립 확인. KIET 문서는 같은 글 안에서 고용 회복 문장을 '모습을 보이고 있다'로 완전 서술형 종결했으므로, 이 장치는 일괄 적용이 아니라 선택적이라는 경계 조건까지 함께 확인되었다. 보고서 장르 한정이며 일반 한국어 문체 규칙이 아니다.",
+      "checkability": "review_guidance",
+      "generality": "genre_local",
+      "scope": {
+        "content_types": [
+          "research",
+          "academic"
+        ]
+      },
+      "authority_ref": null,
+      "evidence_refs": [
+        "eval:kdi-economic-outlook-report-2026-09-05-01"
+      ],
+      "holdout_refs": [
+        "eval:kiet-economy-industry-outlook-2026-09-05-01"
+      ],
+      "holdout_result": "not_yet_tested",
+      "adopt_verdict": "adopt"
+    },
+    {
+      "id": "aud-concrete-before-abstract",
+      "authority_class": "AUDIENCE_CONSTRAINT",
+      "layer": "audience",
+      "statement": "아동 독자(10-12세)에게 추상 개념을 소개할 때는 아이가 이미 아는 구체적 장면이나 익숙한 고유어를 먼저 제시한 뒤 그 위에 전문 용어를 얹는다. 용어 정의를 먼저 놓고 예시를 뒤에 붙이지 않는다. 한자어는 구성 한자를 풀어 그림이 그려지는 유래로 설명할 수 있으면 그렇게 한다.",
+      "rationale": "어린이경제신문(discovery)에서 도출하고 한국은행 '알기 쉬운 경제이야기' 초등용(holdout)에서 다른 기관·다른 장치(지속되는 가족 서사 프레임)로 독립 확인. 기획재정부 어린이 경제교실은 같은 도메인·같은 기관 등급에서 정의를 먼저 놓는 역순 사례로, 이 규칙의 경계를 정의하는 반례로 함께 기록한다. editorial/profiles/audience/child-upper-elementary.json의 concreteness 원칙을 한국어 고유의 장치로 구체화한 것이며, 그 프로필을 다시 서술하지 않는다.",
+      "checkability": "review_guidance",
+      "generality": "audience_local",
+      "scope": {
+        "audiences": [
+          "child-upper-elementary"
+        ]
+      },
+      "authority_ref": null,
+      "evidence_refs": [
+        "eval:econoi-childrens-economic-newspaper-2026-09-05-01",
+        "eval:mofe-kids-economics-classroom-2026-09-05-01"
+      ],
+      "holdout_refs": [
+        "eval:bok-easy-economics-elementary-2026-09-05-01"
+      ],
+      "holdout_result": "not_yet_tested",
+      "adopt_verdict": "adopt"
+    },
+    {
+      "id": "aud-child-label-is-not-adaptation",
+      "authority_class": "AUDIENCE_CONSTRAINT",
+      "layer": "audience",
+      "statement": "'어린이용'이라는 표지가 붙었다는 사실은 그 글이 아동 독자에 맞게 조정되었다는 증거가 아니다. 아동 대상 글에서 현상을 전문 진단 기준(수치 임계값, 분류 체계)으로 먼저 정의하지 않는다. 레퍼런스로 아동용 자료를 고를 때도 표지가 아니라 실제 레지스터를 보고 판단한다.",
+      "rationale": "기상청 어린이 기상교실(discovery)과 국립생물자원관 어린이 자료(holdout) 두 독립 정부기관에서 동일하게 관찰된 실패 패턴. editorial/profiles/audience/child-upper-elementary.json이 경고하는 anti_pattern은 유아어·생색내는 어조 쪽이지만, 실제 한국 공공기관 아동 자료에서 반복 관찰된 실패는 그 반대편 — 조정되지 않은 전문가 레지스터 — 이었다. 프로필이 예상하지 못한 방향이므로 별도 규칙으로 기록한다.",
+      "checkability": "review_guidance",
+      "generality": "audience_local",
+      "scope": {
+        "audiences": [
+          "child-upper-elementary"
+        ]
+      },
+      "authority_ref": null,
+      "evidence_refs": [
+        "eval:kma-kids-weather-classroom-2026-09-05-01"
+      ],
+      "holdout_refs": [
+        "eval:nibr-bris-child-biology-encyclopedia-2026-09-05-01"
+      ],
+      "holdout_result": "not_yet_tested",
+      "adopt_verdict": "avoid"
     }
   ],
   "terminology": [

@@ -1,0 +1,55 @@
+{
+  "schema_version": "1.0.0",
+  "evaluation_id": "eval:kdi-economic-outlook-report-2026-09-05-01",
+  "ref_id": "ref:kdi-economic-outlook-report",
+  "modality": "text",
+  "evaluator": {
+    "type": "agent",
+    "agent": {
+      "runtime": "claude-code",
+      "model": "claude-sonnet-5"
+    }
+  },
+  "evaluated_at": "2026-09-05T05:20:00Z",
+  "calibration_ref": null,
+  "profile_ref": "editorial/profiles/reference/text.json",
+  "basis": "model_inference",
+  "corpus_role": "discovery",
+  "language": "ko-KR",
+  "dimensions": [
+    {
+      "dimension": "language-naturalness",
+      "verdict": "adopt",
+      "note": "'KDI 경제전망, 2026 상반기' summary prose repeatedly ends a load-bearing forecast clause on a bare noun ('전망', '완화', '존재') rather than a finite predicate ('~할 전망이다', '~완화되었다'), e.g. a sentence built as '... 2.5% 정도 성장한 후 ... 성장을 나타낼 전망' with no closing 이다/verb. This truncated, headline-like sentence-final nominalization is a recognizable register marker of Korean institutional forecast writing — compresses the sentence while keeping the modal status ('전망'=forecast, not fact) legible from the noun itself. Worth carrying as a report-genre trait, not a general Korean trait: ordinary editorial or narrative prose would read as unfinished if it did this.",
+      "evidence": "\"우리 경제는 2026년에 반도체수출 호조세와 내수 개선세로 2.5% 정도 성장한 후, 2027년에도 1.7% 수준의 성장을 나타낼 전망\" — clause ends on the bare noun '전망', no copula."
+    },
+    {
+      "dimension": "language-naturalness",
+      "verdict": "adopt",
+      "note": "Causal-strength hedging is graded, not binary: a conditional risk clause stacks a conditional connective, a causal chain, and an explicit possibility marker in the same sentence rather than asserting the risk outright. This is the report-genre discipline the audience-facing econoi/BOK-storybook corpus enforces at a much simpler register (see ref:econoi-childrens-economic-newspaper, ref:bok-easy-economics-elementary) — here it is the same discipline surfacing in expert-register prose: state the mechanism, then explicitly flag that the outcome is a possibility, not a certainty.",
+      "evidence": "\"중동 전쟁이 격화되거나 장기화되는 경우 원자재 수급 차질과 생산 비용 상승에 따라 성장세가 약화될 가능성도 존재\" — conditional '경우' + causal '~에 따라' + explicit '가능성도 존재' (possibility exists), not a flat claim."
+    },
+    {
+      "dimension": "paragraph-sentence-rhythm",
+      "verdict": "neutral",
+      "note": "Only the report's own summary/abstract prose was read, not the full body; sentence-to-paragraph rhythm across the full report (how long analytical sections run, where they compress vs. expand) was not observed and no claim is made about it here."
+    }
+  ],
+  "strengths": [
+    "Sentence-final bare-noun compression on forecast clauses ('...전망', '...완화', '...존재' with no closing predicate) signals modal status (forecast vs. fact) through the noun itself while shortening the sentence — a report-register device, not general Korean style.",
+    "Risk/uncertainty clauses stack a conditional, a causal connective, and an explicit possibility marker rather than flattening a contingent outcome into a flat assertion — the same hedging discipline required across audience tiers, observed here at expert register."
+  ],
+  "weaknesses": [
+    "Only the report's summary-level prose (as surfaced on the report's own web page) was read, not the full PDF body; paragraph-level rhythm and full-report information density are unverified and no claim is made about them.",
+    "This is one institution's forecast register; the bare-noun sentence-final compression trait is asserted as a report-genre pattern only after independent corroboration at a second institution (see ref:kiet-economy-industry-outlook, holdout) — it is not treated as established from this record alone."
+  ],
+  "applicable_to": {
+    "content_types": ["research", "academic"],
+    "audiences": ["domain-practitioner", "professional-generalist"],
+    "artifacts": ["text/article"],
+    "surfaces": ["suengj-com"]
+  },
+  "authority_boundary": "craft_evidence_only",
+  "provenance_class": "external",
+  "notes": "corpus_role: discovery, assigned before reading, per docs/architecture/LANGUAGE-QUALITY-ARCHITECTURE.md §7 — traits here may be derived and are checked against an independent holdout institution (KIET, KCMI) rather than another BOK/KDI-family source. Source: https://www.kdi.re.kr/research/reportView?pub_no=19180 ('KDI 경제전망, 2026 상반기'). Only summary-level prose surfaced on the report's own page was read; the full PDF was not opened, so this record's claims are scoped to that summary prose only. No more than the quoted evidentiary fragments above were extracted, consistent with editorial/RIGHTS-AND-PROVENANCE.md's fail-to-reference rule."
+}
