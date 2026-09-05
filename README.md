@@ -38,6 +38,12 @@ where the Core's authority lives. See
 [`docs/architecture/V2-EDITORIAL-LEARNING-CORE.md`](docs/architecture/V2-EDITORIAL-LEARNING-CORE.md)
 for the full architecture.
 
+Editorial orchestration separates **role authority** from **model capability**.
+A Manager may own the decision while the final prose Writer still requires a
+high native-language capability floor; a stronger Manager/Reviewer is not a
+reason to route publication-intent prose through a weaker Writer. See
+[`docs/architecture/WRITER-MODEL-ROUTING.md`](docs/architecture/WRITER-MODEL-ROUTING.md).
+
 ## What this repository is NOT
 
 - **Not a content store.** No canonical article archive, no drafts, no
@@ -123,6 +129,7 @@ Absence of a finding is a PASS only when the check demonstrably ran.
 | Fixtures, rubric, matrix, PoC artifacts | [`evals/`](evals/) |
 | Benchmarks and the reference catalog | [`benchmarks/`](benchmarks/), [`references/`](references/) |
 | Language quality: authority classes, overlays, discovery/holdout | [`docs/architecture/LANGUAGE-QUALITY-ARCHITECTURE.md`](docs/architecture/LANGUAGE-QUALITY-ARCHITECTURE.md), [`editorial/profiles/language/`](editorial/profiles/language/) |
+| Writer capability / Manager-Writer-Reviewer routing | [`docs/architecture/WRITER-MODEL-ROUTING.md`](docs/architecture/WRITER-MODEL-ROUTING.md) |
 | Architecture decisions | [`docs/architecture/`](docs/architecture/) |
 
 Start with [`docs/architecture/V2-EDITORIAL-LEARNING-CORE.md`](docs/architecture/V2-EDITORIAL-LEARNING-CORE.md)
@@ -132,12 +139,18 @@ for what is proved, what is partial, what is deferred, and what has not run
 yet. [`docs/architecture/V1-CERTIFICATION.md`](docs/architecture/V1-CERTIFICATION.md)
 remains the record for V1, which V2 builds on rather than replaces.
 
+For prose-heavy operation also read
+[`docs/architecture/WRITER-MODEL-ROUTING.md`](docs/architecture/WRITER-MODEL-ROUTING.md):
+final prose uses task-shaped capability routing, not a simplistic
+`Manager > Writer > Reviewer` model hierarchy.
+
 ## Status
 
 V1 is complete on every item that can be certified from this repository. V2
 (the Editorial Learning Core) is architecturally complete and
 fixture-exercised, honestly certified as a mix of partial, deferred, and
 not-yet-run — real operating evidence is the subject of the adoption
-milestone that follows (owner playbook and real pilot evidence land there,
-not here). Work, scope, and acceptance are tracked in Linear under
-*Suengj.com · AI Editorial System*.
+milestone that follows. SUE-610 has now supplied owner-reviewed evidence for
+source→target delta planning, preservation-first polish, and explicit prose
+Writer capability routing. Work, scope, and acceptance are tracked in Linear
+under *Suengj.com · AI Editorial System*.
