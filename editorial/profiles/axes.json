@@ -33,6 +33,18 @@
       "linear_issue": "AES-V2.2 (SUE-560)"
     },
     {
+      "axis": "language",
+      "dir": "language",
+      "id_pattern": "^[a-z]{2}(-[A-Z]{2})?$",
+      "id_field": "pack_id",
+      "intent_path": "constraints.output_language",
+      "owns": "Per-language quality authority: which external bodies are normative for the language, which empirical native/genre/audience traits it asserts, and how domain terms are rendered. Schema: schemas/language-pack.schema.json. The language-agnostic methodology these packs plug into is docs/architecture/LANGUAGE-QUALITY-ARCHITECTURE.md and is never duplicated into a pack.",
+      "populated": true,
+      "linear_issue": "AES-V2.17 (SUE-607)",
+      "filename_rule": "BCP-47-style id as the filename stem: ko-KR -> ko-KR.json",
+      "planned_note": "ko-KR is the only pack. A second language reuses the methodology and inherits none of Korean's phenomena; no locale profile is created before there is evidence it differs from an existing one. Portability here is architectural, not a multi-language framework built in advance of a second language existing."
+    },
+    {
       "axis": "surface",
       "dir": "surface",
       "id_pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",

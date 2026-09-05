@@ -1,0 +1,526 @@
+/**
+ * Language pack engine — AES-V2.17 (SUE-607).
+ *
+ * Validates every pack under the `language` axis (editorial/profiles/language/,
+ * loaded through the axis registry — scripts/lib/profile-core.mjs — never
+ * hardcoded) against schemas/language-pack.schema.json plus the house rules a
+ * schema alone cannot express: authority-class discipline, genre/audience
+ * orthogonality, promotion evidence for empirical rules, and holdout
+ * leakage. See docs/architecture/LANGUAGE-QUALITY-ARCHITECTURE.md — this
+ * module enforces that document; it never restates it.
+ *
+ * Dependency-free ESM, modelled on scripts/lib/corpus-core.mjs and
+ * scripts/lib/registry-core.mjs.
+ */
+
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
+import { basename, dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { validate } from './json-schema-lite.mjs';
+import { loadAxes, loadAxisProfiles, PROFILES_ROOT } from './profile-core.mjs';
+import { checkPromotionSufficiency } from './promotion-core.mjs';
+import { listEvaluationFiles, PATHS as REGISTRY_PATHS, resolveEvidenceRef } from './registry-core.mjs';
+
+const HERE = dirname(fileURLToPath(import.meta.url));
+export const ROOT = resolve(HERE, '../..');
+
+export const SCHEMA_PATH = resolve(ROOT, 'schemas/language-pack.schema.json');
+export const ROUTING_PATH = resolve(ROOT, 'editorial/feedback-routing.json');
+export const LANGUAGE_AXIS_ID = 'language';
+
+export const loadSchema = (p = SCHEMA_PATH) => JSON.parse(readFileSync(p, 'utf8'));
+export const loadJson = (p) => JSON.parse(readFileSync(p, 'utf8'));
+
+/** Authority classes whose durability is earned by cross-source, holdout-validated evidence (LANGUAGE-QUALITY-ARCHITECTURE.md §6), never by a standards body. */
+const EMPIRICAL_AUTHORITY_CLASSES = new Set(['NATIVE_QUALITY', 'GENRE_CONVENTION', 'AUDIENCE_CONSTRAINT']);
+const HOLDOUT_OK = new Set(['improved', 'neutral']);
+
+export const CODES = Object.freeze({
+  PARSE: 'parse',
+  SCHEMA: 'schema',
+  FILENAME_MISMATCH: 'pack-id-filename-mismatch',
+  ID_PATTERN: 'pack-id-pattern-mismatch',
+  DOC_REF_MISSING: 'doc-ref-missing',
+  UNKNOWN_LAYER: 'unknown-layer',
+  NORMATIVE_NO_AUTHORITY: 'normative-no-authority',
+  NORMATIVE_AUTHORITY_UNRESOLVED: 'normative-authority-unresolved',
+  NORMATIVE_BACKED_BY_WEAKER_SOURCE: 'normative-backed-by-weaker-source',
+  UNBACKED_MECHANICAL_CLAIM: 'unbacked-mechanical-empirical-claim',
+  SHARED_PROMOTION_INSUFFICIENT: 'shared-promotion-insufficient',
+  EMPIRICAL_PROMOTION_INSUFFICIENT: 'empirical-promotion-insufficient',
+  GENRE_CARRIES_AUDIENCE: 'genre-rule-carries-audience-scope',
+  AUDIENCE_CARRIES_GENRE: 'audience-rule-carries-genre-scope',
+  UNKNOWN_CONTENT_TYPE: 'unknown-content-type-scope',
+  UNKNOWN_AUDIENCE: 'unknown-audience-scope',
+  UNKNOWN_ALIAS_AUDIENCE: 'unknown-alias-audience',
+  HOLDOUT_LEAKAGE: 'holdout-leakage',
+  HOLDOUT_REF_NOT_HOLDOUT: 'holdout-ref-is-not-a-holdout-record',
+  NO_HOLDOUT_CORROBORATION: 'promotion-without-holdout-corroboration',
+  DANGLING_EVIDENCE_REF: 'dangling-evidence-ref',
+  UNASSIGNED_CORPUS_ROLE: 'unassigned-corpus-role',
+  POINTLESS_ALIAS: 'pointless-audience-alias',
+  L1_HARD_LOCAL_AUTHORITY: 'l1-hard-local-correction-requires-integrity-normative-domain-terminology-authority',
+  L1_HARD_LOCAL_MECHANICAL: 'l1-hard-local-correction-requires-mechanical-checkability',
+  L1_NORMATIVE_HARD_LOCAL_NO_AUTHORITY_REF: 'l1-normative-hard-local-correction-requires-authority-ref',
+  L2_EMPIRICAL_MAY_NOT_HARD_LOCAL: 'l2-empirical-authority-class-may-not-be-hard-local-correction',
+  L3_AUDIENCE_LAYER_MODE: 'l3-audience-layer-requires-upstream-guidance-or-local-observation',
+  L4_DEPRECATED_NEEDS_NOTES: 'l4-deprecated-as-instruction-requires-notes',
+  L5_SOURCE_LOCAL_MAY_NOT_HARD_LOCAL: 'l5-source-local-generality-may-not-be-hard-local-correction',
+});
+
+/** authority_class values whose empirical basis may never authorize a hard_local_correction — guard L2. */
+const EMPIRICAL_OR_PREFERENCE_CLASSES = new Set(['NATIVE_QUALITY', 'GENRE_CONVENTION', 'AUDIENCE_CONSTRAINT', 'OWNER_PREFERENCE']);
+/** authority_class values allowed to back a hard_local_correction rule — guard L1. */
+const HARD_LOCAL_CORRECTION_AUTHORITY_CLASSES = new Set(['INTEGRITY', 'NORMATIVE', 'DOMAIN_TERMINOLOGY']);
+/** application_modes a rule whose layer is `audience` may legally carry — guard L3. */
+const AUDIENCE_LAYER_ALLOWED_MODES = new Set(['upstream_guidance', 'local_observation']);
+
+const issue = (code, where, message) => ({ code, where, message });
+
+// --- axis / registry loading -------------------------------------------
+
+export function getLanguageAxis(axes = loadAxes()) {
+  const axis = axes.find((a) => a.axis === LANGUAGE_AXIS_ID);
+  if (!axis) throw new Error(`axis registry has no "${LANGUAGE_AXIS_ID}" axis — editorial/profiles/axes.json`);
+  return axis;
+}
+
+export function listPackFiles(axis = getLanguageAxis(), root = PROFILES_ROOT) {
+  const dir = resolve(root, axis.dir);
+  if (!existsSync(dir)) return [];
+  return readdirSync(dir).filter((f) => f.endsWith('.json')).sort().map((f) => resolve(dir, f));
+}
+
+/** Every layer id declared in editorial/feedback-routing.json, flattened across groups. Never hardcoded. */
+export function loadRoutingLayerIds(routingPath = ROUTING_PATH) {
+  const table = loadJson(routingPath);
+  const ids = new Set();
+  for (const group of Object.values(table.layers ?? {})) {
+    for (const entry of group) if (entry?.id) ids.add(entry.id);
+  }
+  return ids;
+}
+
+// --- per-check helpers ---------------------------------------------------
+
+export function checkSchema(pack, schema, where) {
+  return validate(pack, schema).map((e) => issue(CODES.SCHEMA, where, `${e.path}: ${e.message}`));
+}
+
+export function checkFilenameAndId(pack, filePath, axis) {
+  const issues = [];
+  const stem = basename(filePath).replace(/\.json$/, '');
+  if (typeof pack.pack_id === 'string' && pack.pack_id !== stem) {
+    issues.push(issue(CODES.FILENAME_MISMATCH, filePath,
+      `pack_id "${pack.pack_id}" does not match filename "${basename(filePath)}"`));
+  }
+  if (typeof pack.pack_id === 'string' && !new RegExp(axis.id_pattern).test(pack.pack_id)) {
+    issues.push(issue(CODES.ID_PATTERN, filePath,
+      `pack_id "${pack.pack_id}" does not match axis id_pattern ${axis.id_pattern}`));
+  }
+  return issues;
+}
+
+export function checkDocRef(pack, where, root = ROOT) {
+  if (typeof pack.doc_ref !== 'string' || pack.doc_ref.length === 0) return [];
+  if (!existsSync(resolve(root, pack.doc_ref))) {
+    return [issue(CODES.DOC_REF_MISSING, where, `doc_ref "${pack.doc_ref}" does not exist on disk`)];
+  }
+  return [];
+}
+
+export function checkLayers(pack, where, routingLayerIds) {
+  const issues = [];
+  for (const rule of pack.rules ?? []) {
+    if (rule.layer && !routingLayerIds.has(rule.layer)) {
+      issues.push(issue(CODES.UNKNOWN_LAYER, `${where}:${rule.id}`,
+        `layer "${rule.layer}" is not a known layer id in editorial/feedback-routing.json`));
+    }
+  }
+  return issues;
+}
+
+/** authorities[].id -> authority record. */
+function authorityMap(pack) {
+  const map = new Map();
+  for (const a of pack.authorities ?? []) if (a?.id) map.set(a.id, a);
+  return map;
+}
+
+/**
+ * §2/§6: a NORMATIVE rule's correctness comes from an issuing standards body,
+ * never from a corpus. A NORMATIVE rule backed by an EMPIRICAL_REFERENCE or
+ * STRONG_GUIDANCE authority is a corpus observation wearing a normative
+ * label — the headline failure this validator exists to catch.
+ */
+export function checkNormativeAuthority(pack, where) {
+  const issues = [];
+  const authorities = authorityMap(pack);
+  for (const rule of pack.rules ?? []) {
+    if (rule.authority_class !== 'NORMATIVE') continue;
+    const ruleWhere = `${where}:${rule.id}`;
+    if (rule.authority_ref == null) {
+      issues.push(issue(CODES.NORMATIVE_NO_AUTHORITY, ruleWhere,
+        'authority_class NORMATIVE requires a non-null authority_ref — a normative rule with no standards body behind it is a corpus observation wearing a normative label'));
+      continue;
+    }
+    const authority = authorities.get(rule.authority_ref);
+    if (!authority) {
+      issues.push(issue(CODES.NORMATIVE_AUTHORITY_UNRESOLVED, ruleWhere,
+        `authority_ref "${rule.authority_ref}" does not resolve to an entry in this pack's authorities[]`));
+      continue;
+    }
+    if (authority.source_class !== 'NORMATIVE_STANDARD') {
+      issues.push(issue(CODES.NORMATIVE_BACKED_BY_WEAKER_SOURCE, ruleWhere,
+        `authority_class NORMATIVE is backed by authority "${rule.authority_ref}" whose source_class is "${authority.source_class}", not NORMATIVE_STANDARD — codified correctness comes from an issuing standards body; an EMPIRICAL_REFERENCE or STRONG_GUIDANCE source may illustrate a normative rule but may never establish one (LANGUAGE-QUALITY-ARCHITECTURE.md §6)`));
+    }
+  }
+  return issues;
+}
+
+/**
+ * §6/§17: NATIVE_QUALITY / GENRE_CONVENTION / AUDIENCE_CONSTRAINT are
+ * empirical. Declaring one "mechanical" without an authority_ref to point at
+ * is an empirical claim dressed up as something a validator can decide —
+ * the reverse of the normative failure above.
+ */
+export function checkUnbackedMechanicalClaim(pack, where) {
+  const issues = [];
+  for (const rule of pack.rules ?? []) {
+    if (!EMPIRICAL_AUTHORITY_CLASSES.has(rule.authority_class)) continue;
+    if (rule.checkability === 'mechanical' && rule.authority_ref == null) {
+      issues.push(issue(CODES.UNBACKED_MECHANICAL_CLAIM, `${where}:${rule.id}`,
+        `authority_class "${rule.authority_class}" is empirical and claims checkability "mechanical" with no authority_ref — an unbacked mechanical claim is exactly the confident-wrong-verdict failure mode LANGUAGE-QUALITY-ARCHITECTURE.md §17 ("A style checker") warns against`));
+    }
+  }
+  return issues;
+}
+
+/**
+ * §6: an empirical trait (NATIVE_QUALITY / GENRE_CONVENTION /
+ * AUDIENCE_CONSTRAINT) that claims to reach past the one source it was
+ * observed in requires multi-source evidence (reused from
+ * scripts/lib/promotion-core.mjs, the one place the repo's
+ * promotion-sufficiency rule lives) and a holdout result of improved or
+ * neutral. §6 states that bar for *every* empirical class, not only for
+ * cross-genre promotion, so this gate is keyed on "reaches past one source",
+ * not on `generality: "shared"` alone: an unproven `genre_local` rule
+ * asserts a whole genre on one institution's evidence, which is the same
+ * promotion failure one level down.
+ *
+ * `source_local` is deliberately exempt. It is the honest default for a
+ * trait seen in one publisher and scoped there — it makes no promotion
+ * claim, so there is nothing for evidence to license.
+ *
+ * `shared` keeps its own code because it is the stronger claim (cross-genre,
+ * §6.3); everything else reports EMPIRICAL_PROMOTION_INSUFFICIENT. While the
+ * pack is `draft`, both are downgraded to NOTEs — a draft pack is explicitly
+ * allowed to hold not-yet-validated rules
+ * (schemas/language-pack.schema.json `status`); an `active` pack is not.
+ */
+export function checkSharedPromotion(pack, where) {
+  const issues = [];
+  const notes = [];
+  const isDraft = pack.status === 'draft';
+  for (const rule of pack.rules ?? []) {
+    if (!EMPIRICAL_AUTHORITY_CLASSES.has(rule.authority_class)) continue;
+    if (rule.generality === 'source_local') continue;
+    const ruleWhere = `${where}:${rule.id}`;
+    // Two independent institutions, at least one of which never informed the
+    // rule. The count is taken across BOTH ref lists on purpose: a trait
+    // derived from one discovery source and confirmed at an independent
+    // holdout institution rests on two institutions, which is what the
+    // multi-source rule is actually about. Requiring two *discovery* refs
+    // instead would have forced the corroborating source into the derivation
+    // set — destroying the holdout to satisfy a count.
+    const derivation = (rule.evidence_refs ?? []).filter((r) => typeof r === 'string');
+    const validation = (rule.holdout_refs ?? []).filter((r) => typeof r === 'string');
+    const { insufficientEvidence } = checkPromotionSufficiency({ evidenceRefs: [...derivation, ...validation] });
+    const holdoutOk = HOLDOUT_OK.has(rule.holdout_result);
+    const noDerivation = derivation.length === 0;
+    const noCorroboration = validation.length === 0;
+    if (insufficientEvidence || !holdoutOk || noDerivation || noCorroboration) {
+      const isShared = rule.generality === 'shared';
+      const code = isShared ? CODES.SHARED_PROMOTION_INSUFFICIENT : CODES.EMPIRICAL_PROMOTION_INSUFFICIENT;
+      const reasons = [];
+      if (insufficientEvidence) reasons.push('fewer than two supporting refs across evidence_refs + holdout_refs');
+      if (noDerivation) reasons.push('no evidence_refs — nothing records where the trait came from');
+      if (noCorroboration) reasons.push('no holdout_refs — nothing independent has confirmed it');
+      if (!holdoutOk) reasons.push(`holdout_result is "${rule.holdout_result ?? 'undefined'}", not improved/neutral`);
+      const reach = isShared
+        ? 'generality "shared" claims the trait holds across genres'
+        : `generality "${rule.generality}" claims the trait reaches past the source it was observed in`;
+      const message = `${reach}; on empirical authority_class "${rule.authority_class}" that requires derivation evidence, independent holdout corroboration, and a holdout_result of improved or neutral (${reasons.join('; ')}) — LANGUAGE-QUALITY-ARCHITECTURE.md §6/§7. Scope it "source_local" until the evidence exists.`;
+      if (isDraft) notes.push(issue(code, ruleWhere, `${message} — reported as a NOTE because pack status is "draft"`));
+      else issues.push(issue(code, ruleWhere, message));
+    }
+  }
+  return { issues, notes };
+}
+
+/**
+ * §3: genre and audience are orthogonal axes. Encoding an audience as a
+ * genre (or a genre as an audience) is what makes "news for a 10-year-old"
+ * inexpressible.
+ */
+export function checkGenreAudienceOrthogonality(pack, where) {
+  const issues = [];
+  for (const rule of pack.rules ?? []) {
+    const ruleWhere = `${where}:${rule.id}`;
+    const scope = rule.scope ?? {};
+    if (rule.authority_class === 'GENRE_CONVENTION' && Array.isArray(scope.audiences) && scope.audiences.length > 0) {
+      issues.push(issue(CODES.GENRE_CARRIES_AUDIENCE, ruleWhere,
+        'authority_class GENRE_CONVENTION carries scope.audiences — genre and audience are independent axes (LANGUAGE-QUALITY-ARCHITECTURE.md §3); encoding an audience as a genre is what makes "news for a 10-year-old" inexpressible'));
+    }
+    if (rule.authority_class === 'AUDIENCE_CONSTRAINT' && Array.isArray(scope.content_types) && scope.content_types.length > 0) {
+      issues.push(issue(CODES.AUDIENCE_CARRIES_GENRE, ruleWhere,
+        'authority_class AUDIENCE_CONSTRAINT carries scope.content_types — genre and audience are independent axes (LANGUAGE-QUALITY-ARCHITECTURE.md §3); an audience constraint is not thereby a genre rule'));
+    }
+  }
+  return issues;
+}
+
+/** scope.content_types / scope.audiences / terminology[].audience_aliases[].audience resolve against the content and audience axes — loaded through the axis registry, never hardcoded. */
+export function checkScopeIdsResolve(pack, where, { contentIds, audienceIds }) {
+  const issues = [];
+  for (const rule of pack.rules ?? []) {
+    const ruleWhere = `${where}:${rule.id}`;
+    const scope = rule.scope ?? {};
+    for (const ct of scope.content_types ?? []) {
+      if (!contentIds.has(ct)) {
+        issues.push(issue(CODES.UNKNOWN_CONTENT_TYPE, ruleWhere, `scope.content_types references "${ct}", which is not a known editorial/profiles/content id`));
+      }
+    }
+    for (const a of scope.audiences ?? []) {
+      if (!audienceIds.has(a)) {
+        issues.push(issue(CODES.UNKNOWN_AUDIENCE, ruleWhere, `scope.audiences references "${a}", which is not a known editorial/profiles/audience id`));
+      }
+    }
+  }
+  for (const term of pack.terminology ?? []) {
+    for (const alias of term.audience_aliases ?? []) {
+      if (!audienceIds.has(alias.audience)) {
+        issues.push(issue(CODES.UNKNOWN_ALIAS_AUDIENCE, `${where}:${term.id}`,
+          `audience_aliases references audience "${alias.audience}", which is not a known editorial/profiles/audience id`));
+      }
+    }
+  }
+  return issues;
+}
+
+/**
+ * §7: a trait derived from holdout material has destroyed the holdout. Every
+ * evidence_ref that resolves to an actual reference-evaluation record on
+ * disk is checked; a ref that resolves to nothing is dangling and is
+ * reported, never silently passed. A record carrying no corpus_role at all
+ * is "unassigned" — `corpus_role` is optional on
+ * schemas/reference-evaluation.schema.json, and every record written before
+ * AES-V2.17 predates the field. That is not a leak, but it is reported as a
+ * NOTE: an unassigned reference is one nobody has decided the role of yet,
+ * and §7 requires the decision to be made *before* traits are extracted.
+ */
+export function checkHoldoutLeakage(pack, where, {
+  evaluationsDir = REGISTRY_PATHS.evaluationsDir,
+  feedbackDir = REGISTRY_PATHS.feedbackDir,
+  evaluationFiles = listEvaluationFiles(evaluationsDir),
+} = {}) {
+  const issues = [];
+  const notes = [];
+  const evalByFilename = new Map(evaluationFiles.map((p) => [basename(p), p]));
+
+  for (const rule of pack.rules ?? []) {
+    const ruleWhere = `${where}:${rule.id}`;
+    // Both ref lists are walked, and each is checked against the role it is
+    // allowed to name: evidence_refs (derivation) may never be holdout;
+    // holdout_refs (validation) must be. Mixing them in either direction
+    // collapses the split that makes the holdout mean anything.
+    const refs = [
+      ...(rule.evidence_refs ?? []).map((r) => ({ ref: r, field: 'evidence_refs' })),
+      ...(rule.holdout_refs ?? []).map((r) => ({ ref: r, field: 'holdout_refs' })),
+    ];
+    for (const { ref, field } of refs) {
+      if (typeof ref !== 'string') continue;
+      const resolved = resolveEvidenceRef(ref, { evaluationsDir, feedbackDir });
+      if (!resolved) {
+        issues.push(issue(CODES.DANGLING_EVIDENCE_REF, ruleWhere, `${field} "${ref}" does not resolve to a record on disk`));
+        continue;
+      }
+      if (!ref.startsWith('eval:')) continue; // not a reference-evaluation record; no corpus_role to check
+      const slug = ref.slice('eval:'.length);
+      const path = evalByFilename.get(`${slug}.json`);
+      if (!path) continue; // resolved via resolveEvidenceRef but not found by our own filename index — treated as already reported above
+      let record;
+      try {
+        record = loadJson(path);
+      } catch {
+        continue; // unparseable evaluation file is reported by the registry validator, not here
+      }
+      if (record.corpus_role == null) {
+        notes.push(issue(CODES.UNASSIGNED_CORPUS_ROLE, ruleWhere,
+          `${field} "${ref}" resolves to a reference-evaluation record with no corpus_role — not yet assigned, not a leak, but should be reported`));
+      } else if (field === 'evidence_refs' && record.corpus_role === 'holdout') {
+        issues.push(issue(CODES.HOLDOUT_LEAKAGE, ruleWhere,
+          `evidence_refs "${ref}" resolves to a reference-evaluation record with corpus_role "holdout" — a trait derived from holdout material has destroyed the holdout (LANGUAGE-QUALITY-ARCHITECTURE.md §7)`));
+      } else if (field === 'holdout_refs' && record.corpus_role !== 'holdout') {
+        issues.push(issue(CODES.HOLDOUT_REF_NOT_HOLDOUT, ruleWhere,
+          `holdout_refs "${ref}" resolves to a record with corpus_role "${record.corpus_role}" — holdout_refs names what the rule was TESTED against, and a discovery record cannot test a rule it helped derive`));
+      }
+    }
+  }
+  return { issues, notes };
+}
+
+/**
+ * §terminology: an alias whose surface_form is identical to canonical or
+ * rendering is pointless (it changes nothing). The real defect — an alias
+ * that quietly names a *different concept* — is not mechanically decidable
+ * from the pack alone (it requires judging the meaning of prose), so this
+ * function deliberately does not attempt it. Reported as a NOTE, not a
+ * failure: a pointless alias is dead weight, not a correctness violation.
+ */
+export function checkPointlessAliases(pack, where) {
+  const notes = [];
+  for (const term of pack.terminology ?? []) {
+    for (const alias of term.audience_aliases ?? []) {
+      if (alias.surface_form === term.canonical || (term.rendering && alias.surface_form === term.rendering)) {
+        notes.push(issue(CODES.POINTLESS_ALIAS, `${where}:${term.id}`,
+          `audience_alias surface_form "${alias.surface_form}" for audience "${alias.audience}" is identical to ${alias.surface_form === term.canonical ? 'canonical' : 'rendering'} — the alias changes nothing`));
+      }
+    }
+  }
+  return notes;
+}
+
+/**
+ * L1-L5 — AES-V2.18 / SUE-610, docs/architecture/LANGUAGE-QUALITY-ARCHITECTURE.md
+ * §12. A rule's existence does not authorize an edit; application_mode ties
+ * the mode to what the rule actually is. L3 is the single most important
+ * guard in this issue: a rule whose layer is `audience` must never be a mode
+ * a polish pass can act on directly — that is the child-case fix.
+ */
+export function checkApplicationMode(pack, where) {
+  const issues = [];
+  for (const rule of pack.rules ?? []) {
+    const ruleWhere = `${where}:${rule.id}`;
+
+    if (rule.application_mode === 'hard_local_correction') {
+      if (!HARD_LOCAL_CORRECTION_AUTHORITY_CLASSES.has(rule.authority_class)) {
+        issues.push(issue(CODES.L1_HARD_LOCAL_AUTHORITY, ruleWhere,
+          `application_mode "hard_local_correction" requires authority_class INTEGRITY, NORMATIVE, or DOMAIN_TERMINOLOGY, got "${rule.authority_class}" (LANGUAGE-QUALITY-ARCHITECTURE.md §12 L1)`));
+      }
+      if (rule.checkability !== 'mechanical') {
+        issues.push(issue(CODES.L1_HARD_LOCAL_MECHANICAL, ruleWhere,
+          `application_mode "hard_local_correction" requires checkability "mechanical", got "${rule.checkability}" (LANGUAGE-QUALITY-ARCHITECTURE.md §12 L1)`));
+      }
+      if (rule.authority_class === 'NORMATIVE' && rule.authority_ref == null) {
+        issues.push(issue(CODES.L1_NORMATIVE_HARD_LOCAL_NO_AUTHORITY_REF, ruleWhere,
+          'a NORMATIVE rule in application_mode "hard_local_correction" requires a non-null authority_ref (LANGUAGE-QUALITY-ARCHITECTURE.md §12 L1)'));
+      }
+    }
+
+    if (EMPIRICAL_OR_PREFERENCE_CLASSES.has(rule.authority_class) && rule.application_mode === 'hard_local_correction') {
+      issues.push(issue(CODES.L2_EMPIRICAL_MAY_NOT_HARD_LOCAL, ruleWhere,
+        `authority_class "${rule.authority_class}" is empirical/preference-based and may not be application_mode "hard_local_correction" (LANGUAGE-QUALITY-ARCHITECTURE.md §12 L2)`));
+    }
+
+    if (rule.layer === 'audience' && !AUDIENCE_LAYER_ALLOWED_MODES.has(rule.application_mode)) {
+      issues.push(issue(CODES.L3_AUDIENCE_LAYER_MODE, ruleWhere,
+        `a rule whose layer is "audience" must be application_mode "upstream_guidance" or "local_observation", got "${rule.application_mode}" — audience adaptation is Audience/Transformation work, and this is the child-case fix, the single most important guard in this issue (LANGUAGE-QUALITY-ARCHITECTURE.md §12 L3)`));
+    }
+
+    if (rule.application_mode === 'deprecated_as_instruction' && (!rule.notes || rule.notes.trim().length === 0)) {
+      issues.push(issue(CODES.L4_DEPRECATED_NEEDS_NOTES, ruleWhere,
+        'application_mode "deprecated_as_instruction" requires a non-empty notes field saying what withdrew it (LANGUAGE-QUALITY-ARCHITECTURE.md §12 L4)'));
+    }
+
+    if (rule.generality === 'source_local' && rule.application_mode === 'hard_local_correction') {
+      issues.push(issue(CODES.L5_SOURCE_LOCAL_MAY_NOT_HARD_LOCAL, ruleWhere,
+        'generality "source_local" may not be application_mode "hard_local_correction" (LANGUAGE-QUALITY-ARCHITECTURE.md §12 L5)'));
+    }
+  }
+  return issues;
+}
+
+// --- top-level ------------------------------------------------------------
+
+/**
+ * Validate one parsed pack. Returns { issues, notes } — issues fail the run,
+ * notes are reported but do not (following scripts/validate-profiles.mjs's
+ * distinction).
+ */
+export function validatePack(pack, filePath, opts = {}) {
+  const {
+    schema = loadSchema(),
+    axis = getLanguageAxis(),
+    routingLayerIds = loadRoutingLayerIds(),
+    contentIds = new Set(Object.keys(loadAxisProfiles('content'))),
+    audienceIds = new Set(Object.keys(loadAxisProfiles('audience'))),
+    evaluationsDir = REGISTRY_PATHS.evaluationsDir,
+    feedbackDir = REGISTRY_PATHS.feedbackDir,
+    evaluationFiles = listEvaluationFiles(evaluationsDir),
+  } = opts;
+
+  const where = pack?.pack_id ?? basename(filePath);
+  const issues = [];
+  const notes = [];
+
+  issues.push(...checkSchema(pack, schema, where));
+  issues.push(...checkFilenameAndId(pack, filePath, axis));
+  issues.push(...checkDocRef(pack, where));
+  issues.push(...checkLayers(pack, where, routingLayerIds));
+  issues.push(...checkNormativeAuthority(pack, where));
+  issues.push(...checkUnbackedMechanicalClaim(pack, where));
+  issues.push(...checkApplicationMode(pack, where));
+
+  const promotion = checkSharedPromotion(pack, where);
+  issues.push(...promotion.issues);
+  notes.push(...promotion.notes);
+
+  issues.push(...checkGenreAudienceOrthogonality(pack, where));
+  issues.push(...checkScopeIdsResolve(pack, where, { contentIds, audienceIds }));
+
+  const holdout = checkHoldoutLeakage(pack, where, { evaluationFiles, evaluationsDir, feedbackDir });
+  issues.push(...holdout.issues);
+  notes.push(...holdout.notes);
+
+  notes.push(...checkPointlessAliases(pack, where));
+
+  return { issues, notes };
+}
+
+export function validatePackFile(filePath, opts = {}) {
+  let pack;
+  try {
+    pack = JSON.parse(readFileSync(filePath, 'utf8'));
+  } catch (err) {
+    return { issues: [issue(CODES.PARSE, filePath, `unparseable language pack: ${err.message}`)], notes: [] };
+  }
+  return validatePack(pack, filePath, opts);
+}
+
+export function validateAll({ axis = getLanguageAxis() } = {}) {
+  const routingLayerIds = loadRoutingLayerIds();
+  const schema = loadSchema();
+  const contentIds = new Set(Object.keys(loadAxisProfiles('content')));
+  const audienceIds = new Set(Object.keys(loadAxisProfiles('audience')));
+  const evaluationFiles = listEvaluationFiles();
+
+  const files = listPackFiles(axis);
+  const issues = [];
+  const notes = [];
+  let ruleCount = 0;
+
+  for (const file of files) {
+    const result = validatePackFile(file, { schema, axis, routingLayerIds, contentIds, audienceIds, evaluationFiles });
+    issues.push(...result.issues.map((i) => ({ ...i, file })));
+    notes.push(...result.notes.map((n) => ({ ...n, file })));
+    try {
+      const pack = JSON.parse(readFileSync(file, 'utf8'));
+      ruleCount += Array.isArray(pack.rules) ? pack.rules.length : 0;
+    } catch {
+      // parse failure already reported above
+    }
+  }
+
+  return { files, issues, notes, ruleCount };
+}

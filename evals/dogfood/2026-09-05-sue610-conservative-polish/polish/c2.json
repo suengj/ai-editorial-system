@@ -1,0 +1,83 @@
+{
+  "description": "SUE-610 C2 polish decision.",
+  "records": [
+    {
+      "schema_version": "1.0.0",
+      "decision_id": "polish:c2-tools-report",
+      "decided_at": "2026-09-05T09:30:00Z",
+      "draft_ref": {
+        "kind": "article",
+        "ref": "p02_com:content/editorial/sue570-pilot-tools-report.md"
+      },
+      "language": "ko-KR",
+      "pack_ref": "editorial/profiles/language/ko-KR.json",
+      "delta_plan_ref": "delta:c2-tools-report",
+      "reviewer": {
+        "type": "agent",
+        "agent": {
+          "runtime": "claude-code",
+          "model": "claude-sonnet-5",
+          "version": "2026-09-05"
+        }
+      },
+      "basis": "model_inference",
+      "action": "LOCAL_POLISH",
+      "edits": [
+        {
+          "edit_id": "edit-01",
+          "rule_ref": "nq-translationese-connective-scaffolding",
+          "authority_class": "NATIVE_QUALITY",
+          "application_mode": "soft_detector",
+          "defect": "'이 구분 — X — 은 ... 지지대이므로' 형태로 삽입구와 주어화 '은'이 겹치는 번역투 접속 비계 (editorial/voice.md §5가 지목하는 'This distinction …'의 기계적 번역 패턴과 동형).",
+          "span_original": "이 구분 — 원인이 아니라 촉매/실행 비용 인하 — 은 이 리포트의 나머지 논증 전체가 기대는 지지대이므로, 다음 절에서 반드시 다시 등장한다.",
+          "span_candidate": "원인이 아니라 촉매였다는 이 구분에 이 리포트의 나머지 논증 전체가 기대고 있으므로, 다음 절에서 다시 등장한다.",
+          "pairwise": {
+            "continuous_readability": "better",
+            "native_naturalness": "better",
+            "rhythm": "better",
+            "repetition": "same",
+            "over_explication": "same",
+            "stiffness": "better",
+            "information_loss": "same",
+            "semantic_integrity": "same",
+            "genre_preservation": "same",
+            "audience_preservation": "same",
+            "domain_terminology_preservation": "same"
+          },
+          "verdict": "accept"
+        },
+        {
+          "edit_id": "edit-02",
+          "rule_ref": "nq-jeok-suffix-pileup",
+          "authority_class": "NATIVE_QUALITY",
+          "application_mode": "soft_detector",
+          "defect": "'정량적', '논리적'처럼 '~적' 접미가 한 문장 안에 근접 배치됨.",
+          "span_original": "이 부분은 원문에도 정량적 근거가 없는, 논리적 추론에 그친 지점이다.",
+          "span_candidate": "이 부분은 원문에도 수치로 뒷받침된 근거가 없는, 논리만으로 추론한 지점이다.",
+          "pairwise": {
+            "continuous_readability": "same",
+            "native_naturalness": "same",
+            "rhythm": "same",
+            "repetition": "same",
+            "over_explication": "same",
+            "stiffness": "same",
+            "information_loss": "same",
+            "semantic_integrity": "same",
+            "genre_preservation": "same",
+            "audience_preservation": "same",
+            "domain_terminology_preservation": "same"
+          },
+          "verdict": "revert",
+          "revert_reason": "continuous_readability와 native_naturalness가 모두 same이라 A1을 만족하지 못한다 — '~적' 접미 두 개가 근접했다는 사실만으로는 결함이 아니며, 후보문이 원문보다 더 자연스럽다고 주장할 근거가 없다. 모호하면 revert."
+        }
+      ],
+      "edit_surface": {
+        "unit": "characters",
+        "original_total": 4560,
+        "changed_total": 80,
+        "note": "accept된 edit-01의 원본 스팬(80자, 전체의 1.8%)만 변경됨. edit-02는 revert되어 원문이 그대로 유지됨."
+      },
+      "upstream_route": null
+    }
+  ]
+}

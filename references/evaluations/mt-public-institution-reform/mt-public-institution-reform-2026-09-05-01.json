@@ -1,0 +1,54 @@
+{
+  "schema_version": "1.0.0",
+  "evaluation_id": "eval:mt-public-institution-reform-2026-09-05-01",
+  "ref_id": "ref:mt-public-institution-reform",
+  "modality": "text",
+  "evaluator": {
+    "type": "agent",
+    "agent": {
+      "runtime": "claude-code",
+      "model": "claude-sonnet-5"
+    }
+  },
+  "evaluated_at": "2026-09-05T06:30:00Z",
+  "calibration_ref": null,
+  "profile_ref": "editorial/profiles/reference/text.json",
+  "basis": "model_inference",
+  "corpus_role": "holdout",
+  "language": "ko-KR",
+  "dimensions": [
+    {
+      "dimension": "citation-behaviour",
+      "verdict": "adopt",
+      "note": "A third independent instance of the paraphrase-then-quote nesting pattern already found at 경향신문 and 아시아경제 (ref:khan-public-institution-reform, ref:asiae-public-institution-reform): a direct quote ('~해야 할 것 같다') is embedded mid-sentence via '~며', followed by the reporter's own framing noun phrase describing what the speaker did, rather than a second quoted clause this time. This is the same underlying discipline (attribute the words, then let the reporter's own clause carry the interpretive load) applied with a different second-clause shape, showing the nesting move is a flexible convention rather than one fixed template being copied outlet to outlet.",
+      "evidence": "\"이재명 대통령은 지난해 8월 '나라 살림 절약 간담회'에서 '공공기관 통폐합을 해야 할 것 같다'며 '공공기관 기능 개혁' 화두를 던졌다.\" — quote embedded via '~며', followed by the reporter's own interpretive clause ('화두를 던졌다'), not a second direct quote."
+    },
+    {
+      "dimension": "language-naturalness",
+      "verdict": "do_not_copy",
+      "note": "'화두를 던졌다' (literally: threw out a talking point/topic) is a colorful, idiomatic predicate choice for describing an official raising an issue — vivid, but a house-style word choice rather than a corroborated cross-outlet convention; it did not appear in the 경향신문 or 중앙일보 coverage of the same event. Recording it as a publisher-local flourish, not a transferable predicate-choice norm.",
+      "evidence": "\"'공공기관 기능 개혁' 화두를 던졌다\" — idiomatic predicate ('화두를 던지다') not observed at other outlets covering the same story."
+    },
+    {
+      "dimension": "paragraph-sentence-rhythm",
+      "verdict": "neutral",
+      "note": "The piece opens with a clefted, time-anchored construction ('~검토되기 시작한 건 지난해 8월 무렵이다') rather than the lead-then-background order seen at 경향신문 — it reads more like a retrospective/explainer opening than a same-day announcement lead. This is a real structural variant worth noting but not yet corroborated elsewhere in this corpus, so it is not promoted as a News-genre pattern here."
+    }
+  ],
+  "strengths": [
+    "Third independent corroboration of the paraphrase-then-second-clause quotation nesting move, this time with a reporter's own interpretive clause rather than a second quotation as the second layer — evidence the underlying discipline (attribute the words, then let a separate clause carry interpretation) is a flexible News convention, not one fixed sentence template."
+  ],
+  "weaknesses": [
+    "The idiomatic predicate '화두를 던지다' is this outlet's own colorful word choice for this story, not observed at the other outlets covering the same event — do_not_copy as a general predicate-choice norm.",
+    "This record was assigned holdout before reading and validates a trait already derived elsewhere; it does not originate the nesting finding. The clefted, retrospective-style opening sentence is a single, uncorroborated observation and is not promoted to a trait on the strength of this record alone."
+  ],
+  "applicable_to": {
+    "content_types": ["news"],
+    "audiences": ["general-reader", "professional-generalist"],
+    "artifacts": ["text/article"],
+    "surfaces": ["suengj-com"]
+  },
+  "authority_boundary": "craft_evidence_only",
+  "provenance_class": "external",
+  "notes": "corpus_role: holdout, assigned before reading, per docs/architecture/LANGUAGE-QUALITY-ARCHITECTURE.md §7 — validates the nested-quotation citation trait found independently at ref:khan-public-institution-reform and ref:asiae-public-institution-reform, never originates it. Access note: 매일경제 and 조선비즈 could not be verified in the time available; 머니투데이(Money Today) was substituted as a genuinely verifiable independent outlet rather than guessing at an unverified one, per SUE-604's substitution guidance. URL is a verified mirror at v.daum.net/v/20260903163609990 carrying 머니투데이's own byline ('정현수 기자, 김온유 기자') and dateline; the catalog attribution names 머니투데이 as the originating outlet. No article text reproduced beyond the sentence fragments quoted as evidence, consistent with editorial/RIGHTS-AND-PROVENANCE.md's fail-to-reference rule."
+}

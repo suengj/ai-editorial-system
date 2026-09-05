@@ -1,0 +1,60 @@
+{
+  "description": "SUE-610 C1 polish decision.",
+  "records": [
+    {
+      "schema_version": "1.0.0",
+      "decision_id": "polish:c1-bonds-news",
+      "decided_at": "2026-09-05T09:10:00Z",
+      "draft_ref": {
+        "kind": "article",
+        "ref": "p02_com:content/editorial/sue570-pilot-bonds-news.md"
+      },
+      "language": "ko-KR",
+      "pack_ref": "editorial/profiles/language/ko-KR.json",
+      "delta_plan_ref": "delta:c1-bonds-news",
+      "reviewer": {
+        "type": "agent",
+        "agent": {
+          "runtime": "claude-code",
+          "model": "claude-sonnet-5",
+          "version": "2026-09-05"
+        }
+      },
+      "basis": "model_inference",
+      "action": "KEEP",
+      "edits": [
+        {
+          "edit_id": "edit-01",
+          "rule_ref": "nq-passive-causative-overuse",
+          "authority_class": "NATIVE_QUALITY",
+          "application_mode": "soft_detector",
+          "defect": "문장이 히다 계열 피동형 '읽힌다'로 끝나, 능동형을 기본으로 삼는 원칙에서 벗어난 후보로 감지됨.",
+          "span_original": "이 조합은 보통 \"돈을 빌려주는 사람들이 기업 부도 위험을 새로 걱정하기 시작했다\"는 신호가 아니라, \"장기 자금을 오래 묶어두는 대가로 더 높은 보상을 요구하고 있다\"는 신호로 읽힌다.",
+          "span_candidate": "이 조합은 \"돈을 빌려주는 사람들이 기업 부도 위험을 새로 걱정하기 시작했다\"는 신호가 아니라, \"장기 자금을 오래 묶어두는 대가로 더 높은 보상을 요구하고 있다\"는 신호다.",
+          "pairwise": {
+            "continuous_readability": "same",
+            "native_naturalness": "same",
+            "rhythm": "same",
+            "repetition": "same",
+            "over_explication": "same",
+            "stiffness": "same",
+            "information_loss": "worse",
+            "semantic_integrity": "worse",
+            "genre_preservation": "same",
+            "audience_preservation": "same",
+            "domain_terminology_preservation": "same"
+          },
+          "verdict": "revert",
+          "revert_reason": "'~로 읽힌다'는 '보통 이렇게 해석된다'는 해석적 헤지를 담고 있는데, '~는 신호다'로 바꾸면 그 헤지가 사라지고 단정으로 읽혀 information_loss와 semantic_integrity가 worse — A2 위반으로 revert. 피동을 없애는 국소적 규칙 충족이 전체적인 정확도 후퇴를 정당화하지 못한다(보존 우선 원칙, 입증 책임은 편집 쪽에 있음)."
+        }
+      ],
+      "edit_surface": {
+        "unit": "characters",
+        "original_total": 2578,
+        "changed_total": 0,
+        "note": "유일한 후보 편집이 A2 위반으로 revert되어 원문이 그대로 유지됨. KEEP은 성공 상태이지 미완성이 아니다."
+      },
+      "upstream_route": null
+    }
+  ]
+}

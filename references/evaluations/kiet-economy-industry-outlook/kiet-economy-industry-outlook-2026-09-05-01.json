@@ -1,0 +1,50 @@
+{
+  "schema_version": "1.0.0",
+  "evaluation_id": "eval:kiet-economy-industry-outlook-2026-09-05-01",
+  "ref_id": "ref:kiet-economy-industry-outlook",
+  "modality": "text",
+  "evaluator": {
+    "type": "agent",
+    "agent": {
+      "runtime": "claude-code",
+      "model": "claude-sonnet-5"
+    }
+  },
+  "evaluated_at": "2026-09-05T05:30:00Z",
+  "calibration_ref": null,
+  "profile_ref": "editorial/profiles/reference/text.json",
+  "basis": "model_inference",
+  "corpus_role": "holdout",
+  "language": "ko-KR",
+  "dimensions": [
+    {
+      "dimension": "language-naturalness",
+      "verdict": "adopt",
+      "note": "산업연구원's '2026년 경제·산업 전망' page independently reproduces the sentence-final bare-noun compression already found at KDI (ref:kdi-economic-outlook-report, discovery): a long clause-chained sentence ('소비와 수출이 ... 회복세를 보이고, ... 확대되면서 성장을 견인') ends on the noun '견인' with no closing predicate. This corroborates the trait at a second, independent institution (an industrial-policy research institute, not a central bank), from a different subject-matter angle (manufacturing/industry vs. macro forecast). This record validates the trait; it does not originate it — the trait was already derived from KDI before this reference was read.",
+      "evidence": "\"국내 실물경기는 소비와 수출이 2025년 2분기에 회복세를 보이고, 3분기 들어 정부의 소비 지원책과 글로벌 IT경기 개선 등에 힘올어 증가세가 확대되면서 성장을 견인\" — ends on bare noun '견인', no copula, chained via 고/들어/에 힘입어/면서."
+    },
+    {
+      "dimension": "language-naturalness",
+      "verdict": "neutral",
+      "note": "A second sentence on manufacturing employment does close on a full predicate with an evidential hedge ('...모습을 보이고 있다'), showing the bare-noun ending is not universal within this same document — it is used selectively on forecast/trend-summary clauses, not on every sentence. Recording this rather than overclaiming uniform sentence-final compression.",
+      "evidence": "\"코로나19 이후 제조업 고용은 비교적 큰 충격 없이 빠르게 회복하는 모습을 보이고 있다\" — full predicate, hedge via '비교적' and '모습을 보이고 있다', not a bare-noun ending."
+    }
+  ],
+  "strengths": [
+    "Independent-institution corroboration of the sentence-final bare-noun compression trait first observed at KDI: a different institution (industrial/manufacturing-policy research vs. macro/monetary), same device (a long clause-chained sentence ending on a bare noun like '견인' rather than a finite predicate) on a forecast/trend-summary clause specifically.",
+    "The same document shows the device is selective, not blanket: an employment-recovery sentence in the same piece closes on a full predicate with an evidential hedge ('모습을 보이고 있다') rather than a bare noun — useful boundary condition on when the compression device is reached for."
+  ],
+  "weaknesses": [
+    "This record was assigned holdout before reading and validates a trait already derived from ref:kdi-economic-outlook-report; it must never be treated as having originated the bare-noun-ending finding.",
+    "Only the outlook landing/summary page was read, not a full downloadable report body if one exists separately; paragraph-level rhythm and full-document density are unverified."
+  ],
+  "applicable_to": {
+    "content_types": ["research", "academic"],
+    "audiences": ["domain-practitioner", "professional-generalist"],
+    "artifacts": ["text/article"],
+    "surfaces": ["suengj-com"]
+  },
+  "authority_boundary": "craft_evidence_only",
+  "provenance_class": "external",
+  "notes": "corpus_role: holdout, assigned before reading, per docs/architecture/LANGUAGE-QUALITY-ARCHITECTURE.md §7 — this record validates the sentence-final bare-noun compression trait found independently at ref:kdi-economic-outlook-report and must never be read as originating it. Source: https://www.kiet.re.kr/trends/ecolookView?ecolook_no=54 ('2026년 경제·산업 전망'). No report text reproduced beyond the two sentence fragments quoted as evidence, consistent with editorial/RIGHTS-AND-PROVENANCE.md's fail-to-reference rule."
+}

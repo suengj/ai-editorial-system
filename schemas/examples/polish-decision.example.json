@@ -1,0 +1,154 @@
+{
+  "description": "Worked polish-decision records (AES-V2.18 / SUE-610) covering the three action classes — KEEP, LOCAL_POLISH, UPSTREAM_REPLAN_REQUIRED. Used by scripts/test-delta.mjs. Not a real editorial judgement.",
+  "records": [
+    {
+      "schema_version": "1.0.0",
+      "decision_id": "polish:example-keep",
+      "decided_at": "2026-09-05T10:30:00Z",
+      "draft_ref": { "kind": "article", "ref": "art:example-already-good-draft" },
+      "language": "ko-KR",
+      "pack_ref": "editorial/profiles/language/ko-KR.json",
+      "delta_plan_ref": "delta:example-already-good-draft",
+      "reviewer": {
+        "type": "agent",
+        "agent": { "runtime": "claude-code", "model": "claude-sonnet-5", "version": "2026-05-01" }
+      },
+      "basis": "model_inference",
+      "action": "KEEP",
+      "edits": [
+        {
+          "edit_id": "edit-01",
+          "rule_ref": "nq-translationese-connective-scaffolding",
+          "authority_class": "NATIVE_QUALITY",
+          "application_mode": "soft_detector",
+          "defect": "A candidate connective substitution was considered for paragraph 2's transition sentence.",
+          "span_original": "그리고 이어서 설명하면",
+          "span_candidate": "이어서",
+          "pairwise": {
+            "continuous_readability": "same",
+            "native_naturalness": "same",
+            "rhythm": "same",
+            "repetition": "same",
+            "over_explication": "same",
+            "stiffness": "same",
+            "information_loss": "same",
+            "semantic_integrity": "same",
+            "genre_preservation": "same",
+            "audience_preservation": "same",
+            "domain_terminology_preservation": "same"
+          },
+          "verdict": "revert",
+          "revert_reason": "Neither continuous_readability nor native_naturalness is better (both same); the accept rule's A1 clause is not satisfied, so ORIGINAL stands."
+        }
+      ],
+      "edit_surface": {
+        "unit": "characters",
+        "original_total": 420,
+        "changed_total": 0,
+        "note": "One candidate edit was considered and reverted; nothing in the draft changed. KEEP is a first-class success state, not a shortfall."
+      },
+      "upstream_route": null
+    },
+    {
+      "schema_version": "1.0.0",
+      "decision_id": "polish:example-local-polish",
+      "decided_at": "2026-09-05T10:35:00Z",
+      "draft_ref": { "kind": "article", "ref": "art:example-locally-polishable-draft" },
+      "language": "ko-KR",
+      "pack_ref": "editorial/profiles/language/ko-KR.json",
+      "delta_plan_ref": "delta:example-locally-polishable-draft",
+      "reviewer": {
+        "type": "agent",
+        "agent": { "runtime": "claude-code", "model": "claude-sonnet-5", "version": "2026-05-01" }
+      },
+      "basis": "model_inference",
+      "action": "LOCAL_POLISH",
+      "edits": [
+        {
+          "edit_id": "edit-01",
+          "rule_ref": "norm-doeda-dwaeda-distinction",
+          "authority_class": "NORMATIVE",
+          "application_mode": "hard_local_correction",
+          "defect": "'되어'로 풀어써도 자연스러운 자리에 '됬다'가 쓰였다 — '됐다'가 맞는 표기다, per the pack's NORMATIVE 되/돼 구분 rule.",
+          "span_original": "안 됬다",
+          "span_candidate": "안 됐다",
+          "pairwise": {
+            "semantic_integrity": "same"
+          },
+          "verdict": "accept"
+        },
+        {
+          "edit_id": "edit-02",
+          "rule_ref": "nq-translationese-connective-scaffolding",
+          "authority_class": "NATIVE_QUALITY",
+          "application_mode": "soft_detector",
+          "defect": "A calqued connective ('그리고 이어서') survives where a native writer would use a single connective.",
+          "span_original": "그리고 이어서 결과를 살펴보면",
+          "span_candidate": "이어서 결과를 살펴보면",
+          "pairwise": {
+            "continuous_readability": "better",
+            "native_naturalness": "better",
+            "rhythm": "better",
+            "repetition": "same",
+            "over_explication": "same",
+            "stiffness": "same",
+            "information_loss": "same",
+            "semantic_integrity": "same",
+            "genre_preservation": "same",
+            "audience_preservation": "same",
+            "domain_terminology_preservation": "same"
+          },
+          "verdict": "accept"
+        }
+      ],
+      "edit_surface": {
+        "unit": "characters",
+        "original_total": 500,
+        "changed_total": 60,
+        "note": "Two bounded local edits, 12% of the draft by character count — within the advisory band, no large_edit_justification needed."
+      },
+      "upstream_route": null
+    },
+    {
+      "schema_version": "1.0.0",
+      "decision_id": "polish:example-upstream-replan",
+      "decided_at": "2026-09-05T10:40:00Z",
+      "draft_ref": { "kind": "article", "ref": "art:example-report-to-child" },
+      "language": "ko-KR",
+      "pack_ref": "editorial/profiles/language/ko-KR.json",
+      "delta_plan_ref": "delta:example-report-to-child",
+      "reviewer": {
+        "type": "agent",
+        "agent": { "runtime": "claude-code", "model": "claude-sonnet-5", "version": "2026-05-01" }
+      },
+      "basis": "model_inference",
+      "action": "UPSTREAM_REPLAN_REQUIRED",
+      "edits": [
+        {
+          "edit_id": "edit-01",
+          "rule_ref": "aud-vocab-tier-basic",
+          "authority_class": "AUDIENCE_CONSTRAINT",
+          "application_mode": "upstream_guidance",
+          "defect": "Unglossed acronyms and adult-register sentence structure throughout, matching the delta plan's LARGE audience delta.",
+          "span_original": "본 연구는 practitioner 대상 acronym을 다수 포함한다.",
+          "span_candidate": "본 연구는 practitioner 대상 acronym을 다수 포함한다.",
+          "pairwise": {
+            "audience_preservation": "not_applicable"
+          },
+          "verdict": "revert",
+          "revert_reason": "application_mode upstream_guidance never authorizes a polish edit (P5); the audience axis was already routed to P3_RECOMPOSE by delta:example-report-to-child and must be recomposed by Audience/Transformation, not patched here."
+        }
+      ],
+      "edit_surface": {
+        "unit": "characters",
+        "original_total": 900,
+        "changed_total": 0,
+        "note": "No local edit is authorized; the audience and knowledge_depth axes are at P3_RECOMPOSE per the delta plan."
+      },
+      "upstream_route": {
+        "layer": "audience",
+        "reason": "delta:example-report-to-child assigned P3_RECOMPOSE to the audience, knowledge_depth, and terminology axes; this draft has not yet been recomposed for the child-upper-elementary audience and local polish cannot close that gap."
+      }
+    }
+  ]
+}

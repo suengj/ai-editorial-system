@@ -1,0 +1,60 @@
+{
+  "schema_version": "1.0.0",
+  "decision_id": "polish:fixture-golden",
+  "decided_at": "2026-09-05T09:30:00Z",
+  "draft_ref": { "kind": "article", "ref": "art:fixture-source-draft" },
+  "language": "ko-KR",
+  "pack_ref": "editorial/profiles/language/ko-KR.json",
+  "delta_plan_ref": "delta:fixture-golden",
+  "reviewer": {
+    "type": "agent",
+    "agent": { "runtime": "claude-code", "model": "claude-sonnet-5", "version": "2026-05-01" }
+  },
+  "basis": "model_inference",
+  "action": "LOCAL_POLISH",
+  "edits": [
+    {
+      "edit_id": "edit-hard-local",
+      "rule_ref": "norm-particle-attachment",
+      "authority_class": "NORMATIVE",
+      "application_mode": "hard_local_correction",
+      "defect": "Fixture: a required spacing form was omitted, per the pack's NORMATIVE spacing rule.",
+      "span_original": "fixture-original-spacing",
+      "span_candidate": "fixture corrected spacing",
+      "pairwise": {
+        "semantic_integrity": "same"
+      },
+      "verdict": "accept"
+    },
+    {
+      "edit_id": "edit-soft-detector",
+      "rule_ref": "nq-translationese-connective-scaffolding",
+      "authority_class": "NATIVE_QUALITY",
+      "application_mode": "soft_detector",
+      "defect": "Fixture: a calqued connective survives where a native writer would use a single connective.",
+      "span_original": "fixture original connective span",
+      "span_candidate": "fixture candidate connective span",
+      "pairwise": {
+        "continuous_readability": "better",
+        "native_naturalness": "better",
+        "rhythm": "better",
+        "repetition": "same",
+        "over_explication": "same",
+        "stiffness": "same",
+        "information_loss": "same",
+        "semantic_integrity": "same",
+        "genre_preservation": "same",
+        "audience_preservation": "same",
+        "domain_terminology_preservation": "same"
+      },
+      "verdict": "accept"
+    }
+  ],
+  "edit_surface": {
+    "unit": "characters",
+    "original_total": 500,
+    "changed_total": 60,
+    "note": "Fixture: two bounded local edits, 12% of the draft by character count."
+  },
+  "upstream_route": null
+}

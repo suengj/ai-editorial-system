@@ -302,9 +302,21 @@ export function validateFeedbackFile(path, { schema = loadFeedbackSchema() } = {
       'scope "calibration_candidate" requires non-empty evidence_links — a single record, human- or agent-authored, never promotes itself'));
   }
 
+  // editorial/FEEDBACK-ROUTING.md §1 defines THREE states, not two: a shared
+  // layer named; modality-only (layer null, abstained false, modality_layer
+  // naming a declared modality layer — "the answer is modality-specific");
+  // or a genuine abstention (layer null, no modality_layer, abstained true).
+  // This check previously collapsed the first two, so every modality-only
+  // record was reported as an implied abstention. Nothing caught it because
+  // no persisted record had used that state — but the committed worked
+  // example `feedback:example-renderer-glitch` is exactly it, and
+  // scripts/lib/routing-core.mjs has always validated all three correctly.
+  // A checker that forbids a state its own contract documents is the same
+  // defect class as an authority file describing a control that does not
+  // exist, running in the other direction.
   const routing = data.routing;
-  if (routing && routing.layer == null && routing.abstained !== true) {
-    issues.push(issue(CODES.ROUTING_GUESS, where, 'routing.layer is absent/null but abstained is not true — abstention must be explicit, not implied'));
+  if (routing && routing.layer == null && routing.abstained !== true && !routing.modality_layer) {
+    issues.push(issue(CODES.ROUTING_GUESS, where, 'routing.layer is absent/null, no modality_layer is named, and abstained is not true — a record that names no cause at all must abstain explicitly, not implicitly'));
   }
 
   issues.push(...checkOwnerVerdict(data, where));

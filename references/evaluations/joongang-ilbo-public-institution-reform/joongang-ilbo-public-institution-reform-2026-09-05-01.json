@@ -1,0 +1,48 @@
+{
+  "schema_version": "1.0.0",
+  "evaluation_id": "eval:joongang-ilbo-public-institution-reform-2026-09-05-01",
+  "ref_id": "ref:joongang-ilbo-public-institution-reform",
+  "modality": "text",
+  "evaluator": {
+    "type": "agent",
+    "agent": {
+      "runtime": "claude-code",
+      "model": "claude-sonnet-5"
+    }
+  },
+  "evaluated_at": "2026-09-05T06:00:00Z",
+  "calibration_ref": null,
+  "profile_ref": "editorial/profiles/reference/text.json",
+  "basis": "model_inference",
+  "corpus_role": "discovery",
+  "language": "ko-KR",
+  "dimensions": [
+    {
+      "dimension": "citation-behaviour",
+      "verdict": "adopt",
+      "note": "Official quote is placed with the speaker's title and name stated before the quotation ('한성숙 국무총리는 \"...\"고 했다'), and a vivid, figurative phrase ('모닥불처럼 모아서') sits inside the attributed quote itself rather than in the reporter's own narration. This keeps colorful language sourced to the person who said it, not laundered into neutral reportage as the writer's own voice — a clean discipline worth carrying: figurative language belongs inside quotation marks with a named speaker, not in the surrounding prose.",
+      "evidence": "\"한성숙 국무총리는 \\\"'나눠먹기식' 배분을 지양하고, 지역 성장 에너지를 모닥불처럼 모아서 혁신도시를 중심으로 집적 배치해 지역 거점의 힘을 극대화하겠다\\\"고 했다.\" — figurative language ('모닥불처럼') is inside the quote, attribution ('고 했다') follows the full quote."
+    },
+    {
+      "dimension": "language-naturalness",
+      "verdict": "neutral",
+      "note": "Every sentence read in this piece carries an explicit grammatical subject ('정부가', '한성숙 국무총리는', '수도권에 소재한 350여개 공공기관은'); no zero-anaphora (주어 생략) was observed in the fragment read. This is worth recording as an observed data point but not yet promoted as a News-genre convention on the strength of one piece — omission-vs-repetition patterns vary by sentence position in longer articles this evaluation did not read in full."
+    }
+  ],
+  "strengths": [
+    "Attribution placement: named speaker + title precedes the quote, and a speech verb ('고 했다') closes it — figurative or colorful phrasing stays inside the quotation, attributed to the speaker, not adopted into the reporter's own narration."
+  ],
+  "weaknesses": [
+    "Only a short excerpt (lead plus one official quote and one further factual sentence) was read, not the full article; claims about paragraph-level structure, background compression, or full-piece sentence rhythm are not supported by this record.",
+    "This is a single-outlet reading of a single day's coverage of one government announcement; the attribution-placement finding is treated as a discovery observation to be checked against an independent outlet (see the holdout records) before being generalized as a Korean-news norm rather than a 중앙일보-specific habit."
+  ],
+  "applicable_to": {
+    "content_types": ["news"],
+    "audiences": ["general-reader", "professional-generalist"],
+    "artifacts": ["text/article"],
+    "surfaces": ["suengj-com"]
+  },
+  "authority_boundary": "craft_evidence_only",
+  "provenance_class": "external",
+  "notes": "corpus_role: discovery, assigned before reading, per docs/architecture/LANGUAGE-QUALITY-ARCHITECTURE.md §7. Access note: joongang.co.kr blocked direct fetch; this record's URL is a verified mirror at v.daum.net/v/20260903110351324 that carries 중앙일보's own byline ('여성국·오소영 기자') and dateline — the catalog attribution names 중앙일보 as the originating outlet, per SUE-604's guidance on mirror URLs. Traits here are checked against independent outlets in the paired holdout records (ref:asiae-public-institution-reform, ref:mt-public-institution-reform) before being treated as News-genre-general rather than 중앙일보-specific. No article text reproduced beyond the sentence fragments quoted as evidence, consistent with editorial/RIGHTS-AND-PROVENANCE.md's fail-to-reference rule."
+}

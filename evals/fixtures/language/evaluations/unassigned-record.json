@@ -1,0 +1,14 @@
+{
+  "schema_version": "1.0.0",
+  "evaluation_id": "eval:unassigned-record",
+  "ref_id": "ref:fixture-unassigned-source",
+  "modality": "text",
+  "evaluator": { "type": "human" },
+  "evaluated_at": "2026-01-01T00:00:00Z",
+  "basis": "editorial_review",
+  "dimensions": [{ "dimension": "craft", "verdict": "adopt", "note": "Fixture note." }],
+  "applicable_to": ["text"],
+  "authority_boundary": "craft_evidence_only",
+  "provenance_class": "external",
+  "language": "zz"
+}

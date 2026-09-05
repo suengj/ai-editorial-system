@@ -7,6 +7,13 @@
  * comparison is restricted to a declared cross-cutting dimension, the
  * anti-collapse rule is declared rather than silently true, and routes_to
  * always resolves against AES-V2.5's layer table.
+ *
+ * schema_version 1.1.0 (AES-V2.17 / SUE-607) additionally enforces the
+ * absolute (non-comparative) `language_quality` block: required at 1.1.0 and
+ * forbidden at 1.0.0, all seven dimensions present exactly once, evidence
+ * mandatory, semantic_integrity FAIL dominates a pass-shaped outcome, and
+ * each dimension's FAIL routes to exactly the one feedback-routing layer
+ * fixed by LANGUAGE_DIMENSION_ROUTES — never a different layer.
  */
 
 import { readFileSync } from 'node:fs';
@@ -33,7 +40,43 @@ export const CODES = Object.freeze({
   ROUTE_MISMATCH: 'route-outcome-mismatch',
   UNKNOWN_ROUTE: 'route-not-in-routing-table',
   HUMAN_AUTHORITY: 'final-authority-not-human',
+  LANGUAGE_QUALITY_REQUIRED: 'language-quality-required-at-1.1.0',
+  LANGUAGE_QUALITY_NOT_ALLOWED: 'language-quality-not-allowed-at-1.0.0',
+  LANGUAGE_DIMENSION_MISSING: 'language-dimension-missing',
+  LANGUAGE_DIMENSION_DUPLICATED: 'language-dimension-duplicated',
+  LANGUAGE_DIMENSION_MISSING_EVIDENCE: 'language-dimension-missing-evidence-span',
+  LANGUAGE_INTEGRITY_OVERRIDDEN: 'language-integrity-overridden-by-outcome',
+  LANGUAGE_FAIL_HIDDEN_BY_OUTCOME: 'language-fail-hidden-by-pass-shaped-outcome',
+  LANGUAGE_DIMENSION_ROUTE_REQUIRED: 'language-dimension-fail-with-no-route',
+  LANGUAGE_DIMENSION_UNKNOWN_ROUTE: 'language-dimension-route-not-in-routing-table',
+  LANGUAGE_DIMENSION_MISROUTE: 'language-dimension-routed-to-wrong-layer',
+  LANGUAGE_DIMENSION_ROUTE_NOT_ALLOWED: 'language-dimension-non-fail-with-route',
 });
+
+/** The seven dimensions SUE-607 requires, each exactly once, in language_quality. */
+export const LANGUAGE_DIMENSIONS = Object.freeze([
+  'semantic_integrity', 'normative_correctness', 'native_fluency', 'genre_fit',
+  'audience_fit', 'domain_terminology_fit', 'owner_voice_fit',
+]);
+
+/**
+ * The single legal feedback-routing layer for each language-quality
+ * dimension's FAIL verdict (AES-V2.17 / SUE-607). A FAIL routed to any other
+ * layer is the smallest-layer-routing violation this architecture exists to
+ * prevent.
+ */
+export const LANGUAGE_DIMENSION_ROUTES = Object.freeze({
+  semantic_integrity: 'verification',
+  normative_correctness: 'normative',
+  native_fluency: 'native_fluency',
+  genre_fit: 'register',
+  audience_fit: 'audience',
+  domain_terminology_fit: 'domain_terminology',
+  owner_voice_fit: 'owner_voice',
+});
+
+/** Outcomes that are "pass-shaped": no rework is implied. */
+const PASS_SHAPED_OUTCOMES = new Set(['PASS', 'TIE', 'ABSTAIN']);
 
 /** The five dimensions SUE-564 requires at minimum. */
 export const REQUIRED_DIMENSIONS = Object.freeze([
@@ -47,7 +90,12 @@ export const OUTCOME_ROUTES = Object.freeze({
   ABSTAIN: [null],
   ARGUMENT_REWORK: ['frame'],
   FACT_REWORK: ['verification'],
-  PROSE_REWORK: ['writing', 'polish'],
+  // AES-V2.17 (SUE-607) widened this: the language layers are prose-layer
+  // rework targets too. Without them a record could report a
+  // normative/native_fluency/register/terminology FAIL per dimension and
+  // have no legal record-level outcome to carry it, which is how the
+  // finding used to disappear at the record boundary.
+  PROSE_REWORK: ['writing', 'polish', 'register', 'normative', 'native_fluency', 'domain_terminology', 'owner_voice'],
   AUDIENCE_REWORK: ['audience', 'frame'],
 });
 
@@ -144,6 +192,93 @@ export function validateL1Record(record, { schema = loadSchema(), routingTable =
   if (record?.routes_to && !allLayerIds(routingTable).includes(record.routes_to)) {
     issues.push(issue(CODES.UNKNOWN_ROUTE, where,
       `routes_to "${record.routes_to}" is not a layer id in editorial/feedback-routing.json`));
+  }
+
+  // --- language_quality: required at 1.1.0, forbidden at 1.0.0 -------------
+  // (SUE-607 / AES-V2.17). json-schema-lite has no `if`, so the
+  // version-conditional requirement lives here, not in the schema.
+  if (record?.schema_version === '1.1.0' && !record?.language_quality) {
+    issues.push(issue(CODES.LANGUAGE_QUALITY_REQUIRED, where,
+      'schema_version is 1.1.0 but language_quality is absent'));
+  }
+  if (record?.schema_version === '1.0.0' && record?.language_quality) {
+    issues.push(issue(CODES.LANGUAGE_QUALITY_NOT_ALLOWED, where,
+      'schema_version is 1.0.0 but language_quality is present; this is a version defect, not an additive field'));
+  }
+
+  if (record?.language_quality) {
+    const lqDims = record.language_quality.dimensions ?? [];
+
+    // --- all seven dimensions present, exactly once ------------------------
+    const counts = new Map();
+    for (const d of lqDims) counts.set(d.id, (counts.get(d.id) ?? 0) + 1);
+    for (const id of LANGUAGE_DIMENSIONS) {
+      const count = counts.get(id) ?? 0;
+      if (count === 0) {
+        issues.push(issue(CODES.LANGUAGE_DIMENSION_MISSING, where,
+          `language_quality is missing required dimension "${id}"`));
+      } else if (count > 1) {
+        issues.push(issue(CODES.LANGUAGE_DIMENSION_DUPLICATED, where,
+          `language_quality carries dimension "${id}" ${count} times; each dimension must appear exactly once`));
+      }
+    }
+
+    // --- evidence is mandatory, asserted here too as belt-and-braces -------
+    for (const d of lqDims) {
+      if (!d.evidence_span || d.evidence_span.trim().length === 0) {
+        issues.push(issue(CODES.LANGUAGE_DIMENSION_MISSING_EVIDENCE, where,
+          `language_quality dimension "${d.id}" has verdict "${d.verdict}" with no evidence span`));
+      }
+    }
+
+    // --- integrity dominance: semantic_integrity FAIL rules out a pass-shaped
+    // outcome, exactly the same "a stylistic win never offsets an integrity
+    // failure" rule already enforced above for record.integrity.status.
+    const semanticIntegrity = lqDims.find((d) => d.id === 'semantic_integrity');
+    if (semanticIntegrity?.verdict === 'FAIL' && PASS_SHAPED_OUTCOMES.has(record?.outcome)) {
+      issues.push(issue(CODES.LANGUAGE_INTEGRITY_OVERRIDDEN, where,
+        `language_quality.semantic_integrity is FAIL but outcome is "${record?.outcome}"; a pass-shaped outcome may not stand alongside a semantic-integrity failure`));
+    }
+
+    // --- a language FAIL may not be hidden behind a pass-shaped record ------
+    // LANGUAGE-QUALITY-ARCHITECTURE.md §8: "the review output *is* the
+    // routing input". Downstream consumers read the record-level
+    // outcome/routes_to; a record whose outcome is PASS while a language
+    // dimension is FAIL reports "nothing to do" and loses the finding at
+    // exactly the boundary where it was supposed to become an action. The
+    // per-dimension routes_to keeps the detail; this rule keeps the record
+    // from contradicting it. Reported once per record, listing every failing
+    // dimension, so one bad outcome does not produce seven near-identical
+    // issues.
+    const failing = lqDims.filter((d) => d.verdict === 'FAIL' && d.id !== 'semantic_integrity');
+    if (failing.length > 0 && PASS_SHAPED_OUTCOMES.has(record?.outcome)) {
+      issues.push(issue(CODES.LANGUAGE_FAIL_HIDDEN_BY_OUTCOME, where,
+        `outcome is "${record?.outcome}" but language_quality reports FAIL on ${failing.map((d) => d.id).join(', ')}; a pass-shaped outcome tells every downstream consumer there is nothing to route, which contradicts the dimension's own routes_to`));
+    }
+
+    // --- routing: a FAIL must route to its one legal layer; anything else
+    // must not carry a route at all ------------------------------------------
+    for (const d of lqDims) {
+      if (d.verdict === 'FAIL') {
+        if (!d.routes_to) {
+          issues.push(issue(CODES.LANGUAGE_DIMENSION_ROUTE_REQUIRED, where,
+            `language_quality dimension "${d.id}" is FAIL but carries no routes_to`));
+          continue;
+        }
+        if (!allLayerIds(routingTable).includes(d.routes_to)) {
+          issues.push(issue(CODES.LANGUAGE_DIMENSION_UNKNOWN_ROUTE, where,
+            `language_quality dimension "${d.id}" routes_to "${d.routes_to}" is not a layer id in editorial/feedback-routing.json`));
+        }
+        const expected = LANGUAGE_DIMENSION_ROUTES[d.id];
+        if (expected && d.routes_to !== expected) {
+          issues.push(issue(CODES.LANGUAGE_DIMENSION_MISROUTE, where,
+            `language_quality dimension "${d.id}" must route to "${expected}", not "${d.routes_to}" — the smallest-layer-routing violation this architecture exists to prevent`));
+        }
+      } else if (d.routes_to) {
+        issues.push(issue(CODES.LANGUAGE_DIMENSION_ROUTE_NOT_ALLOWED, where,
+          `language_quality dimension "${d.id}" has verdict "${d.verdict}" but carries routes_to "${d.routes_to}"; only a FAIL may route`));
+      }
+    }
   }
 
   // --- L1 is never human/L2 authority ---------------------------------------

@@ -1,0 +1,183 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://suengj.com/schemas/delta-plan.schema.json",
+  "title": "Source→Target delta plan",
+  "description": "One Source→Target Delta Planning Gate record (AES-V2.18 / SUE-610). Decides intervention magnitude PER AXIS, before any generation or polish edit runs. Full contract, worked examples, and the rationale for every guard: docs/architecture/SOURCE-TARGET-DELTA-PLANNING.md. This schema only fixes field names and shapes; it does not restate that document's argument. There is no aggregate: no total, average, weighted distance, or overall number is computed across the seven axes anywhere in this record — see `plan_intervention` below and docs/architecture/SOURCE-TARGET-DELTA-PLANNING.md §3. Guards G1–G6 are mechanical and enforced by scripts/lib/delta-core.mjs, not by this schema alone (json-schema-lite has no conditional, minItems, or uniqueItems keywords).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "delta_plan_id",
+    "created_at",
+    "source",
+    "target",
+    "basis",
+    "source_profile",
+    "target_profile",
+    "axis_deltas",
+    "plan_intervention"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "delta_plan_id": {
+      "type": "string",
+      "pattern": "^delta:[a-z0-9]+(-[a-z0-9]+)*$"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "source": {
+      "description": "The incumbent draft or source artifact this plan profiles. Read from the actual text — docs/architecture/SOURCE-TARGET-DELTA-PLANNING.md §2: \"If nobody reads the draft, there is no SourceProfile; there is only a guess wearing its name.\"",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "ref"],
+      "properties": {
+        "kind": { "enum": ["article", "artifact", "draft"] },
+        "ref": { "type": "string", "minLength": 1 },
+        "content_type": {
+          "enum": ["research", "view", "news", "note", "project", "academic", "promotional"]
+        }
+      }
+    },
+    "target": {
+      "description": "What the request asks for, derived from Editorial Intent (docs/architecture/V2-EDITORIAL-LEARNING-CORE.md §3) and any task override in effect. Properties are independent and each optional — only as many are populated as the requested transformation actually specifies. A label recorded here is an input to target_profile, never a shortcut around reading the source (SOURCE-TARGET-DELTA-PLANNING.md §9).",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "content_type": {
+          "enum": ["research", "view", "news", "note", "project", "academic", "promotional"]
+        },
+        "audience": {
+          "enum": ["beginner-learner", "child-upper-elementary", "domain-expert", "domain-practitioner", "general-reader", "professional-generalist"]
+        },
+        "language": {
+          "type": "string",
+          "pattern": "^[a-z]{2}(-[A-Z]{2})?$"
+        }
+      }
+    },
+    "basis": {
+      "description": "explicit_human_feedback: the human said the source/target profiles are what this record claims. model_inference: an agent judged it. Reused from schemas/reference-evaluation.schema.json and schemas/feedback-record.schema.json — same vocabulary, not a new one.",
+      "enum": ["explicit_human_feedback", "model_inference"]
+    },
+    "source_profile": {
+      "description": "What the incumbent text actually is, on each of the seven fixed axes, read from the text itself — never inferred from its metadata, provenance, or the request that originally produced it (SOURCE-TARGET-DELTA-PLANNING.md §2). Not a score and not a paraphrase of the draft: each value is a prose observation of what that axis currently looks like in this specific text.",
+      "$ref": "#/$defs/axis_profile"
+    },
+    "target_profile": {
+      "description": "What the request asks for, on the same seven axes, derived from Editorial Intent and any task override. Not the label restated — \"Report\" is a genre value, not a profile; this still has to say what depth, register, and structure the target actually requires (SOURCE-TARGET-DELTA-PLANNING.md §2).",
+      "$ref": "#/$defs/axis_profile"
+    },
+    "axis_deltas": {
+      "description": "One entry per axis. Completeness (exactly seven, one per axis, no duplicates) is enforced by scripts/lib/delta-core.mjs — json-schema-lite has no minItems/uniqueItems, the same constraint documented in schemas/l1-review.schema.json for its seven language-quality dimensions.",
+      "type": "array",
+      "items": { "$ref": "#/$defs/axis_delta" }
+    },
+    "plan_intervention": {
+      "$ref": "#/$defs/plan_intervention"
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "$defs": {
+    "axis_id": {
+      "description": "The seven delta axes, fixed order, fixed ids — docs/architecture/SOURCE-TARGET-DELTA-PLANNING.md §2.",
+      "enum": [
+        "language_quality",
+        "genre",
+        "audience",
+        "knowledge_depth",
+        "register",
+        "information_structure",
+        "terminology"
+      ]
+    },
+    "axis_profile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "language_quality",
+        "genre",
+        "audience",
+        "knowledge_depth",
+        "register",
+        "information_structure",
+        "terminology"
+      ],
+      "properties": {
+        "language_quality": { "type": "string", "minLength": 1 },
+        "genre": { "type": "string", "minLength": 1 },
+        "audience": { "type": "string", "minLength": 1 },
+        "knowledge_depth": { "type": "string", "minLength": 1 },
+        "register": { "type": "string", "minLength": 1 },
+        "information_structure": { "type": "string", "minLength": 1 },
+        "terminology": { "type": "string", "minLength": 1 }
+      }
+    },
+    "delta_state": {
+      "enum": ["LOW", "MATERIAL", "LARGE", "UNKNOWN"]
+    },
+    "intervention_level": {
+      "description": "Intervention SCOPE, never a quality score — P3 is not \"worse\" than P0, it is the honest answer when source and target are genuinely far apart (SOURCE-TARGET-DELTA-PLANNING.md §4).",
+      "enum": ["P0_PRESERVE", "P1_LOCAL_POLISH", "P2_CONTROLLED_ADAPT", "P3_RECOMPOSE"]
+    },
+    "axis_delta": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "axis",
+        "delta",
+        "intervention",
+        "owning_layer",
+        "source_observation",
+        "target_requirement",
+        "evidence"
+      ],
+      "properties": {
+        "axis": { "$ref": "#/$defs/axis_id" },
+        "delta": { "$ref": "#/$defs/delta_state" },
+        "intervention": { "$ref": "#/$defs/intervention_level" },
+        "owning_layer": {
+          "description": "The editorial/feedback-routing.json layer authorized to close this axis's gap at P2/P3, or null at P0/P1 where nobody but the source itself (P0) or Language Polish (P1) is involved. Must never be a polish-owned layer (normative, native_fluency, domain_terminology) when intervention is P2 or P3 — guard G5.",
+          "type": ["string", "null"]
+        },
+        "source_observation": {
+          "description": "What the source ACTUALLY does on this axis, observed from the real text — never a restatement of the target label. Guard G6.",
+          "type": "string",
+          "minLength": 1
+        },
+        "target_requirement": {
+          "description": "What the target ACTUALLY requires on this axis, derived from the real request — never a restatement of the target label. Guard G6.",
+          "type": "string",
+          "minLength": 1
+        },
+        "evidence": {
+          "description": "The concrete textual or request-level evidence this axis_delta's delta/intervention rests on — a quote, a measured observation, or a named passage. Non-empty; an axis record with no observable evidence is a guess wearing a delta's name.",
+          "type": "string",
+          "minLength": 1
+        },
+        "what_would_resolve_it": {
+          "description": "Required (enforced by scripts/lib/delta-core.mjs) when delta is UNKNOWN: what reading, evidence, or clarification would actually resolve the unknown. Unknown distance is not evidence of distance — guard G4.",
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "plan_intervention": {
+      "description": "The routing CEILING — the highest intervention level appearing on any single axis in axis_deltas. This is a routing value, not a score: it says \"at least one axis needs this much authority engaged\" and nothing more. It is never computed by summing, averaging, or otherwise doing arithmetic across the axes, it does not rank drafts against each other, and it is never compared numerically across records (SOURCE-TARGET-DELTA-PLANNING.md §3). scripts/lib/delta-core.mjs verifies `value` actually equals the maximum axis intervention present — the one arithmetic-shaped operation this record performs, and it is a maximum, never a sum or average.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["value"],
+      "properties": {
+        "value": { "$ref": "#/$defs/intervention_level" },
+        "rationale": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

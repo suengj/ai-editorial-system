@@ -41,6 +41,56 @@
       "subject_kind": "artifact",
       "subject_ref": "artifact:example-body-infographic-001",
       "verdict": "mixed"
+    },
+    {
+      "created_at": "2026-09-05T13:05:00Z",
+      "feedback_id": "feedback:sue604-attribution-manufactured-quotation-2026-09-05",
+      "path": "feedback/records/sue604-attribution-manufactured-quotation-2026-09-05.json",
+      "scope": "task_local",
+      "signal": "objective_quality",
+      "subject_kind": "article",
+      "subject_ref": "suengj-com content/editorial/sue604-bonds-news.md (SUE-604)",
+      "verdict": "bad"
+    },
+    {
+      "created_at": "2026-09-05T12:30:00Z",
+      "feedback_id": "feedback:sue604-attribution-rule-needs-a-speaker-2026-09-05",
+      "path": "feedback/records/sue604-attribution-rule-needs-a-speaker-2026-09-05.json",
+      "scope": "task_local",
+      "signal": "objective_quality",
+      "subject_kind": "article",
+      "subject_ref": "suengj-com content/editorial/sue604-tools-news.md and content/editorial/sue604-bonds-news.md (SUE-604)",
+      "verdict": "mixed"
+    },
+    {
+      "created_at": "2026-09-05T12:35:00Z",
+      "feedback_id": "feedback:sue604-child-politeness-level-unspecified-2026-09-05",
+      "path": "feedback/records/sue604-child-politeness-level-unspecified-2026-09-05.json",
+      "scope": "task_local",
+      "signal": "objective_quality",
+      "subject_kind": "article",
+      "subject_ref": "suengj-com content/editorial/sue604-bonds-child.md (SUE-604)",
+      "verdict": "mixed"
+    },
+    {
+      "created_at": "2026-09-05T12:15:00Z",
+      "feedback_id": "feedback:sue604-hedge-register-domain-reach-2026-09-05",
+      "path": "feedback/records/sue604-hedge-register-domain-reach-2026-09-05.json",
+      "scope": "task_local",
+      "signal": "objective_quality",
+      "subject_kind": "article",
+      "subject_ref": "suengj-com content/editorial/sue604-housing-report.md and content/editorial/sue604-tools-report.md (SUE-604)",
+      "verdict": "mixed"
+    },
+    {
+      "created_at": "2026-09-05T12:10:00Z",
+      "feedback_id": "feedback:sue604-terminology-gap-construction-2026-09-05",
+      "path": "feedback/records/sue604-terminology-gap-construction-2026-09-05.json",
+      "scope": "task_local",
+      "signal": "objective_quality",
+      "subject_kind": "article",
+      "subject_ref": "suengj-com content/editorial/sue604-housing-child.md (SUE-604 unseen-topic holdout)",
+      "verdict": "mixed"
     }
   ],
   "schema_version": "1.0.0"

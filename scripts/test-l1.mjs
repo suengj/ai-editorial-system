@@ -12,7 +12,7 @@ import { readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
-  CODES as L1, OUTCOME_ROUTES, REQUIRED_DIMENSIONS, loadSchema as loadL1Schema, validateL1Record,
+  CODES as L1, LANGUAGE_DIMENSIONS, OUTCOME_ROUTES, REQUIRED_DIMENSIONS, loadSchema as loadL1Schema, validateL1Record,
 } from './lib/l1-core.mjs';
 import {
   CODES as CORPUS, loadSchema as loadCorpusSchema, validateEntry,
@@ -28,6 +28,11 @@ const { records } = JSON.parse(readFileSync(resolve(ROOT, 'schemas/examples/l1-r
 const byId = Object.fromEntries(records.map((r) => [r.review_id, r]));
 const clone = (r) => JSON.parse(JSON.stringify(r));
 
+const { records: lqRecords } = JSON.parse(
+  readFileSync(resolve(ROOT, 'schemas/examples/l1-review-language-quality.example.json'), 'utf8'),
+);
+const lqById = Object.fromEntries(lqRecords.map((r) => [r.review_id, r]));
+
 const corpusEntries = JSON.parse(readFileSync(resolve(ROOT, 'evals/real-output-corpus/entries/corpus-placeholder-research-accepted.json'), 'utf8'));
 
 let failures = 0;
@@ -41,6 +46,11 @@ const corpusCodes = (e) => validateEntry(e, corpusSchema).map((i) => i.code);
 // --- worked examples ---------------------------------------------------------
 console.log('worked L1 examples (expect 0 issues)');
 for (const r of records) {
+  check(r.review_id, l1Codes(r).length === 0, JSON.stringify(l1Codes(r)));
+}
+
+console.log('\nworked 1.1.0 language_quality example (expect 0 issues)');
+for (const r of lqRecords) {
   check(r.review_id, l1Codes(r).length === 0, JSON.stringify(l1Codes(r)));
 }
 
@@ -207,6 +217,97 @@ console.log('\nL1 is not human authority');
   const skillText = readFileSync(resolve(ROOT, 'skills/review-l1/SKILL.md'), 'utf8');
   check('the Skill states human/L2 remains final in authority.may_not',
     /may_not:[\s\S]*human/i.test(skillText) || /final authority/i.test(skillText));
+}
+
+// --- language_quality: version gating (SUE-607 / AES-V2.17) -------------------
+console.log('\nlanguage_quality is required at 1.1.0 and forbidden at 1.0.0');
+{
+  check('all seven language dimensions are named', LANGUAGE_DIMENSIONS.length === 7);
+
+  const missingAtNewVersion = clone(lqById['l1:example-language-quality-pass']);
+  delete missingAtNewVersion.language_quality;
+  check('a 1.1.0 record with language_quality missing is rejected',
+    l1Codes(missingAtNewVersion).includes(L1.LANGUAGE_QUALITY_REQUIRED));
+
+  const presentAtOldVersion = clone(byId['l1:example-pass']);
+  presentAtOldVersion.language_quality = clone(lqById['l1:example-language-quality-pass']).language_quality;
+  check('a 1.0.0 record carrying language_quality is rejected',
+    l1Codes(presentAtOldVersion).includes(L1.LANGUAGE_QUALITY_NOT_ALLOWED));
+
+  check('an existing 1.0.0 record with no language_quality still validates unchanged (regression guard)',
+    l1Codes(byId['l1:example-pass']).length === 0);
+}
+
+// --- language_quality: all seven dimensions present exactly once --------------
+console.log('\nlanguage_quality must carry all seven dimensions, each exactly once');
+{
+  const missingDim = clone(lqById['l1:example-language-quality-pass']);
+  missingDim.language_quality.dimensions = missingDim.language_quality.dimensions.filter((d) => d.id !== 'owner_voice_fit');
+  check('a language_quality block missing a dimension is rejected',
+    l1Codes(missingDim).includes(L1.LANGUAGE_DIMENSION_MISSING));
+
+  const duplicatedDim = clone(lqById['l1:example-language-quality-pass']);
+  duplicatedDim.language_quality.dimensions.push(clone(duplicatedDim.language_quality.dimensions.find((d) => d.id === 'native_fluency')));
+  check('a language_quality block duplicating a dimension is rejected',
+    l1Codes(duplicatedDim).includes(L1.LANGUAGE_DIMENSION_DUPLICATED));
+}
+
+// --- language_quality: semantic_integrity dominates ----------------------------
+console.log('\nlanguage_quality.semantic_integrity FAIL dominates a pass-shaped outcome');
+{
+  const integrityFailPassOutcome = clone(lqById['l1:example-language-quality-pass']);
+  const si = integrityFailPassOutcome.language_quality.dimensions.find((d) => d.id === 'semantic_integrity');
+  si.verdict = 'FAIL';
+  si.evidence_span = 'The translated claim drops the source filing\'s currency, changing the reported magnitude.';
+  si.routes_to = 'verification';
+  check('semantic_integrity FAIL with outcome PASS is rejected',
+    l1Codes(integrityFailPassOutcome).includes(L1.LANGUAGE_INTEGRITY_OVERRIDDEN));
+}
+
+// --- language_quality: routing (the smallest-layer-routing violation) ---------
+console.log('\nlanguage_quality routing: each dimension has exactly one legal layer');
+{
+  const misrouted = clone(lqById['l1:example-language-quality-pass']);
+  const nf = misrouted.language_quality.dimensions.find((d) => d.id === 'native_fluency');
+  nf.verdict = 'FAIL';
+  nf.evidence_span = 'Paragraph 4 opens with a calqued discourse connective the reference does not use.';
+  nf.routes_to = 'writing';
+  check('native_fluency FAIL routed to "writing" (the wrong layer) is rejected with the mis-routing code',
+    l1Codes(misrouted).includes(L1.LANGUAGE_DIMENSION_MISROUTE));
+
+  // A dimension FAIL must not be hidden behind a pass-shaped record outcome:
+  // downstream consumers read the record-level outcome/routes_to, so PASS
+  // there reports "nothing to route" while the dimension says otherwise.
+  const hiddenFail = clone(lqById['l1:example-language-quality-pass']);
+  const nfHidden = hiddenFail.language_quality.dimensions.find((d) => d.id === 'native_fluency');
+  nfHidden.verdict = 'FAIL';
+  nfHidden.evidence_span = 'Paragraph 4 opens with a calqued discourse connective the reference does not use.';
+  nfHidden.routes_to = 'native_fluency';
+  check('a language FAIL alongside a pass-shaped record outcome is rejected',
+    l1Codes(hiddenFail).includes(L1.LANGUAGE_FAIL_HIDDEN_BY_OUTCOME));
+
+  const correctlyRoutedLq = clone(lqById['l1:example-language-quality-pass']);
+  const nfOk = correctlyRoutedLq.language_quality.dimensions.find((d) => d.id === 'native_fluency');
+  nfOk.verdict = 'FAIL';
+  nfOk.evidence_span = 'Paragraph 4 opens with a calqued discourse connective the reference does not use.';
+  nfOk.routes_to = 'native_fluency';
+  correctlyRoutedLq.outcome = 'PROSE_REWORK';
+  correctlyRoutedLq.routes_to = 'native_fluency';
+  check('native_fluency FAIL routed to "native_fluency" is accepted',
+    l1Codes(correctlyRoutedLq).length === 0, JSON.stringify(l1Codes(correctlyRoutedLq)));
+
+  const failWithNoRoute = clone(lqById['l1:example-language-quality-pass']);
+  const nfNoRoute = failWithNoRoute.language_quality.dimensions.find((d) => d.id === 'native_fluency');
+  nfNoRoute.verdict = 'FAIL';
+  nfNoRoute.evidence_span = 'Paragraph 4 opens with a calqued discourse connective the reference does not use.';
+  check('a FAIL with no routes_to at all is rejected',
+    l1Codes(failWithNoRoute).includes(L1.LANGUAGE_DIMENSION_ROUTE_REQUIRED));
+
+  const passWithRoute = clone(lqById['l1:example-language-quality-pass']);
+  const genreFit = passWithRoute.language_quality.dimensions.find((d) => d.id === 'genre_fit');
+  genreFit.routes_to = 'register';
+  check('a PASS dimension carrying a non-null routes_to is rejected',
+    l1Codes(passWithRoute).includes(L1.LANGUAGE_DIMENSION_ROUTE_NOT_ALLOWED));
 }
 
 // --- corpus: no article body, ever ----------------------------------------------

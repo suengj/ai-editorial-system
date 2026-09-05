@@ -1,0 +1,47 @@
+{
+  "schema_version": "1.0.0",
+  "evaluation_id": "eval:bok-economic-outlook-report-2026-09-05-01",
+  "ref_id": "ref:bok-economic-outlook-report",
+  "modality": "text",
+  "evaluator": {
+    "type": "agent",
+    "agent": {
+      "runtime": "claude-code",
+      "model": "claude-sonnet-5"
+    }
+  },
+  "evaluated_at": "2026-09-05T05:00:00Z",
+  "calibration_ref": null,
+  "profile_ref": "editorial/profiles/reference/text.json",
+  "basis": "model_inference",
+  "corpus_role": "discovery",
+  "language": "ko-KR",
+  "dimensions": [
+    {
+      "dimension": "argument-structure",
+      "verdict": "neutral",
+      "note": "The 경제전망보고서(2026년 5월) landing page exposes only the report's fixed section skeleton (Ⅰ. 국내외 여건 및 전망, Ⅱ. 핵심이슈, plus recurring subsections across issues) and metadata (등록일, 담당부서). The body prose lives only in an attached PDF that this evaluation could not extract text from. The section skeleton itself is observable and stable across at least three issues checked (2025-08, 2025-11, 2026-02, 2026-05 listings), evidence of a fixed institutional report template (situation-then-outlook, then a rotating 핵심이슈 deep-dive), but this is structural evidence only, not a sentence-level craft finding.",
+      "evidence": "Table-of-contents pattern visible on the report index page: 'Ⅰ. 국내외 여건 및 전망 Ⅱ. 핵심이슈' repeated across separately dated report listings at bok.or.kr/portal/bbs/P0002359."
+    },
+    {
+      "dimension": "language-naturalness",
+      "verdict": "neutral",
+      "note": "Could not verify. No sentence-level body prose was extractable from the HTML landing page; the actual forecast text sits in a PDF (\"2026년 5월 경제전망보고서(Indigo Book)_F4.pdf\") this evaluation did not open. No claim is made here about BOK's sentence-level Korean craft — that would require reading the PDF body, which did not happen."
+    }
+  ],
+  "strengths": [
+    "Stable multi-issue report template (situation assessment section followed by a rotating deep-dive section) observable across at least four separately dated issues, evidence of a consistent institutional report architecture rather than an ad hoc structure per issue."
+  ],
+  "weaknesses": [
+    "Body prose (sentence length, hedging language, clause construction, terminology rendering) is unverified for this record. The publication is distributed as a PDF this evaluation could not extract text from, so no sentence-level trait should be attributed to this reference. This gap should be closed with direct PDF reading before treating this source as more than structural evidence."
+  ],
+  "applicable_to": {
+    "content_types": ["research", "academic"],
+    "audiences": ["domain-practitioner", "professional-generalist"],
+    "artifacts": ["text/article"],
+    "surfaces": ["suengj-com"]
+  },
+  "authority_boundary": "craft_evidence_only",
+  "provenance_class": "external",
+  "notes": "corpus_role: discovery, assigned before reading, per docs/architecture/LANGUAGE-QUALITY-ARCHITECTURE.md §7. This record intentionally stops at structural (table-of-contents) evidence because the report body is PDF-only and was not extracted in this pass; it does not originate a sentence-level trait, and no such trait should be attributed to ref:bok-economic-outlook-report on the strength of this record. references/korean-language-authorities.md §4 already lists Bank of Korea published reports as EMPIRICAL_REFERENCE for institutional register, never a style authority; this record treats it the same way. Source pages: https://www.bok.or.kr/portal/bbs/P0002359/view.do?nttId=10098209 (2026년 5월 issue) and the report list at https://www.bok.or.kr/portal/singl/newsData/list.do?menuNo=200066. No report text reproduced beyond the two Roman-numeral section labels quoted as evidence, consistent with editorial/RIGHTS-AND-PROVENANCE.md's fail-to-reference rule."
+}

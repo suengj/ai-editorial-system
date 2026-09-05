@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://suengj.com/schemas/l1-review.schema.json",
   "title": "L1 comparative review record",
-  "description": "One comparative L1 review (AES-V2.6 / SUE-564): a subject output compared pairwise against a relevant GOOD reference, never scored as one opaque number. Evidence spans are mandatory. tie and abstain are first-class outcomes. Integrity failures dominate stylistic wins — enforced by scripts/lib/l1-core.mjs, not merely stated. final_authority is always human: this record informs routing, it never grants publication or preference authority — see editorial/HITL-PROTOCOL.md, which stays the stronger authority.",
+  "description": "One comparative L1 review (AES-V2.6 / SUE-564): a subject output compared pairwise against a relevant GOOD reference, never scored as one opaque number. Evidence spans are mandatory. tie and abstain are first-class outcomes. Integrity failures dominate stylistic wins — enforced by scripts/lib/l1-core.mjs, not merely stated. final_authority is always human: this record informs routing, it never grants publication or preference authority — see editorial/HITL-PROTOCOL.md, which stays the stronger authority. schema_version 1.1.0 (AES-V2.17 / SUE-607) adds the optional top-level `language_quality` block: seven absolute (non-comparative) language-quality dimensions, distinct from the comparative `dimensions[]` array above. 1.1.0 requires `language_quality`; 1.0.0 records are unaffected and must not carry it — enforced by scripts/lib/l1-core.mjs.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -10,7 +10,7 @@
     "integrity", "outcome", "routes_to", "reviewed_at", "reviewer", "final_authority"
   ],
   "properties": {
-    "schema_version": { "const": "1.0.0" },
+    "schema_version": { "enum": ["1.0.0", "1.1.0"] },
     "review_id": {
       "type": "string",
       "pattern": "^l1:[a-z0-9]+(-[a-z0-9]+)*$"
@@ -41,6 +41,34 @@
     "routes_to": {
       "description": "Must be one of AES-V2.5's layer ids (editorial/feedback-routing.json), or null for PASS/TIE/ABSTAIN. Cross-checked against that table by scripts/lib/l1-core.mjs so the two packages cannot drift apart.",
       "type": ["string", "null"]
+    },
+    "language_quality": {
+      "description": "SUE-607 / AES-V2.17: absolute (non-comparative) verdicts on the seven language-quality dimensions fixed by docs/architecture/LANGUAGE-QUALITY-ARCHITECTURE.md §8. Unlike `dimensions[]` above, these are never judged against a reference — whether spacing is correct, whether terminology is right, whether the voice matches the owner's are questions with an absolute answer, not a comparative one, so they are not crammed into the comparative array. This block deliberately carries no total, score, or overall field: nothing here sums or averages across the seven dimensions, and a consumer that wants one number is asking the wrong question. Required when schema_version is 1.1.0; must be absent when schema_version is 1.0.0 — a 1.0.0 record carrying it is a version defect. Both rules are enforced by scripts/lib/l1-core.mjs, not this schema.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["language", "pack_ref", "dimensions"],
+      "properties": {
+        "language": {
+          "description": "BCP-47 tag for the language under evaluation, e.g. ko-KR.",
+          "type": "string",
+          "minLength": 1
+        },
+        "pack_ref": {
+          "description": "Repo-relative path to the governing editorial/profiles/language/<tag>.json pack, or null when no pack yet governs this language.",
+          "type": ["string", "null"],
+          "minLength": 1
+        },
+        "polish_decision_ref": {
+          "description": "AES-V2.18 / SUE-610. Optional: present when this L1 review is reviewing a draft that already went through the conservative polish execution contract (schemas/polish-decision.schema.json) — points at the `decision_id` of the polish decision under review. Absent when no polish decision exists yet for this subject, e.g. a pre-polish review. Not cross-validated by scripts/lib/l1-core.mjs; it is a pointer, not a gate.",
+          "type": ["string", "null"],
+          "minLength": 1
+        },
+        "dimensions": {
+          "description": "Exactly the seven dimensions named in docs/architecture/LANGUAGE-QUALITY-ARCHITECTURE.md §8, each exactly once. json-schema-lite has no minItems/uniqueItems, so completeness and non-duplication are enforced by scripts/lib/l1-core.mjs.",
+          "type": "array",
+          "items": { "$ref": "#/$defs/language_dimension_finding" }
+        }
+      }
     },
     "reviewed_at": { "type": "string", "format": "date-time" },
     "reviewer": { "$ref": "#/$defs/evaluator" },
@@ -106,6 +134,34 @@
       "properties": {
         "triggered": { "type": "boolean" },
         "note": { "type": "string", "minLength": 1 }
+      }
+    },
+    "language_dimension_finding": {
+      "description": "One absolute verdict on one of SUE-607's seven language-quality dimensions. Not comparative — see language_quality above.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "verdict", "evidence_span"],
+      "properties": {
+        "id": {
+          "enum": [
+            "semantic_integrity", "normative_correctness", "native_fluency",
+            "genre_fit", "audience_fit", "domain_terminology_fit", "owner_voice_fit"
+          ]
+        },
+        "verdict": {
+          "description": "Absolute, not comparative. UNKNOWN is first-class: silence is not acceptance, and owner_voice_fit is UNKNOWN until a human says otherwise (docs/architecture/LANGUAGE-QUALITY-ARCHITECTURE.md §8). NOT_APPLICABLE is for a dimension that genuinely does not apply to this subject.",
+          "enum": ["PASS", "FAIL", "UNKNOWN", "NOT_APPLICABLE"]
+        },
+        "evidence_span": {
+          "description": "Mandatory for every verdict, exactly like dimension_finding's evidence_span: a verdict with no observable evidence is not a verdict. An honest UNKNOWN or NOT_APPLICABLE verdict still names what could not be observed, or why the dimension does not apply here.",
+          "type": "string",
+          "minLength": 1
+        },
+        "routes_to": {
+          "description": "The feedback-routing layer (editorial/feedback-routing.json) a FAIL routes to. Null or absent for any non-FAIL verdict. Each dimension has exactly one legal layer; cross-checked, including that fixed mapping, by scripts/lib/l1-core.mjs.",
+          "type": ["string", "null"]
+        },
+        "rationale": { "type": "string" }
       }
     },
     "dimension_finding": {

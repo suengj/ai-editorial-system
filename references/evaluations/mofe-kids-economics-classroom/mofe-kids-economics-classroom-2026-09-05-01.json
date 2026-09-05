@@ -1,0 +1,52 @@
+{
+  "schema_version": "1.0.0",
+  "evaluation_id": "eval:mofe-kids-economics-classroom-2026-09-05-01",
+  "ref_id": "ref:mofe-kids-economics-classroom",
+  "modality": "text",
+  "evaluator": {
+    "type": "agent",
+    "agent": {
+      "runtime": "claude-code",
+      "model": "claude-sonnet-5"
+    }
+  },
+  "evaluated_at": "2026-09-05T05:20:00Z",
+  "calibration_ref": null,
+  "profile_ref": "editorial/profiles/reference/text.json",
+  "basis": "model_inference",
+  "corpus_role": "discovery",
+  "language": "ko-KR",
+  "dimensions": [
+    {
+      "dimension": "audience-suitability",
+      "verdict": "avoid",
+      "note": "The government's 어린이 경제교실 ('시장속에 경제가 숨어있어요' page) defines 수요/공급 by naming and defining each term first, in near-dictionary form, and only afterward attaches a concrete market scenario (harvest size affecting vegetable prices). This is the reverse of the sequencing found at ref:econoi-childrens-economic-newspaper, where the everyday word or scene comes first and the technical term is attached to it second. Both sources are government/institutional Korean economics-for-children material; the sequencing choice differs, and the abstract-first order here is the weaker one against the audience profile's explicit 'concrete before abstract' requirement — worth recording as a negative instance precisely because it is a same-domain, same-register counterexample to the econoi record, not a strawman.",
+      "evidence": "\"가격은 수요와 공급에 의해 결정됩니다. 수요란 어떤 상품을 일정한 가격에 구입하고자 하는 것을 말하고, 공급이란 어떤 상품을 일정한 가격에 팔려고 하는 것을 말합니다.\" — 수요/공급 are each given a formal definition (X란 ~것을 말한다) before any scene; a concrete market example (vegetable price responding to harvest size) follows only after both terms are defined."
+    },
+    {
+      "dimension": "audience-suitability",
+      "verdict": "neutral",
+      "note": "No hedging or uncertainty language was present in the passage read, and the topic (price formation as a general mechanism) does not obviously call for it, so this is not counted as a finding either way — unlike the stagflation Q&A at ref:econoi-childrens-economic-newspaper, which did carry a genuinely uncertain claim to hedge. Recording the absence as neutral rather than silently omitting it, since a corpus about how uncertainty survives simplification should say when a source gave no evidence on that dimension at all."
+    },
+    {
+      "dimension": "content-type-fit",
+      "verdict": "neutral",
+      "note": "This is a static government micro-site glossary-style page, not a news or note piece; the sequencing finding above is scoped to audience-suitability, not to a content-type register."
+    }
+  ],
+  "strengths": [
+    "Sentence-level plainness is otherwise sound: short declarative sentences, no unglossed loanwords, and the market example itself (vegetable prices moving with harvest size) is genuinely concrete and mechanism-accurate once it arrives — the weakness is sequencing, not vocabulary or accuracy."
+  ],
+  "weaknesses": [
+    "Define-then-illustrate sequencing for an abstract economic term (수요, 공급 given formal near-dictionary definitions before any concrete scene) runs counter to the audience profile's concrete-before-abstract requirement and to the sequencing found effective at ref:econoi-childrens-economic-newspaper. This is the same domain (basic economics for children) and the same institutional register tier as the adopt-verdict record, so the contrast is a genuine same-domain counterexample, not a mismatch of unlike sources."
+  ],
+  "applicable_to": {
+    "content_types": ["note"],
+    "audiences": ["child-upper-elementary"],
+    "artifacts": ["text/article"],
+    "surfaces": ["suengj-com"]
+  },
+  "authority_boundary": "craft_evidence_only",
+  "provenance_class": "external",
+  "notes": "This record is evidence about the child-upper-elementary AUDIENCE, not a genre: the sequencing finding (define-first vs. concrete-first) is an audience-adaptation choice that composes with whatever content type a child-facing explainer is, not a property of 'economics glossary' as a genre. 'beginner-learner' is omitted from applicable_to.audiences: defining a term before illustrating it is unremarkable, not a failure, for an adult novice reader with some tolerance for abstraction-first exposition, so recording this as an audience-suitability failure for 'beginner-learner' would misstate the finding — the concreteness-first requirement here is specifically bound to the child audience profile's stated reasoning style. Requires the applicability.audiences enum in schemas/reference-evaluation.schema.json to admit 'child-upper-elementary' (flagged already on the SUE-604 discovery/holdout pair in this corpus; not yet present as of this writing). Site is an older 재정경제부 (predecessor of 기획재정부) children's micro-site (kids.mofe.go.kr); only the single quoted passage was read, and no page content was reproduced beyond that fragment, consistent with editorial/RIGHTS-AND-PROVENANCE.md's fail-to-reference rule. corpus_role: discovery, assigned before extraction; no holdout has yet independently corroborated this specific sequencing anti-pattern, so it should be treated as source-local until a second institution is checked."
+}

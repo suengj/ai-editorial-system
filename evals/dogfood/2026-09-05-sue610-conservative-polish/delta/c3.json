@@ -1,0 +1,109 @@
+{
+  "description": "SUE-610 C3 — bonds-news to Report, delta-independence proof.",
+  "records": [
+    {
+      "schema_version": "1.0.0",
+      "delta_plan_id": "delta:c3-bonds-news-to-report",
+      "created_at": "2026-09-05T09:40:00Z",
+      "source": {
+        "kind": "article",
+        "ref": "p02_com:content/editorial/sue570-pilot-bonds-news.md",
+        "content_type": "news"
+      },
+      "target": {
+        "content_type": "research",
+        "audience": "domain-practitioner",
+        "language": "ko-KR"
+      },
+      "basis": "model_inference",
+      "source_profile": {
+        "language_quality": "능동형 대구를 쓰고 조사·띄어쓰기 오류가 없는 이미 다듬어진 한국어.",
+        "genre": "'지금 무슨 일이 있었나/왜 중요한가/배경/확인되지 않은 부분' 뉴스 브리프 소제목 구조이며, 헤지 언어('~로 읽힌다')만 있을 뿐 근거번호나 명시적 confidence qualifier가 있는 findings-first 형식은 없다.",
+        "audience": "'돈을 빌려주는 사람들이 기업 부도 위험을 새로 걱정하기 시작했다'처럼 매 문장마다 개념을 처음 접하는 독자 기준으로 풀어 쓴다.",
+        "knowledge_depth": "OAS 스프레드가 '1.01~1.03%로 거의 움직이지 않았다'는 관찰 하나만 제시하고, term premium이 오르는 메커니즘은 원문 View를 요약 인용하는 데 그친다.",
+        "register": "'~다/~였다' 종결의 절제된 서술형이 시종일관 유지된다.",
+        "information_structure": "결론('일본은 되돌렸고, 미국은 버티고 있다')을 본문 초반에 배치하고, 확인되지 않은 부분을 맨 마지막 한 문단으로만 격리한다.",
+        "terminology": "'신용스프레드(OAS)'처럼 실무 약어를 괄호 병기하는 정도의 처리."
+      },
+      "target_profile": {
+        "language_quality": "target도 정확하고 자연스러운 한국어만 요구할 뿐 추가 언어 품질 상승을 요구하지 않는다.",
+        "genre": "practitioner Report는 근거를 계층화하고 confidence qualifier를 명시하는 findings-first 구조를 요구한다(reg-report-hedge-language, reg-report-outline-vs-narrative).",
+        "audience": "domain-practitioner 대상 Report는 신용스프레드/OAS/term premium 같은 개념을 이미 아는 독자를 전제로, 실무 용어를 풀어 쓰지 않고 바로 사용할 것을 요구한다.",
+        "knowledge_depth": "Report는 term premium이 오르는 메커니즘(재정적자·AI 자금수요·일본 정상화의 상호작용)을 스스로 전개하고 시나리오별 근거를 계량적으로 대조할 것을 요구한다(원문 View의 Scenario map 수준).",
+        "register": "Report도 동일한 절제된 서술형 종결을 요구한다.",
+        "information_structure": "Report는 결론-근거-반론-불확실성을 각기 독립된 섹션으로 확장하고, 불확실성도 근거 각각에 붙여 다룰 것을 요구한다.",
+        "terminology": "Report도 practitioner 용어 유지 방식을 그대로 요구한다."
+      },
+      "axis_deltas": [
+        {
+          "axis": "language_quality",
+          "delta": "LOW",
+          "intervention": "P0_PRESERVE",
+          "owning_layer": null,
+          "source_observation": "본문은 능동형 대구('일본은 되돌렸고, 미국은 버티고 있다')를 쓰고 표본 문단 전체에서 조사·띄어쓰기 오류가 없다.",
+          "target_requirement": "Report도 정확하고 자연스러운 한국어만 요구할 뿐 추가 언어 품질 상승을 요구하지 않는다.",
+          "evidence": "'일본은 되돌렸고, 미국은 버티고 있다 — 이번 주 채권시장을 한 줄로 요약하면 이렇다.'"
+        },
+        {
+          "axis": "genre",
+          "delta": "MATERIAL",
+          "intervention": "P2_CONTROLLED_ADAPT",
+          "owning_layer": "register",
+          "source_observation": "헤지 언어('~로 읽힌다', '~할 수 없다') 정도만 사용하는 뉴스 브리프 소제목 구조이며, findings-first 형식의 근거번호나 명시적 confidence qualifier는 없다.",
+          "target_requirement": "practitioner Report는 근거를 계층화하고 confidence qualifier를 명시하는 findings-first 구조를 요구한다.",
+          "evidence": "소제목이 '지금 무슨 일이 있었나 / 왜 중요한가 / 배경 / 확인되지 않은 부분'뿐이고, 번호 매긴 findings나 hedge-language 마커가 없음."
+        },
+        {
+          "axis": "audience",
+          "delta": "MATERIAL",
+          "intervention": "P2_CONTROLLED_ADAPT",
+          "owning_layer": "audience",
+          "source_observation": "'이 조합은 보통 ... 기업 부도 위험을 새로 걱정하기 시작했다는 신호가 아니라'처럼 매 문장마다 개념을 처음 접하는 독자 기준으로 풀어 쓴다.",
+          "target_requirement": "domain-practitioner 대상 Report는 신용스프레드/OAS/term premium 같은 개념을 이미 아는 독자를 전제로 바로 사용할 것을 요구한다.",
+          "evidence": "동일 소재의 원문 View는 'term premium', 'OAS', 'carry trade'를 풀어쓰지 않고 바로 쓰는 반면, 이 뉴스 브리프는 매번 비유로 재설명한다."
+        },
+        {
+          "axis": "knowledge_depth",
+          "delta": "MATERIAL",
+          "intervention": "P2_CONTROLLED_ADAPT",
+          "owning_layer": "frame",
+          "source_observation": "OAS 스프레드가 '1.01~1.03%로 거의 움직이지 않았다'는 관찰 하나만 제시하고, term premium이 오르는 메커니즘은 '원문 분석은 ... 해석했다'는 요약 인용에 그친다.",
+          "target_requirement": "Report는 그 메커니즘을 스스로 전개하고 시나리오별 근거를 계량적으로 대조할 것을 요구한다(원문 View의 Scenario map 수준).",
+          "evidence": "'원문 분석(2026-09-02)은 이 상황을 ... 재가격으로 해석했다'는 인용 한 문장이 메커니즘 설명의 전부다."
+        },
+        {
+          "axis": "register",
+          "delta": "LOW",
+          "intervention": "P0_PRESERVE",
+          "owning_layer": null,
+          "source_observation": "문장 종결이 시종일관 '~다/~였다'의 절제된 서술형이며 구어체나 감탄형이 없다.",
+          "target_requirement": "Report 레지스터도 동일한 절제된 서술형을 요구하며 이미 충족되어 있다.",
+          "evidence": "'국채금리는 높은 채 그대로인데 신용스프레드는 벌어지지 않았다는 뜻이다.' — 서술형 종결."
+        },
+        {
+          "axis": "information_structure",
+          "delta": "LARGE",
+          "intervention": "P2_CONTROLLED_ADAPT",
+          "owning_layer": "frame",
+          "source_observation": "결론('일본은 되돌렸고, 미국은 버티고 있다')을 본문 초반에 배치한 뒤 근거가 뒤따르는 뉴스 리드형 구조이며, 확인되지 않은 부분을 맨 마지막 한 문단으로만 격리해 둔다.",
+          "target_requirement": "Report는 결론-근거-반론-불확실성을 각기 독립된 섹션으로 확장하고, 불확실성도 근거 각각에 붙여 다룰 것을 요구한다(원문 View의 Scenario map/Watchlist 수준).",
+          "evidence": "'확인되지 않은 부분' 섹션이 문단 하나뿐이며, 원문 View에 있는 Scenario map·Watchlist에 해당하는 구조가 이 브리프에는 없다."
+        },
+        {
+          "axis": "terminology",
+          "delta": "LOW",
+          "intervention": "P0_PRESERVE",
+          "owning_layer": null,
+          "source_observation": "'신용스프레드(OAS)'처럼 실무 약어를 이미 괄호 병기하고 있다.",
+          "target_requirement": "Report도 practitioner 용어 유지 방식을 그대로 요구하며 이미 충족되어 있다.",
+          "evidence": "'만기 15년 이상 미국 우량 회사채의 신용스프레드(OAS)는' — 약어 병기 이미 존재."
+        }
+      ],
+      "plan_intervention": {
+        "value": "P2_CONTROLLED_ADAPT",
+        "rationale": "genre·audience·knowledge_depth·information_structure 네 축이 MATERIAL 또는 LARGE로 측정되었고 그중 어느 것도 P1을 넘지 않는 P2에 그치므로 천장은 P2_CONTROLLED_ADAPT다 — 최댓값이며 네 축을 합산한 값이 아니다. language_quality와 register는 이미 LOW여서 프로즈 자체는 크게 손댈 필요가 없다는 것이 이 사례가 증명하려는 점이다."
+      },
+      "notes": "동일한 '뉴스→리포트' 라벨 쌍이라도 원문을 실제로 읽으면 register는 거의 그대로 쓸 수 있고, 깊이·구조·독자 세 축만 상위 레이어의 작업을 요구한다는 것을 보여주는 레코드. 라벨이 아니라 실제 텍스트에서 델타를 읽는다는 SUE-610의 핵심 주장이 걸린 사례."
+    }
+  ]
+}

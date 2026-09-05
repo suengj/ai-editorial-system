@@ -1,0 +1,34 @@
+{
+  "schema_version": "1.0.0",
+  "feedback_id": "feedback:sue604-attribution-manufactured-quotation-2026-09-05",
+  "created_at": "2026-09-05T13:05:00Z",
+  "subject": {
+    "kind": "article",
+    "ref": "suengj-com content/editorial/sue604-bonds-news.md (SUE-604)"
+  },
+  "evaluator": {
+    "type": "agent",
+    "agent": {
+      "runtime": "claude-code",
+      "model": "claude-opus-5",
+      "version": "claude-opus-5"
+    }
+  },
+  "basis": "model_inference",
+  "signal": "objective_quality",
+  "verdict": "bad",
+  "owner_verdict": "unknown",
+  "statement": "Applying reg-news-attribution-placement produced a quotation the canonical source never made. The source reads: base case는 \"채권시장 붕괴\"보다 글로벌 term premium의 재가격에 가깝다. The regenerated news draft wrote \"채권시장 위기라기보다 글로벌 term premium의 재가격\"이라며 — putting a paraphrase inside quotation marks and attaching a speech verb, which together assert a verbatim quotation. The 위기/붕괴 substitution came from the SUE-570 baseline, but the baseline stated it as characterization; the rule turned the characterization into a quote. Independent evaluation found the same pattern across the other news drafts: six document-attributions in tools-news and two sourceless 지적이 나온다 / 시각도 있다 in housing-news. Repaired to the source's own words. Recorded task_local: basis model_inference may not carry calibration_candidate scope, so promoting this needs the owner.",
+  "routing": {
+    "layer": "verification",
+    "modality_layer": "register",
+    "confidence": "high",
+    "abstained": false,
+    "rationale": "A quotation mark plus a speech verb is an evidentiary claim about what a source said, so a false one is a provenance failure — editorial/feedback-routing.json's verification layer owns 'a citation that resolves but does not support'. The register layer is named as the modality detail because the genre rule is what produced it, but the finding is not routed there alone: treating a fabricated quotation as a style question is exactly the verification.do_not against repairing a factual problem by rewording. Note this is also evidence that reg-news-attribution-placement's corpus base — four newsrooms covering one event with live speakers — does not cover adapting an argument piece."
+  },
+  "scope": "task_local",
+  "calibration_ref": null,
+  "evidence_links": [
+    "benchmarks/KOREAN-LANGUAGE-CORPUS.md"
+  ]
+}

@@ -1,0 +1,237 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://suengj.com/schemas/polish-decision.schema.json",
+  "title": "Polish decision",
+  "description": "One conservative Language Polish execution record (AES-V2.18 / SUE-610). Full contract for the KEEP / LOCAL_POLISH / UPSTREAM_REPLAN_REQUIRED action classes, the pairwise gate, the accept rule, and edit-surface observability: docs/architecture/LANGUAGE-QUALITY-ARCHITECTURE.md §11–§14. This record executes INSIDE the ceiling a schemas/delta-plan.schema.json record already set (docs/architecture/LANGUAGE-QUALITY-ARCHITECTURE.md §15); it never computes or widens that ceiling. KEEP is a first-class SUCCESS state, not a failure or a no-result — a draft that already satisfies the target is not a shortfall to be corrected by finding something, anything, to change. There is no aggregate here either: no total, average, weighted distance, or overall score anywhere in this record except `edit_surface.original_total` / `edit_surface.changed_total`, which are counts of a measurement unit (characters or sentences), not a quality figure — see the no-aggregate guard in scripts/lib/delta-core.mjs.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "decision_id",
+    "decided_at",
+    "draft_ref",
+    "language",
+    "pack_ref",
+    "delta_plan_ref",
+    "reviewer",
+    "basis",
+    "action",
+    "edits",
+    "edit_surface",
+    "upstream_route"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "decision_id": {
+      "type": "string",
+      "pattern": "^polish:[a-z0-9]+(-[a-z0-9]+)*$"
+    },
+    "decided_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "draft_ref": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "ref"],
+      "properties": {
+        "kind": { "enum": ["article", "artifact", "draft"] },
+        "ref": { "type": "string", "minLength": 1 }
+      }
+    },
+    "language": {
+      "description": "BCP-47 tag for the language this decision was made against, e.g. ko-KR.",
+      "type": "string",
+      "minLength": 1
+    },
+    "pack_ref": {
+      "description": "Repo-relative path to the governing editorial/profiles/language/<tag>.json pack, or null when no pack yet governs this language.",
+      "type": ["string", "null"],
+      "minLength": 1
+    },
+    "delta_plan_ref": {
+      "description": "The delta_plan_id this decision executes inside the ceiling of. A polish decision with no delta plan behind it has no authorized ceiling to stay inside.",
+      "type": "string",
+      "pattern": "^delta:[a-z0-9]+(-[a-z0-9]+)*$"
+    },
+    "reviewer": { "$ref": "#/$defs/evaluator" },
+    "basis": {
+      "description": "explicit_human_feedback: the human made or confirmed this decision. model_inference: an agent judged it. Reused from schemas/reference-evaluation.schema.json and schemas/feedback-record.schema.json.",
+      "enum": ["explicit_human_feedback", "model_inference"]
+    },
+    "action": {
+      "description": "KEEP is a first-class SUCCESS state, not a failure or a no-result (LANGUAGE-QUALITY-ARCHITECTURE.md §11). LOCAL_POLISH means at least one candidate edit survived the pairwise gate. UPSTREAM_REPLAN_REQUIRED means this draft's gap is not a polish-scale problem and must route to the layer named in upstream_route.",
+      "enum": ["KEEP", "LOCAL_POLISH", "UPSTREAM_REPLAN_REQUIRED"]
+    },
+    "edits": {
+      "description": "Candidate edits considered. May be empty for KEEP. Guards P1–P6 (scripts/lib/delta-core.mjs) tie action, application_mode, and verdict together — this schema only fixes shape.",
+      "type": "array",
+      "items": { "$ref": "#/$defs/edit" }
+    },
+    "edit_surface": { "$ref": "#/$defs/edit_surface" },
+    "upstream_route": {
+      "description": "Non-null and naming the owning layer plus a reason exactly when action is UPSTREAM_REPLAN_REQUIRED (guard P3); null otherwise.",
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "required": ["layer", "reason"],
+      "properties": {
+        "layer": {
+          "description": "An editorial/feedback-routing.json layer id, resolved dynamically by scripts/lib/delta-core.mjs — never hardcoded here.",
+          "type": "string",
+          "minLength": 1
+        },
+        "reason": { "type": "string", "minLength": 1 }
+      }
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "$defs": {
+    "evaluator": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type"],
+      "properties": {
+        "type": { "enum": ["human", "agent"] },
+        "agent": {
+          "description": "Present only when type is \"agent\".",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["runtime"],
+          "properties": {
+            "runtime": { "type": "string", "minLength": 1 },
+            "model": { "type": "string" },
+            "version": { "type": "string" }
+          }
+        }
+      }
+    },
+    "authority_class": {
+      "description": "Same vocabulary as schemas/language-pack.schema.json's $defs.authority_class — an edit inherits its authority class from the rule it executes, or is assigned one directly for a defect found with no rule behind it.",
+      "enum": [
+        "INTEGRITY",
+        "NORMATIVE",
+        "NATIVE_QUALITY",
+        "GENRE_CONVENTION",
+        "AUDIENCE_CONSTRAINT",
+        "DOMAIN_TERMINOLOGY",
+        "OWNER_PREFERENCE",
+        "TASK_OVERRIDE"
+      ]
+    },
+    "application_mode": {
+      "description": "Same five values as schemas/language-pack.schema.json rules[].application_mode (docs/architecture/LANGUAGE-QUALITY-ARCHITECTURE.md §12). Carried directly on the edit — not resolved by re-reading the pack — so a decision record is self-contained and auditable without cross-referencing the pack version that was active when it was made.",
+      "enum": [
+        "hard_local_correction",
+        "soft_detector",
+        "upstream_guidance",
+        "local_observation",
+        "deprecated_as_instruction"
+      ]
+    },
+    "pairwise_verdict": {
+      "enum": ["better", "same", "worse", "not_applicable"]
+    },
+    "pairwise": {
+      "description": "The eleven fixed criteria (LANGUAGE-QUALITY-ARCHITECTURE.md §13), judged against ORIGINAL (the incumbent span, not \"before\" — ORIGINAL is simply the other option the gate is choosing between). Polarity note: for repetition, over_explication, stiffness, and information_loss, `better` means the AFTER span has LESS of it — these four are named after defects, not after qualities. All eleven are OPTIONAL in this schema; completeness is enforced by scripts/lib/delta-core.mjs per guard P4 (a soft_detector edit must carry all eleven) and P6 (a hard_local_correction edit may carry only semantic_integrity).",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "continuous_readability": { "$ref": "#/$defs/pairwise_verdict" },
+        "native_naturalness": { "$ref": "#/$defs/pairwise_verdict" },
+        "rhythm": { "$ref": "#/$defs/pairwise_verdict" },
+        "repetition": {
+          "description": "better means the AFTER span has LESS repetition than ORIGINAL.",
+          "$ref": "#/$defs/pairwise_verdict"
+        },
+        "over_explication": {
+          "description": "better means the AFTER span has LESS over-explication than ORIGINAL.",
+          "$ref": "#/$defs/pairwise_verdict"
+        },
+        "stiffness": {
+          "description": "better means the AFTER span has LESS stiffness than ORIGINAL.",
+          "$ref": "#/$defs/pairwise_verdict"
+        },
+        "information_loss": {
+          "description": "better means the AFTER span has LESS information loss than ORIGINAL.",
+          "$ref": "#/$defs/pairwise_verdict"
+        },
+        "semantic_integrity": { "$ref": "#/$defs/pairwise_verdict" },
+        "genre_preservation": { "$ref": "#/$defs/pairwise_verdict" },
+        "audience_preservation": { "$ref": "#/$defs/pairwise_verdict" },
+        "domain_terminology_preservation": { "$ref": "#/$defs/pairwise_verdict" }
+      }
+    },
+    "edit": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "edit_id",
+        "rule_ref",
+        "authority_class",
+        "application_mode",
+        "defect",
+        "span_original",
+        "span_candidate",
+        "verdict"
+      ],
+      "properties": {
+        "edit_id": { "type": "string", "minLength": 1 },
+        "rule_ref": {
+          "description": "The language-pack rule id this edit executes, or null for a defect found with no rule behind it (e.g. an exact-quotation mismatch caught by an integrity check rather than a pack rule).",
+          "type": ["string", "null"]
+        },
+        "authority_class": { "$ref": "#/$defs/authority_class" },
+        "application_mode": { "$ref": "#/$defs/application_mode" },
+        "defect": {
+          "description": "What was actually observed in ORIGINAL — the concrete defect this candidate edit addresses, not a restatement of the rule it came from.",
+          "type": "string",
+          "minLength": 1
+        },
+        "span_original": { "type": "string", "minLength": 1 },
+        "span_candidate": { "type": "string", "minLength": 1 },
+        "pairwise": { "$ref": "#/$defs/pairwise" },
+        "verdict": {
+          "description": "accept only when the accept rule (LANGUAGE-QUALITY-ARCHITECTURE.md §13, guards A1–A3) holds — enforced by scripts/lib/delta-core.mjs as an ERROR, not a warning, when violated. Otherwise revert, and ORIGINAL stands. Ambiguity reverts.",
+          "enum": ["accept", "revert"]
+        },
+        "revert_reason": {
+          "description": "Required when verdict is revert (enforced by scripts/lib/delta-core.mjs) — which clause of the accept rule failed, or why the candidate could not be shown to satisfy it.",
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "edit_surface": {
+      "description": "How much of the original text changed, in characters or sentences — recorded so a broad rewrite is visible as a broad rewrite (LANGUAGE-QUALITY-ARCHITECTURE.md §14). ADVISORY_EDIT_SURFACE_BAND = 0.20 is declared once in scripts/lib/delta-core.mjs. Crossing it does not fail the draft — it is not a gate — it requires large_edit_justification to be non-empty, enforced by scripts/lib/delta-core.mjs, never by this schema.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["unit", "original_total", "changed_total", "note"],
+      "properties": {
+        "unit": { "enum": ["characters", "sentences"] },
+        "original_total": {
+          "description": "A count of the measurement unit, not a quality figure — exempted from the no-aggregate property-name guard for exactly that reason (see scripts/lib/delta-core.mjs).",
+          "type": "number",
+          "minimum": 0
+        },
+        "changed_total": {
+          "description": "A count of the measurement unit, not a quality figure — exempted from the no-aggregate property-name guard for exactly that reason (see scripts/lib/delta-core.mjs).",
+          "type": "number",
+          "minimum": 0
+        },
+        "note": {
+          "type": "string",
+          "minLength": 1
+        },
+        "large_edit_justification": {
+          "description": "Required (non-empty) when changed_total / original_total exceeds ADVISORY_EDIT_SURFACE_BAND (0.20). Names the concrete defect that justified editing that much of the text, and states whether UPSTREAM_REPLAN_REQUIRED was considered instead. The band triggers an explanation, never a rejection of the draft (LANGUAGE-QUALITY-ARCHITECTURE.md §14).",
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    }
+  }
+}

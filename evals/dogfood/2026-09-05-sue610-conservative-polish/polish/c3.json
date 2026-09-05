@@ -1,0 +1,38 @@
+{
+  "description": "SUE-610 C3 polish decision.",
+  "records": [
+    {
+      "schema_version": "1.0.0",
+      "decision_id": "polish:c3-bonds-news-to-report",
+      "decided_at": "2026-09-05T09:50:00Z",
+      "draft_ref": {
+        "kind": "article",
+        "ref": "p02_com:content/editorial/sue570-pilot-bonds-news.md"
+      },
+      "language": "ko-KR",
+      "pack_ref": "editorial/profiles/language/ko-KR.json",
+      "delta_plan_ref": "delta:c3-bonds-news-to-report",
+      "reviewer": {
+        "type": "agent",
+        "agent": {
+          "runtime": "claude-code",
+          "model": "claude-sonnet-5",
+          "version": "2026-09-05"
+        }
+      },
+      "basis": "model_inference",
+      "action": "UPSTREAM_REPLAN_REQUIRED",
+      "edits": [],
+      "edit_surface": {
+        "unit": "characters",
+        "original_total": 2578,
+        "changed_total": 0,
+        "note": "practitioner Report 초안 자체가 아직 존재하지 않는다 — 델타 플랜의 천장이 P2_CONTROLLED_ADAPT이므로, 폴리시가 편집할 대상(genre/audience/knowledge_depth/information_structure를 반영한 Report 텍스트)이 아직 만들어지지 않았다. 뉴스 브리프 원문에 국소 편집을 시도하지 않았다."
+      },
+      "upstream_route": {
+        "layer": "frame",
+        "reason": "delta:c3-bonds-news-to-report에서 knowledge_depth와 information_structure가 각각 MATERIAL/LARGE로 측정되어 P2_CONTROLLED_ADAPT 천장이 설정되었고, genre(register 레이어 소유)와 audience(audience 레이어 소유)도 동일 천장이다(SOURCE-TARGET-DELTA-PLANNING.md G1). 이 네 축은 모두 Language Polish 권한 밖이며, Frame/Transformation이 메커니즘·시나리오 근거를 확장하고 Audience/Genre가 독자층과 정보 위계를 재구성해야 Report 초안이 비로소 존재한다. 그 전에는 국소 폴리시가 판단할 대상 자체가 없다."
+      }
+    }
+  ]
+}

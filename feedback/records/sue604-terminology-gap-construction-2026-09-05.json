@@ -1,0 +1,34 @@
+{
+  "schema_version": "1.0.0",
+  "feedback_id": "feedback:sue604-terminology-gap-construction-2026-09-05",
+  "created_at": "2026-09-05T12:10:00Z",
+  "subject": {
+    "kind": "article",
+    "ref": "suengj-com content/editorial/sue604-housing-child.md (SUE-604 unseen-topic holdout)"
+  },
+  "evaluator": {
+    "type": "agent",
+    "agent": {
+      "runtime": "claude-code",
+      "model": "claude-sonnet-5",
+      "version": "claude-sonnet-5"
+    }
+  },
+  "basis": "model_inference",
+  "signal": "objective_quality",
+  "verdict": "mixed",
+  "owner_verdict": "unknown",
+  "statement": "The ko-KR language pack's terminology table holds 11 entries, all finance or AI. Generating the unseen-topic holdout on Seoul housing supply required 착공, 준공 and 인허가 — the three terms the whole piece turns on — and none of them is in the pack. The child variant therefore carries glosses the Writer coined ('공사를 시작하는 날', '공사가 다 끝나서 집이 완성되는 날', '정부가 땅에 집을 지어도 좋다고 허락하는 것') with no terminology authority behind them. The glosses read correctly, which is precisely the risk: an unbacked coinage that happens to be right is indistinguishable in the output from one that is wrong. This is a coverage gap that only became visible because the holdout topic was chosen from outside the corpus's domain — on the two pilot topics the terminology table looked complete. Recorded at task_local scope: this is an agent observation, and basis \"model_inference\" may not carry scope \"calibration_candidate\" on its own — agent consensus never silently becomes durable preference. Promoting this finding into the pack requires the owner.",
+  "routing": {
+    "layer": null,
+    "modality_layer": "domain_terminology",
+    "confidence": "high",
+    "abstained": false,
+    "rationale": "editorial/feedback-routing.json's domain_terminology layer owns 'which term names the concept ... whether an audience-facing alias still maps to the same concept', and its repair says an agent may not invent a canonical rendering. That is exactly what happened here. It is not an audience-layer finding: the reading level was fine and the simplification was appropriate — what is missing is the authority backing the mapping. Not routed to verification either, since no claim changed meaning."
+  },
+  "scope": "task_local",
+  "calibration_ref": null,
+  "evidence_links": [
+    "benchmarks/KOREAN-LANGUAGE-CORPUS.md"
+  ]
+}

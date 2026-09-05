@@ -36,6 +36,7 @@ and a profile belongs in exactly one axis directory:
 | Content type | Evidence burden, required fields, register, structure | `content/` |
 | Transformation | What may change, what must survive | `transformation/` |
 | Audience | Who is on the other end, across every modality | `audience/` |
+| Language | Per-language quality authority: normative bodies, native/genre/audience traits, terminology | `language/` (AES-V2.17) |
 | Surface | Where it lands, who owns that destination | `surface/` |
 | Artifact | Which medium and which shape of it | `artifact/` (AES-V2.7/V2.8) |
 | Brand | Visual/voice tokens an artifact profile applies | `brand/` (AES-V2.7) |

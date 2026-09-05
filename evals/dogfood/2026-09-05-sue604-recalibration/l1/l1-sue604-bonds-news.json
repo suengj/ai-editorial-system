@@ -1,0 +1,111 @@
+{
+  "schema_version": "1.1.0",
+  "review_id": "l1:sue604-bonds-news",
+  "subject": {
+    "kind": "article",
+    "ref": "content/editorial/sue604-bonds-news.md",
+    "content_type": "news"
+  },
+  "comparison": {
+    "mode": "abstain",
+    "references": [
+      {
+        "ref": "eval:khan-public-institution-reform-2026-09-05-01",
+        "provenance_class": "external",
+        "content_type": "news"
+      },
+      {
+        "ref": "eval:asiae-public-institution-reform-2026-09-05-01",
+        "provenance_class": "external",
+        "content_type": "news"
+      }
+    ],
+    "same_content_type": true
+  },
+  "dimensions": [
+    {
+      "id": "thesis-worth",
+      "verdict": "abstain",
+      "evidence_span": "The independent SUE-604 evaluation (evals/dogfood/2026-09-05-sue604-recalibration/sue604-evaluation.md) is scoped entirely to the seven absolute language_quality dimensions fixed by LANGUAGE-QUALITY-ARCHITECTURE.md §8 -- its own method section states \"no dimension is totalled or averaged\" and it records no pairwise judgement of this draft against a GOOD reference on \"thesis-worth\". There is no observation in that evaluation to ground a decided verdict here, so this comparative dimension abstains rather than inventing a judgement the source assessment never made."
+    },
+    {
+      "id": "synthesis-independence",
+      "verdict": "abstain",
+      "evidence_span": "The independent SUE-604 evaluation (evals/dogfood/2026-09-05-sue604-recalibration/sue604-evaluation.md) is scoped entirely to the seven absolute language_quality dimensions fixed by LANGUAGE-QUALITY-ARCHITECTURE.md §8 -- its own method section states \"no dimension is totalled or averaged\" and it records no pairwise judgement of this draft against a GOOD reference on \"synthesis-independence\". There is no observation in that evaluation to ground a decided verdict here, so this comparative dimension abstains rather than inventing a judgement the source assessment never made."
+    },
+    {
+      "id": "language-native-prose",
+      "verdict": "abstain",
+      "evidence_span": "The independent SUE-604 evaluation (evals/dogfood/2026-09-05-sue604-recalibration/sue604-evaluation.md) is scoped entirely to the seven absolute language_quality dimensions fixed by LANGUAGE-QUALITY-ARCHITECTURE.md §8 -- its own method section states \"no dimension is totalled or averaged\" and it records no pairwise judgement of this draft against a GOOD reference on \"language-native-prose\". There is no observation in that evaluation to ground a decided verdict here, so this comparative dimension abstains rather than inventing a judgement the source assessment never made."
+    },
+    {
+      "id": "formulaic-ai-shaped",
+      "verdict": "abstain",
+      "evidence_span": "The independent SUE-604 evaluation (evals/dogfood/2026-09-05-sue604-recalibration/sue604-evaluation.md) is scoped entirely to the seven absolute language_quality dimensions fixed by LANGUAGE-QUALITY-ARCHITECTURE.md §8 -- its own method section states \"no dimension is totalled or averaged\" and it records no pairwise judgement of this draft against a GOOD reference on \"formulaic-ai-shaped\". There is no observation in that evaluation to ground a decided verdict here, so this comparative dimension abstains rather than inventing a judgement the source assessment never made."
+    },
+    {
+      "id": "audience-fit",
+      "verdict": "abstain",
+      "evidence_span": "The independent SUE-604 evaluation (evals/dogfood/2026-09-05-sue604-recalibration/sue604-evaluation.md) is scoped entirely to the seven absolute language_quality dimensions fixed by LANGUAGE-QUALITY-ARCHITECTURE.md §8 -- its own method section states \"no dimension is totalled or averaged\" and it records no pairwise judgement of this draft against a GOOD reference on \"audience-fit\". There is no observation in that evaluation to ground a decided verdict here, so this comparative dimension abstains rather than inventing a judgement the source assessment never made."
+    }
+  ],
+  "integrity": {
+    "status": "clear"
+  },
+  "outcome": "PROSE_REWORK",
+  "routes_to": "native_fluency",
+  "language_quality": {
+    "language": "ko-KR",
+    "pack_ref": "editorial/profiles/language/ko-KR.json",
+    "dimensions": [
+      {
+        "id": "semantic_integrity",
+        "verdict": "PASS",
+        "evidence_span": "Every figure, date, footnote id and the \"확인되지 않은 부분\" section are identical between BEFORE and AFTER; no claim status changed."
+      },
+      {
+        "id": "normative_correctness",
+        "verdict": "PASS",
+        "evidence_span": "No checkable NORMATIVE rule violation was found in this draft."
+      },
+      {
+        "id": "native_fluency",
+        "verdict": "FAIL",
+        "evidence_span": "AFTER: \"국채금리는 높은 채로 유지되었지만 신용스프레드는 벌어지지 않았다.\" replaced BEFORE's native 그대로이다 with the agentless 되다-predicate 유지되었지만, against nq-passive-causative-overuse's 능동형을 기본으로 한다; a second span in the same draft, \"채권시장 위기와 정상적인 재가격을 가르는 신호는 회사채 신용스프레드다.\", re-states a pair the immediately preceding sentence already set up, the opposite of what nq-subject-topic-omission asks for. No BEFORE defect was removed by either change.",
+        "routes_to": "native_fluency"
+      },
+      {
+        "id": "genre_fit",
+        "verdict": "PASS",
+        "evidence_span": "AFTER (as delivered, quotation issue repaired) reads: \"원문 분석(2026-09-02)은 이런 흐름을 두고 base case가 \\\"채권시장 붕괴\\\"보다 \\\"글로벌 term premium의 재가격\\\"에 가깝다고 보았고, 신용스프레드가 장기금리만큼 급격히 벌어지지 않은 점을 근거로 들었다.\" This now matches the canonical view's actual wording (\"'채권시장 붕괴'보다 ... 재가격\"). See notes for the pre-repair defect this replaced."
+      },
+      {
+        "id": "audience_fit",
+        "verdict": "FAIL",
+        "evidence_span": "BEFORE: \"이 조합은 보통 \\\"돈을 빌려주는 사람들이 기업 부도 위험을 새로 걱정하기 시작했다\\\"는 신호가 아니라...\". AFTER: \"이런 조합은 흔히 \\\"기업 부도 위험을 새로 걱정하기 시작했다\\\"는 신호가 아니라...\". nq-subject-topic-omission was over-applied: it licenses omission only 문맥상 주어나 화제가 명백할 때, but 돈을 빌려주는 사람들 was this general-reader brief's first and only mention of who does the worrying, and it is now gone.",
+        "routes_to": "audience"
+      },
+      {
+        "id": "domain_terminology_fit",
+        "verdict": "PASS",
+        "evidence_span": "Nothing terminological changed between BEFORE and AFTER for this draft."
+      },
+      {
+        "id": "owner_voice_fit",
+        "verdict": "UNKNOWN",
+        "evidence_span": "No human has expressed a preference on this draft or any of the fifteen drafts read by the SUE-604 evaluation; editorial/voice.md records the voice, not a verdict on this text. Silence is not acceptance."
+      }
+    ]
+  },
+  "reviewed_at": "2026-09-05T12:00:00Z",
+  "reviewer": {
+    "type": "agent",
+    "agent": {
+      "provider": "claude-code",
+      "model": "claude-sonnet-5",
+      "model_version": "claude-sonnet-5"
+    }
+  },
+  "final_authority": "human",
+  "notes": "Transcribed from sue604-evaluation.md §2.4, \"the one net regression\". Two real, unrepaired findings remain: native_fluency FAIL (stiffer 유지되었지만 + redundant restatement, routes_to native_fluency per LANGUAGE_DIMENSION_ROUTES) and audience_fit FAIL (deleted concrete agent 돈을 빌려주는 사람들, routes_to audience). These sit at different feedback-routing layers; this record's outcome/routes_to (PROSE_REWORK/native_fluency) reflects the layer carrying two of the three regressions the evaluation names, while the audience_fit dimension finding still carries its own correct dimension-level routes_to of 'audience' independently. SUE-604 POST-EVALUATION REPAIR: at the time of the independent evaluation, this draft's genre_fit paragraph asserted a verbatim-looking quotation the canonical source never made -- the evaluation's own text records AFTER as originally reading \"...이런 흐름을 두고 \\\"채권시장 위기라기보다 글로벌 term premium의 재가격\\\"이라며, ...근거로 들었다\" -- wrapping a constructed paraphrase in quotation marks with a closing speech verb (이라며 ... 근거로 들었다), when the canonical view's actual words are \"'채권시장 붕괴'보다 ... 재가격\". The evaluation flagged this as F4 (routes to 'normative': a gap in the pack about whether quotation marks may enclose a paraphrase) and separately as a genre_fit caveat, but did not FAIL genre_fit or semantic_integrity for it because the underlying claim was faithful even though the wording quoted was not the source's own. This has since been repaired in the draft to the source's actual wording (\"'채권시장 붕괴'보다 ... 재가격\" -- see genre_fit evidence_span above, current draft state). No automated gate caught the original mismatch; the independent evaluation did, via direct comparison against the canonical view's text. Recorded here as history, not as a live finding: genre_fit is PASS in this record because it reflects the repaired draft. Comparative dimensions abstain: not assessed by the source evaluation. comparison.mode is \"abstain\" and outcome is ABSTAIN where no language dimension failed: the evaluation this record transcribes assessed only the seven absolute language_quality dimensions and made no comparative judgement against a reference on any of the five comparative axes. Recording mode \"pairwise\" would assert a comparison that never happened, and a comparative PASS would claim the draft was measured against the reference and held up. The references are still named because they were the genre-matched pool available and a later comparative pass should use them."
+}

@@ -1,0 +1,109 @@
+{
+  "schema_version": "1.1.0",
+  "review_id": "l1:sue604-tools-child",
+  "subject": {
+    "kind": "article",
+    "ref": "content/editorial/sue604-tools-child.md",
+    "content_type": "note"
+  },
+  "comparison": {
+    "mode": "abstain",
+    "references": [
+      {
+        "ref": "eval:mofe-kids-economics-classroom-2026-09-05-01",
+        "provenance_class": "external",
+        "content_type": "note"
+      },
+      {
+        "ref": "eval:nibr-bris-child-biology-encyclopedia-2026-09-05-01",
+        "provenance_class": "external",
+        "content_type": "note"
+      }
+    ],
+    "same_content_type": true
+  },
+  "dimensions": [
+    {
+      "id": "thesis-worth",
+      "verdict": "abstain",
+      "evidence_span": "The independent SUE-604 evaluation (evals/dogfood/2026-09-05-sue604-recalibration/sue604-evaluation.md) is scoped entirely to the seven absolute language_quality dimensions fixed by LANGUAGE-QUALITY-ARCHITECTURE.md §8 -- its own method section states \"no dimension is totalled or averaged\" and it records no pairwise judgement of this draft against a GOOD reference on \"thesis-worth\". There is no observation in that evaluation to ground a decided verdict here, so this comparative dimension abstains rather than inventing a judgement the source assessment never made."
+    },
+    {
+      "id": "synthesis-independence",
+      "verdict": "abstain",
+      "evidence_span": "The independent SUE-604 evaluation (evals/dogfood/2026-09-05-sue604-recalibration/sue604-evaluation.md) is scoped entirely to the seven absolute language_quality dimensions fixed by LANGUAGE-QUALITY-ARCHITECTURE.md §8 -- its own method section states \"no dimension is totalled or averaged\" and it records no pairwise judgement of this draft against a GOOD reference on \"synthesis-independence\". There is no observation in that evaluation to ground a decided verdict here, so this comparative dimension abstains rather than inventing a judgement the source assessment never made."
+    },
+    {
+      "id": "language-native-prose",
+      "verdict": "abstain",
+      "evidence_span": "The independent SUE-604 evaluation (evals/dogfood/2026-09-05-sue604-recalibration/sue604-evaluation.md) is scoped entirely to the seven absolute language_quality dimensions fixed by LANGUAGE-QUALITY-ARCHITECTURE.md §8 -- its own method section states \"no dimension is totalled or averaged\" and it records no pairwise judgement of this draft against a GOOD reference on \"language-native-prose\". There is no observation in that evaluation to ground a decided verdict here, so this comparative dimension abstains rather than inventing a judgement the source assessment never made."
+    },
+    {
+      "id": "formulaic-ai-shaped",
+      "verdict": "abstain",
+      "evidence_span": "The independent SUE-604 evaluation (evals/dogfood/2026-09-05-sue604-recalibration/sue604-evaluation.md) is scoped entirely to the seven absolute language_quality dimensions fixed by LANGUAGE-QUALITY-ARCHITECTURE.md §8 -- its own method section states \"no dimension is totalled or averaged\" and it records no pairwise judgement of this draft against a GOOD reference on \"formulaic-ai-shaped\". There is no observation in that evaluation to ground a decided verdict here, so this comparative dimension abstains rather than inventing a judgement the source assessment never made."
+    },
+    {
+      "id": "audience-fit",
+      "verdict": "abstain",
+      "evidence_span": "The independent SUE-604 evaluation (evals/dogfood/2026-09-05-sue604-recalibration/sue604-evaluation.md) is scoped entirely to the seven absolute language_quality dimensions fixed by LANGUAGE-QUALITY-ARCHITECTURE.md §8 -- its own method section states \"no dimension is totalled or averaged\" and it records no pairwise judgement of this draft against a GOOD reference on \"audience-fit\". There is no observation in that evaluation to ground a decided verdict here, so this comparative dimension abstains rather than inventing a judgement the source assessment never made."
+    }
+  ],
+  "integrity": {
+    "status": "clear"
+  },
+  "outcome": "ABSTAIN",
+  "routes_to": null,
+  "language_quality": {
+    "language": "ko-KR",
+    "pack_ref": "editorial/profiles/language/ko-KR.json",
+    "dimensions": [
+      {
+        "id": "semantic_integrity",
+        "verdict": "PASS",
+        "evidence_span": "Uncertainty survives unchanged in both drafts: \"이것도 아직 확인된 사실이 아니라 그럴 수도 있다는 추측이야.\""
+      },
+      {
+        "id": "normative_correctness",
+        "verdict": "PASS",
+        "evidence_span": "AFTER regularises 보조용언 spacing (\"계산해주는\" → \"계산해 주는\") but norm-auxiliary-verb-spacing states both joined and spaced forms are permitted, and AFTER is not itself internally consistent about it (\"바꿔놓았어\" stays joined) -- the evaluation records this as churn, not a defect either way, so PASS holds on both drafts."
+      },
+      {
+        "id": "native_fluency",
+        "verdict": "PASS",
+        "evidence_span": "\"Nothing changed on any dimension\" per the evaluation's own summary for this pair; e.g. AFTER's \"질문 하나를 더 던지는 것 자체가 시간과 돈이 드는 일이었어.\" only loses BEFORE's bold emphasis."
+      },
+      {
+        "id": "genre_fit",
+        "verdict": "PASS",
+        "evidence_span": "No genre-relevant change between BEFORE and AFTER was identified in this pair."
+      },
+      {
+        "id": "audience_fit",
+        "verdict": "PASS",
+        "evidence_span": "BEFORE already opened concrete-first -- \"너희 반에서 학급 문고 예산을 짜다고 생각해보자. '책을 3권 더 사면 얼마가 남을까?'\" -- before any mention of 표 계산 프로그램, so aud-concrete-before-abstract had nothing left to repair in AFTER."
+      },
+      {
+        "id": "domain_terminology_fit",
+        "verdict": "NOT_APPLICABLE",
+        "evidence_span": "The draft contains no domain-specific canonical terminology requiring retention or aliasing; it is child-register prose about a general concept (tools shaping work), not a piece carrying a canonical technical vocabulary the way the bonds/housing drafts carry 국채/신용스프레드 or 착공/준공."
+      },
+      {
+        "id": "owner_voice_fit",
+        "verdict": "UNKNOWN",
+        "evidence_span": "No human has expressed a preference on this draft or any of the fifteen drafts read by the SUE-604 evaluation; editorial/voice.md records the voice, not a verdict on this text. Silence is not acceptance."
+      }
+    ]
+  },
+  "reviewed_at": "2026-09-05T12:00:00Z",
+  "reviewer": {
+    "type": "agent",
+    "agent": {
+      "provider": "claude-code",
+      "model": "claude-sonnet-5",
+      "model_version": "claude-sonnet-5"
+    }
+  },
+  "final_authority": "human",
+  "notes": "Transcribed from sue604-evaluation.md §2.3: \"Nothing changed on any dimension. This is the honest result and it matters for §4.\" The auxiliary-verb-spacing edit is recorded as churn the pack itself warns against flagging as an error, not as a fix or a defect. Comparative dimensions abstain: not assessed by the source evaluation. comparison.mode is \"abstain\" and outcome is ABSTAIN where no language dimension failed: the evaluation this record transcribes assessed only the seven absolute language_quality dimensions and made no comparative judgement against a reference on any of the five comparative axes. Recording mode \"pairwise\" would assert a comparison that never happened, and a comparative PASS would claim the draft was measured against the reference and held up. The references are still named because they were the genre-matched pool available and a later comparative pass should use them."
+}

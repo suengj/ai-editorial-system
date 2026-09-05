@@ -1,0 +1,47 @@
+{
+  "schema_version": "1.0.0",
+  "evaluation_id": "eval:nabo-economic-outlook-report-2026-09-05-01",
+  "ref_id": "ref:nabo-economic-outlook-report",
+  "modality": "text",
+  "evaluator": {
+    "type": "agent",
+    "agent": {
+      "runtime": "claude-code",
+      "model": "claude-sonnet-5"
+    }
+  },
+  "evaluated_at": "2026-09-05T05:10:00Z",
+  "calibration_ref": null,
+  "profile_ref": "editorial/profiles/reference/text.json",
+  "basis": "model_inference",
+  "corpus_role": "discovery",
+  "language": "ko-KR",
+  "dimensions": [
+    {
+      "dimension": "content-type-fit",
+      "verdict": "neutral",
+      "note": "The 국회예산정책처 report listing page (경제전망 및 정책분석 section) surfaces only report titles, issue dates, and download-file indicators — e.g. '2026년 NABO 경제전망: 2025~2029', described in a press summary as organizing analysis into 4개 부문 (지출·생산·소득·지속성장). This four-part structure is a genuine, checkable content-type-fit signal for a fiscal/economic outlook report (expenditure/output/income/sustainability as parallel analytical lenses), but it comes from a secondary press description of the report's stated scope, not from reading the report's own body prose.",
+      "evidence": "Secondary summary: report divides analysis into '지출·생산·소득·지속성장 등 4개 부문' — structure claim only, not sentence-level."
+    },
+    {
+      "dimension": "language-naturalness",
+      "verdict": "neutral",
+      "note": "Could not verify. The report body is distributed as a PDF; the NABO report listing and detail pages fetched for this record contained only titles, dates, and file-download affordances, no extractable body prose. No sentence-level claim is made about NABO's Korean craft."
+    }
+  ],
+  "strengths": [
+    "Stated four-part analytical framing (지출·생산·소득·지속성장) for a multi-year economic outlook is a legitimate content-type-fit data point for report-genre structure, corroborating a segmented-by-analytical-lens approach at a second budget/fiscal institution distinct from BOK's situation-then-issue template."
+  ],
+  "weaknesses": [
+    "No sentence-level prose (hedging language, sentence length, clause construction, terminology rendering) was verified for this record; the source is PDF-gated and this evaluation did not extract its text. This record must not be read as evidence about NABO's actual writing craft, only about its stated report scope."
+  ],
+  "applicable_to": {
+    "content_types": ["research", "academic"],
+    "audiences": ["domain-practitioner", "professional-generalist"],
+    "artifacts": ["text/article"],
+    "surfaces": ["suengj-com"]
+  },
+  "authority_boundary": "craft_evidence_only",
+  "provenance_class": "external",
+  "notes": "corpus_role: discovery, assigned before reading. Like ref:bok-economic-outlook-report, this record deliberately stays at structural/scope evidence because the report body could not be extracted from the PDF in this pass — it does not originate a sentence-level trait. Source: https://www.nabo.go.kr/ko/report/knEconomyList.do?key=2509110016 (경제전망 및 정책분석 listing) and the '2026년 NABO 경제전망: 2025~2029' report entry described there. No report text reproduced beyond the four-part scope description already public in NABO's own press summary of the report."
+}

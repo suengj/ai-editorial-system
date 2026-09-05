@@ -1,0 +1,108 @@
+{
+  "description": "Worked delta-plan record (AES-V2.18 / SUE-610) for the 'Professional Report -> age 10-12' case worked through in docs/architecture/SOURCE-TARGET-DELTA-PLANNING.md §6. Used by scripts/test-delta.mjs. Not a real editorial judgement.",
+  "records": [
+    {
+      "schema_version": "1.0.0",
+      "delta_plan_id": "delta:example-report-to-child",
+      "created_at": "2026-09-05T10:00:00Z",
+      "source": {
+        "kind": "article",
+        "ref": "art:example-practitioner-report",
+        "content_type": "research"
+      },
+      "target": {
+        "content_type": "research",
+        "audience": "child-upper-elementary",
+        "language": "ko-KR"
+      },
+      "basis": "model_inference",
+      "source_profile": {
+        "language_quality": "The draft is fluent, correctly spaced, and free of translationese in the sampled paragraphs; it reads as professionally edited Korean prose.",
+        "genre": "Written in the Report register: dense evidentiary cadence, numbered findings, hedged claims with confidence qualifiers.",
+        "audience": "Addressed to a domain-practitioner: acronyms unglossed, prerequisite knowledge assumed, no scaffolding for a first-time reader of the topic.",
+        "knowledge_depth": "Carries mechanism (why the effect occurs) and quantified evidence (three cited measurements) beyond a surface-level claim.",
+        "register": "Formal, third-person, evidence-first paragraph structure typical of a practitioner-facing Report.",
+        "information_structure": "Findings-first hierarchy: conclusion stated, then evidence, then caveats, matching a Report's expected shape for its actual audience.",
+        "terminology": "Uses the field's technical terms in their standard professional form (e.g. the untranslated English acronym), consistent with what a practitioner reaches for."
+      },
+      "target_profile": {
+        "language_quality": "No language-quality gap implied by the audience change; the target still needs correct, fluent, native Korean.",
+        "genre": "Still a Research piece, but the child-appropriate treatment of a Research piece foregrounds narrative framing over dense evidentiary cadence.",
+        "audience": "A ten-year-old reader with no prerequisite knowledge: every technical term must be glossed or replaced, sentences short, one idea per sentence.",
+        "knowledge_depth": "Mechanism must be simplified to a single causal chain a ten-year-old can follow; the three quantified measurements are not requested at this depth.",
+        "register": "Warm, concrete, second-person-adjacent narration rather than a formal third-person evidentiary register.",
+        "information_structure": "Curiosity-first ordering (what happened, then why) rather than findings-first, matching how the audience profile expects material to be sequenced for this age.",
+        "terminology": "Every technical term needs a plain-language surface form; the untranslated acronym a practitioner reaches for means nothing to this reader."
+      },
+      "axis_deltas": [
+        {
+          "axis": "language_quality",
+          "delta": "LOW",
+          "intervention": "P0_PRESERVE",
+          "owning_layer": null,
+          "source_observation": "The sampled paragraphs show no misspelling, spacing error, or translationese scaffolding.",
+          "target_requirement": "The target requires correct, fluent Korean, which the source already is.",
+          "evidence": "Paragraphs 1-3 of the source draft, checked against the ko-KR pack's normative and native-fluency rules, show zero defects."
+        },
+        {
+          "axis": "genre",
+          "delta": "MATERIAL",
+          "intervention": "P2_CONTROLLED_ADAPT",
+          "owning_layer": "register",
+          "source_observation": "The piece is written in the Report register: numbered findings, hedged claims, evidence-first paragraphs.",
+          "target_requirement": "A Research piece for a child reader still needs to argue a thesis, but the practitioner Report's dense evidentiary cadence is not the register a ten-year-old's Research piece uses.",
+          "evidence": "Section 2 opens with 'Finding 1 (p<0.05):', a Report-register construction absent from every child-audience Research piece in the corpus."
+        },
+        {
+          "axis": "audience",
+          "delta": "LARGE",
+          "intervention": "P3_RECOMPOSE",
+          "owning_layer": "audience",
+          "source_observation": "Acronyms are unglossed, prerequisite domain knowledge is assumed throughout, and no sentence offers a first-time reader a foothold.",
+          "target_requirement": "A ten-year-old reader needs every term glossed, no assumed prerequisite knowledge, and short single-idea sentences.",
+          "evidence": "The opening sentence uses three unglossed acronyms and one subordinate clause with two embedded qualifiers."
+        },
+        {
+          "axis": "knowledge_depth",
+          "delta": "LARGE",
+          "intervention": "P3_RECOMPOSE",
+          "owning_layer": "frame",
+          "source_observation": "The draft carries three quantified measurements and a multi-step causal mechanism explaining the effect.",
+          "target_requirement": "The target audience profile calls for a single causal chain a ten-year-old can hold in mind, with the quantified measurements omitted.",
+          "evidence": "Paragraph 4 chains four causal steps in one sentence, each with its own numeric qualifier."
+        },
+        {
+          "axis": "register",
+          "delta": "MATERIAL",
+          "intervention": "P2_CONTROLLED_ADAPT",
+          "owning_layer": "register",
+          "source_observation": "The draft is formal and third-person throughout, with no direct address to the reader.",
+          "target_requirement": "The audience profile calls for warm, concrete narration, closer to second person, rather than formal third-person exposition.",
+          "evidence": "Every paragraph in the sample uses third-person passive constructions with no direct reader address."
+        },
+        {
+          "axis": "information_structure",
+          "delta": "MATERIAL",
+          "intervention": "P2_CONTROLLED_ADAPT",
+          "owning_layer": "frame",
+          "source_observation": "The draft states the conclusion first, then evidence, then caveats — a findings-first hierarchy.",
+          "target_requirement": "The audience profile calls for curiosity-first ordering: what happened, then why, before any caveat.",
+          "evidence": "The first paragraph states the conclusion in its first sentence, before any narrative context is given."
+        },
+        {
+          "axis": "terminology",
+          "delta": "LARGE",
+          "intervention": "P3_RECOMPOSE",
+          "owning_layer": "audience",
+          "source_observation": "The draft retains the field's English acronym in its standard professional form, per the language pack's keep_source rendering_policy for practitioners.",
+          "target_requirement": "The audience profile requires a plain-language surface form for every technical term; the untranslated acronym communicates nothing to this reader.",
+          "evidence": "The acronym appears six times in the sample with no gloss or plain-language alias offered anywhere in the draft."
+        }
+      ],
+      "plan_intervention": {
+        "value": "P3_RECOMPOSE",
+        "rationale": "audience, knowledge_depth, and terminology all measure LARGE — the highest single-axis intervention is the ceiling; it is not computed by summing or averaging the seven axes."
+      }
+    }
+  ]
+}

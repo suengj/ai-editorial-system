@@ -1,0 +1,34 @@
+{
+  "schema_version": "1.0.0",
+  "feedback_id": "feedback:sue604-hedge-register-domain-reach-2026-09-05",
+  "created_at": "2026-09-05T12:15:00Z",
+  "subject": {
+    "kind": "article",
+    "ref": "suengj-com content/editorial/sue604-housing-report.md and content/editorial/sue604-tools-report.md (SUE-604)"
+  },
+  "evaluator": {
+    "type": "agent",
+    "agent": {
+      "runtime": "claude-code",
+      "model": "claude-sonnet-5",
+      "version": "claude-sonnet-5"
+    }
+  },
+  "basis": "model_inference",
+  "signal": "objective_quality",
+  "verdict": "mixed",
+  "owner_verdict": "unknown",
+  "statement": "Two independent generations report the same doubt about reg-report-bare-noun-compression and reg-report-hedge-language: both were derived from macro-forecast writing (KDI, KIET, KCMI) and both sit less naturally outside it. On the housing supply-pipeline analysis the bare-noun compression was usable but not idiomatic, and the hedge vocabulary fit partly because Korean housing-statistics commentary already borrows the macro register — not demonstrably because the rule is domain-general. On the tools topic, which analyses an argument rather than forecasting anything, the compression device had only one honest place to go. Neither rule is wrong; both may be scoped wider than their evidence reaches. The two report rules are currently generality genre_local over research/academic, which asserts the whole genre. The corpus behind them is three economics institutions. Recorded at task_local scope: this is an agent observation, and basis \"model_inference\" may not carry scope \"calibration_candidate\" on its own — agent consensus never silently becomes durable preference. Promoting this finding into the pack requires the owner.",
+  "routing": {
+    "layer": null,
+    "modality_layer": "register",
+    "confidence": "medium",
+    "abstained": false,
+    "rationale": "This is a scope question about two GENRE_CONVENTION rules — whether a report-register device observed in macro-economics writing holds across the research/academic content type — which is the register layer's own concern. Deliberately not routed to native_fluency: the prose these rules produced is not unidiomatic, it is idiomatic for a register that may not be the right one for the piece. Confidence is medium because two agent generations agreeing is weaker evidence than two institutions, and neither is a Korean reader's judgement."
+  },
+  "scope": "task_local",
+  "calibration_ref": null,
+  "evidence_links": [
+    "benchmarks/KOREAN-LANGUAGE-CORPUS.md"
+  ]
+}

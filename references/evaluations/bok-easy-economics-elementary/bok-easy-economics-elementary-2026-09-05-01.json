@@ -1,0 +1,49 @@
+{
+  "schema_version": "1.0.0",
+  "evaluation_id": "eval:bok-easy-economics-elementary-2026-09-05-01",
+  "ref_id": "ref:bok-easy-economics-elementary",
+  "modality": "text",
+  "evaluator": {
+    "type": "agent",
+    "agent": {
+      "runtime": "claude-code",
+      "model": "claude-sonnet-5"
+    }
+  },
+  "evaluated_at": "2026-09-05T04:10:00Z",
+  "calibration_ref": null,
+  "profile_ref": "editorial/profiles/reference/text.json",
+  "basis": "model_inference",
+  "corpus_role": "holdout",
+  "language": "ko-KR",
+  "dimensions": [
+    {
+      "dimension": "audience-suitability",
+      "verdict": "adopt",
+      "note": "Bank of Korea's 알기 쉬운 경제이야기 series (published since 2005, separately pitched at elementary/middle/high-school/general readers) frames economic ideas through a recurring family's conversations and folk/fairy-tale economic episodes rather than expository definition. This independently corroborates the concrete-before-abstract framing trait already found in ref:econoi-childrens-economic-newspaper's articles, from a different institution (a central bank publication programme, not a newspaper) and a different concrete device (an ongoing family-conversation frame plus retold folk stories, vs. econoi's Q&A-and-한자어-decomposition device). This record was assigned holdout before reading and no new trait is derived from it beyond confirming the one above; it is not used to originate a trait.",
+      "evidence": "Publisher description of the elementary-level volume: \"한은이네 가족의 대화와 여러 가지 이야기를 재미있게 읽다 보면 여러분들은 자연스럽게 경제를 익히고, 경제적으로 생각할 수 있는 힘을 키울 수 있습니다.\" (Reading 한은이's family's conversations and various stories, you naturally pick up economics and build the capacity to think economically.)"
+    },
+    {
+      "dimension": "audience-suitability",
+      "verdict": "neutral",
+      "note": "Could not verify the actual body prose (sentence length, clause depth, vocabulary tier, or whether stated uncertainty survives simplification) because the publication is distributed as a PDF booklet that this evaluation could not extract text from. The finding above is limited to the structural device (family-narrative frame) as described in the publisher's own front-matter, not to sentence-level craft. This gap should be closed before any of this record's evidence is used to derive (rather than merely validate) a trait."
+    }
+  ],
+  "strengths": [
+    "Independent-institution corroboration of concrete-before-abstract framing: a central-bank publication programme reaches for the same move (attach an abstract economic idea to an ongoing, familiar narrative) that a dedicated children's economics newspaper reaches for, via a different concrete device.",
+    "Explicit audience tiering by depth, not by a different voice per tier: the same series title and framing device ('경제이야기') is republished at elementary/middle/high-school/general levels, which is itself evidence that this institution treats audience as a depth dial on one editorial approach rather than a wholesale register swap into a separate 'child voice' per book."
+  ],
+  "weaknesses": [
+    "The named family ('한은이', '중은이' and parents) and the specific retold folk-tale episodes are this publication's own recognizable content; the transferable lesson is the structural device (a persistent, familiar narrative frame carrying the abstraction), never the characters or the specific stories — do_not_copy on the concrete instantiation.",
+    "Sentence-level Korean (length, clause depth, hedging under uncertainty) is unverified here — this record validates a structural trait only and must not be read as validating anything about prose-level craft."
+  ],
+  "applicable_to": {
+    "content_types": ["note", "research"],
+    "audiences": ["child-upper-elementary", "beginner-learner"],
+    "artifacts": ["text/article"],
+    "surfaces": ["suengj-com"]
+  },
+  "authority_boundary": "craft_evidence_only",
+  "provenance_class": "external",
+  "notes": "corpus_role: holdout, assigned before any reading of this reference began, per docs/architecture/LANGUAGE-QUALITY-ARCHITECTURE.md §7 — this record validates the framing trait found independently at ref:econoi-childrens-economic-newspaper and must never be treated as having originated it. applicable_to.audiences now lists 'child-upper-elementary' first per SUE-604 correction, since this evaluation's actual subject is editorial/profiles/audience/child-upper-elementary.json; 'beginner-learner' is kept second because the persistent-narrative-frame device plausibly transfers to an adult novice as well. This still requires the applicability.audiences enum in schemas/reference-evaluation.schema.json to admit 'child-upper-elementary' (not yet present) — see the matching note on the paired discovery record; the Manager should extend the enum alongside this catalog merge. references/korean-language-authorities.md §4 lists Bank of Korea publications only as EMPIRICAL_REFERENCE for institutional register, never as a style authority; this record treats it the same way. No booklet content was reproduced; the single sentence quoted above is publisher front-matter describing the book, not body prose, consistent with editorial/RIGHTS-AND-PROVENANCE.md's fail-to-reference rule."
+}

@@ -1,0 +1,35 @@
+{
+  "description": "SUE-610 C6 polish decision.",
+  "records": [
+    {
+      "schema_version": "1.0.0",
+      "decision_id": "polish:c6-japan-us-view",
+      "decided_at": "2026-09-05T10:50:00Z",
+      "draft_ref": {
+        "kind": "article",
+        "ref": "p02_com:content/views/japan-us-global-bond-selloff.md"
+      },
+      "language": "ko-KR",
+      "pack_ref": "editorial/profiles/language/ko-KR.json",
+      "delta_plan_ref": "delta:c6-japan-us-view",
+      "reviewer": {
+        "type": "agent",
+        "agent": {
+          "runtime": "claude-code",
+          "model": "claude-sonnet-5",
+          "version": "2026-09-05"
+        }
+      },
+      "basis": "model_inference",
+      "action": "KEEP",
+      "edits": [],
+      "edit_surface": {
+        "unit": "characters",
+        "original_total": 6398,
+        "changed_total": 0,
+        "note": "표본 문단(핵심 판단, 1~3절, Bottom line)을 검토했으나 폴리시가 제안할 만한 국소적 결함을 하나도 찾지 못했다 — 후보 편집 자체를 생성하지 않았다. 이것이 가장 강한 형태의 KEEP이다: 시도하고 되돌린 것이 아니라, 되돌릴 것조차 없었다."
+      },
+      "upstream_route": null
+    }
+  ]
+}

@@ -1,0 +1,129 @@
+{
+  "schema_version": "1.1.0",
+  "pack_id": "zz-ZZ",
+  "language": "zz",
+  "status": "active",
+  "doc_ref": "docs/architecture/LANGUAGE-QUALITY-ARCHITECTURE.md",
+  "calibration_ref": null,
+  "authorities": [
+    {
+      "id": "std-body",
+      "title": "Fixture Standards Body Orthography Guide",
+      "issuer": "Fixture Standards Body",
+      "source_class": "NORMATIVE_STANDARD",
+      "governs": [
+        "orthography",
+        "spacing"
+      ],
+      "does_not_govern": [
+        "literary style",
+        "genre form"
+      ]
+    },
+    {
+      "id": "corpus-ref",
+      "title": "Fixture Well-Edited Corpus",
+      "issuer": "Fixture Publisher",
+      "source_class": "EMPIRICAL_REFERENCE",
+      "governs": [
+        "craft evidence for native fluency"
+      ],
+      "does_not_govern": [
+        "correctness",
+        "facts"
+      ]
+    }
+  ],
+  "rules": [
+    {
+      "id": "spacing-rule",
+      "authority_class": "NORMATIVE",
+      "layer": "normative",
+      "statement": "Fixture spacing rule statement, falsifiable and actionable.",
+      "checkability": "mechanical",
+      "generality": "shared",
+      "authority_ref": "std-body",
+      "application_mode": "hard_local_correction"
+    },
+    {
+      "id": "native-quality-rule",
+      "authority_class": "NATIVE_QUALITY",
+      "layer": "native_fluency",
+      "statement": "Fixture native-quality observation, scoped to one genre.",
+      "checkability": "review_guidance",
+      "generality": "source_local",
+      "scope": {
+        "content_types": [
+          "news"
+        ]
+      },
+      "application_mode": "soft_detector"
+    },
+    {
+      "id": "shared-native-rule",
+      "authority_class": "NATIVE_QUALITY",
+      "layer": "native_fluency",
+      "statement": "Fixture native-quality trait promoted to shared with sufficient evidence.",
+      "checkability": "review_guidance",
+      "generality": "shared",
+      "evidence_refs": [
+        "eval:discovery-record",
+        "eval:discovery-record-two"
+      ],
+      "holdout_refs": [
+        "eval:holdout-record"
+      ],
+      "holdout_result": "improved",
+      "application_mode": "soft_detector"
+    },
+    {
+      "id": "genre-rule",
+      "authority_class": "GENRE_CONVENTION",
+      "layer": "register",
+      "statement": "Fixture genre convention for news leads.",
+      "checkability": "review_guidance",
+      "generality": "source_local",
+      "scope": {
+        "content_types": [
+          "news"
+        ]
+      },
+      "application_mode": "soft_detector"
+    },
+    {
+      "id": "audience-rule",
+      "authority_class": "AUDIENCE_CONSTRAINT",
+      "layer": "audience",
+      "statement": "Fixture audience constraint for a young reader.",
+      "checkability": "review_guidance",
+      "generality": "source_local",
+      "scope": {
+        "audiences": [
+          "child-upper-elementary"
+        ]
+      },
+      "application_mode": "upstream_guidance"
+    }
+  ],
+  "terminology": [
+    {
+      "id": "term-one",
+      "canonical": "Fixture Widget Concept",
+      "domain": "fixture-engineering",
+      "rendering": "fixture-widget",
+      "rendering_policy": "translate",
+      "audience_aliases": [
+        {
+          "audience": "child-upper-elementary",
+          "surface_form": "small helper thing",
+          "gloss_required": true
+        }
+      ]
+    }
+  ],
+  "not_authoritative_for": [
+    "facts",
+    "other languages",
+    "publication"
+  ]
+}

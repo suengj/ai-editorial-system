@@ -211,8 +211,8 @@ const feedbackCases = [
   ['calibration_candidate with an empty evidence_links array is still rejected', CODES.CALIBRATION_CANDIDATE_UNSUPPORTED, (f) => {
     f.basis = 'explicit_human_feedback'; f.scope = 'calibration_candidate'; f.evidence_links = [];
   }],
-  ['a null routing.layer without abstained:true is a guess, not an abstention', CODES.ROUTING_GUESS, (f) => {
-    f.routing.layer = null; f.routing.abstained = false;
+  ['a null routing.layer naming no cause at all and not abstaining is a guess', CODES.ROUTING_GUESS, (f) => {
+    f.routing.layer = null; f.routing.abstained = false; delete f.routing.modality_layer;
   }],
   ['an embedded body in a feedback statement is rejected', CODES.EMBEDDED_BODY, (f) => { f.statement = 'B'.repeat(250); }],
   ['schema: an unknown owner_verdict is rejected', CODES.SCHEMA, (f) => { f.owner_verdict = 'sort-of-liked-it'; }],
@@ -234,6 +234,23 @@ for (const [name, expected, mutate] of feedbackCases) {
   check(name, codes.includes(expected), `expected ${expected}, got [${[...new Set(codes)].join(', ')}]`);
 }
 
+// Allow fixture for the third routing state. editorial/FEEDBACK-ROUTING.md §1
+// defines modality-only routing — layer null, abstained false, modality_layer
+// naming a declared modality layer — as a legitimate state distinct from both
+// "a shared layer applies" and "I cannot tell". The committed worked example
+// feedback:example-renderer-glitch is exactly this shape. Until SUE-604 the
+// check above collapsed it into ROUTING_GUESS; no persisted record had used
+// the state, so nothing caught the contradiction.
+{
+  const f = JSON.parse(JSON.stringify(baseFeedback));
+  f.routing.layer = null;
+  f.routing.abstained = false;
+  f.routing.modality_layer = 'renderer';
+  const codes = feedbackDirectCodes(f);
+  check('modality-only routing (layer null + modality_layer named) is NOT an implied abstention',
+    !codes.includes(CODES.ROUTING_GUESS), `got [${[...new Set(codes)].join(', ')}]`);
+}
+
 function feedbackDirectCodes(record) {
   const codes = [];
   for (const e of validate(record, feedbackSchema)) codes.push(CODES.SCHEMA);
@@ -244,7 +261,7 @@ function feedbackDirectCodes(record) {
   if (record.scope === 'calibration_candidate' && !(Array.isArray(record.evidence_links) && record.evidence_links.length > 0)) {
     codes.push(CODES.CALIBRATION_CANDIDATE_UNSUPPORTED);
   }
-  if (record.routing && record.routing.layer == null && record.routing.abstained !== true) codes.push(CODES.ROUTING_GUESS);
+  if (record.routing && record.routing.layer == null && record.routing.abstained !== true && !record.routing.modality_layer) codes.push(CODES.ROUTING_GUESS);
   const grounded = record.evaluator?.type === 'human' || record.basis === 'explicit_human_feedback';
   if (record.owner_verdict && record.owner_verdict !== 'unknown' && !grounded) codes.push(CODES.OWNER_VERDICT_UNSUPPORTED);
   return codes;
