@@ -1,0 +1,34 @@
+{
+  "schema_version": "1.0.0",
+  "feedback_id": "feedback:sue604-child-politeness-level-unspecified-2026-09-05",
+  "created_at": "2026-09-05T12:35:00Z",
+  "subject": {
+    "kind": "article",
+    "ref": "suengj-com content/editorial/sue604-bonds-child.md (SUE-604)"
+  },
+  "evaluator": {
+    "type": "agent",
+    "agent": {
+      "runtime": "claude-code",
+      "model": "claude-sonnet-5",
+      "version": "claude-sonnet-5"
+    }
+  },
+  "basis": "model_inference",
+  "signal": "objective_quality",
+  "verdict": "mixed",
+  "owner_verdict": "unknown",
+  "statement": "aud-uncertainty-child-register illustrates plain child-facing uncertainty with polite -요 forms ('아직 확실하지 않아요', '그럴 수도 있어요'), while the SUE-570 child baselines are written throughout in casual 반말 ('~야', '~아'). The Writer kept 반말 for internal consistency and flagged the ambiguity rather than switching register mid-document, which was the right call. But the pack does not say anywhere which politeness level a child-facing Korean piece should use, and Korean has no neutral option — every sentence ending commits to one. The rule's examples therefore read as if they mandate -요 when they are only illustrating plainness. This is a genuine hole rather than a misreading: an agent following the pack literally would produce a register clash the pack never warned about. Recorded at task_local scope: this is an agent observation, and basis \"model_inference\" may not carry scope \"calibration_candidate\" on its own — agent consensus never silently becomes durable preference. Promoting this finding into the pack requires the owner.",
+  "routing": {
+    "layer": "audience",
+    "modality_layer": "audience",
+    "confidence": "high",
+    "abstained": false,
+    "rationale": "Politeness level in Korean child-facing writing is an audience-constraint question — it is about the relationship the text assumes with its reader — and the shared audience layer owns 'depth, jargon tolerance, purpose framing'. Not owner_voice: nobody has expressed a preference, and treating an unspecified default as taste would invent owner preference from silence. Not normative: both 반말 and -요 are correct Korean, so no standards body decides this."
+  },
+  "scope": "task_local",
+  "calibration_ref": null,
+  "evidence_links": [
+    "editorial/profiles/audience/child-upper-elementary.json"
+  ]
+}

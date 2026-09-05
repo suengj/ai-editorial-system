@@ -1,0 +1,34 @@
+{
+  "schema_version": "1.0.0",
+  "feedback_id": "feedback:sue604-attribution-rule-needs-a-speaker-2026-09-05",
+  "created_at": "2026-09-05T12:30:00Z",
+  "subject": {
+    "kind": "article",
+    "ref": "suengj-com content/editorial/sue604-tools-news.md and content/editorial/sue604-bonds-news.md (SUE-604)"
+  },
+  "evaluator": {
+    "type": "agent",
+    "agent": {
+      "runtime": "claude-code",
+      "model": "claude-sonnet-5",
+      "version": "claude-sonnet-5"
+    }
+  },
+  "basis": "model_inference",
+  "signal": "objective_quality",
+  "verdict": "mixed",
+  "owner_verdict": "unknown",
+  "statement": "Two Writers working independently on different topics reported the same difficulty with reg-news-attribution-placement. The rule describes a construction corroborated across four newsrooms — speaker first, a clause marking the utterance ('~라며'), the content, closing on a speech verb — but all four corroborating references are event coverage with live quoted officials. Both SUE-604 news adaptations derive from written argument pieces with no speaker at all, so each Writer had to stretch '화자' to mean 'the essay's author' or 'the canonical source'. One of them wrote that the result 'performs the convention rather than needing it organically'. The rule may be sound and simply scoped to a kind of news the pilot does not produce: the corpus was built from institutional-announcement coverage, and adapting an argument into a news brief is a different act from reporting an event. Recorded at task_local scope: this is an agent observation, and basis \"model_inference\" may not carry scope \"calibration_candidate\" on its own — agent consensus never silently becomes durable preference. Promoting this finding into the pack requires the owner.",
+  "routing": {
+    "layer": null,
+    "modality_layer": "register",
+    "confidence": "medium",
+    "abstained": false,
+    "rationale": "A GENRE_CONVENTION rule whose evidence may not cover the sub-genre it is being applied to is a register-layer scope question, which is where content-type conventions live. Not native_fluency: the sentences produced are idiomatic Korean, the doubt is whether the convention belongs on this kind of piece. Not intake: the news transformation was correctly requested and correctly extracted. Confidence medium — two agent reports agreeing is weaker than two institutions, and neither is a Korean editor's judgement."
+  },
+  "scope": "task_local",
+  "calibration_ref": null,
+  "evidence_links": [
+    "benchmarks/KOREAN-LANGUAGE-CORPUS.md"
+  ]
+}

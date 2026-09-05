@@ -117,8 +117,8 @@ console.log('\nthree states, never collapsed: shared layer / modality-only / abs
     codesFor(unknownModalityLayer).includes(CODES.UNKNOWN_MODALITY_LAYER));
 }
 
-// --- deny: the three named misroutes ----------------------------------------
-console.log('\nthe three misroutes docs/architecture/V2-EDITORIAL-LEARNING-CORE.md §5 names');
+// --- deny: the four named misroutes ----------------------------------------
+console.log('\nthe four misroutes docs/architecture/V2-EDITORIAL-LEARNING-CORE.md §5 names');
 {
   const frameToPolish = clone(byId['feedback:example-frame-worth']);
   frameToPolish.routing.layer = null;
@@ -131,6 +131,38 @@ console.log('\nthe three misroutes docs/architecture/V2-EDITORIAL-LEARNING-CORE.
   rendererToBrand.statement = 'This one render has garbled text; let\'s make the brand profile match what we see here.';
   check('a renderer defect promoted to a brand-profile change is caught',
     codesFor(rendererToBrand).includes(CODES.MISROUTE));
+
+  // Misroute 4 (AES-V2.17): unidiomatic language filed as owner taste, and a
+  // correctness defect filed as a fluency problem. Both directions, because
+  // before SUE-607's review only the mirror direction was enforced.
+  const fluencyToOwnerVoice = clone(byId['feedback:example-frame-worth']);
+  fluencyToOwnerVoice.routing.layer = null;
+  fluencyToOwnerVoice.routing.modality_layer = 'owner_voice';
+  fluencyToOwnerVoice.statement = '문법은 맞는데 번역투라서 어색하다 — reads like a translation.';
+  check('unidiomatic language filed as owner preference is caught',
+    codesFor(fluencyToOwnerVoice).includes(CODES.MISROUTE));
+
+  const normativeToFluency = clone(byId['feedback:example-frame-worth']);
+  normativeToFluency.routing.layer = null;
+  normativeToFluency.routing.modality_layer = 'native_fluency';
+  normativeToFluency.statement = '띄어쓰기와 맞춤법 오류가 몇 군데 있다.';
+  check('a spelling/spacing defect filed as a fluency problem is caught',
+    codesFor(normativeToFluency).includes(CODES.MISROUTE));
+
+  // Regression guard for a false positive this keyword gate actually produced:
+  // a record whose rationale explains why it is *not* routing to
+  // native_fluency was flagged, because "not native" matched inside the layer
+  // name "native_fluency". Penalising a record for naming the layer it
+  // rejected punishes exactly the reasoning the routing table asks for — the
+  // same class of failure that got the earlier English-regex authority check
+  // deleted (AES-V2 B3).
+  const declinesFluency = clone(byId['feedback:example-frame-worth']);
+  declinesFluency.routing.layer = null;
+  declinesFluency.routing.modality_layer = 'register';
+  declinesFluency.statement = 'A genre-convention scope question about a report register rule.';
+  declinesFluency.routing.rationale = 'Not native_fluency: the sentences produced are idiomatic Korean; the doubt is whether the convention belongs on this kind of piece.';
+  check('a record explaining why it is NOT a native_fluency finding is not flagged',
+    !codesFor(declinesFluency).includes(CODES.MISROUTE));
 
   const referenceToWriting = clone(byId['feedback:example-reference-repeated']);
   referenceToWriting.routing.layer = null;

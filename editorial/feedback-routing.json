@@ -311,7 +311,7 @@
               "unnatural",
               "awkward",
               "translationese",
-              "not native",
+              "\\bnot native\\b",
               "어색",
               "번역투",
               "reads like a translation"
@@ -324,7 +324,7 @@
               "unnatural",
               "awkward",
               "translationese",
-              "not native",
+              "\\bnot native\\b",
               "어색",
               "번역투",
               "reads like a translation",
