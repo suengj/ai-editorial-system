@@ -1,0 +1,97 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="400" role="img" aria-labelledby="pd-t pd-d">
+  <title id="pd-t">일본 10년물은 되돌리고, 미국 10년물은 버틴다</title>
+  <desc id="pd-d">2026년 9월 1일부터 4일까지 일본과 미국 10년 국채금리 변화(재확인된 관측치 3개). 일본은 3% 돌파 후 이틀 연속 하락, 미국은 4.8% 부근에서 거의 그대로. 일본 10년물 3.00 → 2.96 → 2.90(%), 미국 10년물 4.796 → 4.78 → 4.76(%). 세로축은 2%에서 6%까지, 가로축은 날짜 간격에 비례하는 실제 시간 척도다. 실선이 일본, 점선이 미국이며 계열 이름은 각 선의 끝에 직접 붙는다. 테두리 상자는 없다. Period: 2026-09-01, 2026-09-03, 2026-09-04 (재확인 조회일 2026-09-05; 9/5 관측치 없음). Source: canonical source(2026-09-02) + TradingEconomics 재확인(2026-09-05 조회). 좁은 화면에서는 같은 세 관측치와 같은 값이 더 좁고 높은 비율로 다시 배치되고 계열 이름은 선 끝의 위·아래로 옮겨가며, 글자 크기는 두 배치에서 동일하게 유지된다.</desc>
+  <style>
+    text { font-family: Pretendard, "Apple SD Gothic Neo", "Noto Sans KR", system-ui, sans-serif; fill: currentColor; }
+    .lay-w { display: none; }
+    .grid { stroke: currentColor; stroke-opacity: 0.15; stroke-width: 1; }
+    .axis { stroke: currentColor; stroke-opacity: 0.5; stroke-width: 1; }
+    .series { fill: none; stroke: currentColor; stroke-width: 2; }
+    .point { fill: currentColor; }
+    .tick { font-size: 15px; fill-opacity: 0.7; }
+    .label { font-size: 15px; }
+    .heading { font-size: 17px; font-weight: 600; }
+    .note { font-size: 15px; fill-opacity: 0.7; }
+
+    /* narrow layout (default) — 358px article column */
+    .d-h1 { transform: translate(8px, 30px); text-anchor: start; }
+    .d-h2 { transform: translate(8px, 54px); text-anchor: start; }
+    .d-sub { transform: translate(8px, 84px); text-anchor: start; }
+    .d-y6 { transform: translate(36px, 139px); text-anchor: end; }
+    .d-y5 { transform: translate(36px, 187px); text-anchor: end; }
+    .d-y4 { transform: translate(36px, 235px); text-anchor: end; }
+    .d-y3 { transform: translate(36px, 283px); text-anchor: end; }
+    .d-y2 { transform: translate(36px, 331px); text-anchor: end; }
+    .d-x1 { transform: translate(44px, 348px); text-anchor: middle; }
+    .d-x2 { transform: translate(196px, 348px); text-anchor: middle; }
+    .d-x3 { transform: translate(272px, 348px); text-anchor: middle; }
+    .d-us { transform: translate(272px, 180px); text-anchor: end; }
+    .d-jp { transform: translate(272px, 304px); text-anchor: end; }
+    .d-ax { transform: translate(8px, 378px); text-anchor: start; }
+
+    /* wide layout — 672px article column */
+    @media (min-width: 640px) {
+      svg { height: 356px; }
+      .lay-n { display: none; }
+      .lay-w { display: block; }
+      .d-y6 { transform: translate(64px, 123px); text-anchor: end; }
+      .d-y5 { transform: translate(64px, 167px); text-anchor: end; }
+      .d-y4 { transform: translate(64px, 211px); text-anchor: end; }
+      .d-y3 { transform: translate(64px, 255px); text-anchor: end; }
+      .d-y2 { transform: translate(64px, 299px); text-anchor: end; }
+      .d-x1 { transform: translate(72px, 316px); text-anchor: middle; }
+      .d-x2 { transform: translate(370.67px, 316px); text-anchor: middle; }
+      .d-x3 { transform: translate(520px, 316px); text-anchor: middle; }
+      .d-us { transform: translate(528px, 175px); text-anchor: start; }
+      .d-jp { transform: translate(528px, 254px); text-anchor: start; }
+      .d-ax { transform: translate(8px, 342px); text-anchor: start; }
+    }
+  </style>
+
+  <g class="lay-n">
+    <line class="grid" x1="44" y1="134" x2="272" y2="134"/>
+    <line class="grid" x1="44" y1="182" x2="272" y2="182"/>
+    <line class="grid" x1="44" y1="230" x2="272" y2="230"/>
+    <line class="grid" x1="44" y1="278" x2="272" y2="278"/>
+    <line class="axis" x1="44" y1="326" x2="272" y2="326"/>
+    <path class="series" d="M44.00,278.00 L196.00,279.92 L272.00,282.80"/>
+    <circle class="point" cx="44.00" cy="278.00" r="2.5"/>
+    <circle class="point" cx="196.00" cy="279.92" r="2.5"/>
+    <circle class="point" cx="272.00" cy="282.80" r="2.5"/>
+    <path class="series" stroke-dasharray="6 4" d="M44.00,191.792 L196.00,192.56 L272.00,193.52"/>
+    <circle class="point" cx="44.00" cy="191.792" r="2.5"/>
+    <circle class="point" cx="196.00" cy="192.56" r="2.5"/>
+    <circle class="point" cx="272.00" cy="193.52" r="2.5"/>
+  </g>
+
+  <g class="lay-w">
+    <line class="grid" x1="72" y1="118" x2="520" y2="118"/>
+    <line class="grid" x1="72" y1="162" x2="520" y2="162"/>
+    <line class="grid" x1="72" y1="206" x2="520" y2="206"/>
+    <line class="grid" x1="72" y1="250" x2="520" y2="250"/>
+    <line class="axis" x1="72" y1="294" x2="520" y2="294"/>
+    <path class="series" d="M72.00,250.00 L370.67,251.76 L520.00,254.40"/>
+    <circle class="point" cx="72.00" cy="250.00" r="2.5"/>
+    <circle class="point" cx="370.67" cy="251.76" r="2.5"/>
+    <circle class="point" cx="520.00" cy="254.40" r="2.5"/>
+    <path class="series" stroke-dasharray="6 4" d="M72.00,170.976 L370.67,171.68 L520.00,172.56"/>
+    <circle class="point" cx="72.00" cy="170.976" r="2.5"/>
+    <circle class="point" cx="370.67" cy="171.68" r="2.5"/>
+    <circle class="point" cx="520.00" cy="172.56" r="2.5"/>
+  </g>
+
+  <text class="heading d-h1">일본 10년물은 되돌리고,</text>
+  <text class="heading d-h2">미국 10년물은 버틴다</text>
+  <text class="note d-sub">10년 국채금리 (%) · 재확인 관측치 3개</text>
+  <text class="tick d-y6">6%</text>
+  <text class="tick d-y5">5%</text>
+  <text class="tick d-y4">4%</text>
+  <text class="tick d-y3">3%</text>
+  <text class="tick d-y2">2%</text>
+  <text class="tick d-x1">9/1</text>
+  <text class="tick d-x2">9/3</text>
+  <text class="tick d-x3">9/4</text>
+  <text class="label d-us">미국 10Y</text>
+  <text class="label d-jp">일본 10Y</text>
+  <text class="note d-ax">날짜 (9월)</text>
+</svg>

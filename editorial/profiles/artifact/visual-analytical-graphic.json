@@ -14,9 +14,10 @@
   },
   "text_policy": {
     "profile": "hybrid_template",
-    "label_count_ceiling": 10,
+    "label_count_ceiling": 14,
     "complexity_ceiling": "Short row/column labels composited deterministically; exact observed values inside the matrix remain deterministic and traceable (ARTICLE-ILLUSTRATION-ROUTING.md §2.4).",
-    "enforcement": "scripts/validate-composition-plan.mjs checks composition.label_strategy.max_labels against this family's ceiling of 10. Ceilings were stated before SUE-628 and nothing checked them: the rejected SUE-570 plate shipped 22 labels against visual/body-infographic's ceiling of 8 (signature F7)."
+    "enforcement": "scripts/validate-composition-plan.mjs checks composition.label_strategy.max_labels against this family's ceiling of 14, and scripts/validate-plate.mjs checks the RENDERED asset against the plan's declared count. Ceilings were stated before SUE-628 and nothing checked them: the rejected SUE-570 plate shipped 22 labels against visual/body-infographic's ceiling of 8 (signature F7).",
+    "ceiling_derivation": "A labelled comparison across N dimensions needs 2 column headers + 2N values + N row names = 3N+2 labels. The previous ceiling of 10 permitted N=2 and forbade N=3 (11) and N=4 (14) — so the family that exists FOR comparisons forbade naming the rows of any comparison past two dimensions, and the SUE-629 prototype was rendered with its four row names omitted and its y axis therefore unnamed in the artwork. That fails trait T1 in the rendered plate even though the plan declared the axis. 14 admits N=4; N=5 needs 17 and is the split trigger. Raised on that arithmetic, not to accommodate a crowded plate: the change ADDS the row identity that trait T4 makes load-bearing, and a comparison whose rows are unnamed is strictly worse than the table it is supposed to beat."
   },
   "composition": {
     "dominant_structure": "One aligned comparison matrix, scale, or paired structure (SUENGJ-INFOGRAPHIC-CALIBRATION.md §3 comparative matrix).",
@@ -88,7 +89,7 @@
   },
   "split_rule": {
     "applies": true,
-    "rule": "Split when the comparison dimensions exceed what fits legibly in one plate — mirrors the SUENGJ-ARTICLE-IMAGE-FAMILIES.md §6 trigger of more than 4 major modules competing for attention."
+    "rule": "Split when the comparison dimensions exceed what fits legibly in one plate. Concretely, a labelled comparison needs 3N+2 labels for N dimensions, so N=5 (17) exceeds this family's ceiling and must be split — mirroring the SUENGJ-ARTICLE-IMAGE-FAMILIES.md §6 trigger of more than 4 major modules competing for attention."
   },
   "acceptance": [
     "comparison dimensions match what the article actually establishes; none are invented",

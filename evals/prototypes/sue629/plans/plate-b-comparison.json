@@ -129,7 +129,7 @@
       }
     ],
     "label_strategy": {
-      "max_labels": 10,
+      "max_labels": 14,
       "stable_only": true
     },
     "annotation_strategy": "각 행의 두 값(스프레드시트 값 / AI 값)을 행의 양 끝에 직접 레이블로 붙이며, 별도의 범례나 용어 설명 박스로 분리하지 않는다.",
@@ -141,5 +141,5 @@
     }
   },
   "renderer_route": "deterministic",
-  "notes": "행 간 비교를 매트릭스(교차 조건 조회)가 아니라 correspondence(정렬된 쌍 비교)로 분류했다 — 어느 셀도 '행과 열을 결합해야만 알 수 있는' 진단을 담지 않고, 각 행은 그 자체로 완결된 쌍이기 때문이다(T12). 원래 article이 제시하는 여섯 비교 차원 중 그림자 산출물과 통제 필요 두 차원은 label 예산(10)과 T10 모듈 상한을 지키기 위해 이 플레이트에서 제외했다 — 삭제가 아니라 plate:governance-authority-loop로의 재배치이며, 그 두 차원은 거기서 텍스트 쌍이 아니라 authority 채널의 유무라는 실제 메커니즘으로 더 깊이 다뤄진다."
+  "notes": "행 간 비교를 매트릭스(교차 조건 조회)가 아니라 correspondence(정렬된 쌍 비교)로 분류했다 — 어느 셀도 '행과 열을 결합해야만 알 수 있는' 진단을 담지 않고, 각 행은 그 자체로 완결된 쌍이기 때문이다(T12). 원래 article이 제시하는 여섯 비교 차원 중 그림자 산출물과 통제 필요 두 차원은 label 예산(10)과 T10 모듈 상한을 지키기 위해 이 플레이트에서 제외했다 — 삭제가 아니라 plate:governance-authority-loop로의 재배치이며, 그 두 차원은 거기서 텍스트 쌍이 아니라 authority 채널의 유무라는 실제 메커니즘으로 더 깊이 다뤄진다. max_labels raised from 10 to 14 during SUE-629 rendering: the four row-dimension names did not fit the family's original ceiling, so the first render omitted them and left the y axis unnamed in the artwork. The ceiling was the defect, not the plate — see visual-analytical-graphic.json text_policy.ceiling_derivation."
 }
