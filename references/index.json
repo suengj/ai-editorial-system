@@ -1,8 +1,8 @@
 {
   "counts": {
     "by_provenance_class": {
-      "external": 17,
-      "generated_output": 0,
+      "external": 21,
+      "generated_output": 1,
       "owner_created": 0
     },
     "promoted_generated_output": 0
@@ -65,6 +65,17 @@
     },
     {
       "basis": "model_inference",
+      "evaluated_at": "2026-09-06T08:00:00Z",
+      "evaluation_id": "eval:c4-model-containment-2026-09-06-01",
+      "evaluator_type": "agent",
+      "modality": "visual",
+      "path": "references/evaluations/c4-model-containment/c4-model-containment-2026-09-06-01.json",
+      "promoted": false,
+      "provenance_class": "external",
+      "ref_id": "ref:c4-model-containment"
+    },
+    {
+      "basis": "model_inference",
       "evaluated_at": "2026-09-05T02:15:00Z",
       "evaluation_id": "eval:denoiser-consumption-architecture-2026-09-05-01",
       "evaluator_type": "agent",
@@ -84,6 +95,17 @@
       "promoted": false,
       "provenance_class": "external",
       "ref_id": "ref:econoi-childrens-economic-newspaper"
+    },
+    {
+      "basis": "model_inference",
+      "evaluated_at": "2026-09-06T08:00:00Z",
+      "evaluation_id": "eval:ft-visual-vocabulary-2026-09-06-01",
+      "evaluator_type": "agent",
+      "modality": "visual",
+      "path": "references/evaluations/ft-visual-vocabulary/ft-visual-vocabulary-2026-09-06-01.json",
+      "promoted": false,
+      "provenance_class": "external",
+      "ref_id": "ref:ft-visual-vocabulary"
     },
     {
       "basis": "model_inference",
@@ -194,6 +216,39 @@
       "promoted": false,
       "provenance_class": "external",
       "ref_id": "ref:nibr-bris-child-biology-encyclopedia"
+    },
+    {
+      "basis": "model_inference",
+      "evaluated_at": "2026-09-06T08:00:00Z",
+      "evaluation_id": "eval:risk-matrix-comprehension-2026-09-06-01",
+      "evaluator_type": "agent",
+      "modality": "visual",
+      "path": "references/evaluations/risk-matrix-comprehension/risk-matrix-comprehension-2026-09-06-01.json",
+      "promoted": false,
+      "provenance_class": "external",
+      "ref_id": "ref:risk-matrix-comprehension"
+    },
+    {
+      "basis": "explicit_human_feedback",
+      "evaluated_at": "2026-09-06T08:00:00Z",
+      "evaluation_id": "eval:sue570-body-infographic-2026-09-06-01",
+      "evaluator_type": "agent",
+      "modality": "visual",
+      "path": "references/evaluations/sue570-body-infographic/sue570-body-infographic-2026-09-06-01.json",
+      "promoted": false,
+      "provenance_class": "generated_output",
+      "ref_id": "ref:sue570-body-infographic"
+    },
+    {
+      "basis": "model_inference",
+      "evaluated_at": "2026-09-06T08:00:00Z",
+      "evaluation_id": "eval:timeline-design-space-2026-09-06-01",
+      "evaluator_type": "agent",
+      "modality": "visual",
+      "path": "references/evaluations/timeline-design-space/timeline-design-space-2026-09-06-01.json",
+      "promoted": false,
+      "provenance_class": "external",
+      "ref_id": "ref:timeline-design-space"
     }
   ],
   "generated": true,

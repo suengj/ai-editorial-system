@@ -1,0 +1,72 @@
+{
+  "schema_version": "1.0.0",
+  "modality": "visual",
+  "evaluator": {
+    "type": "agent",
+    "agent": {
+      "runtime": "claude-code",
+      "model": "claude-opus-5"
+    }
+  },
+  "evaluated_at": "2026-09-06T08:00:00Z",
+  "calibration_ref": null,
+  "profile_ref": "editorial/profiles/reference/visual.json",
+  "basis": "model_inference",
+  "authority_boundary": "craft_evidence_only",
+  "evaluation_id": "eval:c4-model-containment-2026-09-06-01",
+  "ref_id": "ref:c4-model-containment",
+  "dimensions": [
+    {
+      "dimension": "hierarchy",
+      "verdict": "adopt",
+      "note": "Containment, flow and authority require three separate visual channels. Containment is carried by literal spatial nesting and that channel is never reused; flow is a solid verb-labelled connector whose label states what moves. Authority needs its own asymmetric channel and is the one most often collapsed into flow.",
+      "evidence": "Cross-checked secondary sources on C4 notation, paired with published critique of the IIA Three Lines Model where delegation, accountability and coordination share one arrow grammar and captions must disambiguate."
+    },
+    {
+      "dimension": "composition",
+      "verdict": "adopt",
+      "note": "Never render multiple abstraction levels on one canvas — a plate-split discipline reached independently of SUENGJ-ARTICLE-IMAGE-FAMILIES.md section 6, which strengthens that rule rather than merely restating it."
+    },
+    {
+      "dimension": "line-weight-materiality",
+      "verdict": "neutral",
+      "note": "Not assessable: the artifact was not opened, so no judgement is offered on rendered line weight."
+    },
+    {
+      "dimension": "artifact-suitability",
+      "verdict": "adopt",
+      "note": "Bears on visual/body-infographic and visual/explanatory-diagram whenever a plate carries governance or system structure."
+    },
+    {
+      "dimension": "palette-colour-role",
+      "verdict": "do_not_copy",
+      "note": "C4's colour conventions are a software-architecture idiom, not an editorial one."
+    }
+  ],
+  "strengths": [
+    "Gives a concrete, checkable rule for keeping containment, flow and authority from collapsing into one arrow grammar."
+  ],
+  "weaknesses": [
+    "NOT directly inspected — c4model.com is blocked by this session's egress policy, so this record rests on cross-checked secondary sources.",
+    "Software-architecture idiom; the notation itself must not be transplanted into editorial artwork."
+  ],
+  "applicable_to": {
+    "content_types": [
+      "research",
+      "view"
+    ],
+    "audiences": [
+      "domain-expert",
+      "domain-practitioner"
+    ],
+    "artifacts": [
+      "visual/body-infographic",
+      "visual/explanatory-diagram"
+    ],
+    "surfaces": [
+      "suengj-com"
+    ]
+  },
+  "provenance_class": "external",
+  "notes": "Grade B evidence — assessed from secondary sources, artifact not opened. Recorded with that limitation explicit so a later selection does not over-trust it."
+}

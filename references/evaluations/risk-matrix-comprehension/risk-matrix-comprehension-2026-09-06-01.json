@@ -1,0 +1,67 @@
+{
+  "schema_version": "1.0.0",
+  "modality": "visual",
+  "evaluator": {
+    "type": "agent",
+    "agent": {
+      "runtime": "claude-code",
+      "model": "claude-opus-5"
+    }
+  },
+  "evaluated_at": "2026-09-06T08:00:00Z",
+  "calibration_ref": null,
+  "profile_ref": "editorial/profiles/reference/visual.json",
+  "basis": "model_inference",
+  "authority_boundary": "craft_evidence_only",
+  "evaluation_id": "eval:risk-matrix-comprehension-2026-09-06-01",
+  "ref_id": "ref:risk-matrix-comprehension",
+  "dimensions": [
+    {
+      "dimension": "hierarchy",
+      "verdict": "adopt",
+      "note": "A matrix is warranted only when two genuinely independent scales exist and the reader's task is an intersection lookup. If a sort on one variable answers the question, a grid is the wrong object however tempting it looks.",
+      "evidence": "Cox 2008 product-of-ranks critique plus a later comprehension trial, via cross-checked secondary summaries."
+    },
+    {
+      "dimension": "label-text-strategy",
+      "verdict": "adopt",
+      "note": "Ordinal category labels must never imply arithmetic — a 1x3 cell reading as equivalent to 3x1 is a documented misreading, not a hypothetical one."
+    },
+    {
+      "dimension": "palette-colour-role",
+      "verdict": "avoid",
+      "note": "Colour banding across cell boundaries biases readings. Where a matrix cell is emphasised, the emphasis should mark an observed position rather than imply a computed score."
+    },
+    {
+      "dimension": "artifact-suitability",
+      "verdict": "adopt",
+      "note": "Bears on visual/analytical-graphic when a comparison is genuinely two-dimensional."
+    }
+  ],
+  "strengths": [
+    "Bounds when the matrix relation may be selected at all, which is a gate the current contract does not have."
+  ],
+  "weaknesses": [
+    "NOT directly inspected — publisher domain blocked by this session's egress policy.",
+    "Risk-management context; the comprehension findings transfer, the domain does not."
+  ],
+  "applicable_to": {
+    "content_types": [
+      "research",
+      "view"
+    ],
+    "audiences": [
+      "domain-expert",
+      "domain-practitioner"
+    ],
+    "artifacts": [
+      "visual/analytical-graphic",
+      "visual/body-infographic"
+    ],
+    "surfaces": [
+      "suengj-com"
+    ]
+  },
+  "provenance_class": "external",
+  "notes": "Grade B evidence. Craft evidence only — no factual authority about risk is taken from it."
+}

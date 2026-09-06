@@ -1,0 +1,82 @@
+{
+  "schema_version": "1.0.0",
+  "modality": "visual",
+  "evaluator": {
+    "type": "agent",
+    "agent": {
+      "runtime": "claude-code",
+      "model": "claude-opus-5"
+    }
+  },
+  "evaluated_at": "2026-09-06T08:00:00Z",
+  "calibration_ref": null,
+  "profile_ref": "editorial/profiles/reference/visual.json",
+  "basis": "model_inference",
+  "authority_boundary": "craft_evidence_only",
+  "evaluation_id": "eval:ft-visual-vocabulary-2026-09-06-01",
+  "ref_id": "ref:ft-visual-vocabulary",
+  "dimensions": [
+    {
+      "dimension": "hierarchy",
+      "verdict": "adopt",
+      "note": "The reference's own organising hierarchy is the transferable lesson: nine relationship families sit above the geometries, so selection starts from the relationship in the data rather than from a shape. This inverts the order the SUE-570 infographic used, which chose a 2x2 card layout first and poured relations into it.",
+      "evidence": "Read in full 2026-09-06. Top-level sections are Deviation, Correlation, Ranking, Distribution, Change over Time, Part-to-whole, Magnitude, Spatial, Flow; every concrete chart type appears only beneath one of them."
+    },
+    {
+      "dimension": "artifact-suitability",
+      "verdict": "adopt",
+      "note": "Authoritative for the relation-to-geometry selection method for quantitative relations, which bears on visual/analytical-graphic and visual/evidence-visual. It is NOT authoritative for the qualitative-structural relations a body infographic needs — causal-chain, authority, containment, correspondence have no family here.",
+      "evidence": "No section of the vocabulary covers a non-quantitative relation."
+    },
+    {
+      "dimension": "composition",
+      "verdict": "do_not_copy",
+      "note": "FT chart furniture, proportions and house conventions are that publication's own expression. SUE-627's boundary forbids a named-publisher imitation objective, and the value taken here is a method, not a look."
+    },
+    {
+      "dimension": "palette-colour-role",
+      "verdict": "do_not_copy",
+      "note": "FT's palette is a house identity. suengj.com colour roles are fixed by its own brand profile."
+    },
+    {
+      "dimension": "semantic-density",
+      "verdict": "neutral",
+      "note": "The vocabulary is a selection aid rather than a rendered plate, so it carries no evidence about how much information one plate should hold."
+    },
+    {
+      "dimension": "label-text-strategy",
+      "verdict": "neutral",
+      "note": "Not evidenced: the reference documents chart selection, not in-frame label policy."
+    }
+  ],
+  "strengths": [
+    "Organised by relationship first and geometry second, which is a reusable selection method independent of brand, subject and renderer.",
+    "Published with its source, so it could be inspected directly rather than assessed from secondary description — the only external visual reference in this set for which that was possible."
+  ],
+  "weaknesses": [
+    "Covers quantitative relations only. Supplies nothing for causal chains, authority, containment or correspondence, which is the exact lane where SUE-570 failed.",
+    "Says nothing about mobile behaviour, enclosure budget, or how a plate degrades at a narrow viewport."
+  ],
+  "applicable_to": {
+    "content_types": [
+      "research",
+      "view",
+      "news"
+    ],
+    "audiences": [
+      "domain-expert",
+      "domain-practitioner",
+      "professional-generalist"
+    ],
+    "artifacts": [
+      "visual/analytical-graphic",
+      "visual/evidence-visual",
+      "visual/body-infographic"
+    ],
+    "surfaces": [
+      "suengj-com"
+    ]
+  },
+  "provenance_class": "external",
+  "notes": "Grade A evidence — directly inspected 2026-09-06. Adopted for its taxonomy method only; see benchmarks/EDITORIAL-INFOGRAPHIC-INFORMATION-DESIGN.md section 1.1."
+}
