@@ -15,14 +15,31 @@
   "text_policy": {
     "profile": "hybrid_template",
     "label_count_ceiling": 6,
-    "complexity_ceiling": "Deterministic short relationship/boundary labels only; mutable copy (titles, dates, captions, citations) stays outside the artwork (ARTICLE-VISUAL-PUBLICATION-HANDOFF.md §1)."
+    "complexity_ceiling": "Deterministic short relationship/boundary labels only; mutable copy (titles, dates, captions, citations) stays outside the artwork (ARTICLE-VISUAL-PUBLICATION-HANDOFF.md §1).",
+    "enforcement": "scripts/validate-composition-plan.mjs checks composition.label_strategy.max_labels against this family's ceiling of 6. Ceilings were stated before SUE-628 and nothing checked them: the rejected SUE-570 plate shipped 22 labels against visual/body-infographic's ceiling of 8 (signature F7)."
   },
   "composition": {
     "dominant_structure": "One relationship, process, or authority boundary, grid-led, with sparse connectors that clarify hierarchy rather than build a dense network (ARTICLE-ILLUSTRATION-ROUTING.md §2.2; DIAGRAMMATIC-VISUAL-LANGUAGE.md §2 line behavior).",
     "supporting_modules_max": 4,
     "reading_path": "Single inspection path along the relationship or process.",
     "negative_space": "generous",
-    "chrome_level": "low"
+    "chrome_level": "low",
+    "enclosure_budget": {
+      "rule": "enclosures_planned <= parallel_category_boundaries",
+      "derivation": "Typography carries structure through four independent channels — size, weight, case and asymmetric whitespace — for roughly 3-4 distinguishable tiers. Enclosure becomes necessary only where the structure is NOT hierarchical: independent parallel categories with no rank relation, where size and weight have no 'which is bigger' answer to encode. Everything else drawn as a box is a tier typography could have carried (benchmarks/EDITORIAL-INFOGRAPHIC-INFORMATION-DESIGN.md T10, contradiction C2).",
+      "negative_evidence": "The rejected SUE-570 body infographic drew 12 enclosures for 4 load-bearing modules — cards containing chips containing text (signature F2)."
+    },
+    "position_convention": {
+      "required": true,
+      "values": [
+        "scale",
+        "controlled_comparison",
+        "containment",
+        "topological"
+      ],
+      "acceptance_test": "Name the axes. If neither dimension of the plate can be given a semantic name, the plate is a list wearing a diagram's clothes.",
+      "rationale": "In the conditionally-acceptable chart lane, coordinates are arithmetic on values, so measuring the picture recovers the data. In the rejected infographic the modules sat at hand-assigned coordinates in a 2x2 arrangement whose axes encoded nothing — borrowing the appearance of a matrix without the encoding. 'topological' exists so that a plate whose position honestly means nothing can say so; the failure is undeclared position, not absent position (T1, contradiction C1, signature F1)."
+    }
   },
   "audience_adaptation": {
     "domain-expert": "Legend optional; technical relationship vocabulary allowed without expansion.",
@@ -30,8 +47,18 @@
     "child-upper-elementary": "Use concrete, literal depictions of the relationship rather than schematic abstraction; the legend cannot be load-bearing (audience/child-upper-elementary.json modality_effects.visual)."
   },
   "renderer_preference": {
-    "order": ["deterministic", "hybrid", "generative"],
-    "rule": "Topology and relationship arrows that carry a factual boundary must stay deterministic and traceable; generative rendering is reserved for illustrative connective tissue and must never invent topology (ARTICLE-ILLUSTRATION-ROUTING.md §2.2, §12 renderer integrity)."
+    "order": [
+      "deterministic",
+      "hybrid",
+      "generative_support"
+    ],
+    "rule": "Topology and relationship arrows that carry a factual boundary must stay deterministic and traceable; generative rendering is reserved for illustrative connective tissue and must never invent topology (ARTICLE-ILLUSTRATION-ROUTING.md §2.2, §12 renderer integrity).",
+    "route_enum": [
+      "deterministic",
+      "hybrid",
+      "generative_support"
+    ],
+    "generative_boundary": "Plain 'generative' is not representable for this family — absent from the enum, not merely discouraged. A generative raster model may never own exact numbers, exact labels, citations, factual relation geometry, load-bearing connectors or typography. Under 'hybrid' or 'generative_support' the non-deterministic step contributes bounded non-load-bearing material only, and a load-bearing generative contribution is a routing error rather than a style choice."
   },
   "readability_gate": {
     "applies": true,
@@ -43,7 +70,19 @@
         "line weight/contrast that survives mobile rendering",
         "no horizontal page overflow",
         "no reliance on hover or desktop-only interaction"
-      ]
+      ],
+      "strategy": {
+        "permitted": [
+          "reflow",
+          "restack",
+          "replate",
+          "split"
+        ],
+        "invalid": "uniform_scale",
+        "min_effective_type_px": 14,
+        "measured_at_viewport_px": 390,
+        "note": "min_effective_type_px is the rendered size at the stated viewport, not the authored size. Every asset in the SUE-570 set — including the two conditionally-acceptable charts — is a fixed-viewBox SVG whose only response to a narrow viewport is uniform scaling, producing 5.2-8.7px effective type. This defect is systemic rather than infographic-specific (signature F5, trait T9)."
+      }
     },
     "rationale": "A body-placed explanatory diagram is a body-facing visual and inherits the SUENGJ-ARTICLE-IMAGE-FAMILIES.md §5 mobile gate."
   },
@@ -55,19 +94,35 @@
     "the reviewer can state which relationship, process, or boundary the diagram makes inspectable",
     "one dominant relation, not an assembled set of unrelated nodes",
     "passes VISUAL-INFORMATION-GAIN.md — the diagram is not a redraw of an immediately preceding sequence or pairing",
-    "legible at ~390px without zoom"
+    "legible at ~390px without zoom",
+    "carries a composition plan validating against schemas/composition-plan.schema.json",
+    "declares what spatial position encodes, and passes the name-the-axes test",
+    "declares a mobile strategy from reflow|restack|replate|split with >= 14px effective type at 390px"
   ],
   "reject": [
     "diagram-after-identical-sequence (VISUAL-INFORMATION-GAIN.md §10 R1)",
     "generic network-node wallpaper with no thesis (DIAGRAMMATIC-VISUAL-LANGUAGE.md §12)",
     "ornamental nodes that add no relation",
-    "paragraph-to-icons transcription with one label per noun and no new relation (VISUAL-INFORMATION-GAIN.md §10 R3)"
+    "paragraph-to-icons transcription with one label per noun and no new relation (VISUAL-INFORMATION-GAIN.md §10 R3)",
+    "spatial position that encodes no relation while implying that it does (signature F1)",
+    "more drawn enclosures than parallel-category boundaries (signature F2)",
+    "a module whose only content is a sentence inside a border (signature F3)",
+    "uniform downscaling offered as a mobile strategy (signature F5)"
   ],
   "source_authority": [
     "editorial/ARTICLE-ILLUSTRATION-ROUTING.md",
     "editorial/VISUAL-INFORMATION-GAIN.md",
     "editorial/DIAGRAMMATIC-VISUAL-LANGUAGE.md",
     "editorial/SUENGJ-ARTICLE-IMAGE-FAMILIES.md",
-    "editorial/ARTICLE-VISUAL-PUBLICATION-HANDOFF.md"
-  ]
+    "editorial/ARTICLE-VISUAL-PUBLICATION-HANDOFF.md",
+    "benchmarks/EDITORIAL-INFOGRAPHIC-INFORMATION-DESIGN.md",
+    "schemas/INFOGRAPHIC-COMPOSITION-CONTRACT.md",
+    "evals/negative-baselines/SUE-570-INFOGRAPHIC-FORENSICS.md"
+  ],
+  "composition_plan": {
+    "required": true,
+    "schema_ref": "schemas/composition-plan.schema.json",
+    "contract_ref": "schemas/INFOGRAPHIC-COMPOSITION-CONTRACT.md",
+    "rationale": "AES-V2.16b / SUE-628. Before this, the path from article to image carried a semantic_spec of three string arrays with no relation model, reading order, geometry, enclosure budget or mobile strategy — which is the gap every SUE-570 failure signature except one escaped through (evals/negative-baselines/SUE-570-INFOGRAPHIC-FORENSICS.md). A plate in this family is planned before it is rendered, and the plan is the versioned artifact."
+  }
 }
