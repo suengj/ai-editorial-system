@@ -107,7 +107,7 @@
     "enclosure_budget": {
       "parallel_category_boundaries": 3,
       "enclosures_planned": 3,
-      "justification": "세 개의 실제 포함/경계 관계가 있고, 그 각각은 타이포그래피로 대체할 수 없는 '안/밖' 공간 사실이다: (1) central-platform을 감싸는 경계 — 플랫폼이 하나의 독립된 원천임을 표시, (2) control-layer를 감싸는 경계 — identity·permission/policy/audit trail/evaluation이라는 다섯 병렬 항목이 그 안에 있음을 표시(다섯 항목 자체는 개별 상자 없이 같은 경계 안 타이포그래피 목록으로 처리), (3) authority 도달 범위 경계 — governed-workflow는 안쪽, shadow-workflow는 바깥쪽에 위치시켜 '통제됨/그림자'라는 병렬 범주를 상자 두 개가 아닌 경계선 하나의 안/밖으로 표현. 모듈 4개에 경계 3개로 1:1에 가까운 비율을 유지해 SUE-570의 enclosure-inflation(3.0×)을 반복하지 않는다."
+      "justification": "세 개의 실제 포함/경계 관계가 있고, 그 각각은 타이포그래피로 대체할 수 없는 '안/밖' 공간 사실이다: (1) central-platform을 감싸는 경계 — 플랫폼이 하나의 독립된 원천임을 표시, (2) control-layer를 감싸는 경계 — identity·permission/policy/audit trail/evaluation이라는 네 병렬 항목이 그 안에 있음을 표시(네 항목 자체는 개별 상자 없이 같은 경계 안 타이포그래피 목록으로 처리), (3) authority 도달 범위 경계 — governed-workflow는 안쪽, shadow-workflow는 바깥쪽에 위치시켜 '통제됨/그림자'라는 병렬 범주를 상자 두 개가 아닌 경계선 하나의 안/밖으로 표현. 모듈 4개에 경계 3개로 1:1에 가까운 비율을 유지해 SUE-570의 enclosure-inflation(3.0×)을 반복하지 않는다."
     },
     "typography_roles": [
       { "role": "계층/원천 제목", "channel": ["size", "weight"] },

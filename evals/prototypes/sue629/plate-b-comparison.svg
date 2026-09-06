@@ -1,6 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="520" role="img" aria-labelledby="pb-t pb-d">
+<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="576" role="img" aria-labelledby="pb-t pb-d">
   <title id="pb-t">스프레드시트 시대와 AI 에이전트 시대의 네 가지 대응 비교</title>
-  <desc id="pb-d">네 개의 비교 행이 하나의 공유 정렬 축 위에 놓인 대응 비교표다. 테두리 상자는 하나도 쓰지 않고, 열의 정체성은 위치와 타이포그래피만으로 구분한다. 넓은 화면에서는 왼쪽 열이 스프레드시트 시대, 오른쪽 열이 AI 에이전트 시대이며 각 행의 두 값이 좌우로 마주 본다. 첫째 행은 프로그래밍 단위로 '셀·수식'과 'Goal·Task·Context·Tool·Permission', 둘째 행은 인터페이스로 '수식'과 '자연어', 셋째 행은 역량 보유자로 '회계사·재무 담당자'와 '거의 모든 지식노동자', 넷째 행은 최적화 대상으로 '숫자'와 '업무 자체'다. 네 행의 연결자는 모두 같은 방향으로 열려 있으며, 셋째와 넷째 행에서는 연결자 위아래로 벌어지는 두 선이 그 확장을 폭으로 함께 표시한다. 행 이름과 종합 해석은 이 그림 안에 문장으로 적지 않는다. 좁은 화면에서는 좌우 두 열이 위아래로 다시 쌓이며, 위쪽이 스프레드시트 시대, 한 칸 들여쓴 아래쪽이 AI 에이전트 시대이고, 연결자는 아래를 향한다. 글자 크기는 두 배치에서 동일하다.</desc>
+  <desc id="pb-d">네 개의 비교 행이 하나의 공유 정렬 축 위에 놓인 대응 비교표다. 테두리 상자는 하나도 쓰지 않고, 열의 정체성은 위치와 타이포그래피만으로 구분한다. 세로축은 비교 차원이며 프로그래밍 단위, 인터페이스, 역량 보유자, 최적화 대상 순으로 각 행에 이름이 붙는다. 이 행 이름은 값보다 한 단계 작고 옅은 별도의 역할로 조판되어 다섯째 값 열이 아니라 축으로 읽힌다. 넓은 화면에서는 행 이름이 왼쪽 축 기둥에 값과 같은 기준선으로 놓이고, 왼쪽 열이 스프레드시트 시대, 오른쪽 열이 AI 에이전트 시대이며 각 행의 두 값이 좌우로 마주 본다. 첫째 행 프로그래밍 단위는 '셀·수식'과 'Goal·Task·Context·Tool·Permission', 둘째 행 인터페이스는 '수식'과 '자연어', 셋째 행 역량 보유자는 '회계사·재무 담당자'와 '거의 모든 지식노동자', 넷째 행 최적화 대상은 '숫자'와 '업무 자체'다. 네 행의 연결자는 모두 같은 방향으로 열려 있으며, 셋째와 넷째 행에서는 연결자 위아래로 벌어지는 두 선이 그 확장을 폭으로 함께 표시한다. 종합 해석은 이 그림 안에 문장으로 적지 않는다. 좁은 화면에서는 좌우 두 열이 위아래로 다시 쌓이며, 행 이름은 자기 행의 값 쌍 바로 위에 머물러 별도의 범례로 모이지 않는다. 위쪽이 스프레드시트 시대, 한 칸 들여쓴 아래쪽이 AI 에이전트 시대이고 연결자는 아래를 향한다. 글자 크기는 두 배치에서 동일하다.</desc>
   <defs>
     <marker id="pb-ar" markerWidth="12" markerHeight="10" refX="11" refY="5" orient="auto" markerUnits="userSpaceOnUse">
       <path d="M0,0 L12,5 L0,10 Z" fill="currentColor" fill-opacity="0.6"/>
@@ -13,72 +13,87 @@
     .conn { stroke: currentColor; stroke-opacity: 0.6; stroke-width: 1.4; }
     .arm { stroke: currentColor; stroke-opacity: 0.32; stroke-width: 1.2; }
     .t-h { font-size: 17px; font-weight: 600; letter-spacing: 0.01em; }
+    .t-dim { font-size: 15px; fill-opacity: 0.5; letter-spacing: 0.03em; }
     .t-a { font-size: 16px; fill-opacity: 0.8; }
     .t-b { font-size: 16px; font-weight: 600; }
 
-    /* narrow layout (default) — 358px article column */
+    /* narrow layout (default) — 358px article column.
+       The dimension name stays as the eyebrow of its own value pair, never a legend. */
     .b-hl { transform: translate(8px, 36px); text-anchor: start; }
     .b-hr { transform: translate(40px, 78px); text-anchor: start; }
-    .b-1a { transform: translate(8px, 138px); text-anchor: start; }
-    .b-1b { transform: translate(40px, 180px); text-anchor: start; }
-    .b-2a { transform: translate(8px, 242px); text-anchor: start; }
-    .b-2b { transform: translate(40px, 284px); text-anchor: start; }
-    .b-3a { transform: translate(8px, 346px); text-anchor: start; }
-    .b-3b { transform: translate(40px, 388px); text-anchor: start; }
-    .b-4a { transform: translate(8px, 450px); text-anchor: start; }
-    .b-4b { transform: translate(40px, 492px); text-anchor: start; }
+    .b-1d { transform: translate(8px, 132px); text-anchor: start; }
+    .b-1a { transform: translate(8px, 154px); text-anchor: start; }
+    .b-1b { transform: translate(40px, 194px); text-anchor: start; }
+    .b-2d { transform: translate(8px, 250px); text-anchor: start; }
+    .b-2a { transform: translate(8px, 272px); text-anchor: start; }
+    .b-2b { transform: translate(40px, 312px); text-anchor: start; }
+    .b-3d { transform: translate(8px, 368px); text-anchor: start; }
+    .b-3a { transform: translate(8px, 390px); text-anchor: start; }
+    .b-3b { transform: translate(40px, 430px); text-anchor: start; }
+    .b-4d { transform: translate(8px, 486px); text-anchor: start; }
+    .b-4a { transform: translate(8px, 508px); text-anchor: start; }
+    .b-4b { transform: translate(40px, 548px); text-anchor: start; }
 
-    /* wide layout — 672px article column */
+    /* wide layout — 672px article column.
+       The dimension names become a left axis stub on the values' own baselines. */
     @media (min-width: 640px) {
       svg { height: 326px; }
       .lay-n { display: none; }
       .lay-w { display: block; }
-      .b-hl { transform: translate(224px, 40px); text-anchor: end; }
-      .b-hr { transform: translate(300px, 40px); text-anchor: start; }
-      .b-1a { transform: translate(224px, 104px); text-anchor: end; }
-      .b-1b { transform: translate(300px, 104px); text-anchor: start; }
-      .b-2a { transform: translate(224px, 170px); text-anchor: end; }
-      .b-2b { transform: translate(300px, 170px); text-anchor: start; }
-      .b-3a { transform: translate(224px, 236px); text-anchor: end; }
-      .b-3b { transform: translate(300px, 236px); text-anchor: start; }
-      .b-4a { transform: translate(224px, 302px); text-anchor: end; }
-      .b-4b { transform: translate(300px, 302px); text-anchor: start; }
+      .b-hl { transform: translate(252px, 40px); text-anchor: end; }
+      .b-hr { transform: translate(328px, 40px); text-anchor: start; }
+      .b-1d { transform: translate(8px, 104px); text-anchor: start; }
+      .b-1a { transform: translate(252px, 104px); text-anchor: end; }
+      .b-1b { transform: translate(328px, 104px); text-anchor: start; }
+      .b-2d { transform: translate(8px, 170px); text-anchor: start; }
+      .b-2a { transform: translate(252px, 170px); text-anchor: end; }
+      .b-2b { transform: translate(328px, 170px); text-anchor: start; }
+      .b-3d { transform: translate(8px, 236px); text-anchor: start; }
+      .b-3a { transform: translate(252px, 236px); text-anchor: end; }
+      .b-3b { transform: translate(328px, 236px); text-anchor: start; }
+      .b-4d { transform: translate(8px, 302px); text-anchor: start; }
+      .b-4a { transform: translate(252px, 302px); text-anchor: end; }
+      .b-4b { transform: translate(328px, 302px); text-anchor: start; }
     }
   </style>
 
   <g class="lay-n">
     <line class="conn" x1="20" y1="48" x2="20" y2="59" marker-end="url(#pb-ar)"/>
     <line class="rule" x1="8" y1="100" x2="346" y2="100"/>
-    <line class="conn" x1="20" y1="150" x2="20" y2="161" marker-end="url(#pb-ar)"/>
-    <line class="conn" x1="20" y1="254" x2="20" y2="265" marker-end="url(#pb-ar)"/>
-    <line class="conn" x1="20" y1="358" x2="20" y2="369" marker-end="url(#pb-ar)"/>
-    <line class="arm" x1="18" y1="358" x2="6" y2="369"/>
-    <line class="arm" x1="22" y1="358" x2="34" y2="369"/>
-    <line class="conn" x1="20" y1="462" x2="20" y2="473" marker-end="url(#pb-ar)"/>
-    <line class="arm" x1="18" y1="462" x2="6" y2="473"/>
-    <line class="arm" x1="22" y1="462" x2="34" y2="473"/>
+    <line class="conn" x1="20" y1="162" x2="20" y2="176" marker-end="url(#pb-ar)"/>
+    <line class="conn" x1="20" y1="280" x2="20" y2="294" marker-end="url(#pb-ar)"/>
+    <line class="conn" x1="20" y1="398" x2="20" y2="412" marker-end="url(#pb-ar)"/>
+    <line class="arm" x1="18" y1="398" x2="6" y2="412"/>
+    <line class="arm" x1="22" y1="398" x2="34" y2="412"/>
+    <line class="conn" x1="20" y1="516" x2="20" y2="530" marker-end="url(#pb-ar)"/>
+    <line class="arm" x1="18" y1="516" x2="6" y2="530"/>
+    <line class="arm" x1="22" y1="516" x2="34" y2="530"/>
   </g>
 
   <g class="lay-w">
     <line class="rule" x1="8" y1="58" x2="632" y2="58"/>
-    <line class="conn" x1="232" y1="99" x2="288" y2="99" marker-end="url(#pb-ar)"/>
-    <line class="conn" x1="232" y1="165" x2="288" y2="165" marker-end="url(#pb-ar)"/>
-    <line class="conn" x1="232" y1="231" x2="288" y2="231" marker-end="url(#pb-ar)"/>
-    <line class="arm" x1="234" y1="229" x2="292" y2="215"/>
-    <line class="arm" x1="234" y1="233" x2="292" y2="247"/>
-    <line class="conn" x1="232" y1="297" x2="288" y2="297" marker-end="url(#pb-ar)"/>
-    <line class="arm" x1="234" y1="295" x2="292" y2="281"/>
-    <line class="arm" x1="234" y1="299" x2="292" y2="313"/>
+    <line class="conn" x1="260" y1="99" x2="312" y2="99" marker-end="url(#pb-ar)"/>
+    <line class="conn" x1="260" y1="165" x2="312" y2="165" marker-end="url(#pb-ar)"/>
+    <line class="conn" x1="260" y1="231" x2="312" y2="231" marker-end="url(#pb-ar)"/>
+    <line class="arm" x1="262" y1="229" x2="318" y2="215"/>
+    <line class="arm" x1="262" y1="233" x2="318" y2="247"/>
+    <line class="conn" x1="260" y1="297" x2="312" y2="297" marker-end="url(#pb-ar)"/>
+    <line class="arm" x1="262" y1="295" x2="318" y2="281"/>
+    <line class="arm" x1="262" y1="299" x2="318" y2="313"/>
   </g>
 
   <text class="t-h b-hl">스프레드시트 시대</text>
   <text class="t-h b-hr">AI 에이전트 시대</text>
+  <text class="t-dim b-1d">프로그래밍 단위</text>
   <text class="t-a b-1a">셀·수식</text>
   <text class="t-b b-1b">Goal·Task·Context·Tool·Permission</text>
+  <text class="t-dim b-2d">인터페이스</text>
   <text class="t-a b-2a">수식</text>
   <text class="t-b b-2b">자연어</text>
+  <text class="t-dim b-3d">역량 보유자</text>
   <text class="t-a b-3a">회계사·재무 담당자</text>
   <text class="t-b b-3b">거의 모든 지식노동자</text>
+  <text class="t-dim b-4d">최적화 대상</text>
   <text class="t-a b-4a">숫자</text>
   <text class="t-b b-4b">업무 자체</text>
 </svg>
