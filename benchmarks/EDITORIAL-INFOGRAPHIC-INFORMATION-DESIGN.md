@@ -77,13 +77,14 @@ figure-design pedagogy; causal-loop-diagram notation; Tufte's reading of Minard;
 the IIA Three Lines Model and its published critique (used as a *negative* case);
 Cox (2008) and Sutherland et al. (2022) on risk-matrix comprehension.
 
-### 1.1 The one reference that was actually opened
+### 1.1 The reference whose shape is the finding
 
 `ref:ft-visual-vocabulary` — the Financial Times Visual Journalism team's chart-selection
 vocabulary, published with its source at
 `github.com/Financial-Times/chart-doctor/visual-vocabulary`. Read in full this session.
 
-Its structure is the finding. It is organised as **nine relationship families**, and the
+One of the two external sources that could be opened this session. Its structure is the
+finding. It is organised as **nine relationship families**, and the
 geometries sit *underneath* them:
 
 ```text

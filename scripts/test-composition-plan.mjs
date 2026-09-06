@@ -236,6 +236,31 @@ console.log('\ndeny fixtures (expect FAIL, with the specific rule named)');
 }
 
 {
+  // R7, the non-numeric ceiling. Mutation testing found this site live but
+  // uncovered: a profile that resolves yet carries a ceiling that is not a
+  // number must fail closed, exactly as an unresolvable profile does.
+  const plan = clone(mechanism);
+  const doctored = JSON.parse(JSON.stringify(profiles));
+  doctored['visual/body-infographic'].text_policy.label_count_ceiling = 'eight';
+  const codes = validateCompositionPlan(plan, { schema, profiles: doctored }).map((i) => i.code);
+  check('R7 label-ceiling: a ceiling that is not a number fails closed',
+    codes.includes(CODES.LABEL_CEILING));
+}
+
+{
+  // R11 (C3) — a true matrix does not serialise into a list without losing the
+  // joint-condition read, so reflow/restack must disclose the downgrade.
+  // Mutation testing found this site live but uncovered.
+  const plan = clone(comparison);
+  plan.semantic_plan.relations[0].type = 'matrix';
+  plan.composition.geometry.position_convention = 'controlled_comparison';
+  plan.composition.mobile_strategy.strategy = 'restack';
+  delete plan.composition.mobile_strategy.downgrade_disclosed;
+  denies('R11 matrix-mobile-downgrade: a matrix re-stacked without disclosing the downgrade',
+    plan, CODES.MATRIX_MOBILE_DOWNGRADE);
+}
+
+{
   // R6 (F5/T9) — the SUE-570 infographic rendered its labels at 5.2-6.5px.
   const plan = clone(mechanism);
   plan.composition.mobile_strategy.min_type_px = 8.4;

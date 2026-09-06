@@ -33,6 +33,9 @@ export const CODES = Object.freeze({
   TYPE_FLOOR: 'rendered-type-below-floor',
   TYPE_OVERSTATED: 'min-type-px-overstated',
   SCALE_ONLY: 'scale-only-asset-under-a-reflow-plan',
+  TYPE_UNMEASURABLE: 'type-size-unmeasurable',
+  UNMODELLED_TRANSFORM: 'shrinking-transform-not-modelled',
+  NO_BREAKPOINT: 'reflow-claimed-without-a-breakpoint',
   MUTABLE_COPY: 'mutable-copy-rendered-in-artwork',
 });
 
@@ -53,6 +56,8 @@ const MUTABLE_COPY_RE = [
 /** suengj.com --width-article is 42rem; a ~390px viewport leaves about this. */
 export const DEFAULT_AVAILABLE_PX = 358;
 export const TYPE_FLOOR_PX = 14;
+/** SVG's initial font-size when nothing declares one. */
+export const UA_DEFAULT_TYPE_PX = 16;
 
 const issue = (code, where, message) => ({ code, where, message });
 
@@ -60,12 +65,25 @@ const issue = (code, where, message) => ({ code, where, message });
  * Measure what an SVG actually contains. Structural counting only — no
  * rendering engine, no layout, nothing that needs a browser.
  */
+/**
+ * Measure what an SVG actually contains. Structural counting only — no
+ * rendering engine, no layout, nothing that needs a browser.
+ *
+ * Every unknown is an ISSUE, never a skip. Independent review defeated an
+ * earlier cut of this function eight ways out of nine, and five of those rode
+ * a single fail-open branch: when no font-size parsed, the type check was
+ * skipped rather than failed, so `font-size="6px"`, `0.4rem`, or a unitless
+ * value bought a clean bill of health on an unreadable plate. A measurement
+ * layer that fails open is worth less than no measurement layer, because it
+ * also confers a passing grade.
+ */
 export function measureSvg(svg, availablePx = DEFAULT_AVAILABLE_PX) {
+  const notes = [];
+
   // A fluid SVG — percentage width, no viewBox — has no scale factor at all:
   // its user units ARE CSS pixels at every viewport, so authored type renders
   // at authored size. That is the shape that actually defeats F5, so it must
-  // be measurable rather than an error. Treat the available width as the
-  // intrinsic width, which makes the scale factor exactly 1.
+  // be measurable rather than an error.
   const viewBox = /viewBox\s*=\s*"([^"]+)"/.exec(svg);
   const fluidWidth = /<svg\b[^>]*\bwidth\s*=\s*"100%"/.test(svg);
   let vbW; let vbH; let unscaled = false;
@@ -78,50 +96,98 @@ export function measureSvg(svg, availablePx = DEFAULT_AVAILABLE_PX) {
     return { error: 'no viewBox and no percentage width — the asset has neither a coordinate system to scale nor a fluid one, so no effective type size can be derived' };
   }
 
-  const textCount = (svg.match(/<text[\s>]/g) ?? []).length;
+  // A label is a text-bearing unit, not a <text> tag. Thirty labels packed as
+  // <tspan> inside one <text> is thirty labels to a reader.
+  let textCount = 0;
+  for (const t of svg.matchAll(/<text\b[^>]*>([\s\S]*?)<\/text>/g)) {
+    const inner = t[1];
+    const spans = [...inner.matchAll(/<tspan\b[^>]*>([\s\S]*?)<\/tspan>/g)]
+      .filter((m) => m[1].replace(/<[^>]+>/g, '').trim().length > 0);
+    textCount += spans.length > 0 ? spans.length : 1;
+  }
+  // A self-closing or unclosed <text> still draws.
+  const bareText = (svg.match(/<text\b[^>]*\/>/g) ?? []).length;
+  textCount += bareText;
 
-  // A container is a drawn rect that is not the canvas background. Circles are
-  // excluded: in the accepted chart lane they are data marks, not enclosures.
+  // An enclosure is a drawn closed shape, whatever element draws it. Counting
+  // only <rect> let a box drawn as a closed <path> or a <polygon> through.
+  // Definitions are not drawn where they are declared: an arrowhead marker is
+  // a closed path, but it is a glyph on a connector, not a container.
+  const drawn = svg
+    .replace(/<defs\b[\s\S]*?<\/defs>/g, '')
+    .replace(/<marker\b[\s\S]*?<\/marker>/g, '')
+    .replace(/<symbol\b[\s\S]*?<\/symbol>/g, '')
+    .replace(/<clipPath\b[\s\S]*?<\/clipPath>/g, '');
+
   let enclosureCount = 0;
-  for (const m of svg.matchAll(/<rect\b[^>]*>/g)) {
-    const tag = m[0];
-    const w = Number(/\bwidth\s*=\s*"([\d.]+)"/.exec(tag)?.[1]);
-    const h = Number(/\bheight\s*=\s*"([\d.]+)"/.exec(tag)?.[1]);
-      const isBackground = vbH !== null && w === vbW && h === vbH;
+  for (const m of drawn.matchAll(/<rect\b[^>]*>/g)) {
+    const w = Number(/\bwidth\s*=\s*"([\d.]+)"/.exec(m[0])?.[1]);
+    const h = Number(/\bheight\s*=\s*"([\d.]+)"/.exec(m[0])?.[1]);
+    const isBackground = vbH !== null && w === vbW && h === vbH;
     if (!isBackground) enclosureCount += 1;
   }
+  enclosureCount += (drawn.match(/<polygon\b/g) ?? []).length;
+  for (const m of drawn.matchAll(/<path\b[^>]*\bd\s*=\s*"([^"]*)"/g)) {
+    if (/[Zz]\s*$/.test(m[1].trim())) enclosureCount += 1; // a closed path is a box
+  }
 
+  // Font sizes, with units. Anything that looks like a font-size but does not
+  // parse is recorded as unresolved rather than ignored.
   const sizes = [];
-  for (const m of svg.matchAll(/font-size\s*:\s*([\d.]+)px/g)) sizes.push(Number(m[1]));
-  for (const m of svg.matchAll(/font-size\s*=\s*"([\d.]+)"/g)) sizes.push(Number(m[1]));
-  const usable = sizes.filter((s) => Number.isFinite(s) && s > 0);
+  let unresolvedSizes = 0;
+  const toPx = (value, unit) => {
+    const v = Number(value);
+    if (!Number.isFinite(v) || v <= 0) return null;
+    switch ((unit || '').toLowerCase()) {
+      case '': case 'px': return v;          // unitless SVG user units are px here
+      case 'pt': return v * (96 / 72);
+      case 'rem': case 'em': return v * 16;  // 16px root, the browser default
+      default: return null;                  // %, ex, ch, vw — not modelled
+    }
+  };
+  const collect = (re) => {
+    for (const m of svg.matchAll(re)) {
+      const px = toPx(m[1], m[2]);
+      if (px === null) unresolvedSizes += 1; else sizes.push(px);
+    }
+  };
+  collect(/font-size\s*:\s*([\d.]+)([a-z%]*)/gi);
+  collect(/font-size\s*=\s*"\s*([\d.]+)([a-z%]*)\s*"/gi);
+  if (/font-size\s*[:=]\s*"?\s*(inherit|smaller|larger|small|medium|large|x-small|xx-small)/i.test(svg)) unresolvedSizes += 1;
+  if (unresolvedSizes > 0) notes.push(`${unresolvedSizes} font-size declaration(s) in a unit this checker does not model`);
 
-  // An asset carrying width/height alongside viewBox is pinned to one
-  // intrinsic size: its only possible answer to a narrow viewport is uniform
-  // scaling. That is signature F5, and it is visible in the source.
+  // A scale() below 1 shrinks whatever it wraps, and this checker does not
+  // track transform stacks. Report it rather than measure around it.
+  let shrinkingTransforms = 0;
+  for (const m of svg.matchAll(/transform\s*=\s*"[^"]*\bscale\(\s*(-?[\d.]+)/g)) {
+    if (Math.abs(Number(m[1])) < 1) shrinkingTransforms += 1;
+  }
+
   const hasFixedSize = !unscaled
     && /<svg\b[^>]*\bwidth\s*=\s*"[\d.]/.test(svg)
     && /<svg\b[^>]*\bheight\s*=\s*"[\d.]/.test(svg);
 
   // Internal media queries are how a single fluid asset re-stacks instead of
   // shrinking — the mechanism behind a truthful "reflow"/"restack" claim.
-  const hasBreakpoint = /@media[^{]*\(\s*(max|min)-width/.test(svg);
+  const hasBreakpoint = /@media[^{]*\((?:max|min)-width/.test(svg);
 
   return {
     intrinsicWidth: vbW,
     intrinsicHeight: vbH,
-    textCount,
-    enclosureCount,
-    fontSizes: usable,
     unscaled,
     hasBreakpoint,
-    smallestTypePx: usable.length ? Math.min(...usable) : null,
-    largestTypePx: usable.length ? Math.max(...usable) : null,
+    textCount,
+    enclosureCount,
+    fontSizes: sizes,
+    unresolvedSizes,
+    shrinkingTransforms,
+    smallestTypePx: sizes.length ? Math.min(...sizes) : null,
+    largestTypePx: sizes.length ? Math.max(...sizes) : null,
     hasFixedSize,
+    notes,
   };
 }
 
-/** Effective rendered size once the asset is scaled into the available width. */
 export function effectiveTypePx(authoredPx, intrinsicWidth, availablePx = DEFAULT_AVAILABLE_PX) {
   if (intrinsicWidth <= availablePx) return authoredPx;
   return authoredPx * (availablePx / intrinsicWidth);
@@ -144,12 +210,37 @@ export function verifyPlateAgainstPlan(plan, svg, { availablePx = DEFAULT_AVAILA
       `the plan declares ${declaredEnclosures} enclosure(s); the asset draws ${m.enclosureCount} container rect(s)`));
   }
 
-  if (m.smallestTypePx !== null) {
-    const effective = effectiveTypePx(m.smallestTypePx, m.intrinsicWidth, availablePx);
+  // Fail closed. An asset whose type size cannot be read is not an asset that
+  // passed the type floor — it is an asset the floor could not be applied to,
+  // and reporting that as a pass is how five separate evasions got through an
+  // earlier cut of this module.
+  if (m.unresolvedSizes > 0) {
+    issues.push(issue(CODES.TYPE_UNMEASURABLE, `${where}#asset`,
+      `${m.unresolvedSizes} font-size declaration(s) use a unit this checker does not model (%, ex, ch, vw, or a keyword). The ${TYPE_FLOOR_PX}px floor cannot be applied to them, and an unapplied floor is not a met floor`));
+  }
+
+  if (m.shrinkingTransforms > 0) {
+    issues.push(issue(CODES.UNMODELLED_TRANSFORM, `${where}#asset`,
+      `${m.shrinkingTransforms} transform(s) apply scale() below 1, which shrinks whatever they wrap. This checker does not track transform stacks, so the measured type size is an upper bound and the floor cannot be relied on`));
+  }
+
+  // "reflow" and "restack" are claims about an asset changing its layout. A
+  // fluid asset with no breakpoint cannot change layout; it can only stretch.
+  const strategy = plan?.composition?.mobile_strategy?.strategy;
+  if ((strategy === 'reflow' || strategy === 'restack') && m.unscaled && !m.hasBreakpoint) {
+    issues.push(issue(CODES.NO_BREAKPOINT, `${where}#composition.mobile_strategy.strategy`,
+      `the plan declares "${strategy}", but the asset carries no internal @media breakpoint — a fluid asset with no breakpoint cannot re-lay-out, it can only stretch, so nothing about it re-stacks at a narrow viewport`));
+  }
+
+  // No declared font-size does not mean unmeasurable: SVG's initial value is
+  // 16px, which is above the floor authored but not necessarily once scaled.
+  const authoredMin = m.smallestTypePx ?? (m.textCount > 0 ? UA_DEFAULT_TYPE_PX : null);
+  if (authoredMin !== null) {
+    const effective = effectiveTypePx(authoredMin, m.intrinsicWidth, availablePx);
     const rounded = Math.round(effective * 10) / 10;
     if (effective < TYPE_FLOOR_PX) {
       issues.push(issue(CODES.TYPE_FLOOR, `${where}#composition.mobile_strategy`,
-        `smallest authored type is ${m.smallestTypePx}px in a ${m.intrinsicWidth}px canvas, which renders at ${rounded}px in ${availablePx}px — below the ${TYPE_FLOOR_PX}px floor`));
+        `smallest authored type is ${authoredMin}px${m.smallestTypePx === null ? ' (SVG initial value; nothing declares one)' : ''} in a ${m.intrinsicWidth}px canvas, which renders at ${rounded}px in ${availablePx}px — below the ${TYPE_FLOOR_PX}px floor`));
     }
     const declaredMin = plan?.composition?.mobile_strategy?.min_type_px;
     if (Number.isFinite(declaredMin) && declaredMin > effective + 0.05) {

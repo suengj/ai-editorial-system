@@ -133,5 +133,78 @@ console.log('\nmutable copy is caught in the artwork, where it actually lived');
     !codesOf(launderedPlan, clean).includes(CODES.MUTABLE_COPY));
 }
 
+console.log('\nevasions: a bad plate cannot pass by changing SVG dialect');
+{
+  // Independent review defeated an earlier cut of this module eight ways out
+  // of nine. Each probe below is a genuinely bad plate written in an idiom the
+  // checker did not parse. Five of the eight rode one fail-open branch: when
+  // no font-size resolved, the type floor was skipped rather than failed.
+  const strict = {
+    plan_id: 'plate:strict',
+    composition: {
+      label_strategy: { max_labels: 8, stable_only: true },
+      enclosure_budget: { parallel_category_boundaries: 4, enclosures_planned: 4, justification: 'four' },
+      mobile_strategy: { strategy: 'reflow', viewport_px: 390, min_type_px: 14 },
+    },
+  };
+  const mq = '@media (max-width:420px){.a{font-size:15px}}';
+  const probe = (body, style = `.a{font-size:15px}${mq}`) =>
+    `<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="300"><style>${style}</style>${body}</svg>`;
+
+  const tspans = probe(`<text class="a">${Array.from({ length: 30 }, (_, i) => `<tspan x="5" y="${i * 9 + 9}">L${i}</tspan>`).join('')}</text>`);
+  check('30 labels packed as <tspan> inside one <text> are counted as 30 labels',
+    codesOf(strict, tspans).includes(CODES.LABEL_COUNT));
+
+  const paths = probe(`${Array.from({ length: 20 }, (_, i) => `<path d="M${i * 10},0 h20 v20 h-20 Z"/>`).join('')}<text class="a">x</text>`);
+  check('boxes drawn as closed <path> are counted as enclosures',
+    codesOf(strict, paths).includes(CODES.ENCLOSURE_COUNT));
+
+  check('a font-size attribute carrying its unit inside the quotes is parsed',
+    codesOf(strict, probe('<text font-size="6px">x</text>', mq)).includes(CODES.TYPE_FLOOR));
+  check('rem is converted rather than ignored',
+    codesOf(strict, probe('<text class="a">x</text>', `.a{font-size:0.4rem}${mq}`)).includes(CODES.TYPE_FLOOR));
+  check('a unitless font-size is read as user units, not skipped',
+    codesOf(strict, probe('<text class="a">x</text>', `.a{font-size:6}${mq}`)).includes(CODES.TYPE_FLOOR));
+  check('a font-size in a unit this checker cannot model fails closed rather than passing',
+    codesOf(strict, probe('<text class="a">x</text>', `.a{font-size:40%}${mq}`)).includes(CODES.TYPE_UNMEASURABLE));
+  // Nothing declaring a font-size is not unmeasurable — SVG's initial value is
+  // 16px. That is above the floor as authored, and below it once scaled, so the
+  // check must model the default rather than skip or hard-fail.
+  const undeclaredFluid = `<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="200"><style>${mq}</style><text>x</text></svg>`;
+  check('text with no declared font-size is measured at the 16px SVG default, and passes when unscaled',
+    codesOf(strict, undeclaredFluid).length === 0);
+  const undeclaredScaled = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 400" width="720" height="400"><text>x</text></svg>';
+  check('the same undeclared type in a 720px canvas is caught below the floor once scaled',
+    codesOf(strict, undeclaredScaled).includes(CODES.TYPE_FLOOR));
+
+  check('a shrinking scale() transform is reported rather than measured around',
+    codesOf(strict, probe('<g transform="scale(0.3)"><text class="a">x</text></g>')).includes(CODES.UNMODELLED_TRANSFORM));
+
+  check('a fluid asset with no breakpoint cannot claim "reflow" — it can only stretch',
+    codesOf(strict, probe('<text class="a">x</text>', '.a{font-size:15px}')).includes(CODES.NO_BREAKPOINT));
+
+  // The combined case the review used: 40 labels, 18 boxes, 5px type, fluid.
+  const combined = probe(
+    `${Array.from({ length: 18 }, (_, i) => `<path d="M${i * 10},0 h20 v20 h-20 Z"/>`).join('')}` +
+    `<text class="a">${Array.from({ length: 40 }, (_, i) => `<tspan x="5" y="${i * 6 + 6}">L${i}</tspan>`).join('')}</text>`,
+    `.a{font-size:5px}${mq}`);
+  const combinedCodes = codesOf(strict, combined);
+  check('the combined evasion is rejected on every count, not one',
+    [CODES.LABEL_COUNT, CODES.ENCLOSURE_COUNT, CODES.TYPE_FLOOR].every((c) => combinedCodes.includes(c)));
+
+  // And the shape that is genuinely correct must still pass cleanly.
+  const good = probe('<text class="a">TOKEN MARKET</text>');
+  check('a fluid asset with a breakpoint and 15px type passes clean',
+    codesOf(strict, good).length === 0);
+}
+
+console.log('\nmarkers are glyphs, not containers');
+{
+  // An arrowhead is a closed <path>. Counting it as an enclosure would have
+  // made the rejected plate measure 13 boxes instead of its real 12.
+  const m = measureSvg(asset('tools-report-infographic'));
+  check('a closed marker path inside <defs> is not counted as an enclosure', m.enclosureCount === 12);
+}
+
 console.log(failures === 0 ? '\nplate-verify: ALL PASS' : `\nplate-verify: ${failures} FAILURE(S)`);
 process.exit(failures === 0 ? 0 : 1);
