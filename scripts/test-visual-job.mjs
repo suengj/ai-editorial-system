@@ -485,6 +485,69 @@ console.log('\napproval-lock review regressions (SUE-639 review)');
     codesOf(hollowVector).includes(CODES.APPROVED_IDENTITY_INCOMPLETE), codesOf(hollowVector).join(', '));
 }
 
+// --- delta re-review: the compiler must not disagree with the validator ----
+console.log('\ncompiler and validator agree (SUE-639 delta review)');
+{
+  // The seal answers "locked and unauthorized". A record that launders the
+  // lock rather than tripping it was still compiling here and failing only at
+  // validation — so `--compile` was a door back to a generative prompt off a
+  // demoted approved master.
+  const demoted = clone(approvedFormat);
+  demoted.approved_asset.state = 'candidate';
+  demoted.renderer_route = 'generative';
+  let threw = false;
+  try { compileVisualPrompt(demoted, { profiles }); } catch (err) { threw = err instanceof RegenerationSealedError; }
+  check('compileVisualPrompt refuses a demoted approved master (B2 shape)', threw);
+
+  // hasAuthorizedReopen does not consult the identity flags, so these two
+  // compiled while validation rejected them.
+  const conceptPreserving = clone(approvedConcept);
+  conceptPreserving.revision.preserve_visual_identity = true;
+  check('compileVisualPrompt refuses a concept_change claiming preserved identity',
+    (() => { try { compileVisualPrompt(conceptPreserving, { profiles }); return false; } catch (e) { return e instanceof RegenerationSealedError; } })());
+
+  const editDrifting = clone(approvedConcept);
+  editDrifting.revision = {
+    intent: 'local_edit', preserve_visual_identity: false, regeneration_allowed: true,
+    authorization: {
+      authorized_by: 'suengjae-hong', statement: 'fix the arrow',
+      bounded_delta: ['reverse the arrow'], protected_invariants: ['every label'],
+    },
+  };
+  check('compileVisualPrompt refuses a local_edit that abandons preserve_visual_identity',
+    (() => { try { compileVisualPrompt(editDrifting, { profiles }); return false; } catch (e) { return e instanceof RegenerationSealedError; } })());
+
+  // The compiler-side seal conditions themselves, which the validator's
+  // equivalents were covering for.
+  const noFlag = clone(approvedConcept);
+  noFlag.revision.regeneration_allowed = false;
+  check('compileVisualPrompt refuses a reopening intent with regeneration_allowed false',
+    isRegenerationSealed(noFlag) &&
+    (() => { try { compileVisualPrompt(noFlag, { profiles }); return false; } catch (e) { return e instanceof RegenerationSealedError; } })());
+
+  const unbounded = clone(approvedConcept);
+  unbounded.revision = {
+    intent: 'local_edit', preserve_visual_identity: true, regeneration_allowed: true,
+    authorization: { authorized_by: 'suengjae-hong', statement: 'fix it' },
+  };
+  check('compileVisualPrompt refuses a local_edit with no bounded delta',
+    isRegenerationSealed(unbounded) &&
+    (() => { try { compileVisualPrompt(unbounded, { profiles }); return false; } catch (e) { return e instanceof RegenerationSealedError; } })());
+  check('hasAuthorizedReopen is false for an unbounded local_edit', !hasAuthorizedReopen(unbounded));
+
+  // A date nobody can look up is not an audit trail.
+  const badDate = clone(approvedFormat);
+  badDate.approved_asset.approved_at = '0000-00-00';
+  check('FAIL a date-shaped approved_at that is not a real calendar date',
+    codesOf(badDate).includes(CODES.APPROVAL_ATTRIBUTION_MISSING));
+
+  // And the legitimate paths still compile.
+  check('an authorized concept_change still compiles after the tightening',
+    typeof compileVisualPrompt(clone(approvedConcept), { profiles }).compiled_prompt === 'string');
+  check('an ordinary unapproved job still compiles',
+    typeof compileVisualPrompt(clone(baseGood), { profiles }).compiled_prompt === 'string');
+}
+
 // --- B6: brand_profile is resolved fail-closed, never a fixed default ------
 console.log('\nbrand resolution is fail-closed (B6)');
 {

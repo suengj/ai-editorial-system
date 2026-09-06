@@ -155,9 +155,9 @@ export function isRegenerationSealed(job) {
   return isApprovalLocked(job) && !hasAuthorizedReopen(job);
 }
 
-/** Thrown by compileVisualPrompt when a sealed job asks for a fresh prompt. */
+/** Thrown by compileVisualPrompt when a sealed or lock-violating job asks for a fresh prompt. */
 export class RegenerationSealedError extends Error {
-  constructor(job) {
+  constructor(job, issues = []) {
     super(
       `visual job "${job?.job_id ?? '<job>'}" carries a human_approved_locked master ` +
       `(revision.intent: ${job?.revision?.intent ? `"${job.revision.intent}"` : 'not declared'}) — ` +
@@ -165,10 +165,12 @@ export class RegenerationSealedError extends Error {
       'are deterministic media operations on the approved master ' +
       '(editorial/APPROVED-VISUAL-ASSET-LIFECYCLE.md §3-§6). If the image itself must change, declare ' +
       'revision.intent local_edit or concept_change with a complete revision.authorization; an undeclared ' +
-      'intent is not an authorization to regenerate.',
+      'intent is not an authorization to regenerate.' +
+      (issues.length > 0 ? `\n  approval lock: ${issues.map((i) => `[${i.code}] ${i.message}`).join('\n  ')}` : ''),
     );
     this.name = 'RegenerationSealedError';
     this.code = CODES.GENERATION_PROMPT_FORBIDDEN;
+    this.issues = issues;
   }
 }
 
@@ -233,7 +235,7 @@ function permittedVocabulary(job, { profiles, brand }) {
  * local_edit with stated protected invariants, and a concept_change the human
  * actually asked for.
  */
-function approvalLockIssues(job, where) {
+export function approvalLockIssues(job, where = job?.job_id ?? '<job>') {
   const out = [];
   const asset = job.approved_asset;
   const revision = job.revision;
@@ -294,6 +296,12 @@ function approvalLockIssues(job, where) {
   // editorial/APPROVED-VISUAL-ASSET-LIFECYCLE.md §2 on the residual limit.
   const attribution = ['approved_by', 'approved_at', 'approval_context']
     .filter((f) => !isMeaningful(asset[f]));
+  // The schema's `format: date` is a shape check (\d{4}-\d{2}-\d{2}), so
+  // "0000-00-00" passes it. A date nobody can look up is not an audit trail.
+  if (isMeaningful(asset.approved_at) && !Number.isFinite(Date.parse(`${asset.approved_at}T00:00:00Z`))) {
+    out.push(issue(CODES.APPROVAL_ATTRIBUTION_MISSING, where,
+      `approved_asset.approved_at "${asset.approved_at}" is date-shaped but is not a real calendar date`));
+  }
   if (attribution.length > 0) {
     out.push(issue(CODES.APPROVAL_ATTRIBUTION_MISSING, where,
       `approved_asset.state is human_approved_locked but the approval is unattributed: missing or blank ${attribution.join(', ')} — a lock must record who approved the master and against which article/package version, so the claim is auditable rather than ambient`));
@@ -519,7 +527,17 @@ export function compileVisualPrompt(job, { profiles = loadArtifactProfiles(), br
   // The approval lock is enforced here as well as in the validator: a sealed
   // job must not be able to obtain a fresh generation prompt by calling the
   // compiler directly and validating afterwards.
-  if (isRegenerationSealed(job)) throw new RegenerationSealedError(job);
+  //
+  // The seal alone is not enough for that promise. It answers "is this locked
+  // and unauthorized", so a record that launders the lock instead of tripping
+  // it — `state: candidate` beside a full master identity, or a reopening
+  // intent whose identity flags contradict it — was still compiling here and
+  // only failing later at validation. Any unresolved approval-lock finding
+  // refuses compilation, so the two enforcement points cannot disagree.
+  const lockIssues = approvalLockIssues(job);
+  if (isRegenerationSealed(job) || lockIssues.length > 0) {
+    throw new RegenerationSealedError(job, lockIssues);
+  }
 
   if (job.information_gain?.verdict === 'skip') {
     return { compiled_prompt: undefined, compiled_from: [] };

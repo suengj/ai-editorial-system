@@ -181,10 +181,20 @@ an approver and a context that a human can check, rather than appearing from
 nowhere. Binding the lock to a verifiable human act — a signature, an external
 approval record, an out-of-band token — is a real gap and is not solved here.
 
-What *is* verified downstream: `suengj-com`'s materializer recomputes the
-master digest from the actual bytes on disk and refuses a production asset that
-is not reproducible from them, so a digest that names nothing real cannot reach
-publication even though it can be written here.
+A digest written here names bytes this repository does not hold — there is no
+asset store in the editorial control plane, so `master_ref` is never resolved
+and `master_digest` is never recomputed against anything. Verifying a digest
+against real bytes is publication-side work, and
+[`editorial/ARTICLE-VISUAL-PUBLICATION-HANDOFF.md`](../editorial/ARTICLE-VISUAL-PUBLICATION-HANDOFF.md)
+§4 is where that boundary is stated. Whether a given publication path actually
+performs that check is that path's contract to make and to prove, not a
+guarantee this document can offer on its behalf.
+
+Both enforcement points agree, and deliberately so: `compileVisualPrompt`
+refuses whenever the job is sealed **or** carries any unresolved approval-lock
+finding. So a record that launders the lock instead of tripping it — a demoted
+`candidate` still naming its master, or a reopening intent whose identity flags
+contradict it — cannot obtain a prompt by compiling without validating.
 
 The lock is additive to the SUE-565 gates, not a replacement for them —
 context isolation, renderer-runtime exclusion, density, and brand resolution
