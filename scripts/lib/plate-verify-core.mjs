@@ -60,11 +60,23 @@ const issue = (code, where, message) => ({ code, where, message });
  * Measure what an SVG actually contains. Structural counting only — no
  * rendering engine, no layout, nothing that needs a browser.
  */
-export function measureSvg(svg) {
+export function measureSvg(svg, availablePx = DEFAULT_AVAILABLE_PX) {
+  // A fluid SVG — percentage width, no viewBox — has no scale factor at all:
+  // its user units ARE CSS pixels at every viewport, so authored type renders
+  // at authored size. That is the shape that actually defeats F5, so it must
+  // be measurable rather than an error. Treat the available width as the
+  // intrinsic width, which makes the scale factor exactly 1.
   const viewBox = /viewBox\s*=\s*"([^"]+)"/.exec(svg);
-  if (!viewBox) return { error: 'no viewBox — intrinsic width is unknowable, so no effective type size can be derived' };
-  const [, , vbW, vbH] = viewBox[1].trim().split(/[\s,]+/).map(Number);
-  if (!Number.isFinite(vbW) || vbW <= 0) return { error: `unusable viewBox "${viewBox[1]}"` };
+  const fluidWidth = /<svg\b[^>]*\bwidth\s*=\s*"100%"/.test(svg);
+  let vbW; let vbH; let unscaled = false;
+  if (viewBox) {
+    [, , vbW, vbH] = viewBox[1].trim().split(/[\s,]+/).map(Number);
+    if (!Number.isFinite(vbW) || vbW <= 0) return { error: `unusable viewBox "${viewBox[1]}"` };
+  } else if (fluidWidth) {
+    vbW = availablePx; vbH = null; unscaled = true;
+  } else {
+    return { error: 'no viewBox and no percentage width — the asset has neither a coordinate system to scale nor a fluid one, so no effective type size can be derived' };
+  }
 
   const textCount = (svg.match(/<text[\s>]/g) ?? []).length;
 
@@ -75,7 +87,7 @@ export function measureSvg(svg) {
     const tag = m[0];
     const w = Number(/\bwidth\s*=\s*"([\d.]+)"/.exec(tag)?.[1]);
     const h = Number(/\bheight\s*=\s*"([\d.]+)"/.exec(tag)?.[1]);
-    const isBackground = w === vbW && h === vbH;
+      const isBackground = vbH !== null && w === vbW && h === vbH;
     if (!isBackground) enclosureCount += 1;
   }
 
@@ -87,7 +99,13 @@ export function measureSvg(svg) {
   // An asset carrying width/height alongside viewBox is pinned to one
   // intrinsic size: its only possible answer to a narrow viewport is uniform
   // scaling. That is signature F5, and it is visible in the source.
-  const hasFixedSize = /<svg\b[^>]*\bwidth\s*=\s*"/.test(svg) && /<svg\b[^>]*\bheight\s*=\s*"/.test(svg);
+  const hasFixedSize = !unscaled
+    && /<svg\b[^>]*\bwidth\s*=\s*"[\d.]/.test(svg)
+    && /<svg\b[^>]*\bheight\s*=\s*"[\d.]/.test(svg);
+
+  // Internal media queries are how a single fluid asset re-stacks instead of
+  // shrinking — the mechanism behind a truthful "reflow"/"restack" claim.
+  const hasBreakpoint = /@media[^{]*\(\s*(max|min)-width/.test(svg);
 
   return {
     intrinsicWidth: vbW,
@@ -95,6 +113,8 @@ export function measureSvg(svg) {
     textCount,
     enclosureCount,
     fontSizes: usable,
+    unscaled,
+    hasBreakpoint,
     smallestTypePx: usable.length ? Math.min(...usable) : null,
     largestTypePx: usable.length ? Math.max(...usable) : null,
     hasFixedSize,
@@ -109,7 +129,7 @@ export function effectiveTypePx(authoredPx, intrinsicWidth, availablePx = DEFAUL
 
 export function verifyPlateAgainstPlan(plan, svg, { availablePx = DEFAULT_AVAILABLE_PX, where = plan?.plan_id ?? 'plate' } = {}) {
   const issues = [];
-  const m = measureSvg(svg);
+  const m = measureSvg(svg, availablePx);
   if (m.error) return [issue(CODES.PARSE, where, m.error)];
 
   const declaredLabels = plan?.composition?.label_strategy?.max_labels;
