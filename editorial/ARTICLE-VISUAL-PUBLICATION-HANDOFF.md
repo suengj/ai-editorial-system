@@ -112,6 +112,8 @@ storage backend
 
 For a small static publication, a Git-native asset can be the simplest correct implementation. If later media volume, audio/video, lifecycle controls, private/public separation, transformations, or repository growth justify object storage, that is a publication-architecture change. Do not redesign this editorial contract merely because transport changes.
 
+Once a visual is `human_approved_locked` ([`APPROVED-VISUAL-ASSET-LIFECYCLE.md`](APPROVED-VISUAL-ASSET-LIFECYCLE.md)), the handoff carries the approved master's identity, not a new render. The publication side implements this as a deterministic materialization — approved master → digest → immutable master → HQ derivative → receipt → article src — and reports a media-boundary failure rather than substituting artwork. suengj.com's implementation of that half is `scripts/materialize-approved-visual.mjs` / `npm run media:materialize` (`docs/design/APPROVED-VISUAL-MATERIALIZATION.md`); the storage convention there is an implementation choice, while the invariant — production asset traces to the approved master's digest and geometry, `regenerated: false` — is this contract's.
+
 ## 5. Renderer routing remains unchanged
 
 The handoff layer must not collapse the existing routing rules.

@@ -1,0 +1,129 @@
+{
+  "schema_version": "1.0.0",
+  "job_id": "job:tokenized-stocks-liquidity-plate-a-webp-derivative",
+  "intent_ref": "intent:2026-09-04-tokenized-stocks-liquidity",
+  "calibration_ref": null,
+  "article_ref": {
+    "article_id": "art:tokenized-stocks-instant-payments-liquidity-rights",
+    "version_number": 2,
+    "content_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "claims_hash": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+  },
+  "artifact_profile": "visual/body-infographic",
+  "profile_ref": "editorial/profiles/artifact/visual-body-infographic.json",
+  "audience": {
+    "value": "domain-practitioner",
+    "profile_ref": "editorial/profiles/audience/domain-practitioner.json",
+    "traits_applied": [
+      "moderate label density with brief glossing on first use"
+    ]
+  },
+  "semantic_spec": {
+    "question": "Why does removing market hours reveal liquidity risk?",
+    "must_communicate": [
+      "token market trades 24/7 while the underlying market has closed windows",
+      "mint/redeem availability narrows during closed windows",
+      "arbitrage weakens, producing wider spread, thinner depth, and a persistent price gap"
+    ],
+    "must_not_include": [
+      "article title, publication date, or citation text",
+      "exact numeric spread/depth values not present in verified claims"
+    ]
+  },
+  "information_gain": {
+    "adjacent_representation": {
+      "type": "prose",
+      "summary": "The article states in prose that continuous token trading against a closed underlying market weakens arbitrage."
+    },
+    "redundancy_test": {
+      "q1_new_perception": "The reader can see the closed-window overlap and the resulting arbitrage gap spatially, across the three mechanism steps, rather than inferring it from one sentence.",
+      "q2_harder_without_it": "Seeing why the gap specifically opens during closed windows becomes materially harder without the module boundaries.",
+      "q3_merely_recreates": false,
+      "q4_worth_the_interruption": true
+    },
+    "gain_type": [
+      "structure",
+      "relation",
+      "temporalization"
+    ],
+    "integration_strategy": "add",
+    "verdict": "proceed"
+  },
+  "density_check": {
+    "profile_semantic_density": "high",
+    "profile_visual_density": "low",
+    "compiled_semantic_density": "high",
+    "compiled_visual_density": "low",
+    "match": true
+  },
+  "selected_reference_traits": {
+    "adopt": [
+      "denoiser-style information placement inside the reading flow"
+    ],
+    "avoid": [
+      "denoiser's literal visual skin"
+    ],
+    "do_not_copy": []
+  },
+  "brand_profile": "suengj-com",
+  "brand_profile_version": "1.0.0",
+  "text_policy": "hybrid_template",
+  "renderer_route": "deterministic",
+  "renderer": {
+    "tool": "deterministic-media-materializer",
+    "tool_version": "1.0.0",
+    "provider": "in-house",
+    "model": "deterministic-media-materializer",
+    "model_version": "1.0.0"
+  },
+  "context_isolation": {
+    "permitted_inputs": [
+      "semantic_spec",
+      "artifact_profile",
+      "audience",
+      "selected_reference_traits",
+      "brand_profile"
+    ],
+    "excluded": [
+      "ambient_conversation",
+      "unrelated_project_state",
+      "prior_unrelated_jobs",
+      "renderer_runtime_identity"
+    ]
+  },
+  "attempts": 1,
+  "max_attempts": 2,
+  "qa": {
+    "performed": true,
+    "information_gain_recheck": "pass",
+    "density_recheck": "pass",
+    "notes": "Post-approval derivative QA: the derivative decodes, matches the master's geometry, and is visually equivalent to the approved master. No re-render."
+  },
+  "status": "accepted",
+  "approved_asset": {
+    "state": "human_approved_locked",
+    "master_ref": "assets/visual-masters/articles/tokenized-stocks-instant-payments-liquidity-rights/liquidity-plate-a.png",
+    "master_digest": "sha256:d4f01ceaa2fa4fd85420d992f128471eca1deff5851ca79f842a4fa29477ec6c",
+    "native_geometry": {
+      "width": 2400,
+      "height": 1350
+    },
+    "format": "png",
+    "approved_by": "suengjae-hong",
+    "approved_at": "2026-09-05",
+    "approval_context": "art:tokenized-stocks-instant-payments-liquidity-rights@v2",
+    "renderer_lineage": {
+      "tool": "svg-diagram-compiler",
+      "tool_version": "1.0.0",
+      "provider": "in-house",
+      "model": "svg-diagram-compiler",
+      "model_version": "1.0.0"
+    }
+  },
+  "revision": {
+    "intent": "format_only",
+    "preserve_visual_identity": true,
+    "regeneration_allowed": false,
+    "request": "convert the approved plate to WebP for the article and keep it high quality"
+  }
+}

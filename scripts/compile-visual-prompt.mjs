@@ -9,16 +9,19 @@
  * --validate checks every schemas/examples/visual-job-*.example.json against
  * schemas/visual-job.schema.json plus the cross-field gates the schema cannot
  * express (density/profile match, renderer route vs evidence, context
- * isolation, attempts budget, clean skip short-circuit).
+ * isolation, attempts budget, clean skip short-circuit, approval lock).
  *
  * --compile deterministically assembles compiled_prompt/compiled_from for one
- * job file from its declared inputs only. No model call, no network call.
+ * job file from its declared inputs only. No model call, no network call. It
+ * refuses outright for a job whose approved_asset is human_approved_locked
+ * under a publication/fidelity/format/layout revision intent.
  */
 
 import { readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
+  RegenerationSealedError,
   compileVisualPrompt, loadArtifactProfiles, loadSchema,
   validateVisualJobFile,
 } from './lib/visual-job-core.mjs';
@@ -68,7 +71,21 @@ function runCompile(jobPath) {
   const job = JSON.parse(readFileSync(jobPath, 'utf8'));
 
   // brand is resolved from job.brand_profile/brand_profile_version, fail-closed.
-  const { compiled_prompt, compiled_from } = compileVisualPrompt(job, { profiles });
+  // A human-approved master under a publication/fidelity/format/layout intent
+  // refuses compilation outright — the whole point of the lock is that this
+  // command cannot be the door back into generation.
+  let compiled_prompt;
+  let compiled_from;
+  try {
+    ({ compiled_prompt, compiled_from } = compileVisualPrompt(job, { profiles }));
+  } catch (err) {
+    if (err instanceof RegenerationSealedError) {
+      console.error(`compile refused: ${err.message}`);
+      console.error('  route this to the deterministic media path (approved master → derivative), not to a renderer.');
+      process.exit(1);
+    }
+    throw err;
+  }
 
   const next = { ...job };
   if (compiled_prompt === undefined) {

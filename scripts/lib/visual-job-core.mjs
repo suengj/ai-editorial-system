@@ -84,7 +84,106 @@ export const CODES = Object.freeze({
   BRAND_VERSION_MISMATCH: 'brand-profile-version-mismatch',
   UNKNOWN_BRAND: 'unknown-brand-profile',
   INCONSISTENT_GAIN_VERDICT: 'information-gain-verdict-inconsistent-with-redundancy-test',
+  REVISION_WITHOUT_APPROVAL: 'revision-intent-without-approved-asset',
+  APPROVED_IDENTITY_INCOMPLETE: 'approved-master-missing-immutable-identity',
+  APPROVAL_FLAGS_INCONSISTENT: 'approval-lock-flags-inconsistent-with-revision-intent',
+  REGENERATION_FORBIDDEN: 'regeneration-forbidden-after-human-approval',
+  GENERATION_PROMPT_FORBIDDEN: 'generation-prompt-compiled-after-human-approval',
+  REVISION_AUTHORIZATION_MISSING: 'revision-intent-requires-explicit-authorization',
+  APPROVAL_STATE_INCONSISTENT: 'approved-master-identity-without-approval-lock',
+  APPROVAL_ATTRIBUTION_MISSING: 'approval-lock-without-owner-attribution',
 });
+
+/**
+ * Post-approval intents that are derivative/media work, never new artwork
+ * (editorial/APPROVED-VISUAL-ASSET-LIFECYCLE.md §3). "Make it high quality",
+ * "convert it to WebP", "upload it", "bust the cache" all land here.
+ */
+export const NON_GENERATIVE_INTENTS = Object.freeze([
+  'publication_only', 'fidelity_only', 'format_only', 'layout_only',
+]);
+
+/** Intents that may reopen the renderer, and only with explicit authorization. */
+export const REOPENING_INTENTS = Object.freeze(['local_edit', 'concept_change']);
+
+export const isApprovalLocked = (job) => job?.approved_asset?.state === 'human_approved_locked';
+
+/** Every field that only a record naming a specific approved master would carry. */
+export const MASTER_IDENTITY_FIELDS = Object.freeze([
+  'master_ref', 'master_digest', 'native_geometry', 'format',
+  'approved_by', 'approved_at', 'approval_context',
+]);
+
+/** A string that is present and is not only whitespace. */
+const isMeaningful = (v) => typeof v === 'string' && v.trim().length > 0;
+const meaningfulEntries = (arr) => (Array.isArray(arr) ? arr.filter(isMeaningful) : []);
+
+/**
+ * True only for an explicitly authorized reopen: a stated local_edit or
+ * concept_change that names who authorized it, what they asked for, and — for
+ * a bounded edit — exactly what may change and what must not.
+ *
+ * The authorization has to be complete here, not merely declared, because this
+ * predicate is what re-opens the renderer. An intent word on its own is a
+ * claim; this is the evidence for it.
+ */
+export function hasAuthorizedReopen(job) {
+  const revision = job?.revision;
+  if (!revision || !REOPENING_INTENTS.includes(revision.intent)) return false;
+  if (revision.regeneration_allowed !== true) return false;
+  const auth = revision.authorization;
+  if (!isMeaningful(auth?.authorized_by) || !isMeaningful(auth?.statement)) return false;
+  if (revision.intent === 'local_edit') {
+    if (meaningfulEntries(auth.bounded_delta).length === 0) return false;
+    if (meaningfulEntries(auth.protected_invariants).length === 0) return false;
+  }
+  return true;
+}
+
+/**
+ * True when no image-generation prompt may be compiled for this job.
+ *
+ * Closed by default, and that default is the whole point. An earlier form of
+ * this predicate sealed a locked master only when it also declared one of the
+ * four non-generative intents — so omitting `revision` entirely, which the
+ * schema permits, walked a human_approved_locked master straight back to a
+ * generative renderer with no diagnostic at all. Silence is not authorization.
+ * Approval closes the edge; only an explicitly authorized local_edit or
+ * concept_change reopens it.
+ */
+export function isRegenerationSealed(job) {
+  return isApprovalLocked(job) && !hasAuthorizedReopen(job);
+}
+
+/** Thrown by compileVisualPrompt when a sealed or lock-violating job asks for a fresh prompt. */
+export class RegenerationSealedError extends Error {
+  constructor(job, issues = []) {
+    // Two different refusals reach here and they need different sentences. A
+    // sealed job is locked and unauthorized — the advice is to declare an
+    // authorized intent. A job refused for an unresolved lock finding may not
+    // even be locked (a demoted `candidate`), or may already declare a
+    // complete authorization whose flags contradict it; telling that caller to
+    // "declare local_edit or concept_change" would be wrong.
+    const sealed = isApprovalLocked(job) && !hasAuthorizedReopen(job);
+    const detail = issues.length > 0
+      ? `\n  approval lock: ${issues.map((i) => `[${i.code}] ${i.message}`).join('\n  ')}`
+      : '';
+    super(sealed
+      ? `visual job "${job?.job_id ?? '<job>'}" carries a human_approved_locked master ` +
+        `(revision.intent: ${job?.revision?.intent ? `"${job.revision.intent}"` : 'not declared'}) — ` +
+        'no image-generation prompt may be compiled for it. Fidelity, format, layout, and publication work ' +
+        'are deterministic media operations on the approved master ' +
+        '(editorial/APPROVED-VISUAL-ASSET-LIFECYCLE.md §3-§6). If the image itself must change, declare ' +
+        'revision.intent local_edit or concept_change with a complete revision.authorization; an undeclared ' +
+        `intent is not an authorization to regenerate.${detail}`
+      : `visual job "${job?.job_id ?? '<job>'}" has an unresolved approval-lock finding, so no ` +
+        'image-generation prompt may be compiled for it. The record does not hold together: resolve the ' +
+        `finding below before compiling anything from it.${detail}`);
+    this.name = 'RegenerationSealedError';
+    this.code = CODES.GENERATION_PROMPT_FORBIDDEN;
+    this.issues = issues;
+  }
+}
 
 const issue = (code, where, message) => ({ code, where, message });
 
@@ -130,6 +229,165 @@ function permittedVocabulary(job, { profiles, brand }) {
   }
   parts.push(job.artifact_profile ?? '', job.brand_profile ?? '', job.text_policy ?? '');
   return new Set(parts.flatMap(tokenize));
+}
+
+/**
+ * The approval lock (SUE-639 / SUE-638).
+ *
+ * Human approval converts a rendered candidate into an immutable master. From
+ * that point the normal edge back to a generative renderer is closed: the
+ * production incident this encodes went approved infographic → awkward upload
+ * → low-resolution workaround → "make it high quality" → new generative render
+ * → different artwork. Every step after the lock is a media operation on the
+ * approved bytes, so these checks fail closed rather than trusting that an
+ * orchestrator classified the request correctly.
+ *
+ * Two exceptions reopen the renderer, and only explicitly: a bounded
+ * local_edit with stated protected invariants, and a concept_change the human
+ * actually asked for.
+ */
+export function approvalLockIssues(job, where = job?.job_id ?? '<job>') {
+  const out = [];
+  const asset = job.approved_asset;
+  const revision = job.revision;
+
+  if (revision && !asset) {
+    out.push(issue(CODES.REVISION_WITHOUT_APPROVAL, where,
+      `revision.intent "${revision.intent}" is a post-approval classification but the job carries no approved_asset — approval must be machine state on this record, not conversational memory (editorial/APPROVED-VISUAL-ASSET-LIFECYCLE.md §2)`));
+    return out;
+  }
+  if (!asset) return out;
+
+  if (asset.state !== 'human_approved_locked') {
+    // A candidate is still in generation, and that is the PASS path for
+    // unapproved work — but only for a record that names no approved master.
+    // Otherwise `state: candidate` beside a real master_ref/master_digest is a
+    // demotion: it keeps the identity of the approved artifact while skipping
+    // every guard below, which is approval laundering rather than candidacy.
+    const identity = MASTER_IDENTITY_FIELDS.filter((f) => asset[f] !== undefined);
+    if (identity.length > 0) {
+      out.push(issue(CODES.APPROVAL_STATE_INCONSISTENT, where,
+        `approved_asset.state is "${asset.state}" but the record still carries approved-master identity (${identity.join(', ')}) — a record that names an approved master is locked. Approval is not something a later job can demote by rewriting one field while keeping the master it points at.`));
+    }
+    return out;
+  }
+
+  // 1. A lock is only a lock if it names what was approved.
+  const missing = [];
+  if (!asset.master_ref) missing.push('master_ref');
+  if (!asset.master_digest) missing.push('master_digest');
+  if (!asset.format) missing.push('format');
+  const geom = asset.native_geometry ?? {};
+  const hasPixels = Number.isInteger(geom.width) && Number.isInteger(geom.height);
+  const hasViewBox = typeof geom.view_box === 'string' && geom.view_box.length > 0;
+  if (asset.format === 'svg') {
+    if (!hasViewBox && !hasPixels) missing.push('native_geometry.view_box');
+  } else if (!hasPixels) {
+    missing.push('native_geometry.width/height');
+  }
+  if (missing.length > 0) {
+    out.push(issue(CODES.APPROVED_IDENTITY_INCOMPLETE, where,
+      `approved_asset.state is human_approved_locked but the master has no immutable identity: missing ${missing.join(', ')} — a lock without a digest and native geometry cannot prove which artifact was approved or that a derivative came from it`));
+  }
+
+  // The declared format must agree with what master_ref actually points at, so
+  // "svg" cannot be used to walk past the raster geometry requirement above on
+  // a master that is plainly a .png.
+  const ext = /\.([a-z0-9]+)$/i.exec(asset.master_ref ?? '')?.[1]?.toLowerCase();
+  const normalizeFormat = (f) => (f === 'jpg' ? 'jpeg' : f);
+  if (ext && asset.format && normalizeFormat(ext) !== normalizeFormat(asset.format)) {
+    out.push(issue(CODES.APPROVED_IDENTITY_INCOMPLETE, where,
+      `approved_asset.format is "${asset.format}" but master_ref ends in ".${ext}" — the declared format must describe the artifact the lock points at, not a different one`));
+  }
+
+  // Who approved it, when, and against what. None of this makes the record
+  // unforgeable — an agent that can write this file can write these fields too
+  // — but it removes the silent path: a lock can no longer be asserted without
+  // naming an approver and a context a human can check. See
+  // editorial/APPROVED-VISUAL-ASSET-LIFECYCLE.md §2 on the residual limit.
+  const attribution = ['approved_by', 'approved_at', 'approval_context']
+    .filter((f) => !isMeaningful(asset[f]));
+  // The schema's `format: date` is a shape check (\d{4}-\d{2}-\d{2}), so
+  // "0000-00-00" passes it. A date nobody can look up is not an audit trail.
+  // Round-tripped rather than merely parsed: Date.parse is lenient about day
+  // overflow and silently rolls "2025-02-29" into March, so a parse check
+  // alone still accepts dates that never happened.
+  if (isMeaningful(asset.approved_at)) {
+    const parsed = new Date(`${asset.approved_at}T00:00:00Z`);
+    if (!Number.isFinite(parsed.getTime()) || parsed.toISOString().slice(0, 10) !== asset.approved_at) {
+      out.push(issue(CODES.APPROVAL_ATTRIBUTION_MISSING, where,
+        `approved_asset.approved_at "${asset.approved_at}" is date-shaped but is not a real calendar date`));
+    }
+  }
+  if (attribution.length > 0) {
+    out.push(issue(CODES.APPROVAL_ATTRIBUTION_MISSING, where,
+      `approved_asset.state is human_approved_locked but the approval is unattributed: missing or blank ${attribution.join(', ')} — a lock must record who approved the master and against which article/package version, so the claim is auditable rather than ambient`));
+  }
+
+  // From here the routing guard applies whether or not a revision was declared.
+  // An undeclared intent is the fail-closed case, not an exemption: approval
+  // closes the edge to a generative renderer, and only an explicitly
+  // authorized reopen opens it again.
+  const intent = revision?.intent;
+  const sealed = isRegenerationSealed(job);
+  const under = intent ? `under revision.intent "${intent}"` : 'with no declared revision.intent';
+
+  if (sealed && job.renderer_route !== 'deterministic') {
+    out.push(issue(CODES.REGENERATION_FORBIDDEN, where,
+      `a human_approved_locked master ${under} routed to renderer_route "${job.renderer_route}" — high-resolution delivery, format conversion, responsive layout, and publication are derivative/media operations on the approved master, not new image-generation jobs. The generative lineage of the master itself belongs in approved_asset.renderer_lineage.`));
+  }
+  if (sealed && job.compiled_prompt !== undefined) {
+    out.push(issue(CODES.GENERATION_PROMPT_FORBIDDEN, where,
+      `a human_approved_locked master ${under} still compiled an image-generation prompt — a post-approval job must not compile a fresh prompt unless an authorized local_edit/concept_change reopened generation (editorial/APPROVED-VISUAL-ASSET-LIFECYCLE.md §8)`));
+  }
+
+  if (!revision) {
+    // The lock alone is a valid record. The guard above already held it closed;
+    // the flag/authorization checks below need a declared intent to talk about.
+    return out;
+  }
+
+  // 2. Identity flags must agree with the intent, so the record cannot claim
+  //    a lock while quietly declaring regeneration open.
+  if (NON_GENERATIVE_INTENTS.includes(intent)) {
+    if (revision.preserve_visual_identity !== true || revision.regeneration_allowed !== false) {
+      out.push(issue(CODES.APPROVAL_FLAGS_INCONSISTENT, where,
+        `revision.intent "${intent}" on a human_approved_locked master requires preserve_visual_identity=true and regeneration_allowed=false, got ${revision.preserve_visual_identity}/${revision.regeneration_allowed}`));
+    }
+  }
+
+  // 3. Reopening generation is explicit or it does not happen.
+  if (REOPENING_INTENTS.includes(intent)) {
+    const auth = revision.authorization;
+    // Whitespace is not authorization. The schema's minLength:1 stops the empty
+    // string and stops there; a single space would otherwise satisfy every
+    // field that is supposed to say what a human actually asked for.
+    if (!isMeaningful(auth?.authorized_by) || !isMeaningful(auth?.statement)) {
+      out.push(issue(CODES.REVISION_AUTHORIZATION_MISSING, where,
+        `revision.intent "${intent}" reopens the renderer on an approved master and therefore requires revision.authorization with a non-blank authorized_by (who authorized it) and statement (what they asked for)`));
+    }
+    if (revision.regeneration_allowed !== true) {
+      out.push(issue(CODES.APPROVAL_FLAGS_INCONSISTENT, where,
+        `revision.intent "${intent}" reopens the renderer but regeneration_allowed is ${revision.regeneration_allowed} — an authorized reopen must say so on the record`));
+    }
+    if (intent === 'local_edit') {
+      if (meaningfulEntries(auth?.bounded_delta).length === 0 ||
+          meaningfulEntries(auth?.protected_invariants).length === 0) {
+        out.push(issue(CODES.REVISION_AUTHORIZATION_MISSING, where,
+          'local_edit requires both a non-blank authorization.bounded_delta (exactly what may change) and authorization.protected_invariants (what must survive unchanged) — an unbounded "edit" is a concept_change wearing a smaller name'));
+      }
+      if (revision.preserve_visual_identity !== true) {
+        out.push(issue(CODES.APPROVAL_FLAGS_INCONSISTENT, where,
+          'local_edit is a bounded correction inside the approved identity: preserve_visual_identity must remain true'));
+      }
+    }
+    if (intent === 'concept_change' && revision.preserve_visual_identity !== false) {
+      out.push(issue(CODES.APPROVAL_FLAGS_INCONSISTENT, where,
+        'concept_change deliberately replaces the approved visual identity: preserve_visual_identity must be false, so the record never claims a preserved identity it is about to discard'));
+    }
+  }
+
+  return out;
 }
 
 /** Validate a compiled visual job. Returns an array of issues; empty means PASS. */
@@ -223,6 +481,8 @@ export function validateVisualJob(job, { schema = loadSchema(), profiles = loadA
       'context_isolation.excluded must declare "renderer_runtime_identity" — provider/model/model_version/quality_tier are lineage, never a compiled-prompt input'));
   }
 
+  issues.push(...approvalLockIssues(job, where));
+
   if (job.information_gain?.verdict === 'skip') {
     if (job.compiled_prompt !== undefined || (job.compiled_from ?? []).length > 0) {
       issues.push(issue(CODES.SKIP_NOT_CLEAN, where,
@@ -281,6 +541,21 @@ export function validateVisualJobFile(path, options = {}) {
  * No network call, no LLM call — pure string composition.
  */
 export function compileVisualPrompt(job, { profiles = loadArtifactProfiles(), brand } = {}) {
+  // The approval lock is enforced here as well as in the validator: a sealed
+  // job must not be able to obtain a fresh generation prompt by calling the
+  // compiler directly and validating afterwards.
+  //
+  // The seal alone is not enough for that promise. It answers "is this locked
+  // and unauthorized", so a record that launders the lock instead of tripping
+  // it — `state: candidate` beside a full master identity, or a reopening
+  // intent whose identity flags contradict it — was still compiling here and
+  // only failing later at validation. Any unresolved approval-lock finding
+  // refuses compilation, so the two enforcement points cannot disagree.
+  const lockIssues = approvalLockIssues(job);
+  if (isRegenerationSealed(job) || lockIssues.length > 0) {
+    throw new RegenerationSealedError(job, lockIssues);
+  }
+
   if (job.information_gain?.verdict === 'skip') {
     return { compiled_prompt: undefined, compiled_from: [] };
   }
