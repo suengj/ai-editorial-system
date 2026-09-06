@@ -125,14 +125,30 @@ revision.request                the human's words, so a misclassification is rev
 revision.authorization          who reopened generation, and for what
 ```
 
-The first four intents are derivative/media work. On a locked master they must
-carry `preserve_visual_identity: true` / `regeneration_allowed: false`, must
-route `renderer_route: deterministic`, and must not carry a `compiled_prompt`.
-`compileVisualPrompt` refuses them outright (`RegenerationSealedError`), so a
-caller cannot obtain a fresh generation prompt by skipping validation and
-compiling directly. "Make it high quality", "convert it to WebP", "upload it",
-and "bust the cache" are all in this set — none of them is a request for a
-different image.
+**The lock is closed by default.** A `human_approved_locked` master is sealed
+against generation unless an explicitly authorized reopen is on the record —
+not merely "unless one of the four non-generative intents is declared". This
+distinction is the whole mechanism, and getting it wrong is how the first
+version of this contract shipped with the lock wide open: `revision` is an
+optional field, so a locked master with *no declared intent* validated clean
+and compiled a generative prompt. Silence is not authorization. Whether or not
+a revision is declared, a locked master must route `renderer_route:
+deterministic` and must not carry a `compiled_prompt`, and `compileVisualPrompt`
+throws `RegenerationSealedError` — so a caller cannot obtain a fresh prompt by
+skipping validation, nor by omitting the classification.
+
+The first four intents are derivative/media work, and on a locked master they
+must additionally carry `preserve_visual_identity: true` /
+`regeneration_allowed: false`. "Make it high quality", "convert it to WebP",
+"upload it", and "bust the cache" are all in this set — none of them is a
+request for a different image.
+
+**Approval is not demotable.** A record carrying any approved-master identity
+(`master_ref`, `master_digest`, `native_geometry`, `format`, or any approval
+attribution) must be `human_approved_locked`. Writing `state: candidate` beside
+the master it points at is approval laundering, not candidacy, and fails as
+`approved-master-identity-without-approval-lock`. A genuine candidate names no
+master.
 
 Generation reopens only through an explicit authorization record:
 
@@ -146,6 +162,29 @@ Generation reopens only through an explicit authorization record:
 
 `revision` without `approved_asset` is rejected: there is one authority for
 post-approval routing, not a second one alongside it.
+
+Authorization has to be complete, not merely declared — an intent word is a
+claim, the authorization record is the evidence for it. Whitespace does not
+satisfy it: the schema's `minLength: 1` stops the empty string and stops there,
+so `authorized_by: " "` would otherwise reopen a renderer. And the declared
+`format` must agree with the extension `master_ref` actually points at, so
+`svg` cannot be used to walk past the raster geometry requirement on a `.png`.
+
+## What the lock does not do
+
+It does not make approval unforgeable. Every field here is written by whatever
+process writes the job record, so an agent that can author the file can author
+`state: human_approved_locked` and a digest it computed itself. Requiring
+`approved_by`, `approved_at`, and `approval_context` on a locked asset does not
+change that; it removes the *silent* path, so a fabricated approval has to name
+an approver and a context that a human can check, rather than appearing from
+nowhere. Binding the lock to a verifiable human act — a signature, an external
+approval record, an out-of-band token — is a real gap and is not solved here.
+
+What *is* verified downstream: `suengj-com`'s materializer recomputes the
+master digest from the actual bytes on disk and refuses a production asset that
+is not reproducible from them, so a digest that names nothing real cannot reach
+publication even though it can be written here.
 
 The lock is additive to the SUE-565 gates, not a replacement for them —
 context isolation, renderer-runtime exclusion, density, and brand resolution

@@ -15,8 +15,9 @@ import { readFileSync, readdirSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
-  CODES, RegenerationSealedError, compileVisualPrompt, isRegenerationSealed,
-  loadArtifactProfiles, loadSchema, resolveBrandProfile, validateVisualJob,
+  CODES, RegenerationSealedError, compileVisualPrompt, hasAuthorizedReopen,
+  isRegenerationSealed, loadArtifactProfiles, loadSchema, resolveBrandProfile,
+  validateVisualJob,
 } from './lib/visual-job-core.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -291,8 +292,12 @@ const approvedConcept = loadExample('visual-job-approved-concept-change.example.
   check('FAIL raster master whose native_geometry has no pixel height',
     codesOf(noGeometry).includes(CODES.APPROVED_IDENTITY_INCOMPLETE));
 
+  // A vector master is identified by its view_box rather than pixel geometry.
+  // master_ref moves to .svg too: the declared format has to describe the
+  // artifact the lock actually points at (see the I3 regression below).
   const vector = clone(approvedFormat);
   vector.approved_asset.format = 'svg';
+  vector.approved_asset.master_ref = 'assets/visual-masters/articles/tokenized-stocks-instant-payments-liquidity-rights/liquidity-plate-a.svg';
   vector.approved_asset.native_geometry = { view_box: '0 0 2400 1350' };
   check('PASS vector master identified by view_box instead of pixel geometry',
     !codesOf(vector).includes(CODES.APPROVED_IDENTITY_INCOMPLETE), codesOf(vector).join(', '));
@@ -343,6 +348,141 @@ const approvedConcept = loadExample('visual-job-approved-concept-change.example.
     notExcluded.context_isolation.excluded.filter((x) => x !== 'renderer_runtime_identity');
   check('SUE-565 renderer_runtime_identity exclusion still required on an approval-locked job',
     codesOf(notExcluded).includes(CODES.RUNTIME_NOT_EXCLUDED));
+}
+
+// --- independent review of PR #13: the lock was open in three places -------
+// Every check below is a falsification an adversarial reviewer actually
+// executed against the shipped scripts. They are here so the same holes cannot
+// reopen silently.
+console.log('\napproval-lock review regressions (SUE-639 review)');
+
+{
+  // B1. THE BIG ONE. `revision` is optional in the schema, and the first
+  // implementation returned early when it was absent — so a locked master with
+  // no declared intent compiled a generative prompt and validated PASS. Silence
+  // is not authorization: the lock is closed by default now, and only an
+  // explicitly authorized reopen opens it.
+  const job = clone(approvedFormat);
+  delete job.revision;
+  job.renderer_route = 'generative';
+  job.compiled_prompt = baseGood.compiled_prompt;
+  job.compiled_from = baseGood.compiled_from;
+  const c = codesOf(job);
+  check('B1 FAIL locked master with NO revision declared → generative route',
+    c.includes(CODES.REGENERATION_FORBIDDEN), c.join(', '));
+  check('B1 FAIL locked master with NO revision declared → compiled prompt',
+    c.includes(CODES.GENERATION_PROMPT_FORBIDDEN), c.join(', '));
+
+  let threw = false;
+  try { compileVisualPrompt(job, { profiles }); } catch (err) { threw = err instanceof RegenerationSealedError; }
+  check('B1 compileVisualPrompt refuses a locked master with no declared intent', threw);
+  check('B1 isRegenerationSealed is true when no revision is declared', isRegenerationSealed(job));
+
+  // The lock alone, with nothing else wrong, is still a valid record.
+  const quiet = clone(approvedFormat);
+  delete quiet.revision;
+  check('B1 a locked master with no revision and a deterministic route is still valid',
+    validateVisualJob(quiet, opts).length === 0, codesOf(quiet).join(', '));
+}
+
+{
+  // B2. Demotion: `state: candidate` while keeping the approved master's
+  // identity skipped every guard. A record that names an approved master is
+  // locked; approval is not demotable by rewriting one field.
+  const job = clone(approvedFormat);
+  job.approved_asset.state = 'candidate';
+  check('B2 FAIL state demoted to "candidate" while still naming the approved master',
+    codesOf(job).includes(CODES.APPROVAL_STATE_INCONSISTENT), codesOf(job).join(', '));
+
+  for (const field of ['master_ref', 'master_digest', 'format', 'approved_by']) {
+    const one = clone(loadExample('visual-job-thumbnail-concept.example.json'));
+    one.approved_asset = { state: 'candidate', [field]: approvedFormat.approved_asset[field] };
+    check(`B2 FAIL a candidate carrying ${field} alone`,
+      codesOf(one).includes(CODES.APPROVAL_STATE_INCONSISTENT));
+  }
+
+  // A genuine candidate — no master identity at all — is still the PASS path.
+  const genuine = clone(loadExample('visual-job-thumbnail-concept.example.json'));
+  genuine.approved_asset = { state: 'candidate' };
+  check('B2 PASS a genuine candidate naming no master still allows generation',
+    validateVisualJob(genuine, opts).length === 0, codesOf(genuine).join(', '));
+}
+
+{
+  // B3. Attribution. A lock asserted with nobody's name on it is ambient
+  // memory wearing a schema. This does not make the record unforgeable — see
+  // the residual limit in editorial/APPROVED-VISUAL-ASSET-LIFECYCLE.md §2 —
+  // but it removes the silent path.
+  for (const field of ['approved_by', 'approved_at', 'approval_context']) {
+    const job = clone(approvedFormat);
+    delete job.approved_asset[field];
+    check(`B3 FAIL human_approved_locked with no ${field}`,
+      codesOf(job).includes(CODES.APPROVAL_ATTRIBUTION_MISSING), codesOf(job).join(', '));
+  }
+  const blank = clone(approvedFormat);
+  blank.approved_asset.approved_by = '   ';
+  check('B3 FAIL a whitespace-only approver name is not an attribution',
+    codesOf(blank).includes(CODES.APPROVAL_ATTRIBUTION_MISSING));
+}
+
+{
+  // I2. Whitespace is not authorization. minLength:1 stops the empty string and
+  // stops there; a single space would otherwise reopen the renderer.
+  const job = clone(approvedConcept);
+  job.revision.authorization = { authorized_by: ' ', statement: ' ' };
+  const c = codesOf(job);
+  check('I2 FAIL concept_change authorized by whitespace',
+    c.includes(CODES.REVISION_AUTHORIZATION_MISSING), c.join(', '));
+  check('I2 a whitespace authorization does not reopen the renderer (job stays sealed)',
+    isRegenerationSealed(job) && c.includes(CODES.REGENERATION_FORBIDDEN));
+
+  const edit = clone(approvedConcept);
+  edit.revision = {
+    intent: 'local_edit', preserve_visual_identity: true, regeneration_allowed: true,
+    authorization: {
+      authorized_by: 'suengjae-hong', statement: 'fix the arrow',
+      bounded_delta: ['  '], protected_invariants: ['  '],
+    },
+  };
+  check('I2 FAIL local_edit bounded by whitespace-only delta and invariants',
+    codesOf(edit).includes(CODES.REVISION_AUTHORIZATION_MISSING));
+}
+
+{
+  // I3. The declared format must describe the artifact the lock points at, so
+  // "svg" cannot walk past the raster geometry requirement on a .png master.
+  const job = clone(approvedFormat);
+  job.approved_asset.format = 'svg';
+  job.approved_asset.native_geometry = { view_box: '0 0 2400 1350' };
+  check('I3 FAIL format "svg" declared on a master_ref ending .png',
+    codesOf(job).includes(CODES.APPROVED_IDENTITY_INCOMPLETE), codesOf(job).join(', '));
+}
+
+{
+  // I1. Three enforcement branches survived mutation testing with the suite
+  // still green — correct behaviour, but nothing held them in place.
+  const noFlag = clone(approvedConcept);
+  noFlag.revision.regeneration_allowed = false;
+  check('I1 FAIL a reopening intent that does not declare regeneration_allowed',
+    codesOf(noFlag).includes(CODES.APPROVAL_FLAGS_INCONSISTENT), codesOf(noFlag).join(', '));
+
+  const drifting = clone(approvedConcept);
+  drifting.revision = {
+    intent: 'local_edit', preserve_visual_identity: false, regeneration_allowed: true,
+    authorization: {
+      authorized_by: 'suengjae-hong', statement: 'fix the arrow only',
+      bounded_delta: ['reverse the arrow'], protected_invariants: ['every label'],
+    },
+  };
+  check('I1 FAIL local_edit that abandons preserve_visual_identity',
+    codesOf(drifting).includes(CODES.APPROVAL_FLAGS_INCONSISTENT), codesOf(drifting).join(', '));
+
+  const hollowVector = clone(approvedFormat);
+  hollowVector.approved_asset.format = 'svg';
+  hollowVector.approved_asset.master_ref = 'assets/visual-masters/articles/x/plate.svg';
+  hollowVector.approved_asset.native_geometry = {};
+  check('I1 FAIL a locked vector master with empty native_geometry',
+    codesOf(hollowVector).includes(CODES.APPROVED_IDENTITY_INCOMPLETE), codesOf(hollowVector).join(', '));
 }
 
 // --- B6: brand_profile is resolved fail-closed, never a fixed default ------

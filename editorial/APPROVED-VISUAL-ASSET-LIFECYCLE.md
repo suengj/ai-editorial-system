@@ -44,6 +44,10 @@ The renderer may be re-entered only for an explicitly authorized `local_edit` or
 
 A production workflow must retain enough identity to prove which artifact was approved. The machine form of this record is `approved_asset` in [`schemas/visual-job.schema.json`](../schemas/visual-job.schema.json) (§8 below); a lock with no digest and no native geometry fails validation, because it cannot say which artifact was approved or let a derivative prove it came from that artifact.
 
+`approved_by`, `approved_at`, and `approval_context` are required on a locked asset, and a record that carries master identity while claiming `state: candidate` is rejected — approval is not demotable by rewriting one field while keeping the master it points at.
+
+**Honest limit.** None of this makes approval unforgeable. The record is written by whatever process writes the job, so an agent can assert a lock it was never given. Requiring attribution removes the silent path — a fabricated approval must name an approver and a context a human can check — but binding the lock to a verifiable human act is an open gap, not a solved problem. Treat these fields as an audit trail, not as authority.
+
 ```yaml
 approved_asset:
   state: human_approved_locked
