@@ -124,6 +124,65 @@ console.log('\ndeny fixtures (expect FAIL, with the specific rule named)');
 }
 
 {
+  // R5b (T4) — a comparison plate pairs the same two modules once per row, so
+  // a repeated pairing is legitimate only when each names its dimension.
+  const plan = clone(mechanism);
+  const [a, b] = [plan.semantic_plan.modules[0].id, plan.semantic_plan.modules[1].id];
+  plan.semantic_plan.relations = [
+    { from: a, to: b, type: 'correspondence', load_bearing: true, basis: 'stated', dimension: 'interface' },
+    { from: a, to: b, type: 'correspondence', load_bearing: true, basis: 'stated', dimension: 'interface' },
+  ];
+  denies('R5b duplicate-relation-pairing: the same pair repeated on the same dimension',
+    plan, CODES.DUPLICATE_PAIRING);
+}
+
+{
+  // R5b, the un-named case — two identical pairings with no dimension at all
+  // cannot be told apart, so one of them cannot be drawn or checked.
+  const plan = clone(mechanism);
+  const [a, b] = [plan.semantic_plan.modules[0].id, plan.semantic_plan.modules[1].id];
+  plan.semantic_plan.relations = [
+    { from: a, to: b, type: 'correspondence', load_bearing: true, basis: 'stated' },
+    { from: a, to: b, type: 'correspondence', load_bearing: true, basis: 'stated' },
+  ];
+  denies('R5b duplicate-relation-pairing: repeated pair with no dimension to distinguish it',
+    plan, CODES.DUPLICATE_PAIRING);
+}
+
+{
+  // R5b, the case that MUST stay legal. T5 requires containment, flow and
+  // authority to be separate channels between the same two modules — two
+  // relations sharing a pair but differing in type are the point of that
+  // trait, not a duplicate. Keying the check on the pair alone would reject
+  // every correctly-built governance plate.
+  const plan = clone(mechanism);
+  const [a2, b2] = [plan.semantic_plan.modules[0].id, plan.semantic_plan.modules[1].id];
+  plan.semantic_plan.relations = [
+    { from: a2, to: b2, type: 'causal-chain', load_bearing: true, basis: 'stated' },
+    { from: a2, to: b2, type: 'containment', load_bearing: true, basis: 'stated' },
+  ];
+  plan.composition.connector_channels = {
+    containment: 'a nesting boundary',
+    flow: 'a solid directed arc',
+  };
+  check('R5b duplicate-relation-pairing: the same pair on DIFFERENT relation types is allowed (T5)',
+    !codesOf(plan).includes(CODES.DUPLICATE_PAIRING));
+}
+
+{
+  // R5b, the case the rule exists to permit — the same pair once per row,
+  // each naming its dimension. This is what a comparison plate actually is.
+  const plan = clone(mechanism);
+  const [a, b] = [plan.semantic_plan.modules[0].id, plan.semantic_plan.modules[1].id];
+  plan.semantic_plan.relations = [
+    { from: a, to: b, type: 'correspondence', load_bearing: true, basis: 'stated', dimension: 'unit of programming' },
+    { from: a, to: b, type: 'correspondence', load_bearing: true, basis: 'stated', dimension: 'interface' },
+  ];
+  check('R5b duplicate-relation-pairing: the same pair once per named dimension is allowed (T4)',
+    !codesOf(plan).includes(CODES.DUPLICATE_PAIRING));
+}
+
+{
   // R6 (F5/T9) — the SUE-570 infographic rendered its labels at 5.2-6.5px.
   const plan = clone(mechanism);
   plan.composition.mobile_strategy.min_type_px = 8.4;

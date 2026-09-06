@@ -50,6 +50,7 @@ export const CODES = Object.freeze({
   PROSE_IN_A_RECTANGLE: 'prose-in-a-rectangle',
   READING_ORDER_MISMATCH: 'reading-order-mismatch',
   UNRESOLVED_ENDPOINT: 'unresolved-relation-endpoint',
+  DUPLICATE_PAIRING: 'duplicate-relation-pairing',
   MOBILE_TYPE_FLOOR: 'mobile-type-floor',
   LABEL_CEILING: 'label-ceiling',
   CHANNEL_COLLISION: 'channel-collision',
@@ -176,6 +177,32 @@ export function validateCompositionPlan(plan, { schema = loadSchema(), profiles 
       }
     }
   });
+
+  // --- R5b · duplicate-relation-pairing (T4) ------------------------------
+  // A comparison plate carries several correspondences between the same two
+  // modules, one per row, and each row's delta is load-bearing (T4). So a
+  // repeated from/to pair is legitimate — but only when each instance names
+  // the dimension it is about. Two identical pairings with no dimension are
+  // indistinguishable, which means one of them cannot be drawn or checked.
+  {
+    const seen = new Map();
+    (sem.relations ?? []).forEach((r, i) => {
+      // Type is part of the identity: T5 requires containment, flow and
+      // authority to be SEPARATE channels between the same two modules, so
+      // two relations sharing a pair but differing in type are the point,
+      // not a duplicate.
+      const pair = `${r.from}→${r.to} (${r.type})`;
+      const key = `${pair}|${r.dimension ?? ''}`;
+      if (seen.has(key)) {
+        issues.push(issue(CODES.DUPLICATE_PAIRING, `${where}#semantic_plan.relations[${i}]`,
+          r.dimension === undefined
+            ? `relation ${pair} repeats relations[${seen.get(key)}] with no "dimension" to tell them apart — a comparison plate may pair the same two modules once per row, but each row must name its dimension (T4)`
+            : `relation ${pair} repeats relations[${seen.get(key)}] on the same dimension "${r.dimension}"`));
+      } else {
+        seen.set(key, i);
+      }
+    });
+  }
 
   // --- R6 · mobile-type-floor (F5 / T9) -----------------------------------
   const mob = comp.mobile_strategy;

@@ -16,7 +16,9 @@
     "renderer_route"
   ],
   "properties": {
-    "schema_version": { "const": "1.0.0" },
+    "schema_version": {
+      "const": "1.0.0"
+    },
     "plan_id": {
       "description": "Stable id for this plate.",
       "type": "string",
@@ -38,24 +40,47 @@
       "description": "Which article this plate serves. Lineage, not content.",
       "type": "object",
       "additionalProperties": false,
-      "required": ["slug"],
+      "required": [
+        "slug"
+      ],
       "properties": {
-        "slug": { "type": "string", "minLength": 1 },
-        "content_hash": { "type": ["string", "null"] },
-        "surface": { "type": "string" }
+        "slug": {
+          "type": "string",
+          "minLength": 1
+        },
+        "content_hash": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "surface": {
+          "type": "string"
+        }
       }
     },
-    "semantic_plan": { "$ref": "#/$defs/semantic_plan" },
-    "composition": { "$ref": "#/$defs/composition" },
+    "semantic_plan": {
+      "$ref": "#/$defs/semantic_plan"
+    },
+    "composition": {
+      "$ref": "#/$defs/composition"
+    },
     "renderer_route": {
       "description": "deterministic: a program emits the whole plate. hybrid: a program owns all factual layout and text, a non-deterministic step contributes bounded non-load-bearing material. generative_support: a generative renderer contributes atmosphere only and never owns factual layout, exact text, labels or relation geometry. Plain `generative` is deliberately not representable for these three families.",
-      "enum": ["deterministic", "hybrid", "generative_support"]
+      "enum": [
+        "deterministic",
+        "hybrid",
+        "generative_support"
+      ]
     },
     "generative_support": {
       "description": "Required when renderer_route is hybrid or generative_support. Enumerates what the non-deterministic step may contribute. Everything not listed stays deterministic.",
       "type": "object",
       "additionalProperties": false,
-      "required": ["permitted_elements", "load_bearing"],
+      "required": [
+        "permitted_elements",
+        "load_bearing"
+      ],
       "properties": {
         "permitted_elements": {
           "type": "array",
@@ -75,7 +100,9 @@
         }
       }
     },
-    "notes": { "type": "string" }
+    "notes": {
+      "type": "string"
+    }
   },
   "$defs": {
     "semantic_plan": {
@@ -102,41 +129,64 @@
           "type": "array",
           "minItems": 2,
           "maxItems": 4,
-          "items": { "$ref": "#/$defs/module" }
+          "items": {
+            "$ref": "#/$defs/module"
+          }
         },
         "relations": {
           "description": "At least one. A plate with modules but no relations is a list.",
           "type": "array",
           "minItems": 1,
-          "items": { "$ref": "#/$defs/relation" }
+          "items": {
+            "$ref": "#/$defs/relation"
+          }
         },
         "reading_order": {
           "description": "Module ids in the order the reader should encounter them. Must be a permutation of modules[].id — a partial order means the path forks, which is a split trigger.",
           "type": "array",
           "minItems": 2,
-          "items": { "type": "string", "minLength": 1 }
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
         },
         "must_preserve": {
           "description": "Information that may not be dropped by any downstream compression. Minimalism that deletes these is semantic deletion (SUENGJ-INFOGRAPHIC-CALIBRATION.md section 5).",
           "type": "array",
           "minItems": 1,
-          "items": { "type": "string", "minLength": 1 }
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
         },
         "evidence_boundary": {
           "description": "Trait T11: the observed/asserted boundary is made visible by medium, not by a device inside the artwork. The plate demonstrates; the caption asserts.",
           "type": "object",
           "additionalProperties": false,
-          "required": ["in_plate", "in_caption"],
+          "required": [
+            "in_plate",
+            "in_caption"
+          ],
           "properties": {
-            "in_plate": { "type": "string", "minLength": 1 },
-            "in_caption": { "type": "string", "minLength": 1 }
+            "in_plate": {
+              "type": "string",
+              "minLength": 1
+            },
+            "in_caption": {
+              "type": "string",
+              "minLength": 1
+            }
           }
         },
         "information_gain": {
           "description": "Trait T14. Prose is inherently sequential; a plate earns its place by producing something a linear medium structurally cannot. This is the operational form of the VISUAL-INFORMATION-GAIN.md gate.",
           "type": "object",
           "additionalProperties": false,
-          "required": ["gain_kind", "adjacent_representation", "what_prose_cannot_do"],
+          "required": [
+            "gain_kind",
+            "adjacent_representation",
+            "what_prose_cannot_do"
+          ],
           "properties": {
             "gain_kind": {
               "enum": [
@@ -147,8 +197,14 @@
                 "evidence"
               ]
             },
-            "adjacent_representation": { "type": "string", "minLength": 1 },
-            "what_prose_cannot_do": { "type": "string", "minLength": 1 }
+            "adjacent_representation": {
+              "type": "string",
+              "minLength": 1
+            },
+            "what_prose_cannot_do": {
+              "type": "string",
+              "minLength": 1
+            }
           }
         }
       }
@@ -156,9 +212,17 @@
     "module": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["id", "label", "role", "carries"],
+      "required": [
+        "id",
+        "label",
+        "role",
+        "carries"
+      ],
       "properties": {
-        "id": { "type": "string", "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$" },
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+        },
         "label": {
           "description": "A short stable semantic label. Never a mutable article/section title, date, caption or citation (signature F6).",
           "type": "string",
@@ -167,7 +231,11 @@
         },
         "role": {
           "description": "observation: the article states it. interpretation: the author claims it. open_question: the article leaves it unresolved.",
-          "enum": ["observation", "interpretation", "open_question"]
+          "enum": [
+            "observation",
+            "interpretation",
+            "open_question"
+          ]
         },
         "carries": {
           "description": "What this module contributes to the plate BEYOND its own text — the quantity, structure or position it renders. A module whose only content is a sentence in a box is signature F3 and must be rejected or merged.",
@@ -184,10 +252,22 @@
     "relation": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["from", "to", "type", "load_bearing", "basis"],
+      "required": [
+        "from",
+        "to",
+        "type",
+        "load_bearing",
+        "basis"
+      ],
       "properties": {
-        "from": { "type": "string", "minLength": 1 },
-        "to": { "type": "string", "minLength": 1 },
+        "from": {
+          "type": "string",
+          "minLength": 1
+        },
+        "to": {
+          "type": "string",
+          "minLength": 1
+        },
         "type": {
           "description": "The relation vocabulary from benchmarks/EDITORIAL-INFOGRAPHIC-INFORMATION-DESIGN.md section 2. The relationship is named BEFORE the geometry is chosen (trait T2) — this is the layer the chart lane inherited and the infographic lane never had.",
           "enum": [
@@ -204,14 +284,31 @@
             "correspondence"
           ]
         },
-        "load_bearing": { "type": "boolean" },
+        "load_bearing": {
+          "type": "boolean"
+        },
         "basis": {
           "description": "stated: the article says it. interpreted: the author infers it. Carried into the caption layer, not stamped inside the artwork.",
-          "enum": ["stated", "interpreted"]
+          "enum": [
+            "stated",
+            "interpreted"
+          ]
         },
         "magnitude_channel": {
           "description": "Trait T7: when magnitude is shown, it rides a continuously-scaling geometric attribute, not discrete buckets or a legend key.",
-          "enum": ["length", "width", "height", "angle", "position", "none"]
+          "enum": [
+            "length",
+            "width",
+            "height",
+            "angle",
+            "position",
+            "none"
+          ]
+        },
+        "dimension": {
+          "description": "The comparison dimension this relation is about. A comparison plate genuinely carries several correspondences between the SAME two modules — one per row — and trait T4 makes each row's delta load-bearing, so collapsing them into one relation loses information the plate exists to show. Required to be distinct when two relations share the same from/to pair, so a repeated pairing is a real set of rows rather than a duplicate.",
+          "type": "string",
+          "minLength": 1
         }
       }
     },
@@ -228,7 +325,9 @@
         "mobile_strategy"
       ],
       "properties": {
-        "geometry": { "$ref": "#/$defs/geometry" },
+        "geometry": {
+          "$ref": "#/$defs/geometry"
+        },
         "reading_order_mechanism": {
           "description": "Trait T3: reading order comes from geometry. Arrows are the fallback for relationships that are genuinely non-spatial, not the default. Module lettering is not an option — it is what a plate does when its geometry cannot say what the order is.",
           "enum": [
@@ -242,11 +341,24 @@
           "description": "Trait T10 / contradiction C2. Typography carries structure through size, weight, case and asymmetric whitespace for roughly 3-4 tiers. Enclosure is necessary only where the structure is NOT hierarchical — independent parallel categories with no rank relation, where size and weight have no 'which is bigger' answer. Everything else drawn as a box is a tier typography could have carried.",
           "type": "object",
           "additionalProperties": false,
-          "required": ["parallel_category_boundaries", "enclosures_planned", "justification"],
+          "required": [
+            "parallel_category_boundaries",
+            "enclosures_planned",
+            "justification"
+          ],
           "properties": {
-            "parallel_category_boundaries": { "type": "integer", "minimum": 0 },
-            "enclosures_planned": { "type": "integer", "minimum": 0 },
-            "justification": { "type": "string", "minLength": 1 }
+            "parallel_category_boundaries": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "enclosures_planned": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "justification": {
+              "type": "string",
+              "minLength": 1
+            }
           }
         },
         "typography_roles": {
@@ -257,13 +369,26 @@
           "items": {
             "type": "object",
             "additionalProperties": false,
-            "required": ["role", "channel"],
+            "required": [
+              "role",
+              "channel"
+            ],
             "properties": {
-              "role": { "type": "string", "minLength": 1 },
+              "role": {
+                "type": "string",
+                "minLength": 1
+              },
               "channel": {
                 "type": "array",
                 "minItems": 1,
-                "items": { "enum": ["size", "weight", "case", "space"] }
+                "items": {
+                  "enum": [
+                    "size",
+                    "weight",
+                    "case",
+                    "space"
+                  ]
+                }
               }
             }
           }
@@ -273,15 +398,27 @@
           "type": "object",
           "additionalProperties": false,
           "properties": {
-            "containment": { "type": "string", "minLength": 1 },
-            "flow": { "type": "string", "minLength": 1 },
-            "authority": { "type": "string", "minLength": 1 }
+            "containment": {
+              "type": "string",
+              "minLength": 1
+            },
+            "flow": {
+              "type": "string",
+              "minLength": 1
+            },
+            "authority": {
+              "type": "string",
+              "minLength": 1
+            }
           }
         },
         "label_strategy": {
           "type": "object",
           "additionalProperties": false,
-          "required": ["max_labels", "stable_only"],
+          "required": [
+            "max_labels",
+            "stable_only"
+          ],
           "properties": {
             "max_labels": {
               "description": "Checked against the artifact profile's text_policy.label_count_ceiling. The ceiling existed before and nothing enforced it (signature F7).",
@@ -302,10 +439,24 @@
           "description": "Trait T9 / signature F5. Professional practice renegotiates height and holds type size, re-stacks, swaps in a plate built for the surface, or splits. Uniform downscaling is not among them and is deliberately not representable in this enum.",
           "type": "object",
           "additionalProperties": false,
-          "required": ["strategy", "viewport_px", "min_type_px"],
+          "required": [
+            "strategy",
+            "viewport_px",
+            "min_type_px"
+          ],
           "properties": {
-            "strategy": { "enum": ["reflow", "restack", "replate", "split"] },
-            "viewport_px": { "type": "integer", "minimum": 320 },
+            "strategy": {
+              "enum": [
+                "reflow",
+                "restack",
+                "replate",
+                "split"
+              ]
+            },
+            "viewport_px": {
+              "type": "integer",
+              "minimum": 320
+            },
             "min_type_px": {
               "description": "Effective rendered type size at viewport_px, not the authored size. The SUE-570 set rendered 5.2-8.7px here.",
               "type": "number",
@@ -320,12 +471,19 @@
         "plate_split": {
           "type": "object",
           "additionalProperties": false,
-          "required": ["is_split"],
+          "required": [
+            "is_split"
+          ],
           "properties": {
-            "is_split": { "type": "boolean" },
+            "is_split": {
+              "type": "boolean"
+            },
             "sibling_plates": {
               "type": "array",
-              "items": { "type": "string", "pattern": "^plate:[a-z0-9]+(-[a-z0-9]+)*$" }
+              "items": {
+                "type": "string",
+                "pattern": "^plate:[a-z0-9]+(-[a-z0-9]+)*$"
+              }
             }
           }
         }
@@ -335,22 +493,44 @@
       "description": "Trait T1 and signature F1. Spatial position must encode exactly one declared thing across the whole plate, and which thing must be a decision rather than a residue. Position encoding NOTHING is legitimate and honest for a topological plate; position encoding nothing while LOOKING like it encodes something is the failure.",
       "type": "object",
       "additionalProperties": false,
-      "required": ["position_convention", "x_axis_encodes", "y_axis_encodes"],
+      "required": [
+        "position_convention",
+        "x_axis_encodes",
+        "y_axis_encodes"
+      ],
       "properties": {
         "position_convention": {
           "description": "scale: an axis carries a measured value. controlled_comparison: position carries which variable was varied. containment: position carries nesting. topological: position carries nothing and the plate says so.",
-          "enum": ["scale", "controlled_comparison", "containment", "topological"]
+          "enum": [
+            "scale",
+            "controlled_comparison",
+            "containment",
+            "topological"
+          ]
         },
         "x_axis_encodes": {
           "description": "Name the axis. Null only when the convention is topological or containment. The acceptance test is literal: if neither dimension can be given a semantic name, the plate is a list wearing a diagram's clothes.",
-          "type": ["string", "null"]
+          "type": [
+            "string",
+            "null"
+          ]
         },
-        "y_axis_encodes": { "type": ["string", "null"] },
+        "y_axis_encodes": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
         "time_scale": {
           "description": "Trait T8. Required when any relation is temporal. proportional when the gaps carry meaning the reader needs; ordinal when only order matters. Ordinal applied to duration-critical data fails silently, which makes it the more dangerous direction for an automated system.",
-          "enum": ["proportional", "ordinal"]
+          "enum": [
+            "proportional",
+            "ordinal"
+          ]
         },
-        "scale_rationale": { "type": "string" }
+        "scale_rationale": {
+          "type": "string"
+        }
       }
     }
   }
