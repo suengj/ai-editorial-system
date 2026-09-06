@@ -93,6 +93,71 @@ routing only works if the runtime identity was recorded in the first place.
 contains the renderer's `provider`/`model` string verbatim. A model name in a
 prompt is contamination; the same name in `renderer` is evidence.
 
+## The human-approval lock (SUE-639)
+
+A prompt produces candidates; human approval produces an asset. Once a human
+accepts a rendered candidate, the job records that as machine state rather
+than conversational memory:
+
+```text
+approved_asset.state          candidate | human_approved_locked
+approved_asset.master_ref     the approved artifact itself, not a description of it
+approved_asset.master_digest  sha256:<64 hex> — what a derivative must trace back to
+approved_asset.native_geometry  width/height, or view_box for a vector master
+approved_asset.format         png | webp | jpeg | avif | svg
+approved_asset.renderer_lineage  the runtime that drew the master, kept auditable after the lock
+```
+
+A lock that names no digest and no native geometry is not a lock — it cannot
+say which artifact was approved, and a later derivative cannot prove it came
+from that artifact. `scripts/lib/visual-job-core.mjs` fails it
+(`approved-master-missing-immutable-identity`).
+
+Every post-approval request is classified before any renderer is consulted
+(`editorial/APPROVED-VISUAL-ASSET-LIFECYCLE.md` §3):
+
+```text
+revision.intent                 publication_only | fidelity_only | format_only | layout_only
+                                | local_edit | concept_change
+revision.preserve_visual_identity
+revision.regeneration_allowed
+revision.request                the human's words, so a misclassification is reviewable
+revision.authorization          who reopened generation, and for what
+```
+
+The first four intents are derivative/media work. On a locked master they must
+carry `preserve_visual_identity: true` / `regeneration_allowed: false`, must
+route `renderer_route: deterministic`, and must not carry a `compiled_prompt`.
+`compileVisualPrompt` refuses them outright (`RegenerationSealedError`), so a
+caller cannot obtain a fresh generation prompt by skipping validation and
+compiling directly. "Make it high quality", "convert it to WebP", "upload it",
+and "bust the cache" are all in this set — none of them is a request for a
+different image.
+
+Generation reopens only through an explicit authorization record:
+
+- `local_edit` — needs a non-empty `authorization.bounded_delta` (exactly what
+  may change) and `authorization.protected_invariants` (what must survive
+  unchanged), and keeps `preserve_visual_identity: true`. An unbounded "edit"
+  is a `concept_change` wearing a smaller name.
+- `concept_change` — needs `authorization.authorized_by` and `statement`, and
+  sets `preserve_visual_identity: false`, so the record never claims to
+  preserve an identity it is about to discard.
+
+`revision` without `approved_asset` is rejected: there is one authority for
+post-approval routing, not a second one alongside it.
+
+The lock is additive to the SUE-565 gates, not a replacement for them —
+context isolation, renderer-runtime exclusion, density, and brand resolution
+all still apply to a locked job. Fixtures:
+`schemas/examples/visual-job-approved-format-derivative.example.json` (the
+deterministic derivative path) and
+`schemas/examples/visual-job-approved-concept-change.example.json` (the
+authorized reopen), plus the prohibited paths in `scripts/test-visual-job.mjs`.
+
+The media operations themselves — decode, digest, HQ derivative, receipt,
+article wiring — belong to `suengj-com`, per the boundary below.
+
 ## Priority order for conflicting visual instructions
 
 From `editorial/profiles/brand/suengj-com.v1.json`:

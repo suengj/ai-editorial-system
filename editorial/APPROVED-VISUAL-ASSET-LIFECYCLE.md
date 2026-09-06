@@ -42,7 +42,7 @@ The renderer may be re-entered only for an explicitly authorized `local_edit` or
 
 ## 2. Approval lock record
 
-A production workflow should retain enough identity to prove which artifact was approved.
+A production workflow must retain enough identity to prove which artifact was approved. The machine form of this record is `approved_asset` in [`schemas/visual-job.schema.json`](../schemas/visual-job.schema.json) (§8 below); a lock with no digest and no native geometry fails validation, because it cannot say which artifact was approved or let a derivative prove it came from that artifact.
 
 ```yaml
 approved_asset:
@@ -217,23 +217,28 @@ The editorial system does not prescribe the storage provider. It prescribes the 
 
 ## 8. Relationship to the visual-job contract
 
-The compiled visual job should preserve renderer lineage for candidate generation, but approval introduces a new downstream state.
-
-Recommended extension semantics:
+The compiled visual job preserves renderer lineage for candidate generation, and approval introduces a new downstream state on the same record. This is not a recommendation — it is enforced by [`schemas/visual-job.schema.json`](../schemas/visual-job.schema.json) and `scripts/lib/visual-job-core.mjs`:
 
 ```yaml
-approval:
-  state: human_approved_locked
-  approved_asset_ref: <ref>
-  approved_asset_digest: <digest>
+approved_asset:
+  state: candidate | human_approved_locked
+  master_ref: <ref>
+  master_digest: sha256:<64 hex>
+  native_geometry: { width, height }   # or { view_box } for a vector master
+  format: png | webp | jpeg | avif | svg
+  renderer_lineage: <the runtime that drew the master>
 
 revision:
   intent: publication_only | fidelity_only | format_only | layout_only | local_edit | concept_change
   preserve_visual_identity: true
   regeneration_allowed: false
+  request: <the human's words>
+  authorization: <required for local_edit and concept_change>
 ```
 
-`renderer` remains lineage. It does not receive a new prompt for `publication_only`, `fidelity_only`, `format_only`, or `layout_only` work.
+`renderer` remains lineage. It does not receive a new prompt for `publication_only`, `fidelity_only`, `format_only`, or `layout_only` work: on a locked master those intents must route `renderer_route: deterministic`, must not carry a `compiled_prompt`, and `compileVisualPrompt` refuses to produce one for them. Generation reopens only for a `local_edit` with a bounded delta and protected invariants, or a `concept_change` the human explicitly asked for. The generative origin of the approved master itself stays auditable in `approved_asset.renderer_lineage`, so closing the route does not erase the lineage.
+
+See [`schemas/VISUAL-JOB-CONTRACT.md`](../schemas/VISUAL-JOB-CONTRACT.md) § "The human-approval lock" for the field-level contract and the fixtures that prove both the prohibited and the authorized paths.
 
 ---
 

@@ -254,6 +254,20 @@ Routine editorial work should default to:
 More iterations require a stated reason. Repeated “make it better” loops are a
 failure of acceptance criteria, not evidence that more prompting is needed.
 
+### Acceptance ends this contract
+
+Once a human accepts a rendered candidate, the request leaves this document.
+The accepted artifact becomes an immutable master under
+[`APPROVED-VISUAL-ASSET-LIFECYCLE.md`](APPROVED-VISUAL-ASSET-LIFECYCLE.md), and
+later `publication_only`, `fidelity_only`, `format_only`, and `layout_only`
+work is derivative/media work with no route back into this section.
+“Make it high quality”, “convert it to WebP”, “compress it”, “upload it”, and
+“bust the cache” are none of them a concept failure or a local defect — they do
+not qualify for the revision budget above, because they do not call a renderer
+at all. `schemas/visual-job.schema.json`'s `approved_asset` / `revision` fields
+enforce this, and `scripts/compile-visual-prompt.mjs` refuses to compile a
+prompt for such a job.
+
 ## 10. Generator neutrality
 
 Editorial contracts name **capabilities**, not preferred vendors.

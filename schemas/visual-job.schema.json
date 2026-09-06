@@ -84,9 +84,108 @@
         "planned", "gated_skip", "compiling", "compiled",
         "rendered", "qa_pass", "qa_fail", "accepted", "rejected"
       ]
+    },
+    "approved_asset": {
+      "description": "The human-approval lock (SUE-639 / editorial/APPROVED-VISUAL-ASSET-LIFECYCLE.md §2). Absent while the job is still producing candidates. Present with state human_approved_locked, it makes approval machine state rather than conversational memory: the approved pixels/vectors become the authority for visual identity, and the normal edge back to a generative renderer is closed. Identity completeness for a locked asset is enforced by scripts/lib/visual-job-core.mjs, not by this schema alone, so a lock claimed without a digest or geometry fails rather than validating hollow.",
+      "$ref": "#/$defs/approved_asset"
+    },
+    "revision": {
+      "description": "How a post-approval request was classified (editorial/APPROVED-VISUAL-ASSET-LIFECYCLE.md §3). Only meaningful alongside approved_asset — a revision intent without an approved asset is rejected, so there is exactly one authority for post-approval routing.",
+      "$ref": "#/$defs/revision"
     }
   },
   "$defs": {
+    "approved_asset": {
+      "description": "Approval lock record. state is the only schema-required field: candidate carries no master identity yet, and the identity requirements for human_approved_locked are cross-field checks in scripts/lib/visual-job-core.mjs (a raster master needs pixel geometry, a vector master a view_box).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["state"],
+      "properties": {
+        "state": {
+          "description": "candidate: still a rendered candidate, generation remains open. human_approved_locked: a human accepted this exact artifact; it is now an immutable master.",
+          "enum": ["candidate", "human_approved_locked"]
+        },
+        "master_ref": {
+          "description": "Reference to the approved artifact itself — repository path, blob ref, or asset id. Never a conversational description of it.",
+          "type": "string",
+          "minLength": 1
+        },
+        "master_digest": {
+          "description": "Content digest of the approved master, so a later derivative can prove same-master lineage.",
+          "type": "string",
+          "pattern": "^sha256:[a-f0-9]{64}$"
+        },
+        "native_geometry": { "$ref": "#/$defs/native_geometry" },
+        "format": { "enum": ["png", "webp", "jpeg", "avif", "svg"] },
+        "approved_by": { "type": "string", "minLength": 1 },
+        "approved_at": { "type": "string", "format": "date" },
+        "approval_context": {
+          "description": "Which article/package/version the approval was given against.",
+          "type": "string",
+          "minLength": 1
+        },
+        "renderer_lineage": {
+          "description": "The runtime that produced the approved master, when it was generated. This is where a generative origin stays auditable after the lock closes the generative route on the job itself: renderer_route on a locked, non-semantic job describes the post-approval derivative route, not how the master was first drawn.",
+          "$ref": "#/$defs/runtime"
+        }
+      }
+    },
+    "native_geometry": {
+      "description": "Native geometry of the approved master: width/height for a raster master, view_box for a vector one. Which of the two is required is decided by approved_asset.format in scripts/lib/visual-job-core.mjs.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "width": { "type": "integer", "minimum": 1 },
+        "height": { "type": "integer", "minimum": 1 },
+        "view_box": { "type": "string", "minLength": 1 }
+      }
+    },
+    "revision": {
+      "description": "Post-approval revision intent and its identity flags (editorial/APPROVED-VISUAL-ASSET-LIFECYCLE.md §3). publication_only/fidelity_only/format_only/layout_only are derivative/media work and may never reach a generative renderer; local_edit and concept_change reopen generation only with explicit authorization.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["intent", "preserve_visual_identity", "regeneration_allowed"],
+      "properties": {
+        "intent": {
+          "enum": [
+            "publication_only", "fidelity_only", "format_only", "layout_only",
+            "local_edit", "concept_change"
+          ]
+        },
+        "preserve_visual_identity": { "type": "boolean" },
+        "regeneration_allowed": { "type": "boolean" },
+        "request": {
+          "description": "The human request this intent classifies, recorded verbatim so a misclassification is reviewable ('make it high quality' is fidelity_only, not concept_change).",
+          "type": "string",
+          "minLength": 1
+        },
+        "authorization": { "$ref": "#/$defs/revision_authorization" }
+      }
+    },
+    "revision_authorization": {
+      "description": "Explicit human authority to reopen the renderer. Required for local_edit (with a bounded delta and the invariants it must not touch) and for concept_change (an explicit request for a different image).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["authorized_by", "statement"],
+      "properties": {
+        "authorized_by": { "type": "string", "minLength": 1 },
+        "statement": {
+          "description": "What the human actually asked for, in their words.",
+          "type": "string",
+          "minLength": 1
+        },
+        "bounded_delta": {
+          "description": "For local_edit: exactly what may change. An empty or absent delta is not a bounded edit.",
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "protected_invariants": {
+          "description": "For local_edit: composition, text, values, colours, and subject identity that must survive the edit unchanged.",
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
     "article_ref": {
       "type": "object",
       "additionalProperties": false,
