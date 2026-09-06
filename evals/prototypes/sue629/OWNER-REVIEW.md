@@ -21,8 +21,29 @@ It renders every rejected asset next to its candidate, each in its own viewport,
 figure-width control at 358 / 390 / 672px. Use it at 358px first — that is where every
 previous asset failed, and it is the one thing a terminal cannot show you.
 
-Draft assets also live on `suengj-com` branch `sue-629-infographic-review` (PR #39,
-review-only, nothing published).
+Draft assets also live on `suengj-com` branch `sue-629-infographic-review` (PR #39).
+
+**A third surface exists that I did not create deliberately, and you should decide about it.**
+Cloudflare Pages built a branch preview of that PR at
+`https://sue-629-infographic-review.suengj-com-prod.pages.dev/media/images/sue629-review/...`.
+That is genuinely the most faithful place to judge the plates — the assets are served the way
+the publication would serve them, so the internal breakpoints respond to a real browser rather
+than to an embedding. But it also means the draft assets are **publicly reachable by URL**.
+
+What that is and is not:
+
+- `main` is untouched at `12011ef`; nothing is on the canonical domain;
+- no article references the assets, and they sit in `public/`, not in a content collection,
+  so nothing indexes or links them;
+- the URL is a preview subdomain, unlisted, and disappears when the branch does;
+- but it is public, not access-controlled.
+
+This is the repository's normal review mechanism and I have not treated it as a publication
+event. If you would rather draft visual evidence never be reachable at all, say so — the fix
+is to close the PR and keep the assets to the control-plane repo, and it costs nothing.
+
+I could not open the preview myself; this session's egress blocks that host. It should work
+from your browser.
 
 ## The comparison
 
