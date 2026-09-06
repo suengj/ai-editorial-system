@@ -158,16 +158,27 @@ export function isRegenerationSealed(job) {
 /** Thrown by compileVisualPrompt when a sealed or lock-violating job asks for a fresh prompt. */
 export class RegenerationSealedError extends Error {
   constructor(job, issues = []) {
-    super(
-      `visual job "${job?.job_id ?? '<job>'}" carries a human_approved_locked master ` +
-      `(revision.intent: ${job?.revision?.intent ? `"${job.revision.intent}"` : 'not declared'}) — ` +
-      'no image-generation prompt may be compiled for it. Fidelity, format, layout, and publication work ' +
-      'are deterministic media operations on the approved master ' +
-      '(editorial/APPROVED-VISUAL-ASSET-LIFECYCLE.md §3-§6). If the image itself must change, declare ' +
-      'revision.intent local_edit or concept_change with a complete revision.authorization; an undeclared ' +
-      'intent is not an authorization to regenerate.' +
-      (issues.length > 0 ? `\n  approval lock: ${issues.map((i) => `[${i.code}] ${i.message}`).join('\n  ')}` : ''),
-    );
+    // Two different refusals reach here and they need different sentences. A
+    // sealed job is locked and unauthorized — the advice is to declare an
+    // authorized intent. A job refused for an unresolved lock finding may not
+    // even be locked (a demoted `candidate`), or may already declare a
+    // complete authorization whose flags contradict it; telling that caller to
+    // "declare local_edit or concept_change" would be wrong.
+    const sealed = isApprovalLocked(job) && !hasAuthorizedReopen(job);
+    const detail = issues.length > 0
+      ? `\n  approval lock: ${issues.map((i) => `[${i.code}] ${i.message}`).join('\n  ')}`
+      : '';
+    super(sealed
+      ? `visual job "${job?.job_id ?? '<job>'}" carries a human_approved_locked master ` +
+        `(revision.intent: ${job?.revision?.intent ? `"${job.revision.intent}"` : 'not declared'}) — ` +
+        'no image-generation prompt may be compiled for it. Fidelity, format, layout, and publication work ' +
+        'are deterministic media operations on the approved master ' +
+        '(editorial/APPROVED-VISUAL-ASSET-LIFECYCLE.md §3-§6). If the image itself must change, declare ' +
+        'revision.intent local_edit or concept_change with a complete revision.authorization; an undeclared ' +
+        `intent is not an authorization to regenerate.${detail}`
+      : `visual job "${job?.job_id ?? '<job>'}" has an unresolved approval-lock finding, so no ` +
+        'image-generation prompt may be compiled for it. The record does not hold together: resolve the ' +
+        `finding below before compiling anything from it.${detail}`);
     this.name = 'RegenerationSealedError';
     this.code = CODES.GENERATION_PROMPT_FORBIDDEN;
     this.issues = issues;
@@ -298,9 +309,15 @@ export function approvalLockIssues(job, where = job?.job_id ?? '<job>') {
     .filter((f) => !isMeaningful(asset[f]));
   // The schema's `format: date` is a shape check (\d{4}-\d{2}-\d{2}), so
   // "0000-00-00" passes it. A date nobody can look up is not an audit trail.
-  if (isMeaningful(asset.approved_at) && !Number.isFinite(Date.parse(`${asset.approved_at}T00:00:00Z`))) {
-    out.push(issue(CODES.APPROVAL_ATTRIBUTION_MISSING, where,
-      `approved_asset.approved_at "${asset.approved_at}" is date-shaped but is not a real calendar date`));
+  // Round-tripped rather than merely parsed: Date.parse is lenient about day
+  // overflow and silently rolls "2025-02-29" into March, so a parse check
+  // alone still accepts dates that never happened.
+  if (isMeaningful(asset.approved_at)) {
+    const parsed = new Date(`${asset.approved_at}T00:00:00Z`);
+    if (!Number.isFinite(parsed.getTime()) || parsed.toISOString().slice(0, 10) !== asset.approved_at) {
+      out.push(issue(CODES.APPROVAL_ATTRIBUTION_MISSING, where,
+        `approved_asset.approved_at "${asset.approved_at}" is date-shaped but is not a real calendar date`));
+    }
   }
   if (attribution.length > 0) {
     out.push(issue(CODES.APPROVAL_ATTRIBUTION_MISSING, where,

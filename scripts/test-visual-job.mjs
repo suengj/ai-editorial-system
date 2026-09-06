@@ -535,11 +535,44 @@ console.log('\ncompiler and validator agree (SUE-639 delta review)');
     (() => { try { compileVisualPrompt(unbounded, { profiles }); return false; } catch (e) { return e instanceof RegenerationSealedError; } })());
   check('hasAuthorizedReopen is false for an unbounded local_edit', !hasAuthorizedReopen(unbounded));
 
-  // A date nobody can look up is not an audit trail.
-  const badDate = clone(approvedFormat);
-  badDate.approved_asset.approved_at = '0000-00-00';
-  check('FAIL a date-shaped approved_at that is not a real calendar date',
-    codesOf(badDate).includes(CODES.APPROVAL_ATTRIBUTION_MISSING));
+  // A date nobody can look up is not an audit trail. Date.parse is lenient
+  // about day overflow — it rolls 2025-02-29 into March rather than failing —
+  // so the check round-trips instead of merely parsing.
+  for (const d of ['0000-00-00', '2026-13-01', '2025-02-29', '2026-02-30', '2026-04-31']) {
+    const badDate = clone(approvedFormat);
+    badDate.approved_asset.approved_at = d;
+    check(`FAIL approved_at "${d}" is date-shaped but is not a real calendar date`,
+      codesOf(badDate).includes(CODES.APPROVAL_ATTRIBUTION_MISSING));
+  }
+  for (const d of ['2024-02-29', '2026-09-05', '9999-12-31']) {
+    const okDate = clone(approvedFormat);
+    okDate.approved_asset.approved_at = d;
+    check(`PASS approved_at "${d}" is a real date`,
+      !codesOf(okDate).includes(CODES.APPROVAL_ATTRIBUTION_MISSING), codesOf(okDate).join(', '));
+  }
+
+  // The refusal message has to describe the refusal that actually happened:
+  // a demoted record is not "a human_approved_locked master", and telling that
+  // caller to declare an authorized intent would be wrong advice.
+  const demoted2 = clone(approvedFormat);
+  demoted2.approved_asset.state = 'candidate';
+  let demotedMessage = '';
+  try { compileVisualPrompt(demoted2, { profiles }); } catch (err) { demotedMessage = err.message; }
+  check('a lock-finding refusal does not claim the job carries a locked master',
+    demotedMessage.includes('unresolved approval-lock finding') &&
+    !demotedMessage.includes('carries a human_approved_locked master'), demotedMessage.split('\n')[0]);
+  check('and still names the specific finding for diagnosis',
+    demotedMessage.includes(CODES.APPROVAL_STATE_INCONSISTENT));
+
+  const sealedMessage = (() => {
+    const j = clone(approvedFormat);
+    delete j.revision;
+    j.renderer_route = 'generative';
+    try { compileVisualPrompt(j, { profiles }); return ''; } catch (err) { return err.message; }
+  })();
+  check('a sealed refusal still explains how to reopen generation legitimately',
+    sealedMessage.includes('carries a human_approved_locked master') &&
+    sealedMessage.includes('local_edit or concept_change'));
 
   // And the legitimate paths still compile.
   check('an authorized concept_change still compiles after the tightening',
