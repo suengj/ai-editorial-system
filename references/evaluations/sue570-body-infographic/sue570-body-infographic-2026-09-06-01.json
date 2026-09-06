@@ -11,7 +11,7 @@
   "evaluated_at": "2026-09-06T08:00:00Z",
   "calibration_ref": null,
   "profile_ref": "editorial/profiles/reference/visual.json",
-  "basis": "explicit_human_feedback",
+  "basis": "model_inference",
   "authority_boundary": "craft_evidence_only",
   "evaluation_id": "eval:sue570-body-infographic-2026-09-06-01",
   "ref_id": "ref:sue570-body-infographic",
@@ -19,7 +19,7 @@
     {
       "dimension": "composition",
       "verdict": "avoid",
-      "note": "Four modules at hand-assigned coordinates in a 2x2 arrangement whose axes encode nothing. It borrows the appearance of a matrix without the encoding, which is worse than no grid because it implies a comparison that does not exist. The modules are lettered A/B/C/D precisely because the geometry cannot say what the order is.",
+      "note": "Owner verdict (human, Linear SUE-570 §D): infographic composition is a material failure. The mechanism, read from source: four modules at hand-assigned coordinates in a 2x2 arrangement whose axes encode nothing. It borrows the appearance of a matrix without the encoding, which is worse than no grid because it implies a comparison that does not exist. The modules are lettered A/B/C/D precisely because the geometry cannot say what the order is.",
       "evidence": "SVG source read 2026-09-06: modules at (24,50), (368,50), (24,200), (368,200). Failure signature F1."
     },
     {
@@ -81,5 +81,5 @@
     ]
   },
   "provenance_class": "generated_output",
-  "notes": "NEGATIVE evidence. Deliberately carries no promotion block: a generated_output reference without promotion is excluded from the positive selection path, which is the mechanism that keeps SUE-570 output from becoming a GOOD reference. Owner verdict recorded on Linear SUE-570 section D. Full analysis in evals/negative-baselines/SUE-570-INFOGRAPHIC-FORENSICS.md."
+  "notes": "NEGATIVE evidence. Basis corrected 2026-09-06 after independent review: the owner's explicit judgement (Linear SUE-570 §D) is that infographic composition is a material failure, and that verdict is human. The per-dimension verdicts below — spacing, hierarchy, visual-density, label-text-strategy — are this agent's reading of the SVG source, not things the owner said, so the record's basis is model_inference and claiming explicit_human_feedback for all of them overstated it. Deliberately carries no promotion block: a generated_output reference without promotion is excluded from the positive selection path, which is the mechanism that keeps SUE-570 output from becoming a GOOD reference. Full analysis in evals/negative-baselines/SUE-570-INFOGRAPHIC-FORENSICS.md."
 }

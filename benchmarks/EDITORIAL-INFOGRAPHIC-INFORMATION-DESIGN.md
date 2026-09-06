@@ -16,8 +16,18 @@ publisher, academy or research domain returned `EGRESS_BLOCKED`, and `curl` to t
 hosts returned `CONNECT tunnel failed, response 403` from the proxy. Verified directly:
 `c4model.com`, `academy.datawrapper.de`, `en.wikipedia.org`, `mitcommlab.mit.edu`,
 `practicaltypography.com`, `observablehq.com`, `flourish.studio`, `pudding.cool`,
-`storytellingwithdata.com`, `developer.mozilla.org` — all refused.
-`github.com` / `raw.githubusercontent.com` are reachable.
+`storytellingwithdata.com`, `developer.mozilla.org`, `theiia.org`,
+`onlinelibrary.wiley.com`, `arxiv.org` — all refused.
+`github.com` / `raw.githubusercontent.com` and `microsoft.com/en-us/research` are
+reachable.
+
+> **Correction, 2026-09-06.** An earlier version of this section said "only GitHub is
+> reachable" and "exactly one external visual reference could be opened". Both
+> overstated the constraint: the allowlist is selective rather than GitHub-only, and
+> `microsoft.com/en-us/research` — which hosts `ref:timeline-design-space` — returns
+> 200. Two external sources were therefore opened, not one. The correction makes the
+> access picture *less* restrictive than first reported; every grade below is
+> unchanged, because no grade was assigned on the strength of the blanket claim.
 
 That has a real consequence for evidence quality, so every claim below carries a grade:
 
@@ -39,14 +49,17 @@ fabricated evidence, which is the failure this repository's `basis` /
 The strongest evidence in this phase is therefore not external at all. It is grade A and
 local: the SUE-570 SVG sources
 (`evals/negative-baselines/SUE-570-INFOGRAPHIC-FORENSICS.md`), the currently-live article
-visuals in `suengj-com`, and one professional newsroom reference that publishes its own
-source on GitHub.
+visuals in `suengj-com`, and the two external sources that were reachable — one
+newsroom reference publishing its own source on GitHub, and one academic paper.
 
 ---
 
 ## 1. Reference set
 
-Six references survived. Four are external, two are local negative evidence. They were
+Six rows below; five carry evaluation records. The sixth — the live article visuals —
+is local evidence cited in §5 rather than a catalogued reference, because it is this
+publication's own output rather than something selected as craft evidence. Four rows are
+external, two are local negative evidence. They were
 selected for analysable structural depth, not to fill a count.
 
 | id | family | grade | what it is authoritative for |
@@ -54,7 +67,7 @@ selected for analysable structural depth, not to fill a count.
 | `ref:ft-visual-vocabulary` | relation→geometry taxonomy | **A** | which geometry a named quantitative relationship warrants |
 | `ref:c4-model-containment` | hierarchy / system structure | B | separating containment, flow and authority into distinct channels |
 | `ref:risk-matrix-comprehension` | matrix | B | when a matrix is warranted, and how ordinal cells mislead |
-| `ref:timeline-design-space` | temporal | B | proportional vs ordinal time scales and what breaks |
+| `ref:timeline-design-space` | temporal | **A** | proportional vs ordinal time scales and what breaks |
 | `ref:sue570-body-infographic` (local) | negative | **A** | seven named failure signatures, source-level |
 | live `suengj-com` article visuals (local) | negative | **A** | the repository's own R1/R2 redundancy regressions, in production |
 
@@ -191,7 +204,7 @@ sorted into categories. Continuous encoding lets magnitude be compared across th
 without a printed number at every point.
 
 ### T8 — Declare the time scale: proportional or ordinal
-*(R3 Q1. Grade B, from an opened academic source.)*
+*(R3 Q1. Grade A — the paper was fetched and read.)*
 
 Proportional when the gaps carry meaning the reader needs; ordinal when only order matters.
 The dangerous direction is ordinal applied to duration-critical data, because **it fails
@@ -208,7 +221,7 @@ the surface, or split into sequential plates. Uniform downscaling is not among t
 
 Every asset in the SUE-570 set, including the two conditionally-accepted charts, is a
 fixed-`viewBox` SVG whose only response to a narrow viewport is uniform scaling, producing
-5.2–8.7px effective type at ~358px. This trait is therefore not an infographic-specific
+5.2–10.1px effective type at ~358px. This trait is therefore not an infographic-specific
 repair.
 
 ### T10 — Four type-only channels, three-to-four tiers, then split
@@ -241,7 +254,7 @@ in-plate module `(c2, 검증 안 됨)` — as the SUE-570 plate did — spends p
 disclosure that the caption layer should own.
 
 ### T12 — A matrix is only for intersection lookup
-*(R2 Q1/Q4. Grade B, backed by an RCT and a formal critique.)*
+*(R2 Q1/Q4. Grade B — a formal critique and a later comprehension trial, both cited from secondary summaries rather than read.)*
 
 Warranted only when two genuinely independent scales exist and the reader's task is "given A
 and B, what joint condition results?" If a sort on one variable answers the question, it is not
@@ -309,6 +322,26 @@ So the matrix relation is the documented exception to reflow-by-default. A matri
 either declare a scroll strategy or split — and if it silently degrades into a list on mobile,
 it has stopped being a matrix without telling anyone.
 
+### C3b — The mobile rule reverses an owner-facing calibration document
+
+`SUENGJ-INFOGRAPHIC-CALIBRATION.md` §10 prescribes that "the semantic architecture itself
+must survive downscaling" and adds "this does not mean enlarging every label
+indiscriminately." Trait `T9` says downscaling is not a legitimate strategy at all.
+
+These do not reconcile, and this one matters more than the other contradictions here because
+the document being contradicted is a record of owner review, not an inference of ours.
+
+The reading that holds both: the calibration is right that the fix is not *enlarging every
+label*, and right that semantic architecture is what must survive. What it assumed is that
+surviving happens *under downscaling*, and the measurements say that assumption does not hold
+on this publication — no asset in the SUE-570 set reaches a usable floor even at its largest
+type. So the calibration's goal is kept and its mechanism is replaced: the architecture
+survives by reflowing, re-stacking, re-plating or splitting, none of which enlarge labels
+indiscriminately.
+
+This is flagged rather than resolved silently, because replacing a mechanism inside an
+owner-reviewed calibration is an owner's call, not a reviewer's.
+
 ### C4 — Proportional scales can crowd out small events
 
 T8 prefers proportional time when gaps carry meaning, but a proportional axis lets a
@@ -340,8 +373,9 @@ The catalog entry `ref:sue570-body-infographic` records this as negative evidenc
 mechanism that keeps a rejected output out of the positive selection path.
 
 One further pattern, from the live article visuals rather than the pilot: the repository's own
-`VISUAL-INFORMATION-GAIN.md` §3 already names two production visuals in
-`companies-become-like-the-tools-they-use` as R1/R2 redundancy regressions — a diagram redrawing
+`VISUAL-INFORMATION-GAIN.md` gives both shapes as worked examples of weak duplication in
+§3 and names them as regressions R1/R2 in §10. Two production visuals in
+`companies-become-like-the-tools-they-use` match those shapes exactly — a diagram redrawing
 the `Reality → Metric → Target → Optimization` chain that sits in the prose immediately above it,
 and a diagram redrawing the `Central IT → End-user` pairing from the code block above it. The
 contract identified them; nothing prevented them from shipping. That is `F7` again at a
@@ -349,6 +383,31 @@ different layer, and it is the reason SUE-629's prototypes must be measured agai
 than against schema validity.
 
 ---
+
+## 5b. What the enforcement layer does and does not prove
+
+Recorded because the first version of this work implied more than it had built.
+
+The composition contract is a **declaration format**. Independent review took the rejected
+SUE-570 plate, changed only fields its own author writes — the declaration of what position
+means, the count of boxes wanted, the claimed label count and rendered type — and the
+identical picture passed the validator with zero issues.
+
+So the contract makes the failures **nameable and routable**, and makes one of them
+(a five-module plate) genuinely unrepresentable. It does not, by itself, make them
+undeclarable.
+
+`scripts/validate-plate.mjs` closes the measurable half: label count, enclosure count,
+effective type size and scale-only behaviour are read off the rendered asset and compared to
+the plan. Against the rejected plate with a plan written to sit inside every ceiling, it
+returns five contradictions.
+
+Two fields stay declarations by nature — whether a coordinate *means* something, and whether
+a module carries geometry, are editorial judgements no parser recovers. For those, review is
+the check, and saying so is more useful than implying otherwise.
+
+`schema-valid` therefore carries no information about whether a plate is good. That is the
+premise SUE-629's owner gate rests on.
 
 ## 6. Rejected hypotheses
 

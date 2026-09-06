@@ -29,8 +29,8 @@
     },
     {
       "dimension": "palette-colour-role",
-      "verdict": "avoid",
-      "note": "Colour banding across cell boundaries biases readings. Where a matrix cell is emphasised, the emphasis should mark an observed position rather than imply a computed score."
+      "verdict": "neutral",
+      "note": "Colour banding across cell boundaries is reported in secondary summaries as a source of reading bias. Recorded without a verdict: it is a claim about rendered matrices, and neither paper was opened, so this record is not in a position to say avoid. Downgraded from avoid 2026-09-06 after independent review."
     },
     {
       "dimension": "artifact-suitability",
@@ -63,5 +63,5 @@
     ]
   },
   "provenance_class": "external",
-  "notes": "Grade B evidence. Craft evidence only — no factual authority about risk is taken from it."
+  "notes": "Grade B evidence — neither source was opened; both publisher domains are refused by this session's egress policy. Craft evidence only, no factual authority about risk. The comprehension trial is cited in the benchmark as corroboration, not as a result this record verified."
 }

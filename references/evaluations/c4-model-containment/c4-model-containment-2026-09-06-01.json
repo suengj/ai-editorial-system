@@ -24,8 +24,8 @@
     },
     {
       "dimension": "composition",
-      "verdict": "adopt",
-      "note": "Never render multiple abstraction levels on one canvas — a plate-split discipline reached independently of SUENGJ-ARTICLE-IMAGE-FAMILIES.md section 6, which strengthens that rule rather than merely restating it."
+      "verdict": "neutral",
+      "note": "The abstraction-level discipline (never render multiple levels on one canvas) is recalled from secondary description rather than derived from an inspected artifact, so it is recorded as corroboration for a plate-split rule this repository already had, not as independent evidence for one. Downgraded from adopt 2026-09-06 after independent review pointed out it carried a structural verdict with no evidence field on a source that was never opened."
     },
     {
       "dimension": "line-weight-materiality",

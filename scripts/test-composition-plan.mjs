@@ -354,9 +354,16 @@ console.log('\nSUE-570 regression — tools-report-infographic.svg re-expressed 
  *     produces a schema issue, not a cross-field one.
  *   - The asset's actual mobile behaviour, uniform downscaling, is deliberately
  *     not in the mobile_strategy enum (T9). "reflow" is the most generous claim
- *     the plan can make, and min_type_px is what exposes that the claim is
- *     false — which is the intended shape: the plan may lie about strategy, it
- *     cannot lie about the rendered floor.
+ *     the plan can make.
+ *
+ * What this suite does NOT show, and an earlier version of this comment wrongly
+ * claimed it did: that the SUE-570 PLATE is unrepresentable. Every code below
+ * fires on a value the plan's own author wrote. Independent review demonstrated
+ * the consequence — changing six self-reported fields on this same object, and
+ * nothing about the picture, makes it pass clean. A plan legitimately records
+ * intent, so that is not a defect in the format; believing the plan is the
+ * defect. scripts/test-plate-verify.mjs closes it by measuring the actual
+ * rendered asset against the declaration.
  */
 const sue570 = {
   schema_version: '1.0.0',

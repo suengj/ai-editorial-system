@@ -208,7 +208,7 @@ export function validateCompositionPlan(plan, { schema = loadSchema(), profiles 
   const mob = comp.mobile_strategy;
   if (!(mob.min_type_px >= MIN_TYPE_PX)) {
     issues.push(issue(CODES.MOBILE_TYPE_FLOOR, `${where}#composition.mobile_strategy`,
-      `min_type_px ${mob.min_type_px} is below the ${MIN_TYPE_PX}px floor at viewport_px ${mob.viewport_px} — professional practice renegotiates height and holds type size; answering a narrow viewport by shrinking type is signature F5, and the SUE-570 set rendered 5.2-8.7px here`));
+      `min_type_px ${mob.min_type_px} is below the ${MIN_TYPE_PX}px floor at viewport_px ${mob.viewport_px} — professional practice renegotiates height and holds type size; answering a narrow viewport by shrinking type is signature F5, and the SUE-570 set rendered 5.2-10.1px here`));
   }
 
   // --- R7 · label-ceiling (F7) --------------------------------------------

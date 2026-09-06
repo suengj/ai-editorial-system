@@ -20,12 +20,12 @@
       "dimension": "hierarchy",
       "verdict": "adopt",
       "note": "The reference's own organising hierarchy is the transferable lesson: nine relationship families sit above the geometries, so selection starts from the relationship in the data rather than from a shape. This inverts the order the SUE-570 infographic used, which chose a 2x2 card layout first and poured relations into it.",
-      "evidence": "Read in full 2026-09-06. Top-level sections are Deviation, Correlation, Ranking, Distribution, Change over Time, Part-to-whole, Magnitude, Spatial, Flow; every concrete chart type appears only beneath one of them."
+      "evidence": "README fetched and read 2026-09-06 (22,912 bytes). It carries 15 second-level sections; nine of them are relationship families — Deviation, Correlation, Ranking, Distribution, Change over Time, Part-to-whole, Magnitude, Spatial, Flow — and every concrete chart type appears only beneath one of those nine. The remaining six (General, Uncertainty, Animation, Interactivity, Map projections, Colour) are cross-cutting guidance rather than families."
     },
     {
       "dimension": "artifact-suitability",
       "verdict": "adopt",
-      "note": "Authoritative for the relation-to-geometry selection method for quantitative relations, which bears on visual/analytical-graphic and visual/evidence-visual. It is NOT authoritative for the qualitative-structural relations a body infographic needs — causal-chain, authority, containment, correspondence have no family here.",
+      "note": "Authoritative for the relation-to-geometry selection METHOD, which bears on visual/analytical-graphic and visual/evidence-visual. Explicitly NOT authoritative for visual/body-infographic: the qualitative-structural relations a body infographic needs — causal-chain, authority, containment, correspondence — have no family here.",
       "evidence": "No section of the vocabulary covers a non-quantitative relation."
     },
     {
@@ -51,7 +51,7 @@
   ],
   "strengths": [
     "Organised by relationship first and geometry second, which is a reusable selection method independent of brand, subject and renderer.",
-    "Published with its source, so it could be inspected directly rather than assessed from secondary description — the only external visual reference in this set for which that was possible."
+    "Publishes its README on a reachable host, so the taxonomy could be read directly rather than assessed from secondary description. The poster PDF and the site itself were NOT reachable, and the companion template repository's README is a short getting-started file with no chart code — so what was read is the taxonomy prose, not FT's implementations."
   ],
   "weaknesses": [
     "Covers quantitative relations only. Supplies nothing for causal chains, authority, containment or correspondence, which is the exact lane where SUE-570 failed.",
@@ -70,13 +70,12 @@
     ],
     "artifacts": [
       "visual/analytical-graphic",
-      "visual/evidence-visual",
-      "visual/body-infographic"
+      "visual/evidence-visual"
     ],
     "surfaces": [
       "suengj-com"
     ]
   },
   "provenance_class": "external",
-  "notes": "Grade A evidence — directly inspected 2026-09-06. Adopted for its taxonomy method only; see benchmarks/EDITORIAL-INFOGRAPHIC-INFORMATION-DESIGN.md section 1.1."
+  "notes": "Grade A for the taxonomy prose, which is what is adopted. Corrected 2026-09-06 after independent review: an earlier version implied the whole vocabulary including its templates had been inspected, and listed visual/body-infographic under applicable_to while the artifact-suitability note disclaimed exactly that family. A downstream selector reads applicable_to, not the note."
 }

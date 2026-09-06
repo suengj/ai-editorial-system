@@ -101,6 +101,7 @@ Counted from source:
 | `tools-news-diagram.svg` | 2 lanes × 3 stages | 6 boxes | 1.0× |
 | `report-repricing-vs-crisis-matrix.svg` | 4 cells | 4 (the cells themselves) | 1.0× |
 | `news-jp-us-10y-divergence.svg` | 2 series | 0 | 0× |
+| `child-rate-vs-worry-bars.svg` | 2 bars | 2 (the bars themselves) | 1.0× |
 
 The failed infographic nests enclosure inside enclosure: a bordered card containing
 bordered chips containing text. `SUENGJ-INFOGRAPHIC-CALIBRATION.md` §4 asks for exactly
@@ -184,6 +185,17 @@ viewport is uniform scaling. Effective rendered type sizes at 358px:
 | `tools-news-diagram.svg` | 640 | 0.559 | 15px → **8.4px** | 11px → **6.2px** |
 | `news-jp-us-10y-divergence.svg` | 620 | 0.577 | 15px → **8.7px** | 11px → **6.4px** |
 | `report-repricing-vs-crisis-matrix.svg` | 720 | 0.497 | 17px → **8.5px** | 10.5px → **5.2px** |
+| `child-rate-vs-worry-bars.svg` | 640 | 0.559 | 18px → **10.1px** | 12px → **6.7px** |
+
+> **Correction, 2026-09-06.** The first version of this table omitted
+> `child-rate-vs-worry-bars.svg`, and the range `5.2–8.7px` was quoted from it into
+> the benchmark, the composition contract, three artifact profiles and two commit
+> messages. The measured range across the five non-concept assets is
+> **5.2–10.1px**. The conclusion is unchanged — 10.1px is still far below any
+> usable floor, and no asset reaches 14px even at its largest type — but the number
+> was wrong and had propagated. All copies are corrected, and
+> `scripts/test-plate-verify.mjs` now asserts the range against the actual files so
+> it cannot drift again.
 
 Two consequences that must not be blurred together:
 
@@ -245,10 +257,25 @@ it. This is a contract-enforcement gap, not a design gap:
 
 ## 8. What the accepted lane actually did right
 
-Stated positively, so the successor contract can inherit it rather than rediscover it:
+Stated positively, so the successor contract can inherit it rather than rediscover it —
+with one important qualification recorded first.
 
-- **Position is computed from data.** Coordinates in the chart are arithmetic on values,
-  not hand placement.
+> **Correction, 2026-09-06.** The claim below was originally written as a property of
+> "the accepted lane". It is not. `child-rate-vs-worry-bars.svg` is in the
+> conditionally-accepted set and its position is **not** computed from data: the two
+> bars sit on inconsistent scales (202.4px for 4.80 is 42.2 px/unit; 48.4px for 1.01 is
+> 47.9 px/unit), they encode *level* while the caption claims they show *change*, and
+> the asset's own in-frame note concedes the heights are `정확한 눈금이 아니`— not an
+> accurate scale. Two of the three accepted assets compute position from meaning; the
+> third does not, and it is the weakest of them.
+>
+> This makes the finding sharper rather than weaker. The discriminator is not
+> *chart versus infographic* — family membership predicts nothing. It is *position
+> computed from meaning versus position assigned by hand*, and an accepted-lane asset
+> that fails the discriminator is evidence for the discriminator, not against it.
+
+- **Position is computed from data** — in the two accepted assets where it holds.
+  Coordinates in the line chart are arithmetic on values, not hand placement.
 - **Zero enclosures.** Grouping is done by shared baseline, axis alignment and a series
   label placed at the end of its own line — not by cards.
 - **`fill: currentColor` throughout.** The chart inherits the publication's text colour

@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 360" width="640" height="360" role="img" aria-labelledby="t d">
+<title id="t">회사는 자기가 쓰는 도구 모양을 닮아간다</title>
+<desc id="d">왼쪽: 반듯한 격자(표 계산 프로그램)가 하나의 둥근 모양(회사)으로 모인다. 오른쪽: 더 자유롭고 다양한 모양의 연결망(AI)이 같은 둥근 모양으로 모인다. 두 모양 모두 같은 대상(회사/일)으로 이어지지만 도구의 생김새가 다르면 모이는 방식도 달라진다는 것을 글자 없이 보여주는 개념 그림. 이 그림은 결론이 아니라 저자의 생각을 그린 것이다.</desc>
+<style>
+  .bg { fill: #F5F1E7; }
+  .grid { fill: #FFFFFF; stroke: #5B6F55; stroke-width: 1.4; }
+  .node { fill: #FFFFFF; stroke: #C9A671; stroke-width: 1.4; }
+  .target { fill: #5B6F55; }
+  .targetAlt { fill: #C9A671; }
+  .link { stroke: #8b8778; stroke-width: 1.1; }
+</style>
+<rect class="bg" x="0" y="0" width="640" height="360"/>
+
+<!-- left: rigid grid -->
+<g>
+  <rect class="grid" x="60" y="60" width="34" height="34"/>
+  <rect class="grid" x="100" y="60" width="34" height="34"/>
+  <rect class="grid" x="140" y="60" width="34" height="34"/>
+  <rect class="grid" x="60" y="100" width="34" height="34"/>
+  <rect class="grid" x="100" y="100" width="34" height="34"/>
+  <rect class="grid" x="140" y="100" width="34" height="34"/>
+  <rect class="grid" x="60" y="140" width="34" height="34"/>
+  <rect class="grid" x="100" y="140" width="34" height="34"/>
+  <rect class="grid" x="140" y="140" width="34" height="34"/>
+  <line class="link" x1="117" y1="174" x2="150" y2="230"/>
+  <circle class="target" cx="170" cy="255" r="30"/>
+</g>
+
+<!-- right: organic varied network -->
+<g>
+  <circle class="node" cx="430" cy="70" r="14"/>
+  <circle class="node" cx="480" cy="55" r="9"/>
+  <circle class="node" cx="520" cy="90" r="17"/>
+  <circle class="node" cx="460" cy="115" r="11"/>
+  <circle class="node" cx="410" cy="120" r="8"/>
+  <circle class="node" cx="500" cy="140" r="13"/>
+  <circle class="node" cx="445" cy="160" r="10"/>
+  <line class="link" x1="430" y1="84" x2="470" y2="230"/>
+  <line class="link" x1="520" y1="107" x2="480" y2="230"/>
+  <line class="link" x1="460" y1="126" x2="470" y2="230"/>
+  <line class="link" x1="445" y1="170" x2="470" y2="230"/>
+  <line class="link" x1="500" y1="153" x2="480" y2="230"/>
+  <circle class="targetAlt" cx="475" cy="255" r="30"/>
+</g>
+
+<line x1="230" y1="255" x2="410" y2="255" stroke="#c9c4b4" stroke-width="1" stroke-dasharray="3 5"/>
+</svg>

@@ -229,7 +229,7 @@
       "ref_id": "ref:risk-matrix-comprehension"
     },
     {
-      "basis": "explicit_human_feedback",
+      "basis": "model_inference",
       "evaluated_at": "2026-09-06T08:00:00Z",
       "evaluation_id": "eval:sue570-body-infographic-2026-09-06-01",
       "evaluator_type": "agent",

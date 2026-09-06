@@ -269,12 +269,18 @@
           "minLength": 1
         },
         "type": {
-          "description": "The relation vocabulary from benchmarks/EDITORIAL-INFOGRAPHIC-INFORMATION-DESIGN.md section 2. The relationship is named BEFORE the geometry is chosen (trait T2) — this is the layer the chart lane inherited and the infographic lane never had.",
+          "description": "The relation vocabulary from benchmarks/EDITORIAL-INFOGRAPHIC-INFORMATION-DESIGN.md section 2. The relationship is named BEFORE the geometry is chosen (trait T2) — this is the layer the chart lane inherited and the infographic lane never had. The first ten entries carry the nine quantitative families the reference vocabulary supplies, kept complete after independent review pointed out that an earlier cut kept only four of them while visual/analytical-graphic is a family REQUIRED to carry a plan: a scatterplot, a stacked bar, a share-of-total or a flow diagram could not have been planned at all. The last five are the qualitative-structural relations an explanatory editorial graphic needs and for which no published vocabulary exists — supplying those is what this contract adds.",
           "enum": [
             "magnitude",
             "ranking",
             "comparison-delta",
             "matrix",
+            "deviation",
+            "correlation",
+            "distribution",
+            "part-to-whole",
+            "spatial",
+            "flow",
             "temporal-proportional",
             "temporal-ordinal",
             "causal-chain",
@@ -458,7 +464,7 @@
               "minimum": 320
             },
             "min_type_px": {
-              "description": "Effective rendered type size at viewport_px, not the authored size. The SUE-570 set rendered 5.2-8.7px here.",
+              "description": "Effective rendered type size at viewport_px, not the authored size. The SUE-570 set rendered 5.2-10.1px here.",
               "type": "number",
               "minimum": 0
             },

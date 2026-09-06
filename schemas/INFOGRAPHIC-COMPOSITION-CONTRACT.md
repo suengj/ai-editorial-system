@@ -98,7 +98,10 @@ the modules sat at hand-assigned coordinates in a 2×2 arrangement whose axes en
 borrowing the appearance of a matrix without the encoding, which is worse than no grid because
 it implies a comparison that does not exist.
 
-So `geometry` requires a declared `position_convention` and forces both axes to be named:
+So `geometry` requires a declared `position_convention` and requires the axes to be
+answered — each is `string | null`, and a `scale` or `controlled_comparison` plate that
+names *neither* is rejected. It does not require both to be named: a plate with one real
+axis and one null is legitimate, and that is what the acceptance test below actually says.
 
 ```text
 scale                 an axis carries a measured value
@@ -147,7 +150,7 @@ That is signature `F4` enforced structurally rather than by review.
 
 Every asset in the SUE-570 set — including the two conditionally-accepted charts — is a
 fixed-`viewBox` SVG whose only response to a narrow viewport is uniform scaling, producing
-5.2–8.7px effective type at a ~358px figure width. This is `F5`, and it is systemic rather
+5.2–10.1px effective type at a ~358px figure width. This is `F5`, and it is systemic rather
 than infographic-specific.
 
 Professional practice documents four responses. The enum carries exactly those:
@@ -214,8 +217,49 @@ by cross-field rule, not by schema — whenever `artifact_profile` is one of the
 information-design families and the information-gain verdict is not `skip`. A `skip` verdict
 still short-circuits before any planning, exactly as before.
 
-Nothing else in the visual job changes. The two existing pre-render gates, the context
+`renderer_route` also gains `generative_support`, because the three information-design
+profiles declare it and the plan schema uses it, and until it was added no job could carry a
+plan routed that way.
+
+Two cross-field rules are added to the visual job: an information-design family must name a
+`composition_plan_ref` unless its information-gain verdict is `skip`, and it may not route to
+plain `generative`. Nothing else changes — the two existing pre-render gates, the context
 isolation allowlist, the brand priority order and the renderer lineage fields are untouched.
+
+## What a plan can and cannot be trusted to say
+
+A composition plan is a **declaration of intent**. Independent review of the first cut of
+this contract established what that means concretely: taking the rejected SUE-570 plate and
+changing only fields its own author writes — its declaration of what position means, its own
+count of how many boxes it wanted, its own claim about label count and rendered type — made
+the identical picture pass the entire validator with zero issues. `enclosures_planned <=
+parallel_category_boundaries` was comparing a number to itself.
+
+That is not a defect in the plan format. A plan legitimately records what the author intends.
+It was a defect in the claims made *about* the plan, which have been corrected.
+
+`scripts/validate-plate.mjs` closes the gap for everything a rendered asset can be measured
+for, so the declaration becomes checkable the moment an asset exists:
+
+| declared in the plan | measured in the asset |
+|---|---|
+| `label_strategy.max_labels` | `<text>` elements actually drawn |
+| `enclosure_budget.enclosures_planned` | container rects actually drawn, background excluded |
+| `mobile_strategy.min_type_px` | smallest authored type scaled into the target viewport |
+| `mobile_strategy.strategy` | whether the asset carries `width`/`height` and can only scale |
+
+Run against the rejected plate with a plan written to sit inside every ceiling, it returns
+five contradictions.
+
+Two fields remain declarations and cannot be otherwise:
+
+- **`position_convention`** — whether a coordinate *means* something is an editorial
+  judgement about the picture, not a property a parser recovers. A validator can insist the
+  question is answered; it cannot check the answer.
+- **`module.prose_only`** — likewise a judgement about whether a module carries geometry.
+
+For those two, the plan is a record of a decision someone made, and the check is review.
+The contract states this rather than implying enforcement it does not have.
 
 ## What this contract deliberately does not do
 

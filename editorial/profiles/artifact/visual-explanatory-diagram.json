@@ -65,7 +65,7 @@
     "gate": {
       "viewport": "~390px reading surface",
       "requirements": [
-        "module boundaries readable after downscaling",
+        "module boundaries readable at the target viewport — reached by a declared strategy, not by uniform downscaling (see strategy.invalid below)",
         "one clear reading path",
         "line weight/contrast that survives mobile rendering",
         "no horizontal page overflow",
@@ -81,7 +81,7 @@
         "invalid": "uniform_scale",
         "min_effective_type_px": 14,
         "measured_at_viewport_px": 390,
-        "note": "min_effective_type_px is the rendered size at the stated viewport, not the authored size. Every asset in the SUE-570 set — including the two conditionally-acceptable charts — is a fixed-viewBox SVG whose only response to a narrow viewport is uniform scaling, producing 5.2-8.7px effective type. This defect is systemic rather than infographic-specific (signature F5, trait T9)."
+        "note": "min_effective_type_px is the rendered size at the stated viewport, not the authored size. Every asset in the SUE-570 set — including the two conditionally-acceptable charts — is a fixed-viewBox SVG whose only response to a narrow viewport is uniform scaling, producing 5.2-10.1px effective type. This defect is systemic rather than infographic-specific (signature F5, trait T9)."
       }
     },
     "rationale": "A body-placed explanatory diagram is a body-facing visual and inherits the SUENGJ-ARTICLE-IMAGE-FAMILIES.md §5 mobile gate."

@@ -66,7 +66,7 @@
     "gate": {
       "viewport": "~390px reading surface",
       "requirements": [
-        "comparison rows/columns remain legible without shrinking below readable size",
+        "comparison rows/columns remain legible at the target viewport without shrinking below the type floor",
         "no micro-panel-per-cell density",
         "one clear reading direction",
         "no horizontal page overflow"
@@ -81,7 +81,7 @@
         "invalid": "uniform_scale",
         "min_effective_type_px": 14,
         "measured_at_viewport_px": 390,
-        "note": "min_effective_type_px is the rendered size at the stated viewport, not the authored size. Every asset in the SUE-570 set — including the two conditionally-acceptable charts — is a fixed-viewBox SVG whose only response to a narrow viewport is uniform scaling, producing 5.2-8.7px effective type. This defect is systemic rather than infographic-specific (signature F5, trait T9)."
+        "note": "min_effective_type_px is the rendered size at the stated viewport, not the authored size. Every asset in the SUE-570 set — including the two conditionally-acceptable charts — is a fixed-viewBox SVG whose only response to a narrow viewport is uniform scaling, producing 5.2-10.1px effective type. This defect is systemic rather than infographic-specific (signature F5, trait T9)."
       }
     },
     "rationale": "A comparison matrix is exactly the shape SUENGJ-ARTICLE-IMAGE-FAMILIES.md §5 warns collapses into faint lines and tiny labels on mobile if not disciplined."
