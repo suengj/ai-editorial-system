@@ -1,0 +1,132 @@
+{
+  "schema_version": "1.0.0",
+  "plan_id": "plate:governance-authority-loop",
+  "artifact_profile": "visual/body-infographic",
+  "profile_ref": "editorial/profiles/artifact/visual-body-infographic.json",
+  "article_ref": {
+    "slug": "companies-become-like-the-tools-they-use",
+    "content_hash": null,
+    "surface": "article-body"
+  },
+  "semantic_plan": {
+    "primary_question": "통제 계층을 통과하는 워크플로와 그렇지 않은 워크플로는, 조직이 실제로 무엇을 볼 수 있는지에서 어떻게 달라지는가?",
+    "modules": [
+      {
+        "id": "central-platform",
+        "label": "중앙 AI 플랫폼",
+        "role": "observation",
+        "carries": "모델·도구·데이터를 제공하는 하나의 경계 지어진 원천 — 통제 계층과 별도의 상자로 위치."
+      },
+      {
+        "id": "control-layer",
+        "label": "통제 계층",
+        "role": "observation",
+        "carries": "identity·permission, policy, audit trail, evaluation을 같은 경계 안 병렬 항목으로 담는 하나의 컨테인먼트 — 플랫폼과 워크플로 '사이'에 위치."
+      },
+      {
+        "id": "governed-workflow",
+        "label": "통제된 워크플로",
+        "role": "observation",
+        "carries": "실행(flow) 연결과 더불어, control-layer로 되돌아가는 별도의 authority 연결(감사·권한 보고)이 닫힌 고리를 이루는 형태 — 통제 계층의 경계 안쪽 위치."
+      },
+      {
+        "id": "shadow-workflow",
+        "label": "그림자 워크플로",
+        "role": "interpretation",
+        "carries": "실제 행동(파일 읽기·메일 발송 등)은 일으키지만, control-layer로 돌아가는 authority 연결 자체가 존재하지 않는 형태 — 통제 계층의 경계 바깥 위치. 이 '없음'이 이 플레이트의 payload."
+      }
+    ],
+    "relations": [
+      {
+        "from": "central-platform",
+        "to": "control-layer",
+        "type": "causal-chain",
+        "load_bearing": true,
+        "basis": "stated",
+        "magnitude_channel": "none"
+      },
+      {
+        "from": "control-layer",
+        "to": "governed-workflow",
+        "type": "causal-chain",
+        "load_bearing": true,
+        "basis": "stated",
+        "magnitude_channel": "none"
+      },
+      {
+        "from": "control-layer",
+        "to": "governed-workflow",
+        "type": "containment",
+        "load_bearing": true,
+        "basis": "interpreted",
+        "magnitude_channel": "none"
+      },
+      {
+        "from": "governed-workflow",
+        "to": "control-layer",
+        "type": "authority",
+        "load_bearing": true,
+        "basis": "stated",
+        "magnitude_channel": "none"
+      },
+      {
+        "from": "governed-workflow",
+        "to": "shadow-workflow",
+        "type": "comparison-delta",
+        "load_bearing": true,
+        "basis": "interpreted",
+        "magnitude_channel": "none"
+      }
+    ],
+    "reading_order": ["central-platform", "control-layer", "governed-workflow", "shadow-workflow"],
+    "must_preserve": [
+      "통제 계층이 identity·permission, policy, audit trail, evaluation을 포함한다는 것",
+      "통제 계층이 중앙 AI 플랫폼과 최종 워크플로 '사이'에 위치한다는 것",
+      "통제된 워크플로는 control-layer로 돌아가는 authority(감사·권한) 채널이 닫혀 있다는 것",
+      "그림자 워크플로는 실제 행동은 일어나지만 control-layer로 돌아가는 authority 채널이 존재하지 않는다는 것 — 이것이 이 플레이트의 핵심 payload",
+      "authority 채널은 flow(실행) 채널과 시각적으로 별개여야 한다는 것"
+    ],
+    "evidence_boundary": {
+      "in_plate": "governed-workflow와 shadow-workflow 각각에서 authority 채널의 유무만 대비해 보여준다. 어느 조직이 실제로 이런 상태에 있다는 구체적 사례나 수치는 표기하지 않는다.",
+      "in_caption": "이 구조가 이미 일어난 사실이 아니라, 스프레드시트 시대의 shadow IT 유비에서 저자가 추론한 미래 통제 필요(Agent Governance)에 대한 해석적 모델임을 명시한다."
+    },
+    "information_gain": {
+      "gain_kind": "topological_closure",
+      "adjacent_representation": "본문 코드 블록(Central IT → End-user spreadsheet / Central AI platform → End-user agent workflow)과 이미 게시된 end-user-agent-governance.svg가 platform→governance→workflow의 흐름과 통제 항목 목록(Identity·Permission, Policy, Evaluation, Audit trail)은 이미 보여준다.",
+      "what_prose_cannot_do": "코드 블록과 기존 다이어그램은 통제 계층이 무엇을 포함하는지, 흐름이 어디로 가는지는 보여주지만, 감사·권한 보고가 실제로 돌아와 고리를 닫는지(통제된 워크플로) 아니면 그 채널 자체가 애초에 존재하지 않는지(그림자 워크플로)는 보여주지 않는다. authority의 유무라는 위상적 사실은 프로즈가 한 문장으로 주장할 수는 있어도, 독자가 두 경우를 동시에 비교하며 '보게' 만들 수는 없다."
+    }
+  },
+  "composition": {
+    "geometry": {
+      "position_convention": "containment",
+      "x_axis_encodes": null,
+      "y_axis_encodes": null,
+      "scale_rationale": "이 플레이트는 척도를 갖지 않는다 — 위치는 오직 무엇이 통제 계층의 authority 도달 범위 안에 있고 무엇이 밖에 있는지(포함 관계)만을 나타내며, 좌우/상하 순서 자체에는 의미가 없다."
+    },
+    "reading_order_mechanism": "explicit_connectors",
+    "enclosure_budget": {
+      "parallel_category_boundaries": 3,
+      "enclosures_planned": 3,
+      "justification": "세 개의 실제 포함/경계 관계가 있고, 그 각각은 타이포그래피로 대체할 수 없는 '안/밖' 공간 사실이다: (1) central-platform을 감싸는 경계 — 플랫폼이 하나의 독립된 원천임을 표시, (2) control-layer를 감싸는 경계 — identity·permission/policy/audit trail/evaluation이라는 다섯 병렬 항목이 그 안에 있음을 표시(다섯 항목 자체는 개별 상자 없이 같은 경계 안 타이포그래피 목록으로 처리), (3) authority 도달 범위 경계 — governed-workflow는 안쪽, shadow-workflow는 바깥쪽에 위치시켜 '통제됨/그림자'라는 병렬 범주를 상자 두 개가 아닌 경계선 하나의 안/밖으로 표현. 모듈 4개에 경계 3개로 1:1에 가까운 비율을 유지해 SUE-570의 enclosure-inflation(3.0×)을 반복하지 않는다."
+    },
+    "typography_roles": [
+      { "role": "계층/원천 제목", "channel": ["size", "weight"] },
+      { "role": "통제 항목 목록", "channel": ["size", "case"] },
+      { "role": "그림자 워크플로 강조", "channel": ["weight", "space"] }
+    ],
+    "connector_channels": {
+      "containment": "central-platform, control-layer, authority 도달 범위 각각을 감싸는 경계선 — 이 채널은 다른 어떤 목적으로도 재사용되지 않는다.",
+      "flow": "실선 화살표에 동사형 레이블('실행' 등)을 직접 부착 — 실제 작업/행동이 이동하는 경로만 표시.",
+      "authority": "flow와 구별되는 전용 비대칭 채널(예: 이중선 또는 화살촉 스타일이 다른 회귀 연결) — governed-workflow에서 control-layer로 돌아가는 감사·권한 보고 관계에만 사용하며, shadow-workflow에는 이 채널을 아예 그리지 않는다 — 부재 자체가 정보다."
+    },
+    "label_strategy": { "max_labels": 8, "stable_only": true },
+    "annotation_strategy": "authority 채널과 flow 채널은 서로 다른 선 스타일로 구분되며, 그 의미(무엇이 오가는지)는 각 연결선 옆에 직접 붙는 짧은 동사형 레이블로 표기한다(범례 없음). shadow-workflow에서는 authority 연결선 자체가 존재하지 않는 것으로 표현되어 그 부재가 곧 정보가 된다.",
+    "mobile_strategy": {
+      "strategy": "restack",
+      "viewport_px": 390,
+      "min_type_px": 15
+    }
+  },
+  "renderer_route": "deterministic",
+  "notes": "existing end-user-agent-governance.svg가 이미 그린 platform→governance→workflow 흐름과 통제 항목 목록은 이 플레이트에서도 최소한의 배경 구조로 유지하되, 첫 읽기 payload와 시각적 강조(타이포그래피·연결선 굵기·reading_order)는 governed-workflow와 shadow-workflow 사이의 authority 채널 유무 대비에 둔다 — 기존 SVG가 보여주지 않는 부분만을 지배적 신호로 삼는다."
+}
