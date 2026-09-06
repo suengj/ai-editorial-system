@@ -1,0 +1,106 @@
+{
+  "schema_version": "1.0.0",
+  "plan_id": "plate:tokenized-stocks-window-delta",
+  "artifact_profile": "visual/analytical-graphic",
+  "profile_ref": "editorial/profiles/artifact/visual-analytical-graphic.json",
+  "article_ref": {
+    "slug": "tokenized-stocks-instant-payments-liquidity-rights",
+    "content_hash": null,
+    "surface": "suengj.com"
+  },
+  "semantic_plan": {
+    "primary_question": "How much of the token market's liquidity depends on the underlying market being open?",
+    "modules": [
+      {
+        "id": "open-window",
+        "label": "OPEN WINDOW",
+        "role": "observation",
+        "carries": "One end of every paired reading: spread and depth taken while the underlying market is trading. Its dots sit on the same vertical scale as the closed-window pair, which is what makes the two comparable at a glance rather than by arithmetic."
+      },
+      {
+        "id": "closed-window",
+        "label": "CLOSED WINDOW",
+        "role": "observation",
+        "carries": "The other end of the same pairs, read on the same axis. The vertical distance between this column and the open-window column is the delta itself, rendered as a length rather than stated as two numbers."
+      },
+      {
+        "id": "mint-redeem",
+        "label": "MINT / REDEEM",
+        "role": "interpretation",
+        "carries": "A third column on the same axis, aligned row-for-row with the other two, carrying availability rather than price. Its parallel structure is the claim: the row where availability narrows is the row where the delta opens."
+      }
+    ],
+    "relations": [
+      {
+        "from": "open-window",
+        "to": "closed-window",
+        "type": "comparison-delta",
+        "load_bearing": true,
+        "basis": "stated",
+        "magnitude_channel": "length"
+      },
+      {
+        "from": "mint-redeem",
+        "to": "closed-window",
+        "type": "correspondence",
+        "load_bearing": true,
+        "basis": "interpreted"
+      }
+    ],
+    "reading_order": [
+      "open-window",
+      "closed-window",
+      "mint-redeem"
+    ],
+    "must_preserve": [
+      "one shared vertical scale across all three columns — a per-column scale would make the connecting segments meaningless while still looking comparable",
+      "the connecting segment between paired dots, which is the delta; two dots with no segment leaves the gap to be computed rather than seen",
+      "the row alignment between the availability column and the price columns, which is the only place the interpreted correspondence is carried"
+    ],
+    "evidence_boundary": {
+      "in_plate": "The plate shows the two measured states on one scale and the availability column aligned beside them. It shows that the rows line up; it does not show that one causes the other.",
+      "in_caption": "The caption carries the author's reading that narrowing mint/redeem availability is what opens the window delta, and marks it as an inference from the article's account rather than a measured relationship."
+    },
+    "information_gain": {
+      "gain_kind": "comparison",
+      "adjacent_representation": "A paragraph reporting spread and depth in each window, followed by a sentence about mint/redeem availability.",
+      "what_prose_cannot_do": "Prose delivers four numbers one after another and asks the reader to subtract, then to hold the difference while reading a fifth statement about availability. On a shared scale the difference is a length the eye reads directly, and the availability row sits in the same visual field rather than in the next sentence."
+    }
+  },
+  "composition": {
+    "geometry": {
+      "position_convention": "controlled_comparison",
+      "x_axis_encodes": "which state is being read — underlying market open, underlying market closed, and the availability column that is held alongside both",
+      "y_axis_encodes": "the measured value on one shared scale, identical for every column",
+      "scale_rationale": "The varied condition is the window, and it is the only thing that varies across the x positions; everything else is held. Position therefore carries which variable was varied, which is what makes the vertical distance between columns readable as the delta rather than as a layout gap (T1, T4)."
+    },
+    "reading_order_mechanism": "shared_axis_alignment",
+    "enclosure_budget": {
+      "parallel_category_boundaries": 2,
+      "enclosures_planned": 2,
+      "justification": "Two enclosures, one per genuinely parallel category: the price measures (spread, depth) and the availability measure are independent families with no rank relation between them, so size and weight have no 'which is bigger' answer to give and typography cannot encode the boundary. Everything inside each band is hierarchical and is carried by alignment and whitespace, not by further boxes (C2)."
+    },
+    "typography_roles": [
+      { "role": "column label", "channel": ["case", "weight"] },
+      { "role": "row label on the shared axis", "channel": ["size"] },
+      { "role": "value set at the end of its own segment", "channel": ["size", "weight"] },
+      { "role": "band label separating the two parallel measure families", "channel": ["case", "space"] }
+    ],
+    "label_strategy": {
+      "max_labels": 9,
+      "stable_only": true
+    },
+    "annotation_strategy": "The one qualifier on this plate — that the availability column is read as availability, not as price — is set on the band itself where the column meets the axis, not in a legend. There is no colour key: the correspondence is carried by row alignment, which needs no lookup (T6).",
+    "mobile_strategy": {
+      "strategy": "restack",
+      "viewport_px": 390,
+      "min_type_px": 14,
+      "downgrade_disclosed": "None. Restacking rotates the three columns into three stacked bands sharing one horizontal scale; the delta stays a rendered length and no axis is collapsed."
+    },
+    "plate_split": {
+      "is_split": false
+    }
+  },
+  "renderer_route": "deterministic",
+  "notes": "Values, axis and every label are emitted by a program. The route is deterministic rather than hybrid because exact observed values ride this plate, and an analytical graphic that lets any part of its factual layout drift is not traceable back to the claim it renders."
+}

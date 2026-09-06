@@ -118,6 +118,25 @@ const codesOf = (job) => validateVisualJob(job, opts).map((i) => i.code);
 }
 
 {
+  // SUE-628 — an information-design plate compiled with no composition plan.
+  // F1-F5 are decisions taken before any rendering occurs, so a job in one of
+  // those three families that names no plan has nowhere to route a bad plate.
+  const job = clone(baseGood);
+  delete job.composition_plan_ref;
+  check('SUE-628 information-design family with no composition_plan_ref',
+    codesOf(job).includes(CODES.COMPOSITION_PLAN_REQUIRED));
+}
+
+{
+  // The same gate does not fire on a skip: no plate is produced, so there is
+  // nothing to plan. visual-job-skip.example.json is a visual/explanatory-diagram
+  // gated to skip and carries no composition_plan_ref.
+  const skip = loadExample('visual-job-skip.example.json');
+  check('a skip verdict in an information-design family needs no composition_plan_ref',
+    !codesOf(skip).includes(CODES.COMPOSITION_PLAN_REQUIRED));
+}
+
+{
   // Attempts budget.
   const job = clone(baseGood);
   job.attempts = job.max_attempts + 1;
@@ -206,6 +225,38 @@ console.log('\nmodel/provider drift (informational, optional per manager delta)'
   check('the differing model_version is visible in lineage (renderer.model_version), not in the prompt',
     jobA.renderer.model_version !== jobB.renderer.model_version &&
     !compiledB.compiled_prompt.includes(jobB.renderer.model_version));
+}
+
+// --- an information-design family may never route generative ---------------
+// The composition-plan schema omits plain "generative" from its route enum for
+// these three families, so a plan cannot express it. Without a matching guard
+// here the visual job could still declare it and the contract would be stating
+// a boundary nothing checked — signature F7 one layer up.
+console.log('\ninformation-design families and the generative route (SUE-628)');
+{
+  for (const profile of ['visual/body-infographic', 'visual/analytical-graphic', 'visual/explanatory-diagram']) {
+    const job = clone(baseGood);
+    job.artifact_profile = profile;
+    job.profile_ref = `editorial/profiles/artifact/${profile.replace('visual/', 'visual-')}.json`;
+    job.renderer_route = 'generative';
+    const codes = validateVisualJob(job, { schema, profiles, brand }).map((i) => i.code);
+    check(`${profile} on a generative route is rejected`,
+      codes.includes('information-design-on-generative-route'));
+  }
+
+  const hybrid = clone(baseGood);
+  hybrid.renderer_route = 'hybrid';
+  check('the same family on a hybrid route is not rejected for its route',
+    !validateVisualJob(hybrid, { schema, profiles, brand })
+      .map((i) => i.code).includes('information-design-on-generative-route'));
+
+  const thumb = clone(baseGood);
+  thumb.artifact_profile = 'visual/thumbnail';
+  thumb.profile_ref = 'editorial/profiles/artifact/visual-thumbnail.json';
+  thumb.renderer_route = 'generative';
+  check('visual/thumbnail is unaffected — nothing in it encodes a relation by position',
+    !validateVisualJob(thumb, { schema, profiles, brand })
+      .map((i) => i.code).includes('information-design-on-generative-route'));
 }
 
 console.log(failures === 0 ? '\nvisual-job: ALL PASS' : `\nvisual-job: ${failures} FAILURE(S)`);

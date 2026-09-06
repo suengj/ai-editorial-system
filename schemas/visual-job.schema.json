@@ -43,6 +43,11 @@
       "type": "string",
       "pattern": "^editorial/profiles/artifact/"
     },
+    "composition_plan_ref": {
+      "description": "The plan_id of the composition plan this job renders (schemas/composition-plan.schema.json). The composition plan owns the plate's information design — what position encodes, the enclosure budget, the reading path, the mobile floor — and this job owns the compiled prompt and the runtime lineage; keeping them in separate records is what lets a bad plate route to the layer that produced it rather than to the renderer. Optional here because most visual families do not have one, but the information-design families (visual/body-infographic, visual/analytical-graphic, visual/explanatory-diagram) require one whenever the job is not gated to skip — enforced by scripts/lib/visual-job-core.mjs's composition-plan-required check, not by this schema, which cannot express the condition.",
+      "type": "string",
+      "pattern": "^plate:[a-z0-9]+(-[a-z0-9]+)*$"
+    },
     "audience": { "$ref": "#/$defs/audience" },
     "semantic_spec": { "$ref": "#/$defs/semantic_spec" },
     "information_gain": { "$ref": "#/$defs/information_gain" },

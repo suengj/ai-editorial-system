@@ -3,18 +3,29 @@
  * this repository actually uses.
  *
  * Supported: type, const, enum, required, properties, additionalProperties,
- * items, pattern, minLength, maxLength, minimum, format (date, date-time), $ref into
- * local $defs, and union types via array-valued `type`.
+ * items, minItems, maxItems, pattern, minLength, maxLength, minimum,
+ * format (date, date-time), $ref into local $defs, and union types via
+ * array-valued `type`. `default` is accepted as an annotation and never
+ * validated against — it documents a value, it does not constrain one.
  *
  * Deliberately small. Fail-closed on constructs it does not understand: an
  * unknown keyword is reported rather than silently ignored, so a schema can
  * never pass by being unreadable.
+ *
+ * minItems/maxItems were added for schemas/composition-plan.schema.json
+ * (AES-V2.16b / SUE-628), whose 2-4 module cap is a load-bearing rule rather
+ * than a stylistic bound: signature F4 (multi-question plate) is the plate
+ * that grew a fifth module instead of splitting, so the cap has to be
+ * enforced by the schema itself and not by a downstream check that a caller
+ * could skip. Every other schema in this repo that already declared
+ * minItems/maxItems was being silently under-enforced until now.
  */
 
 const KNOWN_KEYWORDS = new Set([
-  '$schema', '$id', '$ref', '$defs', 'title', 'description',
+  '$schema', '$id', '$ref', '$defs', 'title', 'description', 'default',
   'type', 'const', 'enum', 'required', 'properties', 'additionalProperties',
-  'items', 'pattern', 'minLength', 'maxLength', 'minimum', 'format',
+  'items', 'minItems', 'maxItems', 'pattern', 'minLength', 'maxLength',
+  'minimum', 'format',
 ]);
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
@@ -98,10 +109,18 @@ export function validate(value, schema, root = schema, path = '$') {
     errors.push({ path, message: `below minimum ${schema.minimum}` });
   }
 
-  if (typeOf(value) === 'array' && schema.items) {
-    value.forEach((item, i) => {
-      errors.push(...validate(item, schema.items, root, `${path}[${i}]`));
-    });
+  if (typeOf(value) === 'array') {
+    if (schema.minItems !== undefined && value.length < schema.minItems) {
+      errors.push({ path, message: `has ${value.length} item(s), fewer than minItems ${schema.minItems}` });
+    }
+    if (schema.maxItems !== undefined && value.length > schema.maxItems) {
+      errors.push({ path, message: `has ${value.length} item(s), more than maxItems ${schema.maxItems}` });
+    }
+    if (schema.items) {
+      value.forEach((item, i) => {
+        errors.push(...validate(item, schema.items, root, `${path}[${i}]`));
+      });
+    }
   }
 
   if (typeOf(value) === 'object') {

@@ -84,7 +84,24 @@ export const CODES = Object.freeze({
   BRAND_VERSION_MISMATCH: 'brand-profile-version-mismatch',
   UNKNOWN_BRAND: 'unknown-brand-profile',
   INCONSISTENT_GAIN_VERDICT: 'information-gain-verdict-inconsistent-with-redundancy-test',
+  COMPOSITION_PLAN_REQUIRED: 'composition-plan-required',
+  INFORMATION_DESIGN_GENERATIVE: 'information-design-on-generative-route',
 });
+
+/**
+ * The visual families whose plates are information design rather than
+ * illustration (AES-V2.16b / SUE-628). For these, geometry carries meaning, so
+ * the plate needs a composition plan before a prompt is compiled — SUE-570
+ * showed that F1-F5 are all decisions taken before any rendering occurs, and a
+ * job with no composition plan has no record of those decisions to route back
+ * to. Thumbnail, concept-illustration, social-card and slide-image are
+ * deliberately absent: nothing in them encodes a relation by position.
+ */
+export const INFORMATION_DESIGN_PROFILES = Object.freeze([
+  'visual/body-infographic',
+  'visual/analytical-graphic',
+  'visual/explanatory-diagram',
+]);
 
 const issue = (code, where, message) => ({ code, where, message });
 
@@ -196,9 +213,32 @@ export function validateVisualJob(job, { schema = loadSchema(), profiles = loadA
       'redundancy_test says the visual merely recreates the adjacent representation (q3) or is not worth the interruption (q4), but the verdict is "proceed" — editorial/VISUAL-INFORMATION-GAIN.md §2 requires skip/replace/reposition in this case, a visual that restates adjacent prose is not approved by being accurate'));
   }
 
+  // An information-design plate that is actually going to be produced must
+  // name the composition plan that decided its geometry. A skip verdict is
+  // exempt because no plate is produced — there is nothing to plan.
+  if (INFORMATION_DESIGN_PROFILES.includes(job.artifact_profile) &&
+      job.information_gain?.verdict !== 'skip' &&
+      job.composition_plan_ref === undefined) {
+    issues.push(issue(CODES.COMPOSITION_PLAN_REQUIRED, where,
+      `"${job.artifact_profile}" is an information-design family, so this job must name a composition_plan_ref (schemas/composition-plan.schema.json) — position convention, enclosure budget, reading path and mobile floor are decided before rendering, and a job with no plan has no layer to route a bad plate back to (SUE-570 F1-F5)`));
+  }
+
   if (job.artifact_profile === 'visual/evidence-visual' && job.renderer_route === 'generative') {
     issues.push(issue(CODES.EVIDENCE_GENERATIVE, where,
       'visual/evidence-visual must never route to a generative-only renderer; exact values/axes/citations must stay deterministic'));
+  }
+
+  // schemas/composition-plan.schema.json omits plain "generative" from its
+  // renderer_route enum for the information-design families, so a plan cannot
+  // express that route at all. Without this guard the visual job could still
+  // declare it, and the contract would be asserting a boundary that nothing
+  // checked — which is exactly signature F7 (a stated ceiling with no
+  // enforcement) reappearing one layer up. In these families position,
+  // connectors, labels and typography all carry meaning, so there is nothing
+  // left for a generative raster model to own.
+  if (INFORMATION_DESIGN_PROFILES.includes(job.artifact_profile) && job.renderer_route === 'generative') {
+    issues.push(issue(CODES.INFORMATION_DESIGN_GENERATIVE, where,
+      `"${job.artifact_profile}" must not route to a generative-only renderer: its geometry, connectors, labels and typography are all load-bearing. Use "deterministic", or "hybrid" with a composition plan that names the non-load-bearing elements the generative step may contribute (schemas/INFOGRAPHIC-COMPOSITION-CONTRACT.md)`));
   }
 
   if ((job.selected_reference_traits?.authoritative_override ?? []).length === 0) {

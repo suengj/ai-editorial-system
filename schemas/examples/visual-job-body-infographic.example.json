@@ -11,6 +11,7 @@
   },
   "artifact_profile": "visual/body-infographic",
   "profile_ref": "editorial/profiles/artifact/visual-body-infographic.json",
+  "composition_plan_ref": "plate:tokenized-stocks-liquidity-window-mechanism",
   "audience": {
     "value": "domain-practitioner",
     "profile_ref": "editorial/profiles/audience/domain-practitioner.json",

@@ -1,0 +1,114 @@
+{
+  "schema_version": "1.0.0",
+  "plan_id": "plate:tools-metric-divergence-mechanism",
+  "artifact_profile": "visual/body-infographic",
+  "profile_ref": "editorial/profiles/artifact/visual-body-infographic.json",
+  "article_ref": {
+    "slug": "companies-become-like-the-tools-they-use",
+    "content_hash": null,
+    "surface": "suengj.com"
+  },
+  "semantic_plan": {
+    "primary_question": "How does a metric come apart from the reality it was meant to track once the metric itself becomes the thing being optimised?",
+    "modules": [
+      {
+        "id": "recorded-measure",
+        "label": "RECORDED MEASURE",
+        "role": "observation",
+        "carries": "The entry point of the loop, and the only node with a real inflow: the slice of the work the tool can actually record. Its position on the loop is what makes the return arc land somewhere rather than trailing off."
+      },
+      {
+        "id": "optimisation-pressure",
+        "label": "OPTIMISATION PRESSURE",
+        "role": "observation",
+        "carries": "The reinforcing arc: effort redistributes toward whatever the recorded measure counts. Drawn as the segment whose direction is the same on both traversals, which is what makes the loop reinforcing rather than balancing."
+      },
+      {
+        "id": "unrecorded-work",
+        "label": "UNRECORDED WORK",
+        "role": "interpretation",
+        "carries": "The gap the loop opens: work the tool never counted, shown as the node the reinforcing arc routes around rather than through. Its exclusion from the closed path is the divergence, not a caption about it."
+      }
+    ],
+    "relations": [
+      {
+        "from": "recorded-measure",
+        "to": "optimisation-pressure",
+        "type": "causal-chain",
+        "load_bearing": true,
+        "basis": "stated"
+      },
+      {
+        "from": "optimisation-pressure",
+        "to": "unrecorded-work",
+        "type": "causal-chain",
+        "load_bearing": true,
+        "basis": "stated"
+      },
+      {
+        "from": "optimisation-pressure",
+        "to": "recorded-measure",
+        "type": "causal-loop",
+        "load_bearing": true,
+        "basis": "interpreted"
+      }
+    ],
+    "reading_order": [
+      "recorded-measure",
+      "optimisation-pressure",
+      "unrecorded-work"
+    ],
+    "must_preserve": [
+      "the return arc from optimisation pressure back to the recorded measure — without it the plate is a three-step chain and the divergence looks like a one-off outcome rather than something that compounds",
+      "unrecorded work sitting outside the closed path, not inside it",
+      "the direction marks on both arcs of the loop; an undirected loop cannot be read as reinforcing"
+    ],
+    "evidence_boundary": {
+      "in_plate": "The plate shows only the topology: which node feeds which, and which node the closed path routes around. It asserts nothing about magnitude, speed, or whether the divergence is large enough to matter.",
+      "in_caption": "The caption carries the author's claim that the return arc is the mechanism rather than a coincidence, and names it as an interpretation of the article's account rather than something the article measures."
+    },
+    "information_gain": {
+      "gain_kind": "topological_closure",
+      "adjacent_representation": "Three consecutive prose paragraphs describing what the tool records, how effort follows the record, and what stops being counted.",
+      "what_prose_cannot_do": "Prose states the three steps in sequence and then has to ask the reader to hold all three and notice that the third feeds the first. The eye detects that the chain closes on itself immediately; a reader tracing bullets back to spot the same closure is doing work the geometry can do for free."
+    }
+  },
+  "composition": {
+    "geometry": {
+      "position_convention": "topological",
+      "x_axis_encodes": null,
+      "y_axis_encodes": null,
+      "scale_rationale": "Neither dimension is given a meaning, and the plate says so. What is load-bearing here is adjacency and arc direction, not distance: rotating the loop changes nothing a reader should read. Declaring this is the honest case of T1 — the failure is a plate that leaves position unencoded while borrowing a grid that implies otherwise (C1, signature F1)."
+    },
+    "reading_order_mechanism": "explicit_connectors",
+    "enclosure_budget": {
+      "parallel_category_boundaries": 0,
+      "enclosures_planned": 0,
+      "justification": "There are no independent parallel categories on this plate — all three nodes sit on one causal topology, so every distinction available is hierarchical and typography can carry it. Grouping is done by the loop itself plus asymmetric whitespace around the excluded node; no node is drawn in a box (C2)."
+    },
+    "typography_roles": [
+      { "role": "node label", "channel": ["case", "weight"] },
+      { "role": "arc qualifier fused to its own connector", "channel": ["size"] },
+      { "role": "excluded-node label, set apart by whitespace rather than by a border", "channel": ["size", "space"] }
+    ],
+    "connector_channels": {
+      "flow": "a solid directed arc with an open arrowhead, one weight throughout"
+    },
+    "label_strategy": {
+      "max_labels": 7,
+      "stable_only": true
+    },
+    "annotation_strategy": "Each arc carries its qualifier on the arc itself, set along the path, rather than in a legend key. There is no legend: the only distinction that would need one — stated versus interpreted linkage — is carried by the caption instead of by a dashed/solid key the reader has to hold in memory (T6, T11).",
+    "mobile_strategy": {
+      "strategy": "reflow",
+      "viewport_px": 390,
+      "min_type_px": 15,
+      "downgrade_disclosed": "None. The loop reflows from a wide triangle to a tall one; no relation is dropped and no axis is collapsed, because there is no axis to collapse."
+    },
+    "plate_split": {
+      "is_split": false
+    }
+  },
+  "renderer_route": "deterministic",
+  "notes": "One primary question, one closed loop, three nodes. The open question the article ends on is deliberately not on this plate: adding it would answer a second question and trip the split rule (signature F4)."
+}
