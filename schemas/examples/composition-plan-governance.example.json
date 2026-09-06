@@ -1,0 +1,127 @@
+{
+  "schema_version": "1.0.0",
+  "plan_id": "plate:tokenized-stocks-rights-chain",
+  "artifact_profile": "visual/body-infographic",
+  "profile_ref": "editorial/profiles/artifact/visual-body-infographic.json",
+  "article_ref": {
+    "slug": "tokenized-stocks-instant-payments-liquidity-rights",
+    "content_hash": null,
+    "surface": "suengj.com"
+  },
+  "semantic_plan": {
+    "primary_question": "What must stay connected between a token holder and the underlying share once trading never stops?",
+    "modules": [
+      {
+        "id": "token-holder",
+        "label": "TOKEN HOLDER",
+        "role": "observation",
+        "carries": "The outer position in the custody chain, and the end that holds none of the rights directly. Its distance from the share is the plate's subject."
+      },
+      {
+        "id": "issuer-custodian",
+        "label": "ISSUER / CUSTODIAN",
+        "role": "observation",
+        "carries": "The nesting boundary the rights actually terminate at. Drawn as an enclosure because it is a real perimeter, not a step: what is inside it is claimable, what is outside it is a claim on the operator."
+      },
+      {
+        "id": "underlying-share",
+        "label": "UNDERLYING SHARE",
+        "role": "observation",
+        "carries": "The instrument the corporate actions attach to. Sits innermost, so the reader sees how many boundaries a dividend or a vote crosses before it reaches the holder."
+      },
+      {
+        "id": "pause-authority",
+        "label": "PAUSE AUTHORITY",
+        "role": "observation",
+        "carries": "The only relation in the plate that runs inward against the custody direction. It is drawn on its own channel precisely because it is authority rather than flow — someone may halt the chain without anything moving along it."
+      }
+    ],
+    "relations": [
+      {
+        "from": "token-holder",
+        "to": "issuer-custodian",
+        "type": "containment",
+        "load_bearing": true,
+        "basis": "stated"
+      },
+      {
+        "from": "issuer-custodian",
+        "to": "underlying-share",
+        "type": "containment",
+        "load_bearing": true,
+        "basis": "stated"
+      },
+      {
+        "from": "underlying-share",
+        "to": "token-holder",
+        "type": "flow",
+        "load_bearing": true,
+        "basis": "stated",
+        "dimension": "corporate actions — dividend, voting, redemption"
+      },
+      {
+        "from": "pause-authority",
+        "to": "issuer-custodian",
+        "type": "authority",
+        "load_bearing": true,
+        "basis": "stated"
+      }
+    ],
+    "reading_order": ["token-holder", "issuer-custodian", "underlying-share", "pause-authority"],
+    "must_preserve": [
+      "that the holder's claim terminates at the issuer/custodian boundary rather than at the share — collapsing that boundary is the single most misleading simplification available here",
+      "the direction of the corporate-action flow, which runs opposite to the custody nesting",
+      "pause authority on a channel of its own; rendered as another arrow it reads as one more thing that moves, which is the documented failure this plate exists to avoid"
+    ],
+    "evidence_boundary": {
+      "in_plate": "Only the structure: which parties nest inside which, what moves outward, and who may halt it. No claim about how often a pause is exercised or how well any of it works in practice.",
+      "in_caption": "The caption carries the article's argument that continuous trading stresses this chain, and names which dependencies the article treats as established versus expected."
+    },
+    "information_gain": {
+      "gain_kind": "simultaneity",
+      "adjacent_representation": "A prose passage naming the parties in sequence and a list of the corporate actions that must survive.",
+      "what_prose_cannot_do": "Prose names the parties one at a time, so the number of boundaries a dividend crosses before reaching a holder has to be counted by the reader. Nesting shows the depth and the flow's direction against it at once — and shows that pause authority reaches in from outside the chain entirely, which a sequential list has no way to place."
+    }
+  },
+  "composition": {
+    "geometry": {
+      "position_convention": "containment",
+      "x_axis_encodes": null,
+      "y_axis_encodes": null,
+      "scale_rationale": "Neither axis is a scale: what is load-bearing is depth of nesting, not distance. Position is answered as containment rather than left undeclared, which is the distinction between this plate and the rejected one (T1, C1)."
+    },
+    "reading_order_mechanism": "vertical_precedence",
+    "enclosure_budget": {
+      "parallel_category_boundaries": 2,
+      "enclosures_planned": 2,
+      "justification": "Exactly two real perimeters exist — the issuer/custodian boundary and the share it holds — and containment is the one structure typography cannot encode, because nesting has no 'which is bigger' answer in size or weight. Every other distinction on the plate is carried by type role. Two boundaries, two enclosures (T10, C2)."
+    },
+    "typography_roles": [
+      { "role": "party label", "channel": ["case", "weight"] },
+      { "role": "flow qualifier set along its own connector", "channel": ["size"] },
+      { "role": "authority label, set apart by whitespace", "channel": ["size", "space"] }
+    ],
+    "connector_channels": {
+      "containment": "a thin nesting boundary, no fill, used for nothing else",
+      "flow": "a solid connector labelled with what moves along it",
+      "authority": "a dashed connector with an asymmetric terminal, never used for flow"
+    },
+    "label_strategy": {
+      "max_labels": 8,
+      "stable_only": true
+    },
+    "annotation_strategy": "The corporate-action list rides on the flow connector itself rather than in a legend, so the reader never has to hold a key in memory to know what is moving (T6).",
+    "mobile_strategy": {
+      "strategy": "restack",
+      "viewport_px": 390,
+      "min_type_px": 14,
+      "downgrade_disclosed": "None. Nesting re-stacks as indentation with the boundaries preserved; no relation is dropped. Indentation carries containment honestly because there is no axis being collapsed."
+    },
+    "plate_split": {
+      "is_split": true,
+      "sibling_plates": ["plate:tokenized-stocks-window-delta"]
+    }
+  },
+  "renderer_route": "deterministic",
+  "notes": "Plate B of the split named in SUENGJ-ARTICLE-IMAGE-FAMILIES.md section 9: the liquidity-window mechanism is a separate primary question and lives on its own plate. Carrying both would answer two questions on one canvas (signature F4)."
+}

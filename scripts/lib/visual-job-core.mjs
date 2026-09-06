@@ -85,6 +85,7 @@ export const CODES = Object.freeze({
   UNKNOWN_BRAND: 'unknown-brand-profile',
   INCONSISTENT_GAIN_VERDICT: 'information-gain-verdict-inconsistent-with-redundancy-test',
   COMPOSITION_PLAN_REQUIRED: 'composition-plan-required',
+  COMPOSITION_PLAN_UNRESOLVED: 'composition-plan-ref-unresolved',
   INFORMATION_DESIGN_GENERATIVE: 'information-design-on-generative-route',
 });
 
@@ -150,7 +151,7 @@ function permittedVocabulary(job, { profiles, brand }) {
 }
 
 /** Validate a compiled visual job. Returns an array of issues; empty means PASS. */
-export function validateVisualJob(job, { schema = loadSchema(), profiles = loadArtifactProfiles(), brand } = {}) {
+export function validateVisualJob(job, { schema = loadSchema(), profiles = loadArtifactProfiles(), brand, knownPlanIds } = {}) {
   const issues = [];
   const where = job?.job_id ?? '<job>';
 
@@ -221,6 +222,16 @@ export function validateVisualJob(job, { schema = loadSchema(), profiles = loadA
       job.composition_plan_ref === undefined) {
     issues.push(issue(CODES.COMPOSITION_PLAN_REQUIRED, where,
       `"${job.artifact_profile}" is an information-design family, so this job must name a composition_plan_ref (schemas/composition-plan.schema.json) — position convention, enclosure budget, reading path and mobile floor are decided before rendering, and a job with no plan has no layer to route a bad plate back to (SUE-570 F1-F5)`));
+  }
+
+  // A ref that resolves to nothing is a citation to an unwritten plan, which is
+  // the same unenforced-pointer shape as F7. Checked only when a plan corpus is
+  // supplied, so callers holding plans elsewhere are not forced through it.
+  if (job.composition_plan_ref !== undefined && knownPlanIds) {
+    if (!knownPlanIds.has(job.composition_plan_ref)) {
+      issues.push(issue(CODES.COMPOSITION_PLAN_UNRESOLVED, where,
+        `composition_plan_ref "${job.composition_plan_ref}" resolves to no known composition plan — a job may not cite a plan nobody wrote`));
+    }
   }
 
   if (job.artifact_profile === 'visual/evidence-visual' && job.renderer_route === 'generative') {

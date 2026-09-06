@@ -27,9 +27,22 @@ const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(HERE, '..');
 const EXAMPLES_DIR = resolve(ROOT, 'schemas/examples');
 
+function knownCompositionPlanIds() {
+  const ids = new Set();
+  for (const f of readdirSync(EXAMPLES_DIR)) {
+    if (!f.startsWith('composition-plan-') || !f.endsWith('.example.json')) continue;
+    try {
+      const id = JSON.parse(readFileSync(resolve(EXAMPLES_DIR, f), 'utf8')).plan_id;
+      if (id) ids.add(id);
+    } catch { /* a malformed plan is composition-plan's own validator's problem */ }
+  }
+  return ids;
+}
+
 function runValidate() {
   const schema = loadSchema();
   const profiles = loadArtifactProfiles();
+  const knownPlanIds = knownCompositionPlanIds();
 
   const files = readdirSync(EXAMPLES_DIR)
     .filter((f) => f.startsWith('visual-job-') && f.endsWith('.example.json'))
@@ -45,7 +58,7 @@ function runValidate() {
     const path = resolve(EXAMPLES_DIR, f);
     // No fixed brand passed: each job's own brand_profile/brand_profile_version
     // is resolved from the brand axis, fail-closed, per job (B6).
-    const issues = validateVisualJobFile(path, { schema, profiles });
+    const issues = validateVisualJobFile(path, { schema, profiles, knownPlanIds });
     const label = relative(ROOT, path);
     if (issues.length === 0) {
       console.log(`visual-job: PASS — ${label}`);

@@ -111,5 +111,27 @@ console.log('\nthe mobile floor is measured, not asserted');
   console.log(`        measured at ${DEFAULT_AVAILABLE_PX}px: ${r(lo)}px to ${r(hi)}px across ${set.length} assets`);
 }
 
+console.log('\nmutable copy is caught in the artwork, where it actually lived');
+{
+  // Signature F6 in the real plate was a footer <text>, not a module label. No
+  // field of a composition plan represents a footer, so the plan-level rule
+  // could only ever have caught it if an author volunteered it into a label.
+  const infographic = codesOf(launderedPlan, asset('tools-report-infographic'));
+  check('the rejected plate is caught rendering a "source:" credit line and article date',
+    infographic.includes(CODES.MUTABLE_COPY));
+
+  const chart = codesOf(launderedPlan, asset('news-jp-us-10y-divergence'));
+  check('the ACCEPTED chart is caught too — it bakes an ISO date into the artwork',
+    chart.includes(CODES.MUTABLE_COPY));
+
+  const clean = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 340 200">
+    <desc>retrieved 2026-09-05</desc>
+    <style>.a { font-size: 15px; }</style>
+    <text class="a" x="10" y="20">TOKEN MARKET</text>
+  </svg>`;
+  check('provenance carried in <desc> rather than drawn is not flagged',
+    !codesOf(launderedPlan, clean).includes(CODES.MUTABLE_COPY));
+}
+
 console.log(failures === 0 ? '\nplate-verify: ALL PASS' : `\nplate-verify: ${failures} FAILURE(S)`);
 process.exit(failures === 0 ? 0 : 1);

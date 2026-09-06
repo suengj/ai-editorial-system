@@ -33,7 +33,22 @@ export const CODES = Object.freeze({
   TYPE_FLOOR: 'rendered-type-below-floor',
   TYPE_OVERSTATED: 'min-type-px-overstated',
   SCALE_ONLY: 'scale-only-asset-under-a-reflow-plan',
+  MUTABLE_COPY: 'mutable-copy-rendered-in-artwork',
 });
+
+/**
+ * Mutable publication copy: a credit line, a publication date, a citation.
+ * Checked against the ASSET rather than the plan because in the plate that
+ * produced signature F6 the offending string lived in a footer <text> element,
+ * which no field of a composition plan represents — the plan-level rule could
+ * only ever catch it if an author happened to put it in a module label.
+ */
+const MUTABLE_COPY_RE = [
+  { re: /\bsource\s*:/i, what: 'a "source:" credit line' },
+  { re: /출처/, what: 'a 출처 credit line' },
+  { re: /\b(19|20)\d{2}-\d{2}-\d{2}\b/, what: 'an ISO date' },
+  { re: /\((19|20)\d{2}-\d{2}-\d{2}\)/, what: 'a parenthesised publication date' },
+];
 
 /** suengj.com --width-article is 42rem; a ~390px viewport leaves about this. */
 export const DEFAULT_AVAILABLE_PX = 358;
@@ -120,6 +135,17 @@ export function verifyPlateAgainstPlan(plan, svg, { availablePx = DEFAULT_AVAILA
     if (Number.isFinite(declaredMin) && declaredMin > effective + 0.05) {
       issues.push(issue(CODES.TYPE_OVERSTATED, `${where}#composition.mobile_strategy.min_type_px`,
         `the plan claims ${declaredMin}px effective type; the asset renders its smallest type at ${rounded}px`));
+    }
+  }
+
+  for (const t of svg.matchAll(/<text\b[^>]*>([\s\S]*?)<\/text>/g)) {
+    const content = t[1].replace(/<[^>]+>/g, '').trim();
+    for (const { re, what } of MUTABLE_COPY_RE) {
+      if (re.test(content)) {
+        issues.push(issue(CODES.MUTABLE_COPY, `${where}#asset`,
+          `the artwork renders ${what}: "${content.slice(0, 70)}${content.length > 70 ? '…' : ''}". Mutable publication copy — titles, dates, captions, citations — belongs to the caption layer, which owns it without going stale when the article is re-dated (signature F6)`));
+        break;
+      }
     }
   }
 

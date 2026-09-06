@@ -183,6 +183,59 @@ console.log('\ndeny fixtures (expect FAIL, with the specific rule named)');
 }
 
 {
+  // R1, containment branch. Independent review found this site untested: a
+  // containment plate must still name the channel that carries the nesting,
+  // because containment IS the position convention there (T5).
+  const plan = clone(mechanism);
+  plan.composition.geometry.position_convention = 'containment';
+  plan.composition.geometry.x_axis_encodes = null;
+  plan.composition.geometry.y_axis_encodes = null;
+  delete plan.composition.connector_channels;
+  denies('R1 decorative-geometry: containment plate with no containment channel named',
+    plan, CODES.DECORATIVE_GEOMETRY);
+}
+
+{
+  // R7, fail-closed branch. A profile that cannot be resolved must FAIL rather
+  // than skip — an unenforceable ceiling is how F7 happened in the first place.
+  const plan = clone(mechanism);
+  plan.artifact_profile = 'visual/body-infographic';
+  const codes = validateCompositionPlan(plan, { schema, profiles: {} }).map((i) => i.code);
+  check('R7 label-ceiling: an unresolvable profile fails closed rather than skipping',
+    codes.includes(CODES.LABEL_CEILING));
+}
+
+{
+  // R9, the reverse mismatch. Review found only the missing-time_scale branch
+  // tested; declaring the WRONG scale is the more dangerous direction, because
+  // an ordinal axis presented as proportional fails silently (T8).
+  const plan = clone(mechanism);
+  plan.semantic_plan.relations[0].type = 'temporal-ordinal';
+  plan.composition.geometry.time_scale = 'proportional';
+  denies('R9 undeclared-time-scale: an ordinal relation declared on a proportional scale',
+    plan, CODES.UNDECLARED_TIME_SCALE);
+}
+
+{
+  // R10, each condition separately. Review found both survived mutation because
+  // whichever one was disabled, the other still fired.
+  const axes = clone(comparison);
+  axes.semantic_plan.relations[0].type = 'matrix';
+  axes.composition.geometry.position_convention = 'scale';
+  axes.composition.geometry.y_axis_encodes = null;
+  axes.composition.mobile_strategy.strategy = 'split';
+  denies('R10 matrix-requires-both-axes: a matrix with only one axis named',
+    axes, CODES.MATRIX_BOTH_AXES);
+
+  const conv = clone(comparison);
+  conv.semantic_plan.relations[0].type = 'matrix';
+  conv.composition.geometry.position_convention = 'containment';
+  conv.composition.mobile_strategy.strategy = 'split';
+  denies('R10 matrix-requires-both-axes: a matrix on a non-scale position convention',
+    conv, CODES.MATRIX_BOTH_AXES);
+}
+
+{
   // R6 (F5/T9) — the SUE-570 infographic rendered its labels at 5.2-6.5px.
   const plan = clone(mechanism);
   plan.composition.mobile_strategy.min_type_px = 8.4;

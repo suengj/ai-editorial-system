@@ -259,5 +259,26 @@ console.log('\ninformation-design families and the generative route (SUE-628)');
       .map((i) => i.code).includes('information-design-on-generative-route'));
 }
 
+// --- a composition_plan_ref must resolve to a plan somebody wrote -----------
+console.log('\ncomposition_plan_ref resolution (SUE-628)');
+{
+  const known = new Set(['plate:tokenized-stocks-rights-chain']);
+  const good = clone(baseGood);
+  good.composition_plan_ref = 'plate:tokenized-stocks-rights-chain';
+  check('a ref naming a plan that exists resolves',
+    !validateVisualJob(good, { schema, profiles, brand, knownPlanIds: known })
+      .map((i) => i.code).includes('composition-plan-ref-unresolved'));
+
+  const dangling = clone(baseGood);
+  dangling.composition_plan_ref = 'plate:does-not-exist-anywhere';
+  check('a ref naming no plan is rejected — citing an unwritten plan is the F7 shape again',
+    validateVisualJob(dangling, { schema, profiles, brand, knownPlanIds: known })
+      .map((i) => i.code).includes('composition-plan-ref-unresolved'));
+
+  check('with no plan corpus supplied, resolution is not attempted',
+    !validateVisualJob(dangling, { schema, profiles, brand })
+      .map((i) => i.code).includes('composition-plan-ref-unresolved'));
+}
+
 console.log(failures === 0 ? '\nvisual-job: ALL PASS' : `\nvisual-job: ${failures} FAILURE(S)`);
 process.exit(failures === 0 ? 0 : 1);
