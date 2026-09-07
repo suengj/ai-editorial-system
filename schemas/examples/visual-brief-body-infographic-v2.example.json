@@ -1,0 +1,26 @@
+{
+  "schema_version": "1.0.0",
+  "brief_id": "visual-brief:liquidity-window-body",
+  "article_ref": {
+    "article_id": "art:tokenized-stocks-instant-payments-liquidity-rights",
+    "version_number": 2,
+    "content_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "claims_hash": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+  },
+  "editorial_purpose": "Explain the closed-window mechanism without restating prose.",
+  "article_thesis": "Continuous token trading can expose the liquidity cost of closed underlying markets.",
+  "reader_outcome": "See the causal relation between a closed market window and a persistent price gap.",
+  "artifact_profile": "visual/body-infographic",
+  "semantic_role": "explanation",
+  "visual_story": {
+    "primary_question": "Why does removing market hours reveal liquidity risk?",
+    "metaphor_or_relationship": "A continuous path reaches a temporarily closed exchange gate."
+  },
+  "factual_invariants": ["exact causal labels"],
+  "failure_modes_to_avoid": ["ui_mimicry", "dashboardization", "flat_svg_aesthetic"],
+  "reference_requirements": {
+    "required_dimensions": ["hierarchy"],
+    "forbidden_literal_copy": ["literal C4 notation"],
+    "rationale": "Retrieve a small craft-evidence set for hierarchy only."
+  }
+}

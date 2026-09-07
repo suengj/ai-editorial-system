@@ -12,17 +12,22 @@ import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { dirname, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { validate } from './json-schema-lite.mjs';
+import { assessVisualReferenceAdmissibility, listEvaluationFiles, loadCatalogRefIds } from './registry-core.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(HERE, '../..');
 
 export const VISUAL_JOB_SCHEMA = resolve(ROOT, 'schemas/visual-job.schema.json');
+export const VISUAL_BRIEF_SCHEMA = resolve(ROOT, 'schemas/visual-brief.schema.json');
+export const RENDER_SPEC_SCHEMA = resolve(ROOT, 'schemas/render-spec.schema.json');
 export const ARTIFACT_PROFILE_DIR = resolve(ROOT, 'editorial/profiles/artifact');
 export const BRAND_PROFILE_DIR = resolve(ROOT, 'editorial/profiles/brand');
 
 const readJSON = (p) => JSON.parse(readFileSync(p, 'utf8'));
 
 export const loadSchema = (p = VISUAL_JOB_SCHEMA) => readJSON(p);
+export const loadVisualBriefSchema = (p = VISUAL_BRIEF_SCHEMA) => readJSON(p);
+export const loadRenderSpecSchema = (p = RENDER_SPEC_SCHEMA) => readJSON(p);
 
 /** Load every editorial/profiles/artifact/visual-*.json, keyed by its `artifact` id. */
 export function loadArtifactProfiles(dir = ARTIFACT_PROFILE_DIR) {
@@ -92,6 +97,21 @@ export const CODES = Object.freeze({
   REVISION_AUTHORIZATION_MISSING: 'revision-intent-requires-explicit-authorization',
   APPROVAL_STATE_INCONSISTENT: 'approved-master-identity-without-approval-lock',
   APPROVAL_ATTRIBUTION_MISSING: 'approval-lock-without-owner-attribution',
+  BRIEF_REQUIRED: 'visual-brief-and-render-spec-required',
+  BRIEF_SPEC_MISMATCH: 'brief-render-spec-mismatch',
+  REFERENCE_AUTHORITY_UNRESOLVED: 'reference-authority-unresolved',
+  REFERENCE_AUTHORITY_COUNT: 'reference-authority-count',
+  REFERENCE_IS_FACTUAL_SOURCE: 'reference-is-factual-source',
+  EXACT_FACT_ON_GENERATIVE_LAYER: 'exact-fact-on-generative-layer',
+  ARTICLE_TITLE_IN_ARTWORK: 'article-title-in-artwork',
+  UI_MIMICRY_CONTRACT_MISSING: 'ui-mimicry-contract-missing',
+  BRAND_DEPTH_OVERRIDE_UNBACKED: 'brand-depth-override-unbacked',
+  BRAND_MATERIALITY_CEILING_VIOLATION: 'brand-materiality-ceiling-violation',
+  REFERENCE_AUTHORITY_INADMISSIBLE: 'reference-authority-inadmissible',
+  REFERENCE_AUTHORITY_TRAIT_UNEVIDENCED: 'reference-authority-trait-unevidenced',
+  REFERENCE_AUTHORITY_TRAIT_IRRELEVANT: 'reference-authority-trait-irrelevant-to-brief',
+  BRIEF_REFERENCE_DIMENSIONS_REQUIRED: 'visual-brief-required-dimensions-empty',
+  REQUIRES_OWNER_GATE_MISMATCH: 'requires-owner-gate-conflict-mismatch',
 });
 
 /**
@@ -199,6 +219,11 @@ const STOPWORDS = new Set([
   'traits', 'adopt', 'avoid', 'do', 'copy', 'question', 'communicate',
   'include', 'adjustment', 'reject', 'accept', 'family', 'style', 'render',
   'palette', 'background', 'primary', 'accent',
+  'brief', 'editorial', 'story', 'scene', 'device', 'devices', 'forbidden',
+  'layer', 'layers', 'factual', 'deterministic', 'generative', 'safe', 'zone',
+  'crop', 'reading', 'direction', 'external', 'overlay', 'adapter',
+  'require', 'forbid', 'controls',
+  'wide',
 ]);
 
 function tokenize(str) {
@@ -227,6 +252,9 @@ function permittedVocabulary(job, { profiles, brand }) {
     parts.push(JSON.stringify(brand.desired_impression ?? {}));
     parts.push(JSON.stringify(brand.line_and_materiality ?? {}));
   }
+  const brief = job.visual_brief ?? {};
+  const renderSpec = job.render_spec ?? {};
+  parts.push(JSON.stringify(brief), JSON.stringify(renderSpec));
   parts.push(job.artifact_profile ?? '', job.brand_profile ?? '', job.text_policy ?? '');
   return new Set(parts.flatMap(tokenize));
 }
@@ -390,8 +418,197 @@ export function approvalLockIssues(job, where = job?.job_id ?? '<job>') {
   return out;
 }
 
+function evaluationById() {
+  const out = new Map();
+  for (const path of listEvaluationFiles()) {
+    try {
+      const data = readJSON(path);
+      if (data.evaluation_id) out.set(data.evaluation_id, data);
+    } catch { /* registry validation owns parse reporting */ }
+  }
+  return out;
+}
+
+export function validateVisualBrief(brief, where = '<visual_brief>') {
+  const issues = [];
+  for (const e of validate(brief, loadVisualBriefSchema())) issues.push(issue(CODES.SCHEMA, where, `${e.path}: ${e.message}`));
+  return issues;
+}
+
+export function validateRenderSpec(renderSpec, where = '<render_spec>') {
+  const issues = [];
+  for (const e of validate(renderSpec, loadRenderSpecSchema())) issues.push(issue(CODES.SCHEMA, where, `${e.path}: ${e.message}`));
+  return issues;
+}
+
+export function validateReferenceAuthority(renderSpec, requirements, where = '<render_spec>', { catalogRefIds = loadCatalogRefIds(), evaluations = evaluationById() } = {}) {
+  const selected = renderSpec?.reference_authority?.selected ?? [];
+  const issues = [];
+  if (selected.length < 1 || selected.length > 3) {
+    issues.push(issue(CODES.REFERENCE_AUTHORITY_COUNT, where, 'reference_authority.selected must contain 1-3 references'));
+    return issues;
+  }
+  for (const entry of selected) {
+    const evaluation = evaluations.get(entry.evaluation_id);
+    if (!evaluation || evaluation.ref_id !== entry.ref_id) {
+      issues.push(issue(CODES.REFERENCE_AUTHORITY_UNRESOLVED, where, `reference ${entry?.ref_id}/${entry?.evaluation_id} is not reachable through references/catalog.json plus references/evaluations/`));
+      continue;
+    }
+    const admitted = assessVisualReferenceAdmissibility(evaluation, requirements, { catalogRefIds });
+    if (!admitted.admissible) {
+      issues.push(issue(CODES.REFERENCE_AUTHORITY_INADMISSIBLE, where, `${entry.evaluation_id} fails resolver admissibility: ${admitted.reason}`));
+      continue;
+    }
+    const adopted = new Set((evaluation.dimensions ?? []).filter((d) => d.verdict === 'adopt').map((d) => d.dimension));
+    if ((entry.authority ?? []).some((trait) => !adopted.has(trait))) {
+      issues.push(issue(CODES.REFERENCE_AUTHORITY_TRAIT_UNEVIDENCED, where, `${entry.evaluation_id} does not adopt every claimed authority trait`));
+    }
+    const matched = new Set(admitted.matched.map((dimension) => dimension.dimension));
+    if ((entry.authority ?? []).some((trait) => !matched.has(trait))) {
+      issues.push(issue(CODES.REFERENCE_AUTHORITY_TRAIT_IRRELEVANT, where, `${entry.evaluation_id} claims authority outside the dimensions matched to this VisualBrief`));
+    }
+    if (/\b(source|fact|citation|verified claim)\b/i.test(`${entry.rationale ?? ''} ${(entry.authority ?? []).join(' ')}`)) {
+      issues.push(issue(CODES.REFERENCE_IS_FACTUAL_SOURCE, where, `${entry.evaluation_id} is craft evidence only and may not be made a factual Source`));
+    }
+  }
+  return issues;
+}
+
+function validateBrandDepthOverride(job, brand, where) {
+  const brandDepthModel = normalise(brand.line_and_materiality?.depth_model);
+  const allowed = brandDepthModel.includes('flat') ? ['flat_2d', 'layered_2d'] : [];
+  if (allowed.includes(job.render_spec.spatial_treatment)) return [];
+  const authority = job.render_spec.reference_authority.selected.flatMap((r) => r.authority ?? []);
+  const backed = authority.includes(job.render_spec.spatial_treatment);
+  const conflicts = job.brand_conflicts ?? [];
+  const recorded = conflicts.some((c) => c.brand_field === 'line_and_materiality.depth_model' &&
+    c.brand_profile_version === brand.profile_version && c.render_spec_requirement === job.render_spec.spatial_treatment &&
+    c.reference_authority === job.render_spec.spatial_treatment && c.owner_review === 'pending_owner_review');
+  return backed && recorded ? [] : [issue(CODES.BRAND_DEPTH_OVERRIDE_UNBACKED, where,
+    'RenderSpec requests depth/spatial treatment beyond the brand depth_model without both an explicit selected reference authority trait and a human-visible brand_conflicts entry')];
+}
+
+function normalise(value, { format = 'delete' } = {}) {
+  // The two forms preserve or create word boundaries around invisible
+  // separators without treating script resemblance as a security boundary.
+  return String(value ?? '').normalize('NFKC').replace(/\p{M}/gu, '')
+    .replace(/[\p{Cf}\u0000-\u001F\u007F-\u009F]/gu, format === 'space' ? ' ' : '')
+    .trim().toLowerCase().replace(/[\p{P}\p{S}]+/gu, ' ').replace(/\s+/g, ' ');
+}
+
+function normalisations(value) {
+  return [normalise(value), normalise(value, { format: 'space' })];
+}
+
+/**
+ * The one prompt-bound text assembly. Validators inspect this exact provider
+ * surface; provider adapters may reorder it but cannot introduce new inputs.
+ */
+function assemblePrompt(job, { profiles, brand, promptAdapter = 'generic-v1' } = {}) {
+  const profile = profiles?.[job.artifact_profile] ?? {};
+  const resolvedBrand = brand ?? resolveBrandProfile(job.brand_profile, job.brand_profile_version);
+  const spec = job.semantic_spec ?? {};
+  const refs = job.selected_reference_traits ?? { adopt: [], avoid: [], do_not_copy: [] };
+  const audienceNote = profile.audience_adaptation?.[job.audience?.value];
+  const v2 = job.visual_brief && job.render_spec;
+  const baseLines = [
+    `ARTIFACT: ${profile.family ?? ''} — ${profile.primary_job ?? ''}`,
+    spec.question ? `QUESTION: ${spec.question}` : null,
+    `MUST COMMUNICATE: ${(spec.must_communicate ?? []).join('; ')}`,
+    spec.must_not_include?.length ? `MUST NOT INCLUDE: ${spec.must_not_include.join('; ')}` : null,
+    `COMPOSITION: ${profile.composition?.dominant_structure ?? ''}`,
+    audienceNote ? `AUDIENCE (${job.audience.value}): ${audienceNote}` : null,
+    `TEXT POLICY: ${job.text_policy}`,
+    `BRAND (${resolvedBrand.brand}@${resolvedBrand.profile_version}): background ${resolvedBrand.palette?.background?.family}, primary ${resolvedBrand.palette?.primary_structure?.family}, accent ${resolvedBrand.palette?.accent?.family}`,
+    refs.adopt?.length ? `REFERENCE TRAITS — adopt: ${refs.adopt.join('; ')}` : null,
+    refs.avoid?.length ? `REFERENCE TRAITS — avoid: ${refs.avoid.join('; ')}` : null,
+    refs.do_not_copy?.length ? `REFERENCE TRAITS — do not copy: ${refs.do_not_copy.join('; ')}` : null,
+  ].filter(Boolean);
+  const v2Lines = v2 ? [
+    `EDITORIAL BRIEF: ${job.visual_brief.editorial_purpose}; ${job.visual_brief.article_thesis}; reader outcome: ${job.visual_brief.reader_outcome}`,
+    `VISUAL STORY: ${job.visual_brief.visual_story.metaphor_or_relationship}`,
+    `SCENE: ${job.render_spec.scene_structure}; focal hierarchy: ${job.render_spec.focal_hierarchy}; reading: ${job.render_spec.reading_direction}`,
+    `SPATIAL TREATMENT: ${job.render_spec.spatial_treatment}; MATERIALITY TREATMENT: ${job.render_spec.materiality_treatment}`,
+    `LAYERS — semantic: ${job.render_spec.spatial_layers.generative_semantic.join('; ')}; deterministic factual: ${job.render_spec.spatial_layers.deterministic_factual.join('; ')}`,
+    `SAFE ZONES: ${job.render_spec.safe_zones.join('; ')}; crop: ${job.render_spec.crop_resilience}`,
+    `VISUAL DEVICES — require: ${job.render_spec.visual_devices.join('; ')}; forbid: ${job.render_spec.forbidden_visual_devices.join('; ')}`,
+    `REFERENCE AUTHORITY: ${job.render_spec.reference_authority.selected.map((r) => `${r.evaluation_id} controls ${r.authority.join(', ')}; do not copy ${r.not_authority.join(', ')}; rationale ${r.rationale}`).join(' | ')}`,
+    job.visual_brief.reference_requirements.forbidden_literal_copy.length ? `BRIEF-WIDE FORBIDDEN LITERAL COPY: ${job.visual_brief.reference_requirements.forbidden_literal_copy.join('; ')}` : null,
+    'ARTICLE TITLE: external overlay only',
+  ] : [];
+  const lines = promptAdapter === 'generic-v1'
+    ? [...baseLines, ...v2Lines]
+    : [...v2Lines.slice(0, 4), ...baseLines, ...v2Lines.slice(4)];
+  return lines.join('\n');
+}
+
+function brandCeilingTerms(brand) {
+  const ceiling = String(brand.line_and_materiality?.materiality_ceiling ?? '')
+    .replace(/^never\s+/i, '').split(/,|\s+or\s+/).map((x) => x.trim()).filter(Boolean);
+  const literal = [...(brand.palette?.prohibited ?? []), ...ceiling].map(normalise);
+  // Singularize the profile's own "dark drop shadows" vocabulary; this is
+  // still lexical matching, not an invented semantic synonym list.
+  return [...new Set(literal.flatMap((term) => [term, term.replace(/\bshadows\b/g, 'shadow'), term.replace(/^dark\s+/, '').replace(/\bshadows\b/g, 'shadow')]))];
+}
+
+function validateBrandMateriality(job, brand, profiles, where) {
+  const requested = normalisations(assemblePrompt(job, { profiles, brand }));
+  const hit = brandCeilingTerms(brand).find((term) => term && requested.some((text) => text.includes(term)));
+  return hit ? [issue(CODES.BRAND_MATERIALITY_CEILING_VIOLATION, where, `RenderSpec requests prohibited brand materiality/palette: ${hit}`)] : [];
+}
+
+function validateNoArticleTitle(job, brand, profiles, where) {
+  const title = normalisations(job.article_title).filter(Boolean);
+  if (title.length === 0) return [issue(CODES.ARTICLE_TITLE_IN_ARTWORK, where, 'generative/hybrid jobs require article_title lineage so prompt-bound title absence is checkable')];
+  const found = normalisations(assemblePrompt(job, { profiles, brand })).some((text) => title.some((candidate) => text.includes(candidate)));
+  return found ? [issue(CODES.ARTICLE_TITLE_IN_ARTWORK, where, 'article_title appears in a field that reaches compiled_prompt')]: [];
+}
+
+function validateRequiresOwnerGate(job, where) {
+  const required = (job.brand_conflicts ?? []).length > 0;
+  const actual = job.requires_owner_gate ?? false;
+  return actual === required ? [] : [issue(CODES.REQUIRES_OWNER_GATE_MISMATCH, where,
+    `requires_owner_gate must be ${required} when brand_conflicts has ${(job.brand_conflicts ?? []).length} entry/entries`)];
+}
+
+export function validateVisualContract(job, { brand, profiles = loadArtifactProfiles(), referenceContext } = {}, where = job?.job_id ?? '<job>') {
+  const v2Required = ['generative', 'hybrid'].includes(job?.renderer_route);
+  const ownerGateIssues = validateRequiresOwnerGate(job, where);
+  if (!v2Required && (!job?.visual_brief || !job?.render_spec)) return ownerGateIssues;
+  const issues = [...ownerGateIssues];
+  if (!job?.visual_brief || !job?.render_spec) return [issue(CODES.BRIEF_REQUIRED, where, 'generative and hybrid routes require visual_brief and render_spec')];
+  issues.push(...validateVisualBrief(job.visual_brief, where));
+  issues.push(...validateRenderSpec(job.render_spec, where));
+  if (issues.some((i) => i.code === CODES.SCHEMA)) return issues;
+  if (v2Required && job.visual_brief.reference_requirements.required_dimensions.length === 0) {
+    issues.push(issue(CODES.BRIEF_REFERENCE_DIMENSIONS_REQUIRED, where, 'generative and hybrid VisualBriefs must require at least one reference dimension'));
+  }
+  if (job.visual_brief.brief_id !== job.render_spec.brief_id || job.visual_brief.artifact_profile !== job.artifact_profile ||
+      job.visual_brief.article_ref.article_id !== job.article_ref?.article_id ||
+      job.semantic_spec?.question !== job.visual_brief.visual_story.primary_question) {
+    issues.push(issue(CODES.BRIEF_SPEC_MISMATCH, where, 'VisualBrief/RenderSpec/job semantic projection does not identify one article, artifact profile, and primary question'));
+  }
+  const requirements = { ...job.visual_brief.reference_requirements, artifact_profile: job.artifact_profile };
+  issues.push(...validateReferenceAuthority(job.render_spec, requirements, where, referenceContext));
+  const factual = job.visual_brief.factual_invariants ?? [];
+  const factualLayer = (job.render_spec.spatial_layers?.deterministic_factual ?? []).join(' ').toLowerCase();
+  if (factual.some((item) => !factualLayer.includes(item.toLowerCase()))) {
+    issues.push(issue(CODES.EXACT_FACT_ON_GENERATIVE_LAYER, where, 'every VisualBrief factual_invariant must be named in RenderSpec.spatial_layers.deterministic_factual'));
+  }
+  issues.push(...validateNoArticleTitle(job, brand, profiles, where));
+  if (job.artifact_profile === 'visual/body-infographic') {
+    const forbidden = new Set(job.render_spec.forbidden_visual_devices ?? []);
+    if (!['ui_mimicry', 'dashboardization', 'flat_svg_aesthetic'].every((x) => forbidden.has(x))) {
+      issues.push(issue(CODES.UI_MIMICRY_CONTRACT_MISSING, where, 'body infographic V2 contract must explicitly forbid ui_mimicry, dashboardization, and flat_svg_aesthetic'));
+    }
+  }
+  issues.push(...validateBrandDepthOverride(job, brand, where));
+  issues.push(...validateBrandMateriality(job, brand, profiles, where));
+  return issues;
+}
+
 /** Validate a compiled visual job. Returns an array of issues; empty means PASS. */
-export function validateVisualJob(job, { schema = loadSchema(), profiles = loadArtifactProfiles(), brand } = {}) {
+export function validateVisualJob(job, { schema = loadSchema(), profiles = loadArtifactProfiles(), brand, referenceContext } = {}) {
   const issues = [];
   const where = job?.job_id ?? '<job>';
 
@@ -412,6 +629,9 @@ export function validateVisualJob(job, { schema = loadSchema(), profiles = loadA
       return issues;
     }
   }
+
+  // PR A checks are additive. They never replace approvalLockIssues below.
+  issues.push(...validateVisualContract(job, { brand: resolvedBrand, profiles, referenceContext }, where));
 
   if (!job.article_ref && !job.package_ref) {
     issues.push(issue(CODES.MISSING_REF, where, 'a visual job must carry exactly one of article_ref or package_ref'));
@@ -540,7 +760,7 @@ export function validateVisualJobFile(path, options = {}) {
  * Deterministic, model-free prompt assembly from declared inputs only.
  * No network call, no LLM call — pure string composition.
  */
-export function compileVisualPrompt(job, { profiles = loadArtifactProfiles(), brand } = {}) {
+export function compileVisualPrompt(job, { profiles = loadArtifactProfiles(), brand, promptAdapter = 'generic-v1' } = {}) {
   // The approval lock is enforced here as well as in the validator: a sealed
   // job must not be able to obtain a fresh generation prompt by calling the
   // compiler directly and validating afterwards.
@@ -567,24 +787,16 @@ export function compileVisualPrompt(job, { profiles = loadArtifactProfiles(), br
   // An unresolvable brand throws here rather than silently compiling against
   // suengj.com's tokens under a different brand's name.
   const resolvedBrand = brand ?? resolveBrandProfile(job.brand_profile, job.brand_profile_version);
+  const visualContractIssues = validateVisualContract(job, { brand: resolvedBrand, profiles });
+  if (visualContractIssues.length > 0) {
+    throw new Error(`visual contract invalid: ${visualContractIssues.map((i) => `[${i.code}] ${i.message}`).join(' | ')}`);
+  }
 
-  const spec = job.semantic_spec ?? {};
-  const refs = job.selected_reference_traits ?? { adopt: [], avoid: [], do_not_copy: [] };
-  const audienceNote = profile.audience_adaptation?.[job.audience?.value];
-
-  const lines = [
-    `ARTIFACT: ${profile.family} — ${profile.primary_job}`,
-    spec.question ? `QUESTION: ${spec.question}` : null,
-    `MUST COMMUNICATE: ${(spec.must_communicate ?? []).join('; ')}`,
-    spec.must_not_include?.length ? `MUST NOT INCLUDE: ${spec.must_not_include.join('; ')}` : null,
-    `COMPOSITION: ${profile.composition?.dominant_structure ?? ''}`,
-    audienceNote ? `AUDIENCE (${job.audience.value}): ${audienceNote}` : null,
-    `TEXT POLICY: ${job.text_policy}`,
-    `BRAND (${resolvedBrand.brand}@${resolvedBrand.profile_version}): background ${resolvedBrand.palette?.background?.family}, primary ${resolvedBrand.palette?.primary_structure?.family}, accent ${resolvedBrand.palette?.accent?.family}`,
-    refs.adopt?.length ? `REFERENCE TRAITS — adopt: ${refs.adopt.join('; ')}` : null,
-    refs.avoid?.length ? `REFERENCE TRAITS — avoid: ${refs.avoid.join('; ')}` : null,
-    refs.do_not_copy?.length ? `REFERENCE TRAITS — do not copy: ${refs.do_not_copy.join('; ')}` : null,
-  ].filter(Boolean);
+  const v2 = job.visual_brief && job.render_spec;
+  if (!['generic-v1', 'generic-v2'].includes(promptAdapter)) {
+    throw new Error(`unknown prompt adapter: ${promptAdapter}`);
+  }
+  const compiled_prompt = assemblePrompt(job, { profiles, brand: resolvedBrand, promptAdapter });
 
   // compiled_from records the brand actually loaded (resolvedBrand.brand /
   // .profile_version), never job.brand_profile verbatim — the two agree
@@ -596,7 +808,8 @@ export function compileVisualPrompt(job, { profiles = loadArtifactProfiles(), br
     job.audience?.profile_ref,
     'semantic_spec',
     'selected_reference_traits',
+    ...(v2 ? [`visual_brief:${job.visual_brief.brief_id}`, `render_spec:${job.render_spec.render_spec_id}`, ...job.render_spec.reference_authority.selected.map((r) => r.evaluation_id)] : []),
   ].filter(Boolean);
 
-  return { compiled_prompt: lines.join('\n'), compiled_from };
+  return { compiled_prompt, compiled_from, compiled_prompt_adapter: promptAdapter };
 }

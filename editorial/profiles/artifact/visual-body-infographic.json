@@ -32,7 +32,7 @@
   },
   "renderer_preference": {
     "order": ["deterministic", "hybrid", "generative"],
-    "rule": "Default toward a deterministic or strongly structured renderer whenever labels, topology, arrows, evidence, comparison rows, chronology, or exact relationships must remain stable and auditable. Use generative rendering only when the body visual is primarily qualitative and can tolerate image-model variance without weakening meaning; exact values and labels never ride on a generative raster model (SUENGJ-ARTICLE-IMAGE-FAMILIES.md §4.4)."
+    "rule": "Exact labels, topology, arrows, evidence, comparison rows, chronology, and values remain deterministic and auditable. That does not require the whole plate to be deterministic: a qualitative causal/spatial scene may be generative or hybrid when its RenderSpec keeps exact facts on the deterministic layer. Semantic density is not visual density; simple means cognitively clear, not graphically sparse."
   },
   "readability_gate": {
     "applies": true,

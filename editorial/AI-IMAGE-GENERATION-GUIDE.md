@@ -123,7 +123,7 @@ Do not overload prompts with long adjective lists. Clear spatial and semantic in
 
 Reference images are first-class production state.
 
-**Status:** The per-reference `authority` / `not_authority` record is a target contract for SUE-643, not current shipped behavior.
+**Status:** The per-reference `authority` / `not_authority` record is implemented by [`../schemas/VISUAL-BRIEF-AND-RENDER-SPEC-CONTRACT.md`](../schemas/VISUAL-BRIEF-AND-RENDER-SPEC-CONTRACT.md); this guide remains the quality authority.
 
 A reference must declare what it controls. Examples:
 
