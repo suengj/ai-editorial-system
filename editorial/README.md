@@ -15,6 +15,7 @@ quality gates.
 | [`INFOGRAPHIC-AND-POSTER.md`](INFOGRAPHIC-AND-POSTER.md) | Spatial hierarchy, poster/infographic profiles, module reuse, evidence boundary, and spatial QA | Visual-story extension |
 | [`VIDEO-STORYBOARD.md`](VIDEO-STORYBOARD.md) | Beat-indexed visual/narration synchronization, captions, temporal assembly, local repair, and video QA | Video extension |
 | [`IMAGE-GENERATION.md`](IMAGE-GENERATION.md) | Editorial role, routing, prompt construction, reference consistency, bounded revision, and visual QA for generated/edited images | Visual generation extension |
+| [`AI-IMAGE-GENERATION-GUIDE.md`](AI-IMAGE-GENERATION-GUIDE.md) | Production quality framework for generated editorial imagery — brand-compatible not UI-mimetic, generative-semantic vs deterministic-factual split, reference authority, direction discovery, and aesthetic QA | AES-V2.16 (SUE-605) |
 | [`IMAGE-TEXT-RENDERING-PROFILES.md`](IMAGE-TEXT-RENDERING-PROFILES.md) | Modular text handling for generated images: external overlay, hybrid, integrated generated text, or no text | Visual generation extension |
 | [`DIAGRAMMATIC-VISUAL-LANGUAGE.md`](DIAGRAMMATIC-VISUAL-LANGUAGE.md) | Diagrammatic editorial styling, geometric character grammar, thumbnail adaptation, reusable prompt blocks, and style QA | Visual language extension |
 | [`ARTICLE-ILLUSTRATION-ROUTING.md`](ARTICLE-ILLUSTRATION-ROUTING.md) | Article thesis → information type → renderer → illustration family routing, plus the current suengj.com Editorial Research Graphic profile | Article illustration extension |
@@ -75,6 +76,7 @@ summary of the article.
 `IMAGE-GENERATION.md` extends the control plane into generated visuals without
 making this repository a renderer: it owns the editorial brief and QA contract,
 while project repositories own provider adapters and publication implementation.
+`AI-IMAGE-GENERATION-GUIDE.md` holds the complementary quality and art-direction re-baseline.
 `IMAGE-TEXT-RENDERING-PROFILES.md` keeps text treatment replaceable per
 artifact/visual family rather than making one thumbnail convention a permanent
 image-generation invariant. `DIAGRAMMATIC-VISUAL-LANGUAGE.md` adds a reusable
