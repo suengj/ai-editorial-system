@@ -1,0 +1,89 @@
+{
+  "schema_version": "2.0.0",
+  "intent_id": "intent:2026-09-05-sue570-pilot-bonds-child",
+  "created_at": "2026-09-05T09:10:00Z",
+  "request": {
+    "utterance": "SUE-570 파일럿 Source B: 같은 canonical source(content/views/japan-us-global-bond-selloff.md, 2026-09-02)를 아동용(10-12세)으로 adapt 해줘. 표면은 suengj.com, editorial_product는 explainer. 국채·이자율 개념부터 설명하고, 원문에 없는 사실은 추가하지 마. 재확인 안 된 숫자는 아이들에게도 오늘의 사실인 것처럼 말하면 안 돼.",
+    "language": "ko",
+    "received_by": "claude-code",
+    "received_at": "2026-09-05T09:10:00Z"
+  },
+  "axes": {
+    "transformation": {
+      "value": "adapt",
+      "state": "confirmed",
+      "profile_ref": "editorial/profiles/transformation/adapt.json",
+      "basis": "utterance says \"아동용으로 adapt 해줘\" and \"원문에 없는 사실은 추가하지 마\" — matches adapt.json's new_claims: forbidden constraint directly."
+    },
+    "content_type": {
+      "value": "view",
+      "state": "assumed",
+      "profile_ref": "editorial/profiles/content/view.json",
+      "basis": "the canonical source's own content_type is view; adapt.json's structure_rule says the target modality's native structure governs delivery, not that the content_type axis changes — no content-type-changing signal in the utterance, and adapt.json lists \"view\" as a typical_content_type, so the source's content_type carries forward by default rather than being reassigned to a Core vocabulary id that does not exist (e.g. there is no 'explainer' content-type profile; that word names the publication repo's editorial_product field, a separate vocabulary)."
+    },
+    "audience": {
+      "value": "child-upper-elementary",
+      "state": "confirmed",
+      "profile_ref": "editorial/profiles/audience/child-upper-elementary.json",
+      "basis": "utterance says \"아동용(10-12세)\" directly, matching child-upper-elementary.json's stated age band verbatim.",
+      "traits": {
+        "expertise": "novice",
+        "attention_context": "study"
+      }
+    },
+    "surface": {
+      "value": "suengj-com",
+      "state": "confirmed",
+      "profile_ref": "editorial/profiles/surface/suengj-com.json",
+      "basis": "utterance says \"표면은 suengj.com\" directly."
+    },
+    "artifacts": [
+      {
+        "value": "text/article",
+        "state": "confirmed",
+        "basis": "utterance asks for an adapted written explainer; text/article is the planned text-artifact id, governed by article.schema.json (V1)."
+      },
+      {
+        "value": "visual/analytical-graphic",
+        "state": "confirmed",
+        "profile_ref": "editorial/profiles/artifact/visual-analytical-graphic.json",
+        "basis": "visual-analytical-graphic.json's audience_adaptation.child-upper-elementary explicitly allows this artifact for a child audience when \"the comparison itself is the point ... cap at 2 comparison dimensions with plain-language labels and no abstract scale\" — the comparison here (rate stayed high vs. worry stayed flat) is exactly the article's point, so the same artifact family as Report is used but compiled at a materially lower density per that adaptation clause rather than routed to visual/evidence-visual (whose own child adaptation says 'usually skip').",
+        "count": 1
+      }
+    ]
+  },
+  "inputs": {
+    "sources": [
+      {
+        "source_id": "src:local:content/views/japan-us-global-bond-selloff.md",
+        "state": "confirmed",
+        "note": "Canonical source, publication repo suengj-com, type: view, status: published, date 2026-09-02."
+      }
+    ],
+    "references": []
+  },
+  "constraints": {
+    "output_language": "ko"
+  },
+  "overrides": [
+    {
+      "field": "no_distorting_analogy",
+      "value": "forbidden: lending-lunch-money-style analogies that collapse under scrutiny",
+      "rationale": "Task-specific instruction, matching child-upper-elementary.json's own anti_pattern (\"cute analogies that distort the mechanism\") — recorded here because the calling instruction named a specific example analogy to avoid, which is a task detail rather than a durable profile change.",
+      "stated_by": "upstream_contract"
+    },
+    {
+      "field": "freshness",
+      "value": "reverify_before_restate",
+      "rationale": "Same freshness override as News/Report: unverified numbers must not be asserted as today's fact even in simplified language — child-upper-elementary.json's own anti_pattern already forbids lowering factual accuracy for simplicity; this override makes the freshness dimension of that rule explicit for this run.",
+      "stated_by": "upstream_contract"
+    }
+  ],
+  "clarification": {
+    "required": [],
+    "asked": [],
+    "resolution": "proceeded"
+  },
+  "calibration_ref": null,
+  "status": "ready"
+}

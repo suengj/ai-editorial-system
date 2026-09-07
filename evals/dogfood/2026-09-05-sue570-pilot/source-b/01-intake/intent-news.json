@@ -1,0 +1,83 @@
+{
+  "schema_version": "2.0.0",
+  "intent_id": "intent:2026-09-05-sue570-pilot-bonds-news",
+  "created_at": "2026-09-05T09:00:00Z",
+  "request": {
+    "utterance": "SUE-570 파일럿 Source B: content/views/japan-us-global-bond-selloff.md(2026-09-02 발행, 일본 10년물 3% 돌파와 미국 장기금리 동반 상승)를 뉴스 변형으로 recreate 해줘. 대상은 general-reader, 표면은 suengj.com, editorial_product는 news_brief. 오늘은 2026-09-05이므로 원문의 현재형 시장 서술(일본 10Y, 미국 10Y/30Y, Brent, 장기 회사채 OAS)은 반드시 재확인하고 조회일을 표시해줘.",
+    "language": "ko",
+    "received_by": "claude-code",
+    "received_at": "2026-09-05T09:00:00Z"
+  },
+  "axes": {
+    "transformation": {
+      "value": "recreate",
+      "state": "confirmed",
+      "profile_ref": "editorial/profiles/transformation/recreate.json",
+      "basis": "utterance says \"뉴스 변형으로 recreate 해줘\" — explicit transformation value, matching recreate.json's intent (rebuild the argument for a new audience/surface while keeping the subject)."
+    },
+    "content_type": {
+      "value": "news",
+      "state": "confirmed",
+      "profile_ref": "editorial/profiles/content/news.json",
+      "basis": "utterance says \"뉴스 변형\" and \"editorial_product는 news_brief\" and explicitly invokes the freshness/event_date concern that content/news.json governs (max_source_age_days, 'reporting a projection in the present tense' anti-pattern)."
+    },
+    "audience": {
+      "value": "general-reader",
+      "state": "confirmed",
+      "profile_ref": "editorial/profiles/audience/general-reader.json",
+      "basis": "utterance says \"대상은 general-reader\" directly.",
+      "traits": {
+        "expertise": "novice",
+        "attention_context": "reading"
+      }
+    },
+    "surface": {
+      "value": "suengj-com",
+      "state": "confirmed",
+      "profile_ref": "editorial/profiles/surface/suengj-com.json",
+      "basis": "utterance says \"표면은 suengj.com\" directly."
+    },
+    "artifacts": [
+      {
+        "value": "text/article",
+        "state": "confirmed",
+        "basis": "utterance asks for a recreated written piece (\"뉴스 변형으로 recreate\"); text/article is the planned text-artifact id in the artifact axis registry (editorial/profiles/axes.json), governed by article.schema.json (V1)."
+      },
+      {
+        "value": "visual/evidence-visual",
+        "state": "confirmed",
+        "profile_ref": "editorial/profiles/artifact/visual-evidence-visual.json",
+        "basis": "the canonical source carries an exact market-signal table with retrieval-dated numeric values; visual/evidence-visual.json's renderer_preference (deterministic-only, 'exact values ... must never ride on a generative model') is the correct route for a fast-scannable timeline visual carrying only reverified numbers.",
+        "count": 1
+      }
+    ]
+  },
+  "inputs": {
+    "sources": [
+      {
+        "source_id": "src:local:content/views/japan-us-global-bond-selloff.md",
+        "state": "confirmed",
+        "note": "Canonical source, publication repo suengj-com, type: view, status: published, date 2026-09-02. Read in full including footnoted sources [^1]-[^8] and the market-signal table."
+      }
+    ],
+    "references": []
+  },
+  "constraints": {
+    "output_language": "ko"
+  },
+  "overrides": [
+    {
+      "field": "freshness",
+      "value": "reverify_before_restate",
+      "rationale": "Task-specific override, not a durable calibration change: today (2026-09-05) is 3 days after the canonical source's date; every present-tense market-state claim (Japan 10Y, US 10Y/30Y, Brent, long US corporate OAS) must be reverified via WebSearch/WebFetch and carry a visible retrieval date before being restated. This is content/news.json's own freshness rule (max_source_age_days: 30 governs source age, not claim currency) applied literally, not a new rule.",
+      "stated_by": "upstream_contract"
+    }
+  ],
+  "clarification": {
+    "required": [],
+    "asked": [],
+    "resolution": "proceeded"
+  },
+  "calibration_ref": null,
+  "status": "ready"
+}

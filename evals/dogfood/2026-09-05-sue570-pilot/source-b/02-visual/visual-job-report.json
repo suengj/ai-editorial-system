@@ -1,0 +1,100 @@
+{
+  "schema_version": "1.0.0",
+  "job_id": "job:sue570-pilot-bonds-report-matrix",
+  "intent_ref": "intent:2026-09-05-sue570-pilot-bonds-report",
+  "calibration_ref": null,
+  "article_ref": {
+    "article_id": "art:sue570-pilot-bonds-report",
+    "version_number": 1,
+    "content_hash": "8b54f74c70f437e574cd74e7dd4fab4f0ea2ff29e30d41642a15aabd456a229a",
+    "claims_hash": "92b364aa3b45b92ea9f341825c816d6f03312c16e486d7ba8de330d299ad94ee"
+  },
+  "artifact_profile": "visual/analytical-graphic",
+  "profile_ref": "editorial/profiles/artifact/visual-analytical-graphic.json",
+  "audience": {
+    "value": "domain-practitioner",
+    "profile_ref": "editorial/profiles/audience/domain-practitioner.json",
+    "traits_applied": [
+      "denser comparison rows without in-frame glossing",
+      "legend optional -- omitted here; row/column headers carry the meaning directly"
+    ]
+  },
+  "semantic_spec": {
+    "question": "Which of the article's three named diagnostic conditions (discount-rate shock / financing stress / credit-and-growth shock) does the 2026-09-05 reverified data actually match?",
+    "must_communicate": [
+      "the canonical source's own 2x2 diagnostic logic: Treasury yield direction (row) x credit spread behavior (column)",
+      "which single cell the 2026-09-05 reverified OAS value (1.01-1.03%, FRED BAMLC8A0C15PY) actually falls into",
+      "that one combination (Treasury down + spread stable) is not addressed by the canonical source and is left empty rather than invented"
+    ],
+    "must_not_include": [
+      "a filled-in interpretation for the empty cell",
+      "any OAS or yield value not reverified on 2026-09-05"
+    ]
+  },
+  "information_gain": {
+    "adjacent_representation": {
+      "type": "table",
+      "summary": "The draft article already carries the canonical source's three-row diagnostic table in prose/markdown-table form (Treasury yield x spread -> interpretation)."
+    },
+    "redundancy_test": {
+      "q1_new_perception": "The matrix converts a linear three-row table into a spatial 2x2 grid, letting the reader see at a glance which axis (rate direction vs spread behavior) is doing the diagnostic work, and visually locates the single occupied cell rather than requiring the reader to scan three text rows to find the match.",
+      "q2_harder_without_it": "Without the spatial layout, the reader has to hold the row/column logic in their head while reading the source's original three-row table; the matrix makes the logical structure (2 x 2, one condition unaddressed) visible as a shape.",
+      "q3_merely_recreates": false,
+      "q4_worth_the_interruption": true
+    },
+    "gain_type": [
+      "comparison",
+      "structure",
+      "spatialization"
+    ],
+    "integration_strategy": "extend",
+    "verdict": "proceed"
+  },
+  "density_check": {
+    "profile_semantic_density": "moderate",
+    "profile_visual_density": "low",
+    "compiled_semantic_density": "moderate",
+    "compiled_visual_density": "low",
+    "match": true
+  },
+  "selected_reference_traits": {
+    "adopt": [],
+    "avoid": [],
+    "do_not_copy": []
+  },
+  "brand_profile": "suengj-com",
+  "brand_profile_version": "1.0.0",
+  "text_policy": "hybrid_template",
+  "renderer_route": "hybrid",
+  "renderer": {
+    "tool": "hand-authored SVG, no generator script retained (evals/dogfood/2026-09-05-sue570-pilot/source-b -- the SVG at public/media/images/sue570-pilot/report-repricing-vs-crisis-matrix.svg was authored directly; a script named gen-report-matrix.mjs was referenced here previously but was never committed and does not exist in this or the publication repo -- corrected by independent review, 2026-09-05. chart-renderer.mjs was not reused because its renderChart() supports only type 'line', which cannot express a 2x2 grid.)",
+    "tool_version": "1.0.0",
+    "provider": "in-house",
+    "model": "hand-authored-svg-script",
+    "model_version": "1.0.0"
+  },
+  "context_isolation": {
+    "permitted_inputs": [
+      "semantic_spec",
+      "artifact_profile",
+      "audience",
+      "selected_reference_traits",
+      "brand_profile"
+    ],
+    "excluded": [
+      "ambient_conversation",
+      "unrelated_project_state",
+      "prior_unrelated_jobs",
+      "renderer_runtime_identity"
+    ]
+  },
+  "attempts": 1,
+  "max_attempts": 3,
+  "qa": {
+    "performed": true,
+    "information_gain_recheck": "pass",
+    "density_recheck": "pass",
+    "notes": "renderer_route recorded as 'hybrid' rather than 'deterministic' because the grid/label layout was hand-authored (not compiled purely from a validated chart-renderer.mjs spec the way the News job was) even though every value and label inside it is deterministic and traceable -- no generative model was used anywhere in this asset; 'hybrid' here means hand-authored-deterministic, not generative-plus-deterministic, and this distinction is recorded explicitly rather than overclaiming 'deterministic' for a script this job's own author wrote ad hoc. Actual asset inspection: report-repricing-vs-crisis-matrix.svg (3688 bytes) -- four cells render, the active cell (Treasury up / spread stable) is visually distinguished by fill opacity and stroke weight and carries the exact reverified OAS annotation with its retrieval date, the empty cell is visually de-emphasized (fill-opacity 0.02) and labeled '해당 없음' rather than filled with an invented interpretation, no horizontal overflow at the 720x460 viewBox, text uses currentColor for theme safety. Honest brand gap: as in the News job, brand_profile is recorded by convention id but the brand axis's token set was not resolved into this compiled spec -- currentColor-only minimal fit."
+  },
+  "status": "accepted"
+}
