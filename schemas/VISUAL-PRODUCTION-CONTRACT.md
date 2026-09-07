@@ -13,13 +13,14 @@ The objects have separate declared digest lineage. A `factual_overlay_repair` re
 `semantic_master.renderer_lineage` uses the same runtime shape as the job's
 `renderer` and must equal that lineage exactly. Factual overlay `source_ref`
 is a required, non-empty opaque reference supplied by the upstream article
-authority. Callers may use the convention
-`article-claim:<article_id>:<claim_id>`, but this control plane cannot resolve
-that claim ID: `article_ref` carries only article/version/hash lineage,
-VisualBrief carries factual text but no claim set, and no canonical article
-claim registry is reachable here. The validator therefore does not assert
-article or claim existence; upstream verification must resolve each reference
-to the verified claim set before publication.
+authority. For an article-backed job, when a source_ref uses the convention
+`article-claim:<article_id>:<claim_id>`, the validator mechanically checks only
+that `<article_id>` equals `job.article_ref.article_id`; `<claim_id>` remains
+opaque and is never resolved here. A source_ref outside that convention remains
+unconstrained by this control plane. `article_ref` carries only
+article/version/hash lineage, VisualBrief carries factual text but no claim set,
+and no canonical article claim registry is reachable here. Upstream verification
+must resolve each reference to the verified claim set before publication.
 
 `direction_discovery` holds 2–4 distinct thesis/composition alternatives, article-fit rationale, and only already-selected authorities. It precedes `production_refinement`; refinement preserves the selected direction and scopes its budget to bounded local edits, one declared major variable at a time. An unavailable positive anchor rejects rather than being invented.
 

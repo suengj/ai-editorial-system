@@ -122,6 +122,7 @@ export const CODES = Object.freeze({
   PRODUCTION_RUNTIME_LINEAGE: 'visual-production-runtime-lineage-mismatch',
   OVERLAY_PAYLOAD: 'factual-overlay-payload-hash-mismatch',
   OVERLAY_FACTS: 'factual-overlay-invariants-not-mechanically-covered',
+  OVERLAY_ARTICLE_MISMATCH: 'factual-overlay-article-mismatch',
   FACTUAL_REPAIR: 'factual-repair-changed-semantic-master',
   FACTUAL_REPAIR_PREDECESSOR: 'factual-repair-predecessor-unresolvable',
   FACTUAL_REPAIR_PREDECESSOR_OUTSIDE: 'factual-repair-predecessor-outside-repository',
@@ -647,6 +648,11 @@ function sameJSONValue(left, right) {
   return leftKeys.length === rightKeys.length && leftKeys.every((key, i) => key === rightKeys[i] && sameJSONValue(left[key], right[key]));
 }
 
+const ARTICLE_CLAIM_SOURCE_REF = /^article-claim:(art:[a-z0-9]+(?:-[a-z0-9]+)*):/;
+function articleIdFromSourceRef(sourceRef) {
+  return ARTICLE_CLAIM_SOURCE_REF.exec(sourceRef ?? '')?.[1] ?? null;
+}
+
 export function validateVisualContract(job, { brand, profiles = loadArtifactProfiles(), referenceContext } = {}, where = job?.job_id ?? '<job>') {
   const v2Required = ['generative', 'hybrid'].includes(job?.renderer_route);
   const ownerGateIssues = validateRequiresOwnerGate(job, where);
@@ -711,6 +717,13 @@ export function validateVisualProduction(job, where = job?.job_id ?? '<job>', re
     const declared = new Set(overlay.declared_factual_invariants ?? []);
     const exact = new Set((overlay.payload.items ?? []).map((item) => item.exact_text));
     if (briefFacts.some((fact) => !declared.has(fact) || !exact.has(fact))) out.push(issue(CODES.OVERLAY_FACTS, where, 'every VisualBrief factual invariant must be declared and represented by an exact overlay payload item'));
+    const articleId = job.article_ref?.article_id;
+    for (const item of overlay.payload.items ?? []) {
+      const sourceArticleId = articleIdFromSourceRef(item.source_ref);
+      if (articleId && sourceArticleId && sourceArticleId !== articleId) {
+        out.push(issue(CODES.OVERLAY_ARTICLE_MISMATCH, where, `factual overlay source_ref names article "${sourceArticleId}", expected job article "${articleId}"`));
+      }
+    }
     if (repair) {
       let prior; let priorRealPath;
       try {
