@@ -1,0 +1,63 @@
+{
+  "schema_version": "1.0.0",
+  "evaluation_id": "eval:adobe-firefly-image5-2026-09-08-01",
+  "ref_id": "ref:adobe-firefly-image5",
+  "modality": "visual",
+  "evaluator": {
+    "type": "agent",
+    "agent": {
+      "runtime": "codex",
+      "model": "gpt-5"
+    }
+  },
+  "evaluated_at": "2026-09-08T00:00:00Z",
+  "profile_ref": "editorial/profiles/reference/visual.json",
+  "basis": "model_inference",
+  "dimensions": [
+    {
+      "dimension": "composition",
+      "verdict": "adopt",
+      "note": "The distinction between text-to-image and instruct editing supports an explicit composition/repair lane, with the semantic region and intended change selected by the existing review authority.",
+      "evidence": "Source pointer ref:adobe-firefly-image5; official feature guide observed 2026-09-08."
+    },
+    {
+      "dimension": "artifact-suitability",
+      "verdict": "adopt",
+      "note": "Aspect-ratio and asynchronous-generation controls are relevant to a disposable adapter certification path, not to publication acceptance.",
+      "evidence": "Source pointer ref:adobe-firefly-image5; official feature guide observed 2026-09-08."
+    },
+    {
+      "dimension": "label-text-strategy",
+      "verdict": "neutral",
+      "note": "The guide documents image workflows but does not supply a transferable guarantee for exact in-image text or article claims.",
+      "evidence": "Source pointer ref:adobe-firefly-image5; official feature guide observed 2026-09-08."
+    }
+  ],
+  "strengths": [
+    "Separates reference-conditioned editing from text-to-image generation at the documented workflow level."
+  ],
+  "weaknesses": [
+    "Provider request fields and asynchronous status are not evidence of semantic locality, text accuracy, or mobile readability."
+  ],
+  "applicable_to": {
+    "content_types": [
+      "research",
+      "view",
+      "news"
+    ],
+    "audiences": [
+      "general-reader",
+      "professional-generalist",
+      "domain-practitioner"
+    ],
+    "artifacts": [
+      "visual/body-infographic"
+    ],
+    "surfaces": [
+      "suengj-com"
+    ]
+  },
+  "authority_boundary": "craft_evidence_only",
+  "provenance_class": "external",
+  "notes": "SUE-668 source/evaluation record. The direct URL and retrieval date are owned by ref:adobe-firefly-image5; provider payload and endpoint syntax remain adapter-only."
+}

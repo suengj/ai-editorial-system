@@ -1,0 +1,11 @@
+{
+  "schema_version": "1.0.0",
+  "authority": "repository_article_claims",
+  "article_ref": {
+    "article_id": "art:tokenized-stocks-instant-payments-liquidity-rights",
+    "version_number": 2,
+    "content_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "claims_hash": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+  },
+  "claim_ids": ["liquidity-window"]
+}

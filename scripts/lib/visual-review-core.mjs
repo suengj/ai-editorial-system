@@ -3,7 +3,7 @@ import { lstatSync, readFileSync, realpathSync } from 'node:fs';
 import { resolve, sep } from 'node:path';
 import { validate } from './json-schema-lite.mjs';
 import { listFeedbackFiles, validateFeedbackFile } from './registry-core.mjs';
-import { VISUAL_FAILURE_ACTIONS, expectedVisualFailureAction } from './visual-job-core.mjs';
+import { VISUAL_FAILURE_ACTIONS, canonicalPayloadSha256, expectedVisualFailureAction, validateVisualJob } from './visual-job-core.mjs';
 
 const ROOT = resolve(new URL('../..', import.meta.url).pathname);
 const schema = (name) => JSON.parse(readFileSync(resolve(ROOT, 'schemas', name), 'utf8'));
@@ -28,6 +28,15 @@ export const REVIEW_CODES = Object.freeze({
   FIXTURE_PATH: 'visual-fixture-path',
   FIXTURE_HASH: 'visual-fixture-hash',
   POSITIVE: 'visual-positive-slot-invalid',
+  POST_RENDER_DIGEST: 'visual-review-post-render-digest',
+  POST_RENDER_CHECKS: 'visual-review-post-render-checks',
+  POST_RENDER_ROUTE: 'visual-review-post-render-route',
+  POST_RENDER_SCOPE: 'visual-review-post-render-scope',
+  POST_RENDER_GEOMETRY: 'visual-review-post-render-geometry',
+  VERIFIED_FACT_BINDING: 'visual-review-verified-fact-binding',
+  VERIFIED_FACT_REVIEW_REQUIRED: 'visual-review-verified-fact-review-required',
+  VERIFIED_FACT_JOB: 'visual-review-verified-fact-job',
+  VERIFIED_FACT_SURFACE: 'visual-review-verified-fact-surface',
 });
 
 export const VISUAL_REVIEW_TAG_CLASSES = Object.freeze({
@@ -73,7 +82,174 @@ function digestOf(path) {
   return `sha256:${createHash('sha256').update(readFileSync(path)).digest('hex')}`;
 }
 
-export function validateVisualReview(record, { feedbackDir } = {}) {
+function loadBoundReviewJob(record, out) {
+  const binding = record.verified_fact_binding;
+  if (!binding) return null;
+  const path = containedFile(binding.job_ref);
+  if (!path) {
+    out.push({ code: REVIEW_CODES.VERIFIED_FACT_JOB, message: 'verified_fact_binding.job_ref must resolve to a repository-contained job artifact' });
+    return null;
+  }
+  if (digestOf(path) !== binding.job_sha256) {
+    out.push({ code: REVIEW_CODES.VERIFIED_FACT_JOB, message: 'verified_fact_binding.job_sha256 does not match the bound job artifact bytes' });
+    return null;
+  }
+  let job;
+  try {
+    job = JSON.parse(readFileSync(path, 'utf8'));
+  } catch {
+    out.push({ code: REVIEW_CODES.VERIFIED_FACT_JOB, message: 'verified_fact_binding.job_ref is not a parseable JSON visual job artifact' });
+    return null;
+  }
+  const jobIssues = validateVisualJob(job);
+  if (jobIssues.length) {
+    out.push({ code: REVIEW_CODES.VERIFIED_FACT_JOB, message: `bound visual job is not validator-clean: ${jobIssues[0].message ?? jobIssues[0].code}` });
+    return null;
+  }
+  return job;
+}
+
+function validatePostRenderChecks(record, out) {
+  const post = record.post_render_checks;
+  if (!post) return;
+  if (post.asset_sha256 !== record.asset_sha256 || post.mobile_asset_sha256 !== record.mobile_asset_sha256) {
+    out.push({ code: REVIEW_CODES.POST_RENDER_DIGEST, message: 'post_render_checks must bind to the review record full and mobile asset digests' });
+  }
+  const expected = new Set(['textual', 'factual', 'readability', 'mobile']);
+  const expectedScope = { textual: 'full', factual: 'full', readability: 'full', mobile: 'mobile' };
+  const expectedSurface = { textual: 'desktop_actual_display', factual: 'desktop_actual_display', readability: 'desktop_actual_display', mobile: 'mobile_actual_display' };
+  const seen = new Set();
+  for (const check of post.checks) {
+    if (seen.has(check.check)) out.push({ code: REVIEW_CODES.POST_RENDER_CHECKS, message: `post-render check ${check.check} appears more than once` });
+    seen.add(check.check);
+    if (check.asset_scope !== expectedScope[check.check]) out.push({ code: REVIEW_CODES.POST_RENDER_SCOPE, message: `${check.check} check must inspect the ${expectedScope[check.check]} asset, not ${check.asset_scope}` });
+    if (check.display_surface !== expectedSurface[check.check]) out.push({ code: REVIEW_CODES.POST_RENDER_SCOPE, message: `${check.check} check must record its ${expectedSurface[check.check]} inspection surface` });
+    if (check.observed !== true) out.push({ code: REVIEW_CODES.POST_RENDER_GEOMETRY, message: `${check.check} check must record observed actual-display evidence` });
+    const expectedDigest = check.asset_scope === 'mobile' ? record.mobile_asset_sha256 : record.asset_sha256;
+    if (check.asset_sha256 !== expectedDigest) out.push({ code: REVIEW_CODES.POST_RENDER_DIGEST, message: `${check.check} check is not bound to the digest for its ${check.asset_scope} asset` });
+  }
+  for (const name of expected) if (!seen.has(name)) out.push({ code: REVIEW_CODES.POST_RENDER_CHECKS, message: `post-render checks must cover ${name}` });
+  const geometry = post.actual_display_geometry;
+  let geometryValid = true;
+  if (geometry.desktop.asset_sha256 !== record.asset_sha256) {
+    geometryValid = false;
+    out.push({ code: REVIEW_CODES.POST_RENDER_GEOMETRY, message: 'desktop actual-display geometry must bind to the reviewed full asset digest' });
+  }
+  if (geometry.desktop.observed !== true) {
+    geometryValid = false;
+    out.push({ code: REVIEW_CODES.POST_RENDER_GEOMETRY, message: 'desktop actual-display geometry must be observed' });
+  }
+  if (geometry.desktop.article_body_width_css_px !== 672) {
+    geometryValid = false;
+    out.push({ code: REVIEW_CODES.POST_RENDER_GEOMETRY, message: 'desktop operative article-body width must be observed at exactly 672 CSS px' });
+  }
+  if (geometry.mobile.asset_sha256 !== record.mobile_asset_sha256 || geometry.mobile.derivative_of_asset_sha256 !== record.asset_sha256) {
+    geometryValid = false;
+    out.push({ code: REVIEW_CODES.POST_RENDER_GEOMETRY, message: 'mobile actual-display geometry must bind to the mobile asset and explicitly derive from the reviewed full asset' });
+  }
+  if (geometry.mobile.observed !== true || geometry.mobile.anchor_observed !== true) {
+    geometryValid = false;
+    out.push({ code: REVIEW_CODES.POST_RENDER_GEOMETRY, message: 'mobile actual-display geometry must observe the declared crop anchor' });
+  }
+  if (geometry.mobile.viewport_width_css_px >= geometry.desktop.article_body_width_css_px || geometry.mobile.article_body_width_css_px > geometry.mobile.viewport_width_css_px) {
+    geometryValid = false;
+    out.push({ code: REVIEW_CODES.POST_RENDER_GEOMETRY, message: 'mobile geometry must be narrower than desktop and fit its mobile viewport' });
+  }
+  const actionFor = (verdict) => verdict === 'pass' ? 'KEEP' : verdict === 'fail' ? 'CHANGE' : 'DO_NOT_CHANGE';
+  for (const name of expected) {
+    const check = post.checks.find((x) => x.check === name);
+    const route = post.repair_routing[name];
+    if (check && route !== actionFor(check.verdict)) out.push({ code: REVIEW_CODES.POST_RENDER_ROUTE, message: `${name} repair routing must be ${actionFor(check.verdict)} for a ${check.verdict} check` });
+  }
+  const hasFailure = post.checks.some((x) => x.verdict === 'fail');
+  const hasAbstain = post.checks.some((x) => x.verdict === 'abstain');
+  const allObservedPass = post.checks.length === expected.size && post.checks.every((x) => x.verdict === 'pass' && x.observed === true);
+  if (record.verdict === 'PASS_TO_HUMAN_REVIEW' && (!allObservedPass || !geometryValid)) {
+    out.push({ code: REVIEW_CODES.POST_RENDER_ROUTE, message: 'PASS_TO_HUMAN_REVIEW requires observed pass results for every full/mobile actual-display check and valid geometry; abstain is fail-closed' });
+  }
+  if (!hasFailure && !hasAbstain && allObservedPass && geometryValid && record.verdict !== 'PASS_TO_HUMAN_REVIEW') {
+    out.push({ code: REVIEW_CODES.POST_RENDER_ROUTE, message: 'a clean post-render check set may only pass as PASS_TO_HUMAN_REVIEW' });
+  }
+  if (hasFailure && record.verdict === 'PASS_TO_HUMAN_REVIEW') {
+    out.push({ code: REVIEW_CODES.POST_RENDER_ROUTE, message: 'a failed post-render check cannot be presented as PASS_TO_HUMAN_REVIEW' });
+  }
+}
+
+function validateBoundDisplayAuthority(record, job, out) {
+  const spec = job?.render_spec;
+  const surfaces = spec?.publication_display_surfaces;
+  const anchors = spec?.crop_anchors;
+  const geometry = record.post_render_checks?.actual_display_geometry;
+  if (!spec || !surfaces || !surfaces.desktop || !surfaces.mobile || !Array.isArray(anchors) || !Array.isArray(surfaces.mobile.crop_anchors) || !geometry) {
+    out.push({ code: REVIEW_CODES.VERIFIED_FACT_SURFACE, message: 'verified-fact review requires authoritative RenderSpec crop_anchors, publication-display surfaces, and observed geometry' });
+    return;
+  }
+  const desktop = surfaces.desktop;
+  const mobile = surfaces.mobile;
+  const observedDesktop = geometry.desktop;
+  const observedMobile = geometry.mobile;
+  const desktopMatches = observedDesktop.surface_id === desktop.surface_id &&
+    observedDesktop.asset_scope === desktop.asset_scope &&
+    observedDesktop.article_body_width_css_px === desktop.article_body_width_css_px &&
+    observedDesktop.viewport_width_css_px === desktop.viewport_width_css_px;
+  const mobileMatches = observedMobile.surface_id === mobile.surface_id &&
+    observedMobile.asset_scope === mobile.asset_scope &&
+    observedMobile.viewport_width_css_px === mobile.viewport_width_css_px &&
+    observedMobile.article_body_width_css_px === mobile.article_body_width_css_px &&
+    observedMobile.derivative_of_surface_id === mobile.derivative_of_surface_id &&
+    observedMobile.crop_anchor && anchors.includes(observedMobile.crop_anchor) &&
+    mobile.crop_anchors.includes(observedMobile.crop_anchor);
+  if (!desktopMatches || !mobileMatches) {
+    out.push({ code: REVIEW_CODES.VERIFIED_FACT_SURFACE, message: 'observed desktop/mobile geometry and crop anchor must match the bound RenderSpec publication-display surfaces and declared semantic anchors' });
+  }
+}
+
+function validateVerifiedFactReview(record, job, out) {
+  const jobVerified = Boolean(job?.visual_brief?.text_ownership?.verified_generative_fact);
+  const binding = record.verified_fact_binding;
+  const markedVerified = record.review_scope === 'verified_generative_fact';
+  if (record.review_scope === 'legacy' && (binding || jobVerified)) {
+    out.push({ code: REVIEW_CODES.VERIFIED_FACT_BINDING, message: 'review_scope legacy cannot carry verified_generative_fact ownership' });
+  }
+  // The binding is the durable discriminator. A record carrying one is a
+  // verified-fact review even when the natural validator has no job object to
+  // resolve; legacy records omit it and remain compatible.
+  if (!binding && !jobVerified && !markedVerified) return;
+  if (!binding || !markedVerified) {
+    out.push({ code: REVIEW_CODES.VERIFIED_FACT_BINDING, message: 'verified-fact reviews require review_scope verified_generative_fact and a durable payload/job/asset binding' });
+  }
+  if (markedVerified && !job) {
+    out.push({ code: REVIEW_CODES.VERIFIED_FACT_JOB, message: 'verified-fact reviews require a resolvable, validator-clean bound visual job artifact' });
+  } else if (markedVerified && !jobVerified) {
+    out.push({ code: REVIEW_CODES.VERIFIED_FACT_BINDING, message: 'the bound visual job must itself declare verified_generative_fact ownership; a legacy job cannot be relabeled by a review' });
+  }
+
+  if (binding && binding.asset_sha256 !== record.asset_sha256) {
+    out.push({ code: REVIEW_CODES.VERIFIED_FACT_BINDING, message: 'verified_fact_binding.asset_sha256 must equal the reviewed full-asset digest' });
+  }
+
+  if (jobVerified) {
+    const owner = job.visual_brief.text_ownership.verified_generative_fact;
+    const payload = owner.canonical_payload ?? {};
+    if (!binding || binding.job_id !== job.job_id || binding.payload_ref !== payload.payload_ref ||
+        binding.job_ref === undefined || binding.job_sha256 === undefined ||
+        binding.render_spec_id !== job.render_spec?.render_spec_id ||
+        binding.render_spec_sha256 !== canonicalPayloadSha256(job.render_spec) ||
+        binding.payload_sha256 !== payload.payload_sha256 || binding.asset_sha256 !== record.asset_sha256 ||
+        binding.required_check !== 'factual') {
+      out.push({ code: REVIEW_CODES.VERIFIED_FACT_BINDING, message: 'review must bind exactly to the verified-fact job id/artifact digest, RenderSpec identity/digest, canonical payload reference/digest, reviewed asset digest, and factual check' });
+    }
+  }
+
+  const factual = record.post_render_checks?.checks?.find((check) =>
+    check.check === 'factual' && check.asset_scope === 'full' && check.asset_sha256 === record.asset_sha256);
+  if (!factual) {
+    out.push({ code: REVIEW_CODES.VERIFIED_FACT_REVIEW_REQUIRED, message: 'verified_generative_fact reviews require a full-asset factual post-render check bound to the reviewed digest' });
+  }
+  if (job) validateBoundDisplayAuthority(record, job, out);
+}
+
+export function validateVisualReview(record, { feedbackDir, job } = {}) {
   const out = validate(record, schema('visual-review.schema.json'))
     .map((e) => ({ code: REVIEW_CODES.SCHEMA, message: e.message }));
   if (out.length) return out;
@@ -102,6 +278,10 @@ export function validateVisualReview(record, { feedbackDir } = {}) {
     : (!route || route.failure_class !== record.failure_class || route.next_action !== record.next_action)) {
     out.push({ code: REVIEW_CODES.ROUTE, message: 'verdict/tag route mismatch' });
   }
+
+  validatePostRenderChecks(record, out);
+  const boundJob = record.verified_fact_binding ? loadBoundReviewJob(record, out) : job;
+  validateVerifiedFactReview(record, boundJob, out);
 
   const fbPath = listFeedbackFiles(feedbackDir).find((path) => {
     try { return JSON.parse(readFileSync(path, 'utf8')).feedback_id === record.feedback_ref; } catch { return false; }

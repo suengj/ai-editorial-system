@@ -1,0 +1,36 @@
+{
+  "schema_version": "1.0.0",
+  "authority": "repository_article_claims",
+  "article_ref": {
+    "article_id": "art:ai-hiring-pilot",
+    "version_number": 1,
+    "content_hash": "5b2536661c8ba7fb5310a129c04dede176fcdf979458e14619497e92c0452136",
+    "claims_hash": "6dbb071211439e5cc738c6882ad8245bdc33ab919ef9caf61a6bac3615456c36"
+  },
+  "claim_ids": [
+    "ai-hiring-rate-19-percent",
+    "ai-hiring-rate-41-4-percent",
+    "ai-hiring-rate-18-1-percent"
+  ],
+  "claims": [
+    {
+      "id": "ai-hiring-rate-19-percent",
+      "exact_text": "약 19%",
+      "source_ref": "article-claim:art:ai-hiring-pilot:ai-hiring-rate-19-percent",
+      "status": "verified"
+    },
+    {
+      "id": "ai-hiring-rate-41-4-percent",
+      "exact_text": "41.4%",
+      "source_ref": "article-claim:art:ai-hiring-pilot:ai-hiring-rate-41-4-percent",
+      "status": "verified"
+    },
+    {
+      "id": "ai-hiring-rate-18-1-percent",
+      "exact_text": "18.1%",
+      "source_ref": "article-claim:art:ai-hiring-pilot:ai-hiring-rate-18-1-percent",
+      "status": "verified"
+    }
+  ],
+  "content_basis": "The Missing Rungs\nAI-hiring pilot source version 1\n"
+}

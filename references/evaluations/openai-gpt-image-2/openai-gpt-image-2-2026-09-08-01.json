@@ -1,0 +1,63 @@
+{
+  "schema_version": "1.0.0",
+  "evaluation_id": "eval:openai-gpt-image-2-2026-09-08-01",
+  "ref_id": "ref:openai-gpt-image-2",
+  "modality": "visual",
+  "evaluator": {
+    "type": "agent",
+    "agent": {
+      "runtime": "codex",
+      "model": "gpt-5"
+    }
+  },
+  "evaluated_at": "2026-09-08T00:00:00Z",
+  "profile_ref": "editorial/profiles/reference/visual.json",
+  "basis": "model_inference",
+  "dimensions": [
+    {
+      "dimension": "artifact-suitability",
+      "verdict": "adopt",
+      "note": "The model page is useful as a current capability pointer for a generated visual adapter, not as a publication or evidence authority.",
+      "evidence": "Source pointer ref:openai-gpt-image-2; official model page observed 2026-09-08."
+    },
+    {
+      "dimension": "composition",
+      "verdict": "neutral",
+      "note": "Image input/output and high-fidelity input support are conditioning capabilities; the page does not supply a transferable composition method or a rendered result.",
+      "evidence": "Source pointer ref:openai-gpt-image-2; official model page observed 2026-09-08."
+    },
+    {
+      "dimension": "label-text-strategy",
+      "verdict": "adopt",
+      "note": "Flexible image inputs can support a disposable generation lane, while exact editorial text remains governed by the repository's ownership classes and review evidence.",
+      "evidence": "Source pointer ref:openai-gpt-image-2; official model page observed 2026-09-08."
+    }
+  ],
+  "strengths": [
+    "Separates a current model capability pointer from durable editorial semantics."
+  ],
+  "weaknesses": [
+    "No pixel-level, full/mobile, readability, or claim-verification evidence is supplied by the model page."
+  ],
+  "applicable_to": {
+    "content_types": [
+      "research",
+      "view",
+      "news"
+    ],
+    "audiences": [
+      "general-reader",
+      "professional-generalist",
+      "domain-practitioner"
+    ],
+    "artifacts": [
+      "visual/body-infographic"
+    ],
+    "surfaces": [
+      "suengj-com"
+    ]
+  },
+  "authority_boundary": "craft_evidence_only",
+  "provenance_class": "external",
+  "notes": "SUE-668 source/evaluation record. The direct URL and retrieval date are owned by ref:openai-gpt-image-2; model IDs and request syntax remain adapter-only."
+}

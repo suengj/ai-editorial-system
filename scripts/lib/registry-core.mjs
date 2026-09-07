@@ -152,6 +152,16 @@ export function loadCatalogRefIds(catalogPath = PATHS.catalog) {
   return new Set((catalog.entries ?? []).map((e) => e.ref_id).filter(Boolean));
 }
 
+/**
+ * Load source-owned reference metadata for authority decisions. The catalog is
+ * the owner of selection role; an evaluation cannot self-promote a
+ * documentation pointer into craft authority by carrying adopt dimensions.
+ */
+export function loadCatalogEntries(catalogPath = PATHS.catalog) {
+  const catalog = loadJson(catalogPath);
+  return new Map((catalog.entries ?? []).filter((entry) => entry?.ref_id).map((entry) => [entry.ref_id, entry]));
+}
+
 export function listEvaluationFiles(dir = PATHS.evaluationsDir) {
   return listJsonFiles(dir);
 }
@@ -440,17 +450,24 @@ export function checkIndexFreshness(builder, indexPath) {
  * Deterministic SUE-643 candidate retrieval. It reads only catalog-resolving
  * evaluation records on disk: no recent-conversation state, image paths, or
  * unregistered material can affect the result. An evaluation is positive
- * authority only when it has at least one structured `adopt` dimension.
+ * authority only when its catalog-owned role permits craft selection and it
+ * has at least one structured `adopt` dimension.
  */
 export function queryVisualReferenceEvaluations(requirements, {
-  catalogRefIds = loadCatalogRefIds(),
+  catalogRefIds,
+  catalogEntries,
   evaluationsDir = PATHS.evaluationsDir,
 } = {}) {
+  const resolvedCatalogRefIds = catalogRefIds ?? loadCatalogRefIds();
+  const resolvedCatalogEntries = catalogEntries ?? loadCatalogEntries();
   const candidates = [];
 
   for (const path of listEvaluationFiles(evaluationsDir)) {
     const { data } = parseJsonFile(path);
-    const admitted = assessVisualReferenceAdmissibility(data, requirements, { catalogRefIds });
+    const admitted = assessVisualReferenceAdmissibility(data, requirements, {
+      catalogRefIds: resolvedCatalogRefIds,
+      catalogEntries: resolvedCatalogEntries,
+    });
     if (!admitted.admissible) continue;
     candidates.push({
       ref_id: data.ref_id,
@@ -466,9 +483,18 @@ export function queryVisualReferenceEvaluations(requirements, {
 }
 
 /** The single admissibility chain for resolver output and pinned authority. */
-export function assessVisualReferenceAdmissibility(evaluation, requirements, { catalogRefIds = loadCatalogRefIds() } = {}) {
+export function assessVisualReferenceAdmissibility(evaluation, requirements, {
+  catalogRefIds,
+  catalogEntries,
+} = {}) {
   if (!evaluation || evaluation.modality !== 'visual') return { admissible: false, reason: 'modality' };
-  if (!catalogRefIds.has(evaluation.ref_id)) return { admissible: false, reason: 'catalog' };
+  const resolvedCatalogRefIds = catalogRefIds ?? loadCatalogRefIds();
+  const resolvedCatalogEntries = catalogEntries ?? loadCatalogEntries();
+  if (!resolvedCatalogRefIds.has(evaluation.ref_id)) return { admissible: false, reason: 'catalog' };
+  const catalogEntry = resolvedCatalogEntries.get(evaluation.ref_id);
+  if (catalogEntry?.reference_role === 'documentation_evidence') {
+    return { admissible: false, reason: 'documentation-evidence-only' };
+  }
   if (requirements?.evaluation_ids && !requirements.evaluation_ids.includes(evaluation.evaluation_id)) return { admissible: false, reason: 'selection-scope' };
   if (requirements?.artifact_profile && !(evaluation.applicable_to?.artifacts ?? []).includes(requirements.artifact_profile)) return { admissible: false, reason: 'artifact-profile' };
   const adopted = (evaluation.dimensions ?? []).filter((d) => d.verdict === 'adopt');

@@ -1,0 +1,63 @@
+{
+  "schema_version": "1.0.0",
+  "evaluation_id": "eval:google-gemini-image-generation-2026-09-08-01",
+  "ref_id": "ref:google-gemini-image-generation",
+  "modality": "visual",
+  "evaluator": {
+    "type": "agent",
+    "agent": {
+      "runtime": "codex",
+      "model": "gpt-5"
+    }
+  },
+  "evaluated_at": "2026-09-08T00:00:00Z",
+  "profile_ref": "editorial/profiles/reference/visual.json",
+  "basis": "model_inference",
+  "dimensions": [
+    {
+      "dimension": "hierarchy",
+      "verdict": "adopt",
+      "note": "The guide's complex-instruction and prompt-structure examples support declaring the information hierarchy before adapting the request to a renderer.",
+      "evidence": "Source pointer ref:google-gemini-image-generation; official guide observed 2026-09-08."
+    },
+    {
+      "dimension": "label-text-strategy",
+      "verdict": "adopt",
+      "note": "Documented advanced text rendering is a capability to test, not permission to place mutable or load-bearing article text outside its declared ownership route.",
+      "evidence": "Source pointer ref:google-gemini-image-generation; official guide observed 2026-09-08."
+    },
+    {
+      "dimension": "artifact-suitability",
+      "verdict": "adopt",
+      "note": "Resolution, aspect-ratio, reference, and image-editing controls are relevant to a disposable generated visual adapter and require full/mobile review afterward.",
+      "evidence": "Source pointer ref:google-gemini-image-generation; official guide observed 2026-09-08."
+    }
+  ],
+  "strengths": [
+    "Connects generation, editing, reference roles, text rendering, and surface controls in one official guide."
+  ],
+  "weaknesses": [
+    "Reference counts, grounding, prompt fields, and output settings are provider-specific and do not prove hierarchy or text correctness."
+  ],
+  "applicable_to": {
+    "content_types": [
+      "research",
+      "view",
+      "news"
+    ],
+    "audiences": [
+      "general-reader",
+      "professional-generalist",
+      "domain-practitioner"
+    ],
+    "artifacts": [
+      "visual/body-infographic"
+    ],
+    "surfaces": [
+      "suengj-com"
+    ]
+  },
+  "authority_boundary": "craft_evidence_only",
+  "provenance_class": "external",
+  "notes": "SUE-668 source/evaluation record. The direct URL and retrieval date are owned by ref:google-gemini-image-generation; provider fields remain outside durable contracts."
+}

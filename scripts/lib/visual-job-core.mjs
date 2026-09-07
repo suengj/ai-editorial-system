@@ -13,7 +13,7 @@ import { createHash } from 'node:crypto';
 import { dirname, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { validate } from './json-schema-lite.mjs';
-import { assessVisualReferenceAdmissibility, listEvaluationFiles, loadCatalogRefIds } from './registry-core.mjs';
+import { assessVisualReferenceAdmissibility, listEvaluationFiles, loadCatalogEntries, loadCatalogRefIds } from './registry-core.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(HERE, '../..');
@@ -24,8 +24,30 @@ export const RENDER_SPEC_SCHEMA = resolve(ROOT, 'schemas/render-spec.schema.json
 export const VISUAL_PRODUCTION_SCHEMA = resolve(ROOT, 'schemas/visual-production.schema.json');
 export const ARTIFACT_PROFILE_DIR = resolve(ROOT, 'editorial/profiles/artifact');
 export const BRAND_PROFILE_DIR = resolve(ROOT, 'editorial/profiles/brand');
+export const ARTICLE_CLAIMS_DIR = resolve(ROOT, 'references/article-claims');
 
 const readJSON = (p) => JSON.parse(readFileSync(p, 'utf8'));
+
+function loadAuthoritativeClaimIds(articleRef) {
+  const matches = [];
+  try {
+    for (const file of readdirSync(ARTICLE_CLAIMS_DIR)) {
+      if (!file.endsWith('.json')) continue;
+      let artifact;
+      try { artifact = readJSON(resolve(ARTICLE_CLAIMS_DIR, file)); } catch { continue; }
+      const ref = artifact?.article_ref;
+      if (artifact?.authority !== 'repository_article_claims' ||
+          ref?.article_id !== articleRef?.article_id ||
+          ref?.version_number !== articleRef?.version_number ||
+          ref?.content_hash !== articleRef?.content_hash ||
+          ref?.claims_hash !== articleRef?.claims_hash ||
+          !Array.isArray(artifact.claim_ids) || artifact.claim_ids.length === 0) continue;
+      matches.push(new Set(artifact.claim_ids));
+    }
+  } catch { return null; }
+  if (matches.length !== 1) return null;
+  return matches[0];
+}
 
 export const loadSchema = (p = VISUAL_JOB_SCHEMA) => readJSON(p);
 export const loadVisualBriefSchema = (p = VISUAL_BRIEF_SCHEMA) => readJSON(p);
@@ -117,6 +139,20 @@ export const CODES = Object.freeze({
   REFERENCE_AUTHORITY_TRAIT_REQUIRED: 'reference-authority-trait-required',
   BRIEF_REFERENCE_DIMENSIONS_REQUIRED: 'visual-brief-required-dimensions-empty',
   REQUIRES_OWNER_GATE_MISMATCH: 'requires-owner-gate-conflict-mismatch',
+  TEXT_OWNERSHIP_MISMATCH: 'visual-text-ownership-mismatch',
+  ARTICLE_TITLE_OWNERSHIP: 'article-title-must-be-external-overlay',
+  TEXT_OWNERSHIP_CLASS_INVALID: 'visual-text-ownership-class-invalid',
+  VERIFIED_FACT_PAYLOAD: 'verified-generative-fact-payload-invalid',
+  VERIFIED_FACT_SOURCE: 'verified-generative-fact-source-lineage-invalid',
+  VERIFIED_FACT_POST_RENDER: 'verified-generative-fact-post-render-required',
+  VERIFIED_FACT_LINEAGE: 'verified-generative-fact-lineage-unresolvable',
+  VERIFIED_FACT_CLAIM_SET: 'verified-generative-fact-claim-set-invalid',
+  VERIFIED_FACT_CLAIM: 'verified-generative-fact-claim-unresolvable',
+  FACT_INJECTION: 'factual-invariant-undeclared-in-prompt-surface',
+  HIERARCHY_MISMATCH: 'visual-information-hierarchy-mismatch',
+  HIERARCHY_REFERENCE_REQUIRED: 'visual-information-hierarchy-reference-required',
+  PUBLICATION_SURFACE_REQUIRED: 'visual-publication-display-surface-required',
+  PUBLICATION_SURFACE_INVALID: 'visual-publication-display-surface-invalid',
   PRODUCTION_SCHEMA: 'visual-production-schema',
   PRODUCTION_LINEAGE: 'visual-production-lineage-incomplete',
   PRODUCTION_RUNTIME_LINEAGE: 'visual-production-runtime-lineage-mismatch',
@@ -152,6 +188,12 @@ export const VISUAL_FAILURE_ACTIONS = Object.freeze({
 });
 export function expectedVisualFailureAction(failureClass) { return VISUAL_FAILURE_ACTIONS[failureClass]; }
 export function createVisualFailureRoute(failureClass) { return { failure_class: failureClass, next_action: expectedVisualFailureAction(failureClass) }; }
+// Provider/runtime identity is deliberately absent from these durable classes.
+// `no_text` is an empty semantic surface; the three ownership classes describe
+// who owns meaningful text when one exists.
+export const VISUAL_TEXT_OWNERSHIP_CLASSES = Object.freeze([
+  'generative_structural_text', 'verified_generative_fact', 'deterministic_external_text',
+]);
 export function canonicalPayloadSha256(payload) {
   const canonical = (v) => Array.isArray(v) ? `[${v.map(canonical).join(',')}]` : v && typeof v === 'object' ? `{${Object.keys(v).sort().map((k) => `${JSON.stringify(k)}:${canonical(v[k])}`).join(',')}}` : JSON.stringify(v);
   return `sha256:${createHash('sha256').update(canonical(payload)).digest('hex')}`;
@@ -266,6 +308,7 @@ const STOPWORDS = new Set([
   'layer', 'layers', 'factual', 'deterministic', 'generative', 'safe', 'zone',
   'crop', 'reading', 'direction', 'external', 'overlay', 'adapter',
   'require', 'forbid', 'controls',
+  'route',
   'wide',
 ]);
 
@@ -484,7 +527,11 @@ export function validateRenderSpec(renderSpec, where = '<render_spec>') {
   return issues;
 }
 
-export function validateReferenceAuthority(renderSpec, requirements, where = '<render_spec>', { catalogRefIds = loadCatalogRefIds(), evaluations = evaluationById() } = {}) {
+export function validateReferenceAuthority(renderSpec, requirements, where = '<render_spec>', {
+  catalogRefIds = loadCatalogRefIds(),
+  catalogEntries = loadCatalogEntries(),
+  evaluations = evaluationById(),
+} = {}) {
   const selected = renderSpec?.reference_authority?.selected ?? [];
   const issues = [];
   if (selected.length < 1 || selected.length > 3) {
@@ -497,7 +544,7 @@ export function validateReferenceAuthority(renderSpec, requirements, where = '<r
       issues.push(issue(CODES.REFERENCE_AUTHORITY_UNRESOLVED, where, `reference ${entry?.ref_id}/${entry?.evaluation_id} is not reachable through references/catalog.json plus references/evaluations/`));
       continue;
     }
-    const admitted = assessVisualReferenceAdmissibility(evaluation, requirements, { catalogRefIds });
+    const admitted = assessVisualReferenceAdmissibility(evaluation, requirements, { catalogRefIds, catalogEntries });
     if (!admitted.admissible) {
       issues.push(issue(CODES.REFERENCE_AUTHORITY_INADMISSIBLE, where, `${entry.evaluation_id} fails resolver admissibility: ${admitted.reason}`));
       continue;
@@ -538,6 +585,169 @@ function validateBrandDepthOverride(job, brand, where) {
     'RenderSpec requests depth/spatial treatment beyond the brand depth_model without both an explicit selected reference authority trait and a human-visible brand_conflicts entry')];
 }
 
+function validateTextOwnershipAndHierarchy(job, where) {
+  const issues = [];
+  const brief = job.visual_brief;
+  const spec = job.render_spec;
+  const briefOwnership = brief?.text_ownership;
+  const specOwnership = spec?.text_handling?.text_ownership;
+  if (briefOwnership || specOwnership) {
+    if (!briefOwnership || !specOwnership) {
+      issues.push(issue(CODES.TEXT_OWNERSHIP_MISMATCH, where,
+        'VisualBrief.text_ownership and RenderSpec.text_handling.text_ownership must be declared together'));
+    } else if (!sameJSONValue(briefOwnership, specOwnership)) {
+      issues.push(issue(CODES.TEXT_OWNERSHIP_MISMATCH, where,
+        'VisualBrief and RenderSpec text ownership classes must agree exactly'));
+    }
+    if (briefOwnership?.article_title !== 'deterministic_external_text' || spec?.text_handling?.article_title !== 'external_overlay') {
+      issues.push(issue(CODES.ARTICLE_TITLE_OWNERSHIP, where,
+        'article title is external text: text_ownership.article_title must be deterministic_external_text and text_handling.article_title must remain external_overlay'));
+    }
+    const classes = ['generative_structural_text', 'verified_generative_fact', 'deterministic_external_text'];
+    if (briefOwnership && classes.some((name) => !(name in briefOwnership))) {
+      issues.push(issue(CODES.TEXT_OWNERSHIP_CLASS_INVALID, where,
+        'text_ownership must explicitly represent generative_structural_text, verified_generative_fact, and deterministic_external_text'));
+    }
+    const verified = briefOwnership?.verified_generative_fact;
+    const canonical = verified?.canonical_payload;
+    const verifiedItems = canonical?.items ?? [];
+    if (verified) {
+      if (!canonical || !canonical.payload_ref || !canonical.payload_sha256 || !Array.isArray(canonical.items)) {
+        issues.push(issue(CODES.VERIFIED_FACT_PAYLOAD, where,
+          'verified_generative_fact requires a canonical declared payload with payload_ref, payload_sha256, and items'));
+      } else if (canonical.payload_sha256 !== canonicalPayloadSha256({ payload_ref: canonical.payload_ref, claim_set: verified.claim_set, items: canonical.items })) {
+        issues.push(issue(CODES.VERIFIED_FACT_PAYLOAD, where,
+          'verified_generative_fact canonical_payload.payload_sha256 does not match its declared payload'));
+      }
+      const sourceLineage = new Set(verified.source_lineage ?? []);
+      const itemSources = new Set(verifiedItems.map((item) => item.source_ref));
+      const articleId = job.article_ref?.article_id;
+      const claimSet = verified.claim_set;
+      const canonicalSource = (sourceRef) => parseArticleClaimSourceRef(sourceRef) !== null;
+      const authoritativeClaimIds = loadAuthoritativeClaimIds(job.article_ref);
+      const declaredClaimIds = Array.isArray(claimSet?.claim_ids) ? new Set(claimSet.claim_ids) : new Set();
+      const claimSetMatchesAuthority = authoritativeClaimIds !== null && declaredClaimIds.size === authoritativeClaimIds.size && [...declaredClaimIds].every((claimId) => authoritativeClaimIds.has(claimId));
+      if (!claimSet || claimSet.article_id !== articleId || claimSet.claims_hash !== job.article_ref?.claims_hash || !Array.isArray(claimSet.claim_ids) || claimSet.claim_ids.length === 0 || new Set(claimSet.claim_ids).size !== claimSet.claim_ids.length || !claimSetMatchesAuthority) {
+        issues.push(issue(CODES.VERIFIED_FACT_CLAIM_SET, where,
+          'verified generative fact claim_set must exactly match the repository-authoritative article claims artifact bound to the job article/version/content/claims hashes'));
+      }
+      if (sourceLineage.size === 0 || sourceLineage.size !== itemSources.size ||
+          verifiedItems.some((item) => !sourceLineage.has(item.source_ref)) ||
+          [...sourceLineage].some((sourceRef) => !itemSources.has(sourceRef))) {
+        issues.push(issue(CODES.VERIFIED_FACT_SOURCE, where,
+          'verified generative fact source_lineage must exactly cover canonical item source_ref values'));
+      }
+      if ([...sourceLineage].some((sourceRef) => !canonicalSource(sourceRef))) {
+        issues.push(issue(CODES.VERIFIED_FACT_LINEAGE, where,
+          'verified generative fact lineage must resolve through article-claim:<job article_id>:<claim_id>'));
+      }
+      if (verified.post_render_verification?.required !== true || verified.post_render_verification?.review_dimension !== 'factual' || verified.post_render_verification?.asset_digest_bound !== true) {
+        issues.push(issue(CODES.VERIFIED_FACT_POST_RENDER, where,
+          'verified_generative_fact requires mandatory asset-digest-bound post-render factual verification'));
+      }
+      for (const item of verifiedItems) {
+        const sourceClaim = parseArticleClaimSourceRef(item.source_ref);
+        const sourceArticleId = sourceClaim?.article_id ?? articleIdFromSourceRef(item.source_ref);
+        if (articleId && sourceArticleId && sourceArticleId !== articleId) {
+          issues.push(issue(CODES.VERIFIED_FACT_SOURCE, where,
+            `verified generative fact source_ref names article "${sourceArticleId}", expected job article "${articleId}"`));
+        }
+        if (!sourceClaim || sourceClaim.article_id !== claimSet?.article_id || !claimSet?.claim_ids?.includes(sourceClaim.claim_id) || !authoritativeClaimIds?.has(sourceClaim.claim_id)) {
+          issues.push(issue(CODES.VERIFIED_FACT_CLAIM, where,
+            `verified generative fact source_ref claim must resolve to a declared claim on ${claimSet?.article_id ?? articleId ?? '<article>'}`));
+        }
+      }
+    }
+
+    const external = briefOwnership?.deterministic_external_text;
+    const externalItems = external?.items ?? [];
+    const declaredVerifiedFacts = new Set(verifiedItems.map((item) => item.exact_text));
+    const declaredExternalText = new Set(externalItems.map((item) => item.exact_text));
+    const declaredFacts = new Set([...declaredVerifiedFacts, ...declaredExternalText]);
+    const factual = brief.factual_invariants ?? [];
+    if (factual.some((fact) => !declaredVerifiedFacts.has(fact))) {
+      issues.push(issue(CODES.FACT_INJECTION, where,
+        'every exact factual invariant must be declared by the source-bound verified_generative_fact canonical payload; deterministic_external_text is reserved for citations, dense text, and sensitive text'));
+    }
+    const deterministicLayer = spec.spatial_layers?.deterministic_factual ?? [];
+    if (deterministicLayer.some((item) => !declaredFacts.has(item))) {
+      issues.push(issue(CODES.FACT_INJECTION, where,
+        'RenderSpec deterministic_factual entries must resolve to declared source-bound text items when text ownership is explicit'));
+    }
+    const legacyOverlay = spec.text_handling?.deterministic_overlay ?? [];
+    if (legacyOverlay.some((item) => !declaredFacts.has(item))) {
+      issues.push(issue(CODES.FACT_INJECTION, where,
+        'legacy deterministic_overlay entries must resolve to declared source-bound text items when V2.17 ownership is explicit'));
+    }
+    const untrusted = [
+      brief.editorial_purpose, brief.article_thesis, brief.reader_outcome,
+      brief.visual_story?.primary_question, brief.visual_story?.metaphor_or_relationship,
+      spec.scene_structure, spec.focal_hierarchy, spec.reading_direction,
+      spec.safe_zones, spec.crop_resilience, spec.visual_devices, spec.forbidden_visual_devices,
+      spec.spatial_layers?.generative_semantic,
+      brief.information_hierarchy?.primary, ...(brief.information_hierarchy?.supporting ?? []), ...(brief.information_hierarchy?.detail ?? []),
+      spec.information_hierarchy?.primary, ...(spec.information_hierarchy?.supporting ?? []), ...(spec.information_hierarchy?.detail ?? []),
+      ...(briefOwnership?.generative_structural_text?.items ?? []),
+      ...spec.reference_authority.selected.flatMap((entry) => [entry.rationale, ...(entry.authority ?? []), ...(entry.not_authority ?? [])]),
+    ].flat(Infinity).filter((value) => typeof value === 'string');
+    const untrustedNormalised = untrusted.map((value) => normalise(value)).filter(Boolean);
+    if (factual.some((fact) => {
+      const needle = normalise(fact);
+      return needle && untrustedNormalised.some((surface) => surface.includes(needle));
+    })) {
+      issues.push(issue(CODES.FACT_INJECTION, where,
+        'exact factual invariants may not enter hierarchy or generated prompt surfaces as arbitrary strings, case variants, or larger phrases; use the declared source-bound fact route'));
+    }
+  }
+
+  const briefHierarchy = brief?.information_hierarchy;
+  const specHierarchy = spec?.information_hierarchy;
+  if (briefHierarchy || specHierarchy) {
+    if (!briefHierarchy || !specHierarchy) {
+      issues.push(issue(CODES.HIERARCHY_MISMATCH, where,
+        'VisualBrief and RenderSpec must carry the same integrated information_hierarchy'));
+    } else if (!sameJSONValue(briefHierarchy, specHierarchy)) {
+      issues.push(issue(CODES.HIERARCHY_MISMATCH, where,
+        'VisualBrief and RenderSpec information_hierarchy must agree exactly'));
+    }
+    const selected = spec?.reference_authority?.selected ?? [];
+    if (!selected.some((entry) => (entry.authority ?? []).includes('hierarchy'))) {
+      issues.push(issue(CODES.HIERARCHY_REFERENCE_REQUIRED, where,
+        'integrated information_hierarchy requires a selected reference authority for hierarchy'));
+    }
+  }
+  return issues;
+}
+
+function validatePublicationDisplaySurfaces(job, where) {
+  const verified = job.visual_brief?.text_ownership?.verified_generative_fact;
+  if (!verified) return [];
+  const spec = job.render_spec;
+  const surfaces = spec?.publication_display_surfaces;
+  const anchors = spec?.crop_anchors;
+  if (!surfaces || !surfaces.desktop || !surfaces.mobile || !Array.isArray(anchors) || anchors.length === 0) {
+    return [issue(CODES.PUBLICATION_SURFACE_REQUIRED, where,
+      'verified_generative_fact jobs require RenderSpec crop_anchors and authoritative desktop/mobile publication_display_surfaces')];
+  }
+  const desktop = surfaces.desktop;
+  const mobile = surfaces.mobile;
+  const declared = new Set(anchors);
+  const issues = [];
+  if (desktop.asset_scope !== 'full' || desktop.article_body_width_css_px !== 672 || desktop.viewport_width_css_px < 672) {
+    issues.push(issue(CODES.PUBLICATION_SURFACE_INVALID, where,
+      'RenderSpec desktop publication surface must declare full scope, exactly 672 CSS px article-body width, and a viewport at least that wide'));
+  }
+  if (desktop.surface_id === mobile.surface_id || mobile.asset_scope !== 'mobile' || mobile.derivative_of_asset_scope !== 'full' ||
+      mobile.derivative_of_surface_id !== desktop.surface_id ||
+      mobile.viewport_width_css_px >= desktop.article_body_width_css_px ||
+      mobile.article_body_width_css_px > mobile.viewport_width_css_px ||
+      !mobile.crop_anchors.every((anchor) => declared.has(anchor))) {
+    issues.push(issue(CODES.PUBLICATION_SURFACE_INVALID, where,
+      'RenderSpec mobile publication surface must be a narrower full-surface derivative whose crop anchors are declared semantic anchors'));
+  }
+  return issues;
+}
+
 function normalise(value, { format = 'delete' } = {}) {
   // The two forms preserve or create word boundaries around invisible
   // separators without treating script resemblance as a security boundary.
@@ -548,6 +758,15 @@ function normalise(value, { format = 'delete' } = {}) {
 
 function normalisations(value) {
   return [normalise(value), normalise(value, { format: 'space' })];
+}
+
+function declaredTextItems(job) {
+  const ownership = job.visual_brief?.text_ownership;
+  if (!ownership) return null;
+  return {
+    verified: ownership.verified_generative_fact?.canonical_payload?.items ?? [],
+    external: ownership.deterministic_external_text?.items ?? [],
+  };
 }
 
 /**
@@ -561,6 +780,12 @@ function assemblePrompt(job, { profiles, brand, promptAdapter = 'generic-v1' } =
   const refs = job.selected_reference_traits ?? { adopt: [], avoid: [], do_not_copy: [] };
   const audienceNote = profile.audience_adaptation?.[job.audience?.value];
   const v2 = job.visual_brief && job.render_spec;
+  const hierarchy = job.visual_brief?.information_hierarchy ?? job.render_spec?.information_hierarchy;
+  const ownership = job.visual_brief?.text_ownership ?? job.render_spec?.text_handling?.text_ownership;
+  const declaredItems = declaredTextItems(job);
+  const deterministicFacts = declaredItems
+    ? declaredItems.verified.map((item) => item.exact_text)
+    : job.render_spec?.spatial_layers?.deterministic_factual;
   const baseLines = [
     `ARTIFACT: ${profile.family ?? ''} — ${profile.primary_job ?? ''}`,
     spec.question ? `QUESTION: ${spec.question}` : null,
@@ -578,14 +803,18 @@ function assemblePrompt(job, { profiles, brand, promptAdapter = 'generic-v1' } =
     `EDITORIAL BRIEF: ${job.visual_brief.editorial_purpose}; ${job.visual_brief.article_thesis}; reader outcome: ${job.visual_brief.reader_outcome}`,
     `VISUAL STORY: ${job.visual_brief.visual_story.metaphor_or_relationship}`,
     `SCENE: ${job.render_spec.scene_structure}; focal hierarchy: ${job.render_spec.focal_hierarchy}; reading: ${job.render_spec.reading_direction}`,
+    hierarchy ? `INFORMATION HIERARCHY: primary ${hierarchy.primary}; supporting ${(hierarchy.supporting ?? []).join('; ')}; detail ${(hierarchy.detail ?? []).join('; ')}` : null,
     `SPATIAL TREATMENT: ${job.render_spec.spatial_treatment}; MATERIALITY TREATMENT: ${job.render_spec.materiality_treatment}`,
-    `LAYERS — semantic: ${job.render_spec.spatial_layers.generative_semantic.join('; ')}; deterministic factual: ${job.render_spec.spatial_layers.deterministic_factual.join('; ')}`,
+    `LAYERS — semantic: ${job.render_spec.spatial_layers.generative_semantic.join('; ')}; deterministic factual: ${(deterministicFacts ?? []).join('; ')}`,
     `SAFE ZONES: ${job.render_spec.safe_zones.join('; ')}; crop: ${job.render_spec.crop_resilience}`,
     `VISUAL DEVICES — require: ${job.render_spec.visual_devices.join('; ')}; forbid: ${job.render_spec.forbidden_visual_devices.join('; ')}`,
     `REFERENCE AUTHORITY: ${job.render_spec.reference_authority.selected.map((r) => `${r.evaluation_id} controls ${r.authority.join(', ')}; do not copy ${r.not_authority.join(', ')}; rationale ${r.rationale}`).join(' | ')}`,
     job.visual_brief.reference_requirements.forbidden_literal_copy.length ? `BRIEF-WIDE FORBIDDEN LITERAL COPY: ${job.visual_brief.reference_requirements.forbidden_literal_copy.join('; ')}` : null,
+    ownership ? `TEXT OWNERSHIP: ${['generative_structural_text', 'verified_generative_fact', 'deterministic_external_text'].join('; ')}` : null,
+    declaredItems?.verified.length ? `VERIFIED FACT ROUTE: ${declaredItems.verified.map((item) => `${item.exact_text} [${item.source_ref}]`).join('; ')}` : null,
+    declaredItems?.external.length ? `DETERMINISTIC EXTERNAL TEXT ROUTE: ${declaredItems.external.map((item) => `${item.exact_text} [${item.source_ref}]`).join('; ')}` : null,
     'ARTICLE TITLE: external overlay only',
-  ] : [];
+  ].filter(Boolean) : [];
   const lines = promptAdapter === 'generic-v1'
     ? [...baseLines, ...v2Lines]
     : [...v2Lines.slice(0, 4), ...baseLines, ...v2Lines.slice(4)];
@@ -648,9 +877,14 @@ function sameJSONValue(left, right) {
   return leftKeys.length === rightKeys.length && leftKeys.every((key, i) => key === rightKeys[i] && sameJSONValue(left[key], right[key]));
 }
 
-const ARTICLE_CLAIM_SOURCE_REF = /^article-claim:(art:[a-z0-9]+(?:-[a-z0-9]+)*):/;
+const ARTICLE_CLAIM_ARTICLE_REF = /^article-claim:(art:[a-z0-9]+(?:-[a-z0-9]+)*):/;
+const ARTICLE_CLAIM_SOURCE_REF = /^article-claim:(art:[a-z0-9]+(?:-[a-z0-9]+)*):([a-z0-9]+(?:-[a-z0-9]+)*)$/;
 function articleIdFromSourceRef(sourceRef) {
-  return ARTICLE_CLAIM_SOURCE_REF.exec(sourceRef ?? '')?.[1] ?? null;
+  return ARTICLE_CLAIM_ARTICLE_REF.exec(sourceRef ?? '')?.[1] ?? null;
+}
+function parseArticleClaimSourceRef(sourceRef) {
+  const match = ARTICLE_CLAIM_SOURCE_REF.exec(sourceRef ?? '');
+  return match ? { article_id: match[1], claim_id: match[2] } : null;
 }
 
 export function validateVisualContract(job, { brand, profiles = loadArtifactProfiles(), referenceContext } = {}, where = job?.job_id ?? '<job>') {
@@ -680,6 +914,8 @@ export function validateVisualContract(job, { brand, profiles = loadArtifactProf
   }
   const requirements = { ...job.visual_brief.reference_requirements, artifact_profile: job.artifact_profile };
   issues.push(...validateReferenceAuthority(job.render_spec, requirements, where, referenceContext));
+  issues.push(...validateTextOwnershipAndHierarchy(job, where));
+  issues.push(...validatePublicationDisplaySurfaces(job, where));
   const factual = job.visual_brief.factual_invariants ?? [];
   const factualLayer = (job.render_spec.spatial_layers?.deterministic_factual ?? []).join(' ').toLowerCase();
   if (factual.some((item) => !factualLayer.includes(item.toLowerCase()))) {
@@ -757,12 +993,19 @@ export function validateVisualProduction(job, where = job?.job_id ?? '<job>', re
   }
   const selectedEntries = job.render_spec?.reference_authority?.selected ?? [];
   const selectedAuthorities = new Set(selectedEntries.map((x) => x.evaluation_id));
-  const context = { catalogRefIds: referenceContext.catalogRefIds ?? loadCatalogRefIds(), evaluations: referenceContext.evaluations ?? evaluationById() };
+  const context = {
+    catalogRefIds: referenceContext.catalogRefIds ?? loadCatalogRefIds(),
+    catalogEntries: referenceContext.catalogEntries ?? loadCatalogEntries(),
+    evaluations: referenceContext.evaluations ?? evaluationById(),
+  };
   const requirements = { ...(job.visual_brief?.reference_requirements ?? {}), artifact_profile: job.artifact_profile };
   for (const candidate of candidates) for (const id of candidate.reference_evaluation_ids ?? []) {
     const entry = selectedEntries.find((x) => x.evaluation_id === id);
     const evaluation = context.evaluations.get(id);
-    if (!entry || !evaluation || !assessVisualReferenceAdmissibility(evaluation, requirements, { catalogRefIds: context.catalogRefIds }).admissible) out.push(issue(CODES.DIRECTION_REFERENCE, where, 'each direction must cite an admissible authority already selected on the job; absent anchors are rejected, never invented'));
+    if (!entry || !evaluation || !assessVisualReferenceAdmissibility(evaluation, requirements, {
+      catalogRefIds: context.catalogRefIds,
+      catalogEntries: context.catalogEntries,
+    }).admissible) out.push(issue(CODES.DIRECTION_REFERENCE, where, 'each direction must cite an admissible authority already selected on the job; absent anchors are rejected, never invented'));
   }
   const selection = discovery.selection;
   const selected = selection.selected_direction_id;

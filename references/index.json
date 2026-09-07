@@ -1,13 +1,35 @@
 {
   "counts": {
     "by_provenance_class": {
-      "external": 21,
+      "external": 27,
       "generated_output": 1,
       "owner_created": 0
     },
     "promoted_generated_output": 0
   },
   "evaluations": [
+    {
+      "basis": "model_inference",
+      "evaluated_at": "2026-09-08T00:00:00Z",
+      "evaluation_id": "eval:adobe-firefly-image5-2026-09-08-01",
+      "evaluator_type": "agent",
+      "modality": "visual",
+      "path": "references/evaluations/adobe-firefly-image5/adobe-firefly-image5-2026-09-08-01.json",
+      "promoted": false,
+      "provenance_class": "external",
+      "ref_id": "ref:adobe-firefly-image5"
+    },
+    {
+      "basis": "model_inference",
+      "evaluated_at": "2026-09-08T00:00:00Z",
+      "evaluation_id": "eval:adobe-firefly-reference-roles-2026-09-08-01",
+      "evaluator_type": "agent",
+      "modality": "visual",
+      "path": "references/evaluations/adobe-firefly-reference-roles/adobe-firefly-reference-roles-2026-09-08-01.json",
+      "promoted": false,
+      "provenance_class": "external",
+      "ref_id": "ref:adobe-firefly-reference-roles"
+    },
     {
       "basis": "model_inference",
       "evaluated_at": "2026-09-05T02:00:00Z",
@@ -106,6 +128,28 @@
       "promoted": false,
       "provenance_class": "external",
       "ref_id": "ref:ft-visual-vocabulary"
+    },
+    {
+      "basis": "model_inference",
+      "evaluated_at": "2026-09-08T00:00:00Z",
+      "evaluation_id": "eval:google-gemini-image-generation-2026-09-08-01",
+      "evaluator_type": "agent",
+      "modality": "visual",
+      "path": "references/evaluations/google-gemini-image-generation/google-gemini-image-generation-2026-09-08-01.json",
+      "promoted": false,
+      "provenance_class": "external",
+      "ref_id": "ref:google-gemini-image-generation"
+    },
+    {
+      "basis": "model_inference",
+      "evaluated_at": "2026-09-08T00:00:00Z",
+      "evaluation_id": "eval:google-nano-banana-pro-2026-09-08-01",
+      "evaluator_type": "agent",
+      "modality": "visual",
+      "path": "references/evaluations/google-nano-banana-pro/google-nano-banana-pro-2026-09-08-01.json",
+      "promoted": false,
+      "provenance_class": "external",
+      "ref_id": "ref:google-nano-banana-pro"
     },
     {
       "basis": "model_inference",
@@ -216,6 +260,28 @@
       "promoted": false,
       "provenance_class": "external",
       "ref_id": "ref:nibr-bris-child-biology-encyclopedia"
+    },
+    {
+      "basis": "model_inference",
+      "evaluated_at": "2026-09-08T00:00:00Z",
+      "evaluation_id": "eval:openai-gpt-image-2-2026-09-08-01",
+      "evaluator_type": "agent",
+      "modality": "visual",
+      "path": "references/evaluations/openai-gpt-image-2/openai-gpt-image-2-2026-09-08-01.json",
+      "promoted": false,
+      "provenance_class": "external",
+      "ref_id": "ref:openai-gpt-image-2"
+    },
+    {
+      "basis": "model_inference",
+      "evaluated_at": "2026-09-08T00:00:00Z",
+      "evaluation_id": "eval:openai-image-generation-2026-09-08-01",
+      "evaluator_type": "agent",
+      "modality": "visual",
+      "path": "references/evaluations/openai-image-generation/openai-image-generation-2026-09-08-01.json",
+      "promoted": false,
+      "provenance_class": "external",
+      "ref_id": "ref:openai-image-generation"
     },
     {
       "basis": "model_inference",

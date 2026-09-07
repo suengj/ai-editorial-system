@@ -44,6 +44,38 @@ graphically sparse; `brand-compatible` does not mean UI-mimetic.
 
 `text_handling.article_title` is the schema constant `external_overlay`.
 
+## V2.17 text ownership and integrated hierarchy (SUE-668 / SUE-669)
+
+The optional `text_ownership` block makes exactly three ownership classes explicit:
+
+| Class | Owner | Examples |
+| --- | --- | --- |
+| `generative_structural_text` | generated semantic/structural words that are not factual authority | non-exact scene labels or typographic structure |
+| `verified_generative_fact` | generated factual text backed by a canonical payload and source lineage, then checked in rendered pixels | an exact value or claim intentionally inside generated artwork |
+| `deterministic_external_text` | deterministic text outside generated pixels | article title, citations, dense or sensitive text |
+
+`verified_generative_fact` requires `canonical_payload`, `source_lineage`, and
+`claim_set`, plus `post_render_verification.required: true` with the factual
+review dimension and `asset_digest_bound: true`. The claim set's `article_id`
+and `claims_hash` must equal the job's declared article reference. The list is
+only a projection: it must exactly resolve to the repository-authoritative
+artifact under `references/article-claims/`, including the exact article ID,
+version, content hash, and claims hash. Every
+`article-claim:<article_id>:<claim_id>` source must resolve to that artifact's
+claim ID; a well-shaped but unknown claim is rejected.
+Every exact VisualBrief invariant must resolve to a source-bound item in the
+verified payload. Deterministic external text is reserved for citations, dense
+text, and sensitive text; arbitrary hierarchy or semantic strings cannot
+smuggle a fact into the prompt. The article title remains
+`text_handling.article_title: external_overlay`, while its ownership class is
+`deterministic_external_text`. A V1/V1.1 record may omit this additive block.
+
+When present, `information_hierarchy` is copied from VisualBrief to RenderSpec
+and names `primary`, `supporting`, and `detail` reading levels. Its selected
+reference authority must explicitly include the `hierarchy` trait. The prompt
+compiler emits this hierarchy and ownership as disposable instructions while
+the two durable records remain the source of truth.
+
 The brand profile's `line_and_materiality.depth_model: flat or nearly flat 2D`
 remains authoritative until an owner-reviewed decision changes it. PR A does
 not change that profile. A RenderSpec depth/spatial override requires a

@@ -1,0 +1,63 @@
+{
+  "schema_version": "1.0.0",
+  "evaluation_id": "eval:google-nano-banana-pro-2026-09-08-01",
+  "ref_id": "ref:google-nano-banana-pro",
+  "modality": "visual",
+  "evaluator": {
+    "type": "agent",
+    "agent": {
+      "runtime": "codex",
+      "model": "gpt-5"
+    }
+  },
+  "evaluated_at": "2026-09-08T00:00:00Z",
+  "profile_ref": "editorial/profiles/reference/visual.json",
+  "basis": "model_inference",
+  "dimensions": [
+    {
+      "dimension": "artifact-suitability",
+      "verdict": "adopt",
+      "note": "The model page is directly relevant as the primary source observation for a visual-generation benchmark lane covering graphic design and product-mockup tasks.",
+      "evidence": "Source pointer ref:google-nano-banana-pro; official model page observed 2026-09-08."
+    },
+    {
+      "dimension": "hierarchy",
+      "verdict": "adopt",
+      "note": "The documented complex-design and data-visualization use cases support testing integrated scene/type hierarchy, while the hierarchy itself must remain declared by the repository.",
+      "evidence": "Source pointer ref:google-nano-banana-pro; official model page observed 2026-09-08."
+    },
+    {
+      "dimension": "label-text-strategy",
+      "verdict": "adopt",
+      "note": "The model page identifies a benchmark-relevant use case involving data visualizations, but supplies no guarantee for exact labels, values, chronology, or citations; those remain governed by the ownership and review routes.",
+      "evidence": "Source pointer ref:google-nano-banana-pro; official model page observed 2026-09-08."
+    }
+  ],
+  "strengths": [
+    "Provides the current first-party Nano Banana Pro model observation required for the SUE-668 benchmark lane."
+  ],
+  "weaknesses": [
+    "The documentation is not a local render benchmark and does not provide actual bytes, display geometry, or post-render inspection."
+  ],
+  "applicable_to": {
+    "content_types": [
+      "research",
+      "view",
+      "news"
+    ],
+    "audiences": [
+      "general-reader",
+      "professional-generalist",
+      "domain-practitioner"
+    ],
+    "artifacts": [
+      "visual/body-infographic"
+    ],
+    "surfaces": [
+      "suengj-com"
+    ]
+  },
+  "authority_boundary": "craft_evidence_only",
+  "provenance_class": "external",
+  "notes": "SUE-668 source/evaluation record. The direct URL and retrieval date are owned by ref:google-nano-banana-pro; Nano Banana Pro is provider-specific and never enters a durable contract."
+}

@@ -1,11 +1,134 @@
 #!/usr/bin/env node
 import { readFileSync, writeFileSync, mkdirSync, mkdtempSync, rmSync } from 'node:fs'; import { createHash } from 'node:crypto'; import { spawnSync } from 'node:child_process'; import { resolve } from 'node:path'; import { tmpdir } from 'node:os';
+import { canonicalPayloadSha256 } from './lib/visual-job-core.mjs';
 import { REVIEW_CODES, VISUAL_FAILURE_ACTIONS, expectedVisualReviewRoute, validateVisualFixture, validateVisualReview } from './lib/visual-review-core.mjs';
-const root=resolve(new URL('..',import.meta.url).pathname), read=p=>JSON.parse(readFileSync(resolve(root,p),'utf8')); let bad=0; const ok=(n,v)=>{console.log(`${v?'PASS':'FAIL'} ${n}`);if(!v)bad++};
+const root=resolve(new URL('..',import.meta.url).pathname), read=p=>JSON.parse(readFileSync(resolve(root,p),'utf8')); let bad=0; const ok=(n,v,detail='')=>{console.log(`${v?'PASS':'FAIL'} ${n}${!v&&detail?' — '+detail:''}`);if(!v)bad++};
 const dims=['thesis_clarity','reading_path','narrative_composition','editorial_authorship','spatial_richness','information_hierarchy','article_fit','reference_adherence','brand_compatibility','factual_text_integrity','mobile_crop_resilience'].map(d=>({dimension:d,verdict:'pass',evidence:'observed pixel region'}));
 const mobileAssetRef='evals/prototypes/sue629/plate-b-comparison.svg'; const mobileAssetSha256=`sha256:${createHash('sha256').update(readFileSync(resolve(root,mobileAssetRef))).digest('hex')}`;
 const good={schema_version:'1.0.0',review_id:'visual-review:mobile',asset_ref:'evals/prototypes/sue629/plate-a-mechanism.svg',asset_sha256:'sha256:b2d2e0144f2e73703b3b34799d61253b68b0a30331400aacdce1355c45803894',mobile_asset_ref:mobileAssetRef,mobile_asset_sha256:mobileAssetSha256,review_mode:'mobile_downscaled',dimensions:dims,verdict:'REROUTE',defect_tags:['dashboardization'],primary_tag:'dashboardization',failure_class:'dashboardization',next_action:'reroute_composition_renderer',feedback_ref:'feedback:visual-review-sue629-a',final_authority:'human'};
 ok('mobile review record validates',validateVisualReview(good).length===0); for(const x of ['HUMAN_APPROVED_LOCKED','APPROVED_MASTER','approved']){const j={...good,verdict:x};ok(`approval-shaped verdict rejected ${x}`,validateVisualReview(j).some(i=>i.code===REVIEW_CODES.SCHEMA));}
+{
+  const feedbackScope = mkdtempSync(resolve(tmpdir(), 'visual-review-v217-feedback-'));
+  const feedback = JSON.parse(readFileSync(resolve(root, 'feedback/records/visual-review-sue629-a.json'), 'utf8'));
+  feedback.feedback_id = 'feedback:v217-post-render';
+  feedback.routing.abstained = true;
+  writeFileSync(resolve(feedbackScope, 'v217-post-render.json'), JSON.stringify(feedback));
+  const postRender = {
+    asset_sha256: good.asset_sha256,
+    mobile_asset_sha256: good.mobile_asset_sha256,
+    actual_display_geometry: {
+      desktop: { surface_id: 'surface:body-desktop', asset_scope: 'full', asset_sha256: good.asset_sha256, observed: true, article_body_width_css_px: 672, viewport_width_css_px: 1280 },
+      mobile: { surface_id: 'surface:body-mobile', asset_scope: 'mobile', asset_sha256: good.mobile_asset_sha256, observed: true, viewport_width_css_px: 390, article_body_width_css_px: 390, derivative_of_surface_id: 'surface:body-desktop', derivative_of_asset_sha256: good.asset_sha256, crop_anchor: 'anchor:primary-gate-path', anchor_observed: true },
+    },
+    checks: [
+      { check: 'textual', asset_scope: 'full', asset_sha256: good.asset_sha256, verdict: 'pass', observed: true, display_surface: 'desktop_actual_display', evidence: 'title remains outside the rendered pixels' },
+      { check: 'factual', asset_scope: 'full', asset_sha256: good.asset_sha256, verdict: 'pass', observed: true, display_surface: 'desktop_actual_display', evidence: 'deterministic labels match the overlay source' },
+      { check: 'readability', asset_scope: 'full', asset_sha256: good.asset_sha256, verdict: 'pass', observed: true, display_surface: 'desktop_actual_display', evidence: 'text is legible at target size' },
+      { check: 'mobile', asset_scope: 'mobile', asset_sha256: good.mobile_asset_sha256, verdict: 'pass', observed: true, display_surface: 'mobile_actual_display', evidence: 'primary reading path survives mobile crop' },
+    ],
+    repair_routing: { textual: 'KEEP', factual: 'KEEP', readability: 'KEEP', mobile: 'KEEP' },
+  };
+  const clean = { ...good, verdict: 'PASS_TO_HUMAN_REVIEW', defect_tags: [], primary_tag: null, failure_class: null, next_action: 'human_judgement', feedback_ref: feedback.feedback_id, post_render_checks: postRender };
+  // The existing review validator still owns feedback resolution; this scope
+  // only changes its subject/id so the post-render assertion is isolated.
+  const reviewOptions = { feedbackDir: feedbackScope };
+  ok('digest-bound post-render checks use the existing visual review record', validateVisualReview(clean, reviewOptions).length === 0, JSON.stringify(validateVisualReview(clean, reviewOptions)));
+  ok('post-render digest mutation is rejected', validateVisualReview({ ...clean, post_render_checks: { ...postRender, asset_sha256: 'sha256:' + 'a'.repeat(64) } }, reviewOptions).some(i => i.code === REVIEW_CODES.POST_RENDER_DIGEST));
+  const bad = JSON.parse(JSON.stringify(postRender));
+  bad.checks[1].verdict = 'fail'; bad.repair_routing.factual = 'KEEP';
+  const failed = { ...good, verdict: 'REROUTE', defect_tags: ['dense_text'], primary_tag: 'dense_text', failure_class: 'facts_or_text_wrong', next_action: 'factual_overlay_repair', feedback_ref: feedback.feedback_id, post_render_checks: bad };
+  ok('failed factual/text check requires CHANGE routing', validateVisualReview(failed, reviewOptions).some(i => i.code === REVIEW_CODES.POST_RENDER_ROUTE));
+  bad.repair_routing.factual = 'CHANGE';
+  ok('failed factual/text check routes through the existing repair action', validateVisualReview(failed, reviewOptions).length === 0);
+  const allAbstain = JSON.parse(JSON.stringify(postRender));
+  for (const check of allAbstain.checks) { check.verdict = 'abstain'; }
+  allAbstain.repair_routing = { textual: 'DO_NOT_CHANGE', factual: 'DO_NOT_CHANGE', readability: 'DO_NOT_CHANGE', mobile: 'DO_NOT_CHANGE' };
+  ok('all-abstain post-render evidence cannot pass to human review', validateVisualReview({ ...clean, post_render_checks: allAbstain }, reviewOptions).some(i => i.code === REVIEW_CODES.POST_RENDER_ROUTE));
+  const mobileOnFull = JSON.parse(JSON.stringify(postRender));
+  mobileOnFull.checks[3].asset_scope = 'full';
+  mobileOnFull.checks[3].asset_sha256 = good.asset_sha256;
+  mobileOnFull.checks[3].display_surface = 'desktop_actual_display';
+  ok('mobile check bound to full asset is rejected', validateVisualReview({ ...clean, post_render_checks: mobileOnFull }, reviewOptions).some(i => i.code === REVIEW_CODES.POST_RENDER_SCOPE));
+  const wrongDesktopGeometry = JSON.parse(JSON.stringify(postRender));
+  wrongDesktopGeometry.actual_display_geometry.desktop.article_body_width_css_px = 671;
+  ok('wrong 672 CSS px desktop geometry is rejected', validateVisualReview({ ...clean, post_render_checks: wrongDesktopGeometry }, reviewOptions).some(i => i.code === REVIEW_CODES.SCHEMA));
+  const missingDesktopGeometry = JSON.parse(JSON.stringify(postRender));
+  delete missingDesktopGeometry.actual_display_geometry.desktop.article_body_width_css_px;
+  ok('missing 672 CSS px desktop geometry is rejected', validateVisualReview({ ...clean, post_render_checks: missingDesktopGeometry }, reviewOptions).some(i => i.code === REVIEW_CODES.SCHEMA));
+  const mobileAnchorLost = JSON.parse(JSON.stringify(postRender));
+  mobileAnchorLost.actual_display_geometry.mobile.anchor_observed = false;
+  ok('mobile crop losing the declared anchor is rejected', validateVisualReview({ ...clean, post_render_checks: mobileAnchorLost }, reviewOptions).some(i => i.code === REVIEW_CODES.POST_RENDER_GEOMETRY));
+  const verifiedJob = read('schemas/examples/visual-job-body-infographic-v2.example.json');
+  const verifiedFact = { exact_text: 'exact causal labels', source_ref: 'article-claim:art:tokenized-stocks-instant-payments-liquidity-rights:liquidity-window' };
+  const claimSet = { article_id: verifiedJob.article_ref.article_id, claims_hash: verifiedJob.article_ref.claims_hash, claim_ids: ['liquidity-window'] };
+  const verifiedPayload = { payload_ref: 'payload:liquidity-labels', items: [verifiedFact] };
+  verifiedJob.visual_brief.text_ownership = {
+    article_title: 'deterministic_external_text',
+    generative_structural_text: { items: ['closed gate'] },
+    verified_generative_fact: {
+      canonical_payload: { ...verifiedPayload, payload_sha256: canonicalPayloadSha256({ ...verifiedPayload, claim_set: claimSet }) },
+      source_lineage: [verifiedFact.source_ref],
+      claim_set: claimSet,
+      post_render_verification: { required: true, review_dimension: 'factual', asset_digest_bound: true },
+    },
+    deterministic_external_text: { items: [], includes: ['citations', 'dense_text', 'sensitive_text'] },
+  };
+  verifiedJob.render_spec.text_handling.text_ownership = JSON.parse(JSON.stringify(verifiedJob.visual_brief.text_ownership));
+  const authoritativeJobRef = 'schemas/examples/visual-job-body-infographic-v2.example.json';
+  const authoritativeJobSha256 = `sha256:${createHash('sha256').update(readFileSync(resolve(root, authoritativeJobRef))).digest('hex')}`;
+  const authoritativeRenderSpecSha256 = canonicalPayloadSha256(verifiedJob.render_spec);
+  const bound = { ...clean, review_scope: 'verified_generative_fact',
+    verified_fact_binding: { job_id: verifiedJob.job_id, job_ref: authoritativeJobRef, job_sha256: authoritativeJobSha256, render_spec_id: verifiedJob.render_spec.render_spec_id, render_spec_sha256: authoritativeRenderSpecSha256, payload_ref: verifiedPayload.payload_ref, payload_sha256: canonicalPayloadSha256({ ...verifiedPayload, claim_set: claimSet }), asset_sha256: clean.asset_sha256, required_check: 'factual' } };
+  ok('verified-fact review has a durable default-validator owner-consumer binding', validateVisualReview(bound, reviewOptions).length === 0, JSON.stringify(validateVisualReview(bound, reviewOptions)));
+  ok('verified-fact review binding cross-checks the supplied owner when available', validateVisualReview(bound, { ...reviewOptions, job: verifiedJob }).length === 0, JSON.stringify(validateVisualReview(bound, { ...reviewOptions, job: verifiedJob })));
+  const missingVerifiedCheck = { ...bound }; delete missingVerifiedCheck.post_render_checks;
+  ok('verified-fact review cannot omit the factual digest check', validateVisualReview(missingVerifiedCheck, reviewOptions).some(i => i.code === REVIEW_CODES.VERIFIED_FACT_REVIEW_REQUIRED));
+  const opaqueBinding = { ...bound, verified_fact_binding: { ...bound.verified_fact_binding, payload_sha256: 'sha256:' + 'a'.repeat(64) } };
+  ok('verified-fact review rejects a payload binding from another owner', validateVisualReview(opaqueBinding, { ...reviewOptions, job: verifiedJob }).some(i => i.code === REVIEW_CODES.VERIFIED_FACT_BINDING));
+  const reviewRecordScope = mkdtempSync(resolve(tmpdir(), 'visual-review-v217-records-'));
+  const naturalBound = { ...bound, feedback_ref: 'feedback:v217-post-render' };
+  writeFileSync(resolve(reviewRecordScope, 'verified-fact.json'), JSON.stringify(naturalBound));
+  const naturalPass = spawnSync('npm', ['run', 'validate:visual-review'], {
+    cwd: root, encoding: 'utf8', env: { ...process.env, VISUAL_REVIEW_RECORDS: reviewRecordScope, VISUAL_FEEDBACK_DIR: feedbackScope },
+  });
+  ok('natural npm validate:visual-review consumer accepts a durably bound verified-fact review', naturalPass.status === 0, `status=${naturalPass.status} error=${naturalPass.error?.message ?? ''} ${naturalPass.stdout}\n${naturalPass.stderr}`.trim());
+  const staleJobDigest = { ...naturalBound, verified_fact_binding: { ...naturalBound.verified_fact_binding, job_sha256: `sha256:${'a'.repeat(64)}` } };
+  writeFileSync(resolve(reviewRecordScope, 'verified-fact.json'), JSON.stringify(staleJobDigest));
+  const staleJobDigestFail = spawnSync('npm', ['run', 'validate:visual-review'], {
+    cwd: root, encoding: 'utf8', env: { ...process.env, VISUAL_REVIEW_RECORDS: reviewRecordScope, VISUAL_FEEDBACK_DIR: feedbackScope },
+  });
+  ok('natural consumer rejects a stale authoritative job digest', staleJobDigestFail.status === 1 && `${staleJobDigestFail.stdout}\n${staleJobDigestFail.stderr}`.includes(REVIEW_CODES.VERIFIED_FACT_JOB));
+  const arbitraryAnchor = { ...naturalBound, post_render_checks: JSON.parse(JSON.stringify(postRender)) };
+  arbitraryAnchor.post_render_checks.actual_display_geometry.mobile.crop_anchor = 'anchor:arbitrary-unbound';
+  writeFileSync(resolve(reviewRecordScope, 'verified-fact.json'), JSON.stringify(arbitraryAnchor));
+  const arbitraryAnchorFail = spawnSync('npm', ['run', 'validate:visual-review'], {
+    cwd: root, encoding: 'utf8', env: { ...process.env, VISUAL_REVIEW_RECORDS: reviewRecordScope, VISUAL_FEEDBACK_DIR: feedbackScope },
+  });
+  ok('natural consumer rejects an arbitrary mobile crop anchor', arbitraryAnchorFail.status === 1 && `${arbitraryAnchorFail.stdout}\n${arbitraryAnchorFail.stderr}`.includes(REVIEW_CODES.VERIFIED_FACT_SURFACE));
+  const alteredSurfaceJob = JSON.parse(readFileSync(resolve(root, authoritativeJobRef), 'utf8'));
+  alteredSurfaceJob.render_spec.publication_display_surfaces.mobile.viewport_width_css_px = 414;
+  const alteredJobPath = resolve(root, '.visual-review-v217-authority-job.json');
+  writeFileSync(alteredJobPath, JSON.stringify(alteredSurfaceJob));
+  const alteredJobRef = '.visual-review-v217-authority-job.json';
+  const alteredJobSha256 = `sha256:${createHash('sha256').update(readFileSync(alteredJobPath)).digest('hex')}`;
+  const alteredSurface = { ...naturalBound, verified_fact_binding: { ...naturalBound.verified_fact_binding, job_ref: alteredJobRef, job_sha256: alteredJobSha256, render_spec_sha256: canonicalPayloadSha256(alteredSurfaceJob.render_spec) } };
+  writeFileSync(resolve(reviewRecordScope, 'verified-fact.json'), JSON.stringify(alteredSurface));
+  const alteredSurfaceFail = spawnSync('npm', ['run', 'validate:visual-review'], {
+    cwd: root, encoding: 'utf8', env: { ...process.env, VISUAL_REVIEW_RECORDS: reviewRecordScope, VISUAL_FEEDBACK_DIR: feedbackScope },
+  });
+  ok('natural consumer rejects review geometry against altered authoritative mobile surface', alteredSurfaceFail.status === 1 && `${alteredSurfaceFail.stdout}\n${alteredSurfaceFail.stderr}`.includes(REVIEW_CODES.VERIFIED_FACT_SURFACE));
+  rmSync(alteredJobPath, { force: true });
+  writeFileSync(resolve(reviewRecordScope, 'verified-fact.json'), JSON.stringify({ ...naturalBound, post_render_checks: undefined }));
+  const naturalFail = spawnSync('npm', ['run', 'validate:visual-review'], {
+    cwd: root, encoding: 'utf8', env: { ...process.env, VISUAL_REVIEW_RECORDS: reviewRecordScope, VISUAL_FEEDBACK_DIR: feedbackScope },
+  });
+  ok('natural validate-visual-review consumer rejects missing verified factual checks', naturalFail.status === 1 && `${naturalFail.stdout}\n${naturalFail.stderr}`.includes(REVIEW_CODES.VERIFIED_FACT_REVIEW_REQUIRED));
+  const disguised = { ...bound }; delete disguised.verified_fact_binding;
+  ok('verified-fact review cannot disguise itself as legacy by dropping its binding', validateVisualReview(disguised, reviewOptions).some(i => i.code === REVIEW_CODES.VERIFIED_FACT_BINDING));
+  rmSync(reviewRecordScope, { recursive: true, force: true });
+  ok('legacy review without a verified-fact job remains valid', validateVisualReview(clean, reviewOptions).length === 0);
+  rmSync(feedbackScope, { recursive: true, force: true });
+}
 {
   const wrongFullDigest={...good,asset_sha256:'sha256:'+'a'.repeat(64)};
   ok('reviewed full asset digest must match its actual pixels',validateVisualReview(wrongFullDigest).some(i=>i.code===REVIEW_CODES.ASSET_HASH));

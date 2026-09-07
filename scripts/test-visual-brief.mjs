@@ -4,7 +4,7 @@ import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { CODES, RegenerationSealedError, compileVisualPrompt, loadArtifactProfiles, resolveBrandProfile, validateRenderSpec, validateVisualBrief, validateVisualJob } from './lib/visual-job-core.mjs';
+import { CODES, RegenerationSealedError, canonicalPayloadSha256, compileVisualPrompt, loadArtifactProfiles, resolveBrandProfile, validateRenderSpec, validateVisualBrief, validateVisualJob } from './lib/visual-job-core.mjs';
 import { queryVisualReferenceEvaluations } from './lib/registry-core.mjs';
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const load = (file) => JSON.parse(readFileSync(resolve(ROOT, 'schemas/examples', file), 'utf8'));
@@ -66,6 +66,36 @@ console.log('\nB1 shared reference admissibility');
   emptyAuthority.render_spec.reference_authority.selected[0].authority = [];
   check('selected reference authority must contain at least one trait',
     codes(emptyAuthority).includes(CODES.REFERENCE_AUTHORITY_TRAIT_REQUIRED) || codes(emptyAuthority).includes(CODES.SCHEMA));
+
+  const documentationEvidence = [
+    ['ref:openai-image-generation', 'eval:openai-image-generation-2026-09-08-01'],
+    ['ref:openai-gpt-image-2', 'eval:openai-gpt-image-2-2026-09-08-01'],
+    ['ref:google-gemini-image-generation', 'eval:google-gemini-image-generation-2026-09-08-01'],
+    ['ref:google-nano-banana-pro', 'eval:google-nano-banana-pro-2026-09-08-01'],
+    ['ref:adobe-firefly-image5', 'eval:adobe-firefly-image5-2026-09-08-01'],
+    ['ref:adobe-firefly-reference-roles', 'eval:adobe-firefly-reference-roles-2026-09-08-01'],
+  ];
+  for (const [ref_id, evaluation_id] of documentationEvidence) {
+    const providerAuthority = clone(hybrid);
+    setAuthority(providerAuthority, ref_id, evaluation_id, ['hierarchy', 'composition', 'label-text-strategy'], 'documentation evidence must not become craft authority');
+    check(`${ref_id} documentation evidence is rejected for hierarchy/composition/labels`,
+      codes(providerAuthority).includes(CODES.REFERENCE_AUTHORITY_INADMISSIBLE));
+    let refused = false;
+    try { compileVisualPrompt(providerAuthority); } catch { refused = true; }
+    check(`${ref_id} cannot reach compiled prompt selection`, refused);
+    const resolved = queryVisualReferenceEvaluations({
+      evaluation_ids: [evaluation_id],
+      artifact_profile: hybrid.artifact_profile,
+    });
+    check(`${evaluation_id} is absent from the craft resolver`, resolved.length === 0);
+  }
+  const ordinaryCraftAuthority = queryVisualReferenceEvaluations({
+    evaluation_ids: ['eval:c4-model-containment-2026-09-06-01'],
+    artifact_profile: hybrid.artifact_profile,
+    required_dimensions: ['hierarchy'],
+  });
+  check('ordinary non-provider visual craft authority still resolves',
+    ordinaryCraftAuthority.length === 1 && ordinaryCraftAuthority[0].ref_id === 'ref:c4-model-containment');
 }
 
 console.log('\nB2 structural depth and hard materiality ceiling');
@@ -148,6 +178,109 @@ console.log('\nM4 direct negative guards and isolation');
 console.log('\napproval lock additive regression');
 {
   const locked = load('visual-job-approved-concept-change.example.json'); locked.revision.regeneration_allowed = false; let refused = false; try { compileVisualPrompt(locked, { profiles: loadArtifactProfiles() }); } catch (err) { refused = err instanceof RegenerationSealedError; } check('locked master cannot reopen through VisualBrief/RenderSpec path', refused);
+}
+
+console.log('\nV2.17 text ownership and integrated hierarchy');
+{
+  const v217 = clone(hybrid);
+  const hierarchy = { primary: 'closed gate', supporting: ['continuous path'], detail: ['supporting note'] };
+  const fact = { exact_text: 'exact causal labels', source_ref: 'article-claim:art:tokenized-stocks-instant-payments-liquidity-rights:liquidity-window' };
+  const claimSet = { article_id: v217.article_ref.article_id, claims_hash: v217.article_ref.claims_hash, claim_ids: ['liquidity-window'] };
+  const payload = { payload_ref: 'payload:liquidity-labels', items: [fact] };
+  const ownership = {
+    article_title: 'deterministic_external_text',
+    generative_structural_text: { items: ['closed gate'] },
+    verified_generative_fact: {
+      canonical_payload: { ...payload, payload_sha256: canonicalPayloadSha256({ ...payload, claim_set: claimSet }) },
+      source_lineage: [fact.source_ref],
+      claim_set: claimSet,
+      post_render_verification: { required: true, review_dimension: 'factual', asset_digest_bound: true },
+    },
+    deterministic_external_text: { items: [], includes: ['citations', 'dense_text', 'sensitive_text'] },
+  };
+  v217.visual_brief.information_hierarchy = hierarchy;
+  v217.render_spec.information_hierarchy = clone(hierarchy);
+  v217.visual_brief.text_ownership = ownership;
+  v217.render_spec.text_handling.text_ownership = clone(ownership);
+  check('V2.17 ownership and hierarchy contract validates', validateVisualJob(v217).length === 0);
+  const compiled = compileVisualPrompt(v217);
+  check('compiler carries exact ownership classes and hierarchy as disposable prompt inputs', compiled.compiled_prompt.includes('TEXT OWNERSHIP: generative_structural_text; verified_generative_fact; deterministic_external_text') && compiled.compiled_prompt.includes('INFORMATION HIERARCHY: primary closed gate; supporting continuous path; detail supporting note') && compiled.compiled_prompt.includes('VERIFIED FACT ROUTE: exact causal labels [article-claim:'));
+  const titleAttack = clone(v217); titleAttack.visual_brief.text_ownership.article_title = 'generative_structural_text';
+  check('title cannot move into generated text ownership', codes(titleAttack).includes(CODES.SCHEMA));
+  const ownershipDrift = clone(v217); ownershipDrift.render_spec.text_handling.text_ownership.deterministic_external_text.includes = ['citations'];
+  check('brief/spec ownership drift is rejected', codes(ownershipDrift).includes(CODES.TEXT_OWNERSHIP_MISMATCH));
+  const hierarchyDrift = clone(v217); hierarchyDrift.render_spec.information_hierarchy.primary = 'supporting detail';
+  check('brief/spec hierarchy drift is rejected', codes(hierarchyDrift).includes(CODES.HIERARCHY_MISMATCH));
+  const noHierarchyAuthority = clone(v217); noHierarchyAuthority.render_spec.reference_authority.selected[0].authority = ['composition'];
+  check('integrated hierarchy without hierarchy reference authority is rejected', codes(noHierarchyAuthority).includes(CODES.HIERARCHY_REFERENCE_REQUIRED));
+  const hierarchyAuthorityAlias = clone(v217); hierarchyAuthorityAlias.render_spec.reference_authority.selected[0].authority = ['information_hierarchy'];
+  check('information_hierarchy authority alias is rejected', codes(hierarchyAuthorityAlias).includes(CODES.HIERARCHY_REFERENCE_REQUIRED));
+  const noPayload = clone(v217); delete noPayload.visual_brief.text_ownership.verified_generative_fact.canonical_payload;
+  check('verified generative facts cannot omit canonical payload', codes(noPayload).includes(CODES.SCHEMA));
+  const noSource = clone(v217); delete noSource.visual_brief.text_ownership.verified_generative_fact.source_lineage;
+  check('verified generative facts cannot omit source lineage', codes(noSource).includes(CODES.SCHEMA));
+  const noPostRender = clone(v217); delete noPostRender.visual_brief.text_ownership.verified_generative_fact.post_render_verification;
+  check('verified generative facts cannot omit mandatory post-render verification', codes(noPostRender).includes(CODES.SCHEMA));
+  const badPayloadHash = clone(v217); badPayloadHash.visual_brief.text_ownership.verified_generative_fact.canonical_payload.payload_sha256 = `sha256:${'a'.repeat(64)}`;
+  check('verified generative fact payload hash is canonical', codes(badPayloadHash).includes(CODES.VERIFIED_FACT_PAYLOAD));
+  const wrongSource = clone(v217); wrongSource.visual_brief.text_ownership.verified_generative_fact.source_lineage = ['article-claim:art:other-article:claim'];
+  check('verified generative fact source lineage must cover the item', codes(wrongSource).includes(CODES.VERIFIED_FACT_SOURCE));
+  const opaqueSource = clone(v217); opaqueSource.visual_brief.text_ownership.verified_generative_fact.source_lineage = ['opaque-source'];
+  check('opaque verified generative fact lineage is rejected', codes(opaqueSource).includes(CODES.VERIFIED_FACT_LINEAGE));
+  const unknownClaim = clone(v217);
+  const unknownFact = { ...fact, source_ref: 'article-claim:art:tokenized-stocks-instant-payments-liquidity-rights:well-shaped-but-unknown' };
+  unknownClaim.visual_brief.text_ownership.verified_generative_fact.canonical_payload.items = [unknownFact];
+  unknownClaim.visual_brief.text_ownership.verified_generative_fact.canonical_payload.payload_sha256 = canonicalPayloadSha256({
+    payload_ref: payload.payload_ref, claim_set: claimSet, items: [unknownFact],
+  });
+  unknownClaim.visual_brief.text_ownership.verified_generative_fact.source_lineage = [unknownFact.source_ref];
+  unknownClaim.render_spec.text_handling.text_ownership = clone(unknownClaim.visual_brief.text_ownership);
+  check('well-shaped but undeclared verified claim lineage is rejected', codes(unknownClaim).includes(CODES.VERIFIED_FACT_CLAIM));
+  const mutatedClaimSet = clone(v217);
+  const hostileClaimSet = { ...claimSet, claim_ids: ['well-shaped-but-unknown'] };
+  for (const owner of [mutatedClaimSet.visual_brief.text_ownership, mutatedClaimSet.render_spec.text_handling.text_ownership]) {
+    owner.verified_generative_fact.claim_set = hostileClaimSet;
+    owner.verified_generative_fact.canonical_payload.payload_sha256 = canonicalPayloadSha256({
+      payload_ref: owner.verified_generative_fact.canonical_payload.payload_ref,
+      claim_set: hostileClaimSet,
+      items: owner.verified_generative_fact.canonical_payload.items,
+    });
+  }
+  check('copied claims_hash with a mutated claim set is rejected', codes(mutatedClaimSet).includes(CODES.VERIFIED_FACT_CLAIM_SET));
+  const deletedClaimSet = clone(v217);
+  delete deletedClaimSet.visual_brief.text_ownership.verified_generative_fact.claim_set;
+  delete deletedClaimSet.render_spec.text_handling.text_ownership.verified_generative_fact.claim_set;
+  check('verified fact cannot delete its authoritative claim set', codes(deletedClaimSet).includes(CODES.SCHEMA));
+  const factInHierarchy = clone(v217); factInHierarchy.visual_brief.information_hierarchy.detail = ['exact causal labels'];
+  check('exact factual invariant cannot enter hierarchy as an arbitrary string', codes(factInHierarchy).includes(CODES.FACT_INJECTION));
+  const caseInHierarchy = clone(v217); caseInHierarchy.visual_brief.information_hierarchy.detail = ['EXACT CAUSAL LABELS'];
+  check('case-folded factual invariant cannot enter hierarchy', codes(caseInHierarchy).includes(CODES.FACT_INJECTION));
+  const phraseInHierarchy = clone(v217); phraseInHierarchy.visual_brief.information_hierarchy.detail = ['supporting phrase: exact causal labels must be prominent'];
+  check('factual invariant contained in a larger hierarchy phrase is rejected', codes(phraseInHierarchy).includes(CODES.FACT_INJECTION));
+  const phraseInSemantic = clone(v217); phraseInSemantic.render_spec.spatial_layers.generative_semantic = ['semantic relationship: exact causal labels remain illustrative'];
+  check('factual invariant contained in a larger semantic phrase is rejected', codes(phraseInSemantic).includes(CODES.FACT_INJECTION));
+  const phraseInStructural = clone(v217); phraseInStructural.visual_brief.text_ownership.generative_structural_text.items = ['structure carries EXACT CAUSAL LABELS as decoration'];
+  check('factual invariant contained in a larger generated phrase is rejected', codes(phraseInStructural).includes(CODES.FACT_INJECTION));
+  const externalFact = clone(v217);
+  const otherFact = { exact_text: 'other verified fact', source_ref: 'article-claim:art:tokenized-stocks-instant-payments-liquidity-rights:other-claim' };
+  const otherPayload = { payload_ref: 'payload:other-fact', items: [otherFact] };
+  for (const owner of [externalFact.visual_brief.text_ownership, externalFact.render_spec.text_handling.text_ownership]) {
+    owner.verified_generative_fact.canonical_payload = { ...otherPayload, payload_sha256: canonicalPayloadSha256({ ...otherPayload, claim_set: claimSet }) };
+    owner.verified_generative_fact.source_lineage = [otherFact.source_ref];
+    owner.deterministic_external_text.items = [fact];
+  }
+  check('factual invariant cannot use the deterministic external class as an undeclared fact route', codes(externalFact).includes(CODES.FACT_INJECTION));
+  const undeclaredLayer = clone(v217); undeclaredLayer.render_spec.spatial_layers.deterministic_factual = ['unbound injected fact'];
+  check('undeclared deterministic factual layer is rejected', codes(undeclaredLayer).includes(CODES.FACT_INJECTION));
+  const undeclaredOverlay = clone(v217); undeclaredOverlay.render_spec.text_handling.deterministic_overlay = ['unbound injected fact'];
+  check('undeclared legacy overlay is rejected under explicit V2.17 ownership', codes(undeclaredOverlay).includes(CODES.FACT_INJECTION));
+  let refusedInjection = false;
+  try { compileVisualPrompt(undeclaredLayer); } catch { refusedInjection = true; }
+  check('compiler refuses to emit a prompt for an undeclared fact injection', refusedInjection);
+  const hierarchyAlias = clone(v217); hierarchyAlias.visual_brief.hierarchy = clone(hierarchy);
+  check('ambiguous hierarchy alias is rejected', codes(hierarchyAlias).includes(CODES.SCHEMA));
+  const ownershipAlias = clone(v217); ownershipAlias.render_spec.text_handling.ownership = clone(ownership);
+  check('ambiguous ownership alias is rejected', codes(ownershipAlias).includes(CODES.SCHEMA));
 }
 console.log(failures === 0 ? '\nvisual brief regression: PASS' : `\nvisual brief regression: FAIL (${failures})`);
 process.exit(failures ? 1 : 0);

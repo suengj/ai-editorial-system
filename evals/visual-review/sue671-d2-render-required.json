@@ -1,0 +1,180 @@
+{
+  "issue_ref": "SUE-671",
+  "milestone": "D2",
+  "state": "RENDER_REQUIRED",
+  "authority": "advisory_visual_review",
+  "authoritative_generation_request": {
+    "request_id": "request:sue671-d2-missing-rungs",
+    "candidate_count": 1,
+    "authoritative_job_ref": "evals/visual-review/sue671-ai-hiring-missing-rungs-job.json",
+    "job_sha256": "sha256:f94eb55ab32acd5ebbbe3572450f09cbbd4750e085725b0052b7237d9bc35e66",
+    "render_spec_ref": "render-spec:missing-rungs-ai-hiring",
+    "render_spec_sha256": "sha256:9da3c16efe08c42361da40f35cb2621d34c9544fcea60010977eaa5d927a7c45",
+    "payload_ref": "payload:missing-rungs-hiring-rates",
+    "payload_sha256": "sha256:a7aab3d887ca5f8ddf9ce4dc6e8a4957c1771c51d385c9f4754dbd55806e893e",
+    "compiled_prompt_ref": "evals/visual-review/sue671-ai-hiring-missing-rungs-compiled-prompt.json",
+    "compiled_prompt_sha256": "sha256:df44285461522564dca493502d848ed1e08874df5ee175d350f0b83b03e096fb",
+    "compiled_prompt_adapter": "generic-v1",
+    "compiled_from": [
+      "editorial/profiles/artifact/visual-body-infographic.json",
+      "suengj-com@1.0.0",
+      "editorial/profiles/audience/domain-practitioner.json",
+      "semantic_spec",
+      "selected_reference_traits",
+      "visual_brief:visual-brief:missing-rungs-ai-hiring",
+      "render_spec:render-spec:missing-rungs-ai-hiring",
+      "eval:c4-model-containment-2026-09-06-01"
+    ],
+    "article_title": {
+      "value": "The Missing Rungs",
+      "ownership": "deterministic_external_text",
+      "route": "external_overlay"
+    },
+    "verified_generative_fact": {
+      "ownership": "verified_generative_fact",
+      "canonical_payload": {
+        "payload_ref": "payload:missing-rungs-hiring-rates",
+        "payload_sha256": "sha256:a7aab3d887ca5f8ddf9ce4dc6e8a4957c1771c51d385c9f4754dbd55806e893e",
+        "items": [
+          {
+            "exact_text": "약 19%",
+            "source_ref": "article-claim:art:ai-hiring-pilot:ai-hiring-rate-19-percent"
+          },
+          {
+            "exact_text": "41.4%",
+            "source_ref": "article-claim:art:ai-hiring-pilot:ai-hiring-rate-41-4-percent"
+          },
+          {
+            "exact_text": "18.1%",
+            "source_ref": "article-claim:art:ai-hiring-pilot:ai-hiring-rate-18-1-percent"
+          }
+        ]
+      },
+      "source_lineage": [
+        "article-claim:art:ai-hiring-pilot:ai-hiring-rate-19-percent",
+        "article-claim:art:ai-hiring-pilot:ai-hiring-rate-41-4-percent",
+        "article-claim:art:ai-hiring-pilot:ai-hiring-rate-18-1-percent"
+      ],
+      "claim_set": {
+        "article_id": "art:ai-hiring-pilot",
+        "claims_hash": "6dbb071211439e5cc738c6882ad8245bdc33ab919ef9caf61a6bac3615456c36",
+        "claim_ids": [
+          "ai-hiring-rate-19-percent",
+          "ai-hiring-rate-41-4-percent",
+          "ai-hiring-rate-18-1-percent"
+        ]
+      },
+      "post_render_verification": {
+        "required": true,
+        "review_dimension": "factual",
+        "asset_digest_bound": true
+      }
+    },
+    "deterministic_external_text": {
+      "ownership": "deterministic_external_text",
+      "citations": [
+        {
+          "exact_text": "Source: AI-hiring pilot evidence; qualifiers apply.",
+          "source_ref": "article-source:ai-hiring-pilot"
+        }
+      ],
+      "qualifiers": [
+        {
+          "exact_text": "Illustrative rates; source qualifiers remain external.",
+          "source_ref": "article-qualifier:ai-hiring-pilot"
+        }
+      ]
+    },
+    "publication_display_surfaces": {
+      "desktop": {
+        "surface_id": "surface:missing-rungs-desktop",
+        "asset_scope": "full",
+        "article_body_width_css_px": 672,
+        "viewport_width_css_px": 1280
+      },
+      "mobile": {
+        "surface_id": "surface:missing-rungs-mobile",
+        "asset_scope": "mobile",
+        "viewport_width_css_px": 390,
+        "article_body_width_css_px": 390,
+        "derivative_of_surface_id": "surface:missing-rungs-desktop",
+        "derivative_of_asset_scope": "full",
+        "crop_anchors": ["anchor:missing-middle-rung"]
+      },
+      "crop_anchors": ["anchor:missing-middle-rung"]
+    },
+    "banned_traits": [
+      "ui_mimicry",
+      "dashboardization",
+      "template_cards",
+      "generic_icon_grid",
+      "flat_svg_aesthetic",
+      "box_overload"
+    ],
+    "reference_authority": {
+      "selected": [
+        {
+          "ref_id": "ref:c4-model-containment",
+          "evaluation_id": "eval:c4-model-containment-2026-09-06-01",
+          "authority": ["hierarchy"],
+          "not_authority": ["palette-colour-role"],
+          "rationale": "Hierarchy craft evidence only; no factual, citation, palette, or provider authority."
+        }
+      ]
+    }
+  },
+  "approved_renderer": null,
+  "rendered_assets": {
+    "full": {
+      "status": "ABSENT",
+      "asset_digest": null,
+      "asset_digest_status": "UNKNOWN"
+    },
+    "mobile": {
+      "status": "ABSENT",
+      "asset_digest": null,
+      "asset_digest_status": "UNKNOWN"
+    }
+  },
+  "owner_comparison": {
+    "status": "UNAVAILABLE",
+    "reason": "No raster asset digest or approved renderer output is present, so owner comparison cannot be performed."
+  },
+  "evidence": [
+    {
+      "check": "semantic_master_positive_direction",
+      "status": "PARTIAL",
+      "scope": "bounded_negative",
+      "evidence_only": true,
+      "reason": "The authoritative job and RenderSpec preserve the integrated ladder/path direction and missing-middle anchor, but no semantic-master raster was observed or fabricated."
+    },
+    {
+      "check": "factual_overlay_declared_route",
+      "status": "PARTIAL",
+      "scope": "bounded_negative",
+      "evidence_only": true,
+      "reason": "The declared payload, claim-set lineage, and mandatory factual post-render requirement are compiler/job-validated, but no factual overlay raster or asset digest was observed."
+    },
+    {
+      "check": "rendered_pixels",
+      "status": "UNVERIFIED",
+      "reason": "No approved renderer output and no full/mobile asset digests are available in this checkout."
+    },
+    {
+      "check": "post_render_text_factual_readability_mobile",
+      "status": "UNVERIFIED",
+      "reason": "The visual-review checks require actual full and mobile pixels; metadata and the disposable prompt cannot stand in for inspection."
+    }
+  ],
+  "request": {
+    "needed": [
+      "approved renderer identity and invocation evidence",
+      "full rendered asset",
+      "mobile derivative",
+      "sha256 digest for each asset",
+      "owner comparison against the declared semantic master and overlay"
+    ],
+    "boundary": "Stop at RENDER_REQUIRED. Do not invent a render, assert an asset digest, or emit PASS_TO_HUMAN_REVIEW without pixels and asset-bound checks."
+  },
+  "publication_or_approval": "not_granted"
+}

@@ -9,6 +9,7 @@ generators, provider adapters, and publication workflows.
 | [`MULTIMEDIA-GENERATORS-BENCHMARK.md`](MULTIMEDIA-GENERATORS-BENCHMARK.md) | AES-P1.2 (SUE-439) |
 | [`AUDIO-TTS-PROVIDERS.md`](AUDIO-TTS-PROVIDERS.md) | Audio provider/model adapter snapshot — observed capability, certification lanes, and recertification triggers |
 | [`AUDIO-AGENT-SKILLS.md`](AUDIO-AGENT-SKILLS.md) | Reusable orchestration patterns observed across speech/narration/voiceover Agent Skills |
+| [`VISUAL-GENERATION-CAPABILITY-BENCHMARK.md`](VISUAL-GENERATION-CAPABILITY-BENCHMARK.md) | AES-V2.17 / SUE-668: provider-neutral visual capability lanes, official-source pointers, and adversarial render evidence |
 
 The two audio benchmarks answer different questions. Provider-specific behavior
 is deliberately separate from `../editorial/AUDIO-SCRIPT.md`: editorial

@@ -1,0 +1,63 @@
+{
+  "schema_version": "1.0.0",
+  "evaluation_id": "eval:adobe-firefly-reference-roles-2026-09-08-01",
+  "ref_id": "ref:adobe-firefly-reference-roles",
+  "modality": "visual",
+  "evaluator": {
+    "type": "agent",
+    "agent": {
+      "runtime": "codex",
+      "model": "gpt-5"
+    }
+  },
+  "evaluated_at": "2026-09-08T00:00:00Z",
+  "profile_ref": "editorial/profiles/reference/visual.json",
+  "basis": "model_inference",
+  "dimensions": [
+    {
+      "dimension": "composition",
+      "verdict": "adopt",
+      "note": "Separating style/look-and-feel conditioning from structure conditioning supports the repository's explicit reference-role authority model.",
+      "evidence": "Source pointer ref:adobe-firefly-reference-roles; official reference guide observed 2026-09-08."
+    },
+    {
+      "dimension": "hierarchy",
+      "verdict": "adopt",
+      "note": "A declared structure role can inform craft evidence, but it must not silently become authority for article hierarchy or factual content.",
+      "evidence": "Source pointer ref:adobe-firefly-reference-roles; official reference guide observed 2026-09-08."
+    },
+    {
+      "dimension": "artifact-suitability",
+      "verdict": "adopt",
+      "note": "Useful for reference-role benchmark cases that distinguish style, structure, and non-authoritative traits before rendering.",
+      "evidence": "Source pointer ref:adobe-firefly-reference-roles; official reference guide observed 2026-09-08."
+    }
+  ],
+  "strengths": [
+    "Documents a concrete separation between style and structure reference roles."
+  ],
+  "weaknesses": [
+    "Reference strength and upload/request controls are service-specific and do not establish permission to copy or editorial authority."
+  ],
+  "applicable_to": {
+    "content_types": [
+      "research",
+      "view",
+      "news"
+    ],
+    "audiences": [
+      "general-reader",
+      "professional-generalist",
+      "domain-practitioner"
+    ],
+    "artifacts": [
+      "visual/body-infographic"
+    ],
+    "surfaces": [
+      "suengj-com"
+    ]
+  },
+  "authority_boundary": "craft_evidence_only",
+  "provenance_class": "external",
+  "notes": "SUE-668 source/evaluation record. The direct URL and retrieval date are owned by ref:adobe-firefly-reference-roles; provider reference fields remain adapter-only."
+}
