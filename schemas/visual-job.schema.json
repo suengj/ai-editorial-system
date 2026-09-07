@@ -13,7 +13,7 @@
     "attempts", "max_attempts", "qa", "status"
   ],
   "properties": {
-    "schema_version": { "const": "1.0.0" },
+    "schema_version": { "enum": ["1.0.0", "1.1.0"] },
     "job_id": {
       "type": "string",
       "pattern": "^job:[a-z0-9]+(-[a-z0-9]+)*$"
@@ -45,6 +45,19 @@
     },
     "audience": { "$ref": "#/$defs/audience" },
     "semantic_spec": { "$ref": "#/$defs/semantic_spec" },
+    "article_title": {
+      "description": "Article-title lineage and verification input for generative/hybrid jobs. Core's recognisable-form prompt check catches honest inclusion, not deliberate obfuscation; it is not a security control. The compiler never reads this value, and rendered-image title detection belongs to vision review.",
+      "type": "string",
+      "minLength": 1
+    },
+    "visual_brief": {
+      "description": "SUE-642 durable VisualBrief. Required by core for generative/hybrid routes; optional for legacy deterministic evidence jobs.",
+      "type": "object"
+    },
+    "render_spec": {
+      "description": "SUE-642 durable RenderSpec. Required by core for generative/hybrid routes; optional for legacy deterministic evidence jobs.",
+      "type": "object"
+    },
     "information_gain": { "$ref": "#/$defs/information_gain" },
     "density_check": { "$ref": "#/$defs/density_check" },
     "selected_reference_traits": { "$ref": "#/$defs/selected_reference_traits" },
@@ -74,6 +87,31 @@
       "description": "Every input the compiled_prompt was assembled from. Required whenever compiled_prompt is present.",
       "type": "array",
       "items": { "type": "string", "minLength": 1 }
+    },
+    "compiled_prompt_adapter": {
+      "description": "Prompt-dialect lineage only. It may change the disposable compiled prompt but never the VisualBrief, RenderSpec, reference authority, or renderer runtime identity.",
+      "type": "string",
+      "minLength": 1
+    },
+    "brand_conflicts": {
+      "description": "Human-visible evidence of a RenderSpec requirement that exceeds the current brand default. This is not approval, publication authority, or a lock.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["brand_field", "brand_profile_version", "render_spec_requirement", "reference_authority", "owner_review"],
+        "properties": {
+          "brand_field": { "type": "string", "minLength": 1 },
+          "brand_profile_version": { "type": "string", "minLength": 1 },
+          "render_spec_requirement": { "type": "string", "minLength": 1 },
+          "reference_authority": { "type": "string", "minLength": 1 },
+          "owner_review": { "const": "pending_owner_review" }
+        }
+      }
+    },
+    "requires_owner_gate": {
+      "description": "Derived owner-gate routing flag. Core requires true exactly when brand_conflicts is non-empty; this is not approval, a lock, or publication authority.",
+      "type": "boolean"
     },
     "context_isolation": { "$ref": "#/$defs/context_isolation" },
     "attempts": { "type": "integer", "minimum": 0 },
@@ -342,7 +380,7 @@
         "permitted_inputs": {
           "type": "array",
           "items": {
-            "enum": ["semantic_spec", "artifact_profile", "audience", "selected_reference_traits", "brand_profile"]
+            "enum": ["semantic_spec", "artifact_profile", "audience", "selected_reference_traits", "brand_profile", "visual_brief", "render_spec"]
           }
         },
         "excluded": {

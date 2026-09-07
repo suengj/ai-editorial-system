@@ -66,7 +66,7 @@ function runValidate() {
   process.exit(0);
 }
 
-function runCompile(jobPath) {
+function runCompile(jobPath, promptAdapter = 'generic-v1') {
   const profiles = loadArtifactProfiles();
   const job = JSON.parse(readFileSync(jobPath, 'utf8'));
 
@@ -77,7 +77,7 @@ function runCompile(jobPath) {
   let compiled_prompt;
   let compiled_from;
   try {
-    ({ compiled_prompt, compiled_from } = compileVisualPrompt(job, { profiles }));
+    ({ compiled_prompt, compiled_from } = compileVisualPrompt(job, { profiles, promptAdapter }));
   } catch (err) {
     if (err instanceof RegenerationSealedError) {
       console.error(`compile refused: ${err.message}`);
@@ -94,6 +94,7 @@ function runCompile(jobPath) {
   } else {
     next.compiled_prompt = compiled_prompt;
     next.compiled_from = compiled_from;
+    next.compiled_prompt_adapter = promptAdapter;
   }
 
   writeFileSync(jobPath, `${JSON.stringify(next, null, 2)}\n`);
@@ -105,7 +106,7 @@ function runCompile(jobPath) {
   }
 }
 
-const [, , flag, arg] = process.argv;
+const [, , flag, arg, adapterFlag, adapterValue] = process.argv;
 
 if (flag === '--validate') {
   runValidate();
@@ -114,8 +115,9 @@ if (flag === '--validate') {
     console.error('usage: node scripts/compile-visual-prompt.mjs --compile <job.json>');
     process.exit(1);
   }
-  runCompile(resolve(arg));
+  const promptAdapter = adapterFlag === '--adapter' ? adapterValue : 'generic-v1';
+  runCompile(resolve(arg), promptAdapter);
 } else {
-  console.error('usage: node scripts/compile-visual-prompt.mjs --validate | --compile <job.json>');
+  console.error('usage: node scripts/compile-visual-prompt.mjs --validate | --compile <job.json> [--adapter generic-v1|generic-v2]');
   process.exit(1);
 }

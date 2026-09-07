@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://suengj.com/schemas/render-spec.schema.json",
+  "title": "Render Spec",
+  "description": "Durable renderer-neutral scene/composition contract for a Visual Brief.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "render_spec_id", "brief_id", "target_geometry", "scene_structure", "focal_hierarchy", "reading_direction", "spatial_treatment", "materiality_treatment", "spatial_layers", "safe_zones", "crop_resilience", "visual_devices", "forbidden_visual_devices", "reference_authority", "text_handling"],
+  "properties": {
+    "schema_version": { "const": "1.0.0" },
+    "render_spec_id": { "type": "string", "pattern": "^render-spec:[a-z0-9]+(-[a-z0-9]+)*$" },
+    "brief_id": { "type": "string", "pattern": "^visual-brief:[a-z0-9]+(-[a-z0-9]+)*$" },
+    "target_geometry": { "type": "string", "minLength": 1 },
+    "scene_structure": { "type": "string", "minLength": 1 },
+    "focal_hierarchy": { "type": "string", "minLength": 1 },
+    "reading_direction": { "type": "string", "minLength": 1 },
+    "spatial_treatment": { "enum": ["flat_2d", "layered_2d", "shallow_depth", "deep_scene"] },
+    "materiality_treatment": { "enum": ["matte_2d", "quiet_linework", "soft_tonal_separation"] },
+    "spatial_layers": { "type": "object", "additionalProperties": false, "required": ["generative_semantic", "deterministic_factual"], "properties": { "generative_semantic": { "type": "array", "items": { "type": "string", "minLength": 1 } }, "deterministic_factual": { "type": "array", "items": { "type": "string", "minLength": 1 } } } },
+    "safe_zones": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+    "crop_resilience": { "type": "string", "minLength": 1 },
+    "visual_devices": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+    "forbidden_visual_devices": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+    "reference_authority": { "type": "object", "additionalProperties": false, "required": ["selected"], "properties": { "selected": { "type": "array", "items": { "type": "object", "additionalProperties": false, "required": ["ref_id", "evaluation_id", "authority", "not_authority", "rationale"], "properties": { "ref_id": { "type": "string", "pattern": "^ref:[a-z0-9]+(-[a-z0-9]+)*$" }, "evaluation_id": { "type": "string", "pattern": "^eval:[a-z0-9]+(-[a-z0-9]+)*$" }, "authority": { "type": "array", "items": { "type": "string", "minLength": 1 } }, "not_authority": { "type": "array", "items": { "type": "string", "minLength": 1 } }, "rationale": { "type": "string", "minLength": 1 } } } } } },
+    "text_handling": { "type": "object", "additionalProperties": false, "required": ["article_title"], "properties": { "article_title": { "const": "external_overlay" }, "deterministic_overlay": { "type": "array", "items": { "type": "string", "minLength": 1 } } } }
+  }
+}

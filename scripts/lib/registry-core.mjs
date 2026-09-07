@@ -436,6 +436,54 @@ export function checkIndexFreshness(builder, indexPath) {
   return { fresh, onDisk, matches: onDisk === fresh };
 }
 
+/**
+ * Deterministic SUE-643 candidate retrieval. It reads only catalog-resolving
+ * evaluation records on disk: no recent-conversation state, image paths, or
+ * unregistered material can affect the result. An evaluation is positive
+ * authority only when it has at least one structured `adopt` dimension.
+ */
+export function queryVisualReferenceEvaluations(requirements, {
+  catalogRefIds = loadCatalogRefIds(),
+  evaluationsDir = PATHS.evaluationsDir,
+} = {}) {
+  const candidates = [];
+
+  for (const path of listEvaluationFiles(evaluationsDir)) {
+    const { data } = parseJsonFile(path);
+    const admitted = assessVisualReferenceAdmissibility(data, requirements, { catalogRefIds });
+    if (!admitted.admissible) continue;
+    candidates.push({
+      ref_id: data.ref_id,
+      evaluation_id: data.evaluation_id,
+      authority: admitted.matched.map((d) => d.dimension),
+      not_authority: admitted.doNotCopy,
+      rationale: `Structured adopt dimensions from ${data.evaluation_id}: ${admitted.matched.map((d) => d.dimension).join(', ')} (${admitted.matched.length} required dimension match(es)).`,
+      _match_count: admitted.matched.length,
+    });
+  }
+  return candidates.sort((a, b) => b._match_count - a._match_count || b.authority.length - a.authority.length || a.evaluation_id.localeCompare(b.evaluation_id))
+    .slice(0, 3).map(({ _match_count, ...candidate }) => candidate);
+}
+
+/** The single admissibility chain for resolver output and pinned authority. */
+export function assessVisualReferenceAdmissibility(evaluation, requirements, { catalogRefIds = loadCatalogRefIds() } = {}) {
+  if (!evaluation || evaluation.modality !== 'visual') return { admissible: false, reason: 'modality' };
+  if (!catalogRefIds.has(evaluation.ref_id)) return { admissible: false, reason: 'catalog' };
+  if (requirements?.evaluation_ids && !requirements.evaluation_ids.includes(evaluation.evaluation_id)) return { admissible: false, reason: 'selection-scope' };
+  if (requirements?.artifact_profile && !(evaluation.applicable_to?.artifacts ?? []).includes(requirements.artifact_profile)) return { admissible: false, reason: 'artifact-profile' };
+  const adopted = (evaluation.dimensions ?? []).filter((d) => d.verdict === 'adopt');
+  if (adopted.length === 0) return { admissible: false, reason: 'no-positive-adopt' };
+  const required = new Set(requirements?.required_dimensions ?? []);
+  const matched = required.size === 0 ? adopted : adopted.filter((d) => required.has(d.dimension));
+  if (required.size > 0 && matched.length === 0) return { admissible: false, reason: 'required-dimensions' };
+  return {
+    admissible: true,
+    adopted,
+    matched,
+    doNotCopy: (evaluation.dimensions ?? []).filter((d) => d.verdict === 'do_not_copy').map((d) => d.dimension),
+  };
+}
+
 // --- top-level operations ---------------------------------------------------
 
 export function validateAll() {

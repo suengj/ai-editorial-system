@@ -102,6 +102,12 @@ Examples:
 
 The visual may still inherit the publication palette and typography, but the generator must not invent the evidence.
 
+This restriction belongs to the exact factual layer, not necessarily the whole
+plate. A hybrid visual may use a generative editorial scene or causal/spatial
+relationship while deterministic composition owns its exact values, labels,
+citations, axes, scales, chronology, and factual annotations. See
+[`../schemas/VISUAL-BRIEF-AND-RENDER-SPEC-CONTRACT.md`](../schemas/VISUAL-BRIEF-AND-RENDER-SPEC-CONTRACT.md).
+
 ### 2.2 Relationships, processes, and authority boundaries
 
 Prefer an **explanatory editorial diagram**.
@@ -390,6 +396,10 @@ labels, and decorative clutter. Target [GEOMETRY / CROP].
 ```
 
 The style block is stable. Thesis, information function, structure, and prohibited topic clichés change per article.
+
+Do not interpret a clear one-question brief as an instruction to make a flat
+SVG/dashboard plate. `simple` means cognitively clear; it does not require
+graphical sparseness, and brand compatibility does not require UI mimicry.
 
 ---
 

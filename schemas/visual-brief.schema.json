@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://suengj.com/schemas/visual-brief.schema.json",
+  "title": "Visual Brief",
+  "description": "Durable editorial semantics for a generative or hybrid visual. Provider prompts are compiled outputs, never this authority.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "brief_id", "article_ref", "editorial_purpose", "article_thesis", "reader_outcome", "artifact_profile", "semantic_role", "visual_story", "factual_invariants", "failure_modes_to_avoid", "reference_requirements"],
+  "properties": {
+    "schema_version": { "const": "1.0.0" },
+    "brief_id": { "type": "string", "pattern": "^visual-brief:[a-z0-9]+(-[a-z0-9]+)*$" },
+    "article_ref": { "type": "object", "additionalProperties": false, "required": ["article_id", "version_number", "content_hash", "claims_hash"], "properties": { "article_id": { "type": "string", "pattern": "^art:[a-z0-9]+(-[a-z0-9]+)*$" }, "version_number": { "type": "integer", "minimum": 1 }, "content_hash": { "type": "string", "pattern": "^[a-f0-9]{64}$" }, "claims_hash": { "type": "string", "pattern": "^[a-f0-9]{64}$" } } },
+    "editorial_purpose": { "type": "string", "minLength": 1 },
+    "article_thesis": { "type": "string", "minLength": 1 },
+    "reader_outcome": { "type": "string", "minLength": 1 },
+    "artifact_profile": { "type": "string", "pattern": "^visual/[a-z0-9]+(-[a-z0-9]+)*$" },
+    "semantic_role": { "enum": ["identity", "navigation", "explanation", "distribution", "atmosphere"] },
+    "visual_story": { "type": "object", "additionalProperties": false, "required": ["primary_question", "metaphor_or_relationship"], "properties": { "primary_question": { "type": "string", "minLength": 1 }, "metaphor_or_relationship": { "type": "string", "minLength": 1 } } },
+    "factual_invariants": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+    "failure_modes_to_avoid": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+    "reference_requirements": { "type": "object", "additionalProperties": false, "required": ["required_dimensions", "forbidden_literal_copy", "rationale"], "properties": { "required_dimensions": { "type": "array", "items": { "type": "string", "minLength": 1 } }, "forbidden_literal_copy": { "type": "array", "items": { "type": "string", "minLength": 1 } }, "rationale": { "type": "string", "minLength": 1 } } }
+  }
+}

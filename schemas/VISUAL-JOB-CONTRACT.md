@@ -10,6 +10,15 @@ Machine schema: [`visual-job.schema.json`](visual-job.schema.json).
 Compiler: `scripts/compile-visual-prompt.mjs`. Fixtures:
 `scripts/test-visual-job.mjs`, `schemas/examples/visual-job-*.example.json`.
 
+## Schema versions
+
+Schema `1.1.0` is additive: it introduces `visual_brief`, `render_spec`,
+`compiled_prompt_adapter`, `brand_conflicts`, `requires_owner_gate`, and
+`article_title`. The schema accepts both `1.0.0` and `1.1.0`; every valid
+`1.0.0` job remains valid. `requires_owner_gate` is optional for compatibility
+and absent means false, but core requires it to be present and true when
+`brand_conflicts` is non-empty, and rejects true with no conflict.
+
 ## The prompt is a compiled output, not the source of truth
 
 The durable knowledge is the state the job cites: the semantic spec, the

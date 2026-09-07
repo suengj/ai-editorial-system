@@ -12,6 +12,8 @@ its own visual system.
 
 [`AI-IMAGE-GENERATION-GUIDE.md`](AI-IMAGE-GENERATION-GUIDE.md) holds the quality and art-direction re-baseline for generated editorial imagery; this document remains the editorial brief and QA contract. The guide supplements this contract rather than replacing its authority.
 
+The machine-readable VisualBrief → RenderSpec → provider-prompt boundary is [`../schemas/VISUAL-BRIEF-AND-RENDER-SPEC-CONTRACT.md`](../schemas/VISUAL-BRIEF-AND-RENDER-SPEC-CONTRACT.md); it implements this brief without replacing this document's editorial authority.
+
 ## 1. An image is an editorial decision, not decoration
 
 A generated image must have a named role before a prompt exists.
