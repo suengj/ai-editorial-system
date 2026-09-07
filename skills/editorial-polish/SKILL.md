@@ -9,7 +9,7 @@ inputs:
   - content-type profile
   - source-target delta plan / intervention ceiling when available
 outputs:
-  - one action: KEEP, LOCAL_POLISH, or UPSTREAM_REPLAN_REQUIRED
+  - "one action: KEEP, LOCAL_POLISH, or UPSTREAM_REPLAN_REQUIRED"
   - polished draft when LOCAL_POLISH survives pairwise review
   - edit/revert summary for every proposed soft edit
   - verification, drafting, audience, genre, or terminology findings exposed by the pass
@@ -168,6 +168,9 @@ Therefore:
     or route it upstream.
 14. **Return the final action**: KEEP, LOCAL_POLISH, or
     UPSTREAM_REPLAN_REQUIRED.
+15. **Hand off** the returned action and its edit/revert summary to human
+    review under `editorial/HITL-PROTOCOL.md`. This Skill never finalises,
+    approves, or publishes the draft it polished.
 
 ## When language repair is not a polish edit
 
@@ -199,12 +202,16 @@ fabrication. Both fail.
 Natural prose is not regular prose. Sentence-length randomisation, paragraph
 quotas, and detector-oriented variation are out of scope.
 
-## Refusal / escalation conditions
+## Refusal conditions
 
-Return `UPSTREAM_REPLAN_REQUIRED` rather than editing when:
+Stop and return `UPSTREAM_REPLAN_REQUIRED` rather than editing when:
 
 - the claim set is unavailable;
-- a wanted edit would change a protected span;
+- a wanted edit would change a protected span. The pass does not make the
+  change. It reports the finding; when the protected span is factual or
+  technical, it hands it to `verify-claims`, while a register-only problem goes
+  back to `write-article`. Wanting to change a number or technical term is not
+  permission to change it;
 - the draft's audience, genre, knowledge depth, or structure is not yet the
   requested target;
 - making the Korean natural requires changing thesis, factual qualification,

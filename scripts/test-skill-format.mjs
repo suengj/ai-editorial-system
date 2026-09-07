@@ -46,6 +46,21 @@ console.log('front matter parsing');
     y.a === 1 && y.b.length === 2 && y.c.d === 'two words' && y.c.e[0] === 'one' && y.f[0].load_when === 'w',
     JSON.stringify(y));
 
+  const q = parseYaml('outputs:\n  - "one action: KEEP, LOCAL_POLISH, or UPSTREAM_REPLAN_REQUIRED"\n  - plain item\n');
+  check('a quoted list scalar containing ": " stays a string',
+    typeof q.outputs[0] === 'string'
+      && q.outputs[0] === 'one action: KEEP, LOCAL_POLISH, or UPSTREAM_REPLAN_REQUIRED'
+      && q.outputs[1] === 'plain item',
+    JSON.stringify(q));
+
+  const m = parseYaml('f:\n  - path: p\n    load_when: w\n');
+  check('an unquoted list item with ": " is still a map',
+    typeof m.f[0] === 'object' && m.f[0].path === 'p', JSON.stringify(m));
+
+  let unterminated = false;
+  try { parseYaml('outputs:\n  - "a: b" trailing\n'); } catch { unterminated = true; }
+  check('an unterminated quoted list item throws rather than half-parsing', unterminated);
+
   let threw = false;
   try { parseYaml('a: 1\n\tb: 2\n'); } catch { threw = true; }
   check('malformed input throws rather than half-parsing', threw);
