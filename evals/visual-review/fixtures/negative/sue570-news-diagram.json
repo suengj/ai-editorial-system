@@ -1,0 +1,1 @@
+{"fixture_id":"sue570-news-diagram","asset_ref":"evals/negative-baselines/assets/tools-news-diagram.svg","asset_sha256":"sha256:836e11697829b63bd81e2459eaf943f7c6000633995554f693cc960a9c857e01","status":"negative","owner_judgement":"rejected","failure_tags":["box_overload"],"usage_limit":"Negative explanatory diagram; forensics names six boxes."}

@@ -1,0 +1,73 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://suengj.com/schemas/visual-negative-fixture.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "fixture_id",
+    "asset_ref",
+    "asset_sha256",
+    "status",
+    "owner_judgement",
+    "failure_tags",
+    "usage_limit"
+  ],
+  "properties": {
+    "fixture_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "asset_ref": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "asset_sha256": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^sha256:[a-f0-9]{64}$"
+    },
+    "status": {
+      "enum": [
+        "negative",
+        "positive_pending_owner_input",
+        "owner_positive"
+      ]
+    },
+    "owner_judgement": {
+      "enum": [
+        "rejected",
+        "partial",
+        "unknown",
+        "accepted",
+        null
+      ]
+    },
+    "failure_tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "usage_limit": {
+      "type": "string",
+      "minLength": 1
+    },
+    "blocking_reason": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "review_record": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Repository-relative path to the visual-review record for this asset. Required for owner_positive."
+    }
+  }
+}
