@@ -1,0 +1,1 @@
+{"fixture_id":"sue570-report","asset_ref":"evals/negative-baselines/assets/tools-report-infographic.svg","asset_sha256":"sha256:d5ceb3a0511ad199066d3bc7bbe703f2c7ce63e191719c3febe464b16fef31fc","status":"negative","owner_judgement":"rejected","failure_tags":["box_overload","dense_text"],"usage_limit":"Negative infographic; forensics reports 12 enclosures and 22 text elements."}

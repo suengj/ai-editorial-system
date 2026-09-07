@@ -1,0 +1,1 @@
+{"fixture_id":"sue570-concept","asset_ref":"evals/negative-baselines/assets/tools-child-concept.svg","asset_sha256":"sha256:6c0d1109832b57dcac4af5804c1560853dd27617ba1b89003c51523ed3ba5dba","status":"negative","owner_judgement":"rejected","failure_tags":[],"usage_limit":"Concept lane fail; no supported taxonomy tag."}
