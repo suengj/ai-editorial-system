@@ -4,6 +4,14 @@ This guide supplements `IMAGE-GENERATION.md` with a production-oriented quality 
 
 It exists because factual correctness, restrained branding, and deterministic rendering can accidentally collapse a rich editorial visual into a flat SVG/dashboard aesthetic. The goal is to preserve editorial quality while keeping claims, provenance, and approval boundaries auditable.
 
+## 0. Authority boundary
+
+This guide owns art direction and the generated-image **quality** re-baseline only.
+[`IMAGE-GENERATION.md`](IMAGE-GENERATION.md) remains the editorial brief and QA contract; [`IMAGE-TEXT-RENDERING-PROFILES.md`](IMAGE-TEXT-RENDERING-PROFILES.md) remains the authority on image text handling.
+[`profiles/brand/suengj-com.v1.json`](profiles/brand/suengj-com.v1.json) remains the authority on palette, line, and materiality; [`ARTICLE-ILLUSTRATION-ROUTING.md`](ARTICLE-ILLUSTRATION-ROUTING.md) remains the authority on thesis → renderer routing.
+[`HITL-PROTOCOL.md`](HITL-PROTOCOL.md) and the SUE-638/SUE-639 approved-asset lock remain the only approval authority; nothing here grants machine approval, lock, or publication rights.
+Where this guide restates a rule from those documents, the other document wins.
+
 ## 1. Core principle
 
 **Brand-compatible, not UI-mimetic.**
@@ -115,6 +123,8 @@ Do not overload prompts with long adjective lists. Clear spatial and semantic in
 
 Reference images are first-class production state.
 
+**Status:** The per-reference `authority` / `not_authority` record is a target contract for SUE-643, not current shipped behavior.
+
 A reference must declare what it controls. Examples:
 
 ```yaml
@@ -138,7 +148,7 @@ reference_2:
 
 Use a small reference set. Too many competing references create style dilution and prompt conflict.
 
-For suengj.com editorial body imagery, recovered owner-preferred AI-labor visuals establish a positive grammar: integrated human scene, AI/workflow layer, spatial narrative, restrained evidence modules, high whitespace, blue/teal/gray base, selective warm/red accents, and richer depth than site UI.
+For suengj.com editorial body imagery, recovered owner-preferred AI-labor visuals establish only an integrated human scene, AI/workflow layer, spatial narrative, restrained evidence modules, high whitespace, and depth/information-layering richer than the site UI system. Palette remains governed by [`profiles/brand/suengj-com.v1.json`](profiles/brand/suengj-com.v1.json) until a reference-authority record supersedes it under SUE-643. The tension between the references' depth treatment and the brand profile's current `depth_model: flat or nearly flat 2D` is an **OPEN**, tracked conflict for SUE-644 to resolve; this guide does not resolve it.
 
 ## 6. Style consistency vs brand consistency
 
