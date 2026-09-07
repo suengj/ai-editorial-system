@@ -119,8 +119,10 @@ export const CODES = Object.freeze({
   REQUIRES_OWNER_GATE_MISMATCH: 'requires-owner-gate-conflict-mismatch',
   PRODUCTION_SCHEMA: 'visual-production-schema',
   PRODUCTION_LINEAGE: 'visual-production-lineage-incomplete',
+  PRODUCTION_RUNTIME_LINEAGE: 'visual-production-runtime-lineage-mismatch',
   OVERLAY_PAYLOAD: 'factual-overlay-payload-hash-mismatch',
   OVERLAY_FACTS: 'factual-overlay-invariants-not-mechanically-covered',
+  OVERLAY_SOURCE_UNRESOLVED: 'factual-overlay-source-unresolved',
   FACTUAL_REPAIR: 'factual-repair-changed-semantic-master',
   FACTUAL_REPAIR_PREDECESSOR: 'factual-repair-predecessor-unresolvable',
   FACTUAL_REPAIR_PREDECESSOR_OUTSIDE: 'factual-repair-predecessor-outside-repository',
@@ -635,6 +637,23 @@ function validateVisualSchemaVersionFields(job, where) {
   return issues;
 }
 
+const ARTICLE_CLAIM_REF = /^article-claim:(art:[a-z0-9]+(?:-[a-z0-9]+)*):([a-z0-9]+(?:-[a-z0-9]+)*)$/;
+function resolvesArticleClaimRef(job, sourceRef) {
+  const match = ARTICLE_CLAIM_REF.exec(sourceRef ?? '');
+  return Boolean(match && job.article_ref?.article_id === match[1]);
+}
+
+function sameJSONValue(left, right) {
+  if (left === right) return true;
+  if (Array.isArray(left) || Array.isArray(right)) {
+    return Array.isArray(left) && Array.isArray(right) && left.length === right.length && left.every((v, i) => sameJSONValue(v, right[i]));
+  }
+  if (!left || !right || typeof left !== 'object' || typeof right !== 'object') return false;
+  const leftKeys = Object.keys(left).sort();
+  const rightKeys = Object.keys(right).sort();
+  return leftKeys.length === rightKeys.length && leftKeys.every((key, i) => key === rightKeys[i] && sameJSONValue(left[key], right[key]));
+}
+
 export function validateVisualContract(job, { brand, profiles = loadArtifactProfiles(), referenceContext } = {}, where = job?.job_id ?? '<job>') {
   const v2Required = ['generative', 'hybrid'].includes(job?.renderer_route);
   const ownerGateIssues = validateRequiresOwnerGate(job, where);
@@ -692,6 +711,15 @@ export function validateVisualProduction(job, where = job?.job_id ?? '<job>', re
   if (complete !== 0 && complete !== 3) out.push(issue(CODES.PRODUCTION_LINEAGE, where, 'semantic_master, factual_overlay, and publication_composite must be present together'));
   if (complete === 3) {
     if (overlay.payload_sha256 !== canonicalPayloadSha256(overlay.payload) || composite.semantic_master_sha256 !== master.asset_sha256 || composite.factual_overlay_asset_sha256 !== overlay.asset_sha256 || composite.requires_owner_gate !== (job.requires_owner_gate ?? false) || master.render_spec_id !== job.render_spec?.render_spec_id || master.selected_direction_id !== discovery.selection.selected_direction_id) out.push(issue(CODES.OVERLAY_PAYLOAD, where, 'overlay payload, master, or composite lineage does not match declared independent sources'));
+    if (!sameJSONValue(master.renderer_lineage, job.renderer)) {
+      out.push(issue(CODES.PRODUCTION_RUNTIME_LINEAGE, where, 'semantic_master.renderer_lineage must equal the job renderer runtime lineage'));
+    }
+    for (const item of overlay.payload.items ?? []) {
+      if (!resolvesArticleClaimRef(job, item.source_ref)) {
+        out.push(issue(CODES.OVERLAY_SOURCE_UNRESOLVED, where,
+          `factual overlay source_ref "${item.source_ref}" does not resolve to the job's article claim authority`));
+      }
+    }
     const briefFacts = job.visual_brief?.factual_invariants ?? [];
     const declared = new Set(overlay.declared_factual_invariants ?? []);
     const exact = new Set((overlay.payload.items ?? []).map((item) => item.exact_text));
@@ -714,15 +742,19 @@ export function validateVisualProduction(job, where = job?.job_id ?? '<job>', re
         prior = undefined;
       }
       if (prior) {
-        const priorIssues = validateVisualProduction(prior, repair.prior_production_ref, referenceContext, { chain: new Set([...repairState.chain, priorRealPath]), depth: repairState.depth + 1 });
+        const priorIssues = validateVisualJobRecord(prior, { referenceContext }, { chain: new Set([...repairState.chain, priorRealPath]), depth: repairState.depth + 1 });
         out.push(...priorIssues.map((x) => issue(x.code, `${where} -> ${repair.prior_production_ref}`, `predecessor: ${x.message}`)));
         const priorProduction = prior.visual_production;
         if (master.asset_sha256 !== priorProduction.semantic_master.asset_sha256 || overlay.asset_sha256 === priorProduction.factual_overlay.asset_sha256 || composite.asset_sha256 === priorProduction.publication_composite.asset_sha256) out.push(issue(CODES.FACTUAL_REPAIR, where, 'a factual-overlay repair must preserve resolved prior master digest and replace resolved prior overlay and composite digests'));
       }
-    }
+  }
   } else if (repair) out.push(issue(CODES.FACTUAL_REPAIR, where, 'factual_repair requires complete master/overlay/composite lineage'));
   const candidates = discovery.candidates ?? [];
-  if (candidates.length < 2 || candidates.length > 4 || new Set(candidates.map((x) => `${x.thesis_treatment}\u0000${x.composition_strategy}`)).size !== candidates.length) out.push(issue(CODES.DIRECTION_DISCOVERY, where, 'direction discovery needs 2-4 materially distinct thesis/composition candidates'));
+  if (candidates.length < 2 || candidates.length > 4 ||
+      new Set(candidates.map((x) => x.direction_id)).size !== candidates.length ||
+      new Set(candidates.map((x) => `${x.thesis_treatment}\u0000${x.composition_strategy}`)).size !== candidates.length) {
+    out.push(issue(CODES.DIRECTION_DISCOVERY, where, 'direction discovery needs 2-4 materially distinct candidates with unique direction_id values and thesis/composition pairs'));
+  }
   const selectedEntries = job.render_spec?.reference_authority?.selected ?? [];
   const selectedAuthorities = new Set(selectedEntries.map((x) => x.evaluation_id));
   const context = { catalogRefIds: referenceContext.catalogRefIds ?? loadCatalogRefIds(), evaluations: referenceContext.evaluations ?? evaluationById() };
@@ -734,7 +766,8 @@ export function validateVisualProduction(job, where = job?.job_id ?? '<job>', re
   }
   const selection = discovery.selection;
   const selected = selection.selected_direction_id;
-  if ((selection.state === 'selected' && (!selected || !selection.rationale || !candidates.some((x) => x.direction_id === selected))) || (selection.state === 'open' && selected !== undefined)) out.push(issue(CODES.DIRECTION_DISCOVERY, where, 'direction selection must name a candidate and rationale only when selected'));
+  const selectedMatches = candidates.filter((x) => x.direction_id === selected);
+  if ((selection.state === 'selected' && (!selected || !selection.rationale || selectedMatches.length !== 1)) || (selection.state === 'open' && selected !== undefined)) out.push(issue(CODES.DIRECTION_DISCOVERY, where, 'direction selection must name exactly one candidate and rationale only when selected'));
   if (refinement && (selection.state !== 'selected' || refinement.selected_direction_id !== selected || refinement.local_edits.length > refinement.max_local_edits)) out.push(issue(CODES.REFINEMENT, where, 'refinement starts only after selected direction and stays within its local-edit budget'));
   if (route && expectedVisualFailureAction(route.failure_class) !== route.next_action) out.push(issue(CODES.FAILURE_ROUTE, where, 'failure class must use the single deterministic next action'));
   if (telemetry.edit_count !== (refinement?.local_edits.length ?? 0) || (telemetry.selected_direction_id !== undefined && telemetry.selected_direction_id !== selected) || (telemetry.accepted_asset_outcome === 'accepted') !== isApprovalLocked(job) || (isApprovalLocked(job) && telemetry.accepted_asset_outcome !== 'accepted')) out.push(issue(CODES.TELEMETRY, where, 'declared telemetry must match selected direction, refinement edits, and (only when present) lock acceptance'));
@@ -742,7 +775,7 @@ export function validateVisualProduction(job, where = job?.job_id ?? '<job>', re
 }
 
 /** Validate a compiled visual job. Returns an array of issues; empty means PASS. */
-export function validateVisualJob(job, { schema = loadSchema(), profiles = loadArtifactProfiles(), brand, referenceContext } = {}) {
+function validateVisualJobRecord(job, { schema = loadSchema(), profiles = loadArtifactProfiles(), brand, referenceContext } = {}, repairState = { chain: new Set(), depth: 0 }) {
   const issues = [];
   const where = job?.job_id ?? '<job>';
 
@@ -838,7 +871,7 @@ export function validateVisualJob(job, { schema = loadSchema(), profiles = loadA
   }
 
   issues.push(...approvalLockIssues(job, where));
-  issues.push(...validateVisualProduction(job, where, referenceContext));
+  issues.push(...validateVisualProduction(job, where, referenceContext, repairState));
 
   if (job.information_gain?.verdict === 'skip') {
     if (job.compiled_prompt !== undefined || (job.compiled_from ?? []).length > 0) {
@@ -896,6 +929,10 @@ export function validateVisualJob(job, { schema = loadSchema(), profiles = loadA
   }
 
   return issues;
+}
+
+export function validateVisualJob(job, options = {}) {
+  return validateVisualJobRecord(job, options, options.repairState ?? { chain: new Set(), depth: 0 });
 }
 
 export function validateVisualJobFile(path, options = {}) {

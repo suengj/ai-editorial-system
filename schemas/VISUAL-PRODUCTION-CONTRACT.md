@@ -10,6 +10,13 @@ This is SUE-645/SUE-648 declared control-plane state, not a renderer.
 
 The objects have separate declared digest lineage. A `factual_overlay_repair` resolves a repository-contained regular-file `prior_production_ref`, recursively validates its predecessor chain, and may traverse at most 4 predecessor links; it must retain that record's master digest and replace its overlay and composite digests. Prior-digest fields were deliberately dropped: duplicating them in the current record would be self-attestation. `payload_sha256` verifies canonical overlay SOURCE under this repository's serializer, and every VisualBrief factual invariant requires a declared invariant and exact payload item. It does not prove renderer bytes or factual truth; byte reproducibility needs a shared serializer fixture with suengj-com.
 
+`semantic_master.renderer_lineage` uses the same runtime shape as the job's
+`renderer` and must equal that lineage exactly. Every factual overlay
+`source_ref` uses `article-claim:<article_id>:<claim_id>` and must name the
+same article identity carried by the job's `article_ref`. This binds the
+source to the job's article authority; it does not independently verify the
+claim's truth.
+
 `direction_discovery` holds 2–4 distinct thesis/composition alternatives, article-fit rationale, and only already-selected authorities. It precedes `production_refinement`; refinement preserves the selected direction and scopes its budget to bounded local edits, one declared major variable at a time. An unavailable positive anchor rejects rather than being invented.
 
 | Failure class | Required next action |
