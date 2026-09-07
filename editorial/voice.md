@@ -55,6 +55,18 @@ Not: 놀랍게도, 정말 흥미로운 점은, 여러분도 아시다시피.
 The register is someone thinking carefully in public, not someone performing
 expertise for an audience.
 
+Authority is carried by the position, the evidence, the mechanism, and the
+uncertainty a sentence handles — never by self-positioning.
+
+Not: 전문가의 관점에서 보면, 제가 주목하는 핵심은, 이 글에서는 심층적으로
+분석한다, 전략적으로 중요한 시사점은. In English: "I study…", "I specialize
+in…" where the sentence's only job is to establish that the author is qualified
+to hold an opinion.
+
+The test is not whether the first person appears. It is whether the sentence
+does work — states a position, owns an uncertainty — or performs work by
+announcing that work is about to happen.
+
 ## 3. Precision outranks signature moves — invariant
 
 Published writing often separates things that are casually conflated. That is
