@@ -11,6 +11,10 @@ ok('mobile review record validates',validateVisualReview(good).length===0); for(
   ok('reviewed full asset digest must match its actual pixels',validateVisualReview(wrongFullDigest).some(i=>i.code===REVIEW_CODES.ASSET_HASH));
   const wrongMobileDigest={...good,mobile_asset_sha256:'sha256:'+'a'.repeat(64)};
   ok('reviewed mobile asset digest must match its actual pixels',validateVisualReview(wrongMobileDigest).some(i=>i.code===REVIEW_CODES.MOBILE_ASSET_HASH));
+  const sameRef={...good,mobile_asset_ref:good.asset_ref,mobile_asset_sha256:mobileAssetSha256};
+  ok('full and mobile review refs must be distinct',validateVisualReview(sameRef).some(i=>i.code===REVIEW_CODES.ASSET_PAIR));
+  const sameDigest={...good,mobile_asset_sha256:good.asset_sha256};
+  ok('full and mobile review digests must be distinct',validateVisualReview(sameDigest).some(i=>i.code===REVIEW_CODES.ASSET_PAIR));
   const noMobile={...good,review_mode:'full'}; delete noMobile.mobile_asset_ref; delete noMobile.mobile_asset_sha256;
   ok('full review without a named mobile derivative is rejected',validateVisualReview(noMobile).some(i=>i.code===REVIEW_CODES.SCHEMA));
   const tagless={...good,defect_tags:[]};

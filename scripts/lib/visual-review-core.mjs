@@ -18,6 +18,7 @@ export const REVIEW_CODES = Object.freeze({
   ASSET_HASH: 'visual-review-asset-hash',
   MOBILE_ASSET_PATH: 'visual-review-mobile-asset-path',
   MOBILE_ASSET_HASH: 'visual-review-mobile-asset-hash',
+  ASSET_PAIR: 'visual-review-asset-pair',
   FEEDBACK: 'visual-review-feedback-route-invalid',
   FEEDBACK_UNRESOLVED: 'visual-review-feedback-unresolved',
   FEEDBACK_SUBJECT: 'visual-review-feedback-subject',
@@ -89,6 +90,8 @@ export function validateVisualReview(record, { feedbackDir } = {}) {
   const mobilePath = containedFile(record.mobile_asset_ref);
   if (!mobilePath) out.push({ code: REVIEW_CODES.MOBILE_ASSET_PATH, message: 'mobile_asset_ref must resolve to a repository-contained regular file' });
   else if (digestOf(mobilePath) !== record.mobile_asset_sha256) out.push({ code: REVIEW_CODES.MOBILE_ASSET_HASH, message: 'mobile_asset_sha256 does not match mobile_asset_ref bytes' });
+  if (record.mobile_asset_ref === record.asset_ref) out.push({ code: REVIEW_CODES.ASSET_PAIR, message: 'asset_ref and mobile_asset_ref must identify distinct files' });
+  if (record.mobile_asset_sha256 === record.asset_sha256) out.push({ code: REVIEW_CODES.ASSET_PAIR, message: 'asset_sha256 and mobile_asset_sha256 must identify distinct byte content' });
 
   const route = expectedVisualReviewRoute(record.primary_tag);
   if (record.verdict !== 'PASS_TO_HUMAN_REVIEW' && record.primary_tag !== null && !record.defect_tags.includes(record.primary_tag)) {

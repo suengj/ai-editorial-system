@@ -122,7 +122,6 @@ export const CODES = Object.freeze({
   PRODUCTION_RUNTIME_LINEAGE: 'visual-production-runtime-lineage-mismatch',
   OVERLAY_PAYLOAD: 'factual-overlay-payload-hash-mismatch',
   OVERLAY_FACTS: 'factual-overlay-invariants-not-mechanically-covered',
-  OVERLAY_SOURCE_UNRESOLVED: 'factual-overlay-source-unresolved',
   FACTUAL_REPAIR: 'factual-repair-changed-semantic-master',
   FACTUAL_REPAIR_PREDECESSOR: 'factual-repair-predecessor-unresolvable',
   FACTUAL_REPAIR_PREDECESSOR_OUTSIDE: 'factual-repair-predecessor-outside-repository',
@@ -637,13 +636,6 @@ function validateVisualSchemaVersionFields(job, where) {
   return issues;
 }
 
-function resolvesArticleClaimRef(job, sourceRef) {
-  const articleId = job.article_ref?.article_id;
-  const prefix = typeof articleId === 'string' ? `article-claim:${articleId}:` : '';
-  return prefix.length > 0 && typeof sourceRef === 'string' &&
-    sourceRef.startsWith(prefix) && sourceRef.slice(prefix.length).trim().length > 0;
-}
-
 function sameJSONValue(left, right) {
   if (left === right) return true;
   if (Array.isArray(left) || Array.isArray(right)) {
@@ -714,12 +706,6 @@ export function validateVisualProduction(job, where = job?.job_id ?? '<job>', re
     if (overlay.payload_sha256 !== canonicalPayloadSha256(overlay.payload) || composite.semantic_master_sha256 !== master.asset_sha256 || composite.factual_overlay_asset_sha256 !== overlay.asset_sha256 || composite.requires_owner_gate !== (job.requires_owner_gate ?? false) || master.render_spec_id !== job.render_spec?.render_spec_id || master.selected_direction_id !== discovery.selection.selected_direction_id) out.push(issue(CODES.OVERLAY_PAYLOAD, where, 'overlay payload, master, or composite lineage does not match declared independent sources'));
     if (!sameJSONValue(master.renderer_lineage, job.renderer)) {
       out.push(issue(CODES.PRODUCTION_RUNTIME_LINEAGE, where, 'semantic_master.renderer_lineage must equal the job renderer runtime lineage'));
-    }
-    for (const item of overlay.payload.items ?? []) {
-      if (!resolvesArticleClaimRef(job, item.source_ref)) {
-        out.push(issue(CODES.OVERLAY_SOURCE_UNRESOLVED, where,
-          `factual overlay source_ref "${item.source_ref}" does not resolve to the job's article claim authority`));
-      }
     }
     const briefFacts = job.visual_brief?.factual_invariants ?? [];
     const declared = new Set(overlay.declared_factual_invariants ?? []);

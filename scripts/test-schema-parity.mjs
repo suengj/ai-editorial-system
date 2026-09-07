@@ -284,9 +284,9 @@ console.log('\nvisual schema, runtime, routing, and validator parity');
     same(visualJob.properties.compiled_prompt_adapter.enum, [...SUPPORTED_PROMPT_ADAPTERS]));
 
   const briefOnly = example('visual-job-evidence-visual.example.json');
-  briefOnly.visual_brief = {};
-  check('parity witness: one-sided incomplete visual contract is rejected',
-    codes(briefOnly).includes(CODES.BRIEF_REQUIRED) || codes(briefOnly).includes(CODES.SCHEMA));
+  briefOnly.visual_brief = example('visual-brief-body-infographic-v2.example.json');
+  check('parity witness: structurally valid one-sided VisualBrief is rejected by the pair-presence guard',
+    codes(briefOnly).includes(CODES.BRIEF_REQUIRED));
 
   const authority = example('visual-job-body-infographic-v2.example.json');
   authority.render_spec.reference_authority.selected[0].not_authority = ['fabricated-dimension'];

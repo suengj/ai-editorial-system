@@ -22,13 +22,13 @@ check('standalone RenderSpec example validates', validateRenderSpec(load('render
 {
   const deterministic = load('visual-job-evidence-visual.example.json');
   const briefOnly = clone(deterministic);
-  briefOnly.visual_brief = {};
-  check('legacy deterministic job rejects a present but incomplete visual_brief',
-    codes(briefOnly).includes(CODES.BRIEF_REQUIRED) || codes(briefOnly).includes(CODES.SCHEMA));
+  briefOnly.visual_brief = clone(load('visual-brief-body-infographic-v2.example.json'));
+  check('structurally valid VisualBrief without RenderSpec is rejected by the pair-presence guard',
+    codes(briefOnly).includes(CODES.BRIEF_REQUIRED));
   const specOnly = clone(deterministic);
-  specOnly.render_spec = {};
-  check('legacy deterministic job rejects a present but incomplete render_spec',
-    codes(specOnly).includes(CODES.BRIEF_REQUIRED) || codes(specOnly).includes(CODES.SCHEMA));
+  specOnly.render_spec = clone(load('render-spec-body-infographic-hybrid-v2.example.json'));
+  check('structurally valid RenderSpec without VisualBrief is rejected by the pair-presence guard',
+    codes(specOnly).includes(CODES.BRIEF_REQUIRED));
   check('legacy deterministic job with both visual fields absent remains valid',
     validateVisualJob(deterministic).length === 0);
 }
