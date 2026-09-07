@@ -1,0 +1,145 @@
+{
+  "schema_version": "1.0.0",
+  "plan_id": "plate:comparison-programmability",
+  "artifact_profile": "visual/analytical-graphic",
+  "profile_ref": "editorial/profiles/artifact/visual-analytical-graphic.json",
+  "article_ref": {
+    "slug": "companies-become-like-the-tools-they-use",
+    "content_hash": null,
+    "surface": "article-body"
+  },
+  "semantic_plan": {
+    "primary_question": "스프레드시트와 AI 에이전트는 둘 다 현업에 프로그래밍 능력을 주었다는 점에서 같지만, 정확히 어떤 차원에서 서로 다른가?",
+    "modules": [
+      {
+        "id": "spreadsheet-era",
+        "label": "스프레드시트 시대",
+        "role": "observation",
+        "carries": "네 비교 차원 각각에서 스프레드시트 쪽 값을 공유된 행 축에 맞춰 왼쪽 열에 정렬 배치한다."
+      },
+      {
+        "id": "ai-agent-era",
+        "label": "AI 에이전트 시대",
+        "role": "observation",
+        "carries": "같은 네 행 축 위에서 AI 에이전트 쪽 값을 오른쪽 열에 배치해 각 행의 차이가 바로 옆에서 대비되게 한다."
+      },
+      {
+        "id": "expansion-pattern",
+        "label": "반복되는 확장 패턴",
+        "role": "interpretation",
+        "carries": "네 행을 동시에 정렬했을 때만 드러나는 사실 — 단위·인터페이스·역량 보유자·최적화 대상이 모두 '더 좁고 정형화된 것 → 더 넓고 비정형적인 것'이라는 같은 방향으로 움직인다는 패턴. 이 모듈은 텍스트 제목이 아니라 네 관계가 공유하는 일관된 시각적 방향(예: 네 화살표가 모두 같은 쪽으로 열림)으로만 렌더된다 — T11에 따라 해석은 캡션이 맡는다."
+      }
+    ],
+    "relations": [
+      {
+        "from": "spreadsheet-era",
+        "to": "ai-agent-era",
+        "type": "correspondence",
+        "load_bearing": true,
+        "basis": "stated",
+        "magnitude_channel": "none",
+        "dimension": "프로그래밍 단위"
+      },
+      {
+        "from": "spreadsheet-era",
+        "to": "ai-agent-era",
+        "type": "correspondence",
+        "load_bearing": true,
+        "basis": "stated",
+        "magnitude_channel": "none",
+        "dimension": "인터페이스"
+      },
+      {
+        "from": "spreadsheet-era",
+        "to": "ai-agent-era",
+        "type": "correspondence",
+        "load_bearing": true,
+        "basis": "stated",
+        "magnitude_channel": "width",
+        "dimension": "역량 보유자"
+      },
+      {
+        "from": "spreadsheet-era",
+        "to": "ai-agent-era",
+        "type": "correspondence",
+        "load_bearing": true,
+        "basis": "stated",
+        "magnitude_channel": "width",
+        "dimension": "최적화 대상"
+      },
+      {
+        "from": "ai-agent-era",
+        "to": "spreadsheet-era",
+        "type": "comparison-delta",
+        "load_bearing": true,
+        "basis": "interpreted",
+        "magnitude_channel": "none"
+      }
+    ],
+    "reading_order": [
+      "spreadsheet-era",
+      "ai-agent-era",
+      "expansion-pattern"
+    ],
+    "must_preserve": [
+      "프로그래밍의 단위가 셀·수식에서 Goal·Task·Context·Tool·Permission 등으로 넓어진다는 것",
+      "인터페이스가 수식에서 자연어로 바뀐다는 것",
+      "역량을 얻는 대상이 회계사·금융인에서 거의 모든 지식노동자로 넓어진다는 것",
+      "최적화 대상이 숫자에서 업무 자체로 넓어진다는 것",
+      "이 네 변화가 같은 방향(좁음→넓음)을 공유한다는 해석적 종합",
+      "그림자 산출물(shadow IT→shadow workflow)과 통제 필요(end-user computing control→agent governance) 두 차원은 이 플레이트에서 생략된 것이 아니라 plate:governance-authority-loop에서 메커니즘 수준으로 다뤄진다는 배분 사실"
+    ],
+    "evidence_boundary": {
+      "in_plate": "네 행 각각에서 스프레드시트 값과 AI 값을 나란히 배치해 그 차이의 방향만 시각적으로 보여준다. 정밀한 비율이나 인구 수치는 표기하지 않는다.",
+      "in_caption": "네 차이가 하나의 공통된 확장 패턴을 이룬다는 결론은 캡션에서 설명하며, 플레이트 안에는 그 결론을 문장으로 못박지 않는다."
+    },
+    "information_gain": {
+      "gain_kind": "comparison",
+      "adjacent_representation": "본문은 프로그래밍 단위, 인터페이스, 역량 보유자, 최적화 대상이라는 차원을 각각 서로 다른 문단에서 순차적으로 서술한다.",
+      "what_prose_cannot_do": "프로즈는 한 번에 하나의 차원만 제시할 수 있어 독자가 여러 개의 문장을 기억해 스스로 공통 패턴을 종합해야 한다. 이 플레이트는 네 행을 같은 축 위에 동시에 정렬함으로써, 네 차원이 모두 같은 방향으로 넓어진다는 패턴을 즉시 지각하게 한다 — 이는 어느 한 문단도 단독으로 진술하지 않는 종합이다."
+    }
+  },
+  "composition": {
+    "geometry": {
+      "position_convention": "controlled_comparison",
+      "x_axis_encodes": "비교 대상 시대 (스프레드시트 vs AI 에이전트)",
+      "y_axis_encodes": "비교 차원 (단위·인터페이스·역량 보유자·최적화 대상) — 측정 척도가 아닌 정렬용 범주 순서",
+      "scale_rationale": "각 행은 서로 성격이 다른 차원이므로 y축은 척도가 아니라 범주 순서다. x축의 두 값 사이 간격도 정량적 거리가 아니라 '더 좁음 → 더 넓음'이라는 방향만을 나타내며, 두 행(역량 보유자·최적화 대상)에서만 폭 채널로 그 방향을 보조하고 나머지 두 행(단위·인터페이스)은 위치 대비만으로 표현한다 — 실측 비율 데이터가 없기 때문이다."
+    },
+    "reading_order_mechanism": "shared_axis_alignment",
+    "enclosure_budget": {
+      "parallel_category_boundaries": 1,
+      "enclosures_planned": 0,
+      "justification": "유일한 비계층적 병렬 범주 경계는 두 시대(스프레드시트 vs AI 에이전트)뿐이며, 이는 일관된 좌/우 열 위치와 타이포그래피 역할(굵기·자간)만으로 구분된다. 네 행은 서로 순위가 없는 병렬 항목이지만 각 행을 개별 카드로 감쌀 필요는 없다 — 공유된 행 정렬과 여백만으로 충분히 구분되므로 테두리 상자는 0개로 둔다."
+    },
+    "typography_roles": [
+      {
+        "role": "시대별 값",
+        "channel": [
+          "weight",
+          "space"
+        ]
+      },
+      {
+        "role": "확장 방향 강조",
+        "channel": [
+          "weight",
+          "size"
+        ]
+      }
+    ],
+    "label_strategy": {
+      "max_labels": 14,
+      "stable_only": true
+    },
+    "annotation_strategy": "각 행의 두 값(스프레드시트 값 / AI 값)을 행의 양 끝에 직접 레이블로 붙이며, 별도의 범례나 용어 설명 박스로 분리하지 않는다.",
+    "mobile_strategy": {
+      "strategy": "restack",
+      "viewport_px": 390,
+      "min_type_px": 15,
+      "downgrade_disclosed": "해당 없음 — 좌우 정렬이 상하 재배치(restack)로 바뀔 뿐이며, 네 행 모두에서 두 시대 값이 그대로 유지되어 어떤 축도 손실되지 않는다. 이 플레이트는 진짜 매트릭스(두 독립 축의 교차 조건 조회)가 아니라 정렬된 쌍 비교이므로 축 붕괴 문제 자체가 발생하지 않는다."
+    }
+  },
+  "renderer_route": "deterministic",
+  "notes": "행 간 비교를 매트릭스(교차 조건 조회)가 아니라 correspondence(정렬된 쌍 비교)로 분류했다 — 어느 셀도 '행과 열을 결합해야만 알 수 있는' 진단을 담지 않고, 각 행은 그 자체로 완결된 쌍이기 때문이다(T12). 원래 article이 제시하는 여섯 비교 차원 중 그림자 산출물과 통제 필요 두 차원은 label 예산(10)과 T10 모듈 상한을 지키기 위해 이 플레이트에서 제외했다 — 삭제가 아니라 plate:governance-authority-loop로의 재배치이며, 그 두 차원은 거기서 텍스트 쌍이 아니라 authority 채널의 유무라는 실제 메커니즘으로 더 깊이 다뤄진다. max_labels raised from 10 to 14 during SUE-629 rendering: the four row-dimension names did not fit the family's original ceiling, so the first render omitted them and left the y axis unnamed in the artwork. The ceiling was the defect, not the plate — see visual-analytical-graphic.json text_policy.ceiling_derivation."
+}

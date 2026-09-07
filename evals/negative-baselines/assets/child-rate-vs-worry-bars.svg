@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 420" role="img" aria-labelledby="title desc">
+  <title id="title">이자율은 계속 높은데, 걱정하는 정도는 그대로예요</title>
+  <desc id="desc">미국이 돈을 빌리는 값(국채 이자율)은 9월 1일과 9월 5일 사이 거의 그대로 높게 유지됐지만, 회사가 돈을 못 갚을까 걱정하는 정도(신용스프레드)는 8월 말부터 9월 5일까지 거의 움직이지 않았다는 것을 보여주는 두 막대 비교. 숫자는 2026-09-05 다시 확인한 값.</desc>
+  <style>
+    text { font-family: Pretendard, system-ui, sans-serif; fill: currentColor; }
+    .heading { font-size: 18px; font-weight: 700; }
+    .note { font-size: 12px; fill-opacity: 0.65; }
+    .barTitle { font-size: 15px; font-weight: 700; }
+    .barSub { font-size: 12px; fill-opacity: 0.8; }
+    .barCaption { font-size: 13px; fill-opacity: 0.75; font-style: italic; }
+  </style>
+  <text class="heading" x="320" y="34" text-anchor="middle">이자율은 계속 높은데, 걱정하는 정도는 그대로예요</text>
+  <line x1="60" y1="340" x2="580" y2="340" stroke="currentColor" stroke-opacity="0.4" stroke-width="2"/>
+
+  <rect x="120" y="137.6" width="140" height="202.4" rx="10" fill="currentColor" fill-opacity="0.22" stroke="currentColor" stroke-opacity="0.55" stroke-width="2"/>
+  <text x="190" y="370" text-anchor="middle" class="barTitle">미국이 돈 빌리는 값</text>
+  <text x="190" y="103.6" text-anchor="middle" class="barSub">9/1: 4.80%</text>
+  <text x="190" y="121.6" text-anchor="middle" class="barSub">9/5: 4.76~4.78%</text>
+  <text x="190" y="392" text-anchor="middle" class="barCaption">거의 그대로, 계속 높아요</text>
+
+  <rect x="380" y="291.6" width="140" height="48.4" rx="10" fill="currentColor" fill-opacity="0.22" stroke="currentColor" stroke-opacity="0.55" stroke-width="2"/>
+  <text x="450" y="370" text-anchor="middle" class="barTitle">회사가 망할까 걱정하는 정도</text>
+  <text x="450" y="257.6" text-anchor="middle" class="barSub">8월 말: 약 1%</text>
+  <text x="450" y="275.6" text-anchor="middle" class="barSub">9/5: 1.01~1.03%</text>
+  <text x="450" y="392" text-anchor="middle" class="barCaption">거의 안 움직였어요</text>
+  <text class="note" x="320" y="404" text-anchor="middle">2026년 9월 5일에 다시 확인한 값 · 막대 높이는 정확한 눈금이 아니라 "얼마나 많이 바뀌었는지"를 크게 보여주기 위한 그림이에요</text>
+</svg>

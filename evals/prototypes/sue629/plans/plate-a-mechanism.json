@@ -1,0 +1,105 @@
+{
+  "schema_version": "1.0.0",
+  "plan_id": "plate:mechanism-divergence",
+  "artifact_profile": "visual/explanatory-diagram",
+  "profile_ref": "editorial/profiles/artifact/visual-explanatory-diagram.json",
+  "article_ref": {
+    "slug": "companies-become-like-the-tools-they-use",
+    "content_hash": null,
+    "surface": "article-body"
+  },
+  "semantic_plan": {
+    "primary_question": "최적화 루프가 반복될수록, 지표를 개선하는 경로와 현실을 개선하는 경로는 계속 같은 방향을 유지하는가?",
+    "modules": [
+      {
+        "id": "measured-proxy",
+        "label": "측정된 지표",
+        "role": "observation",
+        "carries": "반복되는 최적화 루프의 축 위에서 지표 값이 계속 상승하는 곡선의 모양과 기울기 — 반복이 이어지는 동안 꺾이지 않고 우상향한다는 형태 자체가 payload."
+      },
+      {
+        "id": "observed-reality",
+        "label": "관찰된 현실",
+        "role": "observation",
+        "carries": "같은 반복 축 위에서 실제 현실 상태가 초기에는 지표와 함께 움직이다가 어느 시점부터 정체·하락하는 곡선의 모양 — 지표 곡선과의 수직 거리가 벌어지는 정도."
+      },
+      {
+        "id": "divergence-onset",
+        "label": "분기 시작점",
+        "role": "interpretation",
+        "carries": "두 곡선 사이의 수직 간격이 지각 가능한 크기를 넘어서기 시작하는, 반복 축 위의 구체적 위치 — 그 지점에 직접 붙는 짧은 게이밍 행동 주석(예: 재고·CapEx·아웃소싱 조정) 하나."
+      }
+    ],
+    "relations": [
+      {
+        "from": "measured-proxy",
+        "to": "observed-reality",
+        "type": "comparison-delta",
+        "load_bearing": true,
+        "basis": "stated",
+        "magnitude_channel": "length"
+      },
+      {
+        "from": "measured-proxy",
+        "to": "divergence-onset",
+        "type": "temporal-ordinal",
+        "load_bearing": true,
+        "basis": "stated",
+        "magnitude_channel": "position"
+      },
+      {
+        "from": "divergence-onset",
+        "to": "observed-reality",
+        "type": "causal-chain",
+        "load_bearing": true,
+        "basis": "interpreted",
+        "magnitude_channel": "none"
+      }
+    ],
+    "reading_order": ["measured-proxy", "observed-reality", "divergence-onset"],
+    "must_preserve": [
+      "두 경로(지표 개선 vs 현실 개선)가 초기에는 함께 움직인다는 것",
+      "반복이 진행되며 두 경로가 서로 다른 방향으로 벌어질 수 있다는 방향성",
+      "지표는 계속 개선되는 것처럼 보일 수 있지만 현실은 그렇지 않을 수 있다는 비대칭",
+      "이것이 확정된 사실이 아니라 Goodhart's Law를 이 상황에 적용한 저자의 해석이라는 것"
+    ],
+    "evidence_boundary": {
+      "in_plate": "두 곡선의 형태(초기 동행 → 후기 분기)와 분기 시작점의 위치만 시각적으로 제시하며, 실제 수치나 정밀한 척도값은 표기하지 않는다.",
+      "in_caption": "이 분기가 실제로 일어난다고 확정하는 것이 아니라, Goodhart's Law·Campbell's Law에 따라 반복된 최적화에서 나타날 수 있는 패턴이라는 저자의 해석적 모델임을 명시한다."
+    },
+    "information_gain": {
+      "gain_kind": "mechanism",
+      "adjacent_representation": "본문 문단이 'Reality → Metric → Target → Optimization'의 4단계 순서와 '이 루프가 몇 번 반복되면 두 경로가 벌어질 수 있다'는 결론을 이미 문장으로 서술하며, 같은 4단계 체인과 그 뒤를 잇는 분기 루프를 그대로 재현한 기존 SVG(metric-feedback.svg)가 이미 게시되어 있다.",
+      "what_prose_cannot_do": "프로즈와 기존 체인 다이어그램은 '벌어질 수 있다'는 결론만 한 문장으로 전달할 수 있을 뿐, 두 경로가 반복 축 위에서 언제부터, 얼마나 벌어지는지, 그리고 그 벌어짐이 점진적인지 급격한지를 독자가 동시에 지각하게 만들 수 없다. 이 플레이트는 4단계 체인을 다시 그리지 않고, 체인 이후에 실제로 일어나는 두 궤적의 형태 차이만을 보여준다."
+    }
+  },
+  "composition": {
+    "geometry": {
+      "position_convention": "scale",
+      "x_axis_encodes": "최적화 루프 반복 횟수 (순서, 실제 경과 시간 아님)",
+      "y_axis_encodes": "지표/현실이 개선된 정도 (공통 정규화 척도, 절대값이 아닌 방향과 상대적 간격만 의미)",
+      "time_scale": "ordinal",
+      "scale_rationale": "x축은 실제 경과 시간이 아니라 최적화 루프가 반복된 횟수(순서)만을 나타내므로 ordinal이다. y축은 실측 데이터가 없으므로 절대 수치를 표기하지 않고, 두 곡선을 같은 방향성 척도 위에서 비교 가능하게만 배치한다 — 정밀한 척도값을 표기하면 없는 데이터를 있는 것처럼 보이는 faux precision이 된다."
+    },
+    "reading_order_mechanism": "shared_axis_alignment",
+    "enclosure_budget": {
+      "parallel_category_boundaries": 1,
+      "enclosures_planned": 0,
+      "justification": "두 곡선(측정된 지표 vs 관찰된 현실)이 유일한 비계층적 병렬 범주 경계다. 그러나 이 구분은 선 스타일(실선/점선)과 끝점 레이블만으로 충분히 전달되며 — 두 상태 사이에 '어느 쪽이 더 크다'는 위계가 없다는 사실 자체가 선 스타일로 이미 표현된다 — 별도의 테두리 상자는 필요하지 않다. 분기 시작점도 선 위의 한 점(마커)일 뿐 컨테이너가 아니다."
+    },
+    "typography_roles": [
+      { "role": "곡선 끝점 레이블", "channel": ["weight", "case"] },
+      { "role": "분기점 강조", "channel": ["size", "weight"] },
+      { "role": "축 레이블", "channel": ["size", "case"] }
+    ],
+    "label_strategy": { "max_labels": 6, "stable_only": true },
+    "annotation_strategy": "분기 시작점 옆에 짧은 게이밍 행동 주석 하나(예: '재고·CapEx·아웃소싱 조정')를 관계에 직접 붙여 표기하며, 별도의 범례나 각주로 분리하지 않는다.",
+    "mobile_strategy": {
+      "strategy": "reflow",
+      "viewport_px": 390,
+      "min_type_px": 15
+    }
+  },
+  "renderer_route": "deterministic",
+  "notes": "이 플레이트는 기존 metric-feedback.svg의 4단계 체인이나 그 뒤에 이미 추가된 단일 분기 루프를 재현하지 않는다. 대신 반복 축 위에서 두 궤적의 형태 차이(초기 동행 → 후기 분기)만을 payload로 삼는다."
+}

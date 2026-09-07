@@ -110,6 +110,22 @@
       "notes": "corpus_role: discovery (report genre). Structural evidence only; see references/evaluations/bok-economic-outlook-report/ for the full record."
     },
     {
+      "ref_id": "ref:c4-model-containment",
+      "url": "https://c4model.com/diagrams/notation",
+      "title": "C4 model diagram notation — containment, flow and abstraction levels",
+      "creator": "Simon Brown (C4 model)",
+      "kind": "documentation",
+      "observed_at": "2026-09-06",
+      "rights_status": "clear",
+      "license": "CC BY 4.0 (c4model.com stated licence)",
+      "license_compatible": true,
+      "attribution": "Simon Brown, C4 model notation guidance.",
+      "copy_status": "linked",
+      "verdict": "adapt",
+      "observations": "NOT directly inspected — c4model.com is blocked by this session's egress policy (CONNECT 403). Assessed from cross-checked secondary sources plus published critique. The transferable mechanic is channel separation: containment carried by literal spatial nesting and never reused for anything else, flow carried by a solid verb-labelled connector whose label states what moves. Also transferable is the discipline of never rendering multiple abstraction levels on one canvas, which is a plate-split rule arrived at independently of ours.",
+      "notes": "Grade B evidence. Paired in the SUE-627 benchmark with the IIA Three Lines Model as a documented NEGATIVE case, where delegation, accountability and coordination share one arrow grammar and text captions are forced to disambiguate what the geometry should carry."
+    },
+    {
       "ref_id": "ref:denoiser-consumption-architecture",
       "url": "https://github.com/suengj/suengj-com/blob/main/docs/architecture/P1-6-VISUAL-HIERARCHY.md",
       "title": "Denoiser multi-surface consumption architecture — as recorded in the suengj-com visual hierarchy contract",
@@ -197,6 +213,22 @@
       "verdict": "adapt",
       "observations": "ElevenLabs separates Instant and Professional Voice Cloning. Current PVC documentation requires verification and states that Professional Voice Cloning is for one's own voice; Instant Voice Cloning requires confirmation of right and consent. These controls are implementation safeguards, not editorial rights authority.",
       "notes": "Related official PVC page: https://elevenlabs.io/docs/eleven-creative/voices/voice-cloning/professional-voice-cloning"
+    },
+    {
+      "ref_id": "ref:ft-visual-vocabulary",
+      "url": "https://github.com/Financial-Times/chart-doctor/blob/main/visual-vocabulary/README.md",
+      "title": "Financial Times Visual Vocabulary — chart selection organised by relationship type",
+      "creator": "Financial Times Visual Journalism Team",
+      "kind": "documentation",
+      "observed_at": "2026-09-06",
+      "rights_status": "clear",
+      "license": "MIT (repository LICENSE); poster and prose are FT-authored and used link-only",
+      "license_compatible": true,
+      "attribution": "Financial Times Visual Journalism Team, Visual Vocabulary (chart-doctor repository).",
+      "copy_status": "linked",
+      "verdict": "adapt",
+      "observations": "Read in full this session — the only external visual reference in the SUE-627 set that was directly opened rather than assessed from secondary sources. The transferable structure is that it is organised as nine relationship families (Deviation, Correlation, Ranking, Distribution, Change over Time, Part-to-whole, Magnitude, Spatial, Flow) with geometries beneath them, so a designer names the relationship in the data and the vocabulary returns the geometries that can carry it. Relationship-before-geometry is the method we adapt. The taxonomy itself is quantitative only and has no family for causal-chain, authority, containment or correspondence — the qualitative-structural relations an explanatory editorial infographic needs — which is a gap this repository has to close itself.",
+      "notes": "Adapted for its selection method, not its look. FT house styling, palette and chart furniture are explicitly not imitated (SUE-627 boundary: no named-publisher imitation objective)."
     },
     {
       "ref_id": "ref:gemini-api-media",
@@ -546,6 +578,20 @@
       "notes": "Related official model page: https://developers.openai.com/api/docs/models/gpt-4o-mini-tts"
     },
     {
+      "ref_id": "ref:risk-matrix-comprehension",
+      "url": "https://onlinelibrary.wiley.com/doi/abs/10.1111/j.1539-6924.2008.01030.x",
+      "title": "What's Wrong with Risk Matrices? (Cox 2008), with the Sutherland et al. 2022 comprehension trial",
+      "creator": "Louis Anthony Cox Jr.; Sutherland et al. (Risk Analysis)",
+      "kind": "paper",
+      "observed_at": "2026-09-06",
+      "rights_status": "unclear",
+      "license": null,
+      "copy_status": "linked",
+      "verdict": "adapt",
+      "observations": "NOT directly inspected — publisher domain blocked by this session's egress policy. Assessed from cross-checked secondary summaries. Two mechanics are taken: a matrix is warranted only when two genuinely independent scales exist and the reader's task is an intersection lookup, and ordinal category labels must never imply arithmetic (a 1x3 cell reading as equivalent to 3x1). Both are stated as constraints on when a grid is legitimate, not as a chart style.",
+      "notes": "Grade B evidence. Used to bound when the matrix relation may be selected at all; no factual authority is taken from it."
+    },
+    {
       "ref_id": "ref:social-ai-voiceover-skill",
       "url": "https://github.com/social-media-skills/skills/blob/main/skills/ai-voiceover/SKILL.md",
       "title": "Social Media Skills — AI voiceover Skill",
@@ -559,6 +605,36 @@
       "copy_status": "linked",
       "verdict": "adapt",
       "observations": "The Skill treats script-for-the-ear plus delivery direction as the main quality driver, loads shared brand/voice context before audio choices, and keeps consent/disclosure as a boundary. We adapt this to Suengj voice + content register while rejecting universal short-sentence rules, social hooks, and provider-led defaults."
+    },
+    {
+      "ref_id": "ref:sue570-body-infographic",
+      "url": "https://github.com/suengj/suengj-com/blob/sue-570-pilot-review/public/media/images/sue570-pilot/tools-report-infographic.svg",
+      "title": "SUE-570 pilot body infographic — owner-rejected, retained as negative evidence",
+      "creator": "AI Editorial System (SUE-570 pilot output)",
+      "kind": "media",
+      "observed_at": "2026-09-06",
+      "rights_status": "clear",
+      "license": "Owner's own repository",
+      "license_compatible": true,
+      "attribution": "Generated by this system during the SUE-570 pilot.",
+      "copy_status": "linked",
+      "verdict": "avoid",
+      "observations": "Read at SVG source level this session. Owner verdict on Linear SUE-570 section D: infographic composition is a material failure. Seven named failure signatures are recorded in evals/negative-baselines/SUE-570-INFOGRAPHIC-FORENSICS.md. The load-bearing one is that the four modules sit at hand-assigned coordinates in a 2x2 arrangement whose axes encode nothing, borrowing the appearance of a matrix without the encoding.",
+      "notes": "NEGATIVE evidence only. This entry exists so the failure is citable and routable; it must never be selected as generation evidence and is not promoted. provenance_class on its evaluation is generated_output with no promotion block, which is what keeps it out of the selection path."
+    },
+    {
+      "ref_id": "ref:timeline-design-space",
+      "url": "https://www.microsoft.com/en-us/research/wp-content/uploads/2016/10/Brehmer-TVCG-2017.pdf",
+      "title": "Timelines Revisited — a design space and considerations for expressive storytelling (IEEE TVCG 2017)",
+      "creator": "Brehmer, Lee, Bach, Riche, Munzner",
+      "kind": "paper",
+      "observed_at": "2026-09-06",
+      "rights_status": "unclear",
+      "license": null,
+      "copy_status": "linked",
+      "verdict": "adapt",
+      "observations": "Obtained as full text during SUE-627 research. The transferable mechanic is that a timeline's scale is a decision about what the spatial dimension is allowed to claim: proportional when gaps carry meaning the reader needs, ordinal when only order matters. The dangerous direction is ordinal applied to duration-critical data because it fails silently — evenly spaced stages look like comparable durations, an inference the scale does not entitle the reader to make.",
+      "notes": "Grade A/B boundary: full text was obtained but the taxonomy is used as a design-space vocabulary, never as factual authority."
     },
     {
       "ref_id": "ref:vega-lite",
