@@ -1,1 +1,42 @@
-{"$schema":"https://json-schema.org/draft/2020-12/schema","$id":"https://suengj.com/schemas/visual-review.schema.json","title":"Advisory rendered visual review","type":"object","additionalProperties":false,"required":["schema_version","review_id","asset_ref","asset_sha256","review_mode","dimensions","verdict","defect_tags","primary_tag","failure_class","next_action","feedback_ref","final_authority"],"properties":{"schema_version":{"const":"1.0.0"},"review_id":{"type":"string","pattern":"^visual-review:[a-z0-9-]+$"},"asset_ref":{"type":"string","minLength":1},"asset_sha256":{"type":"string","pattern":"^sha256:[a-f0-9]{64}$"},"review_mode":{"enum":["full","mobile_downscaled"]},"dimensions":{"type":"array","items":{"type":"object","additionalProperties":false,"required":["dimension","verdict","evidence"],"properties":{"dimension":{"enum":["thesis_clarity","reading_path","narrative_composition","editorial_authorship","spatial_richness","information_hierarchy","article_fit","reference_adherence","brand_compatibility","factual_text_integrity","mobile_crop_resilience"]},"verdict":{"enum":["pass","revise","reroute","abstain"]},"evidence":{"type":"string","minLength":1}}}},"verdict":{"enum":["PASS_TO_HUMAN_REVIEW","REVISE","REROUTE","SKIP"]},"defect_tags":{"type":"array","items":{"enum":["dashboardization","ui_mimicry","flat_svg_aesthetic","generic_icon_grid","box_overload","over_minimalization","weak_visual_thesis","style_dilution","dense_text","reference_drift","factual_overlay_intrusion"]}},"primary_tag":{"type":["string","null"]},"failure_class":{"type":["string","null"]},"next_action":{"type":"string","minLength":1},"feedback_ref":{"type":"string","pattern":"^feedback:[a-z0-9-]+$"},"final_authority":{"const":"human"}}}
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://suengj.com/schemas/visual-review.schema.json",
+  "title": "Advisory rendered visual review",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version", "review_id", "asset_ref", "asset_sha256",
+    "mobile_asset_ref", "mobile_asset_sha256", "review_mode", "dimensions",
+    "verdict", "defect_tags", "primary_tag", "failure_class", "next_action",
+    "feedback_ref", "final_authority"
+  ],
+  "properties": {
+    "schema_version": { "const": "1.0.0" },
+    "review_id": { "type": "string", "pattern": "^visual-review:[a-z0-9-]+$" },
+    "asset_ref": { "type": "string", "minLength": 1 },
+    "asset_sha256": { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$" },
+    "mobile_asset_ref": { "type": "string", "minLength": 1 },
+    "mobile_asset_sha256": { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$" },
+    "review_mode": { "enum": ["full", "mobile_downscaled"] },
+    "dimensions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["dimension", "verdict", "evidence"],
+        "properties": {
+          "dimension": { "enum": ["thesis_clarity", "reading_path", "narrative_composition", "editorial_authorship", "spatial_richness", "information_hierarchy", "article_fit", "reference_adherence", "brand_compatibility", "factual_text_integrity", "mobile_crop_resilience"] },
+          "verdict": { "enum": ["pass", "revise", "reroute", "abstain"] },
+          "evidence": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "verdict": { "enum": ["PASS_TO_HUMAN_REVIEW", "REVISE", "REROUTE", "SKIP"] },
+    "defect_tags": { "type": "array", "items": { "enum": ["dashboardization", "ui_mimicry", "flat_svg_aesthetic", "generic_icon_grid", "box_overload", "over_minimalization", "weak_visual_thesis", "style_dilution", "dense_text", "reference_drift", "factual_overlay_intrusion"] } },
+    "primary_tag": { "enum": ["dashboardization", "ui_mimicry", "flat_svg_aesthetic", "generic_icon_grid", "box_overload", "over_minimalization", "weak_visual_thesis", "style_dilution", "dense_text", "reference_drift", "factual_overlay_intrusion", null] },
+    "failure_class": { "enum": ["wrong_concept", "local_defect", "low_fidelity", "facts_or_text_wrong", "reference_drift", "dashboardization", "human_likes_candidate", null] },
+    "next_action": { "enum": ["new_direction", "local_edit", "fidelity_derivative", "factual_overlay_repair", "recompile_reference_authority", "reroute_composition_renderer", "human_approval_required", "human_judgement"] },
+    "feedback_ref": { "type": "string", "pattern": "^feedback:[a-z0-9-]+$" },
+    "final_authority": { "const": "human" }
+  }
+}

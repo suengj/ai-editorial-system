@@ -42,9 +42,17 @@
  * excluded from this parity group rather than silently treated as a match.
  */
 
-import { readdirSync, readFileSync } from 'node:fs';
+import { createHash } from 'node:crypto';
+import { mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import {
+  CODES, VISUAL_FAILURE_ACTIONS, VISUAL_JOB_V1_1_FIELDS, VISUAL_JOB_V1_2_FIELDS,
+  loadSchema, validateVisualJob,
+} from './lib/visual-job-core.mjs';
+import {
+  REVIEW_CODES, VISUAL_REVIEW_TAG_CLASSES, validateVisualReview,
+} from './lib/visual-review-core.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const load = (rel) => JSON.parse(readFileSync(resolve(ROOT, rel), 'utf8'));
@@ -224,6 +232,121 @@ console.log('\nauthority_class / application_mode enum parity (polish-decision.s
       same(languagePackApplicationMode, polishApplicationMode),
       `language-pack: ${JSON.stringify(languagePackApplicationMode)}, polish-decision: ${JSON.stringify(polishApplicationMode)}`);
   }
+}
+
+// --- visual schema and validator parity (SUE-visual-schema-review) ---------
+// The visual contracts are split across standalone schemas and executable
+// cross-object validators. Keep the duplicated runtime and routing vocabularies
+// synchronized, and retain one representative negative witness for each
+// invariant so this parity test cannot silently pass while the visual tests
+// are accidentally bypassed.
+console.log('\nvisual schema, runtime, routing, and validator parity');
+{
+  const visualJob = load('schemas/visual-job.schema.json');
+  const visualBrief = load('schemas/visual-brief.schema.json');
+  const renderSpec = load('schemas/render-spec.schema.json');
+  const production = load('schemas/visual-production.schema.json');
+  const review = load('schemas/visual-review.schema.json');
+  const clone = (value) => JSON.parse(JSON.stringify(value));
+  const example = (name) => load(`schemas/examples/${name}`);
+  const codes = (job) => validateVisualJob(job).map((i) => i.code);
+
+  check('visual job schema exposes the three visual contract fields',
+    visualJob.properties.visual_brief?.type === 'object' &&
+    visualJob.properties.render_spec?.type === 'object' &&
+    visualJob.properties.visual_production?.type === 'object');
+  check('standalone VisualBrief and RenderSpec schemas are complete objects',
+    visualBrief.type === 'object' && renderSpec.type === 'object' &&
+    visualBrief.additionalProperties === false && renderSpec.additionalProperties === false);
+  check('visual production schema exposes a runtime definition for renderer lineage',
+    Boolean(production.$defs?.runtime) && production.$defs.master.properties.renderer_lineage.$ref === '#/$defs/runtime');
+  check('visual production runtime shape matches the visual job runtime shape',
+    same(visualJob.$defs.runtime, production.$defs.runtime));
+
+  const productionClasses = production.$defs.failure_route.properties.failure_class.enum;
+  const productionActions = production.$defs.failure_route.properties.next_action.enum;
+  check('production failure classes match the executable route vocabulary',
+    same(productionClasses, Object.keys(VISUAL_FAILURE_ACTIONS)));
+  check('production next actions match the executable route vocabulary',
+    same(productionActions, Object.values(VISUAL_FAILURE_ACTIONS)));
+  check('review defect tags match the executable review-tag vocabulary',
+    same(review.properties.defect_tags.items.enum, Object.keys(VISUAL_REVIEW_TAG_CLASSES)));
+  check('review failure classes mirror production failure classes plus null',
+    same(review.properties.failure_class.enum, [...productionClasses, null]));
+  check('review next actions mirror production actions plus human_judgement',
+    same(review.properties.next_action.enum, [...productionActions, 'human_judgement']));
+
+  check('V1.1 field list is represented by the visual job contract',
+    VISUAL_JOB_V1_1_FIELDS.every((field) => field in visualJob.properties));
+  check('V1.2 field list is represented by the visual job contract',
+    VISUAL_JOB_V1_2_FIELDS.every((field) => field in visualJob.properties));
+
+  const briefOnly = example('visual-job-evidence-visual.example.json');
+  briefOnly.visual_brief = {};
+  check('parity witness: one-sided incomplete visual contract is rejected',
+    codes(briefOnly).includes(CODES.BRIEF_REQUIRED) || codes(briefOnly).includes(CODES.SCHEMA));
+
+  const authority = example('visual-job-body-infographic-v2.example.json');
+  authority.render_spec.reference_authority.selected[0].not_authority = ['fabricated-dimension'];
+  check('parity witness: fabricated not_authority is rejected',
+    codes(authority).includes(CODES.REFERENCE_AUTHORITY_NOT_AUTHORITY_UNEVIDENCED));
+
+  const lineage = example('visual-job-body-infographic-v2.example.json');
+  lineage.visual_brief.article_ref.version_number = 999;
+  check('parity witness: VisualBrief article version drift is rejected',
+    codes(lineage).includes(CODES.BRIEF_SPEC_MISMATCH));
+
+  const compiled = example('visual-job-body-infographic-v2.example.json');
+  compiled.compiled_prompt = '';
+  compiled.compiled_from = ['bogus'];
+  compiled.compiled_prompt_adapter = 'unregistered-adapter';
+  check('parity witness: fabricated prompt adapter lineage is rejected',
+    codes(compiled).includes(CODES.SCHEMA));
+
+  const wrongVersion = example('visual-job-body-infographic-v2.example.json');
+  wrongVersion.schema_version = '1.1.0';
+  check('parity witness: V1.1 carrying visual_production is rejected',
+    codes(wrongVersion).includes(CODES.VERSION_FIELD_MISMATCH));
+
+  const runtime = example('visual-job-body-infographic-v2.example.json');
+  runtime.visual_production.semantic_master.renderer_lineage = {};
+  check('parity witness: incomplete production runtime lineage is rejected',
+    codes(runtime).includes(CODES.PRODUCTION_SCHEMA));
+
+  const duplicateDirection = example('visual-job-body-infographic-v2.example.json');
+  duplicateDirection.visual_production.direction_discovery.candidates[1].direction_id =
+    duplicateDirection.visual_production.direction_discovery.candidates[0].direction_id;
+  check('parity witness: duplicate direction identity is rejected',
+    codes(duplicateDirection).includes(CODES.DIRECTION_DISCOVERY));
+
+  const temp = mkdtempSync(resolve(ROOT, '.visual-schema-parity-'));
+  try {
+    const priorPath = resolve(temp, 'malformed-prior.json');
+    const prior = example('visual-job-body-infographic-v2.example.json');
+    delete prior.job_id;
+    writeFileSync(priorPath, JSON.stringify(prior));
+    const repair = example('visual-job-body-infographic-factual-repair.example.json');
+    repair.visual_production.factual_repair.prior_production_ref = priorPath.slice(ROOT.length + 1);
+    check('parity witness: malformed repair predecessor envelope is rejected',
+      codes(repair).includes(CODES.SCHEMA));
+  } finally {
+    rmSync(temp, { recursive: true, force: true });
+  }
+
+  const fullRef = 'evals/prototypes/sue629/plate-a-mechanism.svg';
+  const mobileRef = 'evals/prototypes/sue629/plate-b-comparison.svg';
+  const digest = (ref) => `sha256:${createHash('sha256').update(readFileSync(resolve(ROOT, ref))).digest('hex')}`;
+  const reviewWitness = {
+    schema_version: '1.0.0', review_id: 'visual-review:parity', asset_ref: fullRef,
+    asset_sha256: `sha256:${'a'.repeat(64)}`, mobile_asset_ref: mobileRef,
+    mobile_asset_sha256: digest(mobileRef), review_mode: 'full',
+    dimensions: ['thesis_clarity', 'reading_path', 'narrative_composition', 'editorial_authorship', 'spatial_richness', 'information_hierarchy', 'article_fit', 'reference_adherence', 'brand_compatibility', 'factual_text_integrity', 'mobile_crop_resilience'].map((dimension) => ({ dimension, verdict: 'pass', evidence: 'parity witness' })),
+    verdict: 'REROUTE', defect_tags: ['dashboardization'], primary_tag: 'dashboardization',
+    failure_class: 'dashboardization', next_action: 'reroute_composition_renderer',
+    feedback_ref: 'feedback:missing-parity-record', final_authority: 'human',
+  };
+  check('parity witness: review digest not bound to full pixels is rejected',
+    validateVisualReview(reviewWitness).some((i) => i.code === REVIEW_CODES.ASSET_HASH));
 }
 
 console.log(failures === 0 ? '\nschema parity: PASS' : `\nschema parity: FAIL (${failures})`);
