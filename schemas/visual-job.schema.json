@@ -13,7 +13,7 @@
     "attempts", "max_attempts", "qa", "status"
   ],
   "properties": {
-    "schema_version": { "enum": ["1.0.0", "1.1.0"] },
+    "schema_version": { "enum": ["1.0.0", "1.1.0", "1.2.0"] },
     "job_id": {
       "type": "string",
       "pattern": "^job:[a-z0-9]+(-[a-z0-9]+)*$"
@@ -130,6 +130,10 @@
     "revision": {
       "description": "How a post-approval request was classified (editorial/APPROVED-VISUAL-ASSET-LIFECYCLE.md §3). Only meaningful alongside approved_asset — a revision intent without an approved asset is rejected, so there is exactly one authority for post-approval routing.",
       "$ref": "#/$defs/revision"
+    },
+    "visual_production": {
+      "description": "Optional SUE-645/SUE-648 declared production control state. It does not approve, lock, publish, render, or observe a provider.",
+      "type": "object"
     }
   },
   "$defs": {

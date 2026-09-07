@@ -42,6 +42,7 @@
       "items": { "$ref": "#/$defs/artifact" }
     },
     "presentation": { "$ref": "#/$defs/presentation" },
+    "visual_production_lineage": { "description": "Optional lineage only; suengj-com materialises and verifies bytes.", "type": "object", "additionalProperties": false, "properties": { "semantic_master_sha256": { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$" }, "factual_overlay_sha256": { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$" }, "composite_sha256": { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$" }, "requires_owner_gate": { "type": "boolean" } } },
     "evidence": {
       "description": "Execution evidence that stays in this repository and is referenced, never copied into the site.",
       "type": "object",

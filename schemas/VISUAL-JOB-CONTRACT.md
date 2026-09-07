@@ -19,6 +19,11 @@ Schema `1.1.0` is additive: it introduces `visual_brief`, `render_spec`,
 and absent means false, but core requires it to be present and true when
 `brand_conflicts` is non-empty, and rejects true with no conflict.
 
+Schema `1.2.0` adds optional `visual_production`, the declared SUE-645/648
+control-plane state documented in [VISUAL-PRODUCTION-CONTRACT.md](VISUAL-PRODUCTION-CONTRACT.md).
+It accepts `1.0.0`, `1.1.0`, and `1.2.0`; a V1 job has no production telemetry
+requirement. This state never replaces the SUE-638/639 approval-lock path.
+
 ## The prompt is a compiled output, not the source of truth
 
 The durable knowledge is the state the job cites: the semantic spec, the

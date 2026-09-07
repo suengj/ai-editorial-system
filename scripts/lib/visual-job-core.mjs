@@ -8,7 +8,8 @@
  * schemas/VISUAL-JOB-CONTRACT.md.
  */
 
-import { existsSync, readFileSync, readdirSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync, lstatSync, realpathSync } from 'node:fs';
+import { createHash } from 'node:crypto';
 import { dirname, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { validate } from './json-schema-lite.mjs';
@@ -20,6 +21,7 @@ const ROOT = resolve(HERE, '../..');
 export const VISUAL_JOB_SCHEMA = resolve(ROOT, 'schemas/visual-job.schema.json');
 export const VISUAL_BRIEF_SCHEMA = resolve(ROOT, 'schemas/visual-brief.schema.json');
 export const RENDER_SPEC_SCHEMA = resolve(ROOT, 'schemas/render-spec.schema.json');
+export const VISUAL_PRODUCTION_SCHEMA = resolve(ROOT, 'schemas/visual-production.schema.json');
 export const ARTIFACT_PROFILE_DIR = resolve(ROOT, 'editorial/profiles/artifact');
 export const BRAND_PROFILE_DIR = resolve(ROOT, 'editorial/profiles/brand');
 
@@ -28,6 +30,7 @@ const readJSON = (p) => JSON.parse(readFileSync(p, 'utf8'));
 export const loadSchema = (p = VISUAL_JOB_SCHEMA) => readJSON(p);
 export const loadVisualBriefSchema = (p = VISUAL_BRIEF_SCHEMA) => readJSON(p);
 export const loadRenderSpecSchema = (p = RENDER_SPEC_SCHEMA) => readJSON(p);
+export const loadVisualProductionSchema = (p = VISUAL_PRODUCTION_SCHEMA) => readJSON(p);
 
 /** Load every editorial/profiles/artifact/visual-*.json, keyed by its `artifact` id. */
 export function loadArtifactProfiles(dir = ARTIFACT_PROFILE_DIR) {
@@ -112,7 +115,34 @@ export const CODES = Object.freeze({
   REFERENCE_AUTHORITY_TRAIT_IRRELEVANT: 'reference-authority-trait-irrelevant-to-brief',
   BRIEF_REFERENCE_DIMENSIONS_REQUIRED: 'visual-brief-required-dimensions-empty',
   REQUIRES_OWNER_GATE_MISMATCH: 'requires-owner-gate-conflict-mismatch',
+  PRODUCTION_SCHEMA: 'visual-production-schema',
+  PRODUCTION_LINEAGE: 'visual-production-lineage-incomplete',
+  OVERLAY_PAYLOAD: 'factual-overlay-payload-hash-mismatch',
+  OVERLAY_FACTS: 'factual-overlay-invariants-not-mechanically-covered',
+  FACTUAL_REPAIR: 'factual-repair-changed-semantic-master',
+  FACTUAL_REPAIR_PREDECESSOR: 'factual-repair-predecessor-unresolvable',
+  FACTUAL_REPAIR_PREDECESSOR_OUTSIDE: 'factual-repair-predecessor-outside-repository',
+  FACTUAL_REPAIR_PREDECESSOR_NOT_REGULAR: 'factual-repair-predecessor-not-regular-file',
+  FACTUAL_REPAIR_CYCLE: 'factual-repair-predecessor-cycle',
+  FACTUAL_REPAIR_DEPTH: 'factual-repair-predecessor-depth-exceeded',
+  DIRECTION_DISCOVERY: 'direction-discovery-invalid',
+  DIRECTION_REFERENCE: 'direction-reference-not-selected-authority',
+  REFINEMENT: 'production-refinement-invalid',
+  FAILURE_ROUTE: 'visual-failure-route-mismatch',
+  TELEMETRY: 'visual-production-telemetry-invalid',
 });
+
+export const VISUAL_FAILURE_ACTIONS = Object.freeze({
+  wrong_concept: 'new_direction', local_defect: 'local_edit', low_fidelity: 'fidelity_derivative',
+  facts_or_text_wrong: 'factual_overlay_repair', reference_drift: 'recompile_reference_authority',
+  dashboardization: 'reroute_composition_renderer', human_likes_candidate: 'human_approval_required',
+});
+export function expectedVisualFailureAction(failureClass) { return VISUAL_FAILURE_ACTIONS[failureClass]; }
+export function createVisualFailureRoute(failureClass) { return { failure_class: failureClass, next_action: expectedVisualFailureAction(failureClass) }; }
+export function canonicalPayloadSha256(payload) {
+  const canonical = (v) => Array.isArray(v) ? `[${v.map(canonical).join(',')}]` : v && typeof v === 'object' ? `{${Object.keys(v).sort().map((k) => `${JSON.stringify(k)}:${canonical(v[k])}`).join(',')}}` : JSON.stringify(v);
+  return `sha256:${createHash('sha256').update(canonical(payload)).digest('hex')}`;
+}
 
 /**
  * Post-approval intents that are derivative/media work, never new artwork
@@ -607,6 +637,68 @@ export function validateVisualContract(job, { brand, profiles = loadArtifactProf
   return issues;
 }
 
+/** SUE-645/648 control-plane validation; never replaces the approval lock. */
+export const MAX_FACTUAL_REPAIR_DEPTH = 4;
+export function validateVisualProduction(job, where = job?.job_id ?? '<job>', referenceContext = {}, repairState = { chain: new Set(), depth: 0 }) {
+  const production = job?.visual_production;
+  if (!production) return [];
+  const out = [];
+  for (const e of validate(production, loadVisualProductionSchema())) out.push(issue(CODES.PRODUCTION_SCHEMA, where, `${e.path}: ${e.message}`));
+  if (out.length) return out;
+  const { semantic_master: master, factual_overlay: overlay, publication_composite: composite, factual_repair: repair, direction_discovery: discovery, production_refinement: refinement, failure_route: route, telemetry } = production;
+  const complete = [master, overlay, composite].filter(Boolean).length;
+  if (complete !== 0 && complete !== 3) out.push(issue(CODES.PRODUCTION_LINEAGE, where, 'semantic_master, factual_overlay, and publication_composite must be present together'));
+  if (complete === 3) {
+    if (overlay.payload_sha256 !== canonicalPayloadSha256(overlay.payload) || composite.semantic_master_sha256 !== master.asset_sha256 || composite.factual_overlay_asset_sha256 !== overlay.asset_sha256 || composite.requires_owner_gate !== (job.requires_owner_gate ?? false) || master.render_spec_id !== job.render_spec?.render_spec_id || master.selected_direction_id !== discovery.selection.selected_direction_id) out.push(issue(CODES.OVERLAY_PAYLOAD, where, 'overlay payload, master, or composite lineage does not match declared independent sources'));
+    const briefFacts = job.visual_brief?.factual_invariants ?? [];
+    const declared = new Set(overlay.declared_factual_invariants ?? []);
+    const exact = new Set((overlay.payload.items ?? []).map((item) => item.exact_text));
+    if (briefFacts.some((fact) => !declared.has(fact) || !exact.has(fact))) out.push(issue(CODES.OVERLAY_FACTS, where, 'every VisualBrief factual invariant must be declared and represented by an exact overlay payload item'));
+    if (repair) {
+      let prior; let priorRealPath;
+      try {
+        const priorPath = resolve(ROOT, repair.prior_production_ref);
+        if (!priorPath.startsWith(`${ROOT}/`)) { out.push(issue(CODES.FACTUAL_REPAIR_PREDECESSOR_OUTSIDE, where, 'factual_repair.prior_production_ref resolves outside the repository')); throw new Error('outside'); }
+        const stat = lstatSync(priorPath);
+        if (stat.isSymbolicLink() || !stat.isFile()) { out.push(issue(CODES.FACTUAL_REPAIR_PREDECESSOR_NOT_REGULAR, where, 'factual_repair.prior_production_ref must name a repository-contained regular file, not a symlink or other file type')); throw new Error('not regular'); }
+        priorRealPath = realpathSync(priorPath);
+        if (!priorRealPath.startsWith(`${ROOT}/`)) { out.push(issue(CODES.FACTUAL_REPAIR_PREDECESSOR_OUTSIDE, where, 'factual_repair.prior_production_ref realpath is outside the repository')); throw new Error('outside'); }
+        if (repairState.chain.has(priorRealPath)) { out.push(issue(CODES.FACTUAL_REPAIR_CYCLE, where, 'factual repair predecessor chain contains a cycle')); throw new Error('cycle'); }
+        if (repairState.depth >= MAX_FACTUAL_REPAIR_DEPTH) { out.push(issue(CODES.FACTUAL_REPAIR_DEPTH, where, `factual repair predecessor chain exceeds depth ${MAX_FACTUAL_REPAIR_DEPTH}`)); throw new Error('depth'); }
+        prior = readJSON(priorPath);
+        if (!prior?.visual_production?.semantic_master || !prior.visual_production.factual_overlay || !prior.visual_production.publication_composite) throw new Error('not a complete visual-production record');
+      } catch {
+        if (!out.some((x) => [CODES.FACTUAL_REPAIR_PREDECESSOR_NOT_REGULAR, CODES.FACTUAL_REPAIR_PREDECESSOR_OUTSIDE, CODES.FACTUAL_REPAIR_CYCLE, CODES.FACTUAL_REPAIR_DEPTH].includes(x.code))) out.push(issue(CODES.FACTUAL_REPAIR_PREDECESSOR, where, 'factual_repair.prior_production_ref must resolve to a readable prior visual-job record with complete visual_production lineage'));
+        prior = undefined;
+      }
+      if (prior) {
+        const priorIssues = validateVisualProduction(prior, repair.prior_production_ref, referenceContext, { chain: new Set([...repairState.chain, priorRealPath]), depth: repairState.depth + 1 });
+        out.push(...priorIssues.map((x) => issue(x.code, `${where} -> ${repair.prior_production_ref}`, `predecessor: ${x.message}`)));
+        const priorProduction = prior.visual_production;
+        if (master.asset_sha256 !== priorProduction.semantic_master.asset_sha256 || overlay.asset_sha256 === priorProduction.factual_overlay.asset_sha256 || composite.asset_sha256 === priorProduction.publication_composite.asset_sha256) out.push(issue(CODES.FACTUAL_REPAIR, where, 'a factual-overlay repair must preserve resolved prior master digest and replace resolved prior overlay and composite digests'));
+      }
+    }
+  } else if (repair) out.push(issue(CODES.FACTUAL_REPAIR, where, 'factual_repair requires complete master/overlay/composite lineage'));
+  const candidates = discovery.candidates ?? [];
+  if (candidates.length < 2 || candidates.length > 4 || new Set(candidates.map((x) => `${x.thesis_treatment}\u0000${x.composition_strategy}`)).size !== candidates.length) out.push(issue(CODES.DIRECTION_DISCOVERY, where, 'direction discovery needs 2-4 materially distinct thesis/composition candidates'));
+  const selectedEntries = job.render_spec?.reference_authority?.selected ?? [];
+  const selectedAuthorities = new Set(selectedEntries.map((x) => x.evaluation_id));
+  const context = { catalogRefIds: referenceContext.catalogRefIds ?? loadCatalogRefIds(), evaluations: referenceContext.evaluations ?? evaluationById() };
+  const requirements = { ...(job.visual_brief?.reference_requirements ?? {}), artifact_profile: job.artifact_profile };
+  for (const candidate of candidates) for (const id of candidate.reference_evaluation_ids ?? []) {
+    const entry = selectedEntries.find((x) => x.evaluation_id === id);
+    const evaluation = context.evaluations.get(id);
+    if (!entry || !evaluation || !assessVisualReferenceAdmissibility(evaluation, requirements, { catalogRefIds: context.catalogRefIds }).admissible) out.push(issue(CODES.DIRECTION_REFERENCE, where, 'each direction must cite an admissible authority already selected on the job; absent anchors are rejected, never invented'));
+  }
+  const selection = discovery.selection;
+  const selected = selection.selected_direction_id;
+  if ((selection.state === 'selected' && (!selected || !selection.rationale || !candidates.some((x) => x.direction_id === selected))) || (selection.state === 'open' && selected !== undefined)) out.push(issue(CODES.DIRECTION_DISCOVERY, where, 'direction selection must name a candidate and rationale only when selected'));
+  if (refinement && (selection.state !== 'selected' || refinement.selected_direction_id !== selected || refinement.local_edits.length > refinement.max_local_edits)) out.push(issue(CODES.REFINEMENT, where, 'refinement starts only after selected direction and stays within its local-edit budget'));
+  if (route && expectedVisualFailureAction(route.failure_class) !== route.next_action) out.push(issue(CODES.FAILURE_ROUTE, where, 'failure class must use the single deterministic next action'));
+  if (telemetry.edit_count !== (refinement?.local_edits.length ?? 0) || (telemetry.selected_direction_id !== undefined && telemetry.selected_direction_id !== selected) || (telemetry.accepted_asset_outcome === 'accepted') !== isApprovalLocked(job) || (isApprovalLocked(job) && telemetry.accepted_asset_outcome !== 'accepted')) out.push(issue(CODES.TELEMETRY, where, 'declared telemetry must match selected direction, refinement edits, and (only when present) lock acceptance'));
+  return out;
+}
+
 /** Validate a compiled visual job. Returns an array of issues; empty means PASS. */
 export function validateVisualJob(job, { schema = loadSchema(), profiles = loadArtifactProfiles(), brand, referenceContext } = {}) {
   const issues = [];
@@ -702,6 +794,7 @@ export function validateVisualJob(job, { schema = loadSchema(), profiles = loadA
   }
 
   issues.push(...approvalLockIssues(job, where));
+  issues.push(...validateVisualProduction(job, where, referenceContext));
 
   if (job.information_gain?.verdict === 'skip') {
     if (job.compiled_prompt !== undefined || (job.compiled_from ?? []).length > 0) {
