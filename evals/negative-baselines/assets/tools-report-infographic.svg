@@ -1,0 +1,71 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 460" width="720" height="460" role="img" aria-labelledby="t d">
+<title id="t">스프레드시트 메커니즘 → AI 사상 → 갈라지는 지점</title>
+<desc id="d">4개 모듈: 표현·비교·시뮬레이션·최적화의 메커니즘, 권한 이동(Central→End-user→Shadow), 핵심 해석(flat이지만 centralized), 그리고 이해 가능한 것과 위임 가능한 것 사이의 긴장. 실무자용 분석 인포그래픽, 모든 해석 표시는 사실이 아님을 명시.</desc>
+<style>
+  .bg { fill: #F5F1E7; }
+  .module { fill: #FFFFFF; stroke: #5B6F55; stroke-width: 1.2; }
+  .moduleAccent { fill: #FFFFFF; stroke: #C9A671; stroke-width: 1.2; }
+  .h { font-family: -apple-system, "Noto Sans KR", sans-serif; font-size: 13px; font-weight: 700; fill: #3A3630; }
+  .step { font-family: -apple-system, "Noto Sans KR", sans-serif; font-size: 11.5px; fill: #3A3630; }
+  .note { font-family: -apple-system, "Noto Sans KR", sans-serif; font-size: 10.5px; fill: #6B6558; }
+  .arrow { stroke: #8b8778; stroke-width: 1.2; fill: none; marker-end: url(#hd); }
+  .chip { fill: #EEF1E9; stroke: #5B6F55; stroke-width: 1; }
+</style>
+<defs>
+  <marker id="hd" markerWidth="7" markerHeight="7" refX="5" refY="2.5" orient="auto"><path d="M0,0 L5,2.5 L0,5 z" fill="#8b8778"/></marker>
+</defs>
+<rect class="bg" x="0" y="0" width="720" height="460"/>
+<text class="h" x="24" y="30" font-size="15">질문: 스프레드시트의 경로가 AI에도 그대로 적용되는가?</text>
+
+<!-- Module A: mechanism -->
+<rect class="module" x="24" y="50" width="320" height="130" rx="8"/>
+<text class="h" x="40" y="72">A. 스프레드시트 메커니즘</text>
+<g font-family="-apple-system, 'Noto Sans KR', sans-serif">
+  <rect class="chip" x="40" y="86" width="66" height="26" rx="4"/><text class="step" x="73" y="103" text-anchor="middle">표현</text>
+  <line class="arrow" x1="106" y1="99" x2="126" y2="99"/>
+  <rect class="chip" x="126" y="86" width="66" height="26" rx="4"/><text class="step" x="159" y="103" text-anchor="middle">비교</text>
+  <line class="arrow" x1="192" y1="99" x2="212" y2="99"/>
+  <rect class="chip" x="212" y="86" width="80" height="26" rx="4"/><text class="step" x="252" y="103" text-anchor="middle">시뮬레이션</text>
+  <line class="arrow" x1="73" y1="112" x2="73" y2="140"/>
+  <rect class="chip" x="40" y="140" width="150" height="26" rx="4"/><text class="step" x="115" y="157" text-anchor="middle">최적화 대상화</text>
+</g>
+<text class="note" x="40" y="170">1980s 금융 규제완화·LBO 확산과 시기적으로 겹침</text>
+
+<!-- Module B: authority shift -->
+<rect class="module" x="368" y="50" width="328" height="130" rx="8"/>
+<text class="h" x="384" y="72">B. 권한 이동의 반복</text>
+<g font-family="-apple-system, 'Noto Sans KR', sans-serif">
+  <rect class="chip" x="384" y="86" width="90" height="26" rx="4"/><text class="step" x="429" y="103" text-anchor="middle">Central IT/AI</text>
+  <line class="arrow" x1="474" y1="99" x2="494" y2="99"/>
+  <rect class="chip" x="494" y="86" width="100" height="26" rx="4"/><text class="step" x="544" y="103" text-anchor="middle">End-user 도구</text>
+  <line class="arrow" x1="594" y1="99" x2="612" y2="99" stroke="#C9A671" marker-end="url(#hd)"/>
+  <rect class="moduleAccent" x="384" y="140" width="290" height="26" rx="4"/>
+  <text class="step" x="529" y="157" text-anchor="middle" fill="#8a6b3a">Shadow IT → Shadow workflow (더 넓은 범위)</text>
+</g>
+
+<!-- Module C: flat vs centralized -->
+<rect class="module" x="24" y="200" width="320" height="110" rx="8"/>
+<text class="h" x="40" y="222">C. 핵심 해석 (c2, 검증 안 됨)</text>
+<text class="step" x="40" y="248">관리 범위 ↑ → 계층 ↓ (flat)</text>
+<text class="step" x="40" y="270">동시에 최고 의사결정자 가시성 ↑ (centralized)</text>
+<text class="note" x="40" y="296">span of control → span of complexity (원문 제안, 미검증 개념)</text>
+
+<!-- Module D: tension -->
+<rect class="moduleAccent" x="368" y="200" width="328" height="110" rx="8"/>
+<text class="h" x="384" y="222" fill="#8a6b3a">D. 갈라지는 지점 (반론이 만든 긴장)</text>
+<text class="step" x="384" y="248">AI가 이해할 수 있는 것</text>
+<text class="step" x="384" y="270" fill="#8a6b3a">≠ AI에게 맡길 수 있는 것</text>
+<text class="note" x="384" y="296">반론2(맥락 보존 가능성)를 완전히 기각도 수용도 하지 않음</text>
+
+<!-- synthesis arrows into a shared open question, not a resolved box -->
+<line class="arrow" x1="184" y1="180" x2="184" y2="200"/>
+<line class="arrow" x1="532" y1="180" x2="532" y2="200"/>
+<line x1="184" y1="335" x2="532" y2="335" stroke="#8b8778" stroke-width="1" stroke-dasharray="2 4"/>
+<line x1="184" y1="310" x2="184" y2="335" stroke="#8b8778" stroke-width="1" stroke-dasharray="2 4"/>
+<line x1="532" y1="310" x2="532" y2="335" stroke="#8b8778" stroke-width="1" stroke-dasharray="2 4"/>
+<rect class="module" x="184" y="345" width="348" height="60" rx="8" fill="#EFEAE0" stroke="#3A3630" stroke-dasharray="4 3"/>
+<text class="step" x="358" y="368" text-anchor="middle">열린 질문: 이해–위임 간극을</text>
+<text class="step" x="358" y="386" text-anchor="middle">누가, 어떤 기준으로 좁힐 것인가 (미해결)</text>
+
+<text class="note" x="24" y="438">source: 기업은 자신이 사용하는 도구를 닮아간다 (2026-09-03) · A/B = 원문 서술, C/D = 원문의 해석·반론 · 결론 상자는 해결이 아니라 미해결 질문</text>
+</svg>

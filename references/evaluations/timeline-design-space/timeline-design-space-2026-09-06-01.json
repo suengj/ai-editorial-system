@@ -1,0 +1,68 @@
+{
+  "schema_version": "1.0.0",
+  "modality": "visual",
+  "evaluator": {
+    "type": "agent",
+    "agent": {
+      "runtime": "claude-code",
+      "model": "claude-opus-5"
+    }
+  },
+  "evaluated_at": "2026-09-06T08:00:00Z",
+  "calibration_ref": null,
+  "profile_ref": "editorial/profiles/reference/visual.json",
+  "basis": "model_inference",
+  "authority_boundary": "craft_evidence_only",
+  "evaluation_id": "eval:timeline-design-space-2026-09-06-01",
+  "ref_id": "ref:timeline-design-space",
+  "dimensions": [
+    {
+      "dimension": "hierarchy",
+      "verdict": "adopt",
+      "note": "A timeline's scale is a decision about what the spatial dimension is allowed to claim. Proportional when the gaps carry meaning the reader needs; ordinal when only order matters. Ordinal applied to duration-critical data fails silently, which makes it the more dangerous error for an automated system: nothing about the plate looks broken.",
+      "evidence": "Full text obtained during SUE-627 research; the paper treats scale, representation and layout as independent design-space axes."
+    },
+    {
+      "dimension": "composition",
+      "verdict": "adopt",
+      "note": "A mixed scale inside one plate with no visible seam is the least recoverable failure, because the reader has no way to know which segments are measured."
+    },
+    {
+      "dimension": "artifact-suitability",
+      "verdict": "adopt",
+      "note": "Bears on visual/body-infographic and visual/analytical-graphic wherever a plate carries progression or chronology."
+    },
+    {
+      "dimension": "semantic-density",
+      "verdict": "neutral",
+      "note": "The design space is orthogonal to how much a single plate should carry."
+    }
+  ],
+  "strengths": [
+    "Turns 'timeline' from one shape into an explicit scale decision with a stated failure mode for each direction."
+  ],
+  "weaknesses": [
+    "Academic taxonomy rather than a rendered editorial artifact; it says nothing about visual restraint or mobile type floors."
+  ],
+  "applicable_to": {
+    "content_types": [
+      "research",
+      "view",
+      "news"
+    ],
+    "audiences": [
+      "domain-expert",
+      "domain-practitioner",
+      "professional-generalist"
+    ],
+    "artifacts": [
+      "visual/body-infographic",
+      "visual/analytical-graphic"
+    ],
+    "surfaces": [
+      "suengj-com"
+    ]
+  },
+  "provenance_class": "external",
+  "notes": "Used as a design-space vocabulary. Craft evidence only."
+}

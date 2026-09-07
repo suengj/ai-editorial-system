@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 300" width="640" height="300" role="img" aria-labelledby="t d">
+<title id="t">도구가 바뀌면 관리 대상이 바뀐다</title>
+<desc id="d">스프레드시트가 숫자를 프로그래밍 가능하게 만든 것처럼, AI는 업무 자체를 프로그래밍 가능한 대상으로 만들고 있다는 저자의 해석을 보여주는 단일 관계 다이어그램. 사실이 아니라 해석임.</desc>
+<style>
+  .bg { fill: #F5F1E7; }
+  .box { fill: #FFFFFF; stroke: #5B6F55; stroke-width: 1.5; }
+  .boxAlt { fill: #FFFFFF; stroke: #C9A671; stroke-width: 1.5; }
+  .label { font-family: -apple-system, "Noto Sans KR", sans-serif; font-size: 15px; fill: #3A3630; }
+  .small { font-family: -apple-system, "Noto Sans KR", sans-serif; font-size: 12px; fill: #6B6558; }
+  .arrow { stroke: #5B6F55; stroke-width: 1.5; fill: none; marker-end: url(#head); }
+  .arrowAlt { stroke: #C9A671; stroke-width: 1.5; fill: none; marker-end: url(#headAlt); }
+  .tag { font-family: -apple-system, "Noto Sans KR", sans-serif; font-size: 11px; fill: #6B6558; }
+</style>
+<defs>
+  <marker id="head" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 z" fill="#5B6F55"/></marker>
+  <marker id="headAlt" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 z" fill="#C9A671"/></marker>
+</defs>
+<rect class="bg" x="0" y="0" width="640" height="300"/>
+
+<!-- lane labels -->
+<text class="small" x="24" y="40">지난 반세기</text>
+<text class="small" x="24" y="170">지금 (저자의 해석)</text>
+
+<!-- top lane: spreadsheet -->
+<rect class="box" x="24" y="55" width="150" height="48" rx="6"/>
+<text class="label" x="99" y="84" text-anchor="middle">기업</text>
+<line class="arrow" x1="174" y1="79" x2="234" y2="79"/>
+<text class="tag" x="204" y="70" text-anchor="middle">표현·비교·시뮬레이션</text>
+<rect class="box" x="234" y="55" width="150" height="48" rx="6"/>
+<text class="label" x="309" y="84" text-anchor="middle">스프레드시트</text>
+<line class="arrow" x1="384" y1="79" x2="444" y2="79"/>
+<rect class="box" x="444" y="55" width="172" height="48" rx="6"/>
+<text class="label" x="530" y="78" text-anchor="middle">최적화 대상</text>
+<text class="small" x="530" y="94" text-anchor="middle">= 숫자</text>
+
+<!-- bottom lane: AI (accent, marked as interpretation) -->
+<rect class="boxAlt" x="24" y="185" width="150" height="48" rx="6"/>
+<text class="label" x="99" y="214" text-anchor="middle">업무</text>
+<line class="arrowAlt" x1="174" y1="209" x2="234" y2="209"/>
+<text class="tag" x="204" y="200" text-anchor="middle">(같은 경로라는 해석)</text>
+<rect class="boxAlt" x="234" y="185" width="150" height="48" rx="6"/>
+<text class="label" x="309" y="214" text-anchor="middle">AI</text>
+<line class="arrowAlt" x1="384" y1="209" x2="444" y2="209"/>
+<rect class="boxAlt" x="444" y="185" width="172" height="48" rx="6"/>
+<text class="label" x="530" y="208" text-anchor="middle">최적화 대상</text>
+<text class="small" x="530" y="224" text-anchor="middle">= 업무 자체</text>
+
+<!-- vertical linking dashed to show the analogy is the claim -->
+<line x1="530" y1="103" x2="530" y2="185" stroke="#C9A671" stroke-width="1.5" stroke-dasharray="3 4"/>
+<text class="tag" x="616" y="145" text-anchor="end" fill="#8a6b3a">해석 (c1)</text>
+
+<text class="small" x="24" y="272">source: 기업은 자신이 사용하는 도구를 닮아간다 (2026-09-03) · 실선 = 원문이 서술한 것, 점선 = 저자의 해석적 연결</text>
+</svg>

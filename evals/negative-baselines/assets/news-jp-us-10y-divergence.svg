@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 620 360" role="img" aria-labelledby="title desc">
+  <title id="title">일본 10년물은 되돌리고, 미국 10년물은 버틴다</title>
+  <desc id="desc">2026년 9월 1일부터 4일까지 일본과 미국 10년 국채금리 변화(재확인된 관측치 3개). 일본은 3% 돌파 후 이틀 연속 하락, 미국은 4.8% 부근에서 거의 그대로. Period: 2026-09-01, 2026-09-03, 2026-09-04 (재확인 조회일 2026-09-05; 9/5 관측치 없음). Source: canonical source(2026-09-02) + TradingEconomics 재확인(2026-09-05 조회)</desc>
+  <style>
+    .grid { stroke: currentColor; stroke-opacity: 0.15; stroke-width: 1; }
+    .axis { stroke: currentColor; stroke-opacity: 0.5; stroke-width: 1; }
+    .series { fill: none; stroke: currentColor; stroke-width: 2; }
+    .point { fill: currentColor; }
+    text { font-family: Pretendard, system-ui, sans-serif; fill: currentColor; }
+    .tick { font-size: 11px; fill-opacity: 0.7; }
+    .label { font-size: 12px; }
+    .heading { font-size: 15px; font-weight: 600; }
+    .note { font-size: 11px; fill-opacity: 0.7; }
+  </style>
+  <text class="heading" x="64.00" y="24">일본 10년물은 되돌리고, 미국 10년물은 버틴다</text>
+  <text class="note" x="64.00" y="40">2026-09-01 · 09-03 · 09-04 재확인 관측치 (조회일 2026-09-05; 9/5 관측치 없음) · 10년 국채금리 (%)</text>
+  <line class="grid" x1="64.00" y1="304.00" x2="538.00" y2="304.00"/>
+  <text class="tick" x="56.00" y="308.00" text-anchor="end">2%</text>
+  <line class="grid" x1="64.00" y1="240.00" x2="538.00" y2="240.00"/>
+  <text class="tick" x="56.00" y="244.00" text-anchor="end">3%</text>
+  <line class="grid" x1="64.00" y1="176.00" x2="538.00" y2="176.00"/>
+  <text class="tick" x="56.00" y="180.00" text-anchor="end">4%</text>
+  <line class="grid" x1="64.00" y1="112.00" x2="538.00" y2="112.00"/>
+  <text class="tick" x="56.00" y="116.00" text-anchor="end">5%</text>
+  <line class="grid" x1="64.00" y1="48.00" x2="538.00" y2="48.00"/>
+  <text class="tick" x="56.00" y="52.00" text-anchor="end">6%</text>
+  <line class="axis" x1="64.00" y1="304.00" x2="538.00" y2="304.00"/>
+  <text class="tick" x="64.00" y="324.00" text-anchor="middle">9/1</text>
+  <text class="tick" x="380.00" y="324.00" text-anchor="middle">9/3</text>
+  <text class="tick" x="538.00" y="324.00" text-anchor="middle">9/4</text>
+  <path class="series" stroke-dasharray="none" d="M64.00,240.00 L380.00,242.56 L538.00,246.40"/>
+  <circle class="point" cx="64.00" cy="240.00" r="2.5"/>
+  <circle class="point" cx="380.00" cy="242.56" r="2.5"/>
+  <circle class="point" cx="538.00" cy="246.40" r="2.5"/>
+  <text class="label" x="544.00" y="250.40">일본 10Y</text>
+  <path class="series" stroke-dasharray="6 4" d="M64.00,125.06 L380.00,126.08 L538.00,127.36"/>
+  <circle class="point" cx="64.00" cy="125.06" r="2.5"/>
+  <circle class="point" cx="380.00" cy="126.08" r="2.5"/>
+  <circle class="point" cx="538.00" cy="127.36" r="2.5"/>
+  <text class="label" x="544.00" y="131.36">미국 10Y</text>
+  <text class="note" x="64.00" y="348.00">날짜(9월, 재확인 관측치 3개) · canonical source(2026-09-02) + TradingEconomics 재확인(2026-09-05 조회)</text>
+</svg>

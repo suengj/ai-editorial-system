@@ -1,0 +1,85 @@
+{
+  "schema_version": "1.0.0",
+  "modality": "visual",
+  "evaluator": {
+    "type": "agent",
+    "agent": {
+      "runtime": "claude-code",
+      "model": "claude-opus-5"
+    }
+  },
+  "evaluated_at": "2026-09-06T08:00:00Z",
+  "calibration_ref": null,
+  "profile_ref": "editorial/profiles/reference/visual.json",
+  "basis": "model_inference",
+  "authority_boundary": "craft_evidence_only",
+  "evaluation_id": "eval:sue570-body-infographic-2026-09-06-01",
+  "ref_id": "ref:sue570-body-infographic",
+  "dimensions": [
+    {
+      "dimension": "composition",
+      "verdict": "avoid",
+      "note": "Owner verdict (human, Linear SUE-570 §D): infographic composition is a material failure. The mechanism, read from source: four modules at hand-assigned coordinates in a 2x2 arrangement whose axes encode nothing. It borrows the appearance of a matrix without the encoding, which is worse than no grid because it implies a comparison that does not exist. The modules are lettered A/B/C/D precisely because the geometry cannot say what the order is.",
+      "evidence": "SVG source read 2026-09-06: modules at (24,50), (368,50), (24,200), (368,200). Failure signature F1."
+    },
+    {
+      "dimension": "visual-density",
+      "verdict": "avoid",
+      "note": "Twelve drawn enclosures for four load-bearing modules — cards containing chips containing text. Failure signature F2.",
+      "evidence": "13 rect elements including background; 4 module cards, 7 chips/accent bars, 1 dashed conclusion box."
+    },
+    {
+      "dimension": "semantic-density",
+      "verdict": "avoid",
+      "note": "Semantically dense in element count but not in relationships: two of four modules contain no geometry at all, only prose inside a rectangle, so the first-read payload equals the sentences the plate was derived from. Failure signature F3.",
+      "evidence": "Modules C and D consist solely of text elements inside a bordered rect."
+    },
+    {
+      "dimension": "hierarchy",
+      "verdict": "avoid",
+      "note": "One plate answering four primary questions plus a fifth it explicitly declines to answer. Failure signature F4.",
+      "evidence": "In-frame question is about whether the spreadsheet path applies to AI; modules answer mechanism, authority shift, flat-vs-centralized, and where the analogy breaks."
+    },
+    {
+      "dimension": "label-text-strategy",
+      "verdict": "avoid",
+      "note": "22 text elements against the profile's stated label_count_ceiling of 8, and the article title plus publication date baked into the artwork where the caption layer should own them. Failure signatures F6 and F7.",
+      "evidence": "visual-body-infographic.json text_policy.label_count_ceiling is 8; nothing in the producing path checked it."
+    },
+    {
+      "dimension": "spacing",
+      "verdict": "avoid",
+      "note": "Fixed viewBox with no breakpoint, so the only response to a narrow viewport is uniform scaling: module labels render at roughly 5.7px and notes at 5.2px on a ~358px figure width. Failure signature F5.",
+      "evidence": "720px intrinsic width against suengj.com --width-article of 42rem; scale 0.497 at a ~390px viewport."
+    },
+    {
+      "dimension": "artifact-suitability",
+      "verdict": "avoid",
+      "note": "Retained as negative evidence for visual/body-infographic. It is citable as a failure and must never be selected as generation evidence."
+    }
+  ],
+  "strengths": [],
+  "weaknesses": [
+    "Spatial position encodes no relation; the layout could be permuted without changing what the plate asserts.",
+    "More drawn containers than load-bearing modules.",
+    "Half the plate is prose inside rectangles.",
+    "Fails the ~390px mobile gate by roughly a factor of two, with no mobile strategy attempted.",
+    "Mutable article title and date baked into artwork."
+  ],
+  "applicable_to": {
+    "content_types": [
+      "view"
+    ],
+    "audiences": [
+      "domain-practitioner"
+    ],
+    "artifacts": [
+      "visual/body-infographic"
+    ],
+    "surfaces": [
+      "suengj-com"
+    ]
+  },
+  "provenance_class": "generated_output",
+  "notes": "NEGATIVE evidence. Basis corrected 2026-09-06 after independent review: the owner's explicit judgement (Linear SUE-570 §D) is that infographic composition is a material failure, and that verdict is human. The per-dimension verdicts below — spacing, hierarchy, visual-density, label-text-strategy — are this agent's reading of the SVG source, not things the owner said, so the record's basis is model_inference and claiming explicit_human_feedback for all of them overstated it. Deliberately carries no promotion block: a generated_output reference without promotion is excluded from the positive selection path, which is the mechanism that keeps SUE-570 output from becoming a GOOD reference. Full analysis in evals/negative-baselines/SUE-570-INFOGRAPHIC-FORENSICS.md."
+}

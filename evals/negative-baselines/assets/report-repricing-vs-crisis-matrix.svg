@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 460" role="img" aria-labelledby="title desc">
+  <title id="title">Term premium 재가격인가, credit crisis인가 — 2x2 진단 매트릭스</title>
+  <desc id="desc">국채금리 방향(행)과 신용스프레드 반응(열)을 교차한 진단 매트릭스. 현재는 국채금리 상승 + 신용스프레드 안정 칸(discount-rate shock)에 위치. 신용스프레드 값은 FRED BAMLC8A0C15PY, 2026-09-05 조회 기준 1.01~1.03%.</desc>
+  <style>
+    text { font-family: Pretendard, system-ui, sans-serif; fill: currentColor; }
+    .heading { font-size: 17px; font-weight: 600; }
+    .note { font-size: 11px; fill-opacity: 0.65; }
+    .axisLabel { font-size: 12px; fill-opacity: 0.75; font-weight: 600; }
+    .colHeader { font-size: 12px; fill-opacity: 0.85; }
+    .rowHeader { font-size: 12px; fill-opacity: 0.85; }
+    .cellLabel { font-size: 14px; font-weight: 600; }
+    .cellLabelActive { font-size: 15px; font-weight: 700; }
+    .cellDetail { font-size: 11px; fill-opacity: 0.7; }
+    .cellNote { font-size: 10.5px; fill-opacity: 0.85; font-weight: 600; }
+  </style>
+  <text class="heading" x="24" y="30">Term premium 재가격인가, credit crisis인가</text>
+  <text class="note" x="24" y="48">2x2 진단 매트릭스 · 원문(2026-09-02) 진단표 + 2026-09-05 재확인</text>
+
+  <!-- column axis label -->
+  <text class="axisLabel" x="450" y="90" text-anchor="middle">신용스프레드 (열)</text>
+  <text class="colHeader" x="330" y="110" text-anchor="middle">안정</text>
+  <text class="colHeader" x="570" y="110" text-anchor="middle">급등</text>
+
+  <!-- row axis label (rotated) -->
+  <text class="axisLabel" x="40" y="250" text-anchor="middle" transform="rotate(-90 40 250)">국채금리 (행)</text>
+  <text class="rowHeader" x="198" y="189" text-anchor="end">상승</text>
+  <text class="rowHeader" x="198" y="319" text-anchor="end">하락</text>
+
+
+  <rect x="210" y="120" width="240" height="130" fill="currentColor" fill-opacity="0.16" stroke="currentColor" stroke-opacity="0.4" stroke-width="2.5"/>
+  <text x="330" y="179" text-anchor="middle" class="cellLabelActive">discount-rate shock</text>
+  <text x="330" y="201" text-anchor="middle" class="cellDetail">Treasury 금리 상승 + 스프레드 안정</text>
+  <text x="330" y="223" text-anchor="middle" class="cellNote">현재 위치 · OAS 1.01~1.03% (2026-09-05 조회)</text>
+
+  <rect x="450" y="120" width="240" height="130" fill="currentColor" fill-opacity="0.06" stroke="currentColor" stroke-opacity="0.4" stroke-width="1"/>
+  <text x="570" y="179" text-anchor="middle" class="cellLabel">financing stress</text>
+  <text x="570" y="201" text-anchor="middle" class="cellDetail">Treasury 금리 상승 + 스프레드 급등</text>
+  
+
+  <rect x="210" y="250" width="240" height="130" fill="currentColor" fill-opacity="0.02" stroke="currentColor" stroke-opacity="0.4" stroke-width="1"/>
+  <text x="330" y="309" text-anchor="middle" class="cellLabel">해당 없음</text>
+  <text x="330" y="331" text-anchor="middle" class="cellDetail">원문 진단표에 없음</text>
+  
+
+  <rect x="450" y="250" width="240" height="130" fill="currentColor" fill-opacity="0.06" stroke="currentColor" stroke-opacity="0.4" stroke-width="1"/>
+  <text x="570" y="309" text-anchor="middle" class="cellLabel">경기·신용 충격</text>
+  <text x="570" y="331" text-anchor="middle" class="cellDetail">Treasury 금리 하락 + 스프레드 급등</text>
+  
+
+  <text class="note" x="24" y="444">진하게 표시된 칸이 2026-09-05 재확인 시점의 실제 위치. 빈 칸은 원문이 다루지 않은 조합으로, 임의로 채우지 않음.</text>
+</svg>

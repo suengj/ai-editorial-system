@@ -1,0 +1,81 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="410" role="img" aria-labelledby="pc-t pc-d">
+  <title id="pc-t">통제된 워크플로와 그림자 워크플로 — 되돌아오는 연결선의 유무</title>
+  <desc id="pc-d">경계선 세 개와 두 종류의 연결선으로 이루어진 구조도다. 첫째 경계는 중앙 AI 플랫폼을 감싼다. 둘째 경계는 통제 계층을 감싸며, 그 안에 identity·permission·policy와 audit trail·evaluation이 개별 상자 없이 목록으로 놓인다. 셋째 경계는 통제 계층의 권한이 미치는 범위이며 둘째 경계를 품는다. 통제된 워크플로는 이 범위 안쪽에, 그림자 워크플로는 바깥쪽에 놓인다. 경계선은 오직 포함 관계에만 쓰이고 다른 용도로 재사용되지 않는다. 실선 화살표는 실행, 곧 작업이 이동하는 흐름만을 나타낸다. 플랫폼에서 통제 계층으로 실선이 들어가고, 통제 계층에서 통제된 워크플로로 '실행' 레이블이 붙은 실선이 내려간다. 이와 구별되는 별도의 채널로, 통제된 워크플로에서 통제 계층으로 되돌아가는 점선이 있으며 끝에 화살촉 대신 가로 막대를 두어 방향과 성격을 달리한다. 이 점선에는 '감사·권한 보고' 레이블이 직접 붙는다. 그림자 워크플로에는 플랫폼에서 경계를 우회해 바깥으로 돌아 들어오는 실선 실행 화살표만 있고, 통제 계층으로 되돌아가는 점선은 그려져 있지 않다. 그 부재가 이 그림의 핵심이다. 좁은 화면에서는 같은 네 요소가 중앙 AI 플랫폼, 통제 계층, 통제된 워크플로, 그림자 워크플로 순으로 위에서 아래로 다시 쌓이며, 경계 세 개와 연결선 세 갈래가 모두 유지되고 글자 크기는 그대로다. 이 구조는 관측이 아니라 해석적 모델이다.</desc>
+  <defs>
+    <marker id="pc-ar" markerWidth="12" markerHeight="10" refX="11" refY="5" orient="auto" markerUnits="userSpaceOnUse">
+      <path d="M0,0 L12,5 L0,10 Z" fill="currentColor" fill-opacity="0.65"/>
+    </marker>
+  </defs>
+  <style>
+    text { font-family: Pretendard, "Apple SD Gothic Neo", "Noto Sans KR", system-ui, sans-serif; fill: currentColor; }
+    .lay-w { display: none; }
+    .bound { fill: none; stroke: currentColor; stroke-opacity: 0.34; stroke-width: 1; }
+    .bound-reach { fill: none; stroke: currentColor; stroke-opacity: 0.24; stroke-width: 1; }
+    .flow { fill: none; stroke: currentColor; stroke-opacity: 0.65; stroke-width: 1.5; }
+    .auth { fill: none; stroke: #C9A671; stroke-width: 1.6; stroke-dasharray: 6 4; }
+    .auth-term { stroke: #C9A671; stroke-width: 2.4; }
+    .t-mod { font-size: 16px; font-weight: 600; }
+    .t-list { font-size: 15px; fill-opacity: 0.72; }
+    .t-conn { font-size: 15px; fill-opacity: 0.85; }
+
+    /* narrow layout (default) — 358px article column */
+    .c-plat  { transform: translate(140px, 48px); text-anchor: middle; }
+    .c-layer { transform: translate(72px, 160px); text-anchor: start; }
+    .c-fn1   { transform: translate(72px, 188px); text-anchor: start; }
+    .c-fn2   { transform: translate(72px, 210px); text-anchor: start; }
+    .c-gov   { transform: translate(72px, 300px); text-anchor: start; }
+    .c-run   { transform: translate(100px, 262px); text-anchor: start; }
+    .c-auth  { transform: translate(200px, 280px); text-anchor: start; }
+    .c-shad  { transform: translate(136px, 378px); text-anchor: start; }
+    .r-plat  { transform: translate(40px, 8px); }
+    .r-reach { transform: translate(40px, 120px); }
+    .r-ctrl  { transform: translate(56px, 132px); }
+
+    /* wide layout — 672px article column */
+    @media (min-width: 640px) {
+      svg { height: 320px; }
+      .lay-n { display: none; }
+      .lay-w { display: block; }
+      .c-plat  { transform: translate(108px, 100px); text-anchor: middle; }
+      .c-layer { transform: translate(296px, 60px); text-anchor: start; }
+      .c-fn1   { transform: translate(296px, 88px); text-anchor: start; }
+      .c-fn2   { transform: translate(296px, 110px); text-anchor: start; }
+      .c-gov   { transform: translate(296px, 200px); text-anchor: start; }
+      .c-run   { transform: translate(324px, 168px); text-anchor: start; }
+      .c-auth  { transform: translate(434px, 214px); text-anchor: start; }
+      .c-shad  { transform: translate(356px, 288px); text-anchor: start; }
+      .r-plat  { transform: translate(8px, 60px); }
+      .r-reach { transform: translate(264px, 16px); }
+      .r-ctrl  { transform: translate(280px, 32px); }
+    }
+  </style>
+
+  <rect class="bound-reach r-reach" x="0" y="0" width="306" height="210"/>
+  <rect class="bound r-plat" x="0" y="0" width="200" height="68"/>
+  <rect class="bound r-ctrl" x="0" y="0" width="274" height="100"/>
+
+  <g class="lay-n">
+    <line class="flow" x1="140" y1="76" x2="140" y2="124" marker-end="url(#pc-ar)"/>
+    <line class="flow" x1="88" y1="232" x2="88" y2="284" marker-end="url(#pc-ar)"/>
+    <path class="auth" d="M210,294 L320,294 L320,246"/>
+    <line class="auth-term" x1="310" y1="246" x2="330" y2="246"/>
+    <path class="flow" d="M40,44 L22,44 L22,372 L120,372" marker-end="url(#pc-ar)"/>
+  </g>
+
+  <g class="lay-w">
+    <line class="flow" x1="208" y1="92" x2="268" y2="92" marker-end="url(#pc-ar)"/>
+    <line class="flow" x1="312" y1="132" x2="312" y2="180" marker-end="url(#pc-ar)"/>
+    <path class="auth" d="M430,192 L500,192 L500,140"/>
+    <line class="auth-term" x1="490" y1="140" x2="510" y2="140"/>
+    <path class="flow" d="M108,128 L108,282 L340,282" marker-end="url(#pc-ar)"/>
+  </g>
+
+  <text class="t-mod c-plat">중앙 AI 플랫폼</text>
+  <text class="t-mod c-layer">통제 계층</text>
+  <text class="t-list c-fn1">identity·permission · policy</text>
+  <text class="t-list c-fn2">audit trail · evaluation</text>
+  <text class="t-mod c-gov">통제된 워크플로</text>
+  <text class="t-conn c-run">실행</text>
+  <text class="t-conn c-auth">감사·권한 보고</text>
+  <text class="t-mod c-shad">그림자 워크플로</text>
+</svg>
