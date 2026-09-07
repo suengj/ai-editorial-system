@@ -82,7 +82,16 @@ function parseList(lines, start, indent) {
     if (!trimmed.startsWith('- ')) break;
 
     const rest = trimmed.slice(2).trim();
-    if (rest.includes(': ') || rest.endsWith(':')) {
+    // A quoted scalar is a scalar even when it contains ": ". Checking the
+    // map shape first would silently turn `- "one action: KEEP"` into a map.
+    const q = rest[0];
+    if (q === '"' || q === "'") {
+      if (rest.length < 2 || rest[rest.length - 1] !== q) {
+        throw new Error(`unterminated quoted list item at line ${i + 1}: ${line}`);
+      }
+    }
+    const quoted = q === '"' || q === "'";
+    if (!quoted && (rest.includes(': ') || rest.endsWith(':'))) {
       // A list of maps: re-parse this item's key plus any following indented keys.
       const itemIndent = ind + 2;
       const synthetic = [' '.repeat(itemIndent) + rest];
