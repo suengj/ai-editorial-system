@@ -1,0 +1,74 @@
+{
+  "schema_version": "1.0.0",
+  "review_id": "l1:sue570-pilot-source-a-2026-09-05",
+  "subject": {
+    "kind": "corpus_entry",
+    "ref": "content/editorial/sue570-pilot-tools-report.md (suengj-com pub repo)",
+    "content_type": "research"
+  },
+  "comparison": {
+    "mode": "pairwise",
+    "references": [
+      {
+        "ref": "content/views/companies-become-like-the-tools-they-use.md (suengj-com pub repo)",
+        "provenance_class": "owner_created",
+        "content_type": "view"
+      }
+    ],
+    "same_content_type": false,
+    "cross_cutting_dimension": "synthesis-independence",
+    "anti_collapse": {
+      "triggered": false,
+      "note": "The comparison reference is the canonical, already-published (status: published) source article this pilot's three variants are derived from — provenance_class owner_created, not generated_output — so the generated-output-monoculture rule does not apply."
+    }
+  },
+  "dimensions": [
+    {
+      "id": "thesis-worth",
+      "verdict": "tie",
+      "evidence_span": "Reference: 스프레드시트가 기업을 최적화 대상으로 바꿨다는 주장. Subject (report) opens with an explicit question/thesis pair: '스프레드시트가 기업 운영 방식을 바꾼 경로를 메커니즘으로 분해하면, 그 경로가 지금 AI 도입에도 그대로 적용되는가, 아니면 어디서 갈라지는가?'",
+      "rationale": "Both stake a position a reader could disagree with before any supporting material appears. Not the declared cross-cutting dimension for this cross-type comparison, so recorded as tie rather than a decided win/loss."
+    },
+    {
+      "id": "synthesis-independence",
+      "verdict": "worse",
+      "evidence_span": "Reference builds its own connective mechanism across the four-step chain (표현→비교→시뮬레이션→최적화) end to end and states its own qualification on causal strength ('스프레드시트가 금융화를 만들었다고 보기는 어렵다'). Subject (report) restates the same four-step chain in a compressed table and adds one artifact the reference does not have (a spreadsheet→AI mapping table), but its '실무자가 짚어야 할 약점' sections mostly narrow or qualify the reference's own claims rather than construct new connective material the reference does not already contain.",
+      "rationale": "This is the declared cross_cutting_dimension, so a decided verdict is permitted here even though content types differ. recreate.json permits rebuilding the argument path for a new audience; the report variant's genuinely new contribution is organizational (tables, per-counterargument structure) rather than a new synthetic claim — an honest 'worse' on pure synthesis-independence, consistent with what recreate is supposed to do (restructure, not invent), but worth a human editorial look at whether the mapping table should be pushed further into genuinely new synthesis."
+    },
+    {
+      "id": "language-native-prose",
+      "verdict": "tie",
+      "evidence_span": "Both read as native, hedged Korean expository prose. Reference: '스프레드시트가 금융화를 만들었다고 보기는 어렵다.' Report: '이 메커니즘은 그럴듯하지만, 원문에 실증 데이터는 없다.'",
+      "rationale": "No stilted phrasing, unnatural word order, or machine-translation tell found in either text. Not the declared cross-cutting dimension, recorded as tie per the cross-type comparison rule."
+    },
+    {
+      "id": "formulaic-ai-shaped",
+      "verdict": "abstain",
+      "evidence_span": "All three source-a variants (news, report, child) end on a near-identical rhetorical move: a bolded or explicitly flagged closing sentence reframing the piece as an open question rather than a resolved conclusion ('이건 결론이 아니라...', '아직 답이 없다', '미해결 질문'). This shape repeats three times within one pilot run, by the same generating process, though the reference itself also ends on an open, unresolved note ('그렇기 때문에 역설적으로 이번에는 무엇을 보지 못하는지 알아내기가 더 어려울 수 있다'), so the device may simply be inherited from the source rather than a new house-style tic.",
+      "rationale": "Not the declared cross-cutting dimension, so recorded as abstain per the cross-type comparison rule — but the underlying observation (repeated closing device across n=3 same-run outputs) is genuine enough to flag as a feedback candidate rather than silently dropped. CORRECTION (independent review, 2026-09-05): this previously said 'see ../05-feedback/', a directory that does not exist and was never created. This closing-device observation was never persisted as its own feedback record; it remains recorded only here. The two feedback candidates from this pilot that were persisted are at feedback/records/sue570-pilot-source-a-adapt-axis-scope-2026-09-05.json and feedback/records/sue570-pilot-source-a-body-infographic-module-count-2026-09-05.json, neither of which covers this closing-device pattern."
+    },
+    {
+      "id": "audience-fit",
+      "verdict": "abstain",
+      "evidence_span": "Report keeps 'span of control', 'shadow IT/workflow', and the Goal/Task/Context/Tool/Permission/Evaluation/Agent vocabulary unglossed, matching audience/domain-practitioner.json's jargon_tolerance: high; the reference was never audience-targeted through V2's axis system at all (predates the audience axis), so there is no comparable audience-fit target to score it against.",
+      "rationale": "Not the declared cross-cutting dimension; also structurally hard to score because the reference carries no audience axis value to compare against — abstaining is honest rather than inventing an implicit audience for the reference."
+    }
+  ],
+  "integrity": {
+    "status": "concern",
+    "evidence_span": "All three source-a variants preserve c1/c2/c3 as interpretation and never state them as fact — checked directly against the reference's own answer.claims block; no regression found there. The integrity concern is structural, not a claim-status regression: the L0 run in ../03-l0/ shows all three variants triggering the same 'overclaim: 반드시' false-positive pattern because they all carry forward the same negated source claim c3 ('...만든다고 볼 이유는 없다'). Manual re-reading of the flagged spans in all three drafts confirms this is a gate-mechanics false positive, not an actual overclaim — but it means the mechanical L0 gate cannot currently distinguish this pilot's genuine hedging from a real overclaim, which matters for any future automated acceptance decision on similar recreate/adapt work carrying forward a negated interpretive claim. Also noted: visual-job-report.json's own qa.density_recheck is 'fail' (self-disclosed in that record), an artifact-side integrity-adjacent concern already surfaced by the job itself rather than discovered fresh here."
+  },
+  "outcome": "ARGUMENT_REWORK",
+  "routes_to": "frame",
+  "reviewed_at": "2026-09-05T00:00:00Z",
+  "reviewer": {
+    "type": "agent",
+    "agent": {
+      "provider": "anthropic",
+      "model": "claude-sonnet-5",
+      "model_version": "claude-sonnet-5"
+    }
+  },
+  "final_authority": "human",
+  "notes": "SUE-570 pilot, Source A (evals/dogfood/2026-09-05-sue570-pilot/source-a/). This is an agent-run comparative review with no human review behind it — nothing here is or implies owner acceptance, and final_authority stays human per schema. All three source-a variants and this review itself carry owner_verdict: unknown throughout, and stay unknown until a human says otherwise. routes_to 'frame' reflects the synthesis-independence finding (the report variant's mapping table could be pushed into genuinely new synthesis rather than staying primarily organizational) — a real, if modest, finding, not the L0 gate-mechanics or module-counting issues, which are recorded separately as V2-tooling feedback rather than as an article-framing rework item -- the module-counting issue is persisted at feedback/records/sue570-pilot-source-a-body-infographic-module-count-2026-09-05.json (CORRECTION, independent review, 2026-09-05: this previously said 'in ../05-feedback/', a directory that does not exist; the L0 gate-mechanics issues were never persisted as their own feedback records and remain recorded only in 03-l0/l0-result.txt)."
+}

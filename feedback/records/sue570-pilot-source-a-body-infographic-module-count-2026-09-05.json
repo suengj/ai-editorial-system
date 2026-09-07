@@ -1,0 +1,36 @@
+{
+  "schema_version": "1.0.0",
+  "feedback_id": "feedback:sue570-pilot-source-a-body-infographic-module-count-2026-09-05",
+  "created_at": "2026-09-05T00:00:00Z",
+  "subject": {
+    "kind": "artifact",
+    "ref": "evals/dogfood/2026-09-05-sue570-pilot/source-a/02-visual/visual-job-report.json",
+    "intent_ref": "intent:2026-09-05-sue570-pilot-source-a-report"
+  },
+  "evaluator": {
+    "type": "agent",
+    "agent": {
+      "runtime": "claude-code",
+      "model": "claude-sonnet-5",
+      "version": "claude-sonnet-5"
+    }
+  },
+  "basis": "model_inference",
+  "signal": "objective_quality",
+  "verdict": "mixed",
+  "owner_verdict": "unknown",
+  "statement": "editorial/profiles/artifact/visual-body-infographic.json sets composition.supporting_modules_max to 4 and its split_rule triggers when 'more than 4 major modules compete for attention'. This job's real topology (produced by an actual scripts/lib/chart-renderer.mjs renderDiagram() run, archived at evals/dogfood/2026-09-05-sue570-pilot/source-a/02-visual/report-diagram.mmd) has 8 nodes and 7 edges — the honest raw shape of the source article's argument (a 4-step mechanism chain plus a 3-step authority-shift chain plus one convergence node). The rendered SVG collapses this into 4 bordered top-level boxes, each containing 2-4 short internal labels, to satisfy supporting_modules_max literally. Nothing in visual-body-infographic.json's composition, split_rule, or acceptance sections defines whether 'module' means a top-level bordered region (this job's reading) or a leaf semantic unit (which would put this job at 8, well over the cap and past its own split_rule trigger). This job's own qa.density_recheck is honestly recorded as 'fail' and status 'qa_fail' rather than resolving the ambiguity unilaterally in the job's favor.",
+  "routing": {
+    "layer": "calibration",
+    "modality_layer": "VISUAL composition — visual/body-infographic supporting_modules_max ambiguity (top-level module vs. leaf node)",
+    "confidence": "medium",
+    "abstained": false,
+    "rationale": "editorial/feedback-routing.json's composition layer owns whether 'the composition does not clarify the semantic spec it was given, independent of brand tokens or rendering mechanics' — this is exactly that kind of layout/arrangement question, not a renderer defect (the renderer was run correctly and honestly disclosed as a hybrid hand-authoring step) and not a brand_profile issue (palette and materiality were followed correctly). Confidence is medium: this may already have an intended reading the profile author holds but did not write down, rather than a genuine unresolved gap — a single job re-interpreting an ambiguous term is not yet evidence the term needs to change, only evidence it should be written down explicitly one way or the other."
+  },
+  "scope": "task_local",
+  "calibration_ref": null,
+  "evidence_links": [
+    "job:sue570-pilot-source-a-report-infographic",
+    "evals/dogfood/2026-09-05-sue570-pilot/source-a/02-visual/report-diagram.mmd"
+  ]
+}

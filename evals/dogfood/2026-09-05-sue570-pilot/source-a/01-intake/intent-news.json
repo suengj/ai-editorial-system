@@ -1,0 +1,77 @@
+{
+  "schema_version": "2.0.0",
+  "intent_id": "intent:2026-09-05-sue570-pilot-source-a-news",
+  "created_at": "2026-09-05T00:00:00Z",
+  "request": {
+    "utterance": "SUE-570 파일럿: '기업은 자신이 사용하는 도구를 닮아간다' 글을 일반 독자용 뉴스 브리프로 재구성해줘. suengj.com 편집 레인에 초안으로, 새 사건을 만들지 말고 원문의 논지 관련성으로 리드를 잡아줘.",
+    "language": "ko",
+    "received_by": "claude-code",
+    "received_at": "2026-09-05T00:00:00Z"
+  },
+  "axes": {
+    "transformation": {
+      "value": "recreate",
+      "state": "confirmed",
+      "profile_ref": "editorial/profiles/transformation/recreate.json",
+      "basis": "utterance asks to rebuild the piece for a new audience (\"일반 독자용\") rather than reword it — the direct sense of transformation/recreate.json; structure is rebuilt (fast hierarchy, no mechanical mirroring of the source's section order per recreate's structure_rule)."
+    },
+    "content_type": {
+      "value": "news",
+      "state": "confirmed",
+      "profile_ref": "editorial/profiles/content/news.json",
+      "basis": "utterance names \"뉴스 브리프\" explicitly and the publication repo's Lane 2 editorial_product news_brief maps onto this content type's register (compressed, event-led framing, fact/interpretation separation)."
+    },
+    "audience": {
+      "value": "general-reader",
+      "state": "confirmed",
+      "profile_ref": "editorial/profiles/audience/general-reader.json",
+      "basis": "utterance says \"일반 독자용\" (for a general reader) — matches audience/general-reader.json's low jargon_tolerance and no assumed domain familiarity.",
+      "traits": {
+        "expertise": "novice",
+        "attention_context": "reading",
+        "jargon_tolerance": "low"
+      }
+    },
+    "surface": {
+      "value": "suengj-com",
+      "state": "confirmed",
+      "profile_ref": "editorial/profiles/surface/suengj-com.json",
+      "basis": "utterance says \"suengj.com 편집 레인\" naming the publication surface directly."
+    },
+    "artifacts": [
+      {
+        "value": "text/article",
+        "state": "confirmed",
+        "basis": "utterance asks for a written brief; text/article is the planned text-artifact id in editorial/profiles/axes.json — governed by article.schema.json (V1) pending the text/* artifact profiles."
+      },
+      {
+        "value": "visual/explanatory-diagram",
+        "state": "confirmed",
+        "profile_ref": "editorial/profiles/artifact/visual-explanatory-diagram.json",
+        "basis": "the news register needs a fast-scannable single-relationship visual (one analogy: spreadsheet made numbers programmable, AI is interpreted as making work itself programmable), not an evidence chart (no plottable numeric series exists in this argumentative source) and not a dense multi-module infographic (that would over-serve a general reader per news.json's 'compressed, event-led' register).",
+        "count": 1
+      }
+    ]
+  },
+  "inputs": {
+    "sources": [
+      {
+        "source_id": "src:repo:content/views/companies-become-like-the-tools-they-use.md",
+        "state": "confirmed",
+        "note": "The canonical, already-published (status: published) source in the publication repo suengj-com. Not modified by this pilot. Its answer.claims block (c1, c2, c3, all kind: interpretation) is this run's factual-integrity baseline."
+      }
+    ],
+    "references": []
+  },
+  "constraints": {
+    "output_language": "ko"
+  },
+  "overrides": [],
+  "clarification": {
+    "required": [],
+    "asked": [],
+    "resolution": "proceeded"
+  },
+  "calibration_ref": null,
+  "status": "ready"
+}
