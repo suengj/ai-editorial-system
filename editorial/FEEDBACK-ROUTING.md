@@ -2,7 +2,7 @@
 
 When output is bad, the question this document exists to answer is never
 "what rule should I add?" It is **"which layer produced this?"** — and,
-failing that, an honest "I cannot tell."
+failing that, an honest "I cannot tell." Visual production repair metadata may use visual `modality_layer` values `wrong_concept`, `local_defect`, `low_fidelity`, `facts_or_text_wrong`, `reference_drift`, and `dashboardization`; their deterministic actions are owned by `schemas/VISUAL-PRODUCTION-CONTRACT.md`, not new shared routing layers.
 
 Machine contract: [`feedback-routing.json`](feedback-routing.json). Engine:
 [`../scripts/lib/routing-core.mjs`](../scripts/lib/routing-core.mjs). Run:

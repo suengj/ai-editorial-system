@@ -1,6 +1,6 @@
 # Approved Visual Asset Lifecycle — approval lock, derivatives, and publication handoff
 
-This contract governs what happens **after a rendered visual has been explicitly accepted by a human**.
+This contract governs what happens **after a rendered visual has been explicitly accepted by a human**. A hybrid production record may distinguish a semantic master, deterministic factual overlay, and publication composite; that is lineage vocabulary only. This document's human lock remains the only approval authority.
 
 It closes a gap between [`IMAGE-GENERATION.md`](IMAGE-GENERATION.md), the compiled visual-job contract, and [`ARTICLE-VISUAL-PUBLICATION-HANDOFF.md`](ARTICLE-VISUAL-PUBLICATION-HANDOFF.md): generation owns candidates, but once one candidate is approved, later fidelity/format/publication work must not silently reopen generation.
 

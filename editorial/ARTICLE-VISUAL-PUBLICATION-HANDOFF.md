@@ -1,6 +1,6 @@
 # Article visual publication handoff
 
-This document governs the boundary **after an article visual has been planned and rendered** and before the publication repository integrates it into the canonical article.
+This document governs the boundary **after an article visual has been planned and rendered** and before the publication repository integrates it into the canonical article. An optional `visual_production_lineage` carries semantic-master, factual-overlay, composite digests and `requires_owner_gate` as lineage only; suengj-com materialises and verifies bytes.
 
 It does not replace [`ARTICLE-ILLUSTRATION-ROUTING.md`](ARTICLE-ILLUSTRATION-ROUTING.md), [`IMAGE-GENERATION.md`](IMAGE-GENERATION.md), or the deterministic evidence-media contracts. Those documents decide why a visual exists, which renderer is appropriate, and how the result is evaluated. This document defines the semantic handoff to the publication layer.
 

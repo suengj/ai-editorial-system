@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0.0",
-  "description": "Machine routing table for AES-V2.5 (SUE-563). Layer ids are the routing target vocabulary fixed by docs/architecture/V2-EDITORIAL-LEARNING-CORE.md §5. Prose contract: editorial/FEEDBACK-ROUTING.md. Engine: scripts/lib/routing-core.mjs. This table routes INTO schemas/feedback-record.schema.json's routing.layer / routing.modality_layer / scope fields; it does not redefine them.",
+  "description": "Machine routing table for AES-V2.5 (SUE-563). Layer ids are the routing target vocabulary fixed by docs/architecture/V2-EDITORIAL-LEARNING-CORE.md §5. Prose contract: editorial/FEEDBACK-ROUTING.md. Engine: scripts/lib/routing-core.mjs. This table routes INTO schemas/feedback-record.schema.json's routing.layer / routing.modality_layer / scope fields; it does not redefine them. Visual production repair metadata: wrong_concept, local_defect, low_fidelity, facts_or_text_wrong, reference_drift, dashboardization.",
   "layers": {
     "shared": [
       {
