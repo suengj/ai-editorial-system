@@ -47,7 +47,7 @@ import { mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'n
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
-  CODES, VISUAL_FAILURE_ACTIONS, VISUAL_JOB_V1_1_FIELDS, VISUAL_JOB_V1_2_FIELDS,
+  CODES, SUPPORTED_PROMPT_ADAPTERS, VISUAL_FAILURE_ACTIONS, VISUAL_JOB_V1_1_FIELDS, VISUAL_JOB_V1_2_FIELDS,
   loadSchema, validateVisualJob,
 } from './lib/visual-job-core.mjs';
 import {
@@ -280,6 +280,8 @@ console.log('\nvisual schema, runtime, routing, and validator parity');
     VISUAL_JOB_V1_1_FIELDS.every((field) => field in visualJob.properties));
   check('V1.2 field list is represented by the visual job contract',
     VISUAL_JOB_V1_2_FIELDS.every((field) => field in visualJob.properties));
+  check('compiled prompt adapter schema matches executable supported adapters',
+    same(visualJob.properties.compiled_prompt_adapter.enum, [...SUPPORTED_PROMPT_ADAPTERS]));
 
   const briefOnly = example('visual-job-evidence-visual.example.json');
   briefOnly.visual_brief = {};

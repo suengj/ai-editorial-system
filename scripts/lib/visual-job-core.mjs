@@ -637,10 +637,11 @@ function validateVisualSchemaVersionFields(job, where) {
   return issues;
 }
 
-const ARTICLE_CLAIM_REF = /^article-claim:(art:[a-z0-9]+(?:-[a-z0-9]+)*):([a-z0-9]+(?:-[a-z0-9]+)*)$/;
 function resolvesArticleClaimRef(job, sourceRef) {
-  const match = ARTICLE_CLAIM_REF.exec(sourceRef ?? '');
-  return Boolean(match && job.article_ref?.article_id === match[1]);
+  const articleId = job.article_ref?.article_id;
+  const prefix = typeof articleId === 'string' ? `article-claim:${articleId}:` : '';
+  return prefix.length > 0 && typeof sourceRef === 'string' &&
+    sourceRef.startsWith(prefix) && sourceRef.slice(prefix.length).trim().length > 0;
 }
 
 function sameJSONValue(left, right) {
@@ -982,7 +983,7 @@ export function compileVisualPrompt(job, { profiles = loadArtifactProfiles(), br
   }
 
   const v2 = job.visual_brief && job.render_spec;
-  if (!['generic-v1', 'generic-v2'].includes(promptAdapter)) {
+  if (!SUPPORTED_PROMPT_ADAPTERS.includes(promptAdapter)) {
     throw new Error(`unknown prompt adapter: ${promptAdapter}`);
   }
   const compiled_prompt = assemblePrompt(job, { profiles, brand: resolvedBrand, promptAdapter });
