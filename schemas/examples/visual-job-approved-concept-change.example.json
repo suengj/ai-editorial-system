@@ -1,5 +1,5 @@
 {
-  "schema_version": "1.0.0",
+  "schema_version": "1.1.0",
   "job_id": "job:tokenized-stocks-thumbnail-concept-change",
   "intent_ref": "intent:2026-09-04-tokenized-stocks-liquidity",
   "calibration_ref": null,
@@ -46,10 +46,17 @@
       "metaphor_or_relationship": "A bounded market path meets a closed gate."
     },
     "factual_invariants": [],
-    "failure_modes_to_avoid": ["topic-noun cliché", "embedded article title"],
+    "failure_modes_to_avoid": [
+      "topic-noun cliché",
+      "embedded article title"
+    ],
     "reference_requirements": {
-      "required_dimensions": ["hierarchy"],
-      "forbidden_literal_copy": ["literal source skin"],
+      "required_dimensions": [
+        "hierarchy"
+      ],
+      "forbidden_literal_copy": [
+        "literal source skin"
+      ],
       "rationale": "Use one registry-backed composition lesson without copying it."
     }
   },
@@ -63,21 +70,43 @@
     "reading_direction": "left to right",
     "spatial_treatment": "flat_2d",
     "materiality_treatment": "matte_2d",
-    "spatial_layers": { "generative_semantic": ["bounded metaphor"], "deterministic_factual": [] },
-    "safe_zones": ["right-side external text overlay"],
-    "crop_resilience": "Center subject survives card crop.",
-    "visual_devices": ["negative space", "one dominant relation"],
-    "forbidden_visual_devices": ["ui_mimicry", "dashboardization", "flat_svg_aesthetic"],
-    "reference_authority": {
-      "selected": [{
-        "ref_id": "ref:denoiser-consumption-architecture",
-        "evaluation_id": "eval:denoiser-consumption-architecture-2026-09-05-01",
-        "authority": ["hierarchy"],
-        "not_authority": ["literal source skin"],
-        "rationale": "Use its adopted hierarchy dimension only."
-      }]
+    "spatial_layers": {
+      "generative_semantic": [
+        "bounded metaphor"
+      ],
+      "deterministic_factual": []
     },
-    "text_handling": { "article_title": "external_overlay" }
+    "safe_zones": [
+      "right-side external text overlay"
+    ],
+    "crop_resilience": "Center subject survives card crop.",
+    "visual_devices": [
+      "negative space",
+      "one dominant relation"
+    ],
+    "forbidden_visual_devices": [
+      "ui_mimicry",
+      "dashboardization",
+      "flat_svg_aesthetic"
+    ],
+    "reference_authority": {
+      "selected": [
+        {
+          "ref_id": "ref:denoiser-consumption-architecture",
+          "evaluation_id": "eval:denoiser-consumption-architecture-2026-09-05-01",
+          "authority": [
+            "hierarchy"
+          ],
+          "not_authority": [
+            "composition"
+          ],
+          "rationale": "Use its adopted hierarchy dimension only."
+        }
+      ]
+    },
+    "text_handling": {
+      "article_title": "external_overlay"
+    }
   },
   "information_gain": {
     "adjacent_representation": {
@@ -148,13 +177,16 @@
     "notes": "Legible after aggressive downscale to card/social preview."
   },
   "status": "accepted",
-  "compiled_prompt": "ARTIFACT: Thumbnail / cover / intro visual — Family A of SUENGJ-ARTICLE-IMAGE-FAMILIES.md. — Communicate the article's thesis, tension, or framing at first glance, before the reader reads any prose.\nQUESTION: What single relation should a reader recognize immediately?\nMUST COMMUNICATE: removing trading hours exposes harder bottlenecks in liquidity, rights, and incident control\nMUST NOT INCLUDE: article title, section title, publication date, site label, caption, citation, CTA; any of the load-bearing modules from the body infographic\nCOMPOSITION: One system tension, one transformation, one contrast, one bounded metaphor, or one large relationship between two domains (SUENGJ-ARTICLE-IMAGE-FAMILIES.md §3.2).\nTEXT POLICY: external_overlay\nBRAND (suengj-com@1.0.0): background warm off-white / cream, primary muted forest / sage green — the structural identity color, not a saturation effect, accent restrained sand / camel — accent only, never a second dominant palette\nREFERENCE TRAITS — avoid: taste-calibration variant 1 icon-library density",
+  "compiled_prompt": "ARTIFACT: Thumbnail / cover / intro visual — Family A of SUENGJ-ARTICLE-IMAGE-FAMILIES.md. — Communicate the article's thesis, tension, or framing at first glance, before the reader reads any prose.\nQUESTION: What single relation should a reader recognize immediately?\nMUST COMMUNICATE: removing trading hours exposes harder bottlenecks in liquidity, rights, and incident control\nMUST NOT INCLUDE: article title, section title, publication date, site label, caption, citation, CTA; any of the load-bearing modules from the body infographic\nCOMPOSITION: One system tension, one transformation, one contrast, one bounded metaphor, or one large relationship between two domains (SUENGJ-ARTICLE-IMAGE-FAMILIES.md §3.2).\nTEXT POLICY: external_overlay\nBRAND (suengj-com@1.0.0): background warm off-white / cream, primary muted forest / sage green — the structural identity color, not a saturation effect, accent restrained sand / camel — accent only, never a second dominant palette\nREFERENCE TRAITS — avoid: taste-calibration variant 1 icon-library density\nEDITORIAL BRIEF: Frame the revised thesis at card size.; Removing trading hours exposes harder bottlenecks in liquidity, rights, and incident control.; reader outcome: Recognize the constrained relationship before reading prose.\nVISUAL STORY: A bounded market path meets a closed gate.\nSCENE: One bounded metaphor with a clear center.; focal hierarchy: Gate first, constrained path second.; reading: left to right\nSPATIAL TREATMENT: flat_2d; MATERIALITY TREATMENT: matte_2d\nLAYERS — semantic: bounded metaphor; deterministic factual: \nSAFE ZONES: right-side external text overlay; crop: Center subject survives card crop.\nVISUAL DEVICES — require: negative space; one dominant relation; forbid: ui_mimicry; dashboardization; flat_svg_aesthetic\nREFERENCE AUTHORITY: eval:denoiser-consumption-architecture-2026-09-05-01 controls hierarchy; do not copy composition; rationale Use its adopted hierarchy dimension only.\nBRIEF-WIDE FORBIDDEN LITERAL COPY: literal source skin\nARTICLE TITLE: external overlay only",
   "compiled_from": [
     "editorial/profiles/artifact/visual-thumbnail.json",
     "suengj-com@1.0.0",
     "editorial/profiles/audience/general-reader.json",
     "semantic_spec",
-    "selected_reference_traits"
+    "selected_reference_traits",
+    "visual_brief:visual-brief:tokenized-stocks-thumbnail-concept-change",
+    "render_spec:render-spec:tokenized-stocks-thumbnail-concept-change",
+    "eval:denoiser-consumption-architecture-2026-09-05-01"
   ],
   "approved_asset": {
     "state": "human_approved_locked",
@@ -186,5 +218,6 @@
       "authorized_by": "suengjae-hong",
       "statement": "Draw a new thumbnail; the approved one is not the concept I want."
     }
-  }
+  },
+  "compiled_prompt_adapter": "generic-v1"
 }

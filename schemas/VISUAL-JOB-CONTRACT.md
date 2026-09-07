@@ -19,6 +19,12 @@ Schema `1.1.0` is additive: it introduces `visual_brief`, `render_spec`,
 and absent means false, but core requires it to be present and true when
 `brand_conflicts` is non-empty, and rejects true with no conflict.
 
+The version is coupled to the fields it introduces: a `1.0.0` job may not
+carry any of those V1.1 fields; a `1.1.0` job may carry them but may not carry
+`visual_production`; and a `1.2.0` job is the only version that may carry
+`visual_production`. Legacy deterministic jobs with both VisualBrief and
+RenderSpec absent remain valid.
+
 Schema `1.2.0` adds optional `visual_production`, the declared SUE-645/648
 control-plane state documented in [VISUAL-PRODUCTION-CONTRACT.md](VISUAL-PRODUCTION-CONTRACT.md).
 It accepts `1.0.0`, `1.1.0`, and `1.2.0`; a V1 job has no production telemetry
@@ -33,6 +39,11 @@ reference traits, and the versioned brand profile
 deterministic string assembly over that state, recorded with `compiled_from`
 so it can be regenerated or audited — never hand-edited independently of the
 state that produced it.
+
+Supported prompt adapters are `generic-v1` and `generic-v2`. When a compiled
+prompt is present, the validator reassembles it with the recorded adapter (or
+legacy `generic-v1` when the adapter field is absent) and requires exact
+equality of both `compiled_prompt` and `compiled_from`.
 
 ```text
 semantic_spec + artifact_profile + selected_reference_traits + brand_profile

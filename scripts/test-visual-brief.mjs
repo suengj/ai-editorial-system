@@ -20,6 +20,19 @@ check('hybrid VisualBrief/RenderSpec contract validates', validateVisualJob(hybr
 check('standalone VisualBrief example validates', validateVisualBrief(load('visual-brief-body-infographic-v2.example.json')).length === 0);
 check('standalone RenderSpec example validates', validateRenderSpec(load('render-spec-body-infographic-hybrid-v2.example.json')).length === 0);
 {
+  const deterministic = load('visual-job-evidence-visual.example.json');
+  const briefOnly = clone(deterministic);
+  briefOnly.visual_brief = {};
+  check('legacy deterministic job rejects a present but incomplete visual_brief',
+    codes(briefOnly).includes(CODES.BRIEF_REQUIRED) || codes(briefOnly).includes(CODES.SCHEMA));
+  const specOnly = clone(deterministic);
+  specOnly.render_spec = {};
+  check('legacy deterministic job rejects a present but incomplete render_spec',
+    codes(specOnly).includes(CODES.BRIEF_REQUIRED) || codes(specOnly).includes(CODES.SCHEMA));
+  check('legacy deterministic job with both visual fields absent remains valid',
+    validateVisualJob(deterministic).length === 0);
+}
+{
   const v1 = load('visual-job-evidence-visual.example.json');
   const additiveFields = ['visual_brief', 'render_spec', 'compiled_prompt_adapter', 'brand_conflicts', 'requires_owner_gate', 'article_title'];
   check('verbatim pre-existing V1 job with no additive fields remains valid', v1.schema_version === '1.0.0' && additiveFields.every((field) => !(field in v1)) && validateVisualJob(v1).length === 0);
@@ -45,6 +58,14 @@ console.log('\nB1 shared reference admissibility');
   const unevidenced = clone(hybrid); setAuthority(unevidenced, 'ref:c4-model-containment', 'eval:c4-model-containment-2026-09-06-01', ['composition']); check('trait absent from that evaluation adopt dimensions fails', codes(unevidenced).includes(CODES.REFERENCE_AUTHORITY_TRAIT_UNEVIDENCED));
   const irrelevant = clone(hybrid); setAuthority(irrelevant, 'ref:risk-matrix-comprehension', 'eval:risk-matrix-comprehension-2026-09-06-01', ['label-text-strategy']); check('reviewer risk-matrix label-text pin against hierarchy brief fails relevance', codes(irrelevant).includes(CODES.REFERENCE_AUTHORITY_TRAIT_IRRELEVANT));
   const emptyDimensions = clone(irrelevant); emptyDimensions.visual_brief.reference_requirements.required_dimensions = []; check('reviewer empty required_dimensions authority bypass is rejected', codes(emptyDimensions).includes(CODES.BRIEF_REFERENCE_DIMENSIONS_REQUIRED));
+  const fabricatedNotAuthority = clone(hybrid);
+  fabricatedNotAuthority.render_spec.reference_authority.selected[0].not_authority = ['fabricated-dimension'];
+  check('reference not_authority must resolve to that evaluation\'s do_not_copy dimensions',
+    codes(fabricatedNotAuthority).includes(CODES.REFERENCE_AUTHORITY_NOT_AUTHORITY_UNEVIDENCED));
+  const emptyAuthority = clone(hybrid);
+  emptyAuthority.render_spec.reference_authority.selected[0].authority = [];
+  check('selected reference authority must contain at least one trait',
+    codes(emptyAuthority).includes(CODES.REFERENCE_AUTHORITY_TRAIT_REQUIRED) || codes(emptyAuthority).includes(CODES.SCHEMA));
 }
 
 console.log('\nB2 structural depth and hard materiality ceiling');
@@ -95,6 +116,12 @@ console.log('\nM1/M2 resolver ranking and attribution');
 
 console.log('\nM4 direct negative guards and isolation');
 {
+  const lineage = clone(hybrid);
+  lineage.visual_brief.article_ref.version_number = 999;
+  lineage.visual_brief.article_ref.content_hash = 'c'.repeat(64);
+  lineage.visual_brief.article_ref.claims_hash = 'd'.repeat(64);
+  check('VisualBrief article version and hashes must match the job article_ref',
+    codes(lineage).includes(CODES.BRIEF_SPEC_MISMATCH));
   const mismatch = clone(hybrid); mismatch.render_spec.brief_id = 'visual-brief:wrong'; check('BRIEF_SPEC_MISMATCH has direct negative', codes(mismatch).includes(CODES.BRIEF_SPEC_MISMATCH));
   const noBrief = clone(hybrid); delete noBrief.visual_brief; delete noBrief.render_spec; check('BRIEF_REQUIRED has direct negative', codes(noBrief).includes(CODES.BRIEF_REQUIRED));
   const count = clone(hybrid); count.render_spec.reference_authority.selected = []; check('REFERENCE_AUTHORITY_COUNT has direct negative', codes(count).includes(CODES.REFERENCE_AUTHORITY_COUNT));
@@ -103,6 +130,19 @@ console.log('\nM4 direct negative guards and isolation');
   const arbitrary = clone(hybrid); arbitrary.render_spec.reference_authority.selected.push({ ref_id: 'ref:arbitrary-image', evaluation_id: 'eval:arbitrary-image', authority: ['hierarchy'], not_authority: [], rationale: '/tmp/recent-image.png' }); check('actual arbitrary image insertion is rejected as unresolved', codes(arbitrary).includes(CODES.REFERENCE_AUTHORITY_UNRESOLVED));
   const leaky = clone(hybrid); leaky.context_isolation.permitted_inputs.push('ambient_conversation'); check('context isolation enum still rejects ambient context as permitted input', codes(leaky).includes(CODES.SCHEMA));
   const missingUiForbid = clone(hybrid); missingUiForbid.render_spec.forbidden_visual_devices = ['ui_mimicry']; check('UI_MIMICRY_CONTRACT_MISSING has direct negative', codes(missingUiForbid).includes(CODES.UI_MIMICRY_CONTRACT_MISSING));
+  const forgedCompilation = clone(hybrid);
+  forgedCompilation.compiled_prompt = '';
+  forgedCompilation.compiled_from = ['bogus'];
+  forgedCompilation.compiled_prompt_adapter = 'unregistered-adapter';
+  check('compiled prompt, lineage, and adapter cannot be fabricated on a V2 job',
+    codes(forgedCompilation).length > 0);
+  const supportedButStale = clone(hybrid);
+  const compiled = compileVisualPrompt(clone(hybrid), { promptAdapter: 'generic-v1' });
+  supportedButStale.compiled_prompt = `${compiled.compiled_prompt}\nextra`;
+  supportedButStale.compiled_from = compiled.compiled_from;
+  supportedButStale.compiled_prompt_adapter = 'generic-v1';
+  check('a supported adapter still requires exact deterministic compiled output',
+    codes(supportedButStale).includes(CODES.COMPILED_OUTPUT_MISMATCH));
 }
 
 console.log('\napproval lock additive regression');

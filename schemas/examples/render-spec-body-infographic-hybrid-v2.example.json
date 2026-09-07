@@ -21,7 +21,7 @@
       "ref_id": "ref:c4-model-containment",
       "evaluation_id": "eval:c4-model-containment-2026-09-06-01",
       "authority": ["hierarchy"],
-      "not_authority": ["palette-colour-role", "literal C4 notation"],
+      "not_authority": ["palette-colour-role"],
       "rationale": "Use the evaluated hierarchy lesson, not C4 notation or palette."
     }]
   },

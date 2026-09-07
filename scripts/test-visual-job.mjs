@@ -65,6 +65,17 @@ const baseGood = loadExample('visual-job-body-infographic.example.json');
 const codesOf = (job) => validateVisualJob(job, opts).map((i) => i.code);
 
 {
+  const production = clone(loadExample('visual-job-body-infographic-v2.example.json'));
+  production.schema_version = '1.1.0';
+  check('V1.1 cannot carry the V1.2 visual_production field',
+    codesOf(production).includes(CODES.VERSION_FIELD_MISMATCH));
+  const v1 = clone(baseGood);
+  v1.visual_brief = clone(production.visual_brief);
+  check('V1.0 cannot carry V1.1 visual fields',
+    codesOf(v1).includes(CODES.VERSION_FIELD_MISMATCH));
+}
+
+{
   // SUE-531 — context contamination: a compiled prompt carrying unrelated
   // project/conversation tokens that are not derivable from any declared input.
   const job = clone(baseGood);

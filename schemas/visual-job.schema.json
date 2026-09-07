@@ -90,8 +90,7 @@
     },
     "compiled_prompt_adapter": {
       "description": "Prompt-dialect lineage only. It may change the disposable compiled prompt but never the VisualBrief, RenderSpec, reference authority, or renderer runtime identity.",
-      "type": "string",
-      "minLength": 1
+      "enum": ["generic-v1", "generic-v2"]
     },
     "brand_conflicts": {
       "description": "Human-visible evidence of a RenderSpec requirement that exceeds the current brand default. This is not approval, publication authority, or a lock.",

@@ -113,6 +113,8 @@ export const CODES = Object.freeze({
   REFERENCE_AUTHORITY_INADMISSIBLE: 'reference-authority-inadmissible',
   REFERENCE_AUTHORITY_TRAIT_UNEVIDENCED: 'reference-authority-trait-unevidenced',
   REFERENCE_AUTHORITY_TRAIT_IRRELEVANT: 'reference-authority-trait-irrelevant-to-brief',
+  REFERENCE_AUTHORITY_NOT_AUTHORITY_UNEVIDENCED: 'reference-not-authority-unevidenced',
+  REFERENCE_AUTHORITY_TRAIT_REQUIRED: 'reference-authority-trait-required',
   BRIEF_REFERENCE_DIMENSIONS_REQUIRED: 'visual-brief-required-dimensions-empty',
   REQUIRES_OWNER_GATE_MISMATCH: 'requires-owner-gate-conflict-mismatch',
   PRODUCTION_SCHEMA: 'visual-production-schema',
@@ -130,7 +132,16 @@ export const CODES = Object.freeze({
   REFINEMENT: 'production-refinement-invalid',
   FAILURE_ROUTE: 'visual-failure-route-mismatch',
   TELEMETRY: 'visual-production-telemetry-invalid',
+  VERSION_FIELD_MISMATCH: 'visual-schema-version-field-mismatch',
+  COMPILED_OUTPUT_MISMATCH: 'compiled-output-lineage-mismatch',
 });
+
+export const SUPPORTED_PROMPT_ADAPTERS = Object.freeze(['generic-v1', 'generic-v2']);
+export const VISUAL_JOB_V1_1_FIELDS = Object.freeze([
+  'visual_brief', 'render_spec', 'compiled_prompt_adapter',
+  'brand_conflicts', 'requires_owner_gate', 'article_title',
+]);
+export const VISUAL_JOB_V1_2_FIELDS = Object.freeze(['visual_production']);
 
 export const VISUAL_FAILURE_ACTIONS = Object.freeze({
   wrong_concept: 'new_direction', local_defect: 'local_edit', low_fidelity: 'fidelity_derivative',
@@ -490,8 +501,15 @@ export function validateReferenceAuthority(renderSpec, requirements, where = '<r
       continue;
     }
     const adopted = new Set((evaluation.dimensions ?? []).filter((d) => d.verdict === 'adopt').map((d) => d.dimension));
+    if ((entry.authority ?? []).length === 0) {
+      issues.push(issue(CODES.REFERENCE_AUTHORITY_TRAIT_REQUIRED, where, `${entry.evaluation_id} must name at least one authority trait`));
+    }
     if ((entry.authority ?? []).some((trait) => !adopted.has(trait))) {
       issues.push(issue(CODES.REFERENCE_AUTHORITY_TRAIT_UNEVIDENCED, where, `${entry.evaluation_id} does not adopt every claimed authority trait`));
+    }
+    const notCopied = new Set((evaluation.dimensions ?? []).filter((d) => d.verdict === 'do_not_copy').map((d) => d.dimension));
+    if ((entry.not_authority ?? []).some((trait) => !notCopied.has(trait))) {
+      issues.push(issue(CODES.REFERENCE_AUTHORITY_NOT_AUTHORITY_UNEVIDENCED, where, `${entry.evaluation_id} does not mark every not_authority trait as that evaluation's do_not_copy dimension`));
     }
     const matched = new Set(admitted.matched.map((dimension) => dimension.dimension));
     if ((entry.authority ?? []).some((trait) => !matched.has(trait))) {
@@ -601,22 +619,46 @@ function validateRequiresOwnerGate(job, where) {
     `requires_owner_gate must be ${required} when brand_conflicts has ${(job.brand_conflicts ?? []).length} entry/entries`)];
 }
 
+function validateVisualSchemaVersionFields(job, where) {
+  const issues = [];
+  if (job.schema_version === '1.0.0') {
+    const present = VISUAL_JOB_V1_1_FIELDS.filter((field) => job[field] !== undefined);
+    if (present.length > 0) {
+      issues.push(issue(CODES.VERSION_FIELD_MISMATCH, where,
+        `schema_version 1.0.0 cannot carry V1.1 fields: ${present.join(', ')}`));
+    }
+  }
+  if (job.schema_version !== '1.2.0' && job.visual_production !== undefined) {
+    issues.push(issue(CODES.VERSION_FIELD_MISMATCH, where,
+      `schema_version ${job.schema_version} cannot carry V1.2 field: visual_production`));
+  }
+  return issues;
+}
+
 export function validateVisualContract(job, { brand, profiles = loadArtifactProfiles(), referenceContext } = {}, where = job?.job_id ?? '<job>') {
   const v2Required = ['generative', 'hybrid'].includes(job?.renderer_route);
   const ownerGateIssues = validateRequiresOwnerGate(job, where);
-  if (!v2Required && (!job?.visual_brief || !job?.render_spec)) return ownerGateIssues;
   const issues = [...ownerGateIssues];
-  if (!job?.visual_brief || !job?.render_spec) return [issue(CODES.BRIEF_REQUIRED, where, 'generative and hybrid routes require visual_brief and render_spec')];
-  issues.push(...validateVisualBrief(job.visual_brief, where));
-  issues.push(...validateRenderSpec(job.render_spec, where));
-  if (issues.some((i) => i.code === CODES.SCHEMA)) return issues;
+  const hasBrief = job?.visual_brief !== undefined;
+  const hasRenderSpec = job?.render_spec !== undefined;
+  if (hasBrief) issues.push(...validateVisualBrief(job.visual_brief, where));
+  if (hasRenderSpec) issues.push(...validateRenderSpec(job.render_spec, where));
+  if (hasBrief !== hasRenderSpec || (v2Required && !hasBrief && !hasRenderSpec)) {
+    issues.push(issue(CODES.BRIEF_REQUIRED, where,
+      'visual_brief and render_spec must be absent together for legacy deterministic jobs, or present together for a complete visual contract'));
+  }
+  if (!hasBrief && !hasRenderSpec) return issues;
+  if (hasBrief !== hasRenderSpec || issues.some((i) => i.code === CODES.SCHEMA)) return issues;
   if (v2Required && job.visual_brief.reference_requirements.required_dimensions.length === 0) {
     issues.push(issue(CODES.BRIEF_REFERENCE_DIMENSIONS_REQUIRED, where, 'generative and hybrid VisualBriefs must require at least one reference dimension'));
   }
+  const briefArticle = job.visual_brief.article_ref;
+  const jobArticle = job.article_ref;
+  const articleFields = ['article_id', 'version_number', 'content_hash', 'claims_hash'];
   if (job.visual_brief.brief_id !== job.render_spec.brief_id || job.visual_brief.artifact_profile !== job.artifact_profile ||
-      job.visual_brief.article_ref.article_id !== job.article_ref?.article_id ||
+      articleFields.some((field) => briefArticle[field] !== jobArticle?.[field]) ||
       job.semantic_spec?.question !== job.visual_brief.visual_story.primary_question) {
-    issues.push(issue(CODES.BRIEF_SPEC_MISMATCH, where, 'VisualBrief/RenderSpec/job semantic projection does not identify one article, artifact profile, and primary question'));
+    issues.push(issue(CODES.BRIEF_SPEC_MISMATCH, where, 'VisualBrief/RenderSpec/job semantic projection does not identify one article version, artifact profile, and primary question'));
   }
   const requirements = { ...job.visual_brief.reference_requirements, artifact_profile: job.artifact_profile };
   issues.push(...validateReferenceAuthority(job.render_spec, requirements, where, referenceContext));
@@ -708,6 +750,8 @@ export function validateVisualJob(job, { schema = loadSchema(), profiles = loadA
     issues.push(issue(CODES.SCHEMA, where, `${e.path}: ${e.message}`));
   }
   if (issues.some((i) => i.code === CODES.SCHEMA)) return issues; // structurally unsound; cross-field checks would be noise
+
+  issues.push(...validateVisualSchemaVersionFields(job, where));
 
   // Resolve the brand actually named on this job — never a fixed default
   // (B6). An unresolvable brand fails closed and short-circuits the rest of
@@ -833,6 +877,21 @@ export function validateVisualJob(job, { schema = loadSchema(), profiles = loadA
     if (contaminated.length > 0) {
       issues.push(issue(CODES.RUNTIME_LEAK, where,
         `compiled_prompt contains renderer runtime identity string(s): ${contaminated.join(', ')} — provider/model/model_version/quality_tier must stay in lineage, never in the prompt`));
+    }
+
+    const adapter = job.compiled_prompt_adapter ?? 'generic-v1';
+    if (SUPPORTED_PROMPT_ADAPTERS.includes(adapter)) {
+      try {
+        const expected = compileVisualPrompt(job, { profiles, brand: resolvedBrand, promptAdapter: adapter });
+        if (expected.compiled_prompt !== job.compiled_prompt ||
+            JSON.stringify(expected.compiled_from) !== JSON.stringify(job.compiled_from)) {
+          issues.push(issue(CODES.COMPILED_OUTPUT_MISMATCH, where,
+            `compiled_prompt and compiled_from do not exactly match deterministic ${adapter} compilation from the declared job inputs`));
+        }
+      } catch {
+        // Other gates own refusal diagnostics for jobs that cannot be compiled;
+        // do not turn the same refusal into a second lineage finding.
+      }
     }
   }
 

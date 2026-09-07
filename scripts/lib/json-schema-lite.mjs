@@ -3,7 +3,7 @@
  * this repository actually uses.
  *
  * Supported: type, const, enum, required, properties, additionalProperties,
- * items, pattern, minLength, maxLength, minimum, format (date, date-time), $ref into
+ * items, minItems, pattern, minLength, maxLength, minimum, format (date, date-time), $ref into
  * local $defs, and union types via array-valued `type`.
  *
  * Deliberately small. Fail-closed on constructs it does not understand: an
@@ -14,7 +14,7 @@
 const KNOWN_KEYWORDS = new Set([
   '$schema', '$id', '$ref', '$defs', 'title', 'description',
   'type', 'const', 'enum', 'required', 'properties', 'additionalProperties',
-  'items', 'pattern', 'minLength', 'maxLength', 'minimum', 'format',
+  'items', 'minItems', 'pattern', 'minLength', 'maxLength', 'minimum', 'format',
 ]);
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
@@ -99,6 +99,9 @@ export function validate(value, schema, root = schema, path = '$') {
   }
 
   if (typeOf(value) === 'array' && schema.items) {
+    if (schema.minItems !== undefined && value.length < schema.minItems) {
+      errors.push({ path, message: `fewer than minItems ${schema.minItems}` });
+    }
     value.forEach((item, i) => {
       errors.push(...validate(item, schema.items, root, `${path}[${i}]`));
     });
