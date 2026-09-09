@@ -65,7 +65,11 @@
           "first_used_at": "2026-08-31T09:05:00Z"
         }
       ],
-      "rights": { "license": null, "quotable": true, "redistributable": false }
+      "rights": {
+        "license": null,
+        "quotable": true,
+        "redistributable": false
+      }
     },
     {
       "source_id": "src:drive:1ResearchDraftFileIdQrStUvWxYz0123",
@@ -88,7 +92,11 @@
       "disposition": "candidate",
       "disposition_authority": "ai_recommended",
       "disposition_changed_at": "2026-08-31T02:05:00Z",
-      "rights": { "license": null, "quotable": true, "redistributable": false },
+      "rights": {
+        "license": null,
+        "quotable": true,
+        "redistributable": false
+      },
       "notes": "source_created_at is null: the Drive file carries no authored date. Not substituted with the ingestion date."
     },
     {
@@ -113,13 +121,19 @@
       "disposition": "active",
       "disposition_authority": "ai_recommended",
       "disposition_changed_at": "2026-08-31T03:00:00Z",
-      "rights": { "license": "MIT", "quotable": true, "redistributable": true }
+      "rights": {
+        "license": "MIT",
+        "quotable": true,
+        "redistributable": true
+      }
     },
     {
       "source_id": "src:drive:1SupersededYouTubeSummaryFileId0001",
       "kind": "youtube_summary",
       "origin": "google_drive",
-      "origin_ref": { "file_id": "1SupersededYouTubeSummaryFileId0001" },
+      "origin_ref": {
+        "file_id": "1SupersededYouTubeSummaryFileId0001"
+      },
       "title": "Daily YouTube summary — 2026-08-29 (partial)",
       "source_created_at": "2026-08-29",
       "ingested_at": "2026-08-29T23:10:00Z",
@@ -133,13 +147,19 @@
       "disposition_authority": "ai_recommended",
       "disposition_changed_at": "2026-08-30T23:10:00Z",
       "superseded_by": "src:drive:1AbCdEfGhIjKlMnOpQrStUvWxYz012345",
-      "rights": { "license": null, "quotable": true, "redistributable": false }
+      "rights": {
+        "license": null,
+        "quotable": true,
+        "redistributable": false
+      }
     },
     {
       "source_id": "src:web:example.com/inference-cost-report-2026",
       "kind": "web_reference",
       "origin": "web",
-      "origin_ref": { "url": "https://example.com/inference-cost-report-2026" },
+      "origin_ref": {
+        "url": "https://example.com/inference-cost-report-2026"
+      },
       "title": "Inference Cost Report 2026",
       "language": "en",
       "source_created_at": "2026-07-15",
@@ -160,6 +180,34 @@
         "attribution": "Example Press. Cited only; never mirrored."
       },
       "notes": "Rejected by human review: vendor-sponsored, methodology not disclosed."
+    },
+    {
+      "source_id": "src:github:suengj/reference-library",
+      "kind": "intelligence_dossier",
+      "origin": "github",
+      "origin_ref": {
+        "repo": "suengj/reference-library",
+        "ref": "0a50578bba368e42bac49bfa511a3d4c81e18e36",
+        "path": "intelligence/dossiers/the-agent-cost-curve.md"
+      },
+      "title": "Topic Dossier — the-agent-cost-curve",
+      "language": "en",
+      "source_created_at": "2026-09-09",
+      "ingested_at": "2026-09-09T06:00:00Z",
+      "content_observed_at": "2026-09-09T06:00:00Z",
+      "content_hash": {
+        "algo": "sha256",
+        "value": "7a30fa319c97aabe95180bc04ef6e635221ff9c171a5bb4005aaed0ad6bd5d56"
+      },
+      "revision": 1,
+      "disposition": "candidate",
+      "disposition_authority": "human",
+      "disposition_changed_at": "2026-09-09T06:00:00Z",
+      "rights": {
+        "license": "MIT",
+        "quotable": true,
+        "redistributable": true
+      }
     }
   ]
 }

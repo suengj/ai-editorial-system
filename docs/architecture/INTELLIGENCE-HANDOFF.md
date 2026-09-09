@@ -80,6 +80,10 @@ Source tier is a workflow role, not a truth score.
 
 No claim becomes verified merely because a Daily Brief, Knowledge Map, or Topic Dossier says it is true. `verify-claims` must resolve the claim to admissible evidence under the existing source policy.
 
+This is now mechanically enforced rather than only stated. A selected dossier enters as a source of kind `intelligence_dossier` (repo + immutable commit + path + content hash, body never copied here), and `npm run validate:source` rejects any manifest that cites it with `role: primary` — see [`../../schemas/SOURCE-CONTRACT.md`](../../schemas/SOURCE-CONTRACT.md). The dossier may still be cited as `supporting`, `background`, or `contradicting` context.
+
+`youtube_summary` remains exempt from that rule, because a video can be the primary event under analysis; the judgement stays with `verify-claims`.
+
 ## Editorial sequence remains unchanged
 
 ```text
@@ -116,6 +120,10 @@ The Editorial Core may return:
 It does not update the Knowledge Map merely to make the article cleaner, and it does not publish directly.
 
 If the editorial research materially changes the owner's durable understanding of a topic, that is a **feedback candidate** for the Learning Intelligence layer; it should be routed back explicitly rather than silently rewriting upstream knowledge.
+
+## Status
+
+The handoff is certified as of 2026-09-09 (SUE-737). No second writing path was created: a selected dossier enters through the existing `intake-request` → `frame-article` sequence as an ordinary source manifest entry. The only contract delta was the `intelligence_dossier` source class and the `derived-evidence-role` invariant above.
 
 ## Non-goals
 

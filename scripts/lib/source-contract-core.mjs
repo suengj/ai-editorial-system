@@ -31,6 +31,7 @@ export const CODES = Object.freeze({
   SUPERSEDE_LINK: 'supersede-link',
   DUPLICATE_LINK: 'duplicate-link',
   USED_BY_STATE: 'used-by-state',
+  DERIVED_EVIDENCE: 'derived-evidence-role',
   DATE_ORDER: 'date-order',
 });
 
@@ -53,6 +54,15 @@ const ORIGIN_PREFIX = {
 const FORBIDDEN_DISPOSITIONS = ['published', 'approved', 'draft', 'live'];
 
 const HUMAN_ONLY_DISPOSITIONS = new Set(['archived', 'rejected']);
+
+/**
+ * Kinds that are derived scaffolding by definition and can never themselves be
+ * the primary evidence for a claim. A Topic Dossier curates and summarises
+ * other sources; the claim must resolve to the sources it cites.
+ * `youtube_summary` is deliberately absent: a video can legitimately be the
+ * primary event being analysed. See docs/architecture/INTELLIGENCE-HANDOFF.md.
+ */
+const NEVER_PRIMARY_KINDS = new Set(['intelligence_dossier']);
 const USED_BY_ALLOWED = new Set(['used', 'superseded', 'archived']);
 
 function issue(code, where, message) {
@@ -141,6 +151,18 @@ export function validateManifest(manifest, schema = loadSchema()) {
         CODES.USED_BY_STATE, where,
         `used_by is non-empty but disposition is "${src?.disposition}"; expected one of ${[...USED_BY_ALLOWED].join(', ')}`,
       ));
+    }
+
+    // --- derived material cannot become claim-level primary evidence ---
+    if (NEVER_PRIMARY_KINDS.has(src?.kind)) {
+      for (const [j, u] of usedBy.entries()) {
+        if (u?.role === 'primary') {
+          issues.push(issue(
+            CODES.DERIVED_EVIDENCE, `${where}.used_by[${j}]`,
+            `kind "${src.kind}" is derived scaffolding and cannot be role "primary"; resolve the claim to the underlying source the dossier cites`,
+          ));
+        }
+      }
     }
 
     // --- date separation ---
