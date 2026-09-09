@@ -1,0 +1,191 @@
+{
+  "verified_at": "2026-09-10T00:04:00+09:00",
+  "claims": [
+    {
+      "claim_id": "arc-standard-best",
+      "text": "GPT-6 Astra의 Standard harness best observed ARC-AGI-3 Semi-Private 결과는 max reasoning에서 62.7%, 총 evaluation cost $26,098이다.",
+      "kind": "number",
+      "status": "verified",
+      "evidence": [
+        {
+          "url": "https://arcprize.org/results/openai-gpt-6-astra",
+          "title": "GPT-6 Astra - ARC-AGI Results",
+          "retrieved_at": "2026-09-10",
+          "authority": "primary"
+        },
+        {
+          "url": "https://arcprize.org/blog/astra",
+          "title": "OpenAI's GPT-6 Astra on ARC-AGI-3",
+          "retrieved_at": "2026-09-10",
+          "authority": "primary"
+        }
+      ]
+    },
+    {
+      "claim_id": "arc-provider-best",
+      "text": "GPT-6 Astra의 Provider Adapter harness best observed ARC-AGI-3 Semi-Private 결과는 high reasoning에서 99.9%, 총 evaluation cost $18,817이다.",
+      "kind": "number",
+      "status": "verified",
+      "evidence": [
+        {
+          "url": "https://arcprize.org/results/openai-gpt-6-astra",
+          "title": "GPT-6 Astra - ARC-AGI Results",
+          "retrieved_at": "2026-09-10",
+          "authority": "primary"
+        }
+      ]
+    },
+    {
+      "claim_id": "arc-same-effort-max",
+      "text": "동일 max reasoning 조건에서 Standard harness는 62.7%/$26,098, Provider Adapter harness는 98.6%/$17,332를 기록했다.",
+      "kind": "number",
+      "status": "verified",
+      "evidence": [
+        {
+          "url": "https://arcprize.org/blog/astra",
+          "title": "OpenAI's GPT-6 Astra on ARC-AGI-3",
+          "retrieved_at": "2026-09-10",
+          "authority": "primary"
+        }
+      ]
+    },
+    {
+      "claim_id": "arc-token-reduction",
+      "text": "Public와 Semi-Private 전체에서 두 harness가 모두 해결한 167 game-reasoning pair를 비교했을 때 Provider Adapter runs는 총 token을 49% 적게 사용했다.",
+      "kind": "number",
+      "status": "verified",
+      "evidence": [
+        {
+          "url": "https://arcprize.org/blog/astra",
+          "title": "OpenAI's GPT-6 Astra on ARC-AGI-3",
+          "retrieved_at": "2026-09-10",
+          "authority": "primary"
+        }
+      ]
+    },
+    {
+      "claim_id": "arc-elapsed-speed",
+      "text": "같은 167 paired solved cases에서 Provider Adapter runs는 aggregate recorded elapsed time 기준 약 3.66배 빨랐다.",
+      "kind": "number",
+      "status": "verified",
+      "evidence": [
+        {
+          "url": "https://arcprize.org/blog/astra",
+          "title": "OpenAI's GPT-6 Astra on ARC-AGI-3",
+          "retrieved_at": "2026-09-10",
+          "authority": "primary"
+        }
+      ]
+    },
+    {
+      "claim_id": "arc-provider-mechanism",
+      "text": "ARC Prize의 Provider Adapter harness는 request 사이에 opaque reasoning state를 보존하고 긴 conversation을 관리하기 위해 compaction을 사용한다.",
+      "kind": "assertion",
+      "status": "verified",
+      "evidence": [
+        {
+          "url": "https://arcprize.org/blog/astra",
+          "title": "OpenAI's GPT-6 Astra on ARC-AGI-3",
+          "retrieved_at": "2026-09-10",
+          "authority": "primary"
+        }
+      ]
+    },
+    {
+      "claim_id": "openai-agent-spend",
+      "text": "OpenAI에서 agent usage 기준 median researcher는 2026년 8월 중순 API 가격으로 하루 $600 이상의 coding-agent inference를 사용했다.",
+      "kind": "number",
+      "status": "verified",
+      "evidence": [
+        {
+          "url": "https://openai.com/index/research-acceleration-view-inside-openai/",
+          "title": "Research acceleration: The view inside OpenAI",
+          "retrieved_at": "2026-09-10",
+          "authority": "primary"
+        }
+      ]
+    },
+    {
+      "claim_id": "openai-agent-workdays",
+      "text": "OpenAI research organization은 2026년 8월 중순 human workday 1일당 총 3.1 agent-workdays의 effort를 사용했다.",
+      "kind": "number",
+      "status": "verified",
+      "evidence": [
+        {
+          "url": "https://openai.com/index/research-acceleration-view-inside-openai/",
+          "title": "Research acceleration: The view inside OpenAI",
+          "retrieved_at": "2026-09-10",
+          "authority": "primary"
+        }
+      ]
+    },
+    {
+      "claim_id": "anthropic-context-engineering",
+      "text": "Anthropic은 context engineering을 prompt engineering의 natural progression으로 설명하고, system instructions·tools·external data·message history를 포함한 전체 context state의 관리 문제로 정의한다.",
+      "kind": "attribution",
+      "status": "verified",
+      "evidence": [
+        {
+          "url": "https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents",
+          "title": "Effective context engineering for AI agents",
+          "retrieved_at": "2026-09-10",
+          "authority": "primary"
+        }
+      ]
+    },
+    {
+      "claim_id": "anthropic-long-running-handoff",
+      "text": "Anthropic의 long-running agent 실험에서는 compaction만으로 충분하지 않았고 session 간 상태를 넘기는 structured artifacts와 context reset/initializer-coding-agent 구조가 사용되었다.",
+      "kind": "attribution",
+      "status": "verified",
+      "evidence": [
+        {
+          "url": "https://www.anthropic.com/engineering/effective-harnesses-for-long-running-agents",
+          "title": "Effective harnesses for long-running agents",
+          "retrieved_at": "2026-09-10",
+          "authority": "primary"
+        }
+      ]
+    },
+    {
+      "claim_id": "openai-map-not-manual",
+      "text": "OpenAI는 agent-first repository 운영에서 하나의 거대한 AGENTS.md보다 짧은 map과 구조화된 docs system of record를 사용하는 방식을 설명한다.",
+      "kind": "attribution",
+      "status": "verified",
+      "evidence": [
+        {
+          "url": "https://openai.com/index/harness-engineering/",
+          "title": "Harness engineering: leveraging Codex in an agent-first world",
+          "retrieved_at": "2026-09-10",
+          "authority": "primary"
+        }
+      ]
+    },
+    {
+      "claim_id": "simon-astra-access-guess",
+      "text": "Simon Willison은 2026년 7월 말 OpenAI researcher agent spend 급증의 원인에 대해, 직원들이 이후 GPT-6 Astra로 공개된 모델에 내부 접근하기 시작한 시점일 수 있다고 추측했다.",
+      "kind": "attribution",
+      "status": "verified",
+      "evidence": [
+        {
+          "url": "https://simonwillison.net/2026/Sep/6/research-acceleration-the-view-inside-openai/",
+          "title": "Research acceleration: The view inside OpenAI",
+          "retrieved_at": "2026-09-10",
+          "authority": "secondary"
+        }
+      ]
+    },
+    {
+      "claim_id": "universal-harness-superiority",
+      "text": "하니스는 일반적으로 모델보다 더 중요한 성능 결정요인이다.",
+      "kind": "assertion",
+      "status": "unverified"
+    },
+    {
+      "claim_id": "rework-savings-vs-model-price",
+      "text": "context/state 재작업을 제거하는 비용 절감이 모델 단가를 20% 낮추는 것보다 크다.",
+      "kind": "assertion",
+      "status": "unverified"
+    }
+  ]
+}
