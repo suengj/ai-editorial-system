@@ -20,33 +20,44 @@ publication repository
 asset integration + article placement + site validation
 ```
 
-## 1. Publication text is not artwork state
+## 1. Publication text and artifact-local text are different states
 
-Generated artwork must not become the source of truth for mutable publication copy.
+Generated artwork must not become the source of truth for **parent-publication copy** that can change independently of the visual.
 
-Keep the following outside generated raster artwork by default:
+Keep the following outside generated raster artwork:
 
-- article title;
-- section heading;
+- parent article title or section heading used as publication chrome;
 - publication/update date;
-- caption;
-- citation or source note;
-- site/category label;
-- status, badge, CTA, or other UI copy.
+- content type/status/badge/CTA or other site UI copy;
+- long citations, long qualifiers, definitions, legal/editorially sensitive wording, or other copy that is better represented accessibly in the publication layer.
 
 These belong to Markdown/HTML or another deterministic publication layer because they may change independently of the visual.
 
-Stable semantic labels that are intrinsic to an explanatory diagram may appear inside the visual only when they are necessary to understand the relationship and are explicitly inspected for correctness. Exact evidence, values, axes, chronology, and source-derived geometry remain deterministic/traceable.
+A **Family B body infographic / explanatory research graphic** may, however, be a self-contained knowledge artifact. When intrinsic to the artifact and verified, it may include:
+
+- a separately authored visual-local title/subtitle;
+- stable semantic labels and module headings;
+- axes, units, chronology, declared-and-verified values, and bounded factual payload;
+- short source attribution for independent circulation;
+- an optional restrained publisher signature for a distribution-capable artifact.
+
+Short source attribution inside the raster supplements rather than replaces canonical page-level citation/provenance. Exact evidence, values, axes, chronology, and source-derived geometry remain deterministic, declared-and-verified, or otherwise traceable.
 
 The operational rule is:
 
 ```text
 ARTWORK
 = semantic visual structure
++ bounded artifact-local information when the visual family requires it
 
 PUBLICATION LAYER
-= mutable copy + accessibility + citation + placement metadata
+= parent-publication copy
++ accessibility
++ full citation/provenance
++ placement metadata
 ```
+
+Family A thumbnail/cover/intro visuals remain sparse and should not use this allowance to become title cards or miniature reports.
 
 ## 2. Placement is semantic, not positional
 
@@ -73,6 +84,7 @@ article_visual_handoff:
   article_ref: canonical article slug/path/version
   semantic_role: evidence_visual | explanatory_diagram | architectural_system | conceptual_illustration
   visual_function: explain | compare | compress | frame
+  visual_family: thumbnail | body_infographic | other
   renderer: deterministic | generative | hybrid
   placement:
     relation: after | before | replace_placeholder
@@ -85,8 +97,15 @@ article_visual_handoff:
     alt: concise description of what the visual communicates
     caption: optional; only when it adds interpretation/provenance
   text_policy:
-    mutable_publication_text_inside_artwork: false
-    intrinsic_diagram_labels: none | bounded_verified
+    parent_publication_text_inside_artwork: false
+    artifact_local_text: none | bounded_verified | self_contained_verified
+    artifact_local_title: optional stable visual-local title
+    source_attribution_inside_artwork: none | short_verified
+    publisher_signature_inside_artwork: none | restrained
+    canonical_page_provenance_required: true
+  presentation:
+    mobile_first_read: required
+    detail_access: none | full_size | open | expand | lightbox
   lineage:
     source_article_ref: version/hash when available
     generator_or_renderer: execution lineage, not editorial authority
@@ -95,7 +114,10 @@ article_visual_handoff:
     - thesis fit
     - no fabricated evidence
     - intended crop / scale works
-    - publication text remains external
+    - parent-publication text remains external
+    - artifact-local text is intrinsic, bounded, and verified when present
+    - canonical page provenance remains available
+    - mobile first-read structure survives
 ```
 
 The publication repository may add delivery metadata such as dimensions, file size, cache path, responsive variants, or build receipts. Those are implementation details rather than editorial semantics.
@@ -132,7 +154,7 @@ ABSTRACT THESIS / IDENTITY
 → restrained conceptual illustration
 ```
 
-A generative raster can support explanation, framing, identity, or atmosphere. It must not impersonate computed evidence.
+Integrated multimodal generation may own bounded Family-B structural text/factual payload only under the declared text-ownership and post-render verification contracts. A generative raster must not impersonate computed evidence.
 
 ## 6. Atomic integration preference
 
@@ -154,9 +176,13 @@ The publication layer should verify as applicable:
 - the referenced asset actually exists and is decodable/renderable;
 - the article references the intended asset, not a temporary generation path;
 - alt text is meaningful and separate from the artwork;
-- mutable article/section title text was not baked into generated artwork;
-- exact evidence remains deterministic/traceable;
-- desktop/mobile scale or crop is usable;
+- parent article/section title text was not baked into generated artwork as mutable publication chrome;
+- artifact-local title/subtitle/labels/source attribution/signature, when present, are intrinsic, bounded, and verified under the family contract;
+- short in-art source attribution does not replace canonical page citation/provenance;
+- exact evidence remains deterministic/declared-and-verified/traceable;
+- desktop/mobile first-read scale or crop is usable;
+- for dense Family-B detail, an appropriate full-size/open/expand path exists when secondary labels/evidence are not intended to be legible inline;
+- load-bearing detail is not hidden behind an unavailable detail-access path;
 - asset size/performance is within the publication budget;
 - canonical URL, structured metadata, accessibility, and text-first reading do not regress;
 - post-write evidence identifies the actual article/asset version committed or published.
@@ -182,6 +208,7 @@ actual file/reference
 binary transport
 article syntax
 responsive rendering
+detail-access interaction
 site typography/caption
 performance
 build/runtime validation
@@ -190,6 +217,10 @@ commit/publish mechanics
 
 An image-generation backend owns neither editorial meaning nor publication authority.
 
+## Owner-approved calibration case — 2026-09-09
+
+The `standard-vs-provider-adapter-harness` Family-B infographic for `ai-agent-harness-over-model` is approved as-is. Its visual-local title/subtitle, short source attribution, verified comparison values, and restrained `suengj.com` signature are accepted artifact-local information. The raster does not require regeneration solely to externalize those elements. Secondary fine print is difficult at ~390px, but the dominant comparison remains a first-read structure; this is a bounded calibration case, not a blanket waiver of progressive mobile readability.
+
 ## One-line rule
 
-> **Hand off article visuals by semantic role, semantic placement, accessibility, lineage, and explicit text/evidence boundaries; keep mutable publication copy outside generated artwork, and let the publication repository own storage and integration mechanics.**
+> **Hand off article visuals by semantic role, family-aware text ownership, semantic placement, accessibility, lineage, and explicit evidence boundaries: keep parent-publication copy outside artwork, allow verified artifact-local text for self-contained Family-B infographics, and preserve mobile first-read structure plus appropriate access to dense detail.**
