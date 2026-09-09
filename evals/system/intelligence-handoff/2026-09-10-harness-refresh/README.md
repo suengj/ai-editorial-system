@@ -114,9 +114,9 @@ Publication repo: `suengj/suengj-com`
 
 PR: `#43 — content: agent harness view draft with two approved visuals`
 
-Draft branch after Frame/Verify correction:
+Draft branch after Frame/Verify correction and explicit lineage write-back:
 
-`content/ai-agent-harness-over-model@8c5cc196cba45388a9f83842922e444e59cf4c2e`
+`content/ai-agent-harness-over-model@2b14ad25394047c6acb826494ca997ec82ad21b6`
 
 Article:
 
@@ -137,6 +137,7 @@ Material changes from the initial draft:
 5. Arbitrary `20% model-price vs rework saving` comparison is removed.
 6. Organization analogy and structural-problem masking are explicitly marked as interpretation/hypothesis.
 7. Existing owner-approved images are reused without regeneration or alteration.
+8. The canonical Markdown carries a non-rendered editorial-lineage comment pointing to the selected dossier, freshness addendum, Frame, Claim Set, review state and publication-approval=false.
 
 ## 6. Visual lineage
 
