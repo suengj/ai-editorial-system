@@ -13,9 +13,9 @@
     "rationale": "Compress visual chrome, not the argument: reduce boxes, fills, icons, borders, and repeated labels while preserving every load-bearing relationship (SUENGJ-INFOGRAPHIC-CALIBRATION.md §2, §4). Visual density is low even though semantic density is high — the two controls are independent (§2)."
   },
   "text_policy": {
-    "profile": "hybrid_template",
-    "label_count_ceiling": 8,
-    "complexity_ceiling": "Short stable semantic labels only (e.g. TOKEN MARKET, CUSTODIAN, MINT / REDEEM), never mutable article/section titles, dates, captions, citations, or promotional copy (SUENGJ-ARTICLE-IMAGE-FAMILIES.md §4.3; ARTICLE-VISUAL-PUBLICATION-HANDOFF.md §1)."
+    "profile": "family_aware_integrated",
+    "label_count_ceiling": 12,
+    "complexity_ceiling": "Artifact-local text may include a separately authored visual title/subtitle, short stable semantic labels/module headings, axes/units/chronology, declared-and-verified values, short source attribution for independent circulation, and an optional restrained publisher signature. Parent article/section title used as publication chrome, publication date, content type/status/CTA, long citations/qualifiers, legal/editorially sensitive wording, and dense prose stay outside or in deterministic accessible layers (SUENGJ-ARTICLE-IMAGE-FAMILIES.md §4.3; SUENGJ-INFOGRAPHIC-CALIBRATION.md §10)."
   },
   "composition": {
     "dominant_structure": "One primary question, answered by 2-4 strong semantic modules, one explicit reading path, and a consequence/tension/output when needed (SUENGJ-ARTICLE-IMAGE-FAMILIES.md §4.2).",
@@ -27,48 +27,55 @@
   "audience_adaptation": {
     "domain-expert": "Legend optional; may use denser domain encodings (e.g. custody/rights-chain vocabulary) without in-frame expansion.",
     "domain-practitioner": "Moderate label density with brief glossing on first use.",
-    "beginner-learner": "Expand every acronym in-frame and keep to the low end of the module range (2 modules).",
+    "beginner-learner": "Expand acronyms when necessary for comprehension and keep to the low end of the module range; move long explanations outside the raster.",
     "child-upper-elementary": "Avoid this artifact class for a genuinely child-targeted piece unless the mechanism is essential; if used, cap at 2 modules, use plain-language labels only, avoid abstract encodings, and never make the legend load-bearing — simplifying the audience must never simplify the truth (docs/architecture/V2-EDITORIAL-LEARNING-CORE.md §9 constraint 1)."
   },
   "renderer_preference": {
     "order": ["deterministic", "hybrid", "generative"],
-    "rule": "Exact labels, topology, arrows, evidence, comparison rows, chronology, and values remain deterministic and auditable. That does not require the whole plate to be deterministic: a qualitative causal/spatial scene may be generative or hybrid when its RenderSpec keeps exact facts on the deterministic layer. Semantic density is not visual density; simple means cognitively clear, not graphically sparse."
+    "rule": "Exact labels, topology, arrows, evidence, comparison rows, chronology, and values remain deterministic, declared-and-verified, or otherwise auditable. That does not require the whole plate to be deterministic: integrated multimodal generation may own short structural text or bounded factual payload when the text-ownership contract permits it and post-render verification inspects the actual pixels/text. The deterministic lane remains the fallback for evidence that cannot tolerate variance."
   },
   "readability_gate": {
     "applies": true,
     "gate": {
-      "viewport": "~390px reading surface",
+      "viewport": "~390px inline reading surface plus full-size/open/expand detail path when density requires it",
       "requirements": [
-        "module boundaries readable after downscaling",
-        "2-4 strong modules rather than many tiny panels",
-        "one clear reading path",
-        "line weight/contrast that survives mobile rendering",
-        "labels only where they improve comprehension",
-        "no pseudo-detail or ornamental micro-charts",
+        "visual topic/question identifiable at inline width",
+        "2-4 strong module boundaries readable after downscaling",
+        "dominant comparison/mechanism/reading direction clear without zoom",
+        "principal conclusion or tension clear when the visual carries one",
+        "line weight/contrast survives mobile rendering",
         "no horizontal page overflow",
-        "no reliance on hover or desktop-only interaction"
+        "fine labels/source attribution/secondary evidence may require larger view only when they are not the sole carrier of a load-bearing claim",
+        "load-bearing detail unreadable inline requires either a real detail-access path or plate split/redesign",
+        "no reliance on browser zoom as the intended default interaction"
       ]
     },
-    "rationale": "Mobile readability is a hard gate for body infographics, not an aspiration (SUENGJ-ARTICLE-IMAGE-FAMILIES.md §5; SUENGJ-INFOGRAPHIC-CALIBRATION.md §10)."
+    "rationale": "Mobile readability is progressive: first-read structure is a hard inline gate, while dense secondary detail may be inspected through an explicit larger-view path (SUENGJ-ARTICLE-IMAGE-FAMILIES.md §5; SUENGJ-INFOGRAPHIC-CALIBRATION.md §10)."
   },
   "split_rule": {
     "applies": true,
-    "rule": "One plate, one primary question. Split when more than one primary question is being answered, the reading path forks repeatedly, important labels become too small on mobile, more than 4 major modules compete for attention, the visual requires dashboard-like micro-panels, or semantic structure remains valid only after zooming. Do not solve information overload by shrinking modules, fonts, or labels (SUENGJ-ARTICLE-IMAGE-FAMILIES.md §6; SUENGJ-INFOGRAPHIC-CALIBRATION.md §10)."
+    "rule": "One plate, one primary question. Split when more than one primary question is being answered, the reading path forks repeatedly, more than 4 major modules compete for attention, the visual requires dashboard-like micro-panels, the primary semantic structure becomes legible only after expansion, or load-bearing detail is unreadable inline with no appropriate full-size/open/expand path. Secondary fine detail needing a larger view is not by itself a split trigger when first-read structure survives."
   },
   "acceptance": [
     "passes VISUAL-INFORMATION-GAIN.md with a named new_information item beyond adjacent prose",
     "answers exactly one primary question per plate",
     "2-4 load-bearing modules with one explicit reading path",
-    "structurally understandable at ~390px without zoom",
-    "exact values, topology, or chronology remain deterministic/traceable",
-    "no mutable article title, date, caption, or citation baked into the artwork"
+    "primary structure is understandable at ~390px inline without zoom",
+    "dense secondary detail has an appropriate full-size/open/expand path when needed",
+    "exact values, topology, or chronology remain deterministic/declared-and-verified/traceable",
+    "parent-publication copy remains outside the artwork",
+    "artifact-local title/subtitle/labels/source attribution/signature are allowed only when intrinsic, bounded, and verified",
+    "in-art source attribution supplements rather than replaces canonical page-level provenance"
   ],
   "reject": [
     "mini dashboard or multi-panel report crammed into one plate",
     "dense infographic collage or icon-per-cell composition",
     "pseudo-detail or ornamental micro-charts",
     "more than one primary question on a single plate",
-    "structure that only becomes legible after zooming on mobile",
+    "primary structure that only becomes legible after expansion",
+    "load-bearing detail unreadable inline with no explicit detail-access path",
+    "parent article title/date/status/CTA baked into the visual as publication chrome",
+    "source footer treated as a replacement for canonical provenance",
     "minimalism achieved by deleting load-bearing dimensions, exceptions, or consequences (SUENGJ-INFOGRAPHIC-CALIBRATION.md §5)"
   ],
   "source_authority": [
