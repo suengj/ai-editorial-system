@@ -1,6 +1,6 @@
 # Suengj.com Infographic Calibration
 
-> Snapshot: 2026-09-03
+> Snapshot: 2026-09-03 · family-aware text/mobile calibration updated 2026-09-09
 >
 > This is a publication-specific calibration derived from owner review of two infographic concept boards for the same article. It does not replace the durable infographic, visual-language, or information-gain contracts.
 
@@ -252,24 +252,44 @@ A reusable instruction is:
 
 > **Keep the full approved information architecture. Simplify only the visual treatment: remove unnecessary containers, decorative icons, heavy fills, redundant labels, and high-contrast chrome while preserving every load-bearing comparison, stage, causal link, and consequence.**
 
-## 10. Body-infographic role boundary — 2026-09-04
+## 10. Body-infographic role boundary — updated 2026-09-09
 
-This calibration now applies specifically to the **body infographic / explanatory research graphic** family defined in `SUENGJ-ARTICLE-IMAGE-FAMILIES.md`.
+This calibration applies specifically to the **body infographic / explanatory research graphic** family defined in `SUENGJ-ARTICLE-IMAGE-FAMILIES.md`.
 
 It must not be used to justify dense thumbnail/cover images. Thumbnail assets remain thesis-first and sparse even when a body infographic for the same article carries richer semantic structure.
 
-### Mobile gate
+### Text ownership
 
-A body infographic must remain structurally understandable at roughly a 390px reading viewport without requiring zoom.
+A body infographic may be a self-contained knowledge artifact rather than merely an image subordinate to one article page. Therefore the correct boundary is **parent-publication text vs artifact-local text**, not simply text vs no text.
 
-This does not mean enlarging every label indiscriminately. It means the semantic architecture itself must survive downscaling:
+Artifact-local text may include, when intrinsic and verified:
 
-- use 2–4 strong modules rather than many tiny panels;
-- keep one clear reading path;
-- use line weights/contrast that survive mobile rendering;
-- allow stable semantic labels only when they materially improve comprehension;
-- reject pseudo-detail and ornamental micro-charts;
-- avoid horizontal overflow.
+- a visual-local title and short subtitle/thesis line;
+- stable semantic labels/module headings;
+- axes, units, chronology, exact values, and bounded factual payload;
+- short source attribution for independent circulation;
+- an optional restrained publisher signature for distribution-capable assets.
+
+Parent article/section title used as publication chrome, publication dates, content type/status/CTA, long qualifiers, dense citations, and legal/editorially sensitive wording remain outside or in deterministic accessible page layers.
+
+A source footer inside the raster supplements rather than replaces canonical page provenance.
+
+### Progressive mobile gate
+
+A body infographic must remain **structurally understandable** at roughly a 390px inline reading viewport without requiring zoom. This does not mean every secondary label or source note must be readable at that size.
+
+At inline width, preserve:
+
+- the visual's topic/question;
+- 2–4 strong module boundaries;
+- the dominant comparison/mechanism/reading direction;
+- the main conclusion/tension when present;
+- sufficient contrast/line weight;
+- no horizontal overflow.
+
+Fine-grained labels, source attribution, secondary annotation, or dense evidence values may use a larger view when they are not the only carrier of a load-bearing claim and a full-size/open/expand path is provided.
+
+If load-bearing detail cannot be read inline and no detail-access path exists, split or redesign the plate. Do not solve the problem by shrinking modules or by assuming browser zoom is the intended experience.
 
 ### Plate split rule
 
@@ -284,10 +304,16 @@ Plate B → rights / governance / control / recovery
 
 Do not solve a dense semantic plan by shrinking modules or labels until the graphic becomes technically complete but practically unreadable.
 
+Secondary fine detail requiring expansion is not itself evidence that the semantic plan should be split when the primary structure survives at first read.
+
 ### Denoiser benchmark interpretation
 
 Treat Denoiser-style article visuals as a benchmark for **information placement inside the reading flow** and for the idea of a visual research spread. Do not copy its look mechanically. The target remains suengj.com in surface language, with clearer information hierarchy inside body infographics than inside thumbnails.
 
+### Owner-approved calibration case — 2026-09-09
+
+`standard-vs-provider-adapter-harness` for the `ai-agent-harness-over-model` draft is accepted as-is. Its visual-local title/subtitle, short source attribution, verified values, and restrained `suengj.com` signature are treated as artifact-local information. The approved raster is not regenerated solely to externalize those elements. Its small secondary text on mobile is accepted as a bounded calibration case; future dense infographics should use progressive detail access or plate splitting rather than treating this exception as a blanket waiver.
+
 ## 11. One-line rule
 
-> **For suengj.com body infographics, preserve rich information architecture and reduce visual chrome; keep one plate to one primary question, and treat mobile readability as a hard editorial gate.**
+> **For suengj.com body infographics, preserve rich information architecture and reduce visual chrome; allow verified artifact-local text for self-contained reuse, keep one plate to one primary question, and make mobile first-read structure clear while providing appropriate access to dense secondary detail.**
