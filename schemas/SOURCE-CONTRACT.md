@@ -45,9 +45,23 @@ local:        { path: "evals/fixtures/synthetic-01.md" }
 | `project_repo` | Project GitHub repositories as technical/project SSOT |
 | `web_reference` | External published work cited as evidence |
 | `dataset` | Structured data used for evidence visuals |
+| `intelligence_dossier` | A selected Topic Dossier from `reference-library/intelligence/dossiers/`, referenced by repo + commit + path |
 
 The vocabulary is finite. Adding a class is a contract change, not a
 convention.
+
+### Derived material is never claim-level evidence
+
+`intelligence_dossier` is scaffolding by definition: a dossier curates and
+summarises other sources, so a claim must resolve to the sources it cites, not
+to the dossier. The validator enforces this — a dossier appearing in `used_by`
+with `role: primary` fails with `derived-evidence-role`. `supporting`,
+`background` and `contradicting` are all permitted.
+
+`youtube_summary` is deliberately **not** subject to this rule. A video can
+legitimately be the primary event or artefact under analysis, in which case the
+summary points at genuine primary material. See
+[`../docs/architecture/INTELLIGENCE-HANDOFF.md`](../docs/architecture/INTELLIGENCE-HANDOFF.md).
 
 ## Lifecycle — source, not publication
 

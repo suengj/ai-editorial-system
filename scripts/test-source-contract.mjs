@@ -37,12 +37,59 @@ console.log('canonical example (expect 0 issues)');
   const issues = validateManifest(base, schema);
   check('example manifest is valid', issues.length === 0, JSON.stringify(issues));
   const kinds = new Set(base.sources.map((s) => s.kind));
-  for (const k of ['youtube_summary', 'market_brief', 'research_draft', 'project_repo']) {
+  for (const k of ['youtube_summary', 'market_brief', 'research_draft', 'project_repo', 'intelligence_dossier']) {
     check(`covers source class ${k}`, kinds.has(k));
   }
   check(
     'a source with genuinely unknown authored date uses null, not the ingestion date',
     base.sources.some((s) => s.source_created_at === null),
+  );
+}
+
+// --- learning-intelligence handoff (SUE-737) ------------------------------
+console.log('intelligence dossier intake');
+{
+  const dossier = base.sources.find((s) => s.kind === 'intelligence_dossier');
+  check('a Topic Dossier is representable as a source by reference', Boolean(dossier));
+  check(
+    'the dossier is pinned to an immutable commit, not a branch',
+    /^[0-9a-f]{40}$/.test(dossier?.origin_ref?.ref ?? ''),
+  );
+  check(
+    'the dossier body is referenced by hash, never copied into this repo',
+    dossier?.content_hash?.algo === 'sha256' && !('body' in (dossier ?? {})),
+  );
+  check(
+    'upstream selection is human authority, not an AI recommendation',
+    dossier?.disposition === 'candidate' && dossier?.disposition_authority === 'human',
+  );
+
+  // The load-bearing rule: curated upstream intelligence never becomes the
+  // evidence for a claim just because it was curated.
+  const promoted = clone();
+  const target = promoted.sources.find((s) => s.kind === 'intelligence_dossier');
+  target.disposition = 'used';
+  target.used_by = [{ article_id: 'art:agent-cost-curve', role: 'primary', first_used_at: '2026-09-10T00:00:00Z' }];
+  check(
+    'a dossier cited as primary evidence is rejected',
+    codes(promoted).includes(CODES.DERIVED_EVIDENCE),
+    `got [${[...new Set(codes(promoted))].join(', ')}]`,
+  );
+
+  for (const role of ['supporting', 'background', 'contradicting']) {
+    const ok = clone();
+    const t2 = ok.sources.find((s) => s.kind === 'intelligence_dossier');
+    t2.disposition = 'used';
+    t2.used_by = [{ article_id: 'art:agent-cost-curve', role, first_used_at: '2026-09-10T00:00:00Z' }];
+    check(`a dossier cited as ${role} context is allowed`, !codes(ok).includes(CODES.DERIVED_EVIDENCE));
+  }
+
+  // A YouTube summary may still be primary when the video is the event itself.
+  const yt = clone();
+  const ytSrc = yt.sources.find((s) => s.kind === 'youtube_summary' && (s.used_by ?? []).length > 0);
+  check(
+    'a YouTube summary may still be primary when the video is the event analysed',
+    ytSrc?.used_by?.[0]?.role === 'primary' && !codes(yt).includes(CODES.DERIVED_EVIDENCE),
   );
 }
 
