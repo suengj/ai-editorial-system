@@ -8,13 +8,15 @@ information, one of them is a **cache** and must say so.
 
 | Concern | System of record | Replicas allowed | Notes |
 |---|---|---|---|
-| Raw source material (YouTube, market/finance, GitHub project state) | Google Drive + project GitHub repos | Reference only (URI + hash) | Never copied into this repo |
+| Raw source material (YouTube, market/finance, GitHub project state, web articles) | Original publisher + Google Drive/P03 + project GitHub repos as applicable | Reference only (URI + hash) | Never copied into this repo as canonical raw material |
+| Curated external source registry / monitoring tier (`A+`, `A`, specialist, primary pointers) | **`reference-library/references/`** | Read-only pointers/cached routing metadata | Discovery/monitoring authority only; source tier is not a truth score and is not an editorial craft reference |
+| Derived Learning Intelligence (Daily/Weekly Briefs, Knowledge Map, Article Candidates, Topic Dossiers) | **`reference-library/intelligence/`** | URI/hash/reference in this repo | Provenance-linked learning/editorial context; neither factual authority nor article-generation authority |
 | Source manifest / lifecycle state | Drive-side manifest (AES-P0.2) | Manifest *schema* lives here | This repo owns the schema, not the data |
 | Editorial Constitution, voice, content-type profiles | **ai-editorial-system** | — | `editorial/` |
 | Skills (frame / write / verify / polish / artifacts) | **ai-editorial-system** | — | `skills/` |
 | Source / Article / Artifact schemas, lineage rules | **ai-editorial-system** | — | `schemas/` |
 | Eval fixtures, rubric, regression method | **ai-editorial-system** | — | `evals/` |
-| Benchmarks and external references | **ai-editorial-system** | — | Attributed pointers only |
+| Benchmarks and external craft references | **ai-editorial-system** | — | Attributed pointers only; quality/style/structure role, not factual authority |
 | Draft articles under review | HITL working area (Drive) | — | Not committed here |
 | **Canonical article** | `suengj-com` (`content/**`) | — | Git merge is materialization |
 | Publication status / gating | `suengj-com` content contract | — | `status: draft \| published \| archived` |
@@ -22,9 +24,9 @@ information, one of them is a **cache** and must say so.
 | Derived artifacts (brief, visual, slides) | `suengj-com` alongside the article | Generator config lives here | Lineage fields defined here (AES-P0.3) |
 | Editorial Intent (five axes, clarification state) | **ai-editorial-system** | — | `schemas/editorial-intent.schema.json` (AES-V2.1/V2.2) |
 | Editorial Package (destination-neutral handoff) | **ai-editorial-system** | Adapter-side renders are outputs, not replicas | `schemas/editorial-package.schema.json`, `schemas/EDITORIAL-PACKAGE-CONTRACT.md` (AES-V2.9) |
-| Reference evaluations (craft evidence, never claims) | **ai-editorial-system** | — | `references/`, `editorial/profiles/reference/` (AES-V2.3/V2.4) |
+| Editorial reference evaluations (craft evidence, never claims) | **ai-editorial-system** | — | `references/`, `editorial/profiles/reference/` (AES-V2.3/V2.4); distinct from the external-source registry repo |
 | Calibration (versioned owner preference snapshot) | **ai-editorial-system** | — | `calibration/` (AES-V2.10); never the mean of all feedback, never rewritten in place |
-| Work, dependency, acceptance, evidence | Linear | — | Project *Suengj.com · AI Editorial System* |
+| Work, dependency, acceptance, evidence | Linear | — | Project *AI Editorial System · Editorial Learning Core* and owning cross-repo project as applicable |
 
 ## Directional rules
 
@@ -41,6 +43,11 @@ information, one of them is a **cache** and must say so.
    this repo may set `published`.
 5. **Linear is the acceptance authority.** A phase is complete when Linear says
    so, backed by execution evidence — not when a document exists.
+6. **Learning intelligence cannot bypass evidence or framing.** Daily Briefs,
+   Knowledge Topics, Article Candidates and Topic Dossiers may seed a run, but
+   important claims must resolve to admissible underlying evidence and the
+   Editorial Core must still perform `Frame / NO_ARTICLE`. See
+   [`INTELLIGENCE-HANDOFF.md`](INTELLIGENCE-HANDOFF.md).
 
 ## Consistency anchors in `suengj-com`
 
@@ -61,5 +68,7 @@ breaking changes here.
 - Importing `suengj-com` build or loader code into this repo.
 - Writing directly to `suengj-com` `content/**` from tooling in this repo
   without passing that repo's own validators and review gate.
+- Copying `reference-library` Daily/Knowledge/Dossier prose into an article as
+  verified evidence without resolving the underlying source provenance.
 - Introducing a new database, vector store, or multi-agent framework as a
   system of record for anything in the matrix above.
