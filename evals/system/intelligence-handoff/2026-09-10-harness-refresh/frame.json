@@ -1,0 +1,36 @@
+{
+  "thesis": "AI 에이전트의 성능과 비용은 모델 자체의 속성만으로 설명되지 않는다. ARC-AGI-3의 GPT-6 Astra 사례는 동일 모델에서도 하니스의 context·reasoning-state 관리가 성능과 비용을 크게 바꿀 수 있음을 보여주지만, 이 한 사례만으로 하니스가 일반적으로 모델보다 중요하다고 결론낼 수는 없다.",
+  "article_worthiness": "ARC Prize가 같은 GPT-6 Astra를 서로 다른 harness로 평가한 결과는 모델을 고정한 채 실행 구조의 차이를 수치로 관찰할 수 있는 드문 primary evidence다. 최근 OpenAI의 coding-agent 사용 규모 공개와 함께 보면, 실무자가 모델 이름만 비교하지 않고 model-plus-execution-system을 별도의 측정 단위로 봐야 할 이유가 생긴다.",
+  "audience": "AI agent를 실제 개발·운영하거나 agentic development를 의사결정하는 practitioner와 professional generalist. 모델·프롬프트·tool use의 기본 개념은 알지만 성능과 비용을 주로 모델 선택의 결과로 보는 독자를 상정한다.",
+  "source_weighting": "ARC Prize는 GPT-6 Astra의 harness별 점수·비용·token·elapsed-time 및 harness mechanism에 대한 load-bearing primary authority다. OpenAI는 자사 연구조직의 $600+/day 및 3.1 agent-workdays 운영 지표에 대한 primary authority다. Anthropic과 OpenAI engineering 글은 context/harness design의 mechanism과 practice에 대한 supporting authority다. Simon Willison은 OpenAI usage 급증 시점에 대한 해석의 attribution source일 뿐 원인에 대한 factual authority가 아니다. 2026-09-09 selected dossier와 METR 연구는 spend/productivity 일반화를 제한하는 challenge/background evidence로 사용한다.",
+  "verification_needs": [
+    "ARC Prize Standard harness best observed result가 max reasoning 62.7% / $26,098인지 확인",
+    "ARC Prize Provider Adapter best observed result가 high reasoning 99.9% / $18,817인지 확인",
+    "동일 max reasoning 비교에서 Provider Adapter가 98.6% / $17,332인지 확인",
+    "두 harness가 모두 해결한 167 game-reasoning pair에서 Provider Adapter가 총 token 49% 감소, aggregate recorded elapsed time 약 3.66x faster인지 확인",
+    "Provider Adapter가 opaque reasoning state를 request 간 보존하고 긴 conversation에 compaction을 사용하는지 확인",
+    "OpenAI median researcher가 mid-August 기준 API 가격으로 $600/day 이상의 coding-agent inference를 사용했는지 확인",
+    "OpenAI research organization이 human workday 1일당 3.1 agent-workdays를 사용했는지 확인",
+    "Anthropic이 context engineering을 prompt engineering의 progression으로 정의하고 context state 전체를 관리 대상으로 설명하는지 확인",
+    "Anthropic의 long-running agent 사례에서 compaction만으로 충분하지 않았고 structured handoff/context reset이 사용되었는지 확인",
+    "OpenAI harness engineering 글이 monolithic instruction manual 대신 repository knowledge map/system of record 방식을 설명하는지 확인",
+    "62.7% vs 99.9%를 동일 reasoning-effort controlled comparison으로 오인하지 않도록 모든 문장·인포그래픽 설명을 확인",
+    "harness가 일반적으로 model보다 중요하다는 보편 명제 또는 model-price savings보다 rework savings가 더 크다는 수치적 주장을 사실처럼 쓰지 않았는지 확인"
+  ],
+  "original_value_add": "벤치마크 자체를 소개하는 대신 agent 성능·비용의 비교 단위를 Model 하나에서 Model × Harness × Context × Tools × Verification으로 확장해야 한다는 실무적 판단을 제시한다. 동시에 best-observed 비교와 same-effort 비교를 분리하고, 한 benchmark·한 provider adapter라는 경계를 명시해 'harness가 모델보다 중요하다'는 과잉 일반화를 피한다.",
+  "uncertainty": [
+    "ARC-AGI-3는 bounded game-like benchmark이며 open-ended software/research work로 같은 효과가 일반화되는지는 검증되지 않았다.",
+    "Provider Adapter의 opaque reasoning-state 기능은 provider-specific이므로 다른 vendor/model에서 동일한 효과가 재현되는지 모른다.",
+    "62.7%와 99.9%는 각 harness의 best observed result이지만 reasoning effort가 max와 high로 다르다.",
+    "ARC Prize가 공개한 evaluation cost는 반복 run의 variance를 제시하지 않는다.",
+    "OpenAI의 $600+/day와 3.1 agent-workdays는 내부 운영 지표이며 agent spend가 productivity를 원인적으로 높였다는 증거는 아니다.",
+    "조직 operating-system 비유와 '좋은 intelligence를 덜 낭비한다'는 결론은 evidence에 기반한 해석이지 직접 측정된 사실이 아니다."
+  ],
+  "structure": [
+    "같은 모델, 다른 harness: best-observed 수치와 same-effort max 수치를 구분해 ARC 사례를 먼저 제시한다.",
+    "왜 차이가 났는가: reasoning-state 보존과 compaction을 중심으로 context/state management mechanism을 설명한다.",
+    "실무 비용의 단위가 바뀌는 이유: 모델 단가뿐 아니라 반복 context reconstruction·tool/state loss·validation 재작업을 측정해야 한다는 implication을 제시한다.",
+    "어디까지 일반화할 수 있는가: bounded benchmark, provider-specific adapter, spend≠productivity, METR challenge evidence를 함께 둔다.",
+    "다음 비교 단위: Model × Harness × Context × Tools × Verification을 실제 agent benchmark와 운영 측정의 단위로 제안한다."
+  ]
+}
