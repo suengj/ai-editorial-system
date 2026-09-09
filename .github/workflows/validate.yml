@@ -60,6 +60,8 @@ jobs:
         run: npm run validate:presentation
       - name: Semantic grammar regression
         run: npm run test:presentation
+      - name: Polish assurance boundary regression
+        run: npm run test:polish-assurance
 
   skills:
     name: Skills
