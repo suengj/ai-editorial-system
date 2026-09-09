@@ -1,6 +1,6 @@
 # Suengj.com Article Image Families
 
-> Snapshot: 2026-09-04
+> Snapshot: 2026-09-04 · family-aware text/mobile calibration updated 2026-09-09
 >
 > Publication-specific contract for routing article visuals into two distinct families: **thumbnail / cover / intro visuals** and **body infographic / explanatory research graphics**. Both inherit the same suengj.com taste calibration, but they must not share the same internal information geometry.
 
@@ -74,17 +74,19 @@ Typical forms:
 
 Prefer no text inside artwork.
 
-Mutable publication text must remain outside:
+Parent-publication text must remain outside:
 
 - article title;
 - section title;
 - publication/update date;
-- site label;
+- site UI label;
 - caption;
 - citation/source note;
 - CTA/status/badge.
 
 Stable semantic symbols or extremely small intrinsic labels are allowed only when the concept becomes materially less legible without them.
+
+The richer artifact-local text allowance for Family B does **not** apply to thumbnails merely because the same asset might later be shared socially.
 
 ### 3.4 Readability target
 
@@ -148,11 +150,29 @@ Good body-infographic structures include:
 - market or operational flow;
 - evidence + consequence synthesis.
 
-### 4.3 Stable labels are allowed
+### 4.3 Artifact-local text is allowed
 
-Unlike thumbnails, body infographics may use stable semantic labels when they materially improve comprehension.
+Unlike thumbnails, a body infographic may be a **self-contained knowledge artifact** that is reused outside the parent article. Its text boundary is therefore family-aware.
 
-Examples:
+Allowed when intrinsic to the visual and verified:
+
+- a separately authored **visual title** naming the plate's own question/thesis rather than copying mutable parent-article metadata;
+- a short visual subtitle/thesis line when required for self-contained comprehension;
+- stable semantic labels and module headings;
+- axes, units, chronology, verified values, comparison rows, and bounded factual payload;
+- short source attribution when the infographic carries evidence and may circulate independently;
+- an optional restrained publisher signature such as `suengj.com` for a distribution-capable artifact.
+
+Keep outside the artwork:
+
+- parent article title or section title used merely as publication chrome;
+- publication/update date;
+- content type, status, CTA, badge, or UI copy;
+- long citations, dense qualifiers, definitions, legal/editorially sensitive wording, or anything better represented accessibly in HTML/Markdown.
+
+A short in-art source attribution never replaces canonical page-level citation/provenance. The artifact can be self-contained without becoming its own citation authority.
+
+Examples of intrinsic labels remain valid:
 
 - `TOKEN MARKET`
 - `UNDERLYING MARKET`
@@ -161,13 +181,11 @@ Examples:
 - `VOTING`
 - `PAUSE`
 
-Do not bake in mutable article/section titles, dates, captions, citations, or promotional copy.
-
 ### 4.4 Renderer preference
 
 Body infographics default toward a **deterministic or strongly structured renderer** when labels, topology, arrows, evidence, comparison rows, chronology, or exact relationships must remain stable and auditable.
 
-Use generative rendering only when the body visual is primarily qualitative and can tolerate image-model variance without weakening meaning. Do not ask an image model to reproduce dense text, exact numeric axes, or complex compliance/rights structures that are better authored deterministically.
+However, integrated multimodal generation may own short structural text or bounded factual payload when the upstream text-ownership contract explicitly allows it and post-render verification checks the actual pixels/text. The deterministic lane remains the fallback and the authority for evidence that cannot tolerate generative variance.
 
 Practical default:
 
@@ -176,32 +194,42 @@ thumbnail / cover
 → generative conceptual illustration is often appropriate
 
 body infographic with labels / process / rights / exact structure
-→ deterministic SVG / chart / diagram preferred
+→ deterministic / hybrid / verified integrated generation selected by evidence burden
 ```
 
 Both may share the same suengj.com surface language.
 
 ### 4.5 Evidence boundary
 
-Exact values, axes, chronology, or empirical comparisons must remain deterministic or traceable.
+Exact values, axes, chronology, or empirical comparisons must remain deterministic, declared-and-verified, or otherwise traceable.
 
 A generated infographic may explain structure, but it must not silently invent evidence authority.
 
-## 5. Mobile readability is a hard gate for body infographics
+## 5. Mobile readability is a progressive gate for body infographics
 
-A body infographic that looks refined at desktop width but collapses into faint lines, tiny labels, or unreadable micro-panels on a ~390px reading surface fails the publication contract.
+A body infographic that looks refined at desktop width but loses its **primary structure** on a ~390px reading surface fails the publication contract. The gate does not require every secondary label or source footer to be readable at 390px.
 
-Require:
+At inline mobile width, require first-read comprehension of:
 
-- module boundaries readable after downscaling;
-- enough line weight and contrast to survive mobile rendering;
-- large semantic grouping;
-- labels only where they improve comprehension;
-- no pseudo-detail or ornamental micro-charts;
-- no horizontal page overflow;
-- no reliance on hover or desktop-only interaction.
+- what the infographic is about;
+- the dominant comparison / mechanism / reading direction;
+- the boundaries of the 2–4 major modules;
+- the principal conclusion or tension when the visual carries one;
+- no horizontal page overflow.
 
-A reader should be able to understand the structure before zooming.
+Fine-grained labels, source attribution, secondary annotation, or dense evidence values may require a larger view when they are not the sole carrier of a load-bearing claim **and** the publication provides a suitable full-size/open/expand path.
+
+If load-bearing detail cannot be read inline and no detail-access path exists, split or redesign the plate. Do not use browser zoom as the intended default interaction for newly designed dense graphics.
+
+The principle is:
+
+```text
+390px inline
+→ understand the plate and its main structure
+
+full-size / open / expand when needed
+→ inspect fine labels, source attribution, and secondary evidence detail
+```
 
 ## 6. Split rule — one plate, one primary question
 
@@ -238,10 +266,12 @@ Split when any of these become true:
 
 - more than one primary question is being answered;
 - the reading path forks repeatedly;
-- important labels become too small on mobile;
 - more than 4 major modules compete for attention;
 - the visual requires dashboard-like micro-panels;
-- semantic structure remains valid only after zooming.
+- the **primary semantic structure** becomes legible only after expansion;
+- load-bearing detail is unreadable inline and no appropriate full-size/open/expand path exists.
+
+Secondary fine detail requiring a larger view is not by itself a split trigger when the first-read structure survives and the detail is accessible elsewhere.
 
 ## 7. Denoiser benchmark interpretation
 
@@ -289,9 +319,12 @@ What one question should this plate answer?
 Which 2–4 modules are load-bearing?
 What is the reading order?
 What information gain does the plate add over adjacent prose?
-Can it remain legible on mobile without zooming?
+Which text is parent-publication copy vs artifact-local information?
+Does the artifact need a visual-local title or source attribution to survive independent reuse?
+Does the primary structure remain clear at mobile inline width?
+If secondary detail is dense, what full-size/open/expand path makes it inspectable?
 Should this be split into two plates instead?
-Does the structure require deterministic rendering?
+Which factual payload must be deterministic or post-render verified?
 ```
 
 ## 9. Example — tokenized stocks / 24-hour finance
@@ -337,9 +370,15 @@ Semantic modules:
 - pause authority;
 - recovery / resume path.
 
-Prefer deterministic/structured rendering because topology and semantic labels are load-bearing. If B becomes unreadable at mobile size, split it again rather than compressing it.
+Prefer deterministic/structured rendering because topology and semantic labels are load-bearing. If B's primary structure becomes unreadable at mobile size, split it again rather than compressing it.
 
-## 10. Relationship to other contracts
+## 10. Owner-approved calibration case — 2026-09-09
+
+The `standard-vs-provider-adapter-harness` body infographic for `ai-agent-harness-over-model` is accepted as-is by the owner and becomes a bounded calibration case for this family-aware rule.
+
+Its visual-local title/subtitle, short source attribution, verified comparison values, and restrained `suengj.com` signature are valid artifact-local information rather than parent-publication metadata. The approved raster does not need regeneration. Secondary fine print is difficult at ~390px, but the dominant Standard-vs-Provider comparison remains a first-read structure; this owner approval is not permission to waive progressive readability for future infographics.
+
+## 11. Relationship to other contracts
 
 Use this document together with:
 
@@ -352,4 +391,4 @@ Use this document together with:
 
 ## One-line rule
 
-> **Use one publication identity but two visual functions: thumbnails are thesis-first and often generative; body infographics are information-first and usually deterministic when structure or labels are load-bearing, with mobile readability and plate splitting treated as hard constraints.**
+> **Use one publication identity but two visual functions: thumbnails remain thesis-first and sparse; body infographics are information-first, may carry verified artifact-local text for self-contained reuse, and must preserve mobile first-read structure with an appropriate detail-access path when fine information is dense.**
