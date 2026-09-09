@@ -84,9 +84,11 @@ export function checkPolish(before, after, { classes = null } = {}) {
 }
 
 /**
- * A polish pass is acceptable when it changed the prose but none of the
- * protected spans. Unchanged text is reported separately: a polish that
- * changed nothing is not a violation, but it is not a polish either.
+ * Report protected-span preservation, not semantic or editorial acceptance.
+ * `ok` only means the selected span checks found no violation. Entity binding,
+ * negation, qualification and claim meaning still need the governed semantic
+ * review. Unchanged text can be a valid KEEP under the editorial-polish Skill.
+ * A changed=true/ok=true pair is not by itself permission to accept or publish.
  */
 export function assessPolish(before, after, options = {}) {
   const violations = checkPolish(before, after, options);

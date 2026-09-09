@@ -140,11 +140,12 @@ This Skill stops and reports rather than producing a review when:
 
 ## Evidence
 
-`schemas/l1-review.schema.json` plus `scripts/lib/l1-core.mjs` enforce every
-invariant above mechanically: missing evidence, integrity overridden by
-style, an undeclared cross-type comparison, an undeclared reference
-monoculture, and a `routes_to` that does not resolve against
-`editorial/feedback-routing.json` are all rejected, not merely discouraged.
+`schemas/l1-review.schema.json` and `scripts/lib/l1-core.mjs` validate the
+record's declared structure and consistency constraints, including required
+evidence fields and routing. They do not establish that an evidence span is
+truthful or relevant, that a stylistic judgement is correct, or that every
+semantic invariant above has been proved. The comparison still requires
+actual source/output inspection, and human/L2 authority is unchanged.
 Run: `node scripts/validate-corpus.mjs`, `node scripts/test-l1.mjs`.
 
 ## Authority

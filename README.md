@@ -32,9 +32,11 @@ Failure routing  →  targeted tuning  →  versioned calibration
 suengj.com · NotebookLM · academic · newsletter · …   (adapters)
 ```
 
-Every axis, gate, and routing decision above is an executable contract, not
-prose. `suengj.com` is one adapter this Core hands articles off to; it is not
-where the Core's authority lives. See
+The axes, gates, and routing above have explicit contracts and executable
+checks where implemented. A check proves only its declared property; semantic
+quality, claim support, human approval and actual rendered results require
+their own evidence. `suengj.com` is one adapter this Core hands articles off
+to; it is not where the Core's authority lives. See
 [`docs/architecture/V2-EDITORIAL-LEARNING-CORE.md`](docs/architecture/V2-EDITORIAL-LEARNING-CORE.md)
 for the full architecture.
 
@@ -48,8 +50,12 @@ For the next natural-language request, see
 [`docs/architecture/PROMPT-CONTRACT-INTEGRATION-NOTE.md`](docs/architecture/PROMPT-CONTRACT-INTEGRATION-NOTE.md):
 resolve existing Intent/Brief/RenderSpec/profile authority, send the task delta,
 preserve approved assets, and repair the failed layer rather than regenerate
-everything. This is design and operating guidance, **not** a new executable
-schema, completed owner manual, or proof that pending compiler/pilot work has run.
+everything. The note now includes a seven-Skill audit and a reproducible
+mechanical-versus-semantic assurance counterexample. Its
+[`Writer candidate`](evals/prompt-migration/write-article-candidate.md) is
+**evaluation-only**, not a registered Skill or production routing change.
+Design guidance and targeted fixtures are not a completed owner manual or
+proof that pending compiler/pilot work has run.
 
 ## What this repository is NOT
 
@@ -93,8 +99,9 @@ See [`docs/architecture/REPOSITORY-CONTRACT.md`](docs/architecture/REPOSITORY-CO
 
 ## Running it
 
-Every contract in this repository is executable. Nothing here is enforced by
-convention alone.
+Run the implemented checks below and report their actual scope and result.
+Machine-valid records do not by themselves prove source truth, preserved
+meaning, native-language quality, human approval or external execution.
 
 ```bash
 npm run validate         # every V1 + V2 contract: boundary, source, article,
@@ -106,6 +113,7 @@ npm run matrix           # three source classes through one control plane
 npm run certify          # the V1 certification matrix
 node scripts/certify-v2.mjs        # the V2 certification matrix (on demand)
 node scripts/system-scorecard.mjs --validate   # evals/system/ — is the Core itself improving?
+node scripts/test-polish-assurance-boundary.mjs # synthetic boundary test, not semantic approval
 ```
 
 `npm run certify` and `node scripts/certify-v2.mjs` are the ones to read
@@ -116,7 +124,8 @@ certification is honestly a mix of `PASS`, `PARTIAL`, `DEFERRED`, and
 `NOT_RUN` — see
 [`docs/architecture/V2-CERTIFICATION.md`](docs/architecture/V2-CERTIFICATION.md).
 
-Absence of a finding is a PASS only when the check demonstrably ran.
+Absence of a finding supports a PASS only for the declared property of a
+check that demonstrably ran. It is not an all-purpose correctness guarantee.
 
 ## Licensing
 
@@ -137,7 +146,7 @@ Absence of a finding is a PASS only when the check demonstrably ran.
 | Benchmarks and the reference catalog | [`benchmarks/`](benchmarks/), [`references/`](references/) |
 | Language quality: authority classes, overlays, discovery/holdout | [`docs/architecture/LANGUAGE-QUALITY-ARCHITECTURE.md`](docs/architecture/LANGUAGE-QUALITY-ARCHITECTURE.md), [`editorial/profiles/language/`](editorial/profiles/language/) |
 | Writer capability / Manager-Writer-Reviewer routing | [`docs/architecture/WRITER-MODEL-ROUTING.md`](docs/architecture/WRITER-MODEL-ROUTING.md) |
-| Canonical prompting integration (design guidance) | [`docs/architecture/PROMPT-CONTRACT-INTEGRATION-NOTE.md`](docs/architecture/PROMPT-CONTRACT-INTEGRATION-NOTE.md) |
+| Canonical prompting integration and instruction audit | [`docs/architecture/PROMPT-CONTRACT-INTEGRATION-NOTE.md`](docs/architecture/PROMPT-CONTRACT-INTEGRATION-NOTE.md) |
 | Architecture decisions | [`docs/architecture/`](docs/architecture/) |
 
 Start with [`docs/architecture/V2-EDITORIAL-LEARNING-CORE.md`](docs/architecture/V2-EDITORIAL-LEARNING-CORE.md)

@@ -1,111 +1,115 @@
-# Canonical Prompt Integration — Editorial Design Note
+# Canonical Prompt Integration — Editorial Design and Audit Note
 
-작성: 2026-09-09 · 상태: **설계·운영 개선 안내. 신규 기능 구현 또는 owner pilot 인증 결과가 아니다.**
+작성·개정: 2026-09-09. **운영 설계·instruction 감사와 한정된 기계 검증 반례다. 새로운 Writer 품질 인증, production Skill 축소, owner pilot 완료가 아니다.**
 
-이 문서는 기존 Editorial Learning Core의 책임을 재배치하지 않는다. 자연어 요청을 더 긴 prompt로 반복하는 대신, 이미 있는 Intent·Brief·RenderSpec·profile·lineage·승인 자산 계약을 정확히 사용하도록 연결한다. 최종 owner-facing 사용 설명서는 기존 SUE-571의 실제 pilot 근거와 acceptance를 충족한 뒤 작성한다.
+기존 Editorial Learning Core의 책임을 유지한다. 자연어 요청을 긴 prompt로 반복하기보다 Intent·Brief·RenderSpec·profile·lineage·승인 자산 계약을 조립한다. 최종 owner-facing 안내는 SUE-571의 실제 pilot 조건을 충족한 뒤 작성한다.
 
-## 1. 기존 소유권을 유지한다
+## 1. 정식 소유권
 
-| 대상 | 기존 owner | Prompt의 역할 |
+| 대상 | Owner | Prompt 역할 |
 |---|---|---|
-| 의도·변환·독자·surface·artifact | EditorialIntent와 해당 profile | 선택된 의도와 이번 변경점을 전달 |
-| 사실과 정확한 수치·주장 | 원본 Source 및 검증된 payload | source-bound 값을 보존; craft reference를 사실로 사용하지 않음 |
-| 이미지의 목적·논지·독자 효과 | VisualBrief | 목적을 provider용 표현으로 전달 |
-| 장면·읽기 순서·공간·사실 배치 | RenderSpec | 설계 내용을 손실 없이 표현 |
-| 스타일 참고의 허용 차원 | registry evaluation의 authority / not_authority | 선택된 차원만 반영; source body나 최근 이미지 기억을 새 권위로 사용하지 않음 |
-| 실제 자산 승인·잠금 | visual-job의 기존 approval lock | 생성 prompt나 gate-routing flag는 승인 증거가 아님 |
-| 콘텐츠 보관·발행 | publication adapter / publication repository | 별도 승인된 인계만 수행 |
-| 작업 범위·수용 기준 | Linear | 현재 work contract의 projection |
+| 의도·독자·surface·artifact·변환 | EditorialIntent와 선택된 profile | 이번 outcome/delta 전달 |
+| 사실·수치·주장 | 원본 Source와 verified claims | source-bound 값을 보존; craft reference는 사실 authority가 아님 |
+| 이미지 목적·논지 | VisualBrief | provider-facing 표현 |
+| 장면·읽기 순서·사실 배치 | RenderSpec | 의미·정보 위계 보존 |
+| 참고 자료의 허용 차원 | registry authority / not_authority | 선택된 craft 차원만 사용 |
+| 자산 승인·잠금 | 기존 visual-job approval lock | prompt/gate flag는 승인 증거가 아님 |
+| 보관·발행 | publication adapter/repository | 별도 승인 인계와 read-back |
+| 과업·수용 기준·dependency | Linear | 현재 work contract의 projection |
 
-정식 경계는 [SSOT-BOUNDARIES](SSOT-BOUNDARIES.md), [V2 architecture](V2-EDITORIAL-LEARNING-CORE.md), [VisualBrief/RenderSpec contract](../../schemas/VISUAL-BRIEF-AND-RENDER-SPEC-CONTRACT.md)가 소유한다. 이 문서는 별도 Prompt DB, 중복 Intent schema, 기사 저장소 또는 실행 프레임워크를 추가하지 않는다.
+[SSOT-BOUNDARIES](SSOT-BOUNDARIES.md), [V2 architecture](V2-EDITORIAL-LEARNING-CORE.md), [VisualBrief/RenderSpec contract](../../schemas/VISUAL-BRIEF-AND-RENDER-SPEC-CONTRACT.md)가 규범을 소유한다. 새 Prompt DB·중복 Intent schema·기사 저장소·범용 agent runtime을 만들지 않는다.
 
-## 2. 사람은 자연어로 요청한다
+## 2. 자연어 입력과 현재 대상 확인
 
-사용자에게 JSON, 내부 profile 이름, schema version을 외우게 하지 않는다. 사용자는 목적과 변경점을 말하고, agent가 접근 가능한 정식 source를 읽어 내부 표현을 조립한다.
+사용자는 목적과 변경점을 말한다. 예: “수치와 결론은 그대로 두고 번역투만 다듬어”, “승인된 이미지는 건드리지 말고 설명만 수정해”, “reference의 정보 구조만 참고하고 색감은 따라하지 마”. 이것은 새로운 요청 예시이며 실제 승인·대상 상태를 대신하지 않는다.
+
+Agent가 접근 가능한 source, target revision, approved asset identity와 profile을 직접 확인한다. 대상 이미지가 없으면 편집했다고 주장하지 않는다. source로 해결할 수 없는 결과·권한·정확성의 중요한 모호성만 묻는다. reversible default는 task-local 가정이며 durable preference가 아니다.
 
 ```text
-이 자료를 바탕으로 실무자용 설명 글을 써줘.
-주장의 한계는 유지하고, 이번에는 구매 의사결정에 필요한 부분만 강조해.
-
-이 글의 결론과 수치는 그대로 두고 번역투 문장만 다듬어줘.
-문제가 없는 부분은 바꾸지 마.
-
-이 이미지는 승인된 버전이야. 이미지는 건드리지 말고 본문 설명만 수정해.
-
-이 reference는 정보의 읽기 순서만 참고하고 색감과 인물은 따라하지 마.
+Owner intent/delta
+→ current source/target identity
+→ EditorialIntent + source-target delta
+→ selected profiles / Skills / reference authority
+→ frame / Brief / RenderSpec / audio plan
+→ generation
+→ actual output evaluation
+→ targeted correction or KEEP
+→ separate approval / handoff
 ```
 
-위 예문은 새로운 복사용 예시다. 실제 target·revision·승인 상태는 지시문만 믿지 말고 기존 source/asset contract에서 확인한다. 대상이 없는 이미지 편집 요청은 임의의 이미지를 만들어 편집한 것처럼 처리하지 않는다.
+Bootstrap에는 목적·hard boundary·보존할 사실/자산·authority·종료점을 둔다. task context는 필요한 source/profile/Skill만, 깊은 설명은 locator/load condition으로 제공한다. 필수 source가 없으면 UNKNOWN/SOURCE_MISSING으로 해당 동작을 제한하되 안전한 독립 작업까지 막지 않는다.
 
-추가 질문은 결과·권한·정확성에 실질적 영향을 주며 source로 해결할 수 없는 모호성에 집중한다. 이미 source에 있는 답을 다시 묻거나 모든 작은 선호를 필수 질문으로 만들지 않는다. 진행 가능한 reversible default는 task-local 가정으로 표시하고 durable preference로 몰래 승격하지 않는다.
+## 3. 의미·상태·승인의 보존
 
-## 3. 조립은 짧게, 계약은 충분하게
+Adapter는 wording을 바꿀 수 있지만 intent, factual payload, profile, reference authority, 검증과 발행 권한을 바꾸지 못한다. 기존 lineage에 material source/ref와 선택 이유를 연결한다. 동일 normalized input과 deterministic compiler version은 같은 구조화 계약을 생성한다. 자유 prose의 byte 차이는 곧 의미 변화가 아니며, byte identity는 이를 약속한 renderer에만 요구한다.
 
-```text
-현재 사용자 의도와 변경점
-→ 접근 가능한 source / 현재 target revision 확인
-→ 기존 Intent와 source-target delta
-→ 필요한 profile·Skill·reference authority 선택
-→ VisualBrief / RenderSpec 또는 text/audio plan
-→ provider-facing projection
-→ 실제 산출물 평가
-→ 필요한 부분만 수정
-→ 기존 승인·인계 계약
+조립 시점과 실제 rendering/replacement/publication 시점은 다르다. source claim·target revision·승인 digest 변경 시 영향 검증과 승인을 재확인한다. mutation API timeout은 실패 확정이 아니므로 read-back/기존 멱등 계약을 확인한 뒤 재시도한다. 이 설명이 Core runtime enforcement를 구현하지는 않는다.
+
+현재 VisualBrief/RenderSpec의 article-title 외부 처리, craft-only reference, approval lock을 유지한다. SUE-669의 integrated text ownership은 해당 구현·검증 이후에 적용한다. structural text / verified generative fact / deterministic external text 후보도 source binding과 필요한 실제 post-render 검증을 잃지 않는다. prompt 문자열이 정확해도 이미지 글자·수치·가독성이 정확하다는 증거는 아니다.
+
+승인 자산을 무관한 prose 수정 때문에 재생성하지 않는다. 바뀐 자산은 기존 승인을 승계하지 않는다. 정보가 조밀하면 허용된 분할·caption·외부 표현을 검토하고 억지로 글자를 축소하지 않는다. 음성 계획은 음성 생성·청취 인증이 아니며 미인증 lane을 사용 가능하다고 쓰지 않는다.
+
+## 4. Instruction audit — 관찰과 가설
+
+감사 기준: repository `c3e7f49f82671cc4383518938005c063f9376a2f`. 아래 blob identity는 재현 기준이며 현재 상태를 계속 복제하는 ledger가 아니다. 각 행은 해당 `skills/<name>/SKILL.md`의 명시된 절을 검토한 결과다.
+
+| Skill / baseline blob | 감사한 절과 판정 | 지금 유지 / 이후 후보 |
+|---|---|---|
+| write-article / `3b2f7f7c95e04892138c4597ef7b50a3ad9d6372` | Preconditions·capability·authority·invariants는 KEEP_ALWAYS; Procedure의 상세 합성/문체 설명은 LOAD_ON_DEMAND 또는 REFERENCE/EVAL 후보 | 이미 frame 순서 재배열과 높은 Writer 하한이 있다. thesis·verified claims·citation·한국어·content type·human boundary는 유지. active Skill 축소 없음 |
+| frame-article / `a7c718fb1417530a13a63a26049dfd61837c2ddc` | frame-before-prose, source weights, claim class, NO_ARTICLE은 KEEP; 선택 reference/상세 framing 예시는 task/reference | 이미 조건부 reference loading이 있다. 좋은 framing을 형식 채우기로 대체하지 않음 |
+| editorial-polish / `fb8eff11f18c589814a924ddb713765d3c7a73d5` | KEEP, 의미·불확실성·사실 보호, semantic pairwise review는 KEEP; soft detector/기법 예시는 EVAL/REFERENCE 후보 | 기계적 span 보존만으로 의미 검증을 대체하지 않음. 정상 문장은 보존하고 doubtful change는 되돌림 |
+| review-l1 / `87dbbf98dd32ce4334c9301302e04a96e4a235b3` | Evidence와 Invariants를 대조. 비교 차원·evidence span·tie/abstain·integrity 우선·human authority는 KEEP | 이미 작은 reviewer 계약이다. “모든 invariant를 기계적으로 강제”하는 포괄 표현만 교정; 의미 판정과 기록 구조를 분리 |
+| verify-claims / `9315dc55538a35debc7a3be6dfa735b7ab958982` | Source·status·immutable claim/lineage·권한 경계는 KEEP_ALWAYS; 기술적 설명은 필요 시 reference | 사실 안전을 사후 스타일 evaluator로 이동하지 않음. status 어휘 정합은 기존 schema-parity 책임에서 확인하며 이 감사로 임의 수정하지 않음 |
+| compile-visual-story / `b6660c28243c58ffca202a38d2475975717f17c5` | Procedure 1의 surface별 조건부 load는 KEEP; beat/schema 예시는 REFERENCE 후보 | 이미 전체 style 문서 로드를 금지하고 계획/실제 media QA를 분리. 현재 visual 구현을 이 실험으로 막지 않음 |
+| compile-audio-script / `ff54b0e58771c5afc466721708594b3b105d33f4` | selected profile, verified carried claims, clean narration, renderer 권한 분리는 KEEP | provider-neutral pronunciation/timing 예시는 REFERENCE 후보. 실제 청취·render 검증은 별도이며 축소하지 않음 |
+
+**발견된 반례:** Writer autonomy와 KEEP이 이미 있어 “현재 Skill은 강한 Writer를 단순 실행자로 만든다”는 일괄 진단은 부정확하다. instruction density가 실제 품질을 억누른다는 인과관계도 아직 미측정이다.
+
+Disposition은 KEEP_ALWAYS / LOAD_ON_DEMAND / MOVE_TO_REFERENCE / MOVE_TO_EVAL / MOVE_TO_EXECUTABLE_GUARDRAIL / MOVE_TO_OPERATOR_PROFILE / DELETE_OR_RETIRE로 설명한다. 이들은 상호 배타적이지 않다. 안전 규칙은 generator cue, 실행 통제, negative eval에 함께 남을 수 있다. 모델·effort·비용은 [WRITER-MODEL-ROUTING](WRITER-MODEL-ROUTING.md)과 current profile이 소유한다. 즉시 RETIRE하는 것은 포괄적인 기계 검증 보장 표현이지 품질·권한 규칙이 아니다.
+
+## 5. 실제 기계 검증 반례
+
+`assessPolish()`는 protected-span multiset을 비교한다. 정확한 baseline module blob은 `174b36a51d19ae1ddf7c3090863c9bd7c2475bb7`이며 다음 synthetic pair를 실행했다. 실행 Node version은 결과에 기록한다. 변경한 것은 이 함수의 보장 범위를 설명하는 JSDoc뿐이며 계산 로직/API는 유지한다.
+
+| 사례 | 기계 검사 | 명시한 semantic fixture 판정 |
+|---|---|---|
+| 동일 문장 | ok=true, changed=false | KEEP |
+| 매출 20원 → 30원 | ok=false | REJECT: factual amount 변경 |
+| 매출20/비용10 → 매출10/비용20 | ok=true | REJECT: entity와 quantity의 결합 변경 |
+| “신호로 읽힌다” → “신호다” | ok=true | REJECT: qualification 삭제 |
+| “입증되지 않았다” → “입증되었다” | ok=true | REJECT: negation 반전 |
+
+세 semantic-invalid pair의 mechanical PASS는 **검사 범위의 한계**를 보여준다. 전체 pipeline이 이를 승인한다는 뜻도, 실제 운영 오류율도 아니다. 기존 editorial-polish의 의미 비교와 human gate가 여전히 필요한 이유다. synthetic semantic labels는 평가 모델의 실험 결과가 아니다.
+
+재현:
+
+```bash
+node --check scripts/test-polish-assurance-boundary.mjs
+node scripts/test-polish-assurance-boundary.mjs
 ```
 
-공통 kernel에는 목적, 바꾸지 않을 사실·승인 자산, 허용 작업, 필요한 검증과 종료점을 둔다. 해당 작업에 필요한 source/profile은 task pack으로 전달하고, 긴 참고문서는 locator와 필요 시 읽을 조건을 제공한다.
+[fixture](../../evals/prompt-migration/polish-assurance-boundary.json)는 입력·기대 기계 결과·semantic label을 보존한다. 실행 결과는 source/fixture git blob과 Node version을 출력한다. 이것은 repository test contract에 포함된 targeted test이며, semantic approval이나 전체 npm test의 대체가 아니다. 후속 구현이 검증 범위를 넓히면 기대 결과도 근거와 함께 명시적으로 갱신한다.
 
-같은 규칙을 모든 prompt·Skill·profile에 중복 복제하지 않는다. 다만 중요한 사실·권한 경계를 짧게 재표시하는 것은 허용된다. 필수 source를 읽을 수 없으면 UNKNOWN/SOURCE_MISSING을 드러내고 그 source에 의존하는 생성·발행을 제한한다. 다른 독립적이고 허용된 계획 작업까지 무조건 중단할 필요는 없다.
+## 6. 비활성 Writer 후보와 검증 순서
 
-## 4. 의미 보존과 재현성
+[Writer candidate](../../evals/prompt-migration/write-article-candidate.md)는 평가 전용이다. Skill 등록·routing 변경·production adoption을 하지 않는다. hard invariant, native Korean positive goal, source/claim/citation, content type, human authority와 PROSE_HIGH를 보존한다. 자세한 문체/합성 예시를 필요 시 읽는 방식이 실제로 유리한지 SUE-732에서 확인한다.
 
-Provider adapter는 wording을 바꿀 수 있지만 의도, 사실 payload, profile, reference authority, 필요한 검증, 발행 권한을 바꿀 수 없다. 기존 lineage에 material source/ref revision과 선택 이유를 연결한다. 새 provenance schema가 필요하다고 미리 단정하지 않고 기존 record를 먼저 사용한다.
+먼저 동일 Writer/model/effort/tool permission/topology/source/frame/profile에서 instruction family 하나만 바꾸는 ablation을 수행한다. 이후 Legacy / Thin / Hybrid 전체 운영 구성을 비교한다. prompt와 reviewer 구성을 동시에 바꿔 얻은 결과를 prompt 길이의 효과로 설명하지 않는다. Thin이 프로젝트 assurance 하한을 깨면 부적격이다.
 
-정규화된 입력과 결정론적 compiler version이 같으면 구조화 계약은 동일해야 한다. 자유 문장으로 만든 prompt의 표현이 다르다는 이유만으로 의미가 달라졌거나 memory 오염이라고 단정하지 않는다. 의미 불변성을 검사하고, byte-identical output은 명시적으로 결정론적 renderer를 사용하는 경로에서만 요구한다.
+실제 source 접근, loaded Skill/reference, host-hidden context를 기록한다. 파일 bytes는 input tokens나 비용이 아니고, reference로 옮겨 다시 읽은 자료도 비용에 포함된다. 생성·retrieval·review·수정·실패를 합친 비용과 first-pass acceptance, 한국어 자연스러움, translationese, source-tour, voice overfit, coherence, claim accuracy, human intervention을 본다. blind pairwise·holdout·tie/abstain을 사용하고 critical integrity/authority 회귀는 스타일 이득보다 우선한다.
 
-조립 시 snapshot과 실제 렌더링/교체/발행 대상은 다를 수 있다. source claim, target revision, 승인된 asset identity가 바뀌면 영향받는 검증·승인을 재확인한다. 발행 API timeout은 실패 확정이 아니므로 실제 결과를 read-back하거나 기존 멱등 계약으로 확인한 뒤 재시도를 결정한다. 이 설명만으로 Core에 새로운 runtime enforcement가 구현되지는 않는다.
+현재 모델 기반 Legacy/Thin/Hybrid 비교는 NOT_RUN이다. 후보 작성·static 검사·위 5개 반례 실행만으로 품질 또는 토큰 절감률을 주장하지 않는다. 소규모 pilot은 보편 우월성 증명이 아니다.
 
-## 5. 기존 시각 계약과 진행 중인 변경을 구분한다
+## 7. 실패한 층만 수정한다
 
-현재 VisualBrief/RenderSpec 계약의 article-title 외부 처리, reference의 craft-only 권위, visual-job approval lock을 유지한다. SUE-669의 integrated text ownership은 해당 작업이 구현·검증된 뒤에 적용할 변경이며, 이 문서가 세 가지 새 text class의 지원 완료를 선언하지 않는다.
+논지/독자 문제는 Intent·frame, 수치/인용 문제는 Source·verification, 한국어 문제는 적정 Writer·profile·language evaluation, 정보 과밀은 Brief/RenderSpec, 잘린 글자는 실제 render QA, 일회성 취향은 task-local instruction으로 보낸다. 반복 피드백도 자동 durable preference나 source authority가 아니다.
 
-SUE-669가 제안하는 structural text / verified generative fact / deterministic external text에서도 정확한 사실 payload의 source binding과 필요한 post-render 검증은 보존해야 한다. Prompt 문자열 검증은 실제 이미지의 글자·수치·가독성·브랜드 준수를 증명하지 않는다. 필요한 vision/owner review는 실제 산출물을 대상으로 한다.
+강한 Manager는 최종 prose Writer의 낮은 역량을 보상하지 못한다. source-target delta와 승인 자산은 보존하고 정상 문장을 전면 재작성하지 않는다. 어떤 validator의 PASS든 해당 실행에서 실제로 검사한 속성만 의미한다. 기록의 형태가 유효하다고 claim truth, 의미 보존, 한국어 품질, 실제 render, human approval이 입증되지는 않는다.
 
-이미 승인된 자산은 관련 없는 문구 수정 때문에 다시 생성하거나 교체하지 않는다. 실제 자산이 바뀌면 기존 승인을 자동 승계하지 않는다. Dense information은 정보를 삭제하거나 글자를 작게 우겨 넣는 대신 분할·caption·외부 표현 같은 허용된 경로를 검토한다.
+## 8. 기존 작업과 rollout
 
-## 6. 실패한 층만 고친다
+SUE-731은 이 감사·정확한 assurance 표현·synthetic assurance fixture를 소유한다. SUE-732는 benchmark 후 frame/write/polish/review/verify 순으로 bounded relocation을 판단하고, visual/audio는 해당 기존 owner와 별도 검증 후 적용한다. SUE-564는 실제 corpus, SUE-571은 pilot-backed owner guide, SUE-669는 integrated visual prompt 책임을 유지한다. 완료된 Skill/routing/polish 과제는 재오픈하지 않는다.
 
-| 불만·결함 | 먼저 확인할 층 | 피할 동작 |
-|---|---|---|
-| 논지가 약함·독자에게 맞지 않음 | Intent / framing / audience profile | 문장만 반복 치환 |
-| 수치·인용·사실 오류 | Source / claim payload / verification | 스타일 reference로 사실 채우기 |
-| 번역투·한국어 표현 품질 | source-target delta / native prose Writer / language evaluation | 정상 문장까지 전면 재작성 |
-| 읽는 순서·정보 과밀 | VisualBrief / RenderSpec / artifact profile | 모든 문제를 모델 교체로 해결 |
-| 잘린 글자·렌더링 결함 | 실제 asset / rendering / post-render QA | 논지·사실 계획까지 불필요하게 변경 |
-| 한 번의 취향 변경 | task-local instruction | 전역 calibration을 자동 변경 |
-| 앞으로의 명시적 선호 변경 | 기존 versioned calibration / feedback registry | 모든 과거 자산을 소급 재생성 |
+source missing, source/target revision 변화, reference authority injection, approved-image 보존, 실제 이미지 수치 불일치, 기존 text-free 호환, 음성 미인증의 기존 검증 요구도 유지한다. prompt가 존재함·compiler 지원·산출물 수용·발행 승인은 서로 다른 상태다.
 
-역할 권한과 생성 역량은 별개다. 강한 Manager가 있다고 최종 한국어 prose Writer의 역량 하한을 낮추지 않는다. 이미지 계획, 이미지 렌더링, deterministic chart, vision review, 음성 대본과 실제 청취 평가도 같은 능력으로 취급하지 않는다. 현재 task에 명시된 M/W/R 배정과 effort는 이 일반 안내로 변경하지 않는다. [WRITER-MODEL-ROUTING](WRITER-MODEL-ROUTING.md)을 따른다.
-
-## 7. 기존 과제에 반영할 검증 사례
-
-아래는 **실행 전 검증 명세**이며 PASS 결과가 아니다.
-
-| 사례 | 기대 동작 | 기존 integration owner |
-|---|---|---|
-| 필요한 factual source 접근 실패 | 값 추정 금지, 영향 작업 제한 | 기존 source/intake 경계; SUE-571은 사용자 안내 |
-| provider prompt 표현만 변경 | 논지·사실·권한·검증 의미 유지 | SUE-669의 기존 compiler/lineage |
-| source/target revision 변경 | 관련 검증과 승인 유효성 재확인 | compiler + 기존 downstream asset/publication owner |
-| reference에 '사실을 바꾸라'는 지시 포함 | craft evidence와 authority 분리 | 기존 reference contract; SUE-669 회귀 확인 |
-| 본문만 수정, 이미지 이미 승인됨 | 승인 자산 보존, 필요 없는 regeneration 금지 | 기존 asset lock; SUE-571 안내 |
-| 수치가 prompt에는 맞고 실제 이미지에는 틀림 | post-render 검증 실패를 숨기지 않음 | 기존 vision/owner review |
-| 현재 text-free job 입력 | 새 경로 도입 후에도 기존 계약과 호환 | SUE-669 |
-| 음성 렌더링 기능 미인증 | 대본 계획과 생성·청취 검증을 구분 | 기존 audio owner; SUE-571 안내 |
-
-새 코드가 필요한지 먼저 기존 test와 계약으로 확인한다. 완료된 기존 issue를 무조건 재오픈하거나 새 generic prompting epic을 만들지 않는다. 실제 결함이 기존 acceptance를 깨는지, 새 기능인지, 문서 보완인지 구분한다.
-
-## 8. 평가와 채택
-
-Prompt 길이만 비교하지 않는다. 같은 task/source/profile/model/permission 조건에서 필수 지시 누락, 실제 산출물 수용, owner 수정 횟수, 불필요한 전면 재작업, factual 오류, 승인 자산 침범, 전체 생성·재검토 비용을 본다. 실패 run도 포함한다. 비교 실험을 하지 않았다면 절감률이나 품질 향상 수치를 적지 않는다.
-
-SUE-571의 최종 owner manual은 실제 pilot에서 입증된 내용만 추천한다. Korean prose·visual baseline에 남아 있는 hold나 deferred 상태를 이 문서로 해제하지 않는다. SUE-669는 기존 compiler 책임 안에서 필요한 계약·검증을 구현한다. 문서가 존재하는 것, compiler가 지원하는 것, 실제 산출물이 수용되는 것, 발행 권한이 있는 것은 서로 다른 상태다.
+적용은 candidate → controlled comparison → bounded owner-reviewed pilot → profile/version별 adoption이다. claim/authority 또는 중대한 품질 회귀가 발생하면 이전 Skill/profile ref로 복구하고 실패 이력은 남긴다. repo-specific required validation이 미실행이면 NOT_RUN으로 남기며 audit 완료가 merge/production readiness를 대신하지 않는다.

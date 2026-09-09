@@ -1,0 +1,52 @@
+{
+  "schema_version": 1,
+  "purpose": "Synthetic mechanical assurance boundary, not article approval or measured model quality",
+  "baseline_module_git_blob": "174b36a51d19ae1ddf7c3090863c9bd7c2475bb7",
+  "cases": [
+    {
+      "id": "unchanged",
+      "before": "매출은 20원, 비용은 10원이다.",
+      "after": "매출은 20원, 비용은 10원이다.",
+      "expected_mechanical_ok": true,
+      "expected_changed": false,
+      "semantic_fixture_disposition": "KEEP",
+      "reason": "No textual change; no evidence of a new semantic defect in this synthetic pair."
+    },
+    {
+      "id": "number-change",
+      "before": "매출은 20원이다.",
+      "after": "매출은 30원이다.",
+      "expected_mechanical_ok": false,
+      "expected_changed": true,
+      "semantic_fixture_disposition": "REJECT",
+      "reason": "The asserted amount changes without new source verification."
+    },
+    {
+      "id": "quantity-entity-rebinding",
+      "before": "매출은 20원, 비용은 10원이다.",
+      "after": "매출은 10원, 비용은 20원이다.",
+      "expected_mechanical_ok": true,
+      "expected_changed": true,
+      "semantic_fixture_disposition": "REJECT",
+      "reason": "The same numeric multiset is assigned to different entities."
+    },
+    {
+      "id": "hedge-loss",
+      "before": "이는 개선의 신호로 읽힌다.",
+      "after": "이는 개선의 신호다.",
+      "expected_mechanical_ok": true,
+      "expected_changed": true,
+      "semantic_fixture_disposition": "REJECT",
+      "reason": "Interpretive uncertainty becomes an unqualified assertion."
+    },
+    {
+      "id": "negation-flip",
+      "before": "효과가 입증되지 않았다.",
+      "after": "효과가 입증되었다.",
+      "expected_mechanical_ok": true,
+      "expected_changed": true,
+      "semantic_fixture_disposition": "REJECT",
+      "reason": "The polarity of the evidence claim reverses."
+    }
+  ]
+}
