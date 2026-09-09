@@ -59,7 +59,7 @@ Machine-shaped frame: [`frame.json`](frame.json).
 
 ### Dek
 
-같은 GPT-6 Astra도 실행 하니스가 달라지자 ARC-AGI-3의 성능과 비용이 크게 달라졌다. 이 결과가 보여주는 것은 “하니스가 모델보다 중요하다”는 새 공식이 아니라, agent를 model-plus-execution-system으로 측정해야 한다는 필요성이다.
+같은 GPT-6 Astra도 실행 하이 달라지자 ARC-AGI-3의 성능과 비용이 크게 달라졌다. 이 결과가 보여주는 것은 “하니스가 모델보다 중요하다”는 새 공식이 아니라, agent를 model-plus-execution-system으로 측정해야 한다는 필요성이다.
 
 ### Thesis
 
