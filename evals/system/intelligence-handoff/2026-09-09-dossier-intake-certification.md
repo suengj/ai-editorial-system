@@ -20,6 +20,32 @@ Governing contracts: [`../../../docs/architecture/INTELLIGENCE-HANDOFF.md`](../.
 The body is not copied into this repository. The manifest entry pins an immutable commit,
 so the evidence set the frame was built against remains reconstructable.
 
+### Provenance reconciliation after the upstream merge (2026-09-09)
+
+`reference-library` PR #1 has since merged as `786dc2ff9514c50619209833a9f70b982015874f`.
+The pin above was re-verified against merged `main` rather than assumed:
+
+| Check | Result |
+| --- | --- |
+| `0a50578` reachable from merged `main` | yes (`git merge-base --is-ancestor` passes) |
+| Dossier hash at `0a50578` | `7a30fa31…d6bd5d56` |
+| Dossier hash on merged `main` | `7a30fa31…d6bd5d56` — identical |
+
+The pin therefore stays canonical and is deliberately **not** repointed at the merge
+commit: `0a50578` is the commit the frame was actually built against, it is an ancestor of
+`main`, and the dossier blob is byte-identical at both. Repointing would trade a precise
+reference for a vaguer one.
+
+This required the upstream PR to merge with a **merge commit**. A squash would have
+rewritten `0a50578` out of `main` and silently reduced this certification to a branch-only
+reference — the exact stale provenance this section exists to rule out.
+
+Note that the upstream Knowledge Topic `ai-agent-compute-cost-curve.md` was corrected in the
+same merge (an inadmissible thesis reframe was retracted). That artifact is not part of this
+pin: the dossier is, and its hash is unchanged. The dossier had already recorded the same
+evidence honestly — `role: P03`, confidence `low`, "the underlying paper is not yet
+resolved" — which is why no re-certification of the frame is required.
+
 ## Reuse-before-build finding
 
 No new intake path was required. The dossier enters as an ordinary source manifest entry
