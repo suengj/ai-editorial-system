@@ -44,6 +44,13 @@ high native-language capability floor; a stronger Manager/Reviewer is not a
 reason to route publication-intent prose through a weaker Writer. See
 [`docs/architecture/WRITER-MODEL-ROUTING.md`](docs/architecture/WRITER-MODEL-ROUTING.md).
 
+For the next natural-language request, see
+[`docs/architecture/PROMPT-CONTRACT-INTEGRATION-NOTE.md`](docs/architecture/PROMPT-CONTRACT-INTEGRATION-NOTE.md):
+resolve existing Intent/Brief/RenderSpec/profile authority, send the task delta,
+preserve approved assets, and repair the failed layer rather than regenerate
+everything. This is design and operating guidance, **not** a new executable
+schema, completed owner manual, or proof that pending compiler/pilot work has run.
+
 ## What this repository is NOT
 
 - **Not a content store.** No canonical article archive, no drafts, no
@@ -130,6 +137,7 @@ Absence of a finding is a PASS only when the check demonstrably ran.
 | Benchmarks and the reference catalog | [`benchmarks/`](benchmarks/), [`references/`](references/) |
 | Language quality: authority classes, overlays, discovery/holdout | [`docs/architecture/LANGUAGE-QUALITY-ARCHITECTURE.md`](docs/architecture/LANGUAGE-QUALITY-ARCHITECTURE.md), [`editorial/profiles/language/`](editorial/profiles/language/) |
 | Writer capability / Manager-Writer-Reviewer routing | [`docs/architecture/WRITER-MODEL-ROUTING.md`](docs/architecture/WRITER-MODEL-ROUTING.md) |
+| Canonical prompting integration (design guidance) | [`docs/architecture/PROMPT-CONTRACT-INTEGRATION-NOTE.md`](docs/architecture/PROMPT-CONTRACT-INTEGRATION-NOTE.md) |
 | Architecture decisions | [`docs/architecture/`](docs/architecture/) |
 
 Start with [`docs/architecture/V2-EDITORIAL-LEARNING-CORE.md`](docs/architecture/V2-EDITORIAL-LEARNING-CORE.md)
