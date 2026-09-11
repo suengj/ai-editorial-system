@@ -141,7 +141,7 @@ console.log('acceptance 2 — record-derived restart and replay');
     const envelope = atProgress(state);
     const recovered = recoverJourneyState(JSON.stringify(envelope), referenceOptions);
     check(`${state} is derived and recovered from persisted records`,
-      codes(envelope).length === 0 && deriveProgressState(envelope) === state &&
+      codes(envelope).length === 0 && deriveProgressState(envelope, referenceOptions) === state &&
         recovered.ok && recovered.state === state && recovered.resume_from === state);
   }
 
@@ -828,6 +828,121 @@ console.log('repair round 2 — fail-closed record resolution and unambiguous by
   check(`resolution boundary refuses Git revision expressions with named ${CODES.HANDOFF_INVALID}`,
     revisionResults.every((result) => !result.ok && result.code === CODES.HANDOFF_INVALID),
     JSON.stringify(revisionResults));
+}
+
+console.log('repair round 4 — resolved records must be JSON objects');
+{
+  const baseline = codes(base);
+  const baselineRecovery = recoverJourneyState(JSON.stringify(base), referenceOptions);
+  const resolver = referenceOptions.resolveExternalRecord;
+  const primitiveCases = [
+    ['null', null],
+    ['false', false],
+    ['zero', 0],
+    ['empty string', ''],
+  ];
+  const makePrimitiveCase = (value) => {
+    const envelope = clone(base);
+    const candidateRef = envelope.candidate.ledger_ref;
+    candidateRef.content_sha256 = canonicalRecordSha256(value);
+    envelope.journey_binding_sha256 = journeyBindingSha256(
+      envelope.candidate, envelope.dossier, envelope.article_ref,
+    );
+    const options = {
+      resolveExternalRecord(ref) {
+        if (ref.repository === candidateRef.repository &&
+            ref.commit === candidateRef.commit && ref.path === candidateRef.path) {
+          return JSON.stringify(value);
+        }
+        return resolver(ref);
+      },
+    };
+    return { envelope, options };
+  };
+
+  check('validator-clean legitimate envelope still validates and recovers as LIVE_VERIFIED',
+    baseline.length === 0 && baselineRecovery.ok &&
+      baselineRecovery.state === 'LIVE_VERIFIED');
+
+  for (const [label, value] of primitiveCases) {
+    const candidate = makePrimitiveCase(value);
+    const validationCodes = codes(candidate.envelope, candidate.options);
+    const recovered = recoverJourneyState(
+      JSON.stringify(candidate.envelope), candidate.options,
+    );
+    const resolution = resolveAndVerifyJourneyReference(
+      candidate.envelope.candidate.ledger_ref, candidate.options,
+    );
+    check(`${label} candidate ledger fails validation and recovery with named ${CODES.HANDOFF_INVALID}`,
+      baseline.length === 0 && validationCodes.includes(CODES.HANDOFF_INVALID) &&
+        !recovered.ok && recovered.code === CODES.HANDOFF_INVALID &&
+        recovered.state !== 'LIVE_VERIFIED',
+      JSON.stringify({ validationCodes, recovered }));
+    check(`${label} remains accepted by the raw-byte digest boundary before semantic verification`,
+      baseline.length === 0 && resolution.ok && Object.is(resolution.record, value));
+  }
+
+  const nullCandidate = makePrimitiveCase(null);
+  const fileTemp = mkdtempSync(join(tmpdir(), 'sue-790-r4-file-'));
+  const invalidEnvelopePath = join(fileTemp, 'null-candidate.json');
+  try {
+    writeFileSync(invalidEnvelopePath, JSON.stringify(nullCandidate.envelope), 'utf8');
+    const fileCodes = validateJourneyEnvelopeFile(
+      invalidEnvelopePath, nullCandidate.options,
+    ).map((entry) => entry.code);
+    const fileBaseline = validateJourneyEnvelopeFile(EXAMPLE, referenceOptions);
+    check(`validateJourneyEnvelopeFile inherits the named ${CODES.HANDOFF_INVALID} refusal`,
+      baseline.length === 0 && fileBaseline.length === 0 &&
+        fileCodes.includes(CODES.HANDOFF_INVALID),
+      `baseline=[${fileBaseline.map((entry) => entry.code).join(', ')}] got=[${fileCodes.join(', ')}]`);
+  } finally {
+    rmSync(fileTemp, { recursive: true, force: true });
+  }
+
+  const publishGate = assessPublishGate(nullCandidate.envelope, {
+    articleRef: nullCandidate.envelope.article_ref,
+    assetDigests: nullCandidate.envelope.approved_revision.asset_digests,
+    referenceOptions: nullCandidate.options,
+  });
+  check(`null candidate ledger fails assessPublishGate with named ${CODES.HANDOFF_INVALID}`,
+    baseline.length === 0 && !publishGate.accepted &&
+      publishGate.code === CODES.HANDOFF_INVALID, JSON.stringify(publishGate));
+
+  const visualApproval = assessAssetApproval(nullCandidate.envelope, 0, {
+    articleRef: nullCandidate.envelope.article_ref,
+    assetDigest: nullCandidate.envelope.asset_bindings[0].asset_sha256,
+    referenceOptions: nullCandidate.options,
+  });
+  check(`null candidate ledger fails assessAssetApproval with named ${CODES.HANDOFF_INVALID}`,
+    baseline.length === 0 && !visualApproval.approval_valid &&
+      visualApproval.code === CODES.HANDOFF_INVALID, JSON.stringify(visualApproval));
+
+  const resumed = resumeJourney(JSON.stringify(nullCandidate.envelope), {}, nullCandidate.options);
+  check(`null candidate ledger fails resumeJourney with named ${CODES.HANDOFF_INVALID}`,
+    baseline.length === 0 && !resumed.ok && resumed.code === CODES.HANDOFF_INVALID,
+    JSON.stringify(resumed));
+
+  const interrupted = recordInterrupt(nullCandidate.envelope, CODES.DEPLOYMENT_PARTIAL, {
+    observedAt: '2026-09-11T08:00:00Z',
+    referenceOptions: nullCandidate.options,
+  });
+  check(`null candidate ledger fails recordInterrupt with named ${CODES.HANDOFF_INVALID}`,
+    baseline.length === 0 && !interrupted.ok &&
+      interrupted.code === CODES.HANDOFF_INVALID, JSON.stringify(interrupted));
+
+  check('deriveProgressState cannot report LIVE_VERIFIED for invalid resolved bindings',
+    baseline.length === 0 && deriveProgressState(
+      nullCandidate.envelope, nullCandidate.options,
+    ) === null);
+
+  const cli = resolve(ROOT, 'scripts/validate-journey-envelope.mjs');
+  const recordsOnly = spawnSync(
+    process.execPath, [cli, '--records', RECORDS], { cwd: ROOT, encoding: 'utf8' },
+  );
+  check(`malformed --records-only invocation fails with named ${CODES.HANDOFF_INVALID}`,
+    recordsOnly.status !== 0 &&
+      `${recordsOnly.stdout}${recordsOnly.stderr}`.includes(CODES.HANDOFF_INVALID),
+    `${recordsOnly.stdout}${recordsOnly.stderr}`);
 }
 
 console.log('contract boundaries — refs and digests only');

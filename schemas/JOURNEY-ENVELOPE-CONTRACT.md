@@ -222,6 +222,13 @@ accepts only a 7-40 character lowercase-hex commit id before invoking `git
 show`; revision expressions such as `^{tree}`, `HEAD`, and `main` return
 `HANDOFF_INVALID`.
 
+For every JSON record expected by the identity chain, a successful byte/digest
+resolution is only a transport result: the resolved value must still be a
+non-null JSON object. A primitive, array, or missing parsed record returns
+`HANDOFF_INVALID` through the shared path. The exported `deriveProgressState()`
+also runs that path before reporting any state, and a CLI invocation using
+`--records` must include an envelope input.
+
 ## Validation
 
 ```bash

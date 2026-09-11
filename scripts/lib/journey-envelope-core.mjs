@@ -446,7 +446,17 @@ function verifyEnvelopeReferences(envelope, options, issues) {
   return resolutions;
 }
 
-const resolvedRecord = (resolutions, ref) => resolutions.get(resolutionKey(ref))?.record;
+function resolvedObjectRecord(resolutions, ref, issues, where) {
+  const resolution = resolutions.get(resolutionKey(ref));
+  if (!resolution?.ok) return undefined;
+  const record = resolution.record;
+  if (record === null || typeof record !== 'object' || Array.isArray(record)) {
+    issues.push(issue(CODES.HANDOFF_INVALID, where,
+      'a resolved journey record must be a non-null JSON object'));
+    return undefined;
+  }
+  return record;
+}
 
 function valuesAtPath(value, parts) {
   if (parts.length === 0) return value === undefined ? [] : [value];
@@ -472,7 +482,7 @@ function articleForLineage(articleRef) {
 }
 
 /** Derive the last completed stage from present, contiguous records. */
-export function deriveProgressState(envelope) {
+function deriveProgressStateFromShape(envelope) {
   if (!envelope || typeof envelope !== 'object') return null;
   let state = 'RECEIVED';
   if (envelope.candidate?.selection === null || envelope.candidate?.selection === undefined) return state;
@@ -493,6 +503,16 @@ export function deriveProgressState(envelope) {
   state = 'ARTIFACT_DEPLOYED';
   if (!present(envelope.live_verification_ref) || !present(envelope.live_verification)) return state;
   return 'LIVE_VERIFIED';
+}
+
+/**
+ * Derive a progress state only after the complete envelope verification path
+ * accepts the persisted bindings. The internal shape helper is used by that
+ * path to validate state labels without recursing through this public API.
+ */
+export function deriveProgressState(envelope, options = {}) {
+  const verification = verifyJourneyEnvelope(envelope, options);
+  return verification.issues.length === 0 ? deriveProgressStateFromShape(envelope) : null;
 }
 
 function validateAuthority(envelope, issues) {
@@ -569,7 +589,7 @@ function verifyJourneyEnvelope(envelope, {
       'journey_id must encode the selected candidate slug'));
   }
 
-  const derivedState = deriveProgressState(envelope);
+  const derivedState = deriveProgressStateFromShape(envelope);
   const derivedIndex = PROGRESS_INDEX.get(derivedState);
   const claimedIndex = PROGRESS_INDEX.get(envelope.state);
   const interrupted = INTERRUPT_STATES.includes(envelope.state);
@@ -809,16 +829,18 @@ function visualDecisionRecord(binding) {
 
 function verifyResolvedJourneyBindings(envelope, resolutions, issues) {
   const recordedArticle = envelope.approved_revision?.article_ref ?? envelope.article_ref;
-  const candidateLedger = resolvedRecord(resolutions, envelope.candidate?.ledger_ref);
-  if (candidateLedger && envelope.candidate?.selection !== null) {
+  const candidateLedger = resolvedObjectRecord(
+    resolutions, envelope.candidate?.ledger_ref, issues, '$.candidate.ledger_ref',
+  );
+  if (candidateLedger !== undefined && envelope.candidate?.selection !== null) {
     expectSame(issues, candidateLedger.candidate,
       { slug: envelope.candidate.slug, selection: envelope.candidate.selection },
       CODES.HANDOFF_INVALID, '$.candidate.ledger_ref',
       'resolved candidate selection does not bind the envelope candidate');
   }
 
-  const review = resolvedRecord(resolutions, envelope.review_ref);
-  if (review) {
+  const review = resolvedObjectRecord(resolutions, envelope.review_ref, issues, '$.review_ref');
+  if (review !== undefined) {
     expectSame(issues, review.dossier_ref, envelope.dossier,
       CODES.STALE_REVISION, '$.review_ref',
       'resolved editorial review does not bind the exact dossier revision');
@@ -827,8 +849,10 @@ function verifyResolvedJourneyBindings(envelope, resolutions, issues) {
       'resolved editorial review does not bind the reviewed article revision');
   }
 
-  const handoffReceipt = resolvedRecord(resolutions, envelope.handoff_receipt_ref);
-  if (handoffReceipt) {
+  const handoffReceipt = resolvedObjectRecord(
+    resolutions, envelope.handoff_receipt_ref, issues, '$.handoff_receipt_ref',
+  );
+  if (handoffReceipt !== undefined) {
     expectSame(issues, handoffReceipt.article_ref, recordedArticle,
       CODES.STALE_REVISION, '$.handoff_receipt_ref',
       'resolved handoff receipt does not bind the approved article revision');
@@ -838,31 +862,42 @@ function verifyResolvedJourneyBindings(envelope, resolutions, issues) {
       'resolved handoff receipt does not bind the ordered envelope asset digests');
   }
 
-  const publishApproval = resolvedRecord(resolutions, envelope.approved_revision?.record_ref);
-  if (publishApproval) {
+  const publishApproval = resolvedObjectRecord(
+    resolutions, envelope.approved_revision?.record_ref, issues,
+    '$.approved_revision.record_ref',
+  );
+  if (publishApproval !== undefined) {
     expectSame(issues, publishApproval, publishDecisionRecord(envelope.approved_revision),
       CODES.STALE_REVISION, '$.approved_revision.record_ref',
       'resolved publish decision does not bind the recorded approval');
   }
 
   envelope.asset_bindings?.forEach((binding, index) => {
-    const visualApproval = resolvedRecord(resolutions, binding?.visual_approval?.record_ref);
-    if (visualApproval) {
+    const visualApproval = resolvedObjectRecord(
+      resolutions, binding?.visual_approval?.record_ref, issues,
+      `$.asset_bindings[${index}].visual_approval.record_ref`,
+    );
+    if (visualApproval !== undefined) {
       expectSame(issues, visualApproval, visualDecisionRecord(binding),
         CODES.STALE_REVISION, `$.asset_bindings[${index}].visual_approval.record_ref`,
         'resolved visual decision does not bind this exact asset lineage and digest');
     }
   });
 
-  const publishRun = resolvedRecord(resolutions, envelope.publish_run?.record_ref);
-  if (publishRun) {
+  const publishRun = resolvedObjectRecord(
+    resolutions, envelope.publish_run?.record_ref, issues, '$.publish_run.record_ref',
+  );
+  if (publishRun !== undefined) {
     expectSame(issues, publishRun.run_id, envelope.publish_run.run_id,
       CODES.HANDOFF_INVALID, '$.publish_run.record_ref',
       'resolved publish run identity disagrees with the envelope');
   }
 
-  const deployment = resolvedRecord(resolutions, envelope.deployed_artifact?.record_ref);
-  if (deployment) {
+  const deployment = resolvedObjectRecord(
+    resolutions, envelope.deployed_artifact?.record_ref, issues,
+    '$.deployed_artifact.record_ref',
+  );
+  if (deployment !== undefined) {
     expectSame(issues, deployment.deployment_id, envelope.deployed_artifact.deployment_id,
       CODES.HANDOFF_INVALID, '$.deployed_artifact.record_ref',
       'resolved deployment identity disagrees with the envelope');
@@ -871,8 +906,10 @@ function verifyResolvedJourneyBindings(envelope, resolutions, issues) {
       'resolved deployment source commit disagrees with the envelope');
   }
 
-  const liveVerification = resolvedRecord(resolutions, envelope.live_verification_ref);
-  if (liveVerification) {
+  const liveVerification = resolvedObjectRecord(
+    resolutions, envelope.live_verification_ref, issues, '$.live_verification_ref',
+  );
+  if (liveVerification !== undefined) {
     expectSame(issues, liveVerification.result, envelope.live_verification,
       CODES.HANDOFF_INVALID, '$.live_verification_ref',
       'resolved live read-back result disagrees with the envelope');

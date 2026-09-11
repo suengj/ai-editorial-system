@@ -20,11 +20,17 @@ const RECORDS = resolve(ROOT, 'scripts/fixtures/journey-envelope/cross-repo-reco
 const args = process.argv.slice(2);
 
 let recordsPath = null;
+let malformedRecordsOption = false;
 const inputs = [];
 for (let index = 0; index < args.length; index += 1) {
   if (args[index] === '--records') {
-    recordsPath = args[index + 1] ? resolve(args[index + 1]) : null;
-    index += 1;
+    const next = args[index + 1];
+    if (!next || next.startsWith('--')) {
+      malformedRecordsOption = true;
+    } else {
+      recordsPath = resolve(next);
+      index += 1;
+    }
   } else {
     inputs.push(args[index]);
   }
@@ -36,6 +42,12 @@ const report = (label, pass, detail = '') => {
   (pass ? console.log : console.error)(line);
   if (!pass) failures += 1;
 };
+
+if (malformedRecordsOption || (args.includes('--records') && inputs.length === 0)) {
+  report('usage', false,
+    `[${CODES.HANDOFF_INVALID}] --records requires an envelope input and a records bundle path`);
+  process.exit(1);
+}
 
 if (inputs.length > 0) {
   let recordBundle;
