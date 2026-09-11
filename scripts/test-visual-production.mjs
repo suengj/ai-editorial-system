@@ -34,6 +34,30 @@ const assertRepairDerivedOutput = (name, mutate, expectedCode) => {
     productionCodes.includes(expectedCode) && jobCodes.includes(expectedCode),
     `production=${productionCodes.join(',')} job=${jobCodes.join(',')}`);
 };
+const assignProductionField = (job, [section, field], value) => { job.visual_production[section][field] = value; };
+const assertRepairReferencePair = (name, fieldPath, priorValue, currentValue, expectedReuse) => {
+  const scope = mkdtempSync(resolve(ROOT, '.visual-production-reference-normalization-'));
+  try {
+    const prior = base();
+    assignProductionField(prior, fieldPath, priorValue);
+    const priorCodes = validateVisualJob(prior).map((entry) => entry.code);
+    const priorPath = resolve(scope, 'prior.json');
+    writeFileSync(priorPath, JSON.stringify(prior));
+    const j = repairBase();
+    assignProductionField(j, fieldPath, currentValue);
+    j.visual_production.factual_repair.prior_production_ref = relative(ROOT, priorPath);
+    const productionCodes = validateVisualProduction(j).map((entry) => entry.code);
+    const jobCodes = validateVisualJob(j).map((entry) => entry.code);
+    const passes = priorCodes.length === 0 && (expectedReuse
+      ? productionCodes.includes(CODES.FACTUAL_REPAIR) && jobCodes.includes(CODES.FACTUAL_REPAIR)
+      : productionCodes.length === 0 && jobCodes.length === 0);
+    ok(expectedReuse
+      ? `${name} fails ${CODES.FACTUAL_REPAIR} through validateVisualProduction and validateVisualJob with a validator-clean predecessor`
+      : `${name} remains distinct and validator-clean through validateVisualProduction and validateVisualJob`,
+    passes,
+    `prior=${priorCodes.join(',')} production=${productionCodes.join(',')} job=${jobCodes.join(',')}`);
+  } finally { rmSync(scope, { recursive: true, force: true }); }
+};
 ok('production example validates', validateVisualJob(base()).length === 0);
 ok('verbatim pre-existing locked V1 validates without telemetry', (() => { const j = load('visual-job-approved-format-derivative.example.json'); return !('visual_production' in j) && validateVisualJob(j).length === 0; })());
 ok('verbatim V1.1 job validates without visual_production', (() => { const j = load('visual-job-body-infographic-v2.example.json'); delete j.visual_production; j.schema_version = '1.1.0'; return validateVisualJob(j).length === 0; })());
@@ -66,6 +90,28 @@ for (const [name, mutate] of [
   ['case-folded predecessor publication_composite.asset_ref scheme and host', (j, prior) => { j.visual_production.publication_composite.asset_ref = uppercaseReferenceSchemeAndHost(prior.visual_production.publication_composite.asset_ref); }],
   ['whitespace-padded predecessor publication_composite.asset_ref', (j, prior) => { j.visual_production.publication_composite.asset_ref = ` ${prior.visual_production.publication_composite.asset_ref} `; }],
 ]) assertRepairDerivedOutput(name, mutate, CODES.FACTUAL_REPAIR);
+for (const [name, fieldPath] of [
+  ['percent-encoded unreserved tilde predecessor factual_overlay.overlay_id', ['factual_overlay', 'overlay_id']],
+  ['percent-encoded unreserved tilde predecessor factual_overlay.asset_ref', ['factual_overlay', 'asset_ref']],
+  ['percent-encoded unreserved tilde predecessor publication_composite.composite_id', ['publication_composite', 'composite_id']],
+  ['percent-encoded unreserved tilde predecessor publication_composite.asset_ref', ['publication_composite', 'asset_ref']],
+]) assertRepairReferencePair(name, fieldPath, 'https://example.com/~identity', 'https://example.com/%7Eidentity', true);
+assertRepairReferencePair('reserved percent-encoded slash versus literal slash', ['factual_overlay', 'asset_ref'],
+  'https://example.com/%2Fidentity', 'https://example.com//identity', false);
+assertRepairReferencePair('mixed-case hierarchical path', ['publication_composite', 'asset_ref'],
+  'https://example.com/Identity', 'https://example.com/identity', false);
+assertRepairReferencePair('internal whitespace in opaque identity', ['factual_overlay', 'overlay_id'],
+  'overlay:identity value', 'overlay:identityvalue', false);
+assertRepairReferencePair('percent-encoded unreserved octet in opaque identity', ['factual_overlay', 'overlay_id'],
+  'overlay:~identity', 'overlay:%7Eidentity', false);
+assertRepairReferencePair('trailing slash in opaque identity', ['publication_composite', 'composite_id'],
+  'composite:identity', 'composite:identity/', false);
+assertRepairReferencePair('https trailing slash equivalence', ['factual_overlay', 'asset_ref'],
+  'https://example.com', 'https://example.com/', true);
+assertRepairReferencePair('https default port equivalence', ['factual_overlay', 'asset_ref'],
+  'https://example.com:443/identity', 'https://example.com/identity', true);
+assertRepairReferencePair('Unicode and punycode host equivalence', ['publication_composite', 'asset_ref'],
+  'https://münich.example/identity', 'https://xn--mnich-kva.example/identity', true);
 { const j = load('visual-job-body-infographic-factual-repair.example.json'); j.visual_production.semantic_master.asset_sha256 = 'sha256:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff'; ok('reviewer self-attested replacement master fails resolved predecessor check', has(j, CODES.FACTUAL_REPAIR)); }
 { const j = load('visual-job-body-infographic-factual-repair.example.json'); j.visual_production.factual_overlay.asset_sha256 = 'sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb'; j.visual_production.publication_composite.factual_overlay_asset_sha256 = j.visual_production.factual_overlay.asset_sha256; ok('reviewer phantom prior overlay fails resolved predecessor check', has(j, CODES.FACTUAL_REPAIR)); }
 { const j = load('visual-job-body-infographic-factual-repair.example.json'); const item = j.visual_production.factual_overlay.payload.items[0]; j.visual_brief.factual_invariants = ['unrelated semantic claim']; item.exact_text = 'unrelated semantic claim'; item.source_ref = 'article-claim:art:tokenized-stocks-instant-payments-liquidity-rights:unrelated-semantic-claim'; item.accessible_text = 'Unrelated semantic claim.'; j.visual_production.factual_overlay.declared_factual_invariants = ['unrelated semantic claim']; j.visual_production.factual_overlay.payload_sha256 = canonicalPayloadSha256(j.visual_production.factual_overlay.payload); j.visual_production.factual_repair.item_decisions[0].current_item_sha256 = canonicalPayloadSha256(item); ok('reviewer exact mutation: factual repair cannot replace the brief invariant and overlay with unrelated semantics', validateVisualProduction(j).some((x) => x.code === CODES.FACTUAL_REPAIR_ITEM)); }

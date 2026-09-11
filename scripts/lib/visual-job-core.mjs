@@ -1090,7 +1090,18 @@ function normalizeReferenceIdentity(value) {
     const parsed = new URL(trimmed);
     parsed.protocol = parsed.protocol.toLowerCase();
     if (parsed.hostname) parsed.hostname = parsed.hostname.toLowerCase();
-    return parsed.href;
+    // Keep opaque identifiers byte-distinct; RFC 3986 unreserved-octet
+    // normalization applies here only to hierarchical authority references.
+    if (!/^[a-z][a-z0-9+.-]*:\/\//i.test(trimmed)) return parsed.href;
+    return parsed.href.replace(/%([0-9a-f]{2})/gi, (encoded, hex) => {
+      const octet = Number.parseInt(hex, 16);
+      const isUnreserved =
+        (octet >= 0x41 && octet <= 0x5a) ||
+        (octet >= 0x61 && octet <= 0x7a) ||
+        (octet >= 0x30 && octet <= 0x39) ||
+        [0x2d, 0x2e, 0x5f, 0x7e].includes(octet);
+      return isUnreserved ? String.fromCharCode(octet) : encoded;
+    });
   } catch {
     return trimmed.replace(/^([a-z][a-z0-9+.-]*):/i, (_, scheme) => `${scheme.toLowerCase()}:`);
   }
