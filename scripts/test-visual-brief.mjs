@@ -31,6 +31,10 @@ check('standalone RenderSpec example validates', validateRenderSpec(load('render
     codes(specOnly).includes(CODES.BRIEF_REQUIRED));
   check('legacy deterministic job with both visual fields absent remains valid',
     validateVisualJob(deterministic).length === 0);
+  const textFree = JSON.parse(readFileSync(resolve(ROOT, 'evals/dogfood/2026-09-05-sue570-pilot/source-a/02-visual/visual-job-child.json'), 'utf8'));
+  check('pre-existing text-free no_text semantic-master job still validates unchanged',
+    textFree.text_policy === 'no_text' && validateVisualJob(textFree).length === 0,
+    validateVisualJob(textFree).map((i) => i.code).join(', '));
 }
 {
   const v1 = load('visual-job-evidence-visual.example.json');
@@ -281,6 +285,14 @@ console.log('\nV2.17 text ownership and integrated hierarchy');
   check('ambiguous hierarchy alias is rejected', codes(hierarchyAlias).includes(CODES.SCHEMA));
   const ownershipAlias = clone(v217); ownershipAlias.render_spec.text_handling.ownership = clone(ownership);
   check('ambiguous ownership alias is rejected', codes(ownershipAlias).includes(CODES.SCHEMA));
+  const reviewerDeletion = JSON.parse(readFileSync(resolve(ROOT, 'evals/visual-review/sue671-ai-hiring-missing-rungs-job.json'), 'utf8'));
+  delete reviewerDeletion.visual_brief.text_ownership;
+  delete reviewerDeletion.render_spec.text_handling.text_ownership;
+  check('reviewer exact mutation: text-bearing D2 job cannot delete both ownership declarations',
+    codes(reviewerDeletion).includes(CODES.TEXT_OWNERSHIP_MISMATCH));
+  let undeclaredTextCompiled = true;
+  try { compileVisualPrompt(reviewerDeletion); } catch { undeclaredTextCompiled = false; }
+  check('compiler has no deterministic_factual fallback for undeclared text ownership', !undeclaredTextCompiled);
 }
 console.log(failures === 0 ? '\nvisual brief regression: PASS' : `\nvisual brief regression: FAIL (${failures})`);
 process.exit(failures ? 1 : 0);

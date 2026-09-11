@@ -46,7 +46,11 @@ graphically sparse; `brand-compatible` does not mean UI-mimetic.
 
 ## V2.17 text ownership and integrated hierarchy (SUE-668 / SUE-669)
 
-The optional `text_ownership` block makes exactly three ownership classes explicit:
+Every text-bearing VisualBrief/RenderSpec pair must carry identical
+`text_ownership` blocks. There is no compiler fallback from undeclared text to
+`spatial_layers.deterministic_factual`. A genuine `text_policy: no_text` job may
+omit the block; a declared block represents all three classes explicitly, with
+`verified_generative_fact: null` when that class has no items:
 
 | Class | Owner | Examples |
 | --- | --- | --- |
@@ -68,7 +72,9 @@ verified payload. Deterministic external text is reserved for citations, dense
 text, and sensitive text; arbitrary hierarchy or semantic strings cannot
 smuggle a fact into the prompt. The article title remains
 `text_handling.article_title: external_overlay`, while its ownership class is
-`deterministic_external_text`. A V1/V1.1 record may omit this additive block.
+`deterministic_external_text`. Legacy jobs with no VisualBrief/RenderSpec pair
+remain compatible; once a pair declares a text-bearing policy, both ownership
+declarations are mandatory regardless of job schema version.
 
 When present, `information_hierarchy` is copied from VisualBrief to RenderSpec
 and names `primary`, `supporting`, and `detail` reading levels. Its selected

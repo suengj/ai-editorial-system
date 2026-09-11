@@ -11,8 +11,9 @@
  * regressing again.
  */
 
-import { readFileSync, readdirSync } from 'node:fs';
-import { dirname, resolve } from 'node:path';
+import { mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
+import { createHash } from 'node:crypto';
+import { dirname, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
   CODES, RegenerationSealedError, compileVisualPrompt, hasAuthorizedReopen,
@@ -39,6 +40,8 @@ const check = (name, ok, detail = '') => {
 
 const clone = (o) => JSON.parse(JSON.stringify(o));
 const loadExample = (name) => JSON.parse(readFileSync(resolve(EXAMPLES_DIR, name), 'utf8'));
+const sha256File = (path) => `sha256:${createHash('sha256').update(readFileSync(path)).digest('hex')}`;
+const codesOf = (job) => validateVisualJob(job, opts).map((i) => i.code);
 
 // --- allow fixtures --------------------------------------------------------
 console.log('allow fixtures (expect PASS)');
@@ -58,11 +61,43 @@ console.log('allow fixtures (expect PASS)');
     skip.status === 'gated_skip' && skip.compiled_prompt === undefined);
 }
 
+{
+  const reviewerMutation = JSON.parse(readFileSync(resolve(ROOT, 'evals/visual-review/sue671-ai-hiring-missing-rungs-job.json'), 'utf8'));
+  reviewerMutation.status = 'accepted';
+  reviewerMutation.qa = { performed: true, information_gain_recheck: 'pass', density_recheck: 'pass' };
+  check('SUE-670 reviewer exact mutation: verified-fact job cannot be accepted on QA/schema declarations alone',
+    codesOf(reviewerMutation).includes(CODES.VERIFIED_FACT_TERMINAL_REVIEW), codesOf(reviewerMutation).join(', '));
+
+  const scope = mkdtempSync(resolve(ROOT, '.visual-job-terminal-review-'));
+  try {
+    const job = JSON.parse(readFileSync(resolve(ROOT, 'evals/visual-review/fixtures/semantic-negative/authoritative-job.json'), 'utf8'));
+    const review = JSON.parse(readFileSync(resolve(ROOT, 'evals/visual-review/fixtures/semantic-negative/wrong-number.review.json'), 'utf8'));
+    review.review_id = 'visual-review:fixture-terminal-allow';
+    review.post_render_checks.checks.find((entry) => entry.check === 'factual').observed_text_items[0].observed_text = '41.4%';
+    const reviewPath = resolve(scope, 'review.json');
+    writeFileSync(reviewPath, JSON.stringify(review));
+    job.schema_version = '1.2.0';
+    job.status = 'accepted';
+    job.qa = { performed: true, information_gain_recheck: 'pass', density_recheck: 'pass' };
+    job.post_render_review = {
+      review_id: review.review_id,
+      review_ref: relative(ROOT, reviewPath),
+      review_sha256: sha256File(reviewPath),
+      asset_ref: review.asset_ref,
+      asset_sha256: review.asset_sha256,
+    };
+    check('asset-bound terminal verified-fact review linkage validates',
+      validateVisualJob(job, opts).length === 0,
+      validateVisualJob(job, opts).map((i) => `[${i.code}] ${i.message}`).join(' | '));
+  } finally {
+    rmSync(scope, { recursive: true, force: true });
+  }
+}
+
 // --- deny fixtures ----------------------------------------------------------
 console.log('\ndeny fixtures (expect FAIL, with the specific gate named)');
 
 const baseGood = loadExample('visual-job-body-infographic.example.json');
-const codesOf = (job) => validateVisualJob(job, opts).map((i) => i.code);
 
 {
   const production = clone(loadExample('visual-job-body-infographic-v2.example.json'));
@@ -309,6 +344,7 @@ const approvedConcept = loadExample('visual-job-approved-concept-change.example.
   const vector = clone(approvedFormat);
   vector.approved_asset.format = 'svg';
   vector.approved_asset.master_ref = 'assets/visual-masters/articles/tokenized-stocks-instant-payments-liquidity-rights/liquidity-plate-a.svg';
+  vector.approved_asset.approval_binding.master_ref = vector.approved_asset.master_ref;
   vector.approved_asset.native_geometry = { view_box: '0 0 2400 1350' };
   check('PASS vector master identified by view_box instead of pixel geometry',
     !codesOf(vector).includes(CODES.APPROVED_IDENTITY_INCOMPLETE), codesOf(vector).join(', '));
@@ -434,6 +470,25 @@ console.log('\napproval-lock review regressions (SUE-639 review)');
   blank.approved_asset.approved_by = '   ';
   check('B3 FAIL a whitespace-only approver name is not an attribution',
     codesOf(blank).includes(CODES.APPROVAL_ATTRIBUTION_MISSING));
+}
+
+{
+  const revision = clone(approvedFormat);
+  revision.article_ref.version_number = 3;
+  revision.article_ref.content_hash = 'c'.repeat(64);
+  revision.article_ref.claims_hash = 'd'.repeat(64);
+  check('SUE-669 reviewer exact mutation: v2 approval cannot survive article v3 identity',
+    codesOf(revision).includes(CODES.APPROVAL_IDENTITY_MISMATCH), codesOf(revision).join(', '));
+
+  const masterDigest = clone(approvedFormat);
+  masterDigest.approved_asset.master_digest = `sha256:${'e'.repeat(64)}`;
+  check('SUE-669 reviewer exact mutation: approval cannot survive changed master_digest',
+    codesOf(masterDigest).includes(CODES.APPROVAL_IDENTITY_MISMATCH), codesOf(masterDigest).join(', '));
+
+  const masterRef = clone(approvedFormat);
+  masterRef.approved_asset.master_ref = 'assets/visual-masters/articles/tokenized-stocks-instant-payments-liquidity-rights/another-master.png';
+  check('SUE-669 reviewer exact mutation: approval cannot survive changed master_ref',
+    codesOf(masterRef).includes(CODES.APPROVAL_IDENTITY_MISMATCH), codesOf(masterRef).join(', '));
 }
 
 {

@@ -14,6 +14,8 @@ import { dirname, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { validate } from './json-schema-lite.mjs';
 import { assessVisualReferenceAdmissibility, listEvaluationFiles, loadCatalogEntries, loadCatalogRefIds } from './registry-core.mjs';
+import { classifyArtifact } from './lineage.mjs';
+import { validateMobileLegibility, validateObservedTextAgainstJob } from './visual-review-invariants.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(HERE, '../..');
@@ -22,6 +24,7 @@ export const VISUAL_JOB_SCHEMA = resolve(ROOT, 'schemas/visual-job.schema.json')
 export const VISUAL_BRIEF_SCHEMA = resolve(ROOT, 'schemas/visual-brief.schema.json');
 export const RENDER_SPEC_SCHEMA = resolve(ROOT, 'schemas/render-spec.schema.json');
 export const VISUAL_PRODUCTION_SCHEMA = resolve(ROOT, 'schemas/visual-production.schema.json');
+export const VISUAL_REVIEW_SCHEMA = resolve(ROOT, 'schemas/visual-review.schema.json');
 export const ARTIFACT_PROFILE_DIR = resolve(ROOT, 'editorial/profiles/artifact');
 export const BRAND_PROFILE_DIR = resolve(ROOT, 'editorial/profiles/brand');
 export const ARTICLE_CLAIMS_DIR = resolve(ROOT, 'references/article-claims');
@@ -122,6 +125,7 @@ export const CODES = Object.freeze({
   REVISION_AUTHORIZATION_MISSING: 'revision-intent-requires-explicit-authorization',
   APPROVAL_STATE_INCONSISTENT: 'approved-master-identity-without-approval-lock',
   APPROVAL_ATTRIBUTION_MISSING: 'approval-lock-without-owner-attribution',
+  APPROVAL_IDENTITY_MISMATCH: 'approval-lock-identity-mismatch',
   BRIEF_REQUIRED: 'visual-brief-and-render-spec-required',
   BRIEF_SPEC_MISMATCH: 'brief-render-spec-mismatch',
   REFERENCE_AUTHORITY_UNRESOLVED: 'reference-authority-unresolved',
@@ -145,6 +149,7 @@ export const CODES = Object.freeze({
   VERIFIED_FACT_PAYLOAD: 'verified-generative-fact-payload-invalid',
   VERIFIED_FACT_SOURCE: 'verified-generative-fact-source-lineage-invalid',
   VERIFIED_FACT_POST_RENDER: 'verified-generative-fact-post-render-required',
+  VERIFIED_FACT_TERMINAL_REVIEW: 'verified-generative-fact-terminal-review-required',
   VERIFIED_FACT_LINEAGE: 'verified-generative-fact-lineage-unresolvable',
   VERIFIED_FACT_CLAIM_SET: 'verified-generative-fact-claim-set-invalid',
   VERIFIED_FACT_CLAIM: 'verified-generative-fact-claim-unresolvable',
@@ -165,6 +170,8 @@ export const CODES = Object.freeze({
   FACTUAL_REPAIR_PREDECESSOR_NOT_REGULAR: 'factual-repair-predecessor-not-regular-file',
   FACTUAL_REPAIR_CYCLE: 'factual-repair-predecessor-cycle',
   FACTUAL_REPAIR_DEPTH: 'factual-repair-predecessor-depth-exceeded',
+  FACTUAL_REPAIR_REVIEW: 'factual-repair-review-invalid',
+  FACTUAL_REPAIR_ITEM: 'factual-repair-item-decision-invalid',
   DIRECTION_DISCOVERY: 'direction-discovery-invalid',
   DIRECTION_REFERENCE: 'direction-reference-not-selected-authority',
   REFINEMENT: 'production-refinement-invalid',
@@ -179,7 +186,7 @@ export const VISUAL_JOB_V1_1_FIELDS = Object.freeze([
   'visual_brief', 'render_spec', 'compiled_prompt_adapter',
   'brand_conflicts', 'requires_owner_gate', 'article_title',
 ]);
-export const VISUAL_JOB_V1_2_FIELDS = Object.freeze(['visual_production']);
+export const VISUAL_JOB_V1_2_FIELDS = Object.freeze(['visual_production', 'post_render_review']);
 
 export const VISUAL_FAILURE_ACTIONS = Object.freeze({
   wrong_concept: 'new_direction', local_defect: 'local_edit', low_fidelity: 'fidelity_derivative',
@@ -216,7 +223,7 @@ export const isApprovalLocked = (job) => job?.approved_asset?.state === 'human_a
 /** Every field that only a record naming a specific approved master would carry. */
 export const MASTER_IDENTITY_FIELDS = Object.freeze([
   'master_ref', 'master_digest', 'native_geometry', 'format',
-  'approved_by', 'approved_at', 'approval_context',
+  'approved_by', 'approved_at', 'approval_context', 'approval_binding',
 ]);
 
 /** A string that is present and is not only whitespace. */
@@ -438,6 +445,34 @@ export function approvalLockIssues(job, where = job?.job_id ?? '<job>') {
       `approved_asset.state is human_approved_locked but the approval is unattributed: missing or blank ${attribution.join(', ')} — a lock must record who approved the master and against which article/package version, so the claim is auditable rather than ambient`));
   }
 
+  // Free-text approval_context is retained for human context, but authority is
+  // bound by structured identity. classifyArtifact owns the established
+  // fresh/cosmetic/material/unknown semantics; exact approval additionally
+  // requires the same article id/version and the same master ref/digest.
+  const binding = asset.approval_binding;
+  if (!binding) {
+    out.push(issue(CODES.APPROVAL_IDENTITY_MISMATCH, where,
+      'human_approved_locked requires approval_binding for the exact article revision and master ref/digest it approved'));
+  } else {
+    const currentArticle = job.article_ref ? {
+      article_id: job.article_ref.article_id,
+      version: {
+        number: job.article_ref.version_number,
+        content_hash: job.article_ref.content_hash,
+        claims_hash: job.article_ref.claims_hash,
+      },
+    } : null;
+    const classification = classifyArtifact({ article_ref: binding.article_ref }, currentArticle);
+    const exactArticle = binding.article_ref?.article_id === job.article_ref?.article_id &&
+      binding.article_ref?.version_number === job.article_ref?.version_number &&
+      classification.level === 'fresh';
+    const exactMaster = binding.master_ref === asset.master_ref && binding.master_digest === asset.master_digest;
+    if (!exactArticle || !exactMaster) {
+      out.push(issue(CODES.APPROVAL_IDENTITY_MISMATCH, where,
+        `approval_binding does not match the current article/master identity (classifyArtifact=${classification.level}, article_id/version exact=${exactArticle}, master ref/digest exact=${exactMaster}); stale approval is never inherited`));
+    }
+  }
+
   // From here the routing guard applies whether or not a revision was declared.
   // An undeclared intent is the fail-closed case, not an exemption: approval
   // closes the edge to a generative renderer, and only an explicitly
@@ -591,6 +626,11 @@ function validateTextOwnershipAndHierarchy(job, where) {
   const spec = job.render_spec;
   const briefOwnership = brief?.text_ownership;
   const specOwnership = spec?.text_handling?.text_ownership;
+  const textBearing = Boolean(brief && spec && job.text_policy !== 'no_text');
+  if (textBearing && (!briefOwnership || !specOwnership)) {
+    issues.push(issue(CODES.TEXT_OWNERSHIP_MISMATCH, where,
+      'text-bearing visual jobs must declare matching VisualBrief and RenderSpec text_ownership; undeclared text has no compiler fallback'));
+  }
   if (briefOwnership || specOwnership) {
     if (!briefOwnership || !specOwnership) {
       issues.push(issue(CODES.TEXT_OWNERSHIP_MISMATCH, where,
@@ -746,6 +786,76 @@ function validatePublicationDisplaySurfaces(job, where) {
       'RenderSpec mobile publication surface must be a narrower full-surface derivative whose crop anchors are declared semantic anchors'));
   }
   return issues;
+}
+
+function repositoryRegularFile(ref) {
+  try {
+    const path = resolve(ROOT, ref);
+    if (!path.startsWith(`${ROOT}/`)) return null;
+    const stat = lstatSync(path);
+    if (stat.isSymbolicLink() || !stat.isFile()) return null;
+    const real = realpathSync(path);
+    return real.startsWith(`${ROOT}/`) ? real : null;
+  } catch {
+    return null;
+  }
+}
+
+const digestFile = (path) => `sha256:${createHash('sha256').update(readFileSync(path)).digest('hex')}`;
+
+function validateVerifiedFactTerminalReview(job, where) {
+  const verified = job.visual_brief?.text_ownership?.verified_generative_fact;
+  if (!verified || !['qa_pass', 'accepted'].includes(job.status)) return [];
+  const out = [];
+  const link = job.post_render_review;
+  if (!link) {
+    return [issue(CODES.VERIFIED_FACT_TERMINAL_REVIEW, where,
+      `verified_generative_fact job cannot enter status ${job.status} without an immutable post_render_review bound to real asset bytes`)];
+  }
+  const reviewPath = repositoryRegularFile(link.review_ref);
+  if (!reviewPath || digestFile(reviewPath) !== link.review_sha256) {
+    return [issue(CODES.VERIFIED_FACT_TERMINAL_REVIEW, where,
+      'post_render_review.review_ref must resolve to repository-contained review bytes matching review_sha256')];
+  }
+  let review;
+  try { review = readJSON(reviewPath); } catch {
+    return [issue(CODES.VERIFIED_FACT_TERMINAL_REVIEW, where, 'post_render_review.review_ref is not parseable JSON')];
+  }
+  const schemaIssues = validate(review, readJSON(VISUAL_REVIEW_SCHEMA));
+  if (schemaIssues.length > 0) {
+    return [issue(CODES.VERIFIED_FACT_TERMINAL_REVIEW, where,
+      `post-render review does not satisfy visual-review.schema.json: ${schemaIssues[0].path}: ${schemaIssues[0].message}`)];
+  }
+  const assetPath = repositoryRegularFile(link.asset_ref);
+  const mobilePath = repositoryRegularFile(review.mobile_asset_ref);
+  const binding = review.verified_fact_binding;
+  const post = review.post_render_checks;
+  const factual = post?.checks?.find((entry) => entry.check === 'factual');
+  const allChecksPass = ['textual', 'factual', 'readability', 'mobile'].every((name) => {
+    const check = post?.checks?.find((entry) => entry.check === name);
+    const expectedDigest = name === 'mobile' ? review.mobile_asset_sha256 : review.asset_sha256;
+    return check?.verdict === 'pass' && check.observed === true && check.asset_sha256 === expectedDigest;
+  });
+  const exact = review.review_id === link.review_id && review.asset_ref === link.asset_ref &&
+    review.asset_sha256 === link.asset_sha256 && review.verdict === 'PASS_TO_HUMAN_REVIEW' &&
+    review.final_authority === 'human' && review.review_scope === 'verified_generative_fact' &&
+    binding?.job_id === job.job_id && binding?.render_spec_id === job.render_spec?.render_spec_id &&
+    binding?.render_spec_sha256 === canonicalPayloadSha256(job.render_spec) &&
+    binding?.payload_ref === verified.canonical_payload?.payload_ref &&
+    binding?.payload_sha256 === verified.canonical_payload?.payload_sha256 &&
+    binding?.asset_sha256 === review.asset_sha256 && factual?.asset_sha256 === review.asset_sha256 &&
+    post?.asset_sha256 === review.asset_sha256 && post?.mobile_asset_sha256 === review.mobile_asset_sha256;
+  const realAssets = assetPath && mobilePath && digestFile(assetPath) === link.asset_sha256 &&
+    digestFile(mobilePath) === review.mobile_asset_sha256;
+  const semanticIssues = [
+    ...validateObservedTextAgainstJob(review, job),
+    ...validateMobileLegibility(review),
+  ];
+  if (!exact || !realAssets || !allChecksPass || semanticIssues.length > 0) {
+    out.push(issue(CODES.VERIFIED_FACT_TERMINAL_REVIEW, where,
+      `terminal verified-fact review must match the job/payload/RenderSpec, bind real full/mobile asset bytes, and carry observed passing text/mobile checks${semanticIssues[0] ? `: ${semanticIssues[0].message}` : ''}`));
+  }
+  return out;
 }
 
 function normalise(value, { format = 'delete' } = {}) {
@@ -935,6 +1045,104 @@ export function validateVisualContract(job, { brand, profiles = loadArtifactProf
 
 /** SUE-645/648 control-plane validation; never replaces the approval lock. */
 export const MAX_FACTUAL_REPAIR_DEPTH = 4;
+
+function resolveFactualRepairReview(repair, where, out) {
+  const reviewPath = repositoryRegularFile(repair.review_ref);
+  if (!reviewPath) {
+    out.push(issue(CODES.FACTUAL_REPAIR_REVIEW, where,
+      'factual_repair.review_ref must resolve to a repository-contained regular-file review record'));
+    return null;
+  }
+  if (digestFile(reviewPath) !== repair.review_sha256) {
+    out.push(issue(CODES.FACTUAL_REPAIR_REVIEW, where,
+      'factual_repair.review_sha256 does not match the review record bytes'));
+    return null;
+  }
+  let review;
+  try { review = readJSON(reviewPath); } catch {
+    out.push(issue(CODES.FACTUAL_REPAIR_REVIEW, where, 'factual_repair review record is not parseable JSON'));
+    return null;
+  }
+  const schemaIssues = validate(review, readJSON(VISUAL_REVIEW_SCHEMA));
+  const post = review.post_render_checks;
+  const actionFor = (verdict) => verdict === 'pass' ? 'KEEP' : verdict === 'fail' ? 'CHANGE' : 'DO_NOT_CHANGE';
+  const requiredChecks = ['textual', 'factual', 'readability', 'mobile'];
+  const routeIsConsistent = requiredChecks.every((name) => {
+    const matches = post?.checks?.filter((entry) => entry.check === name) ?? [];
+    return matches.length === 1 && post.repair_routing?.[name] === actionFor(matches[0].verdict);
+  });
+  const failureRouteIsConsistent = review.next_action === expectedVisualFailureAction(review.failure_class) &&
+    review.verdict !== 'PASS_TO_HUMAN_REVIEW' && post?.checks?.some((entry) => entry.verdict === 'fail');
+  if (schemaIssues.length > 0 || review.review_id !== repair.review_id ||
+      !routeIsConsistent || !failureRouteIsConsistent) {
+    out.push(issue(CODES.FACTUAL_REPAIR_REVIEW, where,
+      'factual_repair must consume the named schema-valid failing review and its verdict-consistent KEEP/CHANGE/DO_NOT_CHANGE routing'));
+    return null;
+  }
+  return review;
+}
+
+function validateFactualRepairDecisions(job, prior, review, where) {
+  const out = [];
+  const repair = job.visual_production.factual_repair;
+  const currentItems = job.visual_production.factual_overlay.payload.items ?? [];
+  const priorItems = prior.visual_production.factual_overlay.payload.items ?? [];
+  const currentById = new Map(currentItems.map((item) => [item.item_id, item]));
+  const priorById = new Map(priorItems.map((item) => [item.item_id, item]));
+  const decisions = repair.item_decisions ?? [];
+  const decisionById = new Map(decisions.map((entry) => [entry.item_id, entry]));
+  const allIds = new Set([...priorById.keys(), ...currentById.keys()]);
+  const conceptFailure = review.failure_class === 'wrong_concept' && review.next_action === 'new_direction';
+
+  if (decisionById.size !== decisions.length || decisionById.size !== allIds.size ||
+      [...allIds].some((id) => !decisionById.has(id))) {
+    out.push(issue(CODES.FACTUAL_REPAIR_ITEM, where,
+      'factual_repair.item_decisions must cover every prior/current overlay item_id exactly once'));
+  }
+  const semanticFields = ['article_ref', 'artifact_profile', 'semantic_spec', 'visual_brief', 'render_spec'];
+  if (!conceptFailure && semanticFields.some((field) => !sameJSONValue(job[field], prior[field]))) {
+    out.push(issue(CODES.FACTUAL_REPAIR_ITEM, where,
+      'localized factual repair changed article or semantic/render contract identity without a review declaring wrong_concept/new_direction'));
+  }
+  for (const id of allIds) {
+    const decision = decisionById.get(id);
+    const before = priorById.get(id);
+    const after = currentById.get(id);
+    if (!decision || !before || !after) {
+      out.push(issue(CODES.FACTUAL_REPAIR_ITEM, where,
+        `overlay item ${id} was added/removed instead of receiving a bounded review decision`));
+      continue;
+    }
+    const beforeDigest = canonicalPayloadSha256(before);
+    const afterDigest = canonicalPayloadSha256(after);
+    const routed = review.post_render_checks.repair_routing[decision.review_check];
+    if (decision.decision !== routed || decision.prior_item_sha256 !== beforeDigest || decision.current_item_sha256 !== afterDigest) {
+      out.push(issue(CODES.FACTUAL_REPAIR_ITEM, where,
+        `overlay item ${id} decision/digests do not match the resolved review and canonical prior/current item bytes`));
+      continue;
+    }
+    const changed = !sameJSONValue(before, after);
+    if (!conceptFailure && ['KEEP', 'DO_NOT_CHANGE'].includes(decision.decision) && changed) {
+      out.push(issue(CODES.FACTUAL_REPAIR_ITEM, where,
+        `overlay item ${id} is ${decision.decision} but its canonical bytes changed`));
+    }
+    if (decision.decision === 'CHANGE' && !changed) {
+      out.push(issue(CODES.FACTUAL_REPAIR_ITEM, where,
+        `overlay item ${id} is CHANGE but its canonical bytes did not change`));
+    }
+  }
+  if (!conceptFailure && (review.failure_class !== 'facts_or_text_wrong' || review.next_action !== 'factual_overlay_repair')) {
+    out.push(issue(CODES.FACTUAL_REPAIR_REVIEW, where,
+      'ordinary factual repair requires a review routed as facts_or_text_wrong/factual_overlay_repair'));
+  }
+  const route = job.visual_production.failure_route;
+  if (route && (route.failure_class !== review.failure_class || route.next_action !== review.next_action)) {
+    out.push(issue(CODES.FACTUAL_REPAIR_REVIEW, where,
+      'visual_production.failure_route must consume the resolved review failure_class and next_action exactly'));
+  }
+  return out;
+}
+
 export function validateVisualProduction(job, where = job?.job_id ?? '<job>', referenceContext = {}, repairState = { chain: new Set(), depth: 0 }) {
   const production = job?.visual_production;
   if (!production) return [];
@@ -961,6 +1169,7 @@ export function validateVisualProduction(job, where = job?.job_id ?? '<job>', re
       }
     }
     if (repair) {
+      const repairReview = resolveFactualRepairReview(repair, where, out);
       let prior; let priorRealPath;
       try {
         const priorPath = resolve(ROOT, repair.prior_production_ref);
@@ -982,6 +1191,7 @@ export function validateVisualProduction(job, where = job?.job_id ?? '<job>', re
         out.push(...priorIssues.map((x) => issue(x.code, `${where} -> ${repair.prior_production_ref}`, `predecessor: ${x.message}`)));
         const priorProduction = prior.visual_production;
         if (master.asset_sha256 !== priorProduction.semantic_master.asset_sha256 || overlay.asset_sha256 === priorProduction.factual_overlay.asset_sha256 || composite.asset_sha256 === priorProduction.publication_composite.asset_sha256) out.push(issue(CODES.FACTUAL_REPAIR, where, 'a factual-overlay repair must preserve resolved prior master digest and replace resolved prior overlay and composite digests'));
+        if (repairReview) out.push(...validateFactualRepairDecisions(job, prior, repairReview, where));
       }
   }
   } else if (repair) out.push(issue(CODES.FACTUAL_REPAIR, where, 'factual_repair requires complete master/overlay/composite lineage'));
@@ -1044,6 +1254,7 @@ function validateVisualJobRecord(job, { schema = loadSchema(), profiles = loadAr
 
   // PR A checks are additive. They never replace approvalLockIssues below.
   issues.push(...validateVisualContract(job, { brand: resolvedBrand, profiles, referenceContext }, where));
+  issues.push(...validateVerifiedFactTerminalReview(job, where));
 
   if (!job.article_ref && !job.package_ref) {
     issues.push(issue(CODES.MISSING_REF, where, 'a visual job must carry exactly one of article_ref or package_ref'));

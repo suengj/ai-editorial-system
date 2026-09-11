@@ -112,6 +112,16 @@
     "approved_by": "suengjae-hong",
     "approved_at": "2026-09-05",
     "approval_context": "art:tokenized-stocks-instant-payments-liquidity-rights@v2",
+    "approval_binding": {
+      "article_ref": {
+        "article_id": "art:tokenized-stocks-instant-payments-liquidity-rights",
+        "version_number": 2,
+        "content_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "claims_hash": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+      },
+      "master_ref": "assets/visual-masters/articles/tokenized-stocks-instant-payments-liquidity-rights/liquidity-plate-a.png",
+      "master_digest": "sha256:d4f01ceaa2fa4fd85420d992f128471eca1deff5851ca79f842a4fa29477ec6c"
+    },
     "renderer_lineage": {
       "tool": "svg-diagram-compiler",
       "tool_version": "1.0.0",

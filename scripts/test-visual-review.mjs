@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import { readFileSync, writeFileSync, mkdirSync, mkdtempSync, rmSync } from 'node:fs'; import { createHash } from 'node:crypto'; import { spawnSync } from 'node:child_process'; import { resolve } from 'node:path'; import { tmpdir } from 'node:os';
 import { canonicalPayloadSha256 } from './lib/visual-job-core.mjs';
-import { REVIEW_CODES, VISUAL_FAILURE_ACTIONS, expectedVisualReviewRoute, validateVisualFixture, validateVisualReview } from './lib/visual-review-core.mjs';
+import { REVIEW_CODES, VISUAL_FAILURE_ACTIONS, expectedVisualReviewRoute, materializeVisualSemanticNegativeReview, validateVisualFixture, validateVisualReview } from './lib/visual-review-core.mjs';
 const root=resolve(new URL('..',import.meta.url).pathname), read=p=>JSON.parse(readFileSync(resolve(root,p),'utf8')); let bad=0; const ok=(n,v,detail='')=>{console.log(`${v?'PASS':'FAIL'} ${n}${!v&&detail?' — '+detail:''}`);if(!v)bad++};
 const dims=['thesis_clarity','reading_path','narrative_composition','editorial_authorship','spatial_richness','information_hierarchy','article_fit','reference_adherence','brand_compatibility','factual_text_integrity','mobile_crop_resilience'].map(d=>({dimension:d,verdict:'pass',evidence:'observed pixel region'}));
 const mobileAssetRef='evals/prototypes/sue629/plate-b-comparison.svg'; const mobileAssetSha256=`sha256:${createHash('sha256').update(readFileSync(resolve(root,mobileAssetRef))).digest('hex')}`;
@@ -22,9 +22,9 @@ ok('mobile review record validates',validateVisualReview(good).length===0); for(
     },
     checks: [
       { check: 'textual', asset_scope: 'full', asset_sha256: good.asset_sha256, verdict: 'pass', observed: true, display_surface: 'desktop_actual_display', evidence: 'title remains outside the rendered pixels' },
-      { check: 'factual', asset_scope: 'full', asset_sha256: good.asset_sha256, verdict: 'pass', observed: true, display_surface: 'desktop_actual_display', evidence: 'deterministic labels match the overlay source' },
+      { check: 'factual', asset_scope: 'full', asset_sha256: good.asset_sha256, verdict: 'pass', observed: true, display_surface: 'desktop_actual_display', observed_text_items: [{ source_ref: 'article-claim:art:tokenized-stocks-instant-payments-liquidity-rights:liquidity-window', declared_text: 'exact causal labels', observed_text: 'exact causal labels' }], evidence: 'deterministic labels match the overlay source' },
       { check: 'readability', asset_scope: 'full', asset_sha256: good.asset_sha256, verdict: 'pass', observed: true, display_surface: 'desktop_actual_display', evidence: 'text is legible at target size' },
-      { check: 'mobile', asset_scope: 'mobile', asset_sha256: good.mobile_asset_sha256, verdict: 'pass', observed: true, display_surface: 'mobile_actual_display', evidence: 'primary reading path survives mobile crop' },
+      { check: 'mobile', asset_scope: 'mobile', asset_sha256: good.mobile_asset_sha256, verdict: 'pass', observed: true, display_surface: 'mobile_actual_display', mobile_legibility: { detail_role: 'secondary_detail', load_bearing: true, legible_at_display_size: false, detail_access_path: 'expand', first_read: { topic: true, dominant_relation: true, major_module_boundaries: true, main_conclusion: true } }, evidence: 'primary reading path survives mobile crop; verified secondary detail is available by expand' },
     ],
     repair_routing: { textual: 'KEEP', factual: 'KEEP', readability: 'KEEP', mobile: 'KEEP' },
   };
@@ -58,6 +58,16 @@ ok('mobile review record validates',validateVisualReview(good).length===0); for(
   const mobileAnchorLost = JSON.parse(JSON.stringify(postRender));
   mobileAnchorLost.actual_display_geometry.mobile.anchor_observed = false;
   ok('mobile crop losing the declared anchor is rejected', validateVisualReview({ ...clean, post_render_checks: mobileAnchorLost }, reviewOptions).some(i => i.code === REVIEW_CODES.POST_RENDER_GEOMETRY));
+  ok('verified secondary mobile detail may use progressive disclosure when first-read structure survives',
+    !validateVisualReview(clean, reviewOptions).some(i => i.code === REVIEW_CODES.UNREADABLE_DISPLAY_SIZE));
+  const unreadableLoadBearing = JSON.parse(JSON.stringify(postRender));
+  unreadableLoadBearing.checks.find((check) => check.check === 'mobile').mobile_legibility.detail_access_path = 'none';
+  ok('unreadable load-bearing mobile detail without full-size/open/expand path fails',
+    validateVisualReview({ ...clean, post_render_checks: unreadableLoadBearing }, reviewOptions).some(i => i.code === REVIEW_CODES.UNREADABLE_DISPLAY_SIZE));
+  const lostConclusion = JSON.parse(JSON.stringify(postRender));
+  lostConclusion.checks.find((check) => check.check === 'mobile').mobile_legibility.first_read.main_conclusion = false;
+  ok('mobile PASS requires topic, dominant relation, major boundaries, and main conclusion at first read',
+    validateVisualReview({ ...clean, post_render_checks: lostConclusion }, reviewOptions).some(i => i.code === REVIEW_CODES.UNREADABLE_DISPLAY_SIZE));
   const verifiedJob = read('schemas/examples/visual-job-body-infographic-v2.example.json');
   const verifiedFact = { exact_text: 'exact causal labels', source_ref: 'article-claim:art:tokenized-stocks-instant-payments-liquidity-rights:liquidity-window' };
   const claimSet = { article_id: verifiedJob.article_ref.article_id, claims_hash: verifiedJob.article_ref.claims_hash, claim_ids: ['liquidity-window'] };
@@ -81,6 +91,12 @@ ok('mobile review record validates',validateVisualReview(good).length===0); for(
     verified_fact_binding: { job_id: verifiedJob.job_id, job_ref: authoritativeJobRef, job_sha256: authoritativeJobSha256, render_spec_id: verifiedJob.render_spec.render_spec_id, render_spec_sha256: authoritativeRenderSpecSha256, payload_ref: verifiedPayload.payload_ref, payload_sha256: canonicalPayloadSha256({ ...verifiedPayload, claim_set: claimSet }), asset_sha256: clean.asset_sha256, required_check: 'factual' } };
   ok('verified-fact review has a durable default-validator owner-consumer binding', validateVisualReview(bound, reviewOptions).length === 0, JSON.stringify(validateVisualReview(bound, reviewOptions)));
   ok('verified-fact review binding cross-checks the supplied owner when available', validateVisualReview(bound, { ...reviewOptions, job: verifiedJob }).length === 0, JSON.stringify(validateVisualReview(bound, { ...reviewOptions, job: verifiedJob })));
+  const reviewerObservedOnlyInProse = JSON.parse(JSON.stringify(bound));
+  const reviewerFactual = reviewerObservedOnlyInProse.post_render_checks.checks.find((check) => check.check === 'factual');
+  delete reviewerFactual.observed_text_items;
+  reviewerFactual.evidence = 'WRONG NUMBER observed: 41.5%; declared payload requires 41.4%';
+  ok('reviewer exact mutation: free-text wrong-number evidence cannot pass without structured observed text',
+    validateVisualReview(reviewerObservedOnlyInProse, reviewOptions).some(i => i.code === REVIEW_CODES.OBSERVED_TEXT_REQUIRED));
   const missingVerifiedCheck = { ...bound }; delete missingVerifiedCheck.post_render_checks;
   ok('verified-fact review cannot omit the factual digest check', validateVisualReview(missingVerifiedCheck, reviewOptions).some(i => i.code === REVIEW_CODES.VERIFIED_FACT_REVIEW_REQUIRED));
   const opaqueBinding = { ...bound, verified_fact_binding: { ...bound.verified_fact_binding, payload_sha256: 'sha256:' + 'a'.repeat(64) } };
@@ -145,6 +161,21 @@ ok('mobile review record validates',validateVisualReview(good).length===0); for(
 }
 const fx=read('evals/visual-review/fixtures/negative/sue629-a.json'); ok('real negative fixture hash validates',validateVisualFixture(fx).length===0); ok('hash mismatch rejected',validateVisualFixture({...fx,asset_sha256:'sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'}).some(i=>i.code===REVIEW_CODES.FIXTURE_HASH)); const slot=read('evals/visual-review/fixtures/positive-slots.json').slots[0];ok('empty positive slot inert',validateVisualFixture(slot).length===0);ok('positive slot cannot point at repository asset',validateVisualFixture({...slot,asset_ref:fx.asset_ref,asset_sha256:fx.asset_sha256}).some(i=>i.code===REVIEW_CODES.POSITIVE));
 ok('missing fixture rejected',validateVisualFixture({...fx,asset_ref:'evals/missing.svg'}).some(i=>i.code===REVIEW_CODES.FIXTURE_PATH));ok('outside fixture rejected',validateVisualFixture({...fx,asset_ref:'/tmp/no.svg'}).some(i=>i.code===REVIEW_CODES.FIXTURE_PATH));ok('a negative fixture cannot claim an accepted owner judgement',validateVisualFixture({...fx,owner_judgement:'accepted'}).some(i=>i.code===REVIEW_CODES.POSITIVE));
+for (const [name, code] of [
+  ['wrong-number', REVIEW_CODES.WRONG_NUMBER],
+  ['missing-qualifier', REVIEW_CODES.MISSING_QUALIFIER],
+  ['hallucinated-label', REVIEW_CODES.HALLUCINATED_LABEL],
+  ['unreadable-display-size', REVIEW_CODES.UNREADABLE_DISPLAY_SIZE],
+]) {
+  const fixture = read(`evals/visual-review/fixtures/negative/sue670-${name}.json`);
+  const sourceReview = read(fixture.review_record);
+  const negativeReview = materializeVisualSemanticNegativeReview(fixture, sourceReview);
+  const issues = validateVisualReview(negativeReview);
+  ok(`SUE-670 named negative fixture ${name} fails for ${code}`,
+    issues.some((entry) => entry.code === code), JSON.stringify(issues));
+  ok(`SUE-647 taxonomy registers ${name} as an expected semantic rejection`,
+    validateVisualFixture(fixture).length === 0, JSON.stringify(validateVisualFixture(fixture)));
+}
 for(const tag of ['dashboardization','ui_mimicry','flat_svg_aesthetic','generic_icon_grid','box_overload','over_minimalization','weak_visual_thesis','style_dilution','dense_text','reference_drift','factual_overlay_intrusion']){const r=expectedVisualReviewRoute(tag),j={...good,verdict:'REROUTE',defect_tags:[tag],primary_tag:tag,failure_class:r?.failure_class,next_action:r?.next_action};ok(`tag schema and parity ${tag}`,r&&VISUAL_FAILURE_ACTIONS[r.failure_class]===r.next_action&&!validateVisualReview(j).some(x=>!String(x.code).startsWith('visual-review-feedback-')));}
 const plates=['sue629-a.json','sue629-b.json','sue629-c.json'].map(x=>read(`evals/visual-review/fixtures/negative/${x}`));ok('rejected SUE-629 records carry dashboard UI and flat-SVG warnings routed to reroute', ['dashboardization','ui_mimicry','flat_svg_aesthetic'].every(t=>plates.some(p=>p.failure_tags.includes(t))&&expectedVisualReviewRoute(t).next_action==='reroute_composition_renderer'));
 const harness=spawnSync('node',['scripts/compare-visual-review-fixtures.mjs'],{cwd:root,encoding:'utf8'});ok('empty positive slots make comparison UNRUNNABLE non-success',harness.status===2&&harness.stdout.includes('UNRUNNABLE'));

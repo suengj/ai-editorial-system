@@ -133,9 +133,25 @@
     "visual_production": {
       "description": "Optional SUE-645/SUE-648 declared production control state. It does not approve, lock, publish, render, or observe a provider.",
       "type": "object"
+    },
+    "post_render_review": {
+      "description": "Immutable linkage to the real-asset review required before a verified-generative-fact job may enter qa_pass or accepted. Core resolves and hashes both the review record and reviewed asset.",
+      "$ref": "#/$defs/post_render_review"
     }
   },
   "$defs": {
+    "post_render_review": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["review_id", "review_ref", "review_sha256", "asset_ref", "asset_sha256"],
+      "properties": {
+        "review_id": { "type": "string", "pattern": "^visual-review:[a-z0-9-]+$" },
+        "review_ref": { "type": "string", "minLength": 1 },
+        "review_sha256": { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$" },
+        "asset_ref": { "type": "string", "minLength": 1 },
+        "asset_sha256": { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$" }
+      }
+    },
     "approved_asset": {
       "description": "Approval lock record. state is the only schema-required field: candidate carries no master identity yet, and the identity requirements for human_approved_locked are cross-field checks in scripts/lib/visual-job-core.mjs (a raster master needs pixel geometry, a vector master a view_box).",
       "type": "object",
@@ -165,10 +181,24 @@
           "type": "string",
           "minLength": 1
         },
+        "approval_binding": {
+          "description": "Structured identity the human approval was granted against. Core requires exact article identity and exact master ref/digest equality; free-text approval_context is context only.",
+          "$ref": "#/$defs/approval_binding"
+        },
         "renderer_lineage": {
           "description": "The runtime that produced the approved master, when it was generated. This is where a generative origin stays auditable after the lock closes the generative route on the job itself: renderer_route on a locked, non-semantic job describes the post-approval derivative route, not how the master was first drawn.",
           "$ref": "#/$defs/runtime"
         }
+      }
+    },
+    "approval_binding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["article_ref", "master_ref", "master_digest"],
+      "properties": {
+        "article_ref": { "$ref": "#/$defs/article_ref" },
+        "master_ref": { "type": "string", "minLength": 1 },
+        "master_digest": { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$" }
       }
     },
     "native_geometry": {

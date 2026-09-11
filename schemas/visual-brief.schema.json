@@ -55,7 +55,8 @@
           "properties": { "items": { "type": "array", "items": { "type": "string", "minLength": 1 } } }
         },
         "verified_generative_fact": {
-          "type": "object", "additionalProperties": false,
+          "description": "Null explicitly represents that this ownership class has no items; an object declares generated facts that require authoritative payload lineage and post-render verification.",
+          "type": ["object", "null"], "additionalProperties": false,
           "required": ["canonical_payload", "source_lineage", "claim_set", "post_render_verification"],
           "properties": {
             "canonical_payload": {

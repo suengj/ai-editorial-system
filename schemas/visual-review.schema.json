@@ -32,8 +32,8 @@
       }
     },
     "verdict": { "enum": ["PASS_TO_HUMAN_REVIEW", "REVISE", "REROUTE", "SKIP"] },
-    "defect_tags": { "type": "array", "items": { "enum": ["dashboardization", "ui_mimicry", "flat_svg_aesthetic", "generic_icon_grid", "box_overload", "over_minimalization", "weak_visual_thesis", "style_dilution", "dense_text", "reference_drift", "factual_overlay_intrusion"] } },
-    "primary_tag": { "enum": ["dashboardization", "ui_mimicry", "flat_svg_aesthetic", "generic_icon_grid", "box_overload", "over_minimalization", "weak_visual_thesis", "style_dilution", "dense_text", "reference_drift", "factual_overlay_intrusion", null] },
+    "defect_tags": { "type": "array", "items": { "enum": ["dashboardization", "ui_mimicry", "flat_svg_aesthetic", "generic_icon_grid", "box_overload", "over_minimalization", "weak_visual_thesis", "style_dilution", "dense_text", "reference_drift", "factual_overlay_intrusion", "wrong_number", "missing_qualifier", "hallucinated_label", "unreadable_publication_display_size"] } },
+    "primary_tag": { "enum": ["dashboardization", "ui_mimicry", "flat_svg_aesthetic", "generic_icon_grid", "box_overload", "over_minimalization", "weak_visual_thesis", "style_dilution", "dense_text", "reference_drift", "factual_overlay_intrusion", "wrong_number", "missing_qualifier", "hallucinated_label", "unreadable_publication_display_size", null] },
     "failure_class": { "enum": ["wrong_concept", "local_defect", "low_fidelity", "facts_or_text_wrong", "reference_drift", "dashboardization", "human_likes_candidate", null] },
     "next_action": { "enum": ["new_direction", "local_edit", "fidelity_derivative", "factual_overlay_repair", "recompile_reference_authority", "reroute_composition_renderer", "human_approval_required", "human_judgement"] },
     "feedback_ref": { "type": "string", "pattern": "^feedback:[a-z0-9-]+$" },
@@ -55,7 +55,46 @@
         "verdict": { "enum": ["pass", "fail", "abstain"] },
         "observed": { "type": "boolean" },
         "display_surface": { "enum": ["desktop_actual_display", "mobile_actual_display"] },
+        "observed_text_items": {
+          "description": "Structured transcription of every authoritative text item checked in the rendered asset. declared_text is cross-checked against the bound job; observed_text is what the reviewer actually read, or null when absent.",
+          "type": "array",
+          "items": { "$ref": "#/$defs/observed_text_item" }
+        },
+        "mobile_legibility": { "$ref": "#/$defs/mobile_legibility" },
         "evidence": { "type": "string", "minLength": 1 }
+      }
+    },
+    "observed_text_item": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source_ref", "declared_text", "observed_text"],
+      "properties": {
+        "source_ref": { "type": "string", "minLength": 1 },
+        "declared_text": { "type": ["string", "null"] },
+        "observed_text": { "type": ["string", "null"] }
+      }
+    },
+    "mobile_legibility": {
+      "description": "SUE-546 progressive-mobile evidence. First-read structure must survive inline display; only secondary detail may rely on a declared full-size/open/expand path.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["detail_role", "load_bearing", "legible_at_display_size", "detail_access_path", "first_read"],
+      "properties": {
+        "detail_role": { "enum": ["first_read_structure", "secondary_detail"] },
+        "load_bearing": { "type": "boolean" },
+        "legible_at_display_size": { "type": "boolean" },
+        "detail_access_path": { "enum": ["none", "full_size", "open", "expand"] },
+        "first_read": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["topic", "dominant_relation", "major_module_boundaries", "main_conclusion"],
+          "properties": {
+            "topic": { "type": "boolean" },
+            "dominant_relation": { "type": "boolean" },
+            "major_module_boundaries": { "type": "boolean" },
+            "main_conclusion": { "type": "boolean" }
+          }
+        }
       }
     },
     "repair_routing": {

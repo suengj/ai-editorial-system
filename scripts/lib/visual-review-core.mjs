@@ -4,11 +4,17 @@ import { resolve, sep } from 'node:path';
 import { validate } from './json-schema-lite.mjs';
 import { listFeedbackFiles, validateFeedbackFile } from './registry-core.mjs';
 import { VISUAL_FAILURE_ACTIONS, canonicalPayloadSha256, expectedVisualFailureAction, validateVisualJob } from './visual-job-core.mjs';
+import {
+  VISUAL_REVIEW_INVARIANT_CODES,
+  validateMobileLegibility,
+  validateObservedTextAgainstJob,
+} from './visual-review-invariants.mjs';
 
 const ROOT = resolve(new URL('../..', import.meta.url).pathname);
 const schema = (name) => JSON.parse(readFileSync(resolve(ROOT, 'schemas', name), 'utf8'));
 
 export const REVIEW_CODES = Object.freeze({
+  ...VISUAL_REVIEW_INVARIANT_CODES,
   FEEDBACK_INVALID: 'visual-review-feedback-record-invalid',
   SCHEMA: 'visual-review-schema',
   DIMENSIONS: 'visual-review-dimensions',
@@ -51,6 +57,10 @@ export const VISUAL_REVIEW_TAG_CLASSES = Object.freeze({
   dense_text: 'facts_or_text_wrong',
   reference_drift: 'reference_drift',
   factual_overlay_intrusion: 'facts_or_text_wrong',
+  wrong_number: 'facts_or_text_wrong',
+  missing_qualifier: 'facts_or_text_wrong',
+  hallucinated_label: 'facts_or_text_wrong',
+  unreadable_publication_display_size: 'local_defect',
 });
 
 const REQUIRED_DIMENSIONS = [
@@ -241,6 +251,8 @@ function validateVerifiedFactReview(record, job, out) {
     }
   }
 
+  if (jobVerified) out.push(...validateObservedTextAgainstJob(record, job));
+
   const factual = record.post_render_checks?.checks?.find((check) =>
     check.check === 'factual' && check.asset_scope === 'full' && check.asset_sha256 === record.asset_sha256);
   if (!factual) {
@@ -280,6 +292,7 @@ export function validateVisualReview(record, { feedbackDir, job } = {}) {
   }
 
   validatePostRenderChecks(record, out);
+  out.push(...validateMobileLegibility(record));
   const boundJob = record.verified_fact_binding ? loadBoundReviewJob(record, out) : job;
   validateVerifiedFactReview(record, boundJob, out);
 
@@ -299,6 +312,24 @@ export function validateVisualReview(record, { feedbackDir, job } = {}) {
     if (!fb.routing?.abstained && fb.routing?.modality_layer !== record.primary_tag) out.push({ code: REVIEW_CODES.FEEDBACK_MODALITY, message: 'feedback modality differs' });
   }
   return out;
+}
+
+export function materializeVisualSemanticNegativeReview(fixture, sourceReview) {
+  const review = JSON.parse(JSON.stringify(sourceReview));
+  if (fixture.review_mutation === 'missing_qualifier_pass') {
+    const observed = review.post_render_checks.checks.find((entry) => entry.check === 'factual').observed_text_items;
+    observed[0].observed_text = observed[0].declared_text;
+    observed[1].observed_text = null;
+  } else if (fixture.review_mutation === 'hallucinated_label_pass') {
+    const observed = review.post_render_checks.checks.find((entry) => entry.check === 'factual').observed_text_items;
+    observed[0].observed_text = observed[0].declared_text;
+    observed.push({ source_ref: 'observed:unattributed:entry-level', declared_text: null, observed_text: 'ENTRY LEVEL' });
+  } else if (fixture.review_mutation === 'unreadable_display_size_pass') {
+    const observed = review.post_render_checks.checks.find((entry) => entry.check === 'factual').observed_text_items;
+    observed[0].observed_text = observed[0].declared_text;
+    review.post_render_checks.checks.find((entry) => entry.check === 'mobile').mobile_legibility.detail_access_path = 'none';
+  }
+  return review;
 }
 
 export function validateVisualFixture(fixture) {
@@ -327,6 +358,26 @@ export function validateVisualFixture(fixture) {
     if (digestOf(path) !== fixture.asset_sha256) out.push({ code: REVIEW_CODES.FIXTURE_HASH, message: 'asset hash mismatch' });
   } catch {
     out.push({ code: REVIEW_CODES.FIXTURE_PATH, message: 'asset must be repository-contained regular file' });
+  }
+  if (fixture.expected_review_issue !== undefined) {
+    if (fixture.status !== 'negative' || !fixture.review_record) {
+      out.push({ code: REVIEW_CODES.POSITIVE, message: 'semantic negative fixtures require negative status and a review_record' });
+    } else {
+      const reviewPath = containedFile(fixture.review_record);
+      let review;
+      try { review = reviewPath ? JSON.parse(readFileSync(reviewPath, 'utf8')) : null; } catch { review = null; }
+      if (!review) {
+        out.push({ code: REVIEW_CODES.FIXTURE_PATH, message: 'semantic negative fixture review_record must resolve to repository-contained JSON' });
+      } else {
+        const reviewIssues = validateVisualReview(materializeVisualSemanticNegativeReview(fixture, review));
+        if (!reviewIssues.some((entry) => entry.code === fixture.expected_review_issue)) {
+          out.push({ code: REVIEW_CODES.POSITIVE, message: `semantic negative fixture did not produce expected review issue ${fixture.expected_review_issue}` });
+        }
+        if (review.asset_ref !== fixture.asset_ref || review.asset_sha256 !== fixture.asset_sha256) {
+          out.push({ code: REVIEW_CODES.POSITIVE, message: 'semantic negative fixture and review_record must identify the same asset bytes' });
+        }
+      }
+    }
   }
   return out;
 }

@@ -35,9 +35,10 @@ evidence:
 
 # review-visual
 
-V2.17 extension (SUE-670): this keeps the existing visual review authority
-and adds optional digest-bound post-render text/fact/readability/mobile checks
-with observed actual-display geometry.
+V2.17 extension (SUE-670): this keeps the existing visual review authority and
+adds digest-bound post-render text/fact/readability/mobile checks with observed
+actual-display geometry. These checks are mandatory for verified generative
+facts.
 
 ## Purpose
 
@@ -57,7 +58,7 @@ Resolve the asset, VisualBrief, RenderSpec, and selected authority.
 
 ## Procedure
 
-Inspect full and mobile images; record each dimension with evidence; classify one primary defect; use the shared PR-B action mapping; and, when `post_render_checks` is present, bind textual, factual, and readability checks to the full asset and the mobile check to the mobile derivative. A verified-fact review must bind to a validator-clean job/RenderSpec artifact by repository identity and digest; select `crop_anchor` only from its declared semantic anchors, and copy neither desktop nor mobile geometry from an unbound review assertion. Record observed desktop geometry at exactly 672 CSS px article-body width, plus the mobile viewport/derivative relationship and preserved crop anchor. Route each check to `KEEP`, `CHANGE`, or `DO_NOT_CHANGE`; hand `PASS_TO_HUMAN_REVIEW` to a human only when every required check is an observed pass.
+Inspect full and mobile images; record each dimension with evidence; classify one primary defect; use the shared PR-B action mapping; and, when `post_render_checks` is present, bind textual, factual, and readability checks to the full asset and the mobile check to the mobile derivative. A verified-fact review must bind to a validator-clean job/RenderSpec artifact by repository identity and digest; select `crop_anchor` only from its declared semantic anchors, and copy neither desktop nor mobile geometry from an unbound review assertion. Record every declared payload/external item as structured `observed_text_items`; free-text evidence is context, not the transcription. Record observed desktop geometry at exactly 672 CSS px article-body width, plus the mobile viewport/derivative relationship and preserved crop anchor. The mobile check records detail role, load-bearing status, display-size legibility, detail-access path, and whether topic, dominant relation, major module boundaries, and main conclusion survive first read. Route each check to `KEEP`, `CHANGE`, or `DO_NOT_CHANGE`; hand `PASS_TO_HUMAN_REVIEW` to a human only when every required check is an observed pass.
 
 ## Invariants
 
