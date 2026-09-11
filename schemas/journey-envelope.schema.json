@@ -1,0 +1,288 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://suengj.com/schemas/journey-envelope.schema.json",
+  "title": "Editorial journey reference envelope",
+  "description": "A reference-and-digest-only record that links an intelligence candidate and dossier revision to an article revision, asset approvals, a publication run, deployment, and live read-back. It records external owner decisions and downstream outcomes; it does not grant approval or publish anything.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "journey_id",
+    "state",
+    "last_good_state",
+    "updated_at",
+    "candidate"
+  ],
+  "properties": {
+    "schema_version": { "const": "1.0.0" },
+    "journey_id": {
+      "type": "string",
+      "pattern": "^journey:[a-z0-9]+(-[a-z0-9]+)*$"
+    },
+    "state": { "$ref": "#/$defs/state" },
+    "last_good_state": { "$ref": "#/$defs/progress_state" },
+    "updated_at": { "type": "string", "format": "date-time" },
+    "candidate": { "$ref": "#/$defs/candidate" },
+    "dossier": { "$ref": "#/$defs/dossier" },
+    "article_ref": { "$ref": "#/$defs/article_ref" },
+    "handoff_receipt_ref": { "$ref": "#/$defs/file_ref" },
+    "approved_revision": { "$ref": "#/$defs/approved_revision" },
+    "asset_bindings": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/asset_binding" }
+    },
+    "publish_run": { "$ref": "#/$defs/publish_run" },
+    "source_commit": { "$ref": "#/$defs/source_commit" },
+    "deployed_artifact": { "$ref": "#/$defs/deployed_artifact" },
+    "live_verification": { "$ref": "#/$defs/live_verification" },
+    "interruption": { "$ref": "#/$defs/interruption" }
+  },
+  "$defs": {
+    "digest": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "commit": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{7,40}$"
+    },
+    "file_ref": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["repository", "commit", "path", "content_sha256"],
+      "properties": {
+        "repository": {
+          "type": "string",
+          "pattern": "^[a-zA-Z0-9_.-]+/[a-zA-Z0-9_.-]+$"
+        },
+        "commit": { "$ref": "#/$defs/commit" },
+        "path": { "type": "string", "minLength": 1 },
+        "content_sha256": { "$ref": "#/$defs/digest" }
+      }
+    },
+    "article_ref": {
+      "description": "The exact article revision. This is intentionally the existing artifact lineage shape.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["article_id", "version_number", "content_hash", "claims_hash"],
+      "properties": {
+        "article_id": {
+          "type": "string",
+          "pattern": "^art:[a-z0-9]+(-[a-z0-9]+)*$"
+        },
+        "version_number": { "type": "integer", "minimum": 1 },
+        "content_hash": { "$ref": "#/$defs/digest" },
+        "claims_hash": { "$ref": "#/$defs/digest" },
+        "commit": { "$ref": "#/$defs/commit" }
+      }
+    },
+    "candidate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["slug", "ledger_ref", "selection"],
+      "properties": {
+        "slug": {
+          "type": "string",
+          "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+        },
+        "ledger_ref": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["repository", "commit", "path", "content_sha256"],
+          "properties": {
+            "repository": { "const": "suengj/intelligence-library" },
+            "commit": { "$ref": "#/$defs/commit" },
+            "path": { "const": "intelligence/candidates/ledger.json" },
+            "content_sha256": { "$ref": "#/$defs/digest" }
+          }
+        },
+        "selection": {
+          "type": ["object", "null"],
+          "additionalProperties": false,
+          "required": ["selected_by", "selection_date"],
+          "properties": {
+            "selected_by": { "type": "string", "minLength": 1 },
+            "selection_date": { "type": "string", "format": "date" }
+          }
+        }
+      }
+    },
+    "dossier": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "source_id",
+        "source_class",
+        "repository",
+        "commit",
+        "path",
+        "content_sha256",
+        "evidence_role"
+      ],
+      "properties": {
+        "source_id": {
+          "type": "string",
+          "pattern": "^src:github:[a-zA-Z0-9._@/-]{3,200}$"
+        },
+        "source_class": { "const": "intelligence_dossier" },
+        "repository": { "const": "suengj/intelligence-library" },
+        "commit": { "$ref": "#/$defs/commit" },
+        "path": {
+          "type": "string",
+          "pattern": "^intelligence/dossiers/[a-z0-9-]+\\.md$"
+        },
+        "content_sha256": { "$ref": "#/$defs/digest" },
+        "evidence_role": {
+          "enum": ["primary", "supporting", "contradicting", "background"]
+        }
+      }
+    },
+    "decision_ref": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["approved_by", "approved_at", "record_ref"],
+      "properties": {
+        "approved_by": { "type": "string", "minLength": 1 },
+        "approved_at": { "type": "string", "format": "date-time" },
+        "record_ref": { "$ref": "#/$defs/file_ref" }
+      }
+    },
+    "approved_revision": {
+      "description": "A recorded owner decision made elsewhere, bound to one exact article revision and one ordered asset digest list. This object does not grant approval.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "approved_by",
+        "approved_at",
+        "record_ref",
+        "article_ref",
+        "asset_digests",
+        "asset_digest_set_hash"
+      ],
+      "properties": {
+        "approved_by": { "type": "string", "minLength": 1 },
+        "approved_at": { "type": "string", "format": "date-time" },
+        "record_ref": { "$ref": "#/$defs/file_ref" },
+        "article_ref": { "$ref": "#/$defs/article_ref" },
+        "asset_digests": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/digest" }
+        },
+        "asset_digest_set_hash": { "$ref": "#/$defs/digest" }
+      }
+    },
+    "asset_binding": {
+      "description": "A receipt artifact index binds one external visual decision to its own approved asset digest and article lineage. Receipt-owned artifact identity and location are not copied here.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["receipt_artifact_index", "asset_sha256", "article_ref", "visual_approval"],
+      "properties": {
+        "receipt_artifact_index": { "type": "integer", "minimum": 0 },
+        "asset_sha256": { "$ref": "#/$defs/digest" },
+        "article_ref": { "$ref": "#/$defs/article_ref" },
+        "visual_approval": { "$ref": "#/$defs/decision_ref" }
+      }
+    },
+    "publish_run": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["run_id", "accepted_at", "record_ref"],
+      "properties": {
+        "run_id": { "type": "string", "minLength": 1 },
+        "accepted_at": { "type": "string", "format": "date-time" },
+        "record_ref": { "$ref": "#/$defs/file_ref" }
+      }
+    },
+    "source_commit": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["repository", "commit"],
+      "properties": {
+        "repository": { "const": "suengj/suengj-com" },
+        "commit": { "$ref": "#/$defs/commit" }
+      }
+    },
+    "deployed_artifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["deployment_id", "record_ref"],
+      "properties": {
+        "deployment_id": { "type": "string", "minLength": 1 },
+        "record_ref": { "$ref": "#/$defs/file_ref" }
+      }
+    },
+    "live_verification": {
+      "description": "The downstream LIVE_VERIFIED read-back identity. The result is recorded; this envelope does not perform deployment or publication.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["article_url", "article_body_sha256", "record_ref"],
+      "properties": {
+        "article_url": { "type": "string", "minLength": 1 },
+        "article_body_sha256": { "$ref": "#/$defs/digest" },
+        "media_url": { "type": "string", "minLength": 1 },
+        "media_sha256": { "$ref": "#/$defs/digest" },
+        "record_ref": { "$ref": "#/$defs/file_ref" }
+      }
+    },
+    "progress_state": {
+      "enum": [
+        "RECEIVED",
+        "SELECTED",
+        "DRAFT_READY",
+        "IN_REVIEW",
+        "APPROVED_REVISION",
+        "ASSETS_LOCKED",
+        "PUBLISH_ACCEPTED",
+        "SOURCE_COMMITTED",
+        "ARTIFACT_DEPLOYED",
+        "LIVE_VERIFIED"
+      ]
+    },
+    "interrupt_state": {
+      "enum": [
+        "NEEDS_EVIDENCE",
+        "NO_ARTICLE",
+        "BLOCKED_AUTH",
+        "BLOCKED_TRANSPORT",
+        "STALE_REVISION",
+        "MEDIA_DIGEST_MISMATCH",
+        "ARTICLE_ANCHOR_MISSING",
+        "GIT_CONCURRENT_UPDATE",
+        "DEPLOYMENT_PARTIAL"
+      ]
+    },
+    "state": {
+      "enum": [
+        "RECEIVED",
+        "SELECTED",
+        "DRAFT_READY",
+        "IN_REVIEW",
+        "APPROVED_REVISION",
+        "ASSETS_LOCKED",
+        "PUBLISH_ACCEPTED",
+        "SOURCE_COMMITTED",
+        "ARTIFACT_DEPLOYED",
+        "LIVE_VERIFIED",
+        "NEEDS_EVIDENCE",
+        "NO_ARTICLE",
+        "BLOCKED_AUTH",
+        "BLOCKED_TRANSPORT",
+        "STALE_REVISION",
+        "MEDIA_DIGEST_MISMATCH",
+        "ARTICLE_ANCHOR_MISSING",
+        "GIT_CONCURRENT_UPDATE",
+        "DEPLOYMENT_PARTIAL"
+      ]
+    },
+    "interruption": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["code", "observed_at"],
+      "properties": {
+        "code": { "$ref": "#/$defs/interrupt_state" },
+        "observed_at": { "type": "string", "format": "date-time" },
+        "reason_ref": { "$ref": "#/$defs/file_ref" }
+      }
+    }
+  }
+}

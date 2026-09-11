@@ -1,0 +1,143 @@
+{
+  "schema_version": "1.0.0",
+  "journey_id": "journey:agent-cost-curve",
+  "state": "LIVE_VERIFIED",
+  "last_good_state": "LIVE_VERIFIED",
+  "updated_at": "2026-09-11T06:30:00Z",
+  "candidate": {
+    "slug": "agent-cost-curve",
+    "ledger_ref": {
+      "repository": "suengj/intelligence-library",
+      "commit": "5bf6b44",
+      "path": "intelligence/candidates/ledger.json",
+      "content_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    },
+    "selection": {
+      "selected_by": "owner",
+      "selection_date": "2026-09-11"
+    }
+  },
+  "dossier": {
+    "source_id": "src:github:suengj/intelligence-library/agent-cost-curve",
+    "source_class": "intelligence_dossier",
+    "repository": "suengj/intelligence-library",
+    "commit": "5bf6b44",
+    "path": "intelligence/dossiers/agent-cost-curve.md",
+    "content_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "evidence_role": "supporting"
+  },
+  "article_ref": {
+    "article_id": "art:agent-cost-curve",
+    "version_number": 4,
+    "content_hash": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+    "claims_hash": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+    "commit": "a996889"
+  },
+  "handoff_receipt_ref": {
+    "repository": "suengj/ai-editorial-system",
+    "commit": "a996889",
+    "path": "handoffs/agent-cost-curve/handoff-receipt.json",
+    "content_sha256": "1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef"
+  },
+  "approved_revision": {
+    "approved_by": "owner",
+    "approved_at": "2026-09-11T06:10:00Z",
+    "record_ref": {
+      "repository": "suengj/suengj-com",
+      "commit": "a4e9022",
+      "path": "handoffs/agent-cost-curve/publish-approval.json",
+      "content_sha256": "234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1"
+    },
+    "article_ref": {
+      "article_id": "art:agent-cost-curve",
+      "version_number": 4,
+      "content_hash": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+      "claims_hash": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+      "commit": "a996889"
+    },
+    "asset_digests": [
+      "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+      "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    ],
+    "asset_digest_set_hash": "4fefb7df911851a964e3b274c91329152c7878fd2382683ee50987f5c290d9d4"
+  },
+  "asset_bindings": [
+    {
+      "receipt_artifact_index": 0,
+      "asset_sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+      "article_ref": {
+        "article_id": "art:agent-cost-curve",
+        "version_number": 3,
+        "content_hash": "9999999999999999999999999999999999999999999999999999999999999999",
+        "claims_hash": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+        "commit": "9876543"
+      },
+      "visual_approval": {
+        "approved_by": "owner",
+        "approved_at": "2026-09-11T05:30:00Z",
+        "record_ref": {
+          "repository": "suengj/ai-editorial-system",
+          "commit": "9876543",
+          "path": "reviews/visual/agent-cost-curve-main.json",
+          "content_sha256": "34567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef12"
+        }
+      }
+    },
+    {
+      "receipt_artifact_index": 1,
+      "asset_sha256": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "article_ref": {
+        "article_id": "art:agent-cost-curve",
+        "version_number": 4,
+        "content_hash": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+        "claims_hash": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+        "commit": "a996889"
+      },
+      "visual_approval": {
+        "approved_by": "owner",
+        "approved_at": "2026-09-11T06:00:00Z",
+        "record_ref": {
+          "repository": "suengj/ai-editorial-system",
+          "commit": "a996889",
+          "path": "reviews/visual/agent-cost-curve-detail.json",
+          "content_sha256": "4567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef123"
+        }
+      }
+    }
+  ],
+  "publish_run": {
+    "run_id": "publish-run:agent-cost-curve:20260911t061500z",
+    "accepted_at": "2026-09-11T06:15:00Z",
+    "record_ref": {
+      "repository": "suengj/suengj-com",
+      "commit": "a4e9022",
+      "path": "handoffs/agent-cost-curve/publish-run.json",
+      "content_sha256": "567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234"
+    }
+  },
+  "source_commit": {
+    "repository": "suengj/suengj-com",
+    "commit": "a4e9022"
+  },
+  "deployed_artifact": {
+    "deployment_id": "pages:agent-cost-curve:20260911t062000z",
+    "record_ref": {
+      "repository": "suengj/suengj-com",
+      "commit": "a4e9022",
+      "path": "handoffs/agent-cost-curve/deployment.json",
+      "content_sha256": "67890abcdef1234567890abcdef1234567890abcdef1234567890abcdef12345"
+    }
+  },
+  "live_verification": {
+    "article_url": "https://suengj.com/content/agent-cost-curve",
+    "article_body_sha256": "7890abcdef1234567890abcdef1234567890abcdef1234567890abcdef123456",
+    "media_url": "https://suengj.com/media/agent-cost-curve.png",
+    "media_sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+    "record_ref": {
+      "repository": "suengj/suengj-com",
+      "commit": "a4e9022",
+      "path": "handoffs/agent-cost-curve/live-verification.json",
+      "content_sha256": "890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567"
+    }
+  }
+}

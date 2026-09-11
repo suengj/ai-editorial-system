@@ -1,12 +1,12 @@
 # Intelligence → Editorial Handoff
 
 Status: **V0 cross-repository contract**  
-Upstream learning SSOT: `suengj/reference-library`  
+Upstream learning SSOT: `suengj/intelligence-library`
 Editorial authority: `suengj/ai-editorial-system`
 
 ## Purpose
 
-`reference-library` now maintains a recurring Learning Intelligence layer: Daily Briefs, a cumulative Knowledge Map, Article Candidates, and selected-topic Dossiers. These artifacts may seed editorial work, but they do **not** become editorial authority or factual authority merely because they were curated upstream.
+`suengj/intelligence-library` now maintains a recurring Learning Intelligence layer: Daily Briefs, a cumulative Knowledge Map, Article Candidates, and selected-topic Dossiers. These artifacts may seed editorial work, but they do **not** become editorial authority or factual authority merely because they were curated upstream.
 
 This document defines the boundary from that intelligence layer into the AI Editorial System.
 
@@ -16,7 +16,7 @@ Do not conflate these systems:
 
 | Concept | Authority | Role |
 | --- | --- | --- |
-| External source registry / learning intelligence | `reference-library` | What external material is worth monitoring; what was learned; candidate topics; provenance-linked evidence maps |
+| External source registry / learning intelligence | `suengj/intelligence-library` | What external material is worth monitoring; what was learned; candidate topics; provenance-linked evidence maps |
 | Editorial craft reference / evaluation traits | `ai-editorial-system/references/` and editorial profiles | How quality, structure, style, audience fit, or artifact craft should be evaluated or guided |
 
 An external analysis source is not automatically a preferred craft reference. A preferred craft reference is not automatically evidence for a factual claim.
@@ -129,6 +129,6 @@ The handoff is certified as of 2026-09-09 (SUE-737). No second writing path was 
 
 - Re-implementing blog/RSS crawling inside `ai-editorial-system`.
 - Copying the P03 corpus into this repository.
-- Treating `reference-library` as a source-body database.
+- Treating `suengj/intelligence-library` as a source-body database.
 - Creating article quotas from Daily Intelligence.
 - Allowing source popularity or source tier to replace claim-level verification.

@@ -1,0 +1,35 @@
+{
+  "schema_version": "1.0.0",
+  "journey_id": "journey:agent-cost-curve",
+  "state": "DRAFT_READY",
+  "last_good_state": "DRAFT_READY",
+  "updated_at": "2026-09-11T05:00:00Z",
+  "candidate": {
+    "slug": "agent-cost-curve",
+    "ledger_ref": {
+      "repository": "suengj/intelligence-library",
+      "commit": "5bf6b44",
+      "path": "intelligence/candidates/ledger.json",
+      "content_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    },
+    "selection": {
+      "selected_by": "owner",
+      "selection_date": "2026-09-11"
+    }
+  },
+  "dossier": {
+    "source_id": "src:github:suengj/intelligence-library/agent-cost-curve",
+    "source_class": "intelligence_dossier",
+    "repository": "suengj/intelligence-library",
+    "commit": "5bf6b44",
+    "path": "intelligence/dossiers/agent-cost-curve.md",
+    "content_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "evidence_role": "primary"
+  },
+  "article_ref": {
+    "article_id": "art:agent-cost-curve",
+    "version_number": 1,
+    "content_hash": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+    "claims_hash": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+  }
+}
