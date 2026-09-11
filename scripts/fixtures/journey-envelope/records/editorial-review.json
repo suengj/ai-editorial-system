@@ -1,0 +1,18 @@
+{
+  "dossier_ref": {
+    "source_id": "src:github:suengj/intelligence-library/agent-cost-curve",
+    "source_class": "intelligence_dossier",
+    "repository": "suengj/intelligence-library",
+    "commit": "5bf6b44",
+    "path": "intelligence/dossiers/agent-cost-curve.md",
+    "content_sha256": "96a9b92794c569435051d97f5e0ec6773a36ac400279349bbf7005fd586dd78e",
+    "evidence_role": "supporting"
+  },
+  "article_ref": {
+    "article_id": "art:agent-cost-curve",
+    "version_number": 4,
+    "content_hash": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+    "claims_hash": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+    "commit": "a996889"
+  }
+}

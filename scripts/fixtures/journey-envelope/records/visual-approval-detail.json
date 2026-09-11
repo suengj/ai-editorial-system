@@ -1,0 +1,15 @@
+{
+  "approved_by": "owner",
+  "approved_at": "2026-09-11T06:00:00Z",
+  "article_ref": {
+    "article_id": "art:agent-cost-curve",
+    "version_number": 4,
+    "content_hash": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+    "claims_hash": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+    "commit": "a996889"
+  },
+  "asset_digests": [
+    "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+  ],
+  "binding_sha256": "eec56526d76008050aea28106cc9ae8a308d4d9a7c0ffacc1e151ef110f1717b"
+}
