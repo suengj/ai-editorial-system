@@ -33,6 +33,13 @@
     "claims_hash": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
     "commit": "a996889"
   },
+  "journey_binding_sha256": "19f2ff08775a4d99d9b249d09b0a79028c5b7935bbb26b386a09a3cb46be286b",
+  "review_ref": {
+    "repository": "suengj/ai-editorial-system",
+    "commit": "a996889",
+    "path": "reviews/editorial/agent-cost-curve.json",
+    "content_sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+  },
   "handoff_receipt_ref": {
     "repository": "suengj/ai-editorial-system",
     "commit": "a996889",
@@ -59,7 +66,8 @@
       "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
       "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
     ],
-    "asset_digest_set_hash": "4fefb7df911851a964e3b274c91329152c7878fd2382683ee50987f5c290d9d4"
+    "asset_digest_set_hash": "4fefb7df911851a964e3b274c91329152c7878fd2382683ee50987f5c290d9d4",
+    "binding_sha256": "ecaffed3dfd0ee25b8894cd334c00c42cebf9dd8fd2aad8299e89a5d136c8941"
   },
   "asset_bindings": [
     {
@@ -80,7 +88,8 @@
           "commit": "9876543",
           "path": "reviews/visual/agent-cost-curve-main.json",
           "content_sha256": "34567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef12"
-        }
+        },
+        "binding_sha256": "a5460924a3ea80f2f547f318d4a5da51ccdb87067217587ab1c38a7b4bc56e0c"
       }
     },
     {
@@ -101,7 +110,8 @@
           "commit": "a996889",
           "path": "reviews/visual/agent-cost-curve-detail.json",
           "content_sha256": "4567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef123"
-        }
+        },
+        "binding_sha256": "eec56526d76008050aea28106cc9ae8a308d4d9a7c0ffacc1e151ef110f1717b"
       }
     }
   ],
@@ -128,16 +138,17 @@
       "content_sha256": "67890abcdef1234567890abcdef1234567890abcdef1234567890abcdef12345"
     }
   },
+  "live_verification_ref": {
+    "repository": "suengj/suengj-com",
+    "commit": "a4e9022",
+    "path": "handoffs/agent-cost-curve/live-verification.json",
+    "content_sha256": "890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567"
+  },
   "live_verification": {
+    "state": "LIVE_VERIFIED",
     "article_url": "https://suengj.com/content/agent-cost-curve",
-    "article_body_sha256": "7890abcdef1234567890abcdef1234567890abcdef1234567890abcdef123456",
+    "article_body_sha256": "sha256:7890abcdef1234567890abcdef1234567890abcdef1234567890abcdef123456",
     "media_url": "https://suengj.com/media/agent-cost-curve.png",
-    "media_sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
-    "record_ref": {
-      "repository": "suengj/suengj-com",
-      "commit": "a4e9022",
-      "path": "handoffs/agent-cost-curve/live-verification.json",
-      "content_sha256": "890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567"
-    }
+    "media_sha256": "sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
   }
 }

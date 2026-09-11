@@ -6,101 +6,120 @@ Schema: [`journey-envelope.schema.json`](journey-envelope.schema.json)
 
 ## Purpose and boundary
 
-The journey envelope is a small, persisted reference record that makes one
-cross-repository editorial journey recoverable. It links identities that
-already exist in `suengj/intelligence-library`, `suengj/ai-editorial-system`,
-and `suengj/suengj-com`.
+The journey envelope is a small persisted reference record for one recoverable
+editorial journey across `suengj/intelligence-library`,
+`suengj/ai-editorial-system`, and `suengj/suengj-com`.
 
-It is not an object store or an execution engine. It contains no article body,
-dossier body, evidence body, source/capture body, image bytes, prompt, or
-publication payload. It creates no database, vector store, queue, Writer path,
-image materializer, deployment path, or publication engine.
+It stores references and digests only. It contains no article, dossier,
+evidence, source, capture, image, prompt, or publication-payload body. It
+creates no database, vector store, queue, Writer path, image materializer,
+deployment path, or publication engine.
 
-The envelope also has no operation that grants approval or sets publication
-status. `approved_revision` and each `visual_approval` record the identity,
-time, actor, and immutable reference of an owner decision made elsewhere.
-Downstream systems remain responsible for accepting or refusing the referenced
-handoff and for publishing, deploying, and verifying it.
+The envelope never grants approval or sets publication status.
+`approved_revision` and each `visual_approval` only record an owner decision
+made elsewhere. Publication, deployment, and live verification remain with the
+existing downstream system.
 
 ## Identity chain
 
-A complete envelope reconstructs this chain from references and digests:
+A complete envelope and the independently resolved record metadata reconstruct:
 
 ```text
-candidate slug + pinned ledger revision + human selection evidence
-  -> pinned intelligence_dossier source revision
-  -> current article_ref (article_id, version_number, content_hash, claims_hash)
-  -> handoff_receipt_ref
-  -> ordered approved_revision.asset_digests
-  -> recorded publish-gate approval
-  -> receipt-indexed per-asset visual approvals
-  -> publish_run
-  -> source_commit
-  -> deployed_artifact
-  -> live_verification
+candidate slug + exact ledger ref + valid human selection
+  -> exact derived dossier ref
+  -> exact article revision
+  -> editorial review ref
+  -> handoff receipt ref and its ordered artifact digests
+  -> publish and per-asset owner-decision refs
+  -> publication run
+  -> source commit
+  -> deployment record
+  -> exact LIVE_VERIFIED result + its record ref
 ```
 
-The handoff receipt remains authoritative for fields it already carries:
-`article_id`, `body_sha256`, artifact identity/location, visual production
-lineage, evidence refs, target, presentation, and production time. The envelope
-stores one immutable `handoff_receipt_ref` instead of copying those fields.
-`asset_bindings[].receipt_artifact_index` points into the receipt's ordered
-`artifacts` array.
+`journey_binding_sha256` cross-binds the complete candidate, dossier, and
+article reference objects. Its payload is canonical JSON:
 
-The envelope necessarily records `approved_revision.asset_digests`, because
-the exact ordered digest set is part of the owner decision being bound. A
-per-asset decision separately records `asset_sha256`, because its approval is
-bound to those exact visual bytes independently of the publish-gate decision.
-The receipt index links both digests to the receipt without copying
-receipt-owned artifact identity or location. A validator-clean locked set has
-the same current digest under both bindings, but neither approval is inferred
-from the other.
+```json
+{
+  "format_version": "journey-identity-binding/1",
+  "candidate": {},
+  "dossier": {},
+  "article_ref": {}
+}
+```
 
-## Two distinct bindings
+Object keys are recursively sorted before UTF-8 JSON serialization and bare
+lowercase SHA-256 hashing. Changing a dossier commit, path, or digest while
+retaining the old binding returns `STALE_REVISION`. Dossier filenames are
+exactly `<candidate-slug>.md` or `<candidate-slug>-YYYY-MM-DD.md` with a real
+calendar date; prefix matches are not identity.
 
-### Publish-gate revision binding
+The handoff receipt remains authoritative for fields it already owns, including
+article identity and artifact identity/location. The envelope stores one
+`handoff_receipt_ref` and only the decision-required ordered digests plus
+receipt indices. `validateJourneyReferences()` resolves separately persisted
+metadata and requires exact agreement across the candidate ledger, dossier,
+review, handoff, approvals, publication, deployment, and live read-back.
 
-`approved_revision` records:
+## Two distinct, self-binding approvals
 
-- `approved_by` and `approved_at`;
-- an immutable `record_ref` to the external owner decision;
-- the exact `article_ref`;
-- `asset_digests` in handoff-receipt order; and
-- `asset_digest_set_hash`.
+Every recorded approval carries `binding_sha256`. The decision-time digest is
+computed over this canonical JSON payload:
 
-The digest-set hash is the lowercase bare SHA-256 of the UTF-8 bytes of
-`JSON.stringify(asset_digests)`. Array order is significant.
+```json
+{
+  "format_version": "journey-approval-binding/1",
+  "article_revision": {
+    "article_id": "...",
+    "version_number": 1,
+    "content_hash": "...",
+    "claims_hash": "..."
+  },
+  "ordered_asset_digests": ["..."]
+}
+```
 
-`assessPublishGate()` compares the whole article reference and the exact
-ordered digest list. Any change to `content_hash`, `claims_hash`, another
-article-revision identity field, an asset digest, or asset order returns
-`STALE_REVISION` and refuses the gate. Approval is never inferred or inherited.
+Validation recomputes the digest from the values currently stored beside the
+external decision reference. Reusing an old `record_ref` while rewriting the
+article tuple, asset lineage, or digests therefore returns `STALE_REVISION`.
+The independently resolved decision record must carry the same binding digest,
+so recomputing only the envelope cannot replace the external owner decision.
+Both assessment functions require that resolved decision metadata and compare
+it to the immutable `record_ref`, article tuple, ordered digest set, and binding
+digest before treating the recorded approval as usable.
+
+### Publish-gate binding
+
+`approved_revision.binding_sha256` binds the exact article tuple and the whole
+ordered asset digest set. `asset_digest_set_hash` separately remains the bare
+SHA-256 of the UTF-8 bytes of `JSON.stringify(asset_digests)` and is order
+sensitive.
+
+`assessPublishGate()` honors the envelope's current `article_ref` and state.
+Any article tuple change or asset substitution, addition, removal, or reorder
+returns `STALE_REVISION`. A `STALE_REVISION` envelope refuses even when a caller
+supplies the old approved tuple.
 
 ### Per-asset visual binding
 
-`asset_bindings[]` is separate. Each entry carries the visual's own
-`article_ref`, its independently approved `asset_sha256`, an immutable
-external owner-decision reference, and a receipt artifact index.
-`assessAssetApproval()` calls the existing
-`scripts/lib/lineage.mjs` `classifyArtifact()` unchanged:
+Each `visual_approval.binding_sha256` independently binds that visual's own
+article lineage and the one-element ordered set containing its asset digest.
+`assessAssetApproval()` calls the unchanged
+`scripts/lib/lineage.mjs` `classifyArtifact()`:
 
-- `fresh`: the recorded visual approval remains usable when its digest is the
-  digest at the bound receipt index;
-- `cosmetic`: the article prose changed while `claims_hash` did not, so the
-  unrelated visual approval remains usable and no regeneration is triggered;
-- `material`: the claims changed, so the visual is not presentable and the
-  recorded approval is stale; and
-- `unknown`: lineage is incomplete, so the visual fails safe as not
-  presentable.
+- `fresh` preserves approval for unchanged bytes;
+- `cosmetic` preserves the unrelated visual approval without regeneration;
+- `material` returns `STALE_REVISION`; and
+- `unknown` fails safe with `STALE_REVISION`.
 
-A changed asset digest always returns `STALE_REVISION`, even when lineage is
-`fresh` or `cosmetic`. Therefore a text-only article revision invalidates the
-publish-gate binding while preserving unrelated per-asset approvals; the owner
-may re-approve the new publish revision without regenerating unchanged visuals.
+A text-only revision therefore invalidates the publish-gate decision while an
+unrelated visual decision remains valid. A changed asset digest inherits no
+approval under either binding.
 
-## State and restart
+## State, restart, and terminal outcomes
 
-Progress is ordered:
+Progress records are ordered:
 
 ```text
 RECEIVED -> SELECTED -> DRAFT_READY -> IN_REVIEW -> APPROVED_REVISION
@@ -108,47 +127,63 @@ RECEIVED -> SELECTED -> DRAFT_READY -> IN_REVIEW -> APPROVED_REVISION
   -> ARTIFACT_DEPLOYED -> LIVE_VERIFIED
 ```
 
-Typed interruptions are:
+The validator derives the last completed stage from the contiguous records
+actually present. Persisted `state` and `last_good_state` labels must equal that
+derived stage; labels cannot make absent or rewritten records authoritative.
+For an interruption, `last_good_state` must still equal the derived stage.
 
-```text
-NEEDS_EVIDENCE  NO_ARTICLE  BLOCKED_AUTH  BLOCKED_TRANSPORT
-STALE_REVISION  MEDIA_DIGEST_MISMATCH  ARTICLE_ANCHOR_MISSING
-GIT_CONCURRENT_UPDATE  DEPLOYMENT_PARTIAL
+`recoverJourneyState()` reads only persisted bytes. `resumeJourney()` selects
+and invokes one supplied observation adapter for a resumable interruption. The
+mapping exposes no text generation, asset regeneration, approval, locking, or
+publication operation, and identical persisted bytes yield the same
+idempotency key on replay.
+
+`NO_ARTICLE` is terminal after `SELECTED`: it cannot carry dossier, article,
+review, approval, asset, publish, source, deployment, or live fields, and its
+recovery has no resume point. `NEEDS_EVIDENCE` and the blocked interruption
+family remain resumable from their derived last-good state.
+
+Selection requires a non-blank `selected_by` and a real calendar date. A null
+selection cannot advance past `RECEIVED`; violations return
+`SELECTION_REQUIRED`.
+
+## Exact SUE-789 interoperation
+
+The envelope records the literal result returned by
+`suengj-com@a4e9022` `verifyLivePublication()`:
+
+```json
+{
+  "state": "LIVE_VERIFIED",
+  "article_url": "https://...",
+  "article_body_sha256": "sha256:<64 lowercase hex>",
+  "media_url": "https://...",
+  "media_sha256": "sha256:<64 lowercase hex>"
+}
 ```
 
-For a progress state, `last_good_state` equals `state`. For an interruption,
-`state` and `interruption.code` record the typed pause while
-`last_good_state` is unchanged. `recoverJourneyState()` reads only the
-persisted JSON bytes and resumes from `last_good_state`; it uses no in-memory
-session state.
-
-An interruption is a resume point, never a regeneration trigger.
-`recordInterrupt()` can only change `state`, `updated_at`, and `interruption`;
-it preserves every article, asset, approval, and external reference and
-returns an empty effects list. In particular, `BLOCKED_TRANSPORT` and
-`BLOCKED_AUTH` never request text or asset regeneration.
-
-The envelope's `SOURCE_COMMITTED` state maps to the downstream
-`scripts/publication-state.mjs` state `SOURCE_MERGED`. Both names retain their
-repo-local meanings. Downstream `ARTIFACT_DEPLOYED` and `LIVE_VERIFIED` names
-are recorded without granting the envelope deployment authority.
+The media fields are optional as a pair. `live_verification_ref` separately
+points to the persisted read-back record. Prefixed live and publication-receipt
+digests are not normalized into the envelope's bare internal decision digests.
+The publication manifest's `expected_article_sha256` remains bare, while the
+materialization receipt's `production_sha256` and live result digests remain
+`sha256:`-prefixed. Exact form mismatches return `HANDOFF_INVALID`; a live media
+digest that disagrees with the receipt returns `MEDIA_DIGEST_MISMATCH`.
 
 ## Authority and refusal rules
 
-- `candidate.selection === null` is valid only at `RECEIVED` (or a
-  `NEEDS_EVIDENCE` pause from it). Advancing further returns
-  `SELECTION_REQUIRED`.
-- `NO_ARTICLE` remains reachable after `SELECTED`; selection never forces an
-  article.
-- `NEEDS_EVIDENCE` remains reachable and is not converted into prose.
-- A dossier is always `source_class: intelligence_dossier`, pinned by repo,
-  immutable commit, path, and content digest. Giving that derived source the
-  role `primary` returns the existing source-contract code
-  `derived-evidence-role`.
-- Structural or incomplete identity-chain failures return `HANDOFF_INVALID`.
-- The downstream names `STALE_REVISION`, `MEDIA_DIGEST_MISMATCH`,
-  `ARTICLE_ANCHOR_MISSING`, `GIT_CONCURRENT_UPDATE`, and
-  `DEPLOYMENT_PARTIAL` are preserved exactly.
+`REFERENCE_AUTHORITIES` is the single declarative registry for every durable
+pointer family. Candidate and dossier refs are authoritative only in
+`suengj/intelligence-library`; review, handoff, visual-decision, and interruption
+reason refs only in `suengj/ai-editorial-system`; publish decision/run, source,
+deployment, and live refs only in `suengj/suengj-com`. An unknown repository
+returns `HANDOFF_INVALID`.
+
+An `intelligence_dossier` is derived scaffolding. Assigning it the `primary`
+evidence role returns `derived-evidence-role`. Named downstream refusals remain
+unchanged: `STALE_REVISION`, `MEDIA_DIGEST_MISMATCH`,
+`ARTICLE_ANCHOR_MISSING`, `GIT_CONCURRENT_UPDATE`, and
+`DEPLOYMENT_PARTIAL`.
 
 ## Validation
 
@@ -157,7 +192,7 @@ npm run validate:journey
 npm run test:journey
 ```
 
-The default validator checks the complete allow fixture and proves that the
-deny fixture fails with the named `derived-evidence-role` code. The regression
-test starts every mutation from a validator-clean baseline and asserts named
-failure codes rather than accepting an arbitrary non-empty issue list.
+The validator uses the repository's JSON-schema-lite validator and the
+committed allow/deny fixture pair. Regression negatives start from a
+validator-clean baseline and assert a named failure code. Cross-record tests use
+separately persisted metadata rather than cloning the envelope.

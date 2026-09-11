@@ -31,5 +31,6 @@
     "version_number": 1,
     "content_hash": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
     "claims_hash": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
-  }
+  },
+  "journey_binding_sha256": "526b74926ab6fe75a6e5831aed424ae7cdbab41229e0b461026fd59bc2bea900"
 }
