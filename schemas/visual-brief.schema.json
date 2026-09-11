@@ -16,8 +16,86 @@
     "artifact_profile": { "type": "string", "pattern": "^visual/[a-z0-9]+(-[a-z0-9]+)*$" },
     "semantic_role": { "enum": ["identity", "navigation", "explanation", "distribution", "atmosphere"] },
     "visual_story": { "type": "object", "additionalProperties": false, "required": ["primary_question", "metaphor_or_relationship"], "properties": { "primary_question": { "type": "string", "minLength": 1 }, "metaphor_or_relationship": { "type": "string", "minLength": 1 } } },
+    "information_hierarchy": { "$ref": "#/$defs/information_hierarchy" },
+    "text_ownership": { "$ref": "#/$defs/text_ownership" },
     "factual_invariants": { "type": "array", "items": { "type": "string", "minLength": 1 } },
     "failure_modes_to_avoid": { "type": "array", "items": { "type": "string", "minLength": 1 } },
     "reference_requirements": { "type": "object", "additionalProperties": false, "required": ["required_dimensions", "forbidden_literal_copy", "rationale"], "properties": { "required_dimensions": { "type": "array", "items": { "type": "string", "minLength": 1 } }, "forbidden_literal_copy": { "type": "array", "items": { "type": "string", "minLength": 1 } }, "rationale": { "type": "string", "minLength": 1 } } }
+  },
+  "$defs": {
+    "information_hierarchy": {
+      "description": "Integrated reader hierarchy. The primary takeaway is visually dominant; supporting and detail text are subordinate.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["primary", "supporting", "detail"],
+      "properties": {
+        "primary": { "type": "string", "minLength": 1 },
+        "supporting": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+        "detail": { "type": "array", "items": { "type": "string", "minLength": 1 } }
+      }
+    },
+    "text_item": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["exact_text", "source_ref"],
+      "properties": {
+        "exact_text": { "type": "string", "minLength": 1 },
+        "source_ref": { "type": "string", "minLength": 1 }
+      }
+    },
+    "text_ownership": {
+      "description": "The three V2.17 ownership classes. Verified generative facts carry a canonical payload, source lineage, and mandatory post-render verification.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["article_title", "generative_structural_text", "verified_generative_fact", "deterministic_external_text"],
+      "properties": {
+        "article_title": { "const": "deterministic_external_text" },
+        "generative_structural_text": {
+          "type": "object", "additionalProperties": false, "required": ["items"],
+          "properties": { "items": { "type": "array", "items": { "type": "string", "minLength": 1 } } }
+        },
+        "verified_generative_fact": {
+          "description": "Null explicitly represents that this ownership class has no items; an object declares generated facts that require authoritative payload lineage and post-render verification.",
+          "type": ["object", "null"], "additionalProperties": false,
+          "required": ["canonical_payload", "source_lineage", "claim_set", "post_render_verification"],
+          "properties": {
+            "canonical_payload": {
+              "type": "object", "additionalProperties": false,
+              "required": ["payload_ref", "payload_sha256", "items"],
+              "properties": {
+                "payload_ref": { "type": "string", "pattern": "^payload:[a-z0-9]+(-[a-z0-9]+)*$" },
+                "payload_sha256": { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$" },
+                "items": { "type": "array", "items": { "$ref": "#/$defs/text_item" } }
+              }
+            },
+            "source_lineage": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 } },
+            "claim_set": { "$ref": "#/$defs/claim_set" },
+            "post_render_verification": {
+              "type": "object", "additionalProperties": false,
+              "required": ["required", "review_dimension", "asset_digest_bound"],
+              "properties": { "required": { "const": true }, "review_dimension": { "const": "factual" }, "asset_digest_bound": { "const": true } }
+            }
+          }
+        },
+        "deterministic_external_text": {
+          "type": "object", "additionalProperties": false,
+          "required": ["items", "includes"],
+          "properties": {
+            "items": { "type": "array", "items": { "$ref": "#/$defs/text_item" } },
+            "includes": { "type": "array", "items": { "enum": ["citations", "dense_text", "sensitive_text"] } }
+          }
+        }
+      }
+    },
+    "claim_set": {
+      "description": "Authoritative article claim identity. The article_ref claims_hash binds this declared set to the upstream article version.",
+      "type": "object", "additionalProperties": false,
+      "required": ["article_id", "claims_hash", "claim_ids"],
+      "properties": {
+        "article_id": { "type": "string", "pattern": "^art:[a-z0-9]+(-[a-z0-9]+)*$" },
+        "claims_hash": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "claim_ids": { "type": "array", "minItems": 1, "items": { "type": "string", "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$" } }
+      }
+    }
   }
 }

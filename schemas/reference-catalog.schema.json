@@ -48,6 +48,10 @@
           "description": "linked: URL and our notes only. quoted: limited attributed excerpt supporting analysis. copied: material reproduced in-repo — permitted only under a compatible license with attribution.",
           "enum": ["linked", "quoted", "copied"]
         },
+        "reference_role": {
+          "description": "Selection authority classification. craft_reference is eligible for craft-reference resolution; documentation_evidence is cataloged evidence only and is never eligible for visual craft authority.",
+          "enum": ["craft_reference", "documentation_evidence"]
+        },
         "local_path": { "type": "string" },
         "verdict": {
           "description": "What we decided after studying it.",

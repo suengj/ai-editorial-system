@@ -8,7 +8,33 @@ This is SUE-645/SUE-648 declared control-plane state, not a renderer.
 | Factual overlay | exact items, source refs, accessible equivalents, numbers/labels/citations/axes/chronology | semantic scene or title artwork |
 | Publication composite | declared linkage to one master and overlay | bytes, publication, or approval |
 
-The objects have separate declared digest lineage. A `factual_overlay_repair` resolves a repository-contained regular-file `prior_production_ref`, recursively validates its predecessor chain, and may traverse at most 4 predecessor links; it must retain that record's master digest and replace its overlay and composite digests. Prior-digest fields were deliberately dropped: duplicating them in the current record would be self-attestation. `payload_sha256` verifies canonical overlay SOURCE under this repository's serializer, and every VisualBrief factual invariant requires a declared invariant and exact payload item. It does not prove renderer bytes or factual truth; byte reproducibility needs a shared serializer fixture with suengj-com.
+The objects have separate declared digest lineage. A `factual_overlay_repair`
+resolves a repository-contained regular-file `prior_production_ref`, recursively
+validates its predecessor chain, and may traverse at most 4 predecessor links;
+it must retain that record's master digest and replace its overlay and composite
+digests. It also resolves an immutable `review_ref`/`review_sha256`, consumes
+that review's `KEEP`/`CHANGE`/`DO_NOT_CHANGE` routing, and covers every prior and
+current overlay item exactly once. Each item decision binds the canonical prior
+and current item-byte digests. `KEEP` and `DO_NOT_CHANGE` items must remain
+canonical-byte identical; `CHANGE` items must actually change. Article,
+VisualBrief, RenderSpec, and semantic-spec identity remain unchanged unless the
+resolved review explicitly routes a `wrong_concept` to `new_direction`.
+`payload_sha256` verifies canonical overlay SOURCE under this repository's
+serializer, and every VisualBrief factual invariant requires a declared
+invariant and exact payload item. It does not prove renderer bytes or factual
+truth; byte reproducibility needs a shared serializer fixture with suengj-com.
+
+`semantic_master.renderer_lineage` uses the same runtime shape as the job's
+`renderer` and must equal that lineage exactly. Factual overlay `source_ref`
+is a required, non-empty opaque reference supplied by the upstream article
+authority. For an article-backed job, when a source_ref uses the convention
+`article-claim:<article_id>:<claim_id>`, the validator mechanically checks only
+that `<article_id>` equals `job.article_ref.article_id`; `<claim_id>` remains
+opaque and is never resolved here. A source_ref outside that convention remains
+unconstrained by this control plane. `article_ref` carries only
+article/version/hash lineage, VisualBrief carries factual text but no claim set,
+and no canonical article claim registry is reachable here. Upstream verification
+must resolve each reference to the verified claim set before publication.
 
 `direction_discovery` holds 2–4 distinct thesis/composition alternatives, article-fit rationale, and only already-selected authorities. It precedes `production_refinement`; refinement preserves the selected direction and scopes its budget to bounded local edits, one declared major variable at a time. An unavailable positive anchor rejects rather than being invented.
 

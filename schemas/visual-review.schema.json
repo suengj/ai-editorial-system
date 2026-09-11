@@ -1,1 +1,178 @@
-{"$schema":"https://json-schema.org/draft/2020-12/schema","$id":"https://suengj.com/schemas/visual-review.schema.json","title":"Advisory rendered visual review","type":"object","additionalProperties":false,"required":["schema_version","review_id","asset_ref","asset_sha256","review_mode","dimensions","verdict","defect_tags","primary_tag","failure_class","next_action","feedback_ref","final_authority"],"properties":{"schema_version":{"const":"1.0.0"},"review_id":{"type":"string","pattern":"^visual-review:[a-z0-9-]+$"},"asset_ref":{"type":"string","minLength":1},"asset_sha256":{"type":"string","pattern":"^sha256:[a-f0-9]{64}$"},"review_mode":{"enum":["full","mobile_downscaled"]},"dimensions":{"type":"array","items":{"type":"object","additionalProperties":false,"required":["dimension","verdict","evidence"],"properties":{"dimension":{"enum":["thesis_clarity","reading_path","narrative_composition","editorial_authorship","spatial_richness","information_hierarchy","article_fit","reference_adherence","brand_compatibility","factual_text_integrity","mobile_crop_resilience"]},"verdict":{"enum":["pass","revise","reroute","abstain"]},"evidence":{"type":"string","minLength":1}}}},"verdict":{"enum":["PASS_TO_HUMAN_REVIEW","REVISE","REROUTE","SKIP"]},"defect_tags":{"type":"array","items":{"enum":["dashboardization","ui_mimicry","flat_svg_aesthetic","generic_icon_grid","box_overload","over_minimalization","weak_visual_thesis","style_dilution","dense_text","reference_drift","factual_overlay_intrusion"]}},"primary_tag":{"type":["string","null"]},"failure_class":{"type":["string","null"]},"next_action":{"type":"string","minLength":1},"feedback_ref":{"type":"string","pattern":"^feedback:[a-z0-9-]+$"},"final_authority":{"const":"human"}}}
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://suengj.com/schemas/visual-review.schema.json",
+  "title": "Advisory rendered visual review",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version", "review_id", "asset_ref", "asset_sha256",
+    "mobile_asset_ref", "mobile_asset_sha256", "review_mode", "dimensions",
+    "verdict", "defect_tags", "primary_tag", "failure_class", "next_action",
+    "feedback_ref", "final_authority"
+  ],
+  "properties": {
+    "schema_version": { "const": "1.0.0" },
+    "review_id": { "type": "string", "pattern": "^visual-review:[a-z0-9-]+$" },
+    "asset_ref": { "type": "string", "minLength": 1 },
+    "asset_sha256": { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$" },
+    "mobile_asset_ref": { "type": "string", "minLength": 1 },
+    "mobile_asset_sha256": { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$" },
+    "review_mode": { "enum": ["full", "mobile_downscaled"] },
+    "dimensions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["dimension", "verdict", "evidence"],
+        "properties": {
+          "dimension": { "enum": ["thesis_clarity", "reading_path", "narrative_composition", "editorial_authorship", "spatial_richness", "information_hierarchy", "article_fit", "reference_adherence", "brand_compatibility", "factual_text_integrity", "mobile_crop_resilience"] },
+          "verdict": { "enum": ["pass", "revise", "reroute", "abstain"] },
+          "evidence": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "verdict": { "enum": ["PASS_TO_HUMAN_REVIEW", "REVISE", "REROUTE", "SKIP"] },
+    "defect_tags": { "type": "array", "items": { "enum": ["dashboardization", "ui_mimicry", "flat_svg_aesthetic", "generic_icon_grid", "box_overload", "over_minimalization", "weak_visual_thesis", "style_dilution", "dense_text", "reference_drift", "factual_overlay_intrusion", "wrong_number", "missing_qualifier", "hallucinated_label", "unreadable_publication_display_size"] } },
+    "primary_tag": { "enum": ["dashboardization", "ui_mimicry", "flat_svg_aesthetic", "generic_icon_grid", "box_overload", "over_minimalization", "weak_visual_thesis", "style_dilution", "dense_text", "reference_drift", "factual_overlay_intrusion", "wrong_number", "missing_qualifier", "hallucinated_label", "unreadable_publication_display_size", null] },
+    "failure_class": { "enum": ["wrong_concept", "local_defect", "low_fidelity", "facts_or_text_wrong", "reference_drift", "dashboardization", "human_likes_candidate", null] },
+    "next_action": { "enum": ["new_direction", "local_edit", "fidelity_derivative", "factual_overlay_repair", "recompile_reference_authority", "reroute_composition_renderer", "human_approval_required", "human_judgement"] },
+    "feedback_ref": { "type": "string", "pattern": "^feedback:[a-z0-9-]+$" },
+    "post_render_checks": { "$ref": "#/$defs/post_render_checks" },
+    "review_scope": { "enum": ["legacy", "verified_generative_fact"] },
+    "verified_fact_binding": { "$ref": "#/$defs/verified_fact_binding" },
+    "final_authority": { "const": "human" }
+  },
+  "$defs": {
+    "digest": { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$" },
+    "post_render_check": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["check", "asset_scope", "asset_sha256", "verdict", "observed", "display_surface", "evidence"],
+      "properties": {
+        "check": { "enum": ["textual", "factual", "readability", "mobile"] },
+        "asset_scope": { "enum": ["full", "mobile"] },
+        "asset_sha256": { "$ref": "#/$defs/digest" },
+        "verdict": { "enum": ["pass", "fail", "abstain"] },
+        "observed": { "type": "boolean" },
+        "display_surface": { "enum": ["desktop_actual_display", "mobile_actual_display"] },
+        "observed_text_items": {
+          "description": "Structured transcription of every authoritative text item checked in the rendered asset. declared_text is cross-checked against the bound job; observed_text is what the reviewer actually read, or null when absent.",
+          "type": "array",
+          "items": { "$ref": "#/$defs/observed_text_item" }
+        },
+        "mobile_legibility": { "$ref": "#/$defs/mobile_legibility" },
+        "evidence": { "type": "string", "minLength": 1 }
+      }
+    },
+    "observed_text_item": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source_ref", "declared_text", "observed_text"],
+      "properties": {
+        "source_ref": { "type": "string", "minLength": 1 },
+        "declared_text": { "type": ["string", "null"] },
+        "observed_text": { "type": ["string", "null"] }
+      }
+    },
+    "mobile_legibility": {
+      "description": "SUE-546 progressive-mobile evidence. First-read structure must survive inline display; only secondary detail may rely on a declared full-size/open/expand path.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["detail_role", "load_bearing", "legible_at_display_size", "detail_access_path", "first_read"],
+      "properties": {
+        "detail_role": { "enum": ["first_read_structure", "secondary_detail"] },
+        "load_bearing": { "type": "boolean" },
+        "legible_at_display_size": { "type": "boolean" },
+        "detail_access_path": { "enum": ["none", "full_size", "open", "expand"] },
+        "first_read": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["topic", "dominant_relation", "major_module_boundaries", "main_conclusion"],
+          "properties": {
+            "topic": { "type": "boolean" },
+            "dominant_relation": { "type": "boolean" },
+            "major_module_boundaries": { "type": "boolean" },
+            "main_conclusion": { "type": "boolean" }
+          }
+        }
+      }
+    },
+    "repair_routing": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["textual", "factual", "readability", "mobile"],
+      "properties": {
+        "textual": { "enum": ["KEEP", "CHANGE", "DO_NOT_CHANGE"] },
+        "factual": { "enum": ["KEEP", "CHANGE", "DO_NOT_CHANGE"] },
+        "readability": { "enum": ["KEEP", "CHANGE", "DO_NOT_CHANGE"] },
+        "mobile": { "enum": ["KEEP", "CHANGE", "DO_NOT_CHANGE"] }
+      }
+    },
+    "post_render_checks": {
+      "description": "Asset-bound post-render checks. Every check names the digest of the pixels it inspected; routing is advisory and never approval.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["asset_sha256", "mobile_asset_sha256", "actual_display_geometry", "checks", "repair_routing"],
+      "properties": {
+        "asset_sha256": { "$ref": "#/$defs/digest" },
+        "mobile_asset_sha256": { "$ref": "#/$defs/digest" },
+        "actual_display_geometry": { "$ref": "#/$defs/actual_display_geometry" },
+        "checks": { "type": "array", "items": { "$ref": "#/$defs/post_render_check" } },
+        "repair_routing": { "$ref": "#/$defs/repair_routing" }
+      }
+    },
+    "actual_display_geometry": {
+      "description": "Observed display geometry for the exact full and mobile assets under review; this is evidence, not approval.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["desktop", "mobile"],
+      "properties": {
+        "desktop": {
+          "type": "object", "additionalProperties": false,
+          "required": ["asset_scope", "asset_sha256", "observed", "article_body_width_css_px", "viewport_width_css_px"],
+          "properties": {
+            "surface_id": { "type": "string", "pattern": "^surface:[a-z0-9]+(-[a-z0-9]+)*$" },
+            "asset_scope": { "const": "full" },
+            "asset_sha256": { "$ref": "#/$defs/digest" },
+            "observed": { "type": "boolean" },
+            "article_body_width_css_px": { "const": 672 },
+            "viewport_width_css_px": { "type": "integer", "minimum": 672 }
+          }
+        },
+        "mobile": {
+          "type": "object", "additionalProperties": false,
+          "required": ["asset_scope", "asset_sha256", "observed", "viewport_width_css_px", "article_body_width_css_px", "derivative_of_asset_sha256", "crop_anchor", "anchor_observed"],
+          "properties": {
+            "surface_id": { "type": "string", "pattern": "^surface:[a-z0-9]+(-[a-z0-9]+)*$" },
+            "asset_scope": { "const": "mobile" },
+            "asset_sha256": { "$ref": "#/$defs/digest" },
+            "observed": { "type": "boolean" },
+            "viewport_width_css_px": { "type": "integer", "minimum": 1 },
+            "article_body_width_css_px": { "type": "integer", "minimum": 1 },
+            "derivative_of_surface_id": { "type": "string", "pattern": "^surface:[a-z0-9]+(-[a-z0-9]+)*$" },
+            "derivative_of_asset_sha256": { "$ref": "#/$defs/digest" },
+            "crop_anchor": { "type": "string", "minLength": 1 },
+            "anchor_observed": { "type": "boolean" }
+          }
+        }
+      }
+    },
+    "verified_fact_binding": {
+      "description": "Owner/consumer binding from a validator-clean visual job/RenderSpec artifact's verified_generative_fact payload to this review; the normal review consumer resolves and hashes job_ref.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["job_id", "job_ref", "job_sha256", "render_spec_id", "render_spec_sha256", "payload_ref", "payload_sha256", "asset_sha256", "required_check"],
+      "properties": {
+        "job_id": { "type": "string", "pattern": "^job:[a-z0-9]+(-[a-z0-9]+)*$" },
+        "job_ref": { "type": "string", "minLength": 1 },
+        "job_sha256": { "$ref": "#/$defs/digest" },
+        "render_spec_id": { "type": "string", "pattern": "^render-spec:[a-z0-9]+(-[a-z0-9]+)*$" },
+        "render_spec_sha256": { "$ref": "#/$defs/digest" },
+        "payload_ref": { "type": "string", "pattern": "^payload:[a-z0-9]+(-[a-z0-9]+)*$" },
+        "payload_sha256": { "$ref": "#/$defs/digest" },
+        "asset_sha256": { "$ref": "#/$defs/digest" },
+        "required_check": { "const": "factual" }
+      }
+    }
+  }
+}

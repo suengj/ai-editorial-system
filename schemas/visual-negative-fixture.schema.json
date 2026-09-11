@@ -49,7 +49,7 @@
     "failure_tags": {
       "type": "array",
       "items": {
-        "type": "string"
+        "enum": ["dashboardization", "ui_mimicry", "flat_svg_aesthetic", "generic_icon_grid", "box_overload", "over_minimalization", "weak_visual_thesis", "style_dilution", "dense_text", "reference_drift", "factual_overlay_intrusion", "wrong_number", "missing_qualifier", "hallucinated_label", "unreadable_publication_display_size"]
       }
     },
     "usage_limit": {
@@ -68,6 +68,14 @@
         "null"
       ],
       "description": "Repository-relative path to the visual-review record for this asset. Required for owner_positive."
+    },
+    "expected_review_issue": {
+      "description": "For SUE-647 semantic negative fixtures, the dedicated validator code this review record must demonstrate.",
+      "enum": ["visual-review-wrong-number", "visual-review-missing-qualifier", "visual-review-hallucinated-label", "visual-review-unreadable-publication-display-size"]
+    },
+    "review_mutation": {
+      "description": "Named one-defect transformation applied to the shared schema-valid pass-attack review construction by the SUE-647 fixture validator.",
+      "enum": ["missing_qualifier_pass", "hallucinated_label_pass", "unreadable_display_size_pass"]
     }
   }
 }

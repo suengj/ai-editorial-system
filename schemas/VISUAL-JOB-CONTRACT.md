@@ -19,6 +19,12 @@ Schema `1.1.0` is additive: it introduces `visual_brief`, `render_spec`,
 and absent means false, but core requires it to be present and true when
 `brand_conflicts` is non-empty, and rejects true with no conflict.
 
+The version is coupled to the fields it introduces: a `1.0.0` job may not
+carry any of those V1.1 fields; a `1.1.0` job may carry them but may not carry
+`visual_production`; and a `1.2.0` job is the only version that may carry
+`visual_production`. Legacy deterministic jobs with both VisualBrief and
+RenderSpec absent remain valid.
+
 Schema `1.2.0` adds optional `visual_production`, the declared SUE-645/648
 control-plane state documented in [VISUAL-PRODUCTION-CONTRACT.md](VISUAL-PRODUCTION-CONTRACT.md).
 It accepts `1.0.0`, `1.1.0`, and `1.2.0`; a V1 job has no production telemetry
@@ -33,6 +39,11 @@ reference traits, and the versioned brand profile
 deterministic string assembly over that state, recorded with `compiled_from`
 so it can be regenerated or audited — never hand-edited independently of the
 state that produced it.
+
+Supported prompt adapters are `generic-v1` and `generic-v2`. When a compiled
+prompt is present, the validator reassembles it with the recorded adapter (or
+legacy `generic-v1` when the adapter field is absent) and requires exact
+equality of both `compiled_prompt` and `compiled_from`.
 
 ```text
 semantic_spec + artifact_profile + selected_reference_traits + brand_profile
@@ -127,6 +138,14 @@ say which artifact was approved, and a later derivative cannot prove it came
 from that artifact. `scripts/lib/visual-job-core.mjs` fails it
 (`approved-master-missing-immutable-identity`).
 
+The approval also carries a structured `approval_binding`: the exact article
+id, version, content hash, claims hash, master ref, and master digest the human
+saw. Validation uses `scripts/lib/lineage.mjs` `classifyArtifact()` for the
+established fresh/cosmetic/material/unknown distinction, then requires `fresh`
+plus exact article id/version and master ref/digest equality. Free-text
+`approval_context` remains human context; it cannot carry authority across a
+changed article or master identity.
+
 Every post-approval request is classified before any renderer is consulted
 (`editorial/APPROVED-VISUAL-ASSET-LIFECYCLE.md` §3):
 
@@ -189,15 +208,27 @@ so `authorized_by: " "` would otherwise reopen a renderer. And the declared
 It does not make approval unforgeable. Every field here is written by whatever
 process writes the job record, so an agent that can author the file can author
 `state: human_approved_locked` and a digest it computed itself. Requiring
-`approved_by`, `approved_at`, and `approval_context` on a locked asset does not
-change that; it removes the *silent* path, so a fabricated approval has to name
-an approver and a context that a human can check, rather than appearing from
-nowhere. Binding the lock to a verifiable human act — a signature, an external
+`approved_by`, `approved_at`, `approval_context`, and the structured
+`approval_binding` on a locked asset does not change that; it removes the
+*silent* path, so a fabricated approval has to name an approver and the exact
+article/master identity rather than appearing from nowhere. Binding the lock to
+a verifiable human act — a signature, an external
 approval record, an out-of-band token — is a real gap and is not solved here.
 
-A digest written here names bytes this repository does not hold — there is no
-asset store in the editorial control plane, so `master_ref` is never resolved
-and `master_digest` is never recomputed against anything. Verifying a digest
+## Verified-fact terminal status requires rendered evidence (SUE-670)
+
+Declaring `post_render_verification.required: true` is not evidence that it ran.
+A job carrying a non-null `verified_generative_fact` cannot enter `qa_pass` or
+`accepted` without `post_render_review`. The validator resolves and hashes that
+review record, resolves and hashes its full and mobile assets, binds it to the
+same job/RenderSpec/payload, and requires structured passing observed-text and
+mobile checks. The review verdict remains `PASS_TO_HUMAN_REVIEW`; it does not
+grant approval or publication authority.
+
+An `approved_asset.master_digest` written here names bytes this repository does
+not hold — there is no approved-master asset store in the editorial control
+plane, so `master_ref` is never resolved and `master_digest` is never
+recomputed against anything. Verifying that approval-lock digest
 against real bytes is publication-side work, and
 [`editorial/ARTICLE-VISUAL-PUBLICATION-HANDOFF.md`](../editorial/ARTICLE-VISUAL-PUBLICATION-HANDOFF.md)
 §4 is where that boundary is stated. Whether a given publication path actually

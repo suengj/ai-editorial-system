@@ -4,7 +4,7 @@ import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { CODES, RegenerationSealedError, compileVisualPrompt, loadArtifactProfiles, resolveBrandProfile, validateRenderSpec, validateVisualBrief, validateVisualJob } from './lib/visual-job-core.mjs';
+import { CODES, RegenerationSealedError, canonicalPayloadSha256, compileVisualPrompt, loadArtifactProfiles, resolveBrandProfile, validateRenderSpec, validateVisualBrief, validateVisualJob } from './lib/visual-job-core.mjs';
 import { queryVisualReferenceEvaluations } from './lib/registry-core.mjs';
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const load = (file) => JSON.parse(readFileSync(resolve(ROOT, 'schemas/examples', file), 'utf8'));
@@ -19,6 +19,23 @@ const hybrid = load('visual-job-body-infographic-v2.example.json');
 check('hybrid VisualBrief/RenderSpec contract validates', validateVisualJob(hybrid).length === 0);
 check('standalone VisualBrief example validates', validateVisualBrief(load('visual-brief-body-infographic-v2.example.json')).length === 0);
 check('standalone RenderSpec example validates', validateRenderSpec(load('render-spec-body-infographic-hybrid-v2.example.json')).length === 0);
+{
+  const deterministic = load('visual-job-evidence-visual.example.json');
+  const briefOnly = clone(deterministic);
+  briefOnly.visual_brief = clone(load('visual-brief-body-infographic-v2.example.json'));
+  check('structurally valid VisualBrief without RenderSpec is rejected by the pair-presence guard',
+    codes(briefOnly).includes(CODES.BRIEF_REQUIRED));
+  const specOnly = clone(deterministic);
+  specOnly.render_spec = clone(load('render-spec-body-infographic-hybrid-v2.example.json'));
+  check('structurally valid RenderSpec without VisualBrief is rejected by the pair-presence guard',
+    codes(specOnly).includes(CODES.BRIEF_REQUIRED));
+  check('legacy deterministic job with both visual fields absent remains valid',
+    validateVisualJob(deterministic).length === 0);
+  const textFree = JSON.parse(readFileSync(resolve(ROOT, 'evals/dogfood/2026-09-05-sue570-pilot/source-a/02-visual/visual-job-child.json'), 'utf8'));
+  check('pre-existing text-free no_text semantic-master job still validates unchanged',
+    textFree.text_policy === 'no_text' && validateVisualJob(textFree).length === 0,
+    validateVisualJob(textFree).map((i) => i.code).join(', '));
+}
 {
   const v1 = load('visual-job-evidence-visual.example.json');
   const additiveFields = ['visual_brief', 'render_spec', 'compiled_prompt_adapter', 'brand_conflicts', 'requires_owner_gate', 'article_title'];
@@ -45,6 +62,44 @@ console.log('\nB1 shared reference admissibility');
   const unevidenced = clone(hybrid); setAuthority(unevidenced, 'ref:c4-model-containment', 'eval:c4-model-containment-2026-09-06-01', ['composition']); check('trait absent from that evaluation adopt dimensions fails', codes(unevidenced).includes(CODES.REFERENCE_AUTHORITY_TRAIT_UNEVIDENCED));
   const irrelevant = clone(hybrid); setAuthority(irrelevant, 'ref:risk-matrix-comprehension', 'eval:risk-matrix-comprehension-2026-09-06-01', ['label-text-strategy']); check('reviewer risk-matrix label-text pin against hierarchy brief fails relevance', codes(irrelevant).includes(CODES.REFERENCE_AUTHORITY_TRAIT_IRRELEVANT));
   const emptyDimensions = clone(irrelevant); emptyDimensions.visual_brief.reference_requirements.required_dimensions = []; check('reviewer empty required_dimensions authority bypass is rejected', codes(emptyDimensions).includes(CODES.BRIEF_REFERENCE_DIMENSIONS_REQUIRED));
+  const fabricatedNotAuthority = clone(hybrid);
+  fabricatedNotAuthority.render_spec.reference_authority.selected[0].not_authority = ['fabricated-dimension'];
+  check('reference not_authority must resolve to that evaluation\'s do_not_copy dimensions',
+    codes(fabricatedNotAuthority).includes(CODES.REFERENCE_AUTHORITY_NOT_AUTHORITY_UNEVIDENCED));
+  const emptyAuthority = clone(hybrid);
+  emptyAuthority.render_spec.reference_authority.selected[0].authority = [];
+  check('selected reference authority must contain at least one trait',
+    codes(emptyAuthority).includes(CODES.REFERENCE_AUTHORITY_TRAIT_REQUIRED) || codes(emptyAuthority).includes(CODES.SCHEMA));
+
+  const documentationEvidence = [
+    ['ref:openai-image-generation', 'eval:openai-image-generation-2026-09-08-01'],
+    ['ref:openai-gpt-image-2', 'eval:openai-gpt-image-2-2026-09-08-01'],
+    ['ref:google-gemini-image-generation', 'eval:google-gemini-image-generation-2026-09-08-01'],
+    ['ref:google-nano-banana-pro', 'eval:google-nano-banana-pro-2026-09-08-01'],
+    ['ref:adobe-firefly-image5', 'eval:adobe-firefly-image5-2026-09-08-01'],
+    ['ref:adobe-firefly-reference-roles', 'eval:adobe-firefly-reference-roles-2026-09-08-01'],
+  ];
+  for (const [ref_id, evaluation_id] of documentationEvidence) {
+    const providerAuthority = clone(hybrid);
+    setAuthority(providerAuthority, ref_id, evaluation_id, ['hierarchy', 'composition', 'label-text-strategy'], 'documentation evidence must not become craft authority');
+    check(`${ref_id} documentation evidence is rejected for hierarchy/composition/labels`,
+      codes(providerAuthority).includes(CODES.REFERENCE_AUTHORITY_INADMISSIBLE));
+    let refused = false;
+    try { compileVisualPrompt(providerAuthority); } catch { refused = true; }
+    check(`${ref_id} cannot reach compiled prompt selection`, refused);
+    const resolved = queryVisualReferenceEvaluations({
+      evaluation_ids: [evaluation_id],
+      artifact_profile: hybrid.artifact_profile,
+    });
+    check(`${evaluation_id} is absent from the craft resolver`, resolved.length === 0);
+  }
+  const ordinaryCraftAuthority = queryVisualReferenceEvaluations({
+    evaluation_ids: ['eval:c4-model-containment-2026-09-06-01'],
+    artifact_profile: hybrid.artifact_profile,
+    required_dimensions: ['hierarchy'],
+  });
+  check('ordinary non-provider visual craft authority still resolves',
+    ordinaryCraftAuthority.length === 1 && ordinaryCraftAuthority[0].ref_id === 'ref:c4-model-containment');
 }
 
 console.log('\nB2 structural depth and hard materiality ceiling');
@@ -95,6 +150,12 @@ console.log('\nM1/M2 resolver ranking and attribution');
 
 console.log('\nM4 direct negative guards and isolation');
 {
+  const lineage = clone(hybrid);
+  lineage.visual_brief.article_ref.version_number = 999;
+  lineage.visual_brief.article_ref.content_hash = 'c'.repeat(64);
+  lineage.visual_brief.article_ref.claims_hash = 'd'.repeat(64);
+  check('VisualBrief article version and hashes must match the job article_ref',
+    codes(lineage).includes(CODES.BRIEF_SPEC_MISMATCH));
   const mismatch = clone(hybrid); mismatch.render_spec.brief_id = 'visual-brief:wrong'; check('BRIEF_SPEC_MISMATCH has direct negative', codes(mismatch).includes(CODES.BRIEF_SPEC_MISMATCH));
   const noBrief = clone(hybrid); delete noBrief.visual_brief; delete noBrief.render_spec; check('BRIEF_REQUIRED has direct negative', codes(noBrief).includes(CODES.BRIEF_REQUIRED));
   const count = clone(hybrid); count.render_spec.reference_authority.selected = []; check('REFERENCE_AUTHORITY_COUNT has direct negative', codes(count).includes(CODES.REFERENCE_AUTHORITY_COUNT));
@@ -103,11 +164,142 @@ console.log('\nM4 direct negative guards and isolation');
   const arbitrary = clone(hybrid); arbitrary.render_spec.reference_authority.selected.push({ ref_id: 'ref:arbitrary-image', evaluation_id: 'eval:arbitrary-image', authority: ['hierarchy'], not_authority: [], rationale: '/tmp/recent-image.png' }); check('actual arbitrary image insertion is rejected as unresolved', codes(arbitrary).includes(CODES.REFERENCE_AUTHORITY_UNRESOLVED));
   const leaky = clone(hybrid); leaky.context_isolation.permitted_inputs.push('ambient_conversation'); check('context isolation enum still rejects ambient context as permitted input', codes(leaky).includes(CODES.SCHEMA));
   const missingUiForbid = clone(hybrid); missingUiForbid.render_spec.forbidden_visual_devices = ['ui_mimicry']; check('UI_MIMICRY_CONTRACT_MISSING has direct negative', codes(missingUiForbid).includes(CODES.UI_MIMICRY_CONTRACT_MISSING));
+  const forgedCompilation = clone(hybrid);
+  forgedCompilation.compiled_prompt = '';
+  forgedCompilation.compiled_from = ['bogus'];
+  forgedCompilation.compiled_prompt_adapter = 'unregistered-adapter';
+  check('compiled prompt, lineage, and adapter cannot be fabricated on a V2 job',
+    codes(forgedCompilation).length > 0);
+  const supportedButStale = clone(hybrid);
+  const compiled = compileVisualPrompt(clone(hybrid), { promptAdapter: 'generic-v1' });
+  supportedButStale.compiled_prompt = `${compiled.compiled_prompt}\nextra`;
+  supportedButStale.compiled_from = compiled.compiled_from;
+  supportedButStale.compiled_prompt_adapter = 'generic-v1';
+  check('a supported adapter still requires exact deterministic compiled output',
+    codes(supportedButStale).includes(CODES.COMPILED_OUTPUT_MISMATCH));
 }
 
 console.log('\napproval lock additive regression');
 {
   const locked = load('visual-job-approved-concept-change.example.json'); locked.revision.regeneration_allowed = false; let refused = false; try { compileVisualPrompt(locked, { profiles: loadArtifactProfiles() }); } catch (err) { refused = err instanceof RegenerationSealedError; } check('locked master cannot reopen through VisualBrief/RenderSpec path', refused);
+}
+
+console.log('\nV2.17 text ownership and integrated hierarchy');
+{
+  const v217 = clone(hybrid);
+  const hierarchy = { primary: 'closed gate', supporting: ['continuous path'], detail: ['supporting note'] };
+  const fact = { exact_text: 'exact causal labels', source_ref: 'article-claim:art:tokenized-stocks-instant-payments-liquidity-rights:liquidity-window' };
+  const claimSet = { article_id: v217.article_ref.article_id, claims_hash: v217.article_ref.claims_hash, claim_ids: ['liquidity-window'] };
+  const payload = { payload_ref: 'payload:liquidity-labels', items: [fact] };
+  const ownership = {
+    article_title: 'deterministic_external_text',
+    generative_structural_text: { items: ['closed gate'] },
+    verified_generative_fact: {
+      canonical_payload: { ...payload, payload_sha256: canonicalPayloadSha256({ ...payload, claim_set: claimSet }) },
+      source_lineage: [fact.source_ref],
+      claim_set: claimSet,
+      post_render_verification: { required: true, review_dimension: 'factual', asset_digest_bound: true },
+    },
+    deterministic_external_text: { items: [], includes: ['citations', 'dense_text', 'sensitive_text'] },
+  };
+  v217.visual_brief.information_hierarchy = hierarchy;
+  v217.render_spec.information_hierarchy = clone(hierarchy);
+  v217.visual_brief.text_ownership = ownership;
+  v217.render_spec.text_handling.text_ownership = clone(ownership);
+  check('V2.17 ownership and hierarchy contract validates', validateVisualJob(v217).length === 0);
+  const compiled = compileVisualPrompt(v217);
+  check('compiler carries exact ownership classes and hierarchy as disposable prompt inputs', compiled.compiled_prompt.includes('TEXT OWNERSHIP: generative_structural_text; verified_generative_fact; deterministic_external_text') && compiled.compiled_prompt.includes('INFORMATION HIERARCHY: primary closed gate; supporting continuous path; detail supporting note') && compiled.compiled_prompt.includes('VERIFIED FACT ROUTE: exact causal labels [article-claim:'));
+  const titleAttack = clone(v217); titleAttack.visual_brief.text_ownership.article_title = 'generative_structural_text';
+  check('title cannot move into generated text ownership', codes(titleAttack).includes(CODES.SCHEMA));
+  const ownershipDrift = clone(v217); ownershipDrift.render_spec.text_handling.text_ownership.deterministic_external_text.includes = ['citations'];
+  check('brief/spec ownership drift is rejected', codes(ownershipDrift).includes(CODES.TEXT_OWNERSHIP_MISMATCH));
+  const hierarchyDrift = clone(v217); hierarchyDrift.render_spec.information_hierarchy.primary = 'supporting detail';
+  check('brief/spec hierarchy drift is rejected', codes(hierarchyDrift).includes(CODES.HIERARCHY_MISMATCH));
+  const noHierarchyAuthority = clone(v217); noHierarchyAuthority.render_spec.reference_authority.selected[0].authority = ['composition'];
+  check('integrated hierarchy without hierarchy reference authority is rejected', codes(noHierarchyAuthority).includes(CODES.HIERARCHY_REFERENCE_REQUIRED));
+  const hierarchyAuthorityAlias = clone(v217); hierarchyAuthorityAlias.render_spec.reference_authority.selected[0].authority = ['information_hierarchy'];
+  check('information_hierarchy authority alias is rejected', codes(hierarchyAuthorityAlias).includes(CODES.HIERARCHY_REFERENCE_REQUIRED));
+  const noPayload = clone(v217); delete noPayload.visual_brief.text_ownership.verified_generative_fact.canonical_payload;
+  check('verified generative facts cannot omit canonical payload', codes(noPayload).includes(CODES.SCHEMA));
+  const noSource = clone(v217); delete noSource.visual_brief.text_ownership.verified_generative_fact.source_lineage;
+  check('verified generative facts cannot omit source lineage', codes(noSource).includes(CODES.SCHEMA));
+  const noPostRender = clone(v217); delete noPostRender.visual_brief.text_ownership.verified_generative_fact.post_render_verification;
+  check('verified generative facts cannot omit mandatory post-render verification', codes(noPostRender).includes(CODES.SCHEMA));
+  const badPayloadHash = clone(v217); badPayloadHash.visual_brief.text_ownership.verified_generative_fact.canonical_payload.payload_sha256 = `sha256:${'a'.repeat(64)}`;
+  check('verified generative fact payload hash is canonical', codes(badPayloadHash).includes(CODES.VERIFIED_FACT_PAYLOAD));
+  const wrongSource = clone(v217); wrongSource.visual_brief.text_ownership.verified_generative_fact.source_lineage = ['article-claim:art:other-article:claim'];
+  check('verified generative fact source lineage must cover the item', codes(wrongSource).includes(CODES.VERIFIED_FACT_SOURCE));
+  const opaqueSource = clone(v217); opaqueSource.visual_brief.text_ownership.verified_generative_fact.source_lineage = ['opaque-source'];
+  check('opaque verified generative fact lineage is rejected', codes(opaqueSource).includes(CODES.VERIFIED_FACT_LINEAGE));
+  const unknownClaim = clone(v217);
+  const unknownFact = { ...fact, source_ref: 'article-claim:art:tokenized-stocks-instant-payments-liquidity-rights:well-shaped-but-unknown' };
+  unknownClaim.visual_brief.text_ownership.verified_generative_fact.canonical_payload.items = [unknownFact];
+  unknownClaim.visual_brief.text_ownership.verified_generative_fact.canonical_payload.payload_sha256 = canonicalPayloadSha256({
+    payload_ref: payload.payload_ref, claim_set: claimSet, items: [unknownFact],
+  });
+  unknownClaim.visual_brief.text_ownership.verified_generative_fact.source_lineage = [unknownFact.source_ref];
+  unknownClaim.render_spec.text_handling.text_ownership = clone(unknownClaim.visual_brief.text_ownership);
+  check('well-shaped but undeclared verified claim lineage is rejected', codes(unknownClaim).includes(CODES.VERIFIED_FACT_CLAIM));
+  const mutatedClaimSet = clone(v217);
+  const hostileClaimSet = { ...claimSet, claim_ids: ['well-shaped-but-unknown'] };
+  for (const owner of [mutatedClaimSet.visual_brief.text_ownership, mutatedClaimSet.render_spec.text_handling.text_ownership]) {
+    owner.verified_generative_fact.claim_set = hostileClaimSet;
+    owner.verified_generative_fact.canonical_payload.payload_sha256 = canonicalPayloadSha256({
+      payload_ref: owner.verified_generative_fact.canonical_payload.payload_ref,
+      claim_set: hostileClaimSet,
+      items: owner.verified_generative_fact.canonical_payload.items,
+    });
+  }
+  check('copied claims_hash with a mutated claim set is rejected', codes(mutatedClaimSet).includes(CODES.VERIFIED_FACT_CLAIM_SET));
+  const deletedClaimSet = clone(v217);
+  delete deletedClaimSet.visual_brief.text_ownership.verified_generative_fact.claim_set;
+  delete deletedClaimSet.render_spec.text_handling.text_ownership.verified_generative_fact.claim_set;
+  check('verified fact cannot delete its authoritative claim set', codes(deletedClaimSet).includes(CODES.SCHEMA));
+  const factInHierarchy = clone(v217); factInHierarchy.visual_brief.information_hierarchy.detail = ['exact causal labels'];
+  check('exact factual invariant cannot enter hierarchy as an arbitrary string', codes(factInHierarchy).includes(CODES.FACT_INJECTION));
+  const caseInHierarchy = clone(v217); caseInHierarchy.visual_brief.information_hierarchy.detail = ['EXACT CAUSAL LABELS'];
+  check('case-folded factual invariant cannot enter hierarchy', codes(caseInHierarchy).includes(CODES.FACT_INJECTION));
+  const phraseInHierarchy = clone(v217); phraseInHierarchy.visual_brief.information_hierarchy.detail = ['supporting phrase: exact causal labels must be prominent'];
+  check('factual invariant contained in a larger hierarchy phrase is rejected', codes(phraseInHierarchy).includes(CODES.FACT_INJECTION));
+  const phraseInSemantic = clone(v217); phraseInSemantic.render_spec.spatial_layers.generative_semantic = ['semantic relationship: exact causal labels remain illustrative'];
+  check('factual invariant contained in a larger semantic phrase is rejected', codes(phraseInSemantic).includes(CODES.FACT_INJECTION));
+  const phraseInStructural = clone(v217); phraseInStructural.visual_brief.text_ownership.generative_structural_text.items = ['structure carries EXACT CAUSAL LABELS as decoration'];
+  check('factual invariant contained in a larger generated phrase is rejected', codes(phraseInStructural).includes(CODES.FACT_INJECTION));
+  const externalFact = clone(v217);
+  const otherFact = { exact_text: 'other verified fact', source_ref: 'article-claim:art:tokenized-stocks-instant-payments-liquidity-rights:other-claim' };
+  const otherPayload = { payload_ref: 'payload:other-fact', items: [otherFact] };
+  for (const owner of [externalFact.visual_brief.text_ownership, externalFact.render_spec.text_handling.text_ownership]) {
+    owner.verified_generative_fact.canonical_payload = { ...otherPayload, payload_sha256: canonicalPayloadSha256({ ...otherPayload, claim_set: claimSet }) };
+    owner.verified_generative_fact.source_lineage = [otherFact.source_ref];
+    owner.deterministic_external_text.items = [fact];
+  }
+  check('factual invariant cannot use the deterministic external class as an undeclared fact route', codes(externalFact).includes(CODES.FACT_INJECTION));
+  const undeclaredLayer = clone(v217); undeclaredLayer.render_spec.spatial_layers.deterministic_factual = ['unbound injected fact'];
+  check('undeclared deterministic factual layer is rejected', codes(undeclaredLayer).includes(CODES.FACT_INJECTION));
+  const undeclaredOverlay = clone(v217); undeclaredOverlay.render_spec.text_handling.deterministic_overlay = ['unbound injected fact'];
+  check('undeclared legacy overlay is rejected under explicit V2.17 ownership', codes(undeclaredOverlay).includes(CODES.FACT_INJECTION));
+  let refusedInjection = false;
+  try { compileVisualPrompt(undeclaredLayer); } catch { refusedInjection = true; }
+  check('compiler refuses to emit a prompt for an undeclared fact injection', refusedInjection);
+  const hierarchyAlias = clone(v217); hierarchyAlias.visual_brief.hierarchy = clone(hierarchy);
+  check('ambiguous hierarchy alias is rejected', codes(hierarchyAlias).includes(CODES.SCHEMA));
+  const ownershipAlias = clone(v217); ownershipAlias.render_spec.text_handling.ownership = clone(ownership);
+  check('ambiguous ownership alias is rejected', codes(ownershipAlias).includes(CODES.SCHEMA));
+  const reviewerDeletion = JSON.parse(readFileSync(resolve(ROOT, 'evals/visual-review/sue671-ai-hiring-missing-rungs-job.json'), 'utf8'));
+  delete reviewerDeletion.visual_brief.text_ownership;
+  delete reviewerDeletion.render_spec.text_handling.text_ownership;
+  check('reviewer exact mutation: text-bearing D2 job cannot delete both ownership declarations',
+    codes(reviewerDeletion).includes(CODES.TEXT_OWNERSHIP_MISMATCH));
+  let undeclaredTextCompiled = true;
+  try { compileVisualPrompt(reviewerDeletion); } catch { undeclaredTextCompiled = false; }
+  check('compiler has no deterministic_factual fallback for undeclared text ownership', !undeclaredTextCompiled);
+  const reviewerNoTextBypass = JSON.parse(readFileSync(resolve(ROOT, 'evals/visual-review/sue671-ai-hiring-missing-rungs-job.json'), 'utf8'));
+  reviewerNoTextBypass.text_policy = 'no_text';
+  check('round-2 reviewer bypass: no_text cannot conceal declared deterministic factual text',
+    codes(reviewerNoTextBypass).includes(CODES.TEXT_OWNERSHIP_MISMATCH));
+  let noTextBypassCompiled = true;
+  try { compileVisualPrompt(reviewerNoTextBypass); } catch { noTextBypassCompiled = false; }
+  check('compiler refuses a no_text job whose rendered-text surfaces are nonempty', !noTextBypassCompiled);
 }
 console.log(failures === 0 ? '\nvisual brief regression: PASS' : `\nvisual brief regression: FAIL (${failures})`);
 process.exit(failures ? 1 : 0);

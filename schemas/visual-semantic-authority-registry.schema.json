@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://suengj.com/schemas/visual-semantic-authority-registry.schema.json",
+  "title": "Visual Semantic Field Authority Registry",
+  "description": "Closed classification of every property in the composed Visual Job contract.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "registry_id", "fields"],
+  "properties": {
+    "schema_version": { "const": "1.0.0" },
+    "registry_id": { "const": "visual-semantic-authority:v1" },
+    "fields": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "path",
+          "schema_source",
+          "schema_pointer",
+          "node_kind",
+          "shape_sha256",
+          "rendered_text",
+          "prompt_semantics",
+          "localized_repair",
+          "rationale"
+        ],
+        "properties": {
+          "path": { "type": "string", "pattern": "^/(?:[^/]|~0|~1)+(?:/(?:[^/]|~0|~1)+|/\\*)*$" },
+          "schema_source": { "type": "string", "minLength": 1 },
+          "schema_pointer": { "type": "string", "pattern": "^/(?:[^/]|~0|~1)+(?:/(?:[^/]|~0|~1)+)*$" },
+          "node_kind": { "enum": ["object", "object_array", "scalar", "scalar_array"] },
+          "shape_sha256": {
+            "type": "string",
+            "pattern": "^sha256:[a-f0-9]{64}$",
+            "description": "Digest of the property structural shape together with its containing object's structural keywords."
+          },
+          "rendered_text": { "enum": ["none", "generative_structural_text", "verified_generative_fact", "deterministic_external_text"] },
+          "prompt_semantics": { "enum": ["none", "prompt_input", "semantic_authority"] },
+          "localized_repair": { "enum": ["protected", "decision_gated", "derived_output", "repair_evidence", "new_record_identity"] },
+          "collection_key": { "type": "string", "pattern": "^[a-z][a-z0-9_]*$" },
+          "rationale": { "type": "string", "minLength": 1 }
+        }
+      }
+    }
+  }
+}

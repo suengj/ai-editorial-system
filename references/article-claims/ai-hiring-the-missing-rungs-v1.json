@@ -1,0 +1,48 @@
+{
+  "schema_version": "1.0.0",
+  "authority": "repository_article_claims",
+  "article_ref": {
+    "article_id": "art:ai-hiring-pilot",
+    "version_number": 1,
+    "content_hash": "5b2536661c8ba7fb5310a129c04dede176fcdf979458e14619497e92c0452136",
+    "claims_hash": "4cbc9137f1661759a318aefc641bbc4c9aa82d629f74d90855ce2764fb995c04"
+  },
+  "claim_ids": [
+    "gpt-6-astra-41-4-percent",
+    "gpt-5-6-sol-18-1-percent"
+  ],
+  "claims": [
+    {
+      "id": "gpt-6-astra-41-4-percent",
+      "exact_text": "41.4%",
+      "source_ref": "article-claim:art:ai-hiring-pilot:gpt-6-astra-41-4-percent",
+      "status": "verified",
+      "semantic_binding": "model_comparison",
+      "comparison_label": "GPT-6 Astra — 41.4%",
+      "not_a_job_level_or_management_tier": true
+    },
+    {
+      "id": "gpt-5-6-sol-18-1-percent",
+      "exact_text": "18.1%",
+      "source_ref": "article-claim:art:ai-hiring-pilot:gpt-5-6-sol-18-1-percent",
+      "status": "verified",
+      "semantic_binding": "model_comparison",
+      "comparison_label": "GPT-5.6 Sol — 18.1%",
+      "not_a_job_level_or_management_tier": true
+    }
+  ],
+  "external_text_provenance": [
+    {
+      "exact_text": "AutomationBench",
+      "source_ref": "article-benchmark:ai-hiring-pilot",
+      "route": "deterministic_external_text"
+    },
+    {
+      "exact_text": "약 19%",
+      "source_ref": "external-html-caption:ai-hiring-pilot-approx-rate",
+      "route": "external_html_caption_only",
+      "qualifier_safe": false
+    }
+  ],
+  "content_basis": "The Missing Rungs\nAI-hiring pilot source version 1\n"
+}

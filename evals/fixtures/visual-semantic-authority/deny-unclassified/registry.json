@@ -1,0 +1,17 @@
+{
+  "schema_version": "1.0.0",
+  "registry_id": "visual-semantic-authority:v1",
+  "fields": [
+    {
+      "path": "/caption",
+      "schema_source": "evals/fixtures/visual-semantic-authority/deny-unclassified/schema.json",
+      "schema_pointer": "/properties/caption",
+      "node_kind": "scalar",
+      "shape_sha256": "sha256:0f662f9f53394e32e9d1a8cf1c921bb8cb892ca1b77bcbb799ef939f04df92e5",
+      "rendered_text": "deterministic_external_text",
+      "prompt_semantics": "prompt_input",
+      "localized_repair": "protected",
+      "rationale": "The known caption is classified, while the added future surface is deliberately omitted."
+    }
+  ]
+}

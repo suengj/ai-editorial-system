@@ -14,6 +14,11 @@
   },
   "safe_zones": ["lower-right deterministic factual overlay"],
   "crop_resilience": "Primary gate/path relation remains centered after mobile crop.",
+  "crop_anchors": ["anchor:primary-gate-path"],
+  "publication_display_surfaces": {
+    "desktop": { "surface_id": "surface:body-desktop", "asset_scope": "full", "article_body_width_css_px": 672, "viewport_width_css_px": 1280 },
+    "mobile": { "surface_id": "surface:body-mobile", "asset_scope": "mobile", "viewport_width_css_px": 390, "article_body_width_css_px": 390, "derivative_of_surface_id": "surface:body-desktop", "derivative_of_asset_scope": "full", "crop_anchors": ["anchor:primary-gate-path"] }
+  },
   "visual_devices": ["integrated editorial scene", "restrained evidence module", "high whitespace"],
   "forbidden_visual_devices": ["ui_mimicry", "dashboardization", "flat_svg_aesthetic"],
   "reference_authority": {
@@ -21,7 +26,7 @@
       "ref_id": "ref:c4-model-containment",
       "evaluation_id": "eval:c4-model-containment-2026-09-06-01",
       "authority": ["hierarchy"],
-      "not_authority": ["palette-colour-role", "literal C4 notation"],
+      "not_authority": ["palette-colour-role"],
       "rationale": "Use the evaluated hierarchy lesson, not C4 notation or palette."
     }]
   },
