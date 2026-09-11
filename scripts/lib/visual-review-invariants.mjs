@@ -42,24 +42,38 @@ export function validateObservedTextAgainstJob(record, job) {
   }
 
   const out = [];
-  const expectedBySource = new Map(expectedItems.map((item) => [item.source_ref, item]));
-  const observedBySource = new Map();
+  const itemKey = (sourceRef, declaredText) => JSON.stringify([sourceRef, declaredText]);
+  const expectedByKey = new Map();
+  const expectedTextsBySource = new Map();
+  for (const item of expectedItems) {
+    const key = itemKey(item.source_ref, item.exact_text);
+    const entry = expectedByKey.get(key) ?? { item, count: 0 };
+    entry.count += 1;
+    expectedByKey.set(key, entry);
+    const texts = expectedTextsBySource.get(item.source_ref) ?? new Set();
+    texts.add(item.exact_text);
+    expectedTextsBySource.set(item.source_ref, texts);
+  }
+  const observedCounts = new Map();
   for (const observation of observations) {
-    if (observedBySource.has(observation.source_ref)) {
+    const key = itemKey(observation.source_ref, observation.declared_text);
+    const observedCount = (observedCounts.get(key) ?? 0) + 1;
+    observedCounts.set(key, observedCount);
+    const expected = expectedByKey.get(key);
+    if (expected && observedCount > expected.count) {
       out.push(issue(VISUAL_REVIEW_INVARIANT_CODES.OBSERVED_TEXT_BINDING,
-        `observed text source_ref ${observation.source_ref} appears more than once`));
+        `declared item ${observation.source_ref} / ${JSON.stringify(observation.declared_text)} is transcribed more times than it appears in the bound payload`));
     }
-    observedBySource.set(observation.source_ref, observation);
-    const expected = expectedBySource.get(observation.source_ref);
-    if (expected && observation.declared_text !== expected.exact_text) {
+    if (expectedTextsBySource.has(observation.source_ref) && !expected) {
       out.push(issue(VISUAL_REVIEW_INVARIANT_CODES.OBSERVED_TEXT_BINDING,
-        `declared_text for ${observation.source_ref} does not equal the bound job payload`));
+        `declared_text ${JSON.stringify(observation.declared_text)} for ${observation.source_ref} is not an item in the bound job payload`));
     }
   }
-  for (const expected of expectedItems) {
-    if (!observedBySource.has(expected.source_ref)) {
+  for (const [key, expected] of expectedByKey) {
+    const missingCount = expected.count - (observedCounts.get(key) ?? 0);
+    if (missingCount > 0) {
       out.push(issue(VISUAL_REVIEW_INVARIANT_CODES.OBSERVED_TEXT_REQUIRED,
-        `observed_text_items does not represent declared item ${expected.source_ref}`));
+        `observed_text_items omits ${missingCount} occurrence(s) of declared item ${expected.item.source_ref} / ${JSON.stringify(expected.item.exact_text)}`));
     }
   }
 
@@ -67,10 +81,10 @@ export function validateObservedTextAgainstJob(record, job) {
   if (!passClaimed) return out;
 
   for (const observation of observations) {
-    const expected = expectedBySource.get(observation.source_ref);
+    const expected = expectedByKey.get(itemKey(observation.source_ref, observation.declared_text))?.item;
     if (!expected) {
       out.push(issue(VISUAL_REVIEW_INVARIANT_CODES.HALLUCINATED_LABEL,
-        `observed text ${JSON.stringify(observation.observed_text)} has no declared payload/source item`));
+        `observed text ${JSON.stringify(observation.observed_text)} has no matching declared payload item`));
       continue;
     }
     if (observation.observed_text === expected.exact_text) continue;

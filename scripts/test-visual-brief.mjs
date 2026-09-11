@@ -293,6 +293,13 @@ console.log('\nV2.17 text ownership and integrated hierarchy');
   let undeclaredTextCompiled = true;
   try { compileVisualPrompt(reviewerDeletion); } catch { undeclaredTextCompiled = false; }
   check('compiler has no deterministic_factual fallback for undeclared text ownership', !undeclaredTextCompiled);
+  const reviewerNoTextBypass = JSON.parse(readFileSync(resolve(ROOT, 'evals/visual-review/sue671-ai-hiring-missing-rungs-job.json'), 'utf8'));
+  reviewerNoTextBypass.text_policy = 'no_text';
+  check('round-2 reviewer bypass: no_text cannot conceal declared deterministic factual text',
+    codes(reviewerNoTextBypass).includes(CODES.TEXT_OWNERSHIP_MISMATCH));
+  let noTextBypassCompiled = true;
+  try { compileVisualPrompt(reviewerNoTextBypass); } catch { noTextBypassCompiled = false; }
+  check('compiler refuses a no_text job whose rendered-text surfaces are nonempty', !noTextBypassCompiled);
 }
 console.log(failures === 0 ? '\nvisual brief regression: PASS' : `\nvisual brief regression: FAIL (${failures})`);
 process.exit(failures ? 1 : 0);

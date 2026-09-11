@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import { readFileSync, symlinkSync, writeFileSync, mkdtempSync, rmSync } from 'node:fs';
+import { createHash } from 'node:crypto';
 import { dirname, resolve, relative } from 'node:path';
 import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
@@ -27,6 +28,19 @@ ok('verbatim V1.1 job validates without visual_production', (() => { const j = l
 { const j = load('visual-job-body-infographic-factual-repair.example.json'); const item = j.visual_production.factual_overlay.payload.items[0]; j.visual_brief.factual_invariants = ['unrelated semantic claim']; item.exact_text = 'unrelated semantic claim'; item.source_ref = 'article-claim:art:tokenized-stocks-instant-payments-liquidity-rights:unrelated-semantic-claim'; item.accessible_text = 'Unrelated semantic claim.'; j.visual_production.factual_overlay.declared_factual_invariants = ['unrelated semantic claim']; j.visual_production.factual_overlay.payload_sha256 = canonicalPayloadSha256(j.visual_production.factual_overlay.payload); j.visual_production.factual_repair.item_decisions[0].current_item_sha256 = canonicalPayloadSha256(item); ok('reviewer exact mutation: factual repair cannot replace the brief invariant and overlay with unrelated semantics', validateVisualProduction(j).some((x) => x.code === CODES.FACTUAL_REPAIR_ITEM)); }
 { const j = load('visual-job-body-infographic-factual-repair.example.json'); const item = j.visual_production.factual_overlay.payload.items[1]; item.accessible_text = 'Changed unrelated source note.'; j.visual_production.factual_overlay.payload_sha256 = canonicalPayloadSha256(j.visual_production.factual_overlay.payload); j.visual_production.factual_repair.item_decisions[1].current_item_sha256 = canonicalPayloadSha256(item); ok('KEEP overlay item must remain canonical-byte identical even if self-attested digest is recomputed', has(j, CODES.FACTUAL_REPAIR_ITEM)); }
 { const j = load('visual-job-body-infographic-factual-repair.example.json'); j.visual_production.factual_repair.item_decisions[1].decision = 'CHANGE'; ok('localized repair item decision must equal resolved review KEEP routing', has(j, CODES.FACTUAL_REPAIR_ITEM)); }
+{ const j = load('visual-job-body-infographic-factual-repair.example.json'); j.audience = { value: 'child-upper-elementary', profile_ref: 'editorial/profiles/audience/child-upper-elementary.json', traits_applied: ['concrete first-read relation'] }; ok('round-2 reviewer bypass: localized repair cannot change the prompt audience', validateVisualProduction(j).some((x) => x.code === CODES.FACTUAL_REPAIR_ITEM)); }
+{ const j = load('visual-job-body-infographic-factual-repair.example.json'); j.selected_reference_traits = { adopt: ['unrelated compositional mandate'], avoid: [], do_not_copy: [] }; ok('round-2 reviewer bypass: localized repair cannot replace selected reference traits', validateVisualProduction(j).some((x) => x.code === CODES.FACTUAL_REPAIR_ITEM)); }
+{ const scope = mkdtempSync(resolve(ROOT, '.visual-production-r2-concept-review-')); try {
+  const review = JSON.parse(readFileSync(resolve(ROOT, 'evals/visual-review/fixtures/repair/factual-overlay-change.review.json'), 'utf8'));
+  review.review_id = 'visual-review:r2-explicit-concept-failure'; review.defect_tags = ['weak_visual_thesis']; review.primary_tag = 'weak_visual_thesis'; review.failure_class = 'wrong_concept'; review.next_action = 'new_direction';
+  const reviewBytes = JSON.stringify(review); const reviewPath = resolve(scope, 'review.json'); writeFileSync(reviewPath, reviewBytes);
+  const j = load('visual-job-body-infographic-factual-repair.example.json');
+  j.audience = { value: 'child-upper-elementary', profile_ref: 'editorial/profiles/audience/child-upper-elementary.json', traits_applied: ['concrete first-read relation'] };
+  j.selected_reference_traits = { adopt: ['explicitly redirected composition'], avoid: [], do_not_copy: [] };
+  j.visual_production.factual_repair.review_ref = relative(ROOT, reviewPath); j.visual_production.factual_repair.review_sha256 = `sha256:${createHash('sha256').update(reviewBytes).digest('hex')}`; j.visual_production.factual_repair.review_id = review.review_id;
+  j.visual_production.failure_route = { failure_class: 'wrong_concept', next_action: 'new_direction' };
+  ok('explicit wrong_concept/new_direction review permits prompt-semantic change', validateVisualProduction(j).length === 0);
+} finally { rmSync(scope, { recursive: true, force: true }); } }
 { const j = load('visual-job-body-infographic-factual-repair.example.json'); j.visual_production.factual_repair.prior_production_ref = 'schemas/examples/visual-job-missing.example.json'; ok('unresolvable repair predecessor fails closed', has(j, CODES.FACTUAL_REPAIR_PREDECESSOR)); }
 { const j = load('visual-job-body-infographic-factual-repair.example.json'); j.visual_production.factual_repair.prior_production_ref = 'schemas/examples/visual-job-evidence-visual.example.json'; ok('prior without visual_production fails closed', has(j, CODES.FACTUAL_REPAIR_PREDECESSOR)); }
 { const j = load('visual-job-body-infographic-factual-repair.example.json'); j.visual_production.factual_repair.prior_production_ref = '/tmp/fabricated-prior.json'; ok('absolute predecessor path is outside repository', has(j, CODES.FACTUAL_REPAIR_PREDECESSOR_OUTSIDE)); }

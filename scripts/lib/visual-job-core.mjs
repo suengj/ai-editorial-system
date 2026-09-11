@@ -620,13 +620,33 @@ function validateBrandDepthOverride(job, brand, where) {
     'RenderSpec requests depth/spatial treatment beyond the brand depth_model without both an explicit selected reference authority trait and a human-visible brand_conflicts entry')];
 }
 
+function declaredRenderedText(job) {
+  const ownershipText = (ownership) => [
+    ...(ownership?.generative_structural_text?.items ?? []),
+    ...(ownership?.verified_generative_fact?.canonical_payload?.items ?? []).map((item) => item.exact_text),
+    ...(ownership?.deterministic_external_text?.items ?? []).map((item) => item.exact_text),
+  ];
+  return [
+    ...(job.visual_brief?.factual_invariants ?? []),
+    ...(job.render_spec?.spatial_layers?.deterministic_factual ?? []),
+    ...(job.render_spec?.text_handling?.deterministic_overlay ?? []),
+    ...ownershipText(job.visual_brief?.text_ownership),
+    ...ownershipText(job.render_spec?.text_handling?.text_ownership),
+  ].filter(isMeaningful);
+}
+
 function validateTextOwnershipAndHierarchy(job, where) {
   const issues = [];
   const brief = job.visual_brief;
   const spec = job.render_spec;
   const briefOwnership = brief?.text_ownership;
   const specOwnership = spec?.text_handling?.text_ownership;
-  const textBearing = Boolean(brief && spec && job.text_policy !== 'no_text');
+  const carriesRenderedText = declaredRenderedText(job).length > 0;
+  const textBearing = Boolean(brief && spec && (job.text_policy !== 'no_text' || carriesRenderedText));
+  if (job.text_policy === 'no_text' && carriesRenderedText) {
+    issues.push(issue(CODES.TEXT_OWNERSHIP_MISMATCH, where,
+      'text_policy no_text is contradicted by declared rendered text; no_text is valid only when every rendered-text surface is empty'));
+  }
   if (textBearing && (!briefOwnership || !specOwnership)) {
     issues.push(issue(CODES.TEXT_OWNERSHIP_MISMATCH, where,
       'text-bearing visual jobs must declare matching VisualBrief and RenderSpec text_ownership; undeclared text has no compiler fallback'));
@@ -893,9 +913,11 @@ function assemblePrompt(job, { profiles, brand, promptAdapter = 'generic-v1' } =
   const hierarchy = job.visual_brief?.information_hierarchy ?? job.render_spec?.information_hierarchy;
   const ownership = job.visual_brief?.text_ownership ?? job.render_spec?.text_handling?.text_ownership;
   const declaredItems = declaredTextItems(job);
-  const deterministicFacts = declaredItems
-    ? declaredItems.verified.map((item) => item.exact_text)
-    : job.render_spec?.spatial_layers?.deterministic_factual;
+  const deterministicFacts = job.text_policy === 'no_text'
+    ? []
+    : declaredItems
+      ? declaredItems.verified.map((item) => item.exact_text)
+      : job.render_spec?.spatial_layers?.deterministic_factual;
   const baseLines = [
     `ARTIFACT: ${profile.family ?? ''} — ${profile.primary_job ?? ''}`,
     spec.question ? `QUESTION: ${spec.question}` : null,
@@ -1100,9 +1122,21 @@ function validateFactualRepairDecisions(job, prior, review, where) {
       'factual_repair.item_decisions must cover every prior/current overlay item_id exactly once'));
   }
   const semanticFields = ['article_ref', 'artifact_profile', 'semantic_spec', 'visual_brief', 'render_spec'];
-  if (!conceptFailure && semanticFields.some((field) => !sameJSONValue(job[field], prior[field]))) {
+  const profiles = loadArtifactProfiles();
+  const promptSurface = (record) => {
+    try {
+      const adapter = record.compiled_prompt_adapter ?? 'generic-v1';
+      return { valid: true, value: `${adapter}\u0000${assemblePrompt(record, { profiles, promptAdapter: adapter })}` };
+    } catch (error) {
+      return { valid: false, value: error.message };
+    }
+  };
+  const priorPrompt = promptSurface(prior);
+  const currentPrompt = promptSurface(job);
+  const promptSurfaceChanged = !priorPrompt.valid || !currentPrompt.valid || priorPrompt.value !== currentPrompt.value;
+  if (!conceptFailure && (semanticFields.some((field) => !sameJSONValue(job[field], prior[field])) || promptSurfaceChanged)) {
     out.push(issue(CODES.FACTUAL_REPAIR_ITEM, where,
-      'localized factual repair changed article or semantic/render contract identity without a review declaring wrong_concept/new_direction'));
+      'localized factual repair changed article identity or the actual compiled-prompt surface without a review declaring wrong_concept/new_direction'));
   }
   for (const id of allIds) {
     const decision = decisionById.get(id);

@@ -1,6 +1,6 @@
 #!/usr/bin/env node
-import { readFileSync, writeFileSync, mkdirSync, mkdtempSync, rmSync } from 'node:fs'; import { createHash } from 'node:crypto'; import { spawnSync } from 'node:child_process'; import { resolve } from 'node:path'; import { tmpdir } from 'node:os';
-import { canonicalPayloadSha256 } from './lib/visual-job-core.mjs';
+import { readFileSync, writeFileSync, mkdirSync, mkdtempSync, rmSync } from 'node:fs'; import { createHash } from 'node:crypto'; import { spawnSync } from 'node:child_process'; import { relative, resolve } from 'node:path'; import { tmpdir } from 'node:os';
+import { canonicalPayloadSha256, compileVisualPrompt, validateVisualJob } from './lib/visual-job-core.mjs';
 import { REVIEW_CODES, VISUAL_FAILURE_ACTIONS, expectedVisualReviewRoute, materializeVisualSemanticNegativeReview, validateVisualFixture, validateVisualReview } from './lib/visual-review-core.mjs';
 const root=resolve(new URL('..',import.meta.url).pathname), read=p=>JSON.parse(readFileSync(resolve(root,p),'utf8')); let bad=0; const ok=(n,v,detail='')=>{console.log(`${v?'PASS':'FAIL'} ${n}${!v&&detail?' — '+detail:''}`);if(!v)bad++};
 const dims=['thesis_clarity','reading_path','narrative_composition','editorial_authorship','spatial_richness','information_hierarchy','article_fit','reference_adherence','brand_compatibility','factual_text_integrity','mobile_crop_resilience'].map(d=>({dimension:d,verdict:'pass',evidence:'observed pixel region'}));
@@ -91,6 +91,63 @@ ok('mobile review record validates',validateVisualReview(good).length===0); for(
     verified_fact_binding: { job_id: verifiedJob.job_id, job_ref: authoritativeJobRef, job_sha256: authoritativeJobSha256, render_spec_id: verifiedJob.render_spec.render_spec_id, render_spec_sha256: authoritativeRenderSpecSha256, payload_ref: verifiedPayload.payload_ref, payload_sha256: canonicalPayloadSha256({ ...verifiedPayload, claim_set: claimSet }), asset_sha256: clean.asset_sha256, required_check: 'factual' } };
   ok('verified-fact review has a durable default-validator owner-consumer binding', validateVisualReview(bound, reviewOptions).length === 0, JSON.stringify(validateVisualReview(bound, reviewOptions)));
   ok('verified-fact review binding cross-checks the supplied owner when available', validateVisualReview(bound, { ...reviewOptions, job: verifiedJob }).length === 0, JSON.stringify(validateVisualReview(bound, { ...reviewOptions, job: verifiedJob })));
+  const repeatedSourceScope = mkdtempSync(resolve(root, '.visual-review-r2-repeated-source-'));
+  try {
+    const repeatedSourceJob = JSON.parse(JSON.stringify(verifiedJob));
+    const repeatedItems = [
+      { exact_text: '41.4%', source_ref: verifiedFact.source_ref },
+      { exact_text: '18.1%', source_ref: verifiedFact.source_ref },
+    ];
+    const repeatedPayload = { payload_ref: 'payload:two-values-one-source', items: repeatedItems };
+    const repeatedPayloadSha256 = canonicalPayloadSha256({ ...repeatedPayload, claim_set: claimSet });
+    for (const owner of [repeatedSourceJob.visual_brief.text_ownership, repeatedSourceJob.render_spec.text_handling.text_ownership]) {
+      owner.verified_generative_fact.canonical_payload = { ...repeatedPayload, payload_sha256: repeatedPayloadSha256 };
+      owner.verified_generative_fact.source_lineage = [verifiedFact.source_ref];
+    }
+    repeatedSourceJob.visual_brief.factual_invariants = repeatedItems.map((item) => item.exact_text);
+    repeatedSourceJob.render_spec.spatial_layers.deterministic_factual = repeatedItems.map((item) => item.exact_text);
+    repeatedSourceJob.render_spec.text_handling.deterministic_overlay = repeatedItems.map((item) => item.exact_text);
+    repeatedSourceJob.visual_production.factual_overlay.payload.items = repeatedItems.map((item, index) => ({
+      item_id: `overlay-item:repeated-source-${index + 1}`,
+      kind: 'number',
+      exact_text: item.exact_text,
+      source_ref: item.source_ref,
+      accessible_text: item.exact_text,
+    }));
+    repeatedSourceJob.visual_production.factual_overlay.declared_factual_invariants = repeatedItems.map((item) => item.exact_text);
+    repeatedSourceJob.visual_production.factual_overlay.payload_sha256 = canonicalPayloadSha256(repeatedSourceJob.visual_production.factual_overlay.payload);
+    Object.assign(repeatedSourceJob, compileVisualPrompt(repeatedSourceJob));
+    const repeatedJobPath = resolve(repeatedSourceScope, 'authoritative-job.json');
+    writeFileSync(repeatedJobPath, JSON.stringify(repeatedSourceJob));
+    ok('round-2 two-items-one-source authoritative job is validator-clean', validateVisualJob(repeatedSourceJob).length === 0,
+      JSON.stringify(validateVisualJob(repeatedSourceJob)));
+    const repeatedBinding = {
+      ...bound.verified_fact_binding,
+      job_ref: relative(root, repeatedJobPath),
+      job_sha256: `sha256:${createHash('sha256').update(readFileSync(repeatedJobPath)).digest('hex')}`,
+      render_spec_sha256: canonicalPayloadSha256(repeatedSourceJob.render_spec),
+      payload_ref: repeatedPayload.payload_ref,
+      payload_sha256: repeatedPayloadSha256,
+    };
+    const omittedItem = JSON.parse(JSON.stringify({ ...bound, verified_fact_binding: repeatedBinding }));
+    omittedItem.post_render_checks.checks.find((check) => check.check === 'factual').observed_text_items = [
+      { source_ref: verifiedFact.source_ref, declared_text: '18.1%', observed_text: '18.1%' },
+    ];
+    ok('round-2 reviewer bypass: PASS cannot omit one of two declared items sharing a source',
+      validateVisualReview(omittedItem, reviewOptions).some((entry) => entry.code === REVIEW_CODES.OBSERVED_TEXT_REQUIRED),
+      JSON.stringify(validateVisualReview(omittedItem, reviewOptions)));
+    const duplicatedItem = JSON.parse(JSON.stringify(omittedItem));
+    duplicatedItem.post_render_checks.checks.find((check) => check.check === 'factual').observed_text_items = [
+      { source_ref: verifiedFact.source_ref, declared_text: '41.4%', observed_text: '41.4%' },
+      { source_ref: verifiedFact.source_ref, declared_text: '18.1%', observed_text: '18.1%' },
+      { source_ref: verifiedFact.source_ref, declared_text: '18.1%', observed_text: '18.1%' },
+    ];
+    ok('round-2 duplicated observed payload item is rejected per item rather than per source',
+      validateVisualReview(duplicatedItem, reviewOptions).some((entry) => entry.code === REVIEW_CODES.OBSERVED_TEXT_BINDING),
+      JSON.stringify(validateVisualReview(duplicatedItem, reviewOptions)));
+  } finally {
+    rmSync(repeatedSourceScope, { recursive: true, force: true });
+  }
   const reviewerObservedOnlyInProse = JSON.parse(JSON.stringify(bound));
   const reviewerFactual = reviewerObservedOnlyInProse.post_render_checks.checks.find((check) => check.check === 'factual');
   delete reviewerFactual.observed_text_items;
