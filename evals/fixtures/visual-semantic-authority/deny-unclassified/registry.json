@@ -7,7 +7,7 @@
       "schema_source": "evals/fixtures/visual-semantic-authority/deny-unclassified/schema.json",
       "schema_pointer": "/properties/caption",
       "node_kind": "scalar",
-      "shape_sha256": "sha256:9ac136edb99a2063b3091602181c8d2022fdccb5b514991319d58544c2e57e95",
+      "shape_sha256": "sha256:666d9e6f04c7f81db2e4ef5c3f77205cfe68857e0d9c61645110e95c94bfaa58",
       "rendered_text": "deterministic_external_text",
       "prompt_semantics": "prompt_input",
       "localized_repair": "protected",

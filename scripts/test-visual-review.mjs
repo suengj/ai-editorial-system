@@ -125,6 +125,7 @@ ok('mobile review record validates',validateVisualReview(good).length===0); for(
       source_ref: item.source_ref,
       accessible_text: item.exact_text,
     }));
+    repeatedSourceJob.visual_production.factual_overlay.accessible_text_equivalent = repeatedItems.map((item) => item.exact_text).join(' ');
     repeatedSourceJob.visual_production.factual_overlay.declared_factual_invariants = repeatedItems.map((item) => item.exact_text);
     repeatedSourceJob.visual_production.factual_overlay.payload_sha256 = canonicalPayloadSha256(repeatedSourceJob.visual_production.factual_overlay.payload);
     Object.assign(repeatedSourceJob, compileVisualPrompt(repeatedSourceJob));

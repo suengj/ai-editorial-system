@@ -89,8 +89,18 @@ function structuralShape(node, root, pointer, refStack = []) {
   return out;
 }
 
-export function structuralSchemaDigest(node, root, pointer = '/') {
-  return sha256(canonicalJSON(structuralShape(node, root, pointer)));
+export function structuralSchemaDigest(node, root, pointer = '/', {
+  refStack = [],
+  containerNode,
+  containerPointer = '/',
+  containerRefStack = [],
+} = {}) {
+  return sha256(canonicalJSON({
+    property: structuralShape(node, root, pointer, refStack),
+    container: containerNode === undefined
+      ? null
+      : structuralShape(containerNode, root, containerPointer, containerRefStack),
+  }));
 }
 
 function nodeKind(node, root, pointer, refStack = []) {
@@ -148,7 +158,12 @@ export function buildSchemaFieldInventory(schemaMounts = VISUAL_SCHEMA_MOUNTS) {
         schema_source: source,
         schema_pointer: propertyPointer,
         node_kind: kind,
-        shape_sha256: structuralSchemaDigest(property, root, propertyPointer),
+        shape_sha256: structuralSchemaDigest(property, root, propertyPointer, {
+          refStack: resolved.refStack,
+          containerNode: rawNode,
+          containerPointer: schemaPointer,
+          containerRefStack: refStack,
+        }),
       });
       const child = resolveNode(property, root, propertyPointer, resolved.refStack);
       if (kind === 'object') {
@@ -184,6 +199,14 @@ function contextKey(schemaMounts, registry, committedDigestKey) {
 
 let committedCache;
 const validatedAuthorities = new WeakSet();
+const authorityRegistryIndexes = new WeakMap();
+
+function deepFreeze(value, seen = new WeakSet()) {
+  if (value === null || typeof value !== 'object' || seen.has(value)) return value;
+  seen.add(value);
+  for (const child of Object.values(value)) deepFreeze(child, seen);
+  return Object.freeze(value);
+}
 
 export function loadVisualSemanticAuthorityContext() {
   const schemaMounts = VISUAL_SCHEMA_MOUNTS.map((entry) => {
@@ -250,8 +273,12 @@ export function validateVisualSemanticAuthority(authorityContext) {
   for (const entry of registry?.fields ?? []) {
     if (!inventoryByPath.has(entry.path)) issues.push(issue(AUTHORITY_CODES.ORPHANED_FIELD, `registry path ${entry.path} has no reachable schema property`, entry.path));
   }
-  const value = { ok: issues.length === 0, issues, inventory, registry, registryByPath, schemaMounts };
-  if (value.ok) validatedAuthorities.add(value);
+  const value = { ok: issues.length === 0, issues, inventory, registry, schemaMounts };
+  if (value.ok) {
+    deepFreeze(value);
+    validatedAuthorities.add(value);
+    authorityRegistryIndexes.set(value, registryByPath);
+  }
   if (value.ok && isCommitted) committedCache = { key, value };
   return value;
 }
@@ -259,6 +286,13 @@ export function validateVisualSemanticAuthority(authorityContext) {
 export function requireVisualSemanticAuthority(authorityContext) {
   if (authorityContext && validatedAuthorities.has(authorityContext)) return authorityContext;
   const result = validateVisualSemanticAuthority(authorityContext);
+  if (!result.ok) throw new VisualSemanticAuthorityError(result.issues);
+  return result;
+}
+
+/** Production trust root: no caller-supplied schema or registry is accepted. */
+export function requireCommittedVisualSemanticAuthority() {
+  const result = validateVisualSemanticAuthority();
   if (!result.ok) throw new VisualSemanticAuthorityError(result.issues);
   return result;
 }
@@ -320,9 +354,10 @@ function presentAtPath(record, path) {
 
 export function createPromptInputReader(job, validatedAuthority) {
   const authority = requireVisualSemanticAuthority(validatedAuthority);
+  const registryByPath = authorityRegistryIndexes.get(authority);
   const consumed = new Set();
   function entryFor(path) {
-    const entry = authority.registryByPath.get(path);
+    const entry = registryByPath?.get(path);
     if (!entry || entry.prompt_semantics !== 'prompt_input') {
       throw new VisualSemanticAuthorityError([issue(AUTHORITY_CODES.REGISTRY_INVALID, `prompt assembler attempted to read unclassified input ${path}`, path)]);
     }

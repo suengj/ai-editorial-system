@@ -21,6 +21,15 @@ const assertRepairDrift = (name, mutate) => {
     productionCodes.includes(CODES.FACTUAL_REPAIR_ITEM) && jobCodes.includes(CODES.FACTUAL_REPAIR_ITEM),
     `production=${productionCodes.join(',')} job=${jobCodes.join(',')}`);
 };
+const assertRepairDerivedOutput = (name, mutate, expectedCode) => {
+  const j = repairBase();
+  mutate(j, base());
+  const productionCodes = validateVisualProduction(j).map((entry) => entry.code);
+  const jobCodes = validateVisualJob(j).map((entry) => entry.code);
+  ok(`${name} fails ${expectedCode} through validateVisualProduction and validateVisualJob`,
+    productionCodes.includes(expectedCode) && jobCodes.includes(expectedCode),
+    `production=${productionCodes.join(',')} job=${jobCodes.join(',')}`);
+};
 ok('production example validates', validateVisualJob(base()).length === 0);
 ok('verbatim pre-existing locked V1 validates without telemetry', (() => { const j = load('visual-job-approved-format-derivative.example.json'); return !('visual_production' in j) && validateVisualJob(j).length === 0; })());
 ok('verbatim V1.1 job validates without visual_production', (() => { const j = load('visual-job-body-infographic-v2.example.json'); delete j.visual_production; j.schema_version = '1.1.0'; return validateVisualJob(j).length === 0; })());
@@ -33,6 +42,16 @@ ok('verbatim V1.1 job validates without visual_production', (() => { const j = l
 { const j = base(); const item = j.visual_production.factual_overlay.payload.items[0]; item.source_ref = 'article-claim:art:completely-different-article:liquidity-window'; j.visual_production.factual_overlay.payload_sha256 = canonicalPayloadSha256(j.visual_production.factual_overlay.payload); ok('article-claim convention must bind source_ref to the job article identity', has(j, CODES.OVERLAY_ARTICLE_MISMATCH)); }
 { const j = base(); const item = j.visual_production.factual_overlay.payload.items[0]; item.source_ref = ''; j.visual_production.factual_overlay.payload_sha256 = canonicalPayloadSha256(j.visual_production.factual_overlay.payload); ok('factual overlay source_ref remains mechanically required to be non-empty', validateVisualProduction(j).some((x) => x.code === CODES.PRODUCTION_SCHEMA)); }
 { const j = load('visual-job-body-infographic-factual-repair.example.json'); ok('walked factual-repair predecessor validates', validateVisualJob(j).length === 0); }
+assertRepairDerivedOutput('arbitrary factual_overlay.accessible_text_equivalent',
+  (j) => { j.visual_production.factual_overlay.accessible_text_equivalent = 'UNRELATED SEMANTIC CLAIM'; }, CODES.OVERLAY_PAYLOAD);
+assertRepairDerivedOutput('reused predecessor factual_overlay.overlay_id',
+  (j, prior) => { j.visual_production.factual_overlay.overlay_id = prior.visual_production.factual_overlay.overlay_id; }, CODES.FACTUAL_REPAIR);
+assertRepairDerivedOutput('reused predecessor factual_overlay.asset_ref',
+  (j, prior) => { j.visual_production.factual_overlay.asset_ref = prior.visual_production.factual_overlay.asset_ref; }, CODES.FACTUAL_REPAIR);
+assertRepairDerivedOutput('reused predecessor publication_composite.composite_id',
+  (j, prior) => { j.visual_production.publication_composite.composite_id = prior.visual_production.publication_composite.composite_id; }, CODES.FACTUAL_REPAIR);
+assertRepairDerivedOutput('reused predecessor publication_composite.asset_ref',
+  (j, prior) => { j.visual_production.publication_composite.asset_ref = prior.visual_production.publication_composite.asset_ref; }, CODES.FACTUAL_REPAIR);
 { const j = load('visual-job-body-infographic-factual-repair.example.json'); j.visual_production.semantic_master.asset_sha256 = 'sha256:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff'; ok('reviewer self-attested replacement master fails resolved predecessor check', has(j, CODES.FACTUAL_REPAIR)); }
 { const j = load('visual-job-body-infographic-factual-repair.example.json'); j.visual_production.factual_overlay.asset_sha256 = 'sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb'; j.visual_production.publication_composite.factual_overlay_asset_sha256 = j.visual_production.factual_overlay.asset_sha256; ok('reviewer phantom prior overlay fails resolved predecessor check', has(j, CODES.FACTUAL_REPAIR)); }
 { const j = load('visual-job-body-infographic-factual-repair.example.json'); const item = j.visual_production.factual_overlay.payload.items[0]; j.visual_brief.factual_invariants = ['unrelated semantic claim']; item.exact_text = 'unrelated semantic claim'; item.source_ref = 'article-claim:art:tokenized-stocks-instant-payments-liquidity-rights:unrelated-semantic-claim'; item.accessible_text = 'Unrelated semantic claim.'; j.visual_production.factual_overlay.declared_factual_invariants = ['unrelated semantic claim']; j.visual_production.factual_overlay.payload_sha256 = canonicalPayloadSha256(j.visual_production.factual_overlay.payload); j.visual_production.factual_repair.item_decisions[0].current_item_sha256 = canonicalPayloadSha256(item); ok('reviewer exact mutation: factual repair cannot replace the brief invariant and overlay with unrelated semantics', validateVisualProduction(j).some((x) => x.code === CODES.FACTUAL_REPAIR_ITEM)); }

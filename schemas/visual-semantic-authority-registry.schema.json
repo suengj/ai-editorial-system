@@ -31,7 +31,11 @@
           "schema_source": { "type": "string", "minLength": 1 },
           "schema_pointer": { "type": "string", "pattern": "^/(?:[^/]|~0|~1)+(?:/(?:[^/]|~0|~1)+)*$" },
           "node_kind": { "enum": ["object", "object_array", "scalar", "scalar_array"] },
-          "shape_sha256": { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$" },
+          "shape_sha256": {
+            "type": "string",
+            "pattern": "^sha256:[a-f0-9]{64}$",
+            "description": "Digest of the property structural shape together with its containing object's structural keywords."
+          },
           "rendered_text": { "enum": ["none", "generative_structural_text", "verified_generative_fact", "deterministic_external_text"] },
           "prompt_semantics": { "enum": ["none", "prompt_input", "semantic_authority"] },
           "localized_repair": { "enum": ["protected", "decision_gated", "derived_output", "repair_evidence", "new_record_identity"] },

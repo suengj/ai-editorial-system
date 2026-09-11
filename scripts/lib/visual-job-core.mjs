@@ -26,6 +26,7 @@ import {
   decisionGatedProjection,
   protectedProjection,
   repairEnvelopeProjection,
+  requireCommittedVisualSemanticAuthority,
   requireVisualSemanticAuthority,
   sameCanonicalProjection,
 } from './visual-semantic-authority-core.mjs';
@@ -1092,10 +1093,10 @@ function parseArticleClaimSourceRef(sourceRef) {
   return match ? { article_id: match[1], claim_id: match[2] } : null;
 }
 
-export function validateVisualContract(job, { brand, profiles = loadArtifactProfiles(), referenceContext, authorityContext, validatedAuthority } = {}, where = job?.job_id ?? '<job>') {
-  let authority = validatedAuthority;
+function validateVisualContractWithAuthority(job, { brand, profiles = loadArtifactProfiles(), referenceContext, validatedAuthority } = {}, where = job?.job_id ?? '<job>') {
+  let authority;
   try {
-    authority = requireVisualSemanticAuthority(authority ?? authorityContext);
+    authority = requireVisualSemanticAuthority(validatedAuthority);
   } catch (error) {
     if (error instanceof VisualSemanticAuthorityError) return error.issues.map((entry) => issue(entry.code, where, entry.message));
     throw error;
@@ -1161,6 +1162,21 @@ export function validateVisualContract(job, { brand, profiles = loadArtifactProf
     }
   }
   return issues;
+}
+
+export function validateVisualContract(job, options = {}, where = job?.job_id ?? '<job>') {
+  if (options.authorityContext !== undefined || options.validatedAuthority !== undefined) {
+    return [issue(CODES.VISUAL_SEMANTIC_AUTHORITY_REGISTRY_INVALID, where,
+      'caller-supplied visual semantic authority is test-only and cannot be used by a production validator')];
+  }
+  let validatedAuthority;
+  try {
+    validatedAuthority = requireCommittedVisualSemanticAuthority();
+  } catch (error) {
+    if (error instanceof VisualSemanticAuthorityError) return error.issues.map((entry) => issue(entry.code, where, entry.message));
+    throw error;
+  }
+  return validateVisualContractWithAuthority(job, { ...options, validatedAuthority }, where);
 }
 
 /** SUE-645/648 control-plane validation; never replaces the approval lock. */
@@ -1277,24 +1293,23 @@ function validateFactualRepairDecisions(job, prior, review, where, validatedAuth
   return out;
 }
 
-export function validateVisualProduction(job, where = job?.job_id ?? '<job>', referenceContext = {}, repairState = { chain: new Set(), depth: 0 }, authorityContext) {
-  let validatedAuthority;
-  try {
-    validatedAuthority = requireVisualSemanticAuthority(authorityContext);
-  } catch (error) {
-    if (error instanceof VisualSemanticAuthorityError) return error.issues.map((entry) => issue(entry.code, where, entry.message));
-    throw error;
-  }
+function validateVisualProductionWithAuthority(job, where = job?.job_id ?? '<job>', referenceContext = {}, repairState = { chain: new Set(), depth: 0 }, validatedAuthority) {
+  const authority = requireVisualSemanticAuthority(validatedAuthority);
   const production = job?.visual_production;
   if (!production) return [];
   const out = [];
-  for (const e of validate(production, authoritySchemaAtMount(validatedAuthority, '/visual_production'))) out.push(issue(CODES.PRODUCTION_SCHEMA, where, `${e.path}: ${e.message}`));
+  for (const e of validate(production, authoritySchemaAtMount(authority, '/visual_production'))) out.push(issue(CODES.PRODUCTION_SCHEMA, where, `${e.path}: ${e.message}`));
   if (out.length) return out;
   const { semantic_master: master, factual_overlay: overlay, publication_composite: composite, factual_repair: repair, direction_discovery: discovery, production_refinement: refinement, failure_route: route, telemetry } = production;
   const complete = [master, overlay, composite].filter(Boolean).length;
   if (complete !== 0 && complete !== 3) out.push(issue(CODES.PRODUCTION_LINEAGE, where, 'semantic_master, factual_overlay, and publication_composite must be present together'));
   if (complete === 3) {
     if (overlay.payload_sha256 !== canonicalPayloadSha256(overlay.payload) || composite.semantic_master_sha256 !== master.asset_sha256 || composite.factual_overlay_asset_sha256 !== overlay.asset_sha256 || composite.requires_owner_gate !== (job.requires_owner_gate ?? false) || master.render_spec_id !== job.render_spec?.render_spec_id || master.selected_direction_id !== discovery.selection.selected_direction_id) out.push(issue(CODES.OVERLAY_PAYLOAD, where, 'overlay payload, master, or composite lineage does not match declared independent sources'));
+    const derivedAccessibleText = (overlay.payload.items ?? []).map((item) => item.accessible_text).join(' ');
+    if (overlay.accessible_text_equivalent !== derivedAccessibleText) {
+      out.push(issue(CODES.OVERLAY_PAYLOAD, where,
+        'factual_overlay.accessible_text_equivalent must equal the ordered payload item accessible_text values joined by one space'));
+    }
     if (!sameJSONValue(master.renderer_lineage, job.renderer)) {
       out.push(issue(CODES.PRODUCTION_RUNTIME_LINEAGE, where, 'semantic_master.renderer_lineage must equal the job renderer runtime lineage'));
     }
@@ -1328,11 +1343,21 @@ export function validateVisualProduction(job, where = job?.job_id ?? '<job>', re
         prior = undefined;
       }
       if (prior) {
-        const priorIssues = validateVisualJobRecord(prior, { referenceContext, authorityContext: validatedAuthority }, { chain: new Set([...repairState.chain, priorRealPath]), depth: repairState.depth + 1 });
+        const priorIssues = validateVisualJobRecord(prior, { referenceContext, validatedAuthority: authority }, { chain: new Set([...repairState.chain, priorRealPath]), depth: repairState.depth + 1 });
         out.push(...priorIssues.map((x) => issue(x.code, `${where} -> ${repair.prior_production_ref}`, `predecessor: ${x.message}`)));
         const priorProduction = prior.visual_production;
         if (master.asset_sha256 !== priorProduction.semantic_master.asset_sha256 || overlay.asset_sha256 === priorProduction.factual_overlay.asset_sha256 || composite.asset_sha256 === priorProduction.publication_composite.asset_sha256) out.push(issue(CODES.FACTUAL_REPAIR, where, 'a factual-overlay repair must preserve resolved prior master digest and replace resolved prior overlay and composite digests'));
-        if (repairReview) out.push(...validateFactualRepairDecisions(job, prior, repairReview, where, validatedAuthority));
+        const reusedDerivedIdentity = [
+          ['factual_overlay.overlay_id', overlay.overlay_id, priorProduction.factual_overlay.overlay_id],
+          ['factual_overlay.asset_ref', overlay.asset_ref, priorProduction.factual_overlay.asset_ref],
+          ['publication_composite.composite_id', composite.composite_id, priorProduction.publication_composite.composite_id],
+          ['publication_composite.asset_ref', composite.asset_ref, priorProduction.publication_composite.asset_ref],
+        ].filter(([, current, previous]) => current === previous).map(([path]) => path);
+        if (reusedDerivedIdentity.length > 0) {
+          out.push(issue(CODES.FACTUAL_REPAIR, where,
+            `a factual-overlay repair must assign new derived identities and asset refs; reused predecessor fields: ${reusedDerivedIdentity.join(', ')}`));
+        }
+        if (repairReview) out.push(...validateFactualRepairDecisions(job, prior, repairReview, where, authority));
       }
   }
   } else if (repair) out.push(issue(CODES.FACTUAL_REPAIR, where, 'factual_repair requires complete master/overlay/composite lineage'));
@@ -1368,23 +1393,40 @@ export function validateVisualProduction(job, where = job?.job_id ?? '<job>', re
   return out;
 }
 
+export function validateVisualProduction(job, where = job?.job_id ?? '<job>', referenceContext = {}, repairState = { chain: new Set(), depth: 0 }, authorityContext) {
+  if (authorityContext !== undefined) {
+    return [issue(CODES.VISUAL_SEMANTIC_AUTHORITY_REGISTRY_INVALID, where,
+      'caller-supplied visual semantic authority is test-only and cannot be used by a production validator')];
+  }
+  let validatedAuthority;
+  try {
+    validatedAuthority = requireCommittedVisualSemanticAuthority();
+  } catch (error) {
+    if (error instanceof VisualSemanticAuthorityError) return error.issues.map((entry) => issue(entry.code, where, entry.message));
+    throw error;
+  }
+  return validateVisualProductionWithAuthority(job, where, referenceContext, repairState, validatedAuthority);
+}
+
 /** Validate a compiled visual job. Returns an array of issues; empty means PASS. */
-function validateVisualJobRecord(job, { schema, profiles = loadArtifactProfiles(), brand, referenceContext, authorityContext } = {}, repairState = { chain: new Set(), depth: 0 }) {
+function validateVisualJobRecord(job, { schema, profiles = loadArtifactProfiles(), brand, referenceContext, validatedAuthority } = {}, repairState = { chain: new Set(), depth: 0 }) {
   const issues = [];
   const where = job?.job_id ?? '<job>';
 
-  let validatedAuthority;
+  let authority;
   try {
-    validatedAuthority = requireVisualSemanticAuthority(authorityContext);
+    authority = validatedAuthority === undefined
+      ? requireCommittedVisualSemanticAuthority()
+      : requireVisualSemanticAuthority(validatedAuthority);
   } catch (error) {
     if (error instanceof VisualSemanticAuthorityError) return error.issues.map((entry) => issue(entry.code, where, entry.message));
     throw error;
   }
 
-  const mountedJobSchema = authoritySchemaAtMount(validatedAuthority, '/');
+  const mountedJobSchema = authoritySchemaAtMount(authority, '/');
   if (schema !== undefined && !sameJSONValue(schema, mountedJobSchema)) {
     return [issue(CODES.VISUAL_SEMANTIC_AUTHORITY_SHAPE_MISMATCH, where,
-      'options.schema differs from the Visual Job schema in authorityContext; schema injection must use the single authorityContext dependency')];
+      'options.schema differs from the committed Visual Job schema; production schema authority cannot be replaced independently')];
   }
   const effectiveSchema = schema ?? mountedJobSchema;
 
@@ -1409,7 +1451,7 @@ function validateVisualJobRecord(job, { schema, profiles = loadArtifactProfiles(
   }
 
   // PR A checks are additive. They never replace approvalLockIssues below.
-  issues.push(...validateVisualContract(job, { brand: resolvedBrand, profiles, referenceContext, validatedAuthority }, where));
+  issues.push(...validateVisualContractWithAuthority(job, { brand: resolvedBrand, profiles, referenceContext, validatedAuthority: authority }, where));
   issues.push(...validateVerifiedFactTerminalReview(job, where));
 
   if (!job.article_ref && !job.package_ref) {
@@ -1481,7 +1523,7 @@ function validateVisualJobRecord(job, { schema, profiles = loadArtifactProfiles(
   }
 
   issues.push(...approvalLockIssues(job, where));
-  issues.push(...validateVisualProduction(job, where, referenceContext, repairState, validatedAuthority));
+  issues.push(...validateVisualProductionWithAuthority(job, where, referenceContext, repairState, authority));
 
   if (job.information_gain?.verdict === 'skip') {
     if (job.compiled_prompt !== undefined || (job.compiled_from ?? []).length > 0) {
@@ -1542,7 +1584,24 @@ function validateVisualJobRecord(job, { schema, profiles = loadArtifactProfiles(
 }
 
 export function validateVisualJob(job, options = {}) {
+  if (options.authorityContext !== undefined || options.validatedAuthority !== undefined) {
+    return [issue(CODES.VISUAL_SEMANTIC_AUTHORITY_REGISTRY_INVALID, job?.job_id ?? '<job>',
+      'caller-supplied visual semantic authority is test-only and cannot be used by a production validator')];
+  }
   return validateVisualJobRecord(job, options, options.repairState ?? { chain: new Set(), depth: 0 });
+}
+
+/** Explicit injection seam for registry tests; production callers must use validateVisualJob(). */
+export function validateVisualJobWithAuthorityForTests(job, authorityContext, options = {}) {
+  try {
+    const validatedAuthority = requireVisualSemanticAuthority(authorityContext);
+    return validateVisualJobRecord(job, { ...options, validatedAuthority }, options.repairState ?? { chain: new Set(), depth: 0 });
+  } catch (error) {
+    if (error instanceof VisualSemanticAuthorityError) {
+      return error.issues.map((entry) => issue(entry.code, job?.job_id ?? '<job>', entry.message));
+    }
+    throw error;
+  }
 }
 
 export function validateVisualJobFile(path, options = {}) {
@@ -1559,8 +1618,8 @@ export function validateVisualJobFile(path, options = {}) {
  * Deterministic, model-free prompt assembly from declared inputs only.
  * No network call, no LLM call — pure string composition.
  */
-export function compileVisualPrompt(job, { profiles = loadArtifactProfiles(), brand, promptAdapter = 'generic-v1', authorityContext } = {}) {
-  const validatedAuthority = requireVisualSemanticAuthority(authorityContext);
+function compileVisualPromptWithAuthority(job, { profiles = loadArtifactProfiles(), brand, promptAdapter = 'generic-v1' } = {}, validatedAuthority) {
+  const authority = requireVisualSemanticAuthority(validatedAuthority);
   // The approval lock is enforced here as well as in the validator: a sealed
   // job must not be able to obtain a fresh generation prompt by calling the
   // compiler directly and validating afterwards.
@@ -1587,7 +1646,7 @@ export function compileVisualPrompt(job, { profiles = loadArtifactProfiles(), br
   // An unresolvable brand throws here rather than silently compiling against
   // suengj.com's tokens under a different brand's name.
   const resolvedBrand = brand ?? resolveBrandProfile(job.brand_profile, job.brand_profile_version);
-  const visualContractIssues = validateVisualContract(job, { brand: resolvedBrand, profiles, validatedAuthority });
+  const visualContractIssues = validateVisualContractWithAuthority(job, { brand: resolvedBrand, profiles, validatedAuthority: authority });
   if (visualContractIssues.length > 0) {
     const authorityIssues = visualContractIssues.filter((entry) => Object.values(AUTHORITY_CODES).includes(entry.code));
     if (authorityIssues.length > 0) {
@@ -1600,7 +1659,7 @@ export function compileVisualPrompt(job, { profiles = loadArtifactProfiles(), br
   if (!SUPPORTED_PROMPT_ADAPTERS.includes(promptAdapter)) {
     throw new Error(`unknown prompt adapter: ${promptAdapter}`);
   }
-  const compiled_prompt = assemblePrompt(job, { profiles, brand: resolvedBrand, promptAdapter, validatedAuthority });
+  const compiled_prompt = assemblePrompt(job, { profiles, brand: resolvedBrand, promptAdapter, validatedAuthority: authority });
 
   // compiled_from records the brand actually loaded (resolvedBrand.brand /
   // .profile_version), never job.brand_profile verbatim — the two agree
@@ -1616,4 +1675,20 @@ export function compileVisualPrompt(job, { profiles = loadArtifactProfiles(), br
   ].filter(Boolean);
 
   return { compiled_prompt, compiled_from, compiled_prompt_adapter: promptAdapter };
+}
+
+export function compileVisualPrompt(job, options = {}) {
+  if (options.authorityContext !== undefined || options.validatedAuthority !== undefined) {
+    throw new VisualSemanticAuthorityError([{
+      code: CODES.VISUAL_SEMANTIC_AUTHORITY_REGISTRY_INVALID,
+      path: '/',
+      message: 'caller-supplied visual semantic authority is test-only and cannot be used by the production compiler',
+    }]);
+  }
+  return compileVisualPromptWithAuthority(job, options, requireCommittedVisualSemanticAuthority());
+}
+
+/** Explicit injection seam for registry tests; production callers must use compileVisualPrompt(). */
+export function compileVisualPromptWithAuthorityForTests(job, authorityContext, options = {}) {
+  return compileVisualPromptWithAuthority(job, options, requireVisualSemanticAuthority(authorityContext));
 }

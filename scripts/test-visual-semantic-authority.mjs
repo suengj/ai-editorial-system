@@ -2,7 +2,14 @@
 import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { CODES, compileVisualPrompt, validateVisualJob } from './lib/visual-job-core.mjs';
+import {
+  CODES,
+  compileVisualPrompt,
+  compileVisualPromptWithAuthorityForTests,
+  validateVisualJob,
+  validateVisualJobWithAuthorityForTests,
+  validateVisualProduction,
+} from './lib/visual-job-core.mjs';
 import {
   AUTHORITY_CODES,
   VISUAL_SCHEMA_MOUNTS,
@@ -107,8 +114,19 @@ for (const [name, mutate, code] of [
   const job = read('schemas/examples/visual-job-body-infographic-v2.example.json');
   job.future_root_surface = 'unregistered';
   const result = validateVisualJob(job, { schema });
-  check(`legacy independent schema injection cannot bypass authorityContext: ${AUTHORITY_CODES.SHAPE_MISMATCH}`,
+  check(`legacy independent schema injection cannot bypass committed authority: ${AUTHORITY_CODES.SHAPE_MISMATCH}`,
     result.some((entry) => entry.code === AUTHORITY_CODES.SHAPE_MISMATCH), JSON.stringify(result));
+}
+
+for (const [name, mutate, code] of [
+  ['root required relaxation', (context) => { context.schemaMounts.find((entry) => entry.mount === '/').schema.required.pop(); }, AUTHORITY_CODES.SHAPE_MISMATCH],
+  ['nested required relaxation', (context) => { context.schemaMounts.find((entry) => entry.mount === '/').schema.$defs.audience.required.pop(); }, AUTHORITY_CODES.SHAPE_MISMATCH],
+  ['nested additionalProperties relaxation', (context) => { context.schemaMounts.find((entry) => entry.mount === '/').schema.$defs.audience.additionalProperties = true; }, AUTHORITY_CODES.REGISTRY_INVALID],
+]) {
+  const context = clone(loadVisualSemanticAuthorityContext());
+  mutate(context);
+  const result = validateVisualSemanticAuthority(context);
+  check(`${name} fails named code ${code}`, codes(result).includes(code), JSON.stringify(result.issues));
 }
 
 for (const [name, mutate] of [
@@ -138,13 +156,13 @@ for (const [name, mutate] of [
   check('synthetic-new-field public-path baseline is validator-clean', validateVisualJob(baseline).length === 0);
   const job = clone(baseline);
   job.render_spec.spatial_layers.future_surface = ['future literal surface'];
-  const validationCodes = validateVisualJob(job, { authorityContext: context }).map((entry) => entry.code);
-  check(`validateVisualJob fails closed on a synthetic new field with ${AUTHORITY_CODES.UNCLASSIFIED_FIELD}`,
+  const validationCodes = validateVisualJobWithAuthorityForTests(job, context).map((entry) => entry.code);
+  check(`test-only injected validator fails closed on a synthetic new field with ${AUTHORITY_CODES.UNCLASSIFIED_FIELD}`,
     validationCodes.includes(AUTHORITY_CODES.UNCLASSIFIED_FIELD), validationCodes.join(', '));
   let compileError;
   let compiled;
-  try { compiled = compileVisualPrompt(job, { authorityContext: context }); } catch (error) { compileError = error; }
-  check(`compileVisualPrompt fails closed before output with ${AUTHORITY_CODES.UNCLASSIFIED_FIELD}`,
+  try { compiled = compileVisualPromptWithAuthorityForTests(job, context); } catch (error) { compileError = error; }
+  check(`test-only injected compiler fails closed before output with ${AUTHORITY_CODES.UNCLASSIFIED_FIELD}`,
     compiled === undefined && compileError instanceof VisualSemanticAuthorityError && compileError.code === AUTHORITY_CODES.UNCLASSIFIED_FIELD,
     compileError?.message);
 
@@ -158,15 +176,54 @@ for (const [name, mutate] of [
   });
   check('synthetic matching registry entry is structurally valid', validateVisualSemanticAuthority(context).ok,
     JSON.stringify(validateVisualSemanticAuthority(context).issues));
-  const unreadValidationCodes = validateVisualJob(job, { authorityContext: context }).map((entry) => entry.code);
-  check(`validateVisualJob reports present but unread prompt input as ${AUTHORITY_CODES.PROMPT_UNCONSUMED}`,
+  const unreadValidationCodes = validateVisualJobWithAuthorityForTests(job, context).map((entry) => entry.code);
+  check(`test-only injected validator reports present but unread prompt input as ${AUTHORITY_CODES.PROMPT_UNCONSUMED}`,
     unreadValidationCodes.includes(AUTHORITY_CODES.PROMPT_UNCONSUMED), unreadValidationCodes.join(', '));
   compileError = undefined;
   compiled = undefined;
-  try { compiled = compileVisualPrompt(job, { authorityContext: context }); } catch (error) { compileError = error; }
+  try { compiled = compileVisualPromptWithAuthorityForTests(job, context); } catch (error) { compileError = error; }
   check(`present but unread prompt input fails ${AUTHORITY_CODES.PROMPT_UNCONSUMED}`,
     compiled === undefined && compileError instanceof VisualSemanticAuthorityError && compileError.code === AUTHORITY_CODES.PROMPT_UNCONSUMED,
     compileError?.message);
+}
+
+{
+  const job = textFreeV2();
+  job.render_spec.spatial_layers.generative_semantic = ['41.4%'];
+  const supplied = clone(loadVisualSemanticAuthorityContext());
+  supplied.registry.fields.find((entry) => entry.path === '/render_spec/spatial_layers/generative_semantic').rendered_text = 'none';
+  const suppliedValidation = validateVisualSemanticAuthority(supplied);
+  check('substituted internally consistent registry remains valid only as a test fixture', suppliedValidation.ok,
+    JSON.stringify(suppliedValidation.issues));
+  const validationCodes = validateVisualJob(job, { authorityContext: supplied }).map((entry) => entry.code);
+  check(`production validateVisualJob rejects substituted registry authority with ${AUTHORITY_CODES.REGISTRY_INVALID}`,
+    validationCodes.includes(AUTHORITY_CODES.REGISTRY_INVALID), validationCodes.join(', '));
+  const productionCodes = validateVisualProduction(job, job.job_id, {}, { chain: new Set(), depth: 0 }, supplied).map((entry) => entry.code);
+  check(`production validateVisualProduction rejects substituted registry authority with ${AUTHORITY_CODES.REGISTRY_INVALID}`,
+    productionCodes.includes(AUTHORITY_CODES.REGISTRY_INVALID), productionCodes.join(', '));
+  let compiled;
+  let compileError;
+  try { compiled = compileVisualPrompt(job, { authorityContext: supplied }); } catch (error) { compileError = error; }
+  check(`production compiler rejects substituted registry before emitting 41.4% with ${AUTHORITY_CODES.REGISTRY_INVALID}`,
+    compiled === undefined && compileError instanceof VisualSemanticAuthorityError && compileError.code === AUTHORITY_CODES.REGISTRY_INVALID,
+    compileError?.message);
+}
+
+{
+  const job = textFreeV2();
+  job.render_spec.spatial_layers.generative_semantic = ['41.4%'];
+  const context = clone(loadVisualSemanticAuthorityContext());
+  const validated = validateVisualSemanticAuthority(context);
+  const entry = validated.registry.fields.find((field) => field.path === '/render_spec/spatial_layers/generative_semantic');
+  const mutationApplied = Reflect.set(entry, 'rendered_text', 'none');
+  let compiled;
+  let compileError;
+  try { compiled = compileVisualPromptWithAuthorityForTests(job, validated); } catch (error) { compileError = error; }
+  check(`post-validation mutation is blocked and cannot emit 41.4%: ${CODES.TEXT_OWNERSHIP_MISMATCH}`,
+    validated.ok && Object.isFrozen(validated) && Object.isFrozen(validated.registry) && Object.isFrozen(entry) &&
+      mutationApplied === false && entry.rendered_text === 'generative_structural_text' && compiled === undefined &&
+      compileError?.message.includes(`[${CODES.TEXT_OWNERSHIP_MISMATCH}]`),
+    `mutationApplied=${mutationApplied} class=${entry.rendered_text} error=${compileError?.message}`);
 }
 
 {
