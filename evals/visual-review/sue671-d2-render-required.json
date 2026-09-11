@@ -7,13 +7,13 @@
     "request_id": "request:sue671-d2-missing-rungs",
     "candidate_count": 1,
     "authoritative_job_ref": "evals/visual-review/sue671-ai-hiring-missing-rungs-job.json",
-    "job_sha256": "sha256:f94eb55ab32acd5ebbbe3572450f09cbbd4750e085725b0052b7237d9bc35e66",
+    "job_sha256": "sha256:0ca50589ca392d8ea8b49e5c751f8a72f03ae34c38a02f255ce4aa9061a6b9e2",
     "render_spec_ref": "render-spec:missing-rungs-ai-hiring",
-    "render_spec_sha256": "sha256:9da3c16efe08c42361da40f35cb2621d34c9544fcea60010977eaa5d927a7c45",
-    "payload_ref": "payload:missing-rungs-hiring-rates",
-    "payload_sha256": "sha256:a7aab3d887ca5f8ddf9ce4dc6e8a4957c1771c51d385c9f4754dbd55806e893e",
+    "render_spec_sha256": "sha256:3b856d8a702990bd6f009e90cba732c3dee961bfb0237edb42602439438c6e73",
+    "payload_ref": "payload:missing-rungs-model-comparison",
+    "payload_sha256": "sha256:f5216b7d8ae06b6c1a342b362316278d2e4ffc1ae01be0a564f9fae3993943b7",
     "compiled_prompt_ref": "evals/visual-review/sue671-ai-hiring-missing-rungs-compiled-prompt.json",
-    "compiled_prompt_sha256": "sha256:df44285461522564dca493502d848ed1e08874df5ee175d350f0b83b03e096fb",
+    "compiled_prompt_sha256": "sha256:ae8a602c23d5ef289fc7bf94771bd4f3af7e3d929a5ca85833597f517269d03a",
     "compiled_prompt_adapter": "generic-v1",
     "compiled_from": [
       "editorial/profiles/artifact/visual-body-infographic.json",
@@ -25,6 +25,31 @@
       "render_spec:render-spec:missing-rungs-ai-hiring",
       "eval:c4-model-containment-2026-09-06-01"
     ],
+    "raster_text_policy": {
+      "allowlist": ["AutomationBench", "41.4%", "18.1%", "The missing middle"],
+      "exactly_one_structural_label": "The missing middle",
+      "verified_fact_meanings": {
+        "41.4%": "GPT-6 Astra — 41.4%",
+        "18.1%": "GPT-5.6 Sol — 18.1%"
+      },
+      "external_only": [
+        "약 19%",
+        "The Missing Rungs",
+        "Source: AI-hiring pilot evidence; qualifiers apply.",
+        "Illustrative rates; source qualifiers remain external."
+      ],
+      "forbidden": [
+        "article title",
+        "slogans",
+        "quotes",
+        "invented prose",
+        "EARLY CAREER signage",
+        "MEANINGFUL WORK AHEAD signage",
+        "entry-level labels",
+        "middle-management labels",
+        "all undeclared text"
+      ]
+    },
     "article_title": {
       "value": "The Missing Rungs",
       "ownership": "deterministic_external_text",
@@ -33,35 +58,29 @@
     "verified_generative_fact": {
       "ownership": "verified_generative_fact",
       "canonical_payload": {
-        "payload_ref": "payload:missing-rungs-hiring-rates",
-        "payload_sha256": "sha256:a7aab3d887ca5f8ddf9ce4dc6e8a4957c1771c51d385c9f4754dbd55806e893e",
+        "payload_ref": "payload:missing-rungs-model-comparison",
+        "payload_sha256": "sha256:f5216b7d8ae06b6c1a342b362316278d2e4ffc1ae01be0a564f9fae3993943b7",
         "items": [
           {
-            "exact_text": "약 19%",
-            "source_ref": "article-claim:art:ai-hiring-pilot:ai-hiring-rate-19-percent"
-          },
-          {
             "exact_text": "41.4%",
-            "source_ref": "article-claim:art:ai-hiring-pilot:ai-hiring-rate-41-4-percent"
+            "source_ref": "article-claim:art:ai-hiring-pilot:gpt-6-astra-41-4-percent"
           },
           {
             "exact_text": "18.1%",
-            "source_ref": "article-claim:art:ai-hiring-pilot:ai-hiring-rate-18-1-percent"
+            "source_ref": "article-claim:art:ai-hiring-pilot:gpt-5-6-sol-18-1-percent"
           }
         ]
       },
       "source_lineage": [
-        "article-claim:art:ai-hiring-pilot:ai-hiring-rate-19-percent",
-        "article-claim:art:ai-hiring-pilot:ai-hiring-rate-41-4-percent",
-        "article-claim:art:ai-hiring-pilot:ai-hiring-rate-18-1-percent"
+        "article-claim:art:ai-hiring-pilot:gpt-6-astra-41-4-percent",
+        "article-claim:art:ai-hiring-pilot:gpt-5-6-sol-18-1-percent"
       ],
       "claim_set": {
         "article_id": "art:ai-hiring-pilot",
-        "claims_hash": "6dbb071211439e5cc738c6882ad8245bdc33ab919ef9caf61a6bac3615456c36",
+        "claims_hash": "4cbc9137f1661759a318aefc641bbc4c9aa82d629f74d90855ce2764fb995c04",
         "claim_ids": [
-          "ai-hiring-rate-19-percent",
-          "ai-hiring-rate-41-4-percent",
-          "ai-hiring-rate-18-1-percent"
+          "gpt-6-astra-41-4-percent",
+          "gpt-5-6-sol-18-1-percent"
         ]
       },
       "post_render_verification": {
@@ -72,6 +91,15 @@
     },
     "deterministic_external_text": {
       "ownership": "deterministic_external_text",
+      "benchmark_name": {
+        "exact_text": "AutomationBench",
+        "source_ref": "article-benchmark:ai-hiring-pilot"
+      },
+      "approximate_rate_external_only": {
+        "exact_text": "약 19%",
+        "source_ref": "external-html-caption:ai-hiring-pilot-approx-rate",
+        "route": "external_html_caption_only"
+      },
       "citations": [
         {
           "exact_text": "Source: AI-hiring pilot evidence; qualifiers apply.",
@@ -101,7 +129,14 @@
         "derivative_of_asset_scope": "full",
         "crop_anchors": ["anchor:missing-middle-rung"]
       },
-      "crop_anchors": ["anchor:missing-middle-rung"]
+      "crop_anchors": ["anchor:missing-middle-rung"],
+      "mobile_raster_text_allowlist": ["AutomationBench", "41.4%", "18.1%", "The missing middle"],
+      "mobile_external_html_caption_only": [
+        "약 19%",
+        "The Missing Rungs",
+        "Source: AI-hiring pilot evidence; qualifiers apply.",
+        "Illustrative rates; source qualifiers remain external."
+      ]
     },
     "banned_traits": [
       "ui_mimicry",
@@ -109,7 +144,16 @@
       "template_cards",
       "generic_icon_grid",
       "flat_svg_aesthetic",
-      "box_overload"
+      "box_overload",
+      "article title",
+      "slogans",
+      "quotes",
+      "invented prose",
+      "EARLY CAREER signage",
+      "MEANINGFUL WORK AHEAD signage",
+      "entry-level labels",
+      "middle-management labels",
+      "undeclared text"
     ],
     "reference_authority": {
       "selected": [
@@ -124,6 +168,12 @@
     }
   },
   "approved_renderer": null,
+  "current_raster_policy": {
+    "use": "visual_quality_positive_evidence_only",
+    "materialization": "not_present_in_checkout",
+    "candidate_publication": false,
+    "mutation": "none"
+  },
   "rendered_assets": {
     "full": {
       "status": "ABSENT",
@@ -146,14 +196,14 @@
       "status": "PARTIAL",
       "scope": "bounded_negative",
       "evidence_only": true,
-      "reason": "The authoritative job and RenderSpec preserve the integrated ladder/path direction and missing-middle anchor, but no semantic-master raster was observed or fabricated."
+      "reason": "The authoritative job and RenderSpec preserve the warm editorial mountain/stair direction and missing-middle anchor, but no semantic-master raster was observed or fabricated."
     },
     {
       "check": "factual_overlay_declared_route",
       "status": "PARTIAL",
       "scope": "bounded_negative",
       "evidence_only": true,
-      "reason": "The declared payload, claim-set lineage, and mandatory factual post-render requirement are compiler/job-validated, but no factual overlay raster or asset digest was observed."
+      "reason": "The declared AutomationBench/model-comparison payload, claim-set lineage, and mandatory factual post-render requirement are compiler/job-validated, but no factual overlay raster or asset digest was observed."
     },
     {
       "check": "rendered_pixels",

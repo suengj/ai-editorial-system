@@ -7,7 +7,7 @@
     "article_id": "art:ai-hiring-pilot",
     "version_number": 1,
     "content_hash": "5b2536661c8ba7fb5310a129c04dede176fcdf979458e14619497e92c0452136",
-    "claims_hash": "6dbb071211439e5cc738c6882ad8245bdc33ab919ef9caf61a6bac3615456c36"
+    "claims_hash": "4cbc9137f1661759a318aefc641bbc4c9aa82d629f74d90855ce2764fb995c04"
   },
   "artifact_profile": "visual/body-infographic",
   "profile_ref": "editorial/profiles/artifact/visual-body-infographic.json",
@@ -20,15 +20,28 @@
     ]
   },
   "semantic_spec": {
-    "question": "Where is the missing rung between AI adoption and accountable hiring capability?",
+    "question": "Where is the missing middle capability step between AI adoption and accountable hiring?",
     "must_communicate": [
-      "AI adoption rises faster than the middle layer that turns it into accountable hiring capability.",
-      "The visual must make the missing transition legible before the supporting rates are read."
+      "AI adoption is ahead of the capability bridge needed for accountable hiring.",
+      "Preserve one warm editorial mountain/stair scene with one visible missing middle step; this is a capability relation, not an entry-level or middle-management category.",
+      "Raster text allowlist: AutomationBench; 41.4%; 18.1%; The missing middle. Use no other raster text.",
+      "Keep external-only source, qualifier, article-title, and approximate-rate copy in HTML/caption; do not rasterize it."
     ],
     "must_not_include": [
       "dashboard UI",
       "template cards",
-      "provider-specific syntax"
+      "provider-specific syntax",
+      "article title",
+      "slogans",
+      "quotes",
+      "invented prose",
+      "EARLY CAREER signage",
+      "MEANINGFUL WORK AHEAD signage",
+      "undeclared raster text",
+      "entry-level labels",
+      "middle-management labels",
+      "source or qualifier copy in raster",
+      "external-only approximate rate in raster"
     ]
   },
   "article_title": "The Missing Rungs",
@@ -39,66 +52,58 @@
       "article_id": "art:ai-hiring-pilot",
       "version_number": 1,
       "content_hash": "5b2536661c8ba7fb5310a129c04dede176fcdf979458e14619497e92c0452136",
-      "claims_hash": "6dbb071211439e5cc738c6882ad8245bdc33ab919ef9caf61a6bac3615456c36"
+      "claims_hash": "4cbc9137f1661759a318aefc641bbc4c9aa82d629f74d90855ce2764fb995c04"
     },
-    "editorial_purpose": "Explain the missing middle layer in AI-hiring capability without restating the article as a dashboard.",
-    "article_thesis": "AI-hiring demand is rising faster than the middle layer that turns adoption into accountable capability.",
-    "reader_outcome": "See the missing middle rung before reading the supporting rates.",
+    "editorial_purpose": "Explain the missing capability bridge in AI-hiring without restating the article as a dashboard.",
+    "article_thesis": "AI adoption is ahead of the capability bridge needed for accountable hiring; this comparison is not an entry-level or middle-management measure.",
+    "reader_outcome": "See the missing middle capability step before reading the model-comparison rates.",
     "artifact_profile": "visual/body-infographic",
     "semantic_role": "explanation",
     "visual_story": {
-      "primary_question": "Where is the missing rung between AI adoption and accountable hiring capability?",
-      "metaphor_or_relationship": "A single climbing path has a visible gap between adoption and accountable hiring."
+      "primary_question": "Where is the missing middle capability step between AI adoption and accountable hiring?",
+      "metaphor_or_relationship": "A warm editorial mountain stair climbs toward accountable hiring but skips one capability step."
     },
     "information_hierarchy": {
-      "primary": "The missing middle layer",
+      "primary": "The missing middle",
       "supporting": [
-        "AI adoption outpaces implementation capacity"
+        "model comparison"
       ],
       "detail": [
-        "A bridge is needed before capability becomes accountable hiring"
+        "capability bridge, not a job level"
       ]
     },
     "text_ownership": {
       "article_title": "deterministic_external_text",
       "generative_structural_text": {
         "items": [
-          "integrated ladder path",
-          "missing middle transition",
-          "accountable hiring destination"
+          "The missing middle"
         ]
       },
       "verified_generative_fact": {
         "canonical_payload": {
-          "payload_ref": "payload:missing-rungs-hiring-rates",
-          "payload_sha256": "sha256:a7aab3d887ca5f8ddf9ce4dc6e8a4957c1771c51d385c9f4754dbd55806e893e",
+          "payload_ref": "payload:missing-rungs-model-comparison",
+          "payload_sha256": "sha256:f5216b7d8ae06b6c1a342b362316278d2e4ffc1ae01be0a564f9fae3993943b7",
           "items": [
             {
-              "exact_text": "약 19%",
-              "source_ref": "article-claim:art:ai-hiring-pilot:ai-hiring-rate-19-percent"
-            },
-            {
               "exact_text": "41.4%",
-              "source_ref": "article-claim:art:ai-hiring-pilot:ai-hiring-rate-41-4-percent"
+              "source_ref": "article-claim:art:ai-hiring-pilot:gpt-6-astra-41-4-percent"
             },
             {
               "exact_text": "18.1%",
-              "source_ref": "article-claim:art:ai-hiring-pilot:ai-hiring-rate-18-1-percent"
+              "source_ref": "article-claim:art:ai-hiring-pilot:gpt-5-6-sol-18-1-percent"
             }
           ]
         },
         "source_lineage": [
-          "article-claim:art:ai-hiring-pilot:ai-hiring-rate-19-percent",
-          "article-claim:art:ai-hiring-pilot:ai-hiring-rate-41-4-percent",
-          "article-claim:art:ai-hiring-pilot:ai-hiring-rate-18-1-percent"
+          "article-claim:art:ai-hiring-pilot:gpt-6-astra-41-4-percent",
+          "article-claim:art:ai-hiring-pilot:gpt-5-6-sol-18-1-percent"
         ],
         "claim_set": {
           "article_id": "art:ai-hiring-pilot",
-          "claims_hash": "6dbb071211439e5cc738c6882ad8245bdc33ab919ef9caf61a6bac3615456c36",
+          "claims_hash": "4cbc9137f1661759a318aefc641bbc4c9aa82d629f74d90855ce2764fb995c04",
           "claim_ids": [
-            "ai-hiring-rate-19-percent",
-            "ai-hiring-rate-41-4-percent",
-            "ai-hiring-rate-18-1-percent"
+            "gpt-6-astra-41-4-percent",
+            "gpt-5-6-sol-18-1-percent"
           ]
         },
         "post_render_verification": {
@@ -109,6 +114,14 @@
       },
       "deterministic_external_text": {
         "items": [
+          {
+            "exact_text": "AutomationBench",
+            "source_ref": "article-benchmark:ai-hiring-pilot"
+          },
+          {
+            "exact_text": "약 19%",
+            "source_ref": "external-html-caption:ai-hiring-pilot-approx-rate"
+          },
           {
             "exact_text": "Source: AI-hiring pilot evidence; qualifiers apply.",
             "source_ref": "article-source:ai-hiring-pilot"
@@ -126,7 +139,6 @@
       }
     },
     "factual_invariants": [
-      "약 19%",
       "41.4%",
       "18.1%"
     ],
@@ -136,7 +148,9 @@
       "flat_svg_aesthetic",
       "generic_icon_grid",
       "template_cards",
-      "box_overload"
+      "box_overload",
+      "entry_level_or_management_reinterpretation",
+      "undeclared_raster_text"
     ],
     "reference_requirements": {
       "required_dimensions": [
@@ -154,16 +168,16 @@
     "schema_version": "1.0.0",
     "render_spec_id": "render-spec:missing-rungs-ai-hiring",
     "brief_id": "visual-brief:missing-rungs-ai-hiring",
-    "target_geometry": "3:2 body figure with desktop 672 CSS px publication surface",
-    "scene_structure": "Integrated causal ladder scene: adoption rises toward accountable hiring but visibly lacks the middle rung.",
-    "focal_hierarchy": "Missing middle rung first, upward path second, external rate rail third.",
+    "target_geometry": "3:2 warm editorial mountain/stair body figure with desktop 672 CSS px publication surface",
+    "scene_structure": "Integrated warm editorial mountain/stair scene: adoption climbs toward accountable hiring but visibly skips one capability step.",
+    "focal_hierarchy": "The missing middle first, model-comparison numbers second; no other raster text.",
     "information_hierarchy": {
-      "primary": "The missing middle layer",
+      "primary": "The missing middle",
       "supporting": [
-        "AI adoption outpaces implementation capacity"
+        "model comparison"
       ],
       "detail": [
-        "A bridge is needed before capability becomes accountable hiring"
+        "capability bridge, not a job level"
       ]
     },
     "reading_direction": "bottom-left to top-right",
@@ -171,23 +185,24 @@
     "materiality_treatment": "matte_2d",
     "spatial_layers": {
       "generative_semantic": [
-        "integrated ladder/path scene",
-        "missing middle transition",
+        "warm editorial mountain/stair scene",
+        "one missing middle capability step",
         "accountable hiring destination"
       ],
       "deterministic_factual": [
-        "약 19%",
+        "AutomationBench",
         "41.4%",
         "18.1%",
+        "약 19%",
         "Source: AI-hiring pilot evidence; qualifiers apply.",
         "Illustrative rates; source qualifiers remain external."
       ]
     },
     "safe_zones": [
-      "right-side external title and citation rail",
+      "right-side external HTML/caption source and title rail",
       "lower-right external qualifier rail"
     ],
-    "crop_resilience": "The missing middle rung and upward path remain visible after mobile crop; external rails may reflow.",
+    "crop_resilience": "The mountain/stair scene and missing middle capability step remain visible after mobile crop; source, qualifier, and article copy stay external in HTML/caption.",
     "crop_anchors": [
       "anchor:missing-middle-rung"
     ],
@@ -211,9 +226,9 @@
       }
     },
     "visual_devices": [
-      "integrated editorial scene",
-      "single ladder/path metaphor",
-      "small external text rail",
+      "warm editorial mountain/stair scene",
+      "single missing-step metaphor",
+      "small external HTML/caption rail",
       "high whitespace"
     ],
     "forbidden_visual_devices": [
@@ -242,6 +257,7 @@
     "text_handling": {
       "article_title": "external_overlay",
       "deterministic_overlay": [
+        "AutomationBench",
         "약 19%",
         "41.4%",
         "18.1%",
@@ -252,42 +268,34 @@
         "article_title": "deterministic_external_text",
         "generative_structural_text": {
           "items": [
-            "integrated ladder path",
-            "missing middle transition",
-            "accountable hiring destination"
+            "The missing middle"
           ]
         },
         "verified_generative_fact": {
           "canonical_payload": {
-            "payload_ref": "payload:missing-rungs-hiring-rates",
-            "payload_sha256": "sha256:a7aab3d887ca5f8ddf9ce4dc6e8a4957c1771c51d385c9f4754dbd55806e893e",
+            "payload_ref": "payload:missing-rungs-model-comparison",
+            "payload_sha256": "sha256:f5216b7d8ae06b6c1a342b362316278d2e4ffc1ae01be0a564f9fae3993943b7",
             "items": [
               {
-                "exact_text": "약 19%",
-                "source_ref": "article-claim:art:ai-hiring-pilot:ai-hiring-rate-19-percent"
-              },
-              {
                 "exact_text": "41.4%",
-                "source_ref": "article-claim:art:ai-hiring-pilot:ai-hiring-rate-41-4-percent"
+                "source_ref": "article-claim:art:ai-hiring-pilot:gpt-6-astra-41-4-percent"
               },
               {
                 "exact_text": "18.1%",
-                "source_ref": "article-claim:art:ai-hiring-pilot:ai-hiring-rate-18-1-percent"
+                "source_ref": "article-claim:art:ai-hiring-pilot:gpt-5-6-sol-18-1-percent"
               }
             ]
           },
           "source_lineage": [
-            "article-claim:art:ai-hiring-pilot:ai-hiring-rate-19-percent",
-            "article-claim:art:ai-hiring-pilot:ai-hiring-rate-41-4-percent",
-            "article-claim:art:ai-hiring-pilot:ai-hiring-rate-18-1-percent"
+            "article-claim:art:ai-hiring-pilot:gpt-6-astra-41-4-percent",
+            "article-claim:art:ai-hiring-pilot:gpt-5-6-sol-18-1-percent"
           ],
           "claim_set": {
             "article_id": "art:ai-hiring-pilot",
-            "claims_hash": "6dbb071211439e5cc738c6882ad8245bdc33ab919ef9caf61a6bac3615456c36",
+            "claims_hash": "4cbc9137f1661759a318aefc641bbc4c9aa82d629f74d90855ce2764fb995c04",
             "claim_ids": [
-              "ai-hiring-rate-19-percent",
-              "ai-hiring-rate-41-4-percent",
-              "ai-hiring-rate-18-1-percent"
+              "gpt-6-astra-41-4-percent",
+              "gpt-5-6-sol-18-1-percent"
             ]
           },
           "post_render_verification": {
@@ -298,6 +306,14 @@
         },
         "deterministic_external_text": {
           "items": [
+            {
+              "exact_text": "AutomationBench",
+              "source_ref": "article-benchmark:ai-hiring-pilot"
+            },
+            {
+              "exact_text": "약 19%",
+              "source_ref": "external-html-caption:ai-hiring-pilot-approx-rate"
+            },
             {
               "exact_text": "Source: AI-hiring pilot evidence; qualifiers apply.",
               "source_ref": "article-source:ai-hiring-pilot"
@@ -383,7 +399,7 @@
     "density_recheck": "not_yet"
   },
   "status": "compiled",
-  "compiled_prompt": "ARTIFACT: Body infographic / explanatory research graphic — Family B of SUENGJ-ARTICLE-IMAGE-FAMILIES.md. — Explain a mechanism, comparison, process, governance structure, boundary, sequence, or cross-section synthesis more efficiently than prose alone.\nQUESTION: Where is the missing rung between AI adoption and accountable hiring capability?\nMUST COMMUNICATE: AI adoption rises faster than the middle layer that turns it into accountable hiring capability.; The visual must make the missing transition legible before the supporting rates are read.\nMUST NOT INCLUDE: dashboard UI; template cards; provider-specific syntax\nCOMPOSITION: One primary question, answered by 2-4 strong semantic modules, one explicit reading path, and a consequence/tension/output when needed (SUENGJ-ARTICLE-IMAGE-FAMILIES.md §4.2).\nAUDIENCE (domain-practitioner): Moderate label density with brief glossing on first use.\nTEXT POLICY: hybrid_template\nBRAND (suengj-com@1.0.0): background warm off-white / cream, primary muted forest / sage green — the structural identity color, not a saturation effect, accent restrained sand / camel — accent only, never a second dominant palette\nEDITORIAL BRIEF: Explain the missing middle layer in AI-hiring capability without restating the article as a dashboard.; AI-hiring demand is rising faster than the middle layer that turns adoption into accountable capability.; reader outcome: See the missing middle rung before reading the supporting rates.\nVISUAL STORY: A single climbing path has a visible gap between adoption and accountable hiring.\nSCENE: Integrated causal ladder scene: adoption rises toward accountable hiring but visibly lacks the middle rung.; focal hierarchy: Missing middle rung first, upward path second, external rate rail third.; reading: bottom-left to top-right\nINFORMATION HIERARCHY: primary The missing middle layer; supporting AI adoption outpaces implementation capacity; detail A bridge is needed before capability becomes accountable hiring\nSPATIAL TREATMENT: layered_2d; MATERIALITY TREATMENT: matte_2d\nLAYERS — semantic: integrated ladder/path scene; missing middle transition; accountable hiring destination; deterministic factual: 약 19%; 41.4%; 18.1%\nSAFE ZONES: right-side external title and citation rail; lower-right external qualifier rail; crop: The missing middle rung and upward path remain visible after mobile crop; external rails may reflow.\nVISUAL DEVICES — require: integrated editorial scene; single ladder/path metaphor; small external text rail; high whitespace; forbid: ui_mimicry; dashboardization; flat_svg_aesthetic; generic_icon_grid; template_cards; box_overload\nREFERENCE AUTHORITY: eval:c4-model-containment-2026-09-06-01 controls hierarchy; do not copy palette-colour-role; rationale Use the evaluated hierarchy lesson for separated channels; it is not authority for facts, citations, palette, or provider syntax.\nBRIEF-WIDE FORBIDDEN LITERAL COPY: literal C4 notation; provider prompt syntax; template cards\nTEXT OWNERSHIP: generative_structural_text; verified_generative_fact; deterministic_external_text\nVERIFIED FACT ROUTE: 약 19% [article-claim:art:ai-hiring-pilot:ai-hiring-rate-19-percent]; 41.4% [article-claim:art:ai-hiring-pilot:ai-hiring-rate-41-4-percent]; 18.1% [article-claim:art:ai-hiring-pilot:ai-hiring-rate-18-1-percent]\nDETERMINISTIC EXTERNAL TEXT ROUTE: Source: AI-hiring pilot evidence; qualifiers apply. [article-source:ai-hiring-pilot]; Illustrative rates; source qualifiers remain external. [article-qualifier:ai-hiring-pilot]\nARTICLE TITLE: external overlay only",
+  "compiled_prompt": "ARTIFACT: Body infographic / explanatory research graphic — Family B of SUENGJ-ARTICLE-IMAGE-FAMILIES.md. — Explain a mechanism, comparison, process, governance structure, boundary, sequence, or cross-section synthesis more efficiently than prose alone.\nQUESTION: Where is the missing middle capability step between AI adoption and accountable hiring?\nMUST COMMUNICATE: AI adoption is ahead of the capability bridge needed for accountable hiring.; Preserve one warm editorial mountain/stair scene with one visible missing middle step; this is a capability relation, not an entry-level or middle-management category.; Raster text allowlist: AutomationBench; 41.4%; 18.1%; The missing middle. Use no other raster text.; Keep external-only source, qualifier, article-title, and approximate-rate copy in HTML/caption; do not rasterize it.\nMUST NOT INCLUDE: dashboard UI; template cards; provider-specific syntax; article title; slogans; quotes; invented prose; EARLY CAREER signage; MEANINGFUL WORK AHEAD signage; undeclared raster text; entry-level labels; middle-management labels; source or qualifier copy in raster; external-only approximate rate in raster\nCOMPOSITION: One primary question, answered by 2-4 strong semantic modules, one explicit reading path, and a consequence/tension/output when needed (SUENGJ-ARTICLE-IMAGE-FAMILIES.md §4.2).\nAUDIENCE (domain-practitioner): Moderate label density with brief glossing on first use.\nTEXT POLICY: hybrid_template\nBRAND (suengj-com@1.0.0): background warm off-white / cream, primary muted forest / sage green — the structural identity color, not a saturation effect, accent restrained sand / camel — accent only, never a second dominant palette\nEDITORIAL BRIEF: Explain the missing capability bridge in AI-hiring without restating the article as a dashboard.; AI adoption is ahead of the capability bridge needed for accountable hiring; this comparison is not an entry-level or middle-management measure.; reader outcome: See the missing middle capability step before reading the model-comparison rates.\nVISUAL STORY: A warm editorial mountain stair climbs toward accountable hiring but skips one capability step.\nSCENE: Integrated warm editorial mountain/stair scene: adoption climbs toward accountable hiring but visibly skips one capability step.; focal hierarchy: The missing middle first, model-comparison numbers second; no other raster text.; reading: bottom-left to top-right\nINFORMATION HIERARCHY: primary The missing middle; supporting model comparison; detail capability bridge, not a job level\nSPATIAL TREATMENT: layered_2d; MATERIALITY TREATMENT: matte_2d\nLAYERS — semantic: warm editorial mountain/stair scene; one missing middle capability step; accountable hiring destination; deterministic factual: 41.4%; 18.1%\nSAFE ZONES: right-side external HTML/caption source and title rail; lower-right external qualifier rail; crop: The mountain/stair scene and missing middle capability step remain visible after mobile crop; source, qualifier, and article copy stay external in HTML/caption.\nVISUAL DEVICES — require: warm editorial mountain/stair scene; single missing-step metaphor; small external HTML/caption rail; high whitespace; forbid: ui_mimicry; dashboardization; flat_svg_aesthetic; generic_icon_grid; template_cards; box_overload\nREFERENCE AUTHORITY: eval:c4-model-containment-2026-09-06-01 controls hierarchy; do not copy palette-colour-role; rationale Use the evaluated hierarchy lesson for separated channels; it is not authority for facts, citations, palette, or provider syntax.\nBRIEF-WIDE FORBIDDEN LITERAL COPY: literal C4 notation; provider prompt syntax; template cards\nTEXT OWNERSHIP: generative_structural_text; verified_generative_fact; deterministic_external_text\nVERIFIED FACT ROUTE: 41.4% [article-claim:art:ai-hiring-pilot:gpt-6-astra-41-4-percent]; 18.1% [article-claim:art:ai-hiring-pilot:gpt-5-6-sol-18-1-percent]\nDETERMINISTIC EXTERNAL TEXT ROUTE: AutomationBench [article-benchmark:ai-hiring-pilot]; 약 19% [external-html-caption:ai-hiring-pilot-approx-rate]; Source: AI-hiring pilot evidence; qualifiers apply. [article-source:ai-hiring-pilot]; Illustrative rates; source qualifiers remain external. [article-qualifier:ai-hiring-pilot]\nARTICLE TITLE: external overlay only",
   "compiled_from": [
     "editorial/profiles/artifact/visual-body-infographic.json",
     "suengj-com@1.0.0",
