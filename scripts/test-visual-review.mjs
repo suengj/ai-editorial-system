@@ -2,6 +2,7 @@
 import { readFileSync, writeFileSync, mkdirSync, mkdtempSync, rmSync } from 'node:fs'; import { createHash } from 'node:crypto'; import { spawnSync } from 'node:child_process'; import { relative, resolve } from 'node:path'; import { tmpdir } from 'node:os';
 import { canonicalPayloadSha256, compileVisualPrompt, validateVisualJob } from './lib/visual-job-core.mjs';
 import { REVIEW_CODES, VISUAL_FAILURE_ACTIONS, expectedVisualReviewRoute, materializeVisualSemanticNegativeReview, validateVisualFixture, validateVisualReview } from './lib/visual-review-core.mjs';
+import { validateObservedTextAgainstJob } from './lib/visual-review-invariants.mjs';
 const root=resolve(new URL('..',import.meta.url).pathname), read=p=>JSON.parse(readFileSync(resolve(root,p),'utf8')); let bad=0; const ok=(n,v,detail='')=>{console.log(`${v?'PASS':'FAIL'} ${n}${!v&&detail?' — '+detail:''}`);if(!v)bad++};
 const dims=['thesis_clarity','reading_path','narrative_composition','editorial_authorship','spatial_richness','information_hierarchy','article_fit','reference_adherence','brand_compatibility','factual_text_integrity','mobile_crop_resilience'].map(d=>({dimension:d,verdict:'pass',evidence:'observed pixel region'}));
 const mobileAssetRef='evals/prototypes/sue629/plate-b-comparison.svg'; const mobileAssetSha256=`sha256:${createHash('sha256').update(readFileSync(resolve(root,mobileAssetRef))).digest('hex')}`;
@@ -60,6 +61,10 @@ ok('mobile review record validates',validateVisualReview(good).length===0); for(
   ok('mobile crop losing the declared anchor is rejected', validateVisualReview({ ...clean, post_render_checks: mobileAnchorLost }, reviewOptions).some(i => i.code === REVIEW_CODES.POST_RENDER_GEOMETRY));
   ok('verified secondary mobile detail may use progressive disclosure when first-read structure survives',
     !validateVisualReview(clean, reviewOptions).some(i => i.code === REVIEW_CODES.UNREADABLE_DISPLAY_SIZE));
+  const missingMobileEvidence = JSON.parse(JSON.stringify(postRender));
+  delete missingMobileEvidence.checks.find((check) => check.check === 'mobile').mobile_legibility;
+  ok(`missing mobile evidence fails ${REVIEW_CODES.MOBILE_LEGIBILITY_REQUIRED}`,
+    validateVisualReview({ ...clean, post_render_checks: missingMobileEvidence }, reviewOptions).some(i => i.code === REVIEW_CODES.MOBILE_LEGIBILITY_REQUIRED));
   const unreadableLoadBearing = JSON.parse(JSON.stringify(postRender));
   unreadableLoadBearing.checks.find((check) => check.check === 'mobile').mobile_legibility.detail_access_path = 'none';
   ok('unreadable load-bearing mobile detail without full-size/open/expand path fails',
@@ -68,6 +73,12 @@ ok('mobile review record validates',validateVisualReview(good).length===0); for(
   lostConclusion.checks.find((check) => check.check === 'mobile').mobile_legibility.first_read.main_conclusion = false;
   ok('mobile PASS requires topic, dominant relation, major boundaries, and main conclusion at first read',
     validateVisualReview({ ...clean, post_render_checks: lostConclusion }, reviewOptions).some(i => i.code === REVIEW_CODES.UNREADABLE_DISPLAY_SIZE));
+  const firstReadHidden = JSON.parse(JSON.stringify(postRender));
+  const firstReadEvidence = firstReadHidden.checks.find((check) => check.check === 'mobile').mobile_legibility;
+  firstReadEvidence.detail_role = 'first_read_structure';
+  firstReadEvidence.detail_access_path = 'expand';
+  ok(`first-read structure cannot be deferred behind expand: ${REVIEW_CODES.UNREADABLE_DISPLAY_SIZE}`,
+    validateVisualReview({ ...clean, post_render_checks: firstReadHidden }, reviewOptions).some(i => i.code === REVIEW_CODES.UNREADABLE_DISPLAY_SIZE));
   const verifiedJob = read('schemas/examples/visual-job-body-infographic-v2.example.json');
   const verifiedFact = { exact_text: 'exact causal labels', source_ref: 'article-claim:art:tokenized-stocks-instant-payments-liquidity-rights:liquidity-window' };
   const claimSet = { article_id: verifiedJob.article_ref.article_id, claims_hash: verifiedJob.article_ref.claims_hash, claim_ids: ['liquidity-window'] };
@@ -129,7 +140,27 @@ ok('mobile review record validates',validateVisualReview(good).length===0); for(
       payload_ref: repeatedPayload.payload_ref,
       payload_sha256: repeatedPayloadSha256,
     };
-    const omittedItem = JSON.parse(JSON.stringify({ ...bound, verified_fact_binding: repeatedBinding }));
+    const repeatedPass = JSON.parse(JSON.stringify({ ...bound, verified_fact_binding: repeatedBinding }));
+    repeatedPass.post_render_checks.checks.find((check) => check.check === 'factual').observed_text_items = repeatedItems.map((item) => ({
+      source_ref: item.source_ref,
+      declared_text: item.exact_text,
+      observed_text: item.exact_text,
+    }));
+    ok('R3 payload-accounting baseline reaches PASS_TO_HUMAN_REVIEW only with exact raw source/text occurrences',
+      validateVisualReview(repeatedPass, reviewOptions).length === 0,
+      JSON.stringify(validateVisualReview(repeatedPass, reviewOptions)));
+
+    const identicalJob = JSON.parse(JSON.stringify(repeatedSourceJob));
+    const identical = { exact_text: '41.4%', source_ref: verifiedFact.source_ref };
+    identicalJob.visual_brief.text_ownership.verified_generative_fact.canonical_payload.items = [identical, identical];
+    const identicalReview = JSON.parse(JSON.stringify(repeatedPass));
+    identicalReview.post_render_checks.checks.find((check) => check.check === 'factual').observed_text_items = [
+      { source_ref: identical.source_ref, declared_text: identical.exact_text, observed_text: identical.exact_text },
+    ];
+    ok(`R3 two identical texts under one source preserve occurrence count via ${REVIEW_CODES.OBSERVED_TEXT_REQUIRED}`,
+      validateObservedTextAgainstJob(identicalReview, identicalJob).some((entry) => entry.code === REVIEW_CODES.OBSERVED_TEXT_REQUIRED));
+
+    const omittedItem = JSON.parse(JSON.stringify(repeatedPass));
     omittedItem.post_render_checks.checks.find((check) => check.check === 'factual').observed_text_items = [
       { source_ref: verifiedFact.source_ref, declared_text: '18.1%', observed_text: '18.1%' },
     ];
@@ -145,6 +176,37 @@ ok('mobile review record validates',validateVisualReview(good).length===0); for(
     ok('round-2 duplicated observed payload item is rejected per item rather than per source',
       validateVisualReview(duplicatedItem, reviewOptions).some((entry) => entry.code === REVIEW_CODES.OBSERVED_TEXT_BINDING),
       JSON.stringify(validateVisualReview(duplicatedItem, reviewOptions)));
+
+    const qualifierDifference = JSON.parse(JSON.stringify(repeatedPass));
+    qualifierDifference.post_render_checks.checks.find((check) => check.check === 'factual').observed_text_items[0].declared_text = '41.4% after qualification';
+    ok(`R3 qualifier-only declared-text substitution cannot reach PASS_TO_HUMAN_REVIEW: ${REVIEW_CODES.OBSERVED_TEXT_BINDING}`,
+      validateVisualReview(qualifierDifference, reviewOptions).some((entry) => entry.code === REVIEW_CODES.OBSERVED_TEXT_BINDING),
+      JSON.stringify(validateVisualReview(qualifierDifference, reviewOptions)));
+
+    const unicodeDifference = JSON.parse(JSON.stringify(repeatedPass));
+    unicodeDifference.post_render_checks.checks.find((check) => check.check === 'factual').observed_text_items[0].declared_text = '41.4%\u00a0';
+    ok(`R3 whitespace/Unicode declared-text substitution cannot reach PASS_TO_HUMAN_REVIEW: ${REVIEW_CODES.OBSERVED_TEXT_BINDING}`,
+      validateVisualReview(unicodeDifference, reviewOptions).some((entry) => entry.code === REVIEW_CODES.OBSERVED_TEXT_BINDING),
+      JSON.stringify(validateVisualReview(unicodeDifference, reviewOptions)));
+
+    const balancedSubstitution = JSON.parse(JSON.stringify(repeatedPass));
+    balancedSubstitution.post_render_checks.checks.find((check) => check.check === 'factual').observed_text_items = [
+      { source_ref: verifiedFact.source_ref, declared_text: '41.4%', observed_text: '41.4%' },
+      { source_ref: verifiedFact.source_ref, declared_text: '41.4%', observed_text: '41.4%' },
+    ];
+    const balancedIssues = validateVisualReview(balancedSubstitution, reviewOptions);
+    ok(`R3 drop-one/duplicate-another at unchanged total count fails ${REVIEW_CODES.OBSERVED_TEXT_REQUIRED} and ${REVIEW_CODES.OBSERVED_TEXT_BINDING}`,
+      balancedIssues.some((entry) => entry.code === REVIEW_CODES.OBSERVED_TEXT_REQUIRED) &&
+        balancedIssues.some((entry) => entry.code === REVIEW_CODES.OBSERVED_TEXT_BINDING),
+      JSON.stringify(balancedIssues));
+
+    const sourceMoved = JSON.parse(JSON.stringify(repeatedPass));
+    sourceMoved.post_render_checks.checks.find((check) => check.check === 'factual').observed_text_items[0].source_ref = 'article-source:moved';
+    const sourceMovedIssues = validateVisualReview(sourceMoved, reviewOptions);
+    ok(`R3 source-ref movement cannot reach PASS_TO_HUMAN_REVIEW: ${REVIEW_CODES.OBSERVED_TEXT_REQUIRED} and ${REVIEW_CODES.HALLUCINATED_LABEL}`,
+      sourceMovedIssues.some((entry) => entry.code === REVIEW_CODES.OBSERVED_TEXT_REQUIRED) &&
+        sourceMovedIssues.some((entry) => entry.code === REVIEW_CODES.HALLUCINATED_LABEL),
+      JSON.stringify(sourceMovedIssues));
   } finally {
     rmSync(repeatedSourceScope, { recursive: true, force: true });
   }

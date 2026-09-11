@@ -63,10 +63,12 @@ console.log('allow fixtures (expect PASS)');
 
 {
   const reviewerMutation = JSON.parse(readFileSync(resolve(ROOT, 'evals/visual-review/sue671-ai-hiring-missing-rungs-job.json'), 'utf8'));
-  reviewerMutation.status = 'accepted';
   reviewerMutation.qa = { performed: true, information_gain_recheck: 'pass', density_recheck: 'pass' };
-  check('SUE-670 reviewer exact mutation: verified-fact job cannot be accepted on QA/schema declarations alone',
-    codesOf(reviewerMutation).includes(CODES.VERIFIED_FACT_TERMINAL_REVIEW), codesOf(reviewerMutation).join(', '));
+  for (const status of ['qa_pass', 'accepted']) {
+    reviewerMutation.status = status;
+    check(`SUE-670 verified-fact job cannot enter ${status} on QA/schema declarations alone: ${CODES.VERIFIED_FACT_TERMINAL_REVIEW}`,
+      codesOf(reviewerMutation).includes(CODES.VERIFIED_FACT_TERMINAL_REVIEW), codesOf(reviewerMutation).join(', '));
+  }
 
   const scope = mkdtempSync(resolve(ROOT, '.visual-job-terminal-review-'));
   try {

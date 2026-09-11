@@ -16,6 +16,19 @@ import { validate } from './json-schema-lite.mjs';
 import { assessVisualReferenceAdmissibility, listEvaluationFiles, loadCatalogEntries, loadCatalogRefIds } from './registry-core.mjs';
 import { classifyArtifact } from './lineage.mjs';
 import { validateMobileLegibility, validateObservedTextAgainstJob } from './visual-review-invariants.mjs';
+import {
+  AUTHORITY_CODES,
+  VisualSemanticAuthorityError,
+  assertPromptCoverage,
+  authoritySchemaAtMount,
+  collectClassifiedRenderedText,
+  createPromptInputReader,
+  decisionGatedProjection,
+  protectedProjection,
+  repairEnvelopeProjection,
+  requireVisualSemanticAuthority,
+  sameCanonicalProjection,
+} from './visual-semantic-authority-core.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(HERE, '../..');
@@ -179,6 +192,11 @@ export const CODES = Object.freeze({
   TELEMETRY: 'visual-production-telemetry-invalid',
   VERSION_FIELD_MISMATCH: 'visual-schema-version-field-mismatch',
   COMPILED_OUTPUT_MISMATCH: 'compiled-output-lineage-mismatch',
+  VISUAL_SEMANTIC_AUTHORITY_REGISTRY_INVALID: AUTHORITY_CODES.REGISTRY_INVALID,
+  VISUAL_SEMANTIC_AUTHORITY_UNCLASSIFIED_FIELD: AUTHORITY_CODES.UNCLASSIFIED_FIELD,
+  VISUAL_SEMANTIC_AUTHORITY_ORPHANED_FIELD: AUTHORITY_CODES.ORPHANED_FIELD,
+  VISUAL_SEMANTIC_AUTHORITY_SHAPE_MISMATCH: AUTHORITY_CODES.SHAPE_MISMATCH,
+  VISUAL_SEMANTIC_AUTHORITY_PROMPT_UNCONSUMED: AUTHORITY_CODES.PROMPT_UNCONSUMED,
 });
 
 export const SUPPORTED_PROMPT_ADAPTERS = Object.freeze(['generic-v1', 'generic-v2']);
@@ -550,15 +568,15 @@ function evaluationById() {
   return out;
 }
 
-export function validateVisualBrief(brief, where = '<visual_brief>') {
+export function validateVisualBrief(brief, where = '<visual_brief>', schema = loadVisualBriefSchema()) {
   const issues = [];
-  for (const e of validate(brief, loadVisualBriefSchema())) issues.push(issue(CODES.SCHEMA, where, `${e.path}: ${e.message}`));
+  for (const e of validate(brief, schema)) issues.push(issue(CODES.SCHEMA, where, `${e.path}: ${e.message}`));
   return issues;
 }
 
-export function validateRenderSpec(renderSpec, where = '<render_spec>') {
+export function validateRenderSpec(renderSpec, where = '<render_spec>', schema = loadRenderSpecSchema()) {
   const issues = [];
-  for (const e of validate(renderSpec, loadRenderSpecSchema())) issues.push(issue(CODES.SCHEMA, where, `${e.path}: ${e.message}`));
+  for (const e of validate(renderSpec, schema)) issues.push(issue(CODES.SCHEMA, where, `${e.path}: ${e.message}`));
   return issues;
 }
 
@@ -620,28 +638,14 @@ function validateBrandDepthOverride(job, brand, where) {
     'RenderSpec requests depth/spatial treatment beyond the brand depth_model without both an explicit selected reference authority trait and a human-visible brand_conflicts entry')];
 }
 
-function declaredRenderedText(job) {
-  const ownershipText = (ownership) => [
-    ...(ownership?.generative_structural_text?.items ?? []),
-    ...(ownership?.verified_generative_fact?.canonical_payload?.items ?? []).map((item) => item.exact_text),
-    ...(ownership?.deterministic_external_text?.items ?? []).map((item) => item.exact_text),
-  ];
-  return [
-    ...(job.visual_brief?.factual_invariants ?? []),
-    ...(job.render_spec?.spatial_layers?.deterministic_factual ?? []),
-    ...(job.render_spec?.text_handling?.deterministic_overlay ?? []),
-    ...ownershipText(job.visual_brief?.text_ownership),
-    ...ownershipText(job.render_spec?.text_handling?.text_ownership),
-  ].filter(isMeaningful);
-}
-
-function validateTextOwnershipAndHierarchy(job, where) {
+function validateTextOwnershipAndHierarchy(job, where, validatedAuthority) {
   const issues = [];
   const brief = job.visual_brief;
   const spec = job.render_spec;
   const briefOwnership = brief?.text_ownership;
   const specOwnership = spec?.text_handling?.text_ownership;
-  const carriesRenderedText = declaredRenderedText(job).length > 0;
+  const renderedText = collectClassifiedRenderedText(job, validatedAuthority);
+  const carriesRenderedText = renderedText.length > 0;
   const textBearing = Boolean(brief && spec && (job.text_policy !== 'no_text' || carriesRenderedText));
   if (job.text_policy === 'no_text' && carriesRenderedText) {
     issues.push(issue(CODES.TEXT_OWNERSHIP_MISMATCH, where,
@@ -667,6 +671,11 @@ function validateTextOwnershipAndHierarchy(job, where) {
     if (briefOwnership && classes.some((name) => !(name in briefOwnership))) {
       issues.push(issue(CODES.TEXT_OWNERSHIP_CLASS_INVALID, where,
         'text_ownership must explicitly represent generative_structural_text, verified_generative_fact, and deterministic_external_text'));
+    }
+    const declaredClasses = new Set(renderedText.map((entry) => entry.ownership_class));
+    if ([...declaredClasses].some((name) => !(name in (briefOwnership ?? {})) || !(name in (specOwnership ?? {})))) {
+      issues.push(issue(CODES.TEXT_OWNERSHIP_MISMATCH, where,
+        'every registry-classified rendered-text value must be represented by the matching VisualBrief and RenderSpec ownership class'));
     }
     const verified = briefOwnership?.verified_generative_fact;
     const canonical = verified?.canonical_payload;
@@ -890,59 +899,121 @@ function normalisations(value) {
   return [normalise(value), normalise(value, { format: 'space' })];
 }
 
-function declaredTextItems(job) {
-  const ownership = job.visual_brief?.text_ownership;
-  if (!ownership) return null;
-  return {
-    verified: ownership.verified_generative_fact?.canonical_payload?.items ?? [],
-    external: ownership.deterministic_external_text?.items ?? [],
-  };
-}
-
 /**
  * The one prompt-bound text assembly. Validators inspect this exact provider
  * surface; provider adapters may reorder it but cannot introduce new inputs.
  */
-function assemblePrompt(job, { profiles, brand, promptAdapter = 'generic-v1' } = {}) {
-  const profile = profiles?.[job.artifact_profile] ?? {};
-  const resolvedBrand = brand ?? resolveBrandProfile(job.brand_profile, job.brand_profile_version);
-  const spec = job.semantic_spec ?? {};
-  const refs = job.selected_reference_traits ?? { adopt: [], avoid: [], do_not_copy: [] };
-  const audienceNote = profile.audience_adaptation?.[job.audience?.value];
-  const v2 = job.visual_brief && job.render_spec;
-  const hierarchy = job.visual_brief?.information_hierarchy ?? job.render_spec?.information_hierarchy;
-  const ownership = job.visual_brief?.text_ownership ?? job.render_spec?.text_handling?.text_ownership;
-  const declaredItems = declaredTextItems(job);
-  const deterministicFacts = job.text_policy === 'no_text'
+function assemblePrompt(job, { profiles, brand, promptAdapter = 'generic-v1', validatedAuthority } = {}) {
+  const reader = createPromptInputReader(job, validatedAuthority);
+  const artifactProfile = reader.get('/artifact_profile');
+  const audienceValue = reader.get('/audience/value');
+  const textPolicy = reader.get('/text_policy');
+  const brandProfile = reader.get('/brand_profile');
+  const brandProfileVersion = reader.get('/brand_profile_version');
+  const profile = profiles?.[artifactProfile] ?? {};
+  const resolvedBrand = brand ?? resolveBrandProfile(brandProfile, brandProfileVersion);
+  const spec = {
+    question: reader.get('/semantic_spec/question'),
+    must_communicate: reader.getArray('/semantic_spec/must_communicate') ?? [],
+    must_not_include: reader.getArray('/semantic_spec/must_not_include') ?? [],
+  };
+  const refs = {
+    adopt: reader.getArray('/selected_reference_traits/adopt') ?? [],
+    avoid: reader.getArray('/selected_reference_traits/avoid') ?? [],
+    do_not_copy: reader.getArray('/selected_reference_traits/do_not_copy') ?? [],
+  };
+  const audienceNote = profile.audience_adaptation?.[audienceValue];
+  const brief = {
+    editorial_purpose: reader.get('/visual_brief/editorial_purpose'),
+    article_thesis: reader.get('/visual_brief/article_thesis'),
+    reader_outcome: reader.get('/visual_brief/reader_outcome'),
+    metaphor_or_relationship: reader.get('/visual_brief/visual_story/metaphor_or_relationship'),
+    hierarchy: {
+      primary: reader.get('/visual_brief/information_hierarchy/primary'),
+      supporting: reader.getArray('/visual_brief/information_hierarchy/supporting'),
+      detail: reader.getArray('/visual_brief/information_hierarchy/detail'),
+    },
+    forbidden_literal_copy: reader.getArray('/visual_brief/reference_requirements/forbidden_literal_copy'),
+    generative_items: reader.getArray('/visual_brief/text_ownership/generative_structural_text/items'),
+    verified_exact: reader.getArray('/visual_brief/text_ownership/verified_generative_fact/canonical_payload/items/*/exact_text'),
+    verified_source: reader.getArray('/visual_brief/text_ownership/verified_generative_fact/canonical_payload/items/*/source_ref'),
+    external_exact: reader.getArray('/visual_brief/text_ownership/deterministic_external_text/items/*/exact_text'),
+    external_source: reader.getArray('/visual_brief/text_ownership/deterministic_external_text/items/*/source_ref'),
+  };
+  const renderSpec = {
+    scene_structure: reader.get('/render_spec/scene_structure'),
+    focal_hierarchy: reader.get('/render_spec/focal_hierarchy'),
+    reading_direction: reader.get('/render_spec/reading_direction'),
+    spatial_treatment: reader.get('/render_spec/spatial_treatment'),
+    materiality_treatment: reader.get('/render_spec/materiality_treatment'),
+    generative_semantic: reader.getArray('/render_spec/spatial_layers/generative_semantic'),
+    deterministic_factual: reader.getArray('/render_spec/spatial_layers/deterministic_factual'),
+    safe_zones: reader.getArray('/render_spec/safe_zones'),
+    crop_resilience: reader.get('/render_spec/crop_resilience'),
+    visual_devices: reader.getArray('/render_spec/visual_devices'),
+    forbidden_visual_devices: reader.getArray('/render_spec/forbidden_visual_devices'),
+    hierarchy: {
+      primary: reader.get('/render_spec/information_hierarchy/primary'),
+      supporting: reader.getArray('/render_spec/information_hierarchy/supporting'),
+      detail: reader.getArray('/render_spec/information_hierarchy/detail'),
+    },
+    reference_authority: {
+      ref_id: reader.getArray('/render_spec/reference_authority/selected/*/ref_id') ?? [],
+      evaluation_id: reader.getArray('/render_spec/reference_authority/selected/*/evaluation_id') ?? [],
+      authority: reader.getArray('/render_spec/reference_authority/selected/*/authority') ?? [],
+      not_authority: reader.getArray('/render_spec/reference_authority/selected/*/not_authority') ?? [],
+      rationale: reader.getArray('/render_spec/reference_authority/selected/*/rationale') ?? [],
+    },
+    generative_items: reader.getArray('/render_spec/text_handling/text_ownership/generative_structural_text/items'),
+    verified_exact: reader.getArray('/render_spec/text_handling/text_ownership/verified_generative_fact/canonical_payload/items/*/exact_text'),
+    verified_source: reader.getArray('/render_spec/text_handling/text_ownership/verified_generative_fact/canonical_payload/items/*/source_ref'),
+    external_exact: reader.getArray('/render_spec/text_handling/text_ownership/deterministic_external_text/items/*/exact_text'),
+    external_source: reader.getArray('/render_spec/text_handling/text_ownership/deterministic_external_text/items/*/source_ref'),
+  };
+  const selectedAuthority = renderSpec.reference_authority.evaluation_id.map((evaluation_id, index) => ({
+    evaluation_id,
+    authority: renderSpec.reference_authority.authority[index] ?? [],
+    not_authority: renderSpec.reference_authority.not_authority[index] ?? [],
+    rationale: renderSpec.reference_authority.rationale[index] ?? '',
+  }));
+  const declaredItems = brief.verified_exact === undefined && brief.external_exact === undefined ? null : {
+    verified: (brief.verified_exact ?? []).map((exact_text, index) => ({ exact_text, source_ref: brief.verified_source?.[index] })),
+    external: (brief.external_exact ?? []).map((exact_text, index) => ({ exact_text, source_ref: brief.external_source?.[index] })),
+  };
+  const v2 = brief.editorial_purpose !== undefined && renderSpec.scene_structure !== undefined;
+  const hierarchy = brief.hierarchy.primary !== undefined
+    ? brief.hierarchy
+    : renderSpec.hierarchy.primary !== undefined ? renderSpec.hierarchy : null;
+  const deterministicFacts = textPolicy === 'no_text'
     ? []
     : declaredItems
       ? declaredItems.verified.map((item) => item.exact_text)
-      : job.render_spec?.spatial_layers?.deterministic_factual;
+      : renderSpec.deterministic_factual;
   const baseLines = [
     `ARTIFACT: ${profile.family ?? ''} — ${profile.primary_job ?? ''}`,
     spec.question ? `QUESTION: ${spec.question}` : null,
     `MUST COMMUNICATE: ${(spec.must_communicate ?? []).join('; ')}`,
     spec.must_not_include?.length ? `MUST NOT INCLUDE: ${spec.must_not_include.join('; ')}` : null,
     `COMPOSITION: ${profile.composition?.dominant_structure ?? ''}`,
-    audienceNote ? `AUDIENCE (${job.audience.value}): ${audienceNote}` : null,
-    `TEXT POLICY: ${job.text_policy}`,
+    audienceNote ? `AUDIENCE (${audienceValue}): ${audienceNote}` : null,
+    `TEXT POLICY: ${textPolicy}`,
     `BRAND (${resolvedBrand.brand}@${resolvedBrand.profile_version}): background ${resolvedBrand.palette?.background?.family}, primary ${resolvedBrand.palette?.primary_structure?.family}, accent ${resolvedBrand.palette?.accent?.family}`,
     refs.adopt?.length ? `REFERENCE TRAITS — adopt: ${refs.adopt.join('; ')}` : null,
     refs.avoid?.length ? `REFERENCE TRAITS — avoid: ${refs.avoid.join('; ')}` : null,
     refs.do_not_copy?.length ? `REFERENCE TRAITS — do not copy: ${refs.do_not_copy.join('; ')}` : null,
   ].filter(Boolean);
   const v2Lines = v2 ? [
-    `EDITORIAL BRIEF: ${job.visual_brief.editorial_purpose}; ${job.visual_brief.article_thesis}; reader outcome: ${job.visual_brief.reader_outcome}`,
-    `VISUAL STORY: ${job.visual_brief.visual_story.metaphor_or_relationship}`,
-    `SCENE: ${job.render_spec.scene_structure}; focal hierarchy: ${job.render_spec.focal_hierarchy}; reading: ${job.render_spec.reading_direction}`,
+    `EDITORIAL BRIEF: ${brief.editorial_purpose}; ${brief.article_thesis}; reader outcome: ${brief.reader_outcome}`,
+    `VISUAL STORY: ${brief.metaphor_or_relationship}`,
+    `SCENE: ${renderSpec.scene_structure}; focal hierarchy: ${renderSpec.focal_hierarchy}; reading: ${renderSpec.reading_direction}`,
     hierarchy ? `INFORMATION HIERARCHY: primary ${hierarchy.primary}; supporting ${(hierarchy.supporting ?? []).join('; ')}; detail ${(hierarchy.detail ?? []).join('; ')}` : null,
-    `SPATIAL TREATMENT: ${job.render_spec.spatial_treatment}; MATERIALITY TREATMENT: ${job.render_spec.materiality_treatment}`,
-    `LAYERS — semantic: ${job.render_spec.spatial_layers.generative_semantic.join('; ')}; deterministic factual: ${(deterministicFacts ?? []).join('; ')}`,
-    `SAFE ZONES: ${job.render_spec.safe_zones.join('; ')}; crop: ${job.render_spec.crop_resilience}`,
-    `VISUAL DEVICES — require: ${job.render_spec.visual_devices.join('; ')}; forbid: ${job.render_spec.forbidden_visual_devices.join('; ')}`,
-    `REFERENCE AUTHORITY: ${job.render_spec.reference_authority.selected.map((r) => `${r.evaluation_id} controls ${r.authority.join(', ')}; do not copy ${r.not_authority.join(', ')}; rationale ${r.rationale}`).join(' | ')}`,
-    job.visual_brief.reference_requirements.forbidden_literal_copy.length ? `BRIEF-WIDE FORBIDDEN LITERAL COPY: ${job.visual_brief.reference_requirements.forbidden_literal_copy.join('; ')}` : null,
-    ownership ? `TEXT OWNERSHIP: ${['generative_structural_text', 'verified_generative_fact', 'deterministic_external_text'].join('; ')}` : null,
+    `SPATIAL TREATMENT: ${renderSpec.spatial_treatment}; MATERIALITY TREATMENT: ${renderSpec.materiality_treatment}`,
+    `LAYERS — semantic: ${(renderSpec.generative_semantic ?? []).join('; ')}; deterministic factual: ${(deterministicFacts ?? []).join('; ')}`,
+    `SAFE ZONES: ${(renderSpec.safe_zones ?? []).join('; ')}; crop: ${renderSpec.crop_resilience}`,
+    `VISUAL DEVICES — require: ${(renderSpec.visual_devices ?? []).join('; ')}; forbid: ${(renderSpec.forbidden_visual_devices ?? []).join('; ')}`,
+    `REFERENCE AUTHORITY: ${selectedAuthority.map((r) => `${r.evaluation_id} controls ${r.authority.join(', ')}; do not copy ${r.not_authority.join(', ')}; rationale ${r.rationale}`).join(' | ')}`,
+    brief.forbidden_literal_copy?.length ? `BRIEF-WIDE FORBIDDEN LITERAL COPY: ${brief.forbidden_literal_copy.join('; ')}` : null,
+    `TEXT OWNERSHIP: ${['generative_structural_text', 'verified_generative_fact', 'deterministic_external_text'].join('; ')}`,
     declaredItems?.verified.length ? `VERIFIED FACT ROUTE: ${declaredItems.verified.map((item) => `${item.exact_text} [${item.source_ref}]`).join('; ')}` : null,
     declaredItems?.external.length ? `DETERMINISTIC EXTERNAL TEXT ROUTE: ${declaredItems.external.map((item) => `${item.exact_text} [${item.source_ref}]`).join('; ')}` : null,
     'ARTICLE TITLE: external overlay only',
@@ -950,7 +1021,9 @@ function assemblePrompt(job, { profiles, brand, promptAdapter = 'generic-v1' } =
   const lines = promptAdapter === 'generic-v1'
     ? [...baseLines, ...v2Lines]
     : [...v2Lines.slice(0, 4), ...baseLines, ...v2Lines.slice(4)];
-  return lines.join('\n');
+  const prompt = lines.join('\n');
+  assertPromptCoverage(reader);
+  return prompt;
 }
 
 function brandCeilingTerms(brand) {
@@ -962,16 +1035,16 @@ function brandCeilingTerms(brand) {
   return [...new Set(literal.flatMap((term) => [term, term.replace(/\bshadows\b/g, 'shadow'), term.replace(/^dark\s+/, '').replace(/\bshadows\b/g, 'shadow')]))];
 }
 
-function validateBrandMateriality(job, brand, profiles, where) {
-  const requested = normalisations(assemblePrompt(job, { profiles, brand }));
+function validateBrandMateriality(job, brand, profiles, where, validatedAuthority) {
+  const requested = normalisations(assemblePrompt(job, { profiles, brand, validatedAuthority }));
   const hit = brandCeilingTerms(brand).find((term) => term && requested.some((text) => text.includes(term)));
   return hit ? [issue(CODES.BRAND_MATERIALITY_CEILING_VIOLATION, where, `RenderSpec requests prohibited brand materiality/palette: ${hit}`)] : [];
 }
 
-function validateNoArticleTitle(job, brand, profiles, where) {
+function validateNoArticleTitle(job, brand, profiles, where, validatedAuthority) {
   const title = normalisations(job.article_title).filter(Boolean);
   if (title.length === 0) return [issue(CODES.ARTICLE_TITLE_IN_ARTWORK, where, 'generative/hybrid jobs require article_title lineage so prompt-bound title absence is checkable')];
-  const found = normalisations(assemblePrompt(job, { profiles, brand })).some((text) => title.some((candidate) => text.includes(candidate)));
+  const found = normalisations(assemblePrompt(job, { profiles, brand, validatedAuthority })).some((text) => title.some((candidate) => text.includes(candidate)));
   return found ? [issue(CODES.ARTICLE_TITLE_IN_ARTWORK, where, 'article_title appears in a field that reaches compiled_prompt')]: [];
 }
 
@@ -1019,14 +1092,21 @@ function parseArticleClaimSourceRef(sourceRef) {
   return match ? { article_id: match[1], claim_id: match[2] } : null;
 }
 
-export function validateVisualContract(job, { brand, profiles = loadArtifactProfiles(), referenceContext } = {}, where = job?.job_id ?? '<job>') {
+export function validateVisualContract(job, { brand, profiles = loadArtifactProfiles(), referenceContext, authorityContext, validatedAuthority } = {}, where = job?.job_id ?? '<job>') {
+  let authority = validatedAuthority;
+  try {
+    authority = requireVisualSemanticAuthority(authority ?? authorityContext);
+  } catch (error) {
+    if (error instanceof VisualSemanticAuthorityError) return error.issues.map((entry) => issue(entry.code, where, entry.message));
+    throw error;
+  }
   const v2Required = ['generative', 'hybrid'].includes(job?.renderer_route);
   const ownerGateIssues = validateRequiresOwnerGate(job, where);
   const issues = [...ownerGateIssues];
   const hasBrief = job?.visual_brief !== undefined;
   const hasRenderSpec = job?.render_spec !== undefined;
-  if (hasBrief) issues.push(...validateVisualBrief(job.visual_brief, where));
-  if (hasRenderSpec) issues.push(...validateRenderSpec(job.render_spec, where));
+  if (hasBrief) issues.push(...validateVisualBrief(job.visual_brief, where, authoritySchemaAtMount(authority, '/visual_brief')));
+  if (hasRenderSpec) issues.push(...validateRenderSpec(job.render_spec, where, authoritySchemaAtMount(authority, '/render_spec')));
   if (hasBrief !== hasRenderSpec || (v2Required && !hasBrief && !hasRenderSpec)) {
     issues.push(issue(CODES.BRIEF_REQUIRED, where,
       'visual_brief and render_spec must be absent together for legacy deterministic jobs, or present together for a complete visual contract'));
@@ -1046,14 +1126,22 @@ export function validateVisualContract(job, { brand, profiles = loadArtifactProf
   }
   const requirements = { ...job.visual_brief.reference_requirements, artifact_profile: job.artifact_profile };
   issues.push(...validateReferenceAuthority(job.render_spec, requirements, where, referenceContext));
-  issues.push(...validateTextOwnershipAndHierarchy(job, where));
+  issues.push(...validateTextOwnershipAndHierarchy(job, where, authority));
   issues.push(...validatePublicationDisplaySurfaces(job, where));
   const factual = job.visual_brief.factual_invariants ?? [];
   const factualLayer = (job.render_spec.spatial_layers?.deterministic_factual ?? []).join(' ').toLowerCase();
   if (factual.some((item) => !factualLayer.includes(item.toLowerCase()))) {
     issues.push(issue(CODES.EXACT_FACT_ON_GENERATIVE_LAYER, where, 'every VisualBrief factual_invariant must be named in RenderSpec.spatial_layers.deterministic_factual'));
   }
-  issues.push(...validateNoArticleTitle(job, brand, profiles, where));
+  try {
+    issues.push(...validateNoArticleTitle(job, brand, profiles, where, authority));
+  } catch (error) {
+    if (error instanceof VisualSemanticAuthorityError) {
+      issues.push(...error.issues.map((entry) => issue(entry.code, where, entry.message)));
+    } else {
+      throw error;
+    }
+  }
   if (job.artifact_profile === 'visual/body-infographic') {
     const forbidden = new Set(job.render_spec.forbidden_visual_devices ?? []);
     if (!['ui_mimicry', 'dashboardization', 'flat_svg_aesthetic'].every((x) => forbidden.has(x))) {
@@ -1061,7 +1149,17 @@ export function validateVisualContract(job, { brand, profiles = loadArtifactProf
     }
   }
   issues.push(...validateBrandDepthOverride(job, brand, where));
-  issues.push(...validateBrandMateriality(job, brand, profiles, where));
+  try {
+    issues.push(...validateBrandMateriality(job, brand, profiles, where, authority));
+  } catch (error) {
+    if (error instanceof VisualSemanticAuthorityError) {
+      if (!issues.some((entry) => error.issues.some((authorityIssue) => entry.code === authorityIssue.code && entry.message === authorityIssue.message))) {
+        issues.push(...error.issues.map((entry) => issue(entry.code, where, entry.message)));
+      }
+    } else {
+      throw error;
+    }
+  }
   return issues;
 }
 
@@ -1104,7 +1202,7 @@ function resolveFactualRepairReview(repair, where, out) {
   return review;
 }
 
-function validateFactualRepairDecisions(job, prior, review, where) {
+function validateFactualRepairDecisions(job, prior, review, where, validatedAuthority) {
   const out = [];
   const repair = job.visual_production.factual_repair;
   const currentItems = job.visual_production.factual_overlay.payload.items ?? [];
@@ -1114,29 +1212,28 @@ function validateFactualRepairDecisions(job, prior, review, where) {
   const decisions = repair.item_decisions ?? [];
   const decisionById = new Map(decisions.map((entry) => [entry.item_id, entry]));
   const allIds = new Set([...priorById.keys(), ...currentById.keys()]);
-  const conceptFailure = review.failure_class === 'wrong_concept' && review.next_action === 'new_direction';
 
   if (decisionById.size !== decisions.length || decisionById.size !== allIds.size ||
       [...allIds].some((id) => !decisionById.has(id))) {
     out.push(issue(CODES.FACTUAL_REPAIR_ITEM, where,
       'factual_repair.item_decisions must cover every prior/current overlay item_id exactly once'));
   }
-  const semanticFields = ['article_ref', 'artifact_profile', 'semantic_spec', 'visual_brief', 'render_spec'];
-  const profiles = loadArtifactProfiles();
-  const promptSurface = (record) => {
-    try {
-      const adapter = record.compiled_prompt_adapter ?? 'generic-v1';
-      return { valid: true, value: `${adapter}\u0000${assemblePrompt(record, { profiles, promptAdapter: adapter })}` };
-    } catch (error) {
-      return { valid: false, value: error.message };
-    }
-  };
-  const priorPrompt = promptSurface(prior);
-  const currentPrompt = promptSurface(job);
-  const promptSurfaceChanged = !priorPrompt.valid || !currentPrompt.valid || priorPrompt.value !== currentPrompt.value;
-  if (!conceptFailure && (semanticFields.some((field) => !sameJSONValue(job[field], prior[field])) || promptSurfaceChanged)) {
+  const priorProtected = protectedProjection(prior, validatedAuthority);
+  const currentProtected = protectedProjection(job, validatedAuthority);
+  if (!sameCanonicalProjection(priorProtected, currentProtected)) {
     out.push(issue(CODES.FACTUAL_REPAIR_ITEM, where,
-      'localized factual repair changed article identity or the actual compiled-prompt surface without a review declaring wrong_concept/new_direction'));
+      'localized factual repair changed a registry-protected semantic, lineage, or control field'));
+  }
+  const priorDecisionGated = decisionGatedProjection(prior, validatedAuthority);
+  const currentDecisionGated = decisionGatedProjection(job, validatedAuthority);
+  const priorRepairEnvelope = repairEnvelopeProjection(prior, validatedAuthority);
+  const currentRepairEnvelope = repairEnvelopeProjection(job, validatedAuthority);
+  const unchangedNewIdentity = validatedAuthority.registry.fields
+    .filter((entry) => entry.localized_repair === 'new_record_identity')
+    .some((entry) => sameJSONValue(priorRepairEnvelope[entry.path], currentRepairEnvelope[entry.path]));
+  if (unchangedNewIdentity) {
+    out.push(issue(CODES.FACTUAL_REPAIR_ITEM, where,
+      'localized factual repair must use a new registry-declared record identity'));
   }
   for (const id of allIds) {
     const decision = decisionById.get(id);
@@ -1156,18 +1253,21 @@ function validateFactualRepairDecisions(job, prior, review, where) {
       continue;
     }
     const changed = !sameJSONValue(before, after);
-    if (!conceptFailure && ['KEEP', 'DO_NOT_CHANGE'].includes(decision.decision) && changed) {
+    const decisionGatedChanged = [...validatedAuthority.registry.fields]
+      .filter((entry) => entry.localized_repair === 'decision_gated')
+      .some((entry) => !sameJSONValue(priorDecisionGated[entry.path]?.[id], currentDecisionGated[entry.path]?.[id]));
+    if (['KEEP', 'DO_NOT_CHANGE'].includes(decision.decision) && changed) {
       out.push(issue(CODES.FACTUAL_REPAIR_ITEM, where,
         `overlay item ${id} is ${decision.decision} but its canonical bytes changed`));
     }
-    if (decision.decision === 'CHANGE' && !changed) {
+    if (decision.decision === 'CHANGE' && (!changed || !decisionGatedChanged)) {
       out.push(issue(CODES.FACTUAL_REPAIR_ITEM, where,
-        `overlay item ${id} is CHANGE but its canonical bytes did not change`));
+        `overlay item ${id} is CHANGE but no registry decision-gated value changed`));
     }
   }
-  if (!conceptFailure && (review.failure_class !== 'facts_or_text_wrong' || review.next_action !== 'factual_overlay_repair')) {
+  if (review.failure_class !== 'facts_or_text_wrong' || review.next_action !== 'factual_overlay_repair') {
     out.push(issue(CODES.FACTUAL_REPAIR_REVIEW, where,
-      'ordinary factual repair requires a review routed as facts_or_text_wrong/factual_overlay_repair'));
+      'localized factual repair requires a review routed as facts_or_text_wrong/factual_overlay_repair; concept changes require the direction-discovery lane'));
   }
   const route = job.visual_production.failure_route;
   if (route && (route.failure_class !== review.failure_class || route.next_action !== review.next_action)) {
@@ -1177,11 +1277,18 @@ function validateFactualRepairDecisions(job, prior, review, where) {
   return out;
 }
 
-export function validateVisualProduction(job, where = job?.job_id ?? '<job>', referenceContext = {}, repairState = { chain: new Set(), depth: 0 }) {
+export function validateVisualProduction(job, where = job?.job_id ?? '<job>', referenceContext = {}, repairState = { chain: new Set(), depth: 0 }, authorityContext) {
+  let validatedAuthority;
+  try {
+    validatedAuthority = requireVisualSemanticAuthority(authorityContext);
+  } catch (error) {
+    if (error instanceof VisualSemanticAuthorityError) return error.issues.map((entry) => issue(entry.code, where, entry.message));
+    throw error;
+  }
   const production = job?.visual_production;
   if (!production) return [];
   const out = [];
-  for (const e of validate(production, loadVisualProductionSchema())) out.push(issue(CODES.PRODUCTION_SCHEMA, where, `${e.path}: ${e.message}`));
+  for (const e of validate(production, authoritySchemaAtMount(validatedAuthority, '/visual_production'))) out.push(issue(CODES.PRODUCTION_SCHEMA, where, `${e.path}: ${e.message}`));
   if (out.length) return out;
   const { semantic_master: master, factual_overlay: overlay, publication_composite: composite, factual_repair: repair, direction_discovery: discovery, production_refinement: refinement, failure_route: route, telemetry } = production;
   const complete = [master, overlay, composite].filter(Boolean).length;
@@ -1221,11 +1328,11 @@ export function validateVisualProduction(job, where = job?.job_id ?? '<job>', re
         prior = undefined;
       }
       if (prior) {
-        const priorIssues = validateVisualJobRecord(prior, { referenceContext }, { chain: new Set([...repairState.chain, priorRealPath]), depth: repairState.depth + 1 });
+        const priorIssues = validateVisualJobRecord(prior, { referenceContext, authorityContext: validatedAuthority }, { chain: new Set([...repairState.chain, priorRealPath]), depth: repairState.depth + 1 });
         out.push(...priorIssues.map((x) => issue(x.code, `${where} -> ${repair.prior_production_ref}`, `predecessor: ${x.message}`)));
         const priorProduction = prior.visual_production;
         if (master.asset_sha256 !== priorProduction.semantic_master.asset_sha256 || overlay.asset_sha256 === priorProduction.factual_overlay.asset_sha256 || composite.asset_sha256 === priorProduction.publication_composite.asset_sha256) out.push(issue(CODES.FACTUAL_REPAIR, where, 'a factual-overlay repair must preserve resolved prior master digest and replace resolved prior overlay and composite digests'));
-        if (repairReview) out.push(...validateFactualRepairDecisions(job, prior, repairReview, where));
+        if (repairReview) out.push(...validateFactualRepairDecisions(job, prior, repairReview, where, validatedAuthority));
       }
   }
   } else if (repair) out.push(issue(CODES.FACTUAL_REPAIR, where, 'factual_repair requires complete master/overlay/composite lineage'));
@@ -1262,11 +1369,26 @@ export function validateVisualProduction(job, where = job?.job_id ?? '<job>', re
 }
 
 /** Validate a compiled visual job. Returns an array of issues; empty means PASS. */
-function validateVisualJobRecord(job, { schema = loadSchema(), profiles = loadArtifactProfiles(), brand, referenceContext } = {}, repairState = { chain: new Set(), depth: 0 }) {
+function validateVisualJobRecord(job, { schema, profiles = loadArtifactProfiles(), brand, referenceContext, authorityContext } = {}, repairState = { chain: new Set(), depth: 0 }) {
   const issues = [];
   const where = job?.job_id ?? '<job>';
 
-  for (const e of validate(job, schema)) {
+  let validatedAuthority;
+  try {
+    validatedAuthority = requireVisualSemanticAuthority(authorityContext);
+  } catch (error) {
+    if (error instanceof VisualSemanticAuthorityError) return error.issues.map((entry) => issue(entry.code, where, entry.message));
+    throw error;
+  }
+
+  const mountedJobSchema = authoritySchemaAtMount(validatedAuthority, '/');
+  if (schema !== undefined && !sameJSONValue(schema, mountedJobSchema)) {
+    return [issue(CODES.VISUAL_SEMANTIC_AUTHORITY_SHAPE_MISMATCH, where,
+      'options.schema differs from the Visual Job schema in authorityContext; schema injection must use the single authorityContext dependency')];
+  }
+  const effectiveSchema = schema ?? mountedJobSchema;
+
+  for (const e of validate(job, effectiveSchema)) {
     issues.push(issue(CODES.SCHEMA, where, `${e.path}: ${e.message}`));
   }
   if (issues.some((i) => i.code === CODES.SCHEMA)) return issues; // structurally unsound; cross-field checks would be noise
@@ -1287,7 +1409,7 @@ function validateVisualJobRecord(job, { schema = loadSchema(), profiles = loadAr
   }
 
   // PR A checks are additive. They never replace approvalLockIssues below.
-  issues.push(...validateVisualContract(job, { brand: resolvedBrand, profiles, referenceContext }, where));
+  issues.push(...validateVisualContract(job, { brand: resolvedBrand, profiles, referenceContext, validatedAuthority }, where));
   issues.push(...validateVerifiedFactTerminalReview(job, where));
 
   if (!job.article_ref && !job.package_ref) {
@@ -1359,7 +1481,7 @@ function validateVisualJobRecord(job, { schema = loadSchema(), profiles = loadAr
   }
 
   issues.push(...approvalLockIssues(job, where));
-  issues.push(...validateVisualProduction(job, where, referenceContext, repairState));
+  issues.push(...validateVisualProduction(job, where, referenceContext, repairState, validatedAuthority));
 
   if (job.information_gain?.verdict === 'skip') {
     if (job.compiled_prompt !== undefined || (job.compiled_from ?? []).length > 0) {
@@ -1437,7 +1559,8 @@ export function validateVisualJobFile(path, options = {}) {
  * Deterministic, model-free prompt assembly from declared inputs only.
  * No network call, no LLM call — pure string composition.
  */
-export function compileVisualPrompt(job, { profiles = loadArtifactProfiles(), brand, promptAdapter = 'generic-v1' } = {}) {
+export function compileVisualPrompt(job, { profiles = loadArtifactProfiles(), brand, promptAdapter = 'generic-v1', authorityContext } = {}) {
+  const validatedAuthority = requireVisualSemanticAuthority(authorityContext);
   // The approval lock is enforced here as well as in the validator: a sealed
   // job must not be able to obtain a fresh generation prompt by calling the
   // compiler directly and validating afterwards.
@@ -1464,8 +1587,12 @@ export function compileVisualPrompt(job, { profiles = loadArtifactProfiles(), br
   // An unresolvable brand throws here rather than silently compiling against
   // suengj.com's tokens under a different brand's name.
   const resolvedBrand = brand ?? resolveBrandProfile(job.brand_profile, job.brand_profile_version);
-  const visualContractIssues = validateVisualContract(job, { brand: resolvedBrand, profiles });
+  const visualContractIssues = validateVisualContract(job, { brand: resolvedBrand, profiles, validatedAuthority });
   if (visualContractIssues.length > 0) {
+    const authorityIssues = visualContractIssues.filter((entry) => Object.values(AUTHORITY_CODES).includes(entry.code));
+    if (authorityIssues.length > 0) {
+      throw new VisualSemanticAuthorityError(authorityIssues.map((entry) => ({ code: entry.code, path: '/', message: entry.message })));
+    }
     throw new Error(`visual contract invalid: ${visualContractIssues.map((i) => `[${i.code}] ${i.message}`).join(' | ')}`);
   }
 
@@ -1473,7 +1600,7 @@ export function compileVisualPrompt(job, { profiles = loadArtifactProfiles(), br
   if (!SUPPORTED_PROMPT_ADAPTERS.includes(promptAdapter)) {
     throw new Error(`unknown prompt adapter: ${promptAdapter}`);
   }
-  const compiled_prompt = assemblePrompt(job, { profiles, brand: resolvedBrand, promptAdapter });
+  const compiled_prompt = assemblePrompt(job, { profiles, brand: resolvedBrand, promptAdapter, validatedAuthority });
 
   // compiled_from records the brand actually loaded (resolvedBrand.brand /
   // .profile_version), never job.brand_profile verbatim — the two agree
