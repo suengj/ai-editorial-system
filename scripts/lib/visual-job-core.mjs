@@ -1090,8 +1090,12 @@ function normalizeReferenceIdentity(value) {
     const parsed = new URL(trimmed);
     parsed.protocol = parsed.protocol.toLowerCase();
     if (parsed.hostname) parsed.hostname = parsed.hostname.toLowerCase();
-    // Keep opaque identifiers byte-distinct; RFC 3986 unreserved-octet
-    // normalization applies here only to hierarchical authority references.
+    // RFC 3986: decode unreserved octets below. URL parsing already maps
+    // literal non-ASCII to its UTF-8 percent-encoded URI form, so those forms
+    // denote the same identity; making them distinct would be a regression.
+    // Reserved octets stay encoded because decoding them would change identity.
+    // Keep opaque identifiers byte-distinct by limiting this normalization to
+    // hierarchical authority references.
     if (!/^[a-z][a-z0-9+.-]*:\/\//i.test(trimmed)) return parsed.href;
     return parsed.href.replace(/%([0-9a-f]{2})/gi, (encoded, hex) => {
       const octet = Number.parseInt(hex, 16);

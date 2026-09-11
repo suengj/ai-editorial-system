@@ -96,6 +96,12 @@ for (const [name, fieldPath] of [
   ['percent-encoded unreserved tilde predecessor publication_composite.composite_id', ['publication_composite', 'composite_id']],
   ['percent-encoded unreserved tilde predecessor publication_composite.asset_ref', ['publication_composite', 'asset_ref']],
 ]) assertRepairReferencePair(name, fieldPath, 'https://example.com/~identity', 'https://example.com/%7Eidentity', true);
+for (const [name, fieldPath] of [
+  ['literal non-ASCII and UTF-8 percent-encoding factual_overlay.overlay_id', ['factual_overlay', 'overlay_id']],
+  ['literal non-ASCII and UTF-8 percent-encoding factual_overlay.asset_ref', ['factual_overlay', 'asset_ref']],
+  ['literal non-ASCII and UTF-8 percent-encoding publication_composite.composite_id', ['publication_composite', 'composite_id']],
+  ['literal non-ASCII and UTF-8 percent-encoding publication_composite.asset_ref', ['publication_composite', 'asset_ref']],
+]) assertRepairReferencePair(name, fieldPath, 'https://example.com/id%ED%95%9Cvalue', 'https://example.com/id한value', true);
 assertRepairReferencePair('reserved percent-encoded slash versus literal slash', ['factual_overlay', 'asset_ref'],
   'https://example.com/%2Fidentity', 'https://example.com//identity', false);
 assertRepairReferencePair('mixed-case hierarchical path', ['publication_composite', 'asset_ref'],
