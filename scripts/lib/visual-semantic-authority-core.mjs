@@ -35,11 +35,12 @@ export const VISUAL_AUTHORITY_REGISTRY_SCHEMA = resolve(ROOT, 'schemas/visual-se
 
 const ABSENT = Object.freeze({ $visual_semantic_authority: 'absent' });
 const PRESENT_OBJECT = Object.freeze({ $visual_semantic_authority: 'present_object' });
-const STRUCTURAL_KEYS = Object.freeze([
-  '$ref', 'type', 'const', 'enum', 'required', 'additionalProperties', 'pattern',
-  'minItems', 'maxItems', 'uniqueItems', 'minLength', 'maxLength', 'minimum',
-  'maximum', 'exclusiveMinimum', 'exclusiveMaximum', 'multipleOf', 'format',
-]);
+// These four keywords are pure annotations: changing them cannot change which
+// instances the schema accepts. Do not add a keyword here merely because the
+// current validator does not implement it; every present/future keyword is
+// structural by default so unsupported validation semantics cannot disappear
+// from the digest.
+const NON_STRUCTURAL_ANNOTATIONS = Object.freeze(new Set(['title', 'description', 'examples', '$comment']));
 
 const readJSON = (path) => JSON.parse(readFileSync(path, 'utf8'));
 const escapePointer = (value) => String(value).replace(/~/g, '~0').replace(/\//g, '~1');
@@ -76,17 +77,37 @@ function resolveNode(node, root, pointer, refStack = []) {
 }
 
 function structuralShape(node, root, pointer, refStack = []) {
-  const out = {};
-  if (node.$ref !== undefined) out.$ref = node.$ref;
-  const resolved = resolveNode(node, root, pointer, refStack);
-  for (const key of STRUCTURAL_KEYS) {
-    if (key === '$ref') continue;
-    if (resolved.node[key] !== undefined) out[key] = resolved.node[key];
+  if (!node || typeof node !== 'object') throw new Error(`schema node ${pointer} is not an object`);
+  const local = {};
+  for (const [key, value] of Object.entries(node)) {
+    if (key === '$ref' || NON_STRUCTURAL_ANNOTATIONS.has(key)) continue;
+    // Reachable named descendants are inventoried and digested independently;
+    // including their bodies here would make an annotation-only child edit
+    // churn every ancestor. $defs is only a storage body: reachable definitions
+    // re-enter through their $ref and receive the same independent coverage.
+    if (key === 'properties' || key === '$defs') continue;
+    if (key === 'items') {
+      const item = resolveNode(value, root, `${pointer}/items`, refStack);
+      const recursesIntoRegisteredChildren = (item.node.type === 'object' || item.node.properties) &&
+        Object.keys(item.node.properties ?? {}).length > 0;
+      // An object-item body is omitted only when walkObject will register and
+      // digest its named children; scalar and otherwise terminal item schemas
+      // remain here recursively, with unknown keywords included by default.
+      if (!recursesIntoRegisteredChildren) {
+        local.items = structuralShape(value, root, `${pointer}/items`, refStack);
+      }
+      continue;
+    }
+    local[key] = value;
   }
-  if (resolved.node.items !== undefined) {
-    out.items = structuralShape(resolved.node.items, root, `${resolved.pointer}/items`, resolved.refStack);
-  }
-  return out;
+  if (node.$ref === undefined) return local;
+  if (!node.$ref.startsWith('#/')) throw new Error(`cross-file reference at ${pointer}: ${node.$ref}`);
+  if (refStack.includes(node.$ref)) throw new Error(`reference cycle at ${pointer}: ${[...refStack, node.$ref].join(' -> ')}`);
+  return {
+    $ref: node.$ref,
+    ...(Object.keys(local).length === 0 ? {} : { $ref_siblings: local }),
+    $ref_target: structuralShape(pointerValue(root, node.$ref), root, node.$ref.slice(1), [...refStack, node.$ref]),
+  };
 }
 
 export function structuralSchemaDigest(node, root, pointer = '/', {

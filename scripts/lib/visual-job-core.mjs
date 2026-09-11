@@ -1083,6 +1083,19 @@ function sameJSONValue(left, right) {
   return leftKeys.length === rightKeys.length && leftKeys.every((key, i) => key === rightKeys[i] && sameJSONValue(left[key], right[key]));
 }
 
+function normalizeReferenceIdentity(value) {
+  if (typeof value !== 'string') return value;
+  const trimmed = value.trim();
+  try {
+    const parsed = new URL(trimmed);
+    parsed.protocol = parsed.protocol.toLowerCase();
+    if (parsed.hostname) parsed.hostname = parsed.hostname.toLowerCase();
+    return parsed.href;
+  } catch {
+    return trimmed.replace(/^([a-z][a-z0-9+.-]*):/i, (_, scheme) => `${scheme.toLowerCase()}:`);
+  }
+}
+
 const ARTICLE_CLAIM_ARTICLE_REF = /^article-claim:(art:[a-z0-9]+(?:-[a-z0-9]+)*):/;
 const ARTICLE_CLAIM_SOURCE_REF = /^article-claim:(art:[a-z0-9]+(?:-[a-z0-9]+)*):([a-z0-9]+(?:-[a-z0-9]+)*)$/;
 function articleIdFromSourceRef(sourceRef) {
@@ -1352,7 +1365,7 @@ function validateVisualProductionWithAuthority(job, where = job?.job_id ?? '<job
           ['factual_overlay.asset_ref', overlay.asset_ref, priorProduction.factual_overlay.asset_ref],
           ['publication_composite.composite_id', composite.composite_id, priorProduction.publication_composite.composite_id],
           ['publication_composite.asset_ref', composite.asset_ref, priorProduction.publication_composite.asset_ref],
-        ].filter(([, current, previous]) => current === previous).map(([path]) => path);
+        ].filter(([, current, previous]) => normalizeReferenceIdentity(current) === normalizeReferenceIdentity(previous)).map(([path]) => path);
         if (reusedDerivedIdentity.length > 0) {
           out.push(issue(CODES.FACTUAL_REPAIR, where,
             `a factual-overlay repair must assign new derived identities and asset refs; reused predecessor fields: ${reusedDerivedIdentity.join(', ')}`));

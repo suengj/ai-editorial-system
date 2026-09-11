@@ -7,7 +7,7 @@
       "schema_source": "evals/fixtures/visual-semantic-authority/allow/schema.json",
       "schema_pointer": "/properties/caption",
       "node_kind": "scalar",
-      "shape_sha256": "sha256:666d9e6f04c7f81db2e4ef5c3f77205cfe68857e0d9c61645110e95c94bfaa58",
+      "shape_sha256": "sha256:0f662f9f53394e32e9d1a8cf1c921bb8cb892ca1b77bcbb799ef939f04df92e5",
       "rendered_text": "deterministic_external_text",
       "prompt_semantics": "prompt_input",
       "localized_repair": "protected",

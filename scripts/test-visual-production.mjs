@@ -12,6 +12,10 @@ const has = (j, code) => validateVisualJob(j).some((x) => x.code === code);
 let bad = 0; const ok = (n, v, detail = '') => { console.log(`${v ? 'PASS' : 'FAIL'} ${n}${!v && detail ? ` — ${detail}` : ''}`); if (!v) bad++; };
 const base = () => copy(load('visual-job-body-infographic-v2.example.json'));
 const repairBase = () => copy(load('visual-job-body-infographic-factual-repair.example.json'));
+const uppercaseReferenceSchemeAndHost = (value) => value.replace(
+  /^([a-z][a-z0-9+.-]*):\/\/([^/]+)/i,
+  (_, scheme, host) => `${scheme.toUpperCase()}://${host.toUpperCase()}`,
+);
 const assertRepairDrift = (name, mutate) => {
   const j = repairBase();
   mutate(j);
@@ -52,6 +56,16 @@ assertRepairDerivedOutput('reused predecessor publication_composite.composite_id
   (j, prior) => { j.visual_production.publication_composite.composite_id = prior.visual_production.publication_composite.composite_id; }, CODES.FACTUAL_REPAIR);
 assertRepairDerivedOutput('reused predecessor publication_composite.asset_ref',
   (j, prior) => { j.visual_production.publication_composite.asset_ref = prior.visual_production.publication_composite.asset_ref; }, CODES.FACTUAL_REPAIR);
+for (const [name, mutate] of [
+  ['case-folded predecessor factual_overlay.overlay_id', (j, prior) => { j.visual_production.factual_overlay.overlay_id = prior.visual_production.factual_overlay.overlay_id.replace(/^overlay:/, 'OVERLAY:'); }],
+  ['whitespace-padded predecessor factual_overlay.overlay_id', (j, prior) => { j.visual_production.factual_overlay.overlay_id = ` ${prior.visual_production.factual_overlay.overlay_id} `; }],
+  ['case-folded predecessor factual_overlay.asset_ref scheme and host', (j, prior) => { j.visual_production.factual_overlay.asset_ref = uppercaseReferenceSchemeAndHost(prior.visual_production.factual_overlay.asset_ref); }],
+  ['whitespace-padded predecessor factual_overlay.asset_ref', (j, prior) => { j.visual_production.factual_overlay.asset_ref = ` ${prior.visual_production.factual_overlay.asset_ref} `; }],
+  ['case-folded predecessor publication_composite.composite_id', (j, prior) => { j.visual_production.publication_composite.composite_id = prior.visual_production.publication_composite.composite_id.replace(/^composite:/, 'COMPOSITE:'); }],
+  ['whitespace-padded predecessor publication_composite.composite_id', (j, prior) => { j.visual_production.publication_composite.composite_id = ` ${prior.visual_production.publication_composite.composite_id} `; }],
+  ['case-folded predecessor publication_composite.asset_ref scheme and host', (j, prior) => { j.visual_production.publication_composite.asset_ref = uppercaseReferenceSchemeAndHost(prior.visual_production.publication_composite.asset_ref); }],
+  ['whitespace-padded predecessor publication_composite.asset_ref', (j, prior) => { j.visual_production.publication_composite.asset_ref = ` ${prior.visual_production.publication_composite.asset_ref} `; }],
+]) assertRepairDerivedOutput(name, mutate, CODES.FACTUAL_REPAIR);
 { const j = load('visual-job-body-infographic-factual-repair.example.json'); j.visual_production.semantic_master.asset_sha256 = 'sha256:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff'; ok('reviewer self-attested replacement master fails resolved predecessor check', has(j, CODES.FACTUAL_REPAIR)); }
 { const j = load('visual-job-body-infographic-factual-repair.example.json'); j.visual_production.factual_overlay.asset_sha256 = 'sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb'; j.visual_production.publication_composite.factual_overlay_asset_sha256 = j.visual_production.factual_overlay.asset_sha256; ok('reviewer phantom prior overlay fails resolved predecessor check', has(j, CODES.FACTUAL_REPAIR)); }
 { const j = load('visual-job-body-infographic-factual-repair.example.json'); const item = j.visual_production.factual_overlay.payload.items[0]; j.visual_brief.factual_invariants = ['unrelated semantic claim']; item.exact_text = 'unrelated semantic claim'; item.source_ref = 'article-claim:art:tokenized-stocks-instant-payments-liquidity-rights:unrelated-semantic-claim'; item.accessible_text = 'Unrelated semantic claim.'; j.visual_production.factual_overlay.declared_factual_invariants = ['unrelated semantic claim']; j.visual_production.factual_overlay.payload_sha256 = canonicalPayloadSha256(j.visual_production.factual_overlay.payload); j.visual_production.factual_repair.item_decisions[0].current_item_sha256 = canonicalPayloadSha256(item); ok('reviewer exact mutation: factual repair cannot replace the brief invariant and overlay with unrelated semantics', validateVisualProduction(j).some((x) => x.code === CODES.FACTUAL_REPAIR_ITEM)); }

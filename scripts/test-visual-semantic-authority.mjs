@@ -122,6 +122,9 @@ for (const [name, mutate, code] of [
   ['root required relaxation', (context) => { context.schemaMounts.find((entry) => entry.mount === '/').schema.required.pop(); }, AUTHORITY_CODES.SHAPE_MISMATCH],
   ['nested required relaxation', (context) => { context.schemaMounts.find((entry) => entry.mount === '/').schema.$defs.audience.required.pop(); }, AUTHORITY_CODES.SHAPE_MISMATCH],
   ['nested additionalProperties relaxation', (context) => { context.schemaMounts.find((entry) => entry.mount === '/').schema.$defs.audience.additionalProperties = true; }, AUTHORITY_CODES.REGISTRY_INVALID],
+  ['deep object-array item minProperties addition', (context) => { context.schemaMounts.find((entry) => entry.mount === '/visual_production').schema.$defs.overlay.properties.payload.properties.items.items.minProperties = 5; }, AUTHORITY_CODES.SHAPE_MISMATCH],
+  ['nested object propertyNames addition', (context) => { context.schemaMounts.find((entry) => entry.mount === '/').schema.$defs.audience.propertyNames = { pattern: '^[a-z_]+$' }; }, AUTHORITY_CODES.SHAPE_MISMATCH],
+  ['generalization keyword not addition beside $ref', (context) => { context.schemaMounts.find((entry) => entry.mount === '/').schema.properties.audience.not = { required: ['traits_applied'] }; }, AUTHORITY_CODES.SHAPE_MISMATCH],
 ]) {
   const context = clone(loadVisualSemanticAuthorityContext());
   mutate(context);
