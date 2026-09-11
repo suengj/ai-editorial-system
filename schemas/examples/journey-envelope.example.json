@@ -36,9 +36,9 @@
   "journey_binding_sha256": "ff45633876b5c579aef93c4a3fb03a4a0c67064ab7dd459bead62980dbe6aae3",
   "review_ref": {
     "repository": "suengj/ai-editorial-system",
-    "commit": "4f3fc2ce086f65a8536189eec09990771fea7292",
+    "commit": "3bc181edea0d8fc870e918b6789b3cd2d2d96c06",
     "path": "scripts/fixtures/journey-envelope/records/editorial-review.json",
-    "content_sha256": "2c9b39ca4cd586f6c36ad67132a1d6e656cd41f2ac0582e54216a20067ea6aaf"
+    "content_sha256": "cd8b2ff5656912c44ae736e6caef3308da90d5c15d64201828e5fb1c80f98f35"
   },
   "handoff_receipt_ref": {
     "repository": "suengj/ai-editorial-system",

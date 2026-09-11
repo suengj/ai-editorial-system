@@ -213,6 +213,15 @@ authoritative. That is precisely why unresolved references fail closed here
 and why authentic cross-repository byte resolution is deferred to the SUE-787
 system-integration tests rather than certified by this envelope implementation.
 
+All entry points use one shared verification path: it resolves and digest-checks
+references, then checks the resolved decision, review, receipt, publication,
+deployment, and live records against the envelope bindings. Validation,
+restart recovery, reference reconstruction, and assessment therefore cannot
+disagree about whether a completed journey is supported. Local Git resolution
+accepts only a 7-40 character lowercase-hex commit id before invoking `git
+show`; revision expressions such as `^{tree}`, `HEAD`, and `main` return
+`HANDOFF_INVALID`.
+
 ## Validation
 
 ```bash

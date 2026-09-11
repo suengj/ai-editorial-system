@@ -49,11 +49,20 @@
   "review": {
     "record_ref": {
       "repository": "suengj/ai-editorial-system",
-      "commit": "4f3fc2ce086f65a8536189eec09990771fea7292",
+      "commit": "3bc181edea0d8fc870e918b6789b3cd2d2d96c06",
       "path": "scripts/fixtures/journey-envelope/records/editorial-review.json",
-      "content_sha256": "2c9b39ca4cd586f6c36ad67132a1d6e656cd41f2ac0582e54216a20067ea6aaf"
+      "content_sha256": "cd8b2ff5656912c44ae736e6caef3308da90d5c15d64201828e5fb1c80f98f35"
     },
     "record": {
+      "dossier_ref": {
+        "source_id": "src:github:suengj/intelligence-library/agent-cost-curve",
+        "source_class": "intelligence_dossier",
+        "repository": "suengj/intelligence-library",
+        "commit": "5bf6b44",
+        "path": "intelligence/dossiers/agent-cost-curve.md",
+        "content_sha256": "96a9b92794c569435051d97f5e0ec6773a36ac400279349bbf7005fd586dd78e",
+        "evidence_role": "supporting"
+      },
       "article_ref": {
         "article_id": "art:agent-cost-curve",
         "version_number": 4,

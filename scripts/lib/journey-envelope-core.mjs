@@ -302,6 +302,15 @@ function walkFileRefs(value, path = '$', out = []) {
 
 const LOCAL_REPOSITORY = 'suengj/ai-editorial-system';
 const referenceKey = (ref) => `${ref?.repository}@${ref?.commit}:${ref?.path}`;
+const resolutionKey = (ref) => `${referenceKey(ref)}#${ref?.content_sha256}`;
+
+function validImmutableRecordRef(ref) {
+  return ref && typeof ref === 'object' && !Array.isArray(ref) &&
+    /^[a-zA-Z0-9_.-]+\/[a-zA-Z0-9_.-]+$/.test(ref.repository ?? '') &&
+    /^[a-f0-9]{7,40}$/.test(ref.commit ?? '') &&
+    validRelativePath(ref.path) &&
+    /^[a-f0-9]{64}$/.test(ref.content_sha256 ?? '');
+}
 
 /**
  * Resolve and verify one immutable record reference.
@@ -314,6 +323,14 @@ export function resolveAndVerifyJourneyReference(ref, {
   localRoot = ROOT,
   resolveExternalRecord,
 } = {}) {
+  if (!validImmutableRecordRef(ref)) {
+    return {
+      ok: false,
+      code: CODES.HANDOFF_INVALID,
+      issue: issue(CODES.HANDOFF_INVALID, '$.record_ref',
+        'record reference must use repository owner/name, a 7-40 lowercase-hex commit, a safe relative path, and a 64-hex content digest'),
+    };
+  }
   let raw;
   if (ref?.repository === LOCAL_REPOSITORY) {
     try {
@@ -417,14 +434,19 @@ export function createRecordBundleResolver(recordBundle) {
 
 function verifyEnvelopeReferences(envelope, options, issues) {
   const seen = new Set();
+  const resolutions = new Map();
   for (const { ref, path } of walkFileRefs(envelope)) {
-    const key = `${referenceKey(ref)}#${ref.content_sha256}`;
+    const key = resolutionKey(ref);
     if (seen.has(key)) continue;
     seen.add(key);
     const result = resolveAndVerifyJourneyReference(ref, options);
+    resolutions.set(key, result);
     if (!result.ok) issues.push({ ...result.issue, where: path });
   }
+  return resolutions;
 }
+
+const resolvedRecord = (resolutions, ref) => resolutions.get(resolutionKey(ref))?.record;
 
 function valuesAtPath(value, parts) {
   if (parts.length === 0) return value === undefined ? [] : [value];
@@ -505,8 +527,8 @@ function validateDossierPath(envelope, issues) {
   }
 }
 
-/** Validate structure plus the cross-field invariants JSON Schema cannot express. */
-export function validateJourneyEnvelope(envelope, {
+/** One path for structure, reference resolution, and semantic record bindings. */
+function verifyJourneyEnvelope(envelope, {
   schema = loadSchema(),
   localRoot = ROOT,
   resolveExternalRecord,
@@ -515,7 +537,9 @@ export function validateJourneyEnvelope(envelope, {
   for (const error of validate(envelope, schema)) {
     issues.push(issue(CODES.HANDOFF_INVALID, error.path, error.message));
   }
-  if (!envelope || typeof envelope !== 'object' || Array.isArray(envelope)) return issues;
+  if (!envelope || typeof envelope !== 'object' || Array.isArray(envelope)) {
+    return { issues, resolutions: new Map() };
+  }
 
   for (const { ref, path } of walkFileRefs(envelope)) {
     if (!validRelativePath(ref.path)) {
@@ -525,7 +549,9 @@ export function validateJourneyEnvelope(envelope, {
   }
   validateAuthority(envelope, issues);
   validateDossierPath(envelope, issues);
-  verifyEnvelopeReferences(envelope, { localRoot, resolveExternalRecord }, issues);
+  const resolutions = verifyEnvelopeReferences(
+    envelope, { localRoot, resolveExternalRecord }, issues,
+  );
 
   const selection = envelope.candidate?.selection;
   if (selection !== null && selection !== undefined &&
@@ -686,7 +712,13 @@ export function validateJourneyEnvelope(envelope, {
     issues.push(issue(CODES.HANDOFF_INVALID, '$.live_verification',
       'media_url and media_sha256 must either both be present or both be absent'));
   }
-  return issues;
+  verifyResolvedJourneyBindings(envelope, resolutions, issues);
+  return { issues, resolutions };
+}
+
+/** Validate structure plus the cross-field invariants JSON Schema cannot express. */
+export function validateJourneyEnvelope(envelope, options = {}) {
+  return verifyJourneyEnvelope(envelope, options).issues;
 }
 
 export function validateJourneyEnvelopeFile(path, options = {}) {
@@ -775,14 +807,90 @@ function visualDecisionRecord(binding) {
   };
 }
 
-function resolvedWrapper(issues, wrapper, expectedRef, options, code, where) {
+function verifyResolvedJourneyBindings(envelope, resolutions, issues) {
+  const recordedArticle = envelope.approved_revision?.article_ref ?? envelope.article_ref;
+  const candidateLedger = resolvedRecord(resolutions, envelope.candidate?.ledger_ref);
+  if (candidateLedger && envelope.candidate?.selection !== null) {
+    expectSame(issues, candidateLedger.candidate,
+      { slug: envelope.candidate.slug, selection: envelope.candidate.selection },
+      CODES.HANDOFF_INVALID, '$.candidate.ledger_ref',
+      'resolved candidate selection does not bind the envelope candidate');
+  }
+
+  const review = resolvedRecord(resolutions, envelope.review_ref);
+  if (review) {
+    expectSame(issues, review.dossier_ref, envelope.dossier,
+      CODES.STALE_REVISION, '$.review_ref',
+      'resolved editorial review does not bind the exact dossier revision');
+    expectSame(issues, review.article_ref, recordedArticle,
+      CODES.STALE_REVISION, '$.review_ref',
+      'resolved editorial review does not bind the reviewed article revision');
+  }
+
+  const handoffReceipt = resolvedRecord(resolutions, envelope.handoff_receipt_ref);
+  if (handoffReceipt) {
+    expectSame(issues, handoffReceipt.article_ref, recordedArticle,
+      CODES.STALE_REVISION, '$.handoff_receipt_ref',
+      'resolved handoff receipt does not bind the approved article revision');
+    expectSame(issues, handoffReceipt.artifacts?.map((entry) => entry.asset_sha256),
+      envelope.asset_bindings?.map((entry) => entry.asset_sha256),
+      CODES.MEDIA_DIGEST_MISMATCH, '$.handoff_receipt_ref',
+      'resolved handoff receipt does not bind the ordered envelope asset digests');
+  }
+
+  const publishApproval = resolvedRecord(resolutions, envelope.approved_revision?.record_ref);
+  if (publishApproval) {
+    expectSame(issues, publishApproval, publishDecisionRecord(envelope.approved_revision),
+      CODES.STALE_REVISION, '$.approved_revision.record_ref',
+      'resolved publish decision does not bind the recorded approval');
+  }
+
+  envelope.asset_bindings?.forEach((binding, index) => {
+    const visualApproval = resolvedRecord(resolutions, binding?.visual_approval?.record_ref);
+    if (visualApproval) {
+      expectSame(issues, visualApproval, visualDecisionRecord(binding),
+        CODES.STALE_REVISION, `$.asset_bindings[${index}].visual_approval.record_ref`,
+        'resolved visual decision does not bind this exact asset lineage and digest');
+    }
+  });
+
+  const publishRun = resolvedRecord(resolutions, envelope.publish_run?.record_ref);
+  if (publishRun) {
+    expectSame(issues, publishRun.run_id, envelope.publish_run.run_id,
+      CODES.HANDOFF_INVALID, '$.publish_run.record_ref',
+      'resolved publish run identity disagrees with the envelope');
+  }
+
+  const deployment = resolvedRecord(resolutions, envelope.deployed_artifact?.record_ref);
+  if (deployment) {
+    expectSame(issues, deployment.deployment_id, envelope.deployed_artifact.deployment_id,
+      CODES.HANDOFF_INVALID, '$.deployed_artifact.record_ref',
+      'resolved deployment identity disagrees with the envelope');
+    expectSame(issues, deployment.source_commit, envelope.source_commit,
+      CODES.HANDOFF_INVALID, '$.deployed_artifact.record_ref',
+      'resolved deployment source commit disagrees with the envelope');
+  }
+
+  const liveVerification = resolvedRecord(resolutions, envelope.live_verification_ref);
+  if (liveVerification) {
+    expectSame(issues, liveVerification.result, envelope.live_verification,
+      CODES.HANDOFF_INVALID, '$.live_verification_ref',
+      'resolved live read-back result disagrees with the envelope');
+    if (publishRun) {
+      issues.push(...validateSUE789Interop({
+        manifest: publishRun.manifest,
+        receipt: publishRun.receipt,
+        result: liveVerification.result,
+      }));
+    }
+  }
+}
+
+function resolvedWrapper(issues, wrapper, expectedRef, resolutions, code, where) {
   expectSame(issues, wrapper?.record_ref, expectedRef, CODES.HANDOFF_INVALID,
     `${where}.record_ref`, 'record pointer disagrees with the envelope');
-  const resolution = resolveAndVerifyJourneyReference(expectedRef, options);
-  if (!resolution.ok) {
-    issues.push({ ...resolution.issue, where: `${where}.record_ref` });
-    return undefined;
-  }
+  const resolution = resolutions.get(resolutionKey(expectedRef));
+  if (!resolution?.ok) return undefined;
   expectSame(issues, wrapper?.record, resolution.record, code, `${where}.record`,
     'caller-supplied record metadata disagrees with hash-verified record bytes');
   return resolution.record;
@@ -790,36 +898,38 @@ function resolvedWrapper(issues, wrapper, expectedRef, options, code, where) {
 
 /** Resolve independent record metadata and prove cross-repository agreement. */
 export function validateJourneyReferences(envelope, records, options = {}) {
-  const issues = validateJourneyEnvelope(envelope, options);
+  const verification = verifyJourneyEnvelope(envelope, options);
+  const issues = verification.issues;
   if (issues.length > 0) return issues;
   if (!records || typeof records !== 'object') {
     return [issue(CODES.HANDOFF_INVALID, '$.records', 'independent referenced records are required')];
   }
+  const { resolutions } = verification;
   const candidateLedger = resolvedWrapper(issues, records.candidate_ledger,
-    envelope.candidate.ledger_ref, options, CODES.HANDOFF_INVALID, '$.records.candidate_ledger');
+    envelope.candidate.ledger_ref, resolutions, CODES.HANDOFF_INVALID, '$.records.candidate_ledger');
   expectSame(issues, records.dossier_source?.record_ref, envelope.dossier,
     CODES.HANDOFF_INVALID, '$.records.dossier_source.record_ref', 'dossier pointer disagrees');
   const dossierSource = records.dossier_source?.record;
   const review = resolvedWrapper(issues, records.review,
-    envelope.review_ref, options, CODES.STALE_REVISION, '$.records.review');
+    envelope.review_ref, resolutions, CODES.STALE_REVISION, '$.records.review');
   const handoffReceipt = resolvedWrapper(issues, records.handoff_receipt,
-    envelope.handoff_receipt_ref, options, CODES.HANDOFF_INVALID, '$.records.handoff_receipt');
+    envelope.handoff_receipt_ref, resolutions, CODES.HANDOFF_INVALID, '$.records.handoff_receipt');
   const publishApproval = resolvedWrapper(issues, records.publish_approval,
-    envelope.approved_revision.record_ref, options, CODES.STALE_REVISION, '$.records.publish_approval');
+    envelope.approved_revision.record_ref, resolutions, CODES.STALE_REVISION, '$.records.publish_approval');
   const visualApprovals = envelope.asset_bindings.map((binding, index) => resolvedWrapper(
     issues,
     records.visual_approvals?.[index],
     binding.visual_approval.record_ref,
-    options,
+    resolutions,
     CODES.STALE_REVISION,
     `$.records.visual_approvals[${index}]`,
   ));
   const publishRun = resolvedWrapper(issues, records.publish_run,
-    envelope.publish_run.record_ref, options, CODES.HANDOFF_INVALID, '$.records.publish_run');
+    envelope.publish_run.record_ref, resolutions, CODES.HANDOFF_INVALID, '$.records.publish_run');
   const deployment = resolvedWrapper(issues, records.deployment,
-    envelope.deployed_artifact.record_ref, options, CODES.HANDOFF_INVALID, '$.records.deployment');
+    envelope.deployed_artifact.record_ref, resolutions, CODES.HANDOFF_INVALID, '$.records.deployment');
   const liveVerification = resolvedWrapper(issues, records.live_verification,
-    envelope.live_verification_ref, options, CODES.HANDOFF_INVALID, '$.records.live_verification');
+    envelope.live_verification_ref, resolutions, CODES.HANDOFF_INVALID, '$.records.live_verification');
 
   expectSame(issues, candidateLedger?.candidate,
     { slug: envelope.candidate.slug, selection: envelope.candidate.selection },
@@ -868,7 +978,8 @@ export function recoverJourneyState(serialized, options = {}) {
       issues: [issue(CODES.HANDOFF_INVALID, '$', `unparseable journey envelope: ${error.message}`)],
     };
   }
-  const issues = validateJourneyEnvelope(envelope, options);
+  const verification = verifyJourneyEnvelope(envelope, options);
+  const issues = verification.issues;
   if (issues.length > 0) {
     return { ok: false, code: issues[0].code, state: issues[0].code, issues };
   }
@@ -949,7 +1060,8 @@ export function assessPublishGate(envelope, {
   assetDigests,
   referenceOptions = {},
 } = {}) {
-  const baselineIssues = validateJourneyEnvelope(envelope, referenceOptions);
+  const verification = verifyJourneyEnvelope(envelope, referenceOptions);
+  const baselineIssues = verification.issues;
   if (baselineIssues.length > 0) {
     return { accepted: false, code: baselineIssues[0].code, issues: baselineIssues };
   }
@@ -957,12 +1069,16 @@ export function assessPublishGate(envelope, {
     const stale = issue(CODES.STALE_REVISION, '$.state', 'a stale envelope cannot pass the publish gate');
     return { accepted: false, code: CODES.STALE_REVISION, issues: [stale] };
   }
-  const decision = resolveAndVerifyJourneyReference(
-    envelope.approved_revision.record_ref,
-    referenceOptions,
+  const decision = verification.resolutions.get(
+    resolutionKey(envelope.approved_revision?.record_ref),
   );
-  if (!decision.ok) {
-    return { accepted: false, code: decision.code, issues: [decision.issue] };
+  if (!decision?.ok) {
+    const failure = decision ?? {
+      code: CODES.HANDOFF_INVALID,
+      issue: issue(CODES.HANDOFF_INVALID, '$.approved_revision.record_ref',
+        'publish approval record was not resolved by the shared verification path'),
+    };
+    return { accepted: false, code: failure.code, issues: [failure.issue] };
   }
   if (!same(decision.record, publishDecisionRecord(envelope.approved_revision))) {
     const stale = issue(CODES.STALE_REVISION, '$.approved_revision.record_ref',
@@ -993,7 +1109,8 @@ export function assessAssetApproval(envelope, receiptArtifactIndex, {
   assetDigest,
   referenceOptions = {},
 } = {}) {
-  const baselineIssues = validateJourneyEnvelope(envelope, referenceOptions);
+  const verification = verifyJourneyEnvelope(envelope, referenceOptions);
+  const baselineIssues = verification.issues;
   if (baselineIssues.length > 0) {
     return { approval_valid: false, presentable: false, code: baselineIssues[0].code, lineage: null, issues: baselineIssues };
   }
@@ -1003,12 +1120,16 @@ export function assessAssetApproval(envelope, receiptArtifactIndex, {
     return { approval_valid: false, presentable: false, code: CODES.HANDOFF_INVALID, lineage: null };
   }
   const lineage = classifyArtifact({ article_ref: binding.article_ref }, articleForLineage(articleRef));
-  const decision = resolveAndVerifyJourneyReference(
-    binding.visual_approval.record_ref,
-    referenceOptions,
+  const decision = verification.resolutions.get(
+    resolutionKey(binding.visual_approval?.record_ref),
   );
-  if (!decision.ok) {
-    return { approval_valid: false, presentable: false, code: decision.code, lineage, issues: [decision.issue] };
+  if (!decision?.ok) {
+    const failure = decision ?? {
+      code: CODES.HANDOFF_INVALID,
+      issue: issue(CODES.HANDOFF_INVALID, '$.asset_bindings[].visual_approval.record_ref',
+        'visual approval record was not resolved by the shared verification path'),
+    };
+    return { approval_valid: false, presentable: false, code: failure.code, lineage, issues: [failure.issue] };
   }
   const externallyBound = same(decision.record, visualDecisionRecord(binding));
   const selfBound = binding.visual_approval.binding_sha256 ===

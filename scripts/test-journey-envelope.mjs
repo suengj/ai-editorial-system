@@ -23,6 +23,7 @@ import {
   reconstructIdentityChain,
   recordInterrupt,
   recoverJourneyState,
+  resolveAndVerifyJourneyReference,
   resumeJourney,
   validateJourneyEnvelope,
   validateJourneyEnvelopeFile,
@@ -333,12 +334,15 @@ console.log('acceptance 5 — exact ordered asset set and self-binding approvals
     referenceOptions,
   });
   const reboundReferences = validateJourneyReferences(rebound, records, referenceOptions).map((entry) => entry.code);
-  check(`recomputing forged envelope digests cannot reuse the old external decisions and fails named ${CODES.STALE_REVISION}`,
-    codes(rebound).length === 0 && validateJourneyReferences(base, records, referenceOptions).length === 0 &&
+  const reboundRecovery = recoverJourneyState(JSON.stringify(rebound), referenceOptions);
+  check(`shared verification catches recomputed forged envelope bindings with named ${CODES.STALE_REVISION}`,
+    coordinatedBaseline.length === 0 && validateJourneyReferences(base, records, referenceOptions).length === 0 &&
+      codes(rebound).includes(CODES.STALE_REVISION) && !reboundRecovery.ok &&
+      reboundRecovery.code === CODES.STALE_REVISION &&
       !reboundGate.accepted && reboundGate.code === CODES.STALE_REVISION &&
       !reboundVisual.approval_valid && reboundVisual.code === CODES.STALE_REVISION &&
       reboundReferences.includes(CODES.STALE_REVISION),
-    JSON.stringify({ reboundGate, reboundVisual, reboundReferences }));
+    JSON.stringify({ reboundCodes: codes(rebound), reboundRecovery, reboundGate, reboundVisual, reboundReferences }));
 }
 
 console.log('acceptance 6 — blocked transport executes only the recovery seam');
@@ -720,7 +724,110 @@ console.log('repair round 2 — fail-closed record resolution and unambiguous by
   check(`custom-file CLI without an external resolver fails named ${CODES.BLOCKED_TRANSPORT}`,
     customWithoutRecords.status !== 0 &&
       `${customWithoutRecords.stdout}${customWithoutRecords.stderr}`.includes(CODES.BLOCKED_TRANSPORT),
-    `${customWithoutRecords.stdout}${customWithoutRecords.stderr}`);
+      `${customWithoutRecords.stdout}${customWithoutRecords.stderr}`);
+
+  const validResolutionBaseline = recoverJourneyState(JSON.stringify(base), referenceOptions);
+  check('validator-clean legitimate envelope still recovers as LIVE_VERIFIED',
+    baseline.length === 0 && validResolutionBaseline.ok &&
+      validResolutionBaseline.state === 'LIVE_VERIFIED');
+
+  const resolver = referenceOptions.resolveExternalRecord;
+  const wrongDecisionRecord = clone(records.visual_approvals[0].record);
+  const wrongDecision = clone(base);
+  wrongDecision.approved_revision.record_ref.content_sha256 = canonicalRecordSha256(wrongDecisionRecord);
+  const wrongDecisionOptions = {
+    resolveExternalRecord(ref) {
+      if (ref.repository === wrongDecision.approved_revision.record_ref.repository &&
+          ref.commit === wrongDecision.approved_revision.record_ref.commit &&
+          ref.path === wrongDecision.approved_revision.record_ref.path) {
+        return JSON.stringify(wrongDecisionRecord);
+      }
+      return resolver(ref);
+    },
+  };
+  const wrongDecisionCodes = codes(wrongDecision, wrongDecisionOptions);
+  const wrongDecisionRecovery = recoverJourneyState(
+    JSON.stringify(wrongDecision), wrongDecisionOptions,
+  );
+  check(`hash-consistent semantically wrong publish bytes fail validation and recovery with named ${CODES.STALE_REVISION}`,
+    baseline.length === 0 && wrongDecisionCodes.includes(CODES.STALE_REVISION) &&
+      !wrongDecisionRecovery.ok && wrongDecisionRecovery.code === CODES.STALE_REVISION &&
+      wrongDecisionRecovery.state !== 'LIVE_VERIFIED',
+    JSON.stringify({ wrongDecisionCodes, wrongDecisionRecovery }));
+
+  const reusedVisual = clone(base);
+  reusedVisual.asset_bindings[1].visual_approval.record_ref =
+    clone(base.asset_bindings[0].visual_approval.record_ref);
+  const reusedVisualCodes = codes(reusedVisual);
+  const reusedVisualRecovery = recoverJourneyState(
+    JSON.stringify(reusedVisual), referenceOptions,
+  );
+  check(`reusing a valid visual decision for another asset fails validation and recovery with named ${CODES.STALE_REVISION}`,
+    baseline.length === 0 && reusedVisualCodes.includes(CODES.STALE_REVISION) &&
+      !reusedVisualRecovery.ok && reusedVisualRecovery.code === CODES.STALE_REVISION &&
+      reusedVisualRecovery.state !== 'LIVE_VERIFIED',
+    JSON.stringify({ reusedVisualCodes, reusedVisualRecovery }));
+
+  const reusedApproval = clone(base);
+  reusedApproval.approved_revision.record_ref = {
+    ...reusedApproval.approved_revision.record_ref,
+    path: base.review_ref.path,
+    content_sha256: base.review_ref.content_sha256,
+  };
+  const reusedApprovalOptions = {
+    resolveExternalRecord(ref) {
+      if (ref.repository === reusedApproval.approved_revision.record_ref.repository &&
+          ref.commit === reusedApproval.approved_revision.record_ref.commit &&
+          ref.path === reusedApproval.approved_revision.record_ref.path) {
+        return JSON.stringify(records.review.record);
+      }
+      return resolver(ref);
+    },
+  };
+  const reusedApprovalCodes = codes(reusedApproval, reusedApprovalOptions);
+  const reusedApprovalRecovery = recoverJourneyState(
+    JSON.stringify(reusedApproval), reusedApprovalOptions,
+  );
+  check(`repointing publish approval at another valid JSON record fails validation and recovery with named ${CODES.STALE_REVISION}`,
+    baseline.length === 0 && reusedApprovalCodes.includes(CODES.STALE_REVISION) &&
+      !reusedApprovalRecovery.ok && reusedApprovalRecovery.code === CODES.STALE_REVISION &&
+      reusedApprovalRecovery.state !== 'LIVE_VERIFIED',
+    JSON.stringify({ reusedApprovalCodes, reusedApprovalRecovery }));
+
+  const swappedDossier = clone(base);
+  swappedDossier.dossier.path = 'intelligence/dossiers/agent-cost-curve-2026-09-10.md';
+  swappedDossier.dossier.commit = '6bf6b44';
+  swappedDossier.journey_binding_sha256 = journeyBindingSha256(
+    swappedDossier.candidate, swappedDossier.dossier, swappedDossier.article_ref,
+  );
+  const dossierBytes = resolver(base.dossier);
+  const swappedDossierOptions = {
+    resolveExternalRecord(ref) {
+      if (ref.repository === swappedDossier.dossier.repository &&
+          ref.commit === swappedDossier.dossier.commit &&
+          ref.path === swappedDossier.dossier.path) {
+        return dossierBytes;
+      }
+      return resolver(ref);
+    },
+  };
+  const swappedDossierCodes = codes(swappedDossier, swappedDossierOptions);
+  const swappedDossierRecovery = recoverJourneyState(
+    JSON.stringify(swappedDossier), swappedDossierOptions,
+  );
+  check(`hash-consistent dossier swap fails validation and recovery with named ${CODES.STALE_REVISION}`,
+    baseline.length === 0 && swappedDossierCodes.includes(CODES.STALE_REVISION) &&
+      !swappedDossierRecovery.ok && swappedDossierRecovery.code === CODES.STALE_REVISION &&
+      swappedDossierRecovery.state !== 'LIVE_VERIFIED',
+    JSON.stringify({ swappedDossierCodes, swappedDossierRecovery }));
+
+  const revisionExpressions = ['4f3fc2c^{tree}', 'HEAD', 'main', '4f3fc2c:scripts/fixtures'];
+  const revisionResults = revisionExpressions.map((commit) => resolveAndVerifyJourneyReference(
+    { ...base.review_ref, commit }, { localRoot: ROOT },
+  ));
+  check(`resolution boundary refuses Git revision expressions with named ${CODES.HANDOFF_INVALID}`,
+    revisionResults.every((result) => !result.ok && result.code === CODES.HANDOFF_INVALID),
+    JSON.stringify(revisionResults));
 }
 
 console.log('contract boundaries — refs and digests only');
