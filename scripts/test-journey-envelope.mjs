@@ -1,8 +1,10 @@
 #!/usr/bin/env node
 /** SUE-790 journey-envelope acceptance and anti-vacuity regression tests. */
 
-import { readFileSync } from 'node:fs';
-import { dirname, resolve } from 'node:path';
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { spawnSync } from 'node:child_process';
+import { tmpdir } from 'node:os';
+import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
   CODES,
@@ -13,8 +15,11 @@ import {
   assetDigestSetHash,
   assessAssetApproval,
   assessPublishGate,
+  canonicalRecordSha256,
+  createRecordBundleResolver,
   deriveProgressState,
   journeyBindingSha256,
+  parseJourneyJson,
   reconstructIdentityChain,
   recordInterrupt,
   recoverJourneyState,
@@ -30,10 +35,14 @@ const ROOT = resolve(HERE, '..');
 const EXAMPLE = resolve(ROOT, 'schemas/examples/journey-envelope.example.json');
 const DENY = resolve(ROOT, 'scripts/fixtures/journey-envelope/deny-primary-dossier.json');
 const RECORDS = resolve(ROOT, 'scripts/fixtures/journey-envelope/cross-repo-records.json');
-const base = JSON.parse(readFileSync(EXAMPLE, 'utf8'));
-const records = JSON.parse(readFileSync(RECORDS, 'utf8'));
+const base = parseJourneyJson(readFileSync(EXAMPLE), EXAMPLE);
+const records = parseJourneyJson(readFileSync(RECORDS), RECORDS);
+const referenceOptions = Object.freeze({
+  resolveExternalRecord: createRecordBundleResolver(records),
+});
 const clone = (value) => JSON.parse(JSON.stringify(value));
-const codes = (envelope) => validateJourneyEnvelope(envelope).map((entry) => entry.code);
+const codes = (envelope, options = referenceOptions) =>
+  validateJourneyEnvelope(envelope, options).map((entry) => entry.code);
 
 let failures = 0;
 const check = (name, ok, detail = '') => {
@@ -102,26 +111,26 @@ function staleTextEnvelope({ material = false } = {}) {
 console.log('acceptance 1 — cross-record round-trip identity agreement');
 {
   const envelopeIssues = codes(base);
-  const referenceIssues = validateJourneyReferences(base, records);
-  const result = reconstructIdentityChain(base, records);
+  const referenceIssues = validateJourneyReferences(base, records, referenceOptions);
+  const result = reconstructIdentityChain(base, records, referenceOptions);
   check('complete envelope and separately persisted record metadata agree',
     envelopeIssues.length === 0 && referenceIssues.length === 0 && result.ok,
     JSON.stringify({ envelopeIssues, referenceIssues }));
   check('round-trip resolves independent candidate, dossier, handoff, approval, deployment, and live identities',
-    result.chain.candidate.slug === records.candidate_ledger.candidate.slug &&
-      result.chain.dossier.content_sha256 === records.dossier_source.identity.content_sha256 &&
-      result.chain.article_ref.content_hash === records.handoff_receipt.article_ref.content_hash &&
+    result.chain.candidate.slug === records.candidate_ledger.record.candidate.slug &&
+      result.chain.dossier.content_sha256 === records.dossier_source.record.identity.content_sha256 &&
+      result.chain.article_ref.content_hash === records.handoff_receipt.record.article_ref.content_hash &&
       result.chain.assets.map((entry) => entry.asset_sha256).join(',') ===
-        records.handoff_receipt.artifacts.map((entry) => entry.asset_sha256).join(',') &&
-      result.chain.approved_revision.binding_sha256 === records.publish_approval.binding_sha256 &&
-      result.chain.deployed_artifact.deployment_id === records.deployment.deployment_id &&
-      result.chain.live_verification.article_body_sha256 === records.live_verification.result.article_body_sha256);
+        records.handoff_receipt.record.artifacts.map((entry) => entry.asset_sha256).join(',') &&
+      result.chain.approved_revision.binding_sha256 === records.publish_approval.record.binding_sha256 &&
+      result.chain.deployed_artifact.deployment_id === records.deployment.record.deployment_id &&
+      result.chain.live_verification.article_body_sha256 === records.live_verification.record.result.article_body_sha256);
 
   const changedRecords = clone(records);
-  changedRecords.handoff_receipt.artifacts[0].asset_sha256 = '0'.repeat(64);
-  const changedCodes = validateJourneyReferences(base, changedRecords).map((entry) => entry.code);
-  check(`independent receipt drift fails named ${CODES.MEDIA_DIGEST_MISMATCH} from clean cross-record metadata`,
-    referenceIssues.length === 0 && changedCodes.includes(CODES.MEDIA_DIGEST_MISMATCH),
+  changedRecords.handoff_receipt.record.artifacts[0].asset_sha256 = '0'.repeat(64);
+  const changedCodes = validateJourneyReferences(base, changedRecords, referenceOptions).map((entry) => entry.code);
+  check(`caller-edited receipt metadata fails named ${CODES.HANDOFF_INVALID} against hash-verified bytes`,
+    referenceIssues.length === 0 && changedCodes.includes(CODES.HANDOFF_INVALID),
     `got=[${[...new Set(changedCodes)].join(', ')}]`);
 }
 
@@ -129,7 +138,7 @@ console.log('acceptance 2 — record-derived restart and replay');
 {
   for (const state of PROGRESS_STATES) {
     const envelope = atProgress(state);
-    const recovered = recoverJourneyState(JSON.stringify(envelope));
+    const recovered = recoverJourneyState(JSON.stringify(envelope), referenceOptions);
     check(`${state} is derived and recovered from persisted records`,
       codes(envelope).length === 0 && deriveProgressState(envelope) === state &&
         recovered.ok && recovered.state === state && recovered.resume_from === state);
@@ -147,8 +156,12 @@ console.log('acceptance 2 — record-derived restart and replay');
   };
   for (const code of INTERRUPT_STATES.filter((entry) => entry !== CODES.STALE_REVISION)) {
     const source = interruptSources[code];
-    const recorded = recordInterrupt(source, code, { observedAt: '2026-09-11T07:00:00Z' });
-    const recovered = recorded.ok ? recoverJourneyState(JSON.stringify(recorded.envelope)) : null;
+    const recorded = recordInterrupt(source, code, {
+      observedAt: '2026-09-11T07:00:00Z', referenceOptions,
+    });
+    const recovered = recorded.ok
+      ? recoverJourneyState(JSON.stringify(recorded.envelope), referenceOptions)
+      : null;
     const terminal = code === CODES.NO_ARTICLE;
     check(`${code} recovery preserves its named code and ${terminal ? 'terminates' : 'resumes from derived progress'}`,
       codes(source).length === 0 && recorded.ok && recorded.envelope.interruption.code === code &&
@@ -157,12 +170,12 @@ console.log('acceptance 2 — record-derived restart and replay');
       JSON.stringify(recorded));
   }
   const stale = staleTextEnvelope();
-  const staleRecovered = recoverJourneyState(JSON.stringify(stale));
+  const staleRecovered = recoverJourneyState(JSON.stringify(stale), referenceOptions);
   check(`${CODES.STALE_REVISION} recovery preserves its named code and derived LIVE_VERIFIED resume point`,
     codes(stale).length === 0 && staleRecovered.ok && staleRecovered.state === CODES.STALE_REVISION &&
       staleRecovered.resume_from === 'LIVE_VERIFIED');
 
-  const malformed = recoverJourneyState(JSON.stringify(base).replace(/^\{/, '{not-json'));
+  const malformed = recoverJourneyState(JSON.stringify(base).replace(/^\{/, '{not-json'), referenceOptions);
   check(`persisted-byte corruption fails named ${CODES.HANDOFF_INVALID}`,
     !malformed.ok && malformed.code === CODES.HANDOFF_INVALID);
 }
@@ -173,12 +186,12 @@ console.log('acceptance 3 — text-only change separates publish and visual bind
   const visual = assessAssetApproval(stale, 0, {
     articleRef: stale.article_ref,
     assetDigest: stale.asset_bindings[0].asset_sha256,
-    approvalRecord: records.visual_approvals[0],
+    referenceOptions,
   });
   const publish = assessPublishGate(stale, {
     articleRef: stale.approved_revision.article_ref,
     assetDigests: stale.approved_revision.asset_digests,
-    approvalRecord: records.publish_approval,
+    referenceOptions,
   });
   check('classifyArtifact reports cosmetic and preserves the unrelated visual decision without regeneration',
     codes(stale).length === 0 && visual.lineage?.level === 'cosmetic' && visual.lineage.presentable &&
@@ -192,7 +205,7 @@ console.log('acceptance 3 — text-only change separates publish and visual bind
   const unknown = assessAssetApproval(base, 0, {
     articleRef: unknownArticle,
     assetDigest: base.asset_bindings[0].asset_sha256,
-    approvalRecord: records.visual_approvals[0],
+    referenceOptions,
   });
   check(`unknown lineage fails safe with named ${CODES.STALE_REVISION} from a validator-clean baseline`,
     codes(base).length === 0 && unknown.lineage?.level === 'unknown' && !unknown.presentable &&
@@ -205,7 +218,7 @@ console.log('acceptance 4 — material claim change stales the dependent visual'
   const result = assessAssetApproval(stale, 0, {
     articleRef: stale.article_ref,
     assetDigest: stale.asset_bindings[0].asset_sha256,
-    approvalRecord: records.visual_approvals[0],
+    referenceOptions,
   });
   check(`claims_hash change is material and fails named ${CODES.STALE_REVISION} from a validator-clean stale baseline`,
     codes(stale).length === 0 && result.lineage?.level === 'material' && !result.presentable &&
@@ -218,7 +231,7 @@ console.log('acceptance 5 — exact ordered asset set and self-binding approvals
   const accepted = assessPublishGate(base, {
     articleRef: base.article_ref,
     assetDigests: base.approved_revision.asset_digests,
-    approvalRecord: records.publish_approval,
+    referenceOptions,
   });
   check('exact current article and ordered digest set passes the recorded publish decision',
     baseline.length === 0 && accepted.accepted && accepted.code === null);
@@ -230,9 +243,9 @@ console.log('acceptance 5 — exact ordered asset set and self-binding approvals
     articleRef: base.article_ref,
     assetDigest: base.asset_bindings[0].asset_sha256,
   });
-  check(`unresolved approval pointers fail closed with named ${CODES.STALE_REVISION} from a clean baseline`,
-    baseline.length === 0 && !unresolvedGate.accepted && unresolvedGate.code === CODES.STALE_REVISION &&
-      !unresolvedVisual.approval_valid && unresolvedVisual.code === CODES.STALE_REVISION);
+  check(`unresolved approval pointers fail closed with named ${CODES.BLOCKED_TRANSPORT} from a clean baseline`,
+    baseline.length === 0 && !unresolvedGate.accepted && unresolvedGate.code === CODES.BLOCKED_TRANSPORT &&
+      !unresolvedVisual.approval_valid && unresolvedVisual.code === CODES.BLOCKED_TRANSPORT);
 
   const mutations = [
     ['substitution', ['0'.repeat(64), base.approved_revision.asset_digests[1]]],
@@ -244,7 +257,7 @@ console.log('acceptance 5 — exact ordered asset set and self-binding approvals
     const result = assessPublishGate(base, {
       articleRef: base.article_ref,
       assetDigests,
-      approvalRecord: records.publish_approval,
+      referenceOptions,
     });
     check(`${name} refuses the publish gate with named ${CODES.STALE_REVISION} from a validator-clean baseline`,
       baseline.length === 0 && !result.accepted && result.code === CODES.STALE_REVISION,
@@ -253,7 +266,7 @@ console.log('acceptance 5 — exact ordered asset set and self-binding approvals
   const visual = assessAssetApproval(base, 0, {
     articleRef: base.article_ref,
     assetDigest: '0'.repeat(64),
-    approvalRecord: records.visual_approvals[0],
+    referenceOptions,
   });
   check(`changed visual bytes inherit no approval and fail named ${CODES.STALE_REVISION}`,
     baseline.length === 0 && !visual.approval_valid && visual.code === CODES.STALE_REVISION);
@@ -287,12 +300,12 @@ console.log('acceptance 5 — exact ordered asset set and self-binding approvals
   const coordinatedGate = assessPublishGate(coordinated, {
     articleRef: coordinated.article_ref,
     assetDigests: coordinated.approved_revision.asset_digests,
-    approvalRecord: records.publish_approval,
+    referenceOptions,
   });
   const coordinatedVisual = assessAssetApproval(coordinated, 0, {
     articleRef: coordinated.article_ref,
     assetDigest: coordinated.asset_bindings[0].asset_sha256,
-    approvalRecord: records.visual_approvals[0],
+    referenceOptions,
   });
   check(`coordinated rewrite retaining old decision refs and binding digests fails named ${CODES.STALE_REVISION}`,
     coordinatedBaseline.length === 0 && coordinatedCodes.includes(CODES.STALE_REVISION) &&
@@ -312,16 +325,16 @@ console.log('acceptance 5 — exact ordered asset set and self-binding approvals
   const reboundGate = assessPublishGate(rebound, {
     articleRef: rebound.article_ref,
     assetDigests: rebound.approved_revision.asset_digests,
-    approvalRecord: records.publish_approval,
+    referenceOptions,
   });
   const reboundVisual = assessAssetApproval(rebound, 0, {
     articleRef: rebound.article_ref,
     assetDigest: rebound.asset_bindings[0].asset_sha256,
-    approvalRecord: records.visual_approvals[0],
+    referenceOptions,
   });
-  const reboundReferences = validateJourneyReferences(rebound, records).map((entry) => entry.code);
+  const reboundReferences = validateJourneyReferences(rebound, records, referenceOptions).map((entry) => entry.code);
   check(`recomputing forged envelope digests cannot reuse the old external decisions and fails named ${CODES.STALE_REVISION}`,
-    codes(rebound).length === 0 && validateJourneyReferences(base, records).length === 0 &&
+    codes(rebound).length === 0 && validateJourneyReferences(base, records, referenceOptions).length === 0 &&
       !reboundGate.accepted && reboundGate.code === CODES.STALE_REVISION &&
       !reboundVisual.approval_valid && reboundVisual.code === CODES.STALE_REVISION &&
       reboundReferences.includes(CODES.STALE_REVISION),
@@ -333,6 +346,7 @@ console.log('acceptance 6 — blocked transport executes only the recovery seam'
   const publishAccepted = atProgress('PUBLISH_ACCEPTED');
   const paused = recordInterrupt(publishAccepted, CODES.BLOCKED_TRANSPORT, {
     observedAt: '2026-09-11T07:10:00Z',
+    referenceOptions,
   });
   let transportObservations = 0;
   let generated = 0;
@@ -350,8 +364,8 @@ console.log('acceptance 6 — blocked transport executes only the recovery seam'
     publish() { published += 1; },
   };
   const serialized = JSON.stringify(paused.envelope);
-  const first = resumeJourney(serialized, adapters);
-  const replay = resumeJourney(serialized, adapters);
+  const first = resumeJourney(serialized, adapters, referenceOptions);
+  const replay = resumeJourney(serialized, adapters, referenceOptions);
   check(`transport pause is validator-clean and retains named ${CODES.BLOCKED_TRANSPORT}`,
     paused.ok && codes(paused.envelope).length === 0 && paused.envelope.interruption.code === CODES.BLOCKED_TRANSPORT);
   check('natural resume and replay execute the transport probe with one stable idempotency identity',
@@ -365,11 +379,13 @@ console.log('acceptance 6 — blocked transport executes only the recovery seam'
 console.log('acceptance 7 — NO_ARTICLE is terminal; NEEDS_EVIDENCE remains resumable');
 {
   const selected = atProgress('SELECTED');
-  const noArticle = recordInterrupt(selected, CODES.NO_ARTICLE, { observedAt: '2026-09-11T07:20:00Z' });
+  const noArticle = recordInterrupt(selected, CODES.NO_ARTICLE, {
+    observedAt: '2026-09-11T07:20:00Z', referenceOptions,
+  });
   let invoked = 0;
   const terminalResume = resumeJourney(JSON.stringify(noArticle.envelope), {
     inspectEvidence() { invoked += 1; },
-  });
+  }, referenceOptions);
   check(`${CODES.NO_ARTICLE} is terminal after validator-clean SELECTED and cannot resume downstream`,
     codes(selected).length === 0 && noArticle.ok && noArticle.terminal && terminalResume.ok &&
       terminalResume.terminal && terminalResume.resume_from === null && !terminalResume.invoked && invoked === 0);
@@ -391,8 +407,10 @@ console.log('acceptance 7 — NO_ARTICLE is terminal; NEEDS_EVIDENCE remains res
     });
 
   const received = atProgress('RECEIVED');
-  const needs = recordInterrupt(received, CODES.NEEDS_EVIDENCE, { observedAt: '2026-09-11T07:21:00Z' });
-  const needsRecovered = recoverJourneyState(JSON.stringify(needs.envelope));
+  const needs = recordInterrupt(received, CODES.NEEDS_EVIDENCE, {
+    observedAt: '2026-09-11T07:21:00Z', referenceOptions,
+  });
+  const needsRecovered = recoverJourneyState(JSON.stringify(needs.envelope), referenceOptions);
   check(`${CODES.NEEDS_EVIDENCE} is reachable and resumes from RECEIVED`,
     codes(received).length === 0 && needs.ok && needsRecovered.ok &&
       needsRecovered.resume_from === 'RECEIVED' && !needsRecovered.terminal);
@@ -414,7 +432,7 @@ console.log('acceptance 7 — NO_ARTICLE is terminal; NEEDS_EVIDENCE remains res
 
 console.log('acceptance 8 — exact dossier identity stays derived, bound, and non-primary');
 {
-  const denyIssues = validateJourneyEnvelopeFile(DENY);
+  const denyIssues = validateJourneyEnvelopeFile(DENY, referenceOptions);
   const denyCodes = denyIssues.map((entry) => entry.code);
   check(`committed deny fixture fails exactly named ${CODES.DERIVED_EVIDENCE}`,
     denyIssues.length === 1 && denyCodes[0] === CODES.DERIVED_EVIDENCE,
@@ -438,10 +456,10 @@ console.log('acceptance 8 — exact dossier identity stays derived, bound, and n
 
 console.log('acceptance 9 — exact downstream interop, authority, and command wiring');
 {
-  const literalResult = clone(records.live_verification.result);
+  const literalResult = clone(records.live_verification.record.result);
   const interopBaseline = validateSUE789Interop({
-    manifest: records.publish_run.manifest,
-    receipt: records.publish_run.receipt,
+    manifest: records.publish_run.record.manifest,
+    receipt: records.publish_run.record.receipt,
     result: literalResult,
   });
   check('literal suengj-com LIVE_VERIFIED result with prefixed digests is accepted unchanged',
@@ -450,12 +468,44 @@ console.log('acceptance 9 — exact downstream interop, authority, and command w
   const bareResult = clone(literalResult);
   bareResult.article_body_sha256 = bareResult.article_body_sha256.slice('sha256:'.length);
   const bareCodes = validateSUE789Interop({
-    manifest: records.publish_run.manifest,
-    receipt: records.publish_run.receipt,
+    manifest: records.publish_run.record.manifest,
+    receipt: records.publish_run.record.receipt,
     result: bareResult,
   }).map((entry) => entry.code);
   check(`bare live digest fails named ${CODES.HANDOFF_INVALID} from a clean literal interop baseline`,
     interopBaseline.length === 0 && bareCodes.includes(CODES.HANDOFF_INVALID));
+
+  const mismatchedMedia = clone(literalResult);
+  mismatchedMedia.media_sha256 = `sha256:${'0'.repeat(64)}`;
+  const mismatchedMediaCodes = validateSUE789Interop({
+    manifest: records.publish_run.record.manifest,
+    receipt: records.publish_run.record.receipt,
+    result: mismatchedMedia,
+  }).map((entry) => entry.code);
+  check(`live/receipt media drift fails named ${CODES.MEDIA_DIGEST_MISMATCH} from a clean interop baseline`,
+    interopBaseline.length === 0 && mismatchedMediaCodes.includes(CODES.MEDIA_DIGEST_MISMATCH));
+
+  const sha64Manifest = clone(records.publish_run.record.manifest);
+  sha64Manifest.expected_source_sha = 'b'.repeat(64);
+  const sha64Issues = validateSUE789Interop({
+    manifest: sha64Manifest,
+    receipt: records.publish_run.record.receipt,
+    result: literalResult,
+  });
+  check('a downstream-valid 64-character expected_source_sha is accepted',
+    interopBaseline.length === 0 && sha64Issues.length === 0, JSON.stringify(sha64Issues));
+
+  const shortManifest = clone(records.publish_run.record.manifest);
+  shortManifest.expected_source_sha = 'b'.repeat(39);
+  const shortShaCodes = validateSUE789Interop({
+    manifest: shortManifest,
+    receipt: records.publish_run.record.receipt,
+    result: literalResult,
+  }).map((entry) => entry.code);
+  check(`a short expected_source_sha fails named ${CODES.HANDOFF_INVALID} from a clean interop baseline`,
+    interopBaseline.length === 0 && shortShaCodes.includes(CODES.HANDOFF_INVALID));
+  check('the committed expected_source_sha is downstream-valid full SHA length',
+    records.publish_run.record.manifest.expected_source_sha.length === 40);
 
   const authorityMutations = [
     ['candidate ledger', (e) => { e.candidate.ledger_ref.repository = 'attacker/fake'; }],
@@ -481,6 +531,196 @@ console.log('acceptance 9 — exact downstream interop, authority, and command w
     typeof pkg.scripts['validate:journey'] === 'string' && pkg.scripts.validate.includes('npm run validate:journey'));
   check('npm test includes test:journey',
     typeof pkg.scripts['test:journey'] === 'string' && pkg.scripts.test.includes('npm run test:journey'));
+}
+
+console.log('repair round 2 — fail-closed record resolution and unambiguous bytes');
+{
+  const baseline = codes(base);
+  check('external JSON record content_sha256 is the recomputed canonical record digest',
+    baseline.length === 0 &&
+      canonicalRecordSha256(records.publish_approval.record) ===
+        records.publish_approval.record_ref.content_sha256);
+
+  const hashMismatch = clone(base);
+  hashMismatch.approved_revision.record_ref.content_sha256 = '0'.repeat(64);
+  const hashMismatchCodes = codes(hashMismatch);
+  check(`external record bytes that disagree with content_sha256 fail named ${CODES.HANDOFF_INVALID}`,
+    baseline.length === 0 && hashMismatchCodes.includes(CODES.HANDOFF_INVALID),
+    `got=[${[...new Set(hashMismatchCodes)].join(', ')}]`);
+
+  const localHashMismatch = clone(base);
+  localHashMismatch.review_ref.content_sha256 = '0'.repeat(64);
+  const localHashMismatchCodes = codes(localHashMismatch);
+  check(`repository-local Git bytes that disagree with content_sha256 fail named ${CODES.HANDOFF_INVALID}`,
+    baseline.length === 0 && localHashMismatchCodes.includes(CODES.HANDOFF_INVALID),
+    `got=[${[...new Set(localHashMismatchCodes)].join(', ')}]`);
+
+  const nonexistentExternal = clone(base);
+  nonexistentExternal.approved_revision.record_ref.path =
+    'handoffs/agent-cost-curve/nonexistent-approval.json';
+  const nonexistentExternalCodes = codes(nonexistentExternal);
+  const nonexistentExternalRecovery = recoverJourneyState(
+    JSON.stringify(nonexistentExternal), referenceOptions,
+  );
+  check(`a nonexistent external approval path fails validation and recovery with named ${CODES.BLOCKED_TRANSPORT}`,
+    baseline.length === 0 && nonexistentExternalCodes.includes(CODES.BLOCKED_TRANSPORT) &&
+      !nonexistentExternalRecovery.ok &&
+      nonexistentExternalRecovery.code === CODES.BLOCKED_TRANSPORT &&
+      nonexistentExternalRecovery.state !== 'LIVE_VERIFIED');
+
+  const nonexistentLocal = clone(base);
+  nonexistentLocal.asset_bindings[0].visual_approval.record_ref.path =
+    'scripts/fixtures/journey-envelope/records/nonexistent-visual-approval.json';
+  const nonexistentLocalCodes = codes(nonexistentLocal);
+  const nonexistentLocalRecovery = recoverJourneyState(JSON.stringify(nonexistentLocal), referenceOptions);
+  check(`a nonexistent repository-local path fails validation and recovery with named ${CODES.HANDOFF_INVALID}`,
+    baseline.length === 0 && nonexistentLocalCodes.includes(CODES.HANDOFF_INVALID) &&
+      !nonexistentLocalRecovery.ok && nonexistentLocalRecovery.code === CODES.HANDOFF_INVALID &&
+      nonexistentLocalRecovery.state !== 'LIVE_VERIFIED');
+
+  const fixtureResolver = referenceOptions.resolveExternalRecord;
+  const objectResolverCodes = codes(base, {
+    resolveExternalRecord(ref) {
+      const raw = fixtureResolver(ref);
+      return raw === undefined ? undefined : parseJourneyJson(raw, 'test resolver record');
+    },
+  });
+  check(`a resolver returning caller-parsed objects fails named ${CODES.HANDOFF_INVALID}`,
+    baseline.length === 0 && objectResolverCodes.includes(CODES.HANDOFF_INVALID));
+
+  const forged = clone(base);
+  forged.article_ref = {
+    ...forged.article_ref,
+    version_number: 9,
+    content_hash: '1'.repeat(64),
+    claims_hash: '2'.repeat(64),
+    commit: 'feedface',
+  };
+  forged.journey_binding_sha256 = journeyBindingSha256(
+    forged.candidate, forged.dossier, forged.article_ref,
+  );
+  forged.approved_revision.article_ref = clone(forged.article_ref);
+  forged.approved_revision.asset_digests = ['3'.repeat(64), '4'.repeat(64)];
+  forged.approved_revision.asset_digest_set_hash =
+    assetDigestSetHash(forged.approved_revision.asset_digests);
+  forged.approved_revision.binding_sha256 = approvalBindingSha256(
+    forged.article_ref, forged.approved_revision.asset_digests,
+  );
+  forged.asset_bindings.forEach((binding, index) => {
+    binding.article_ref = clone(forged.article_ref);
+    binding.asset_sha256 = forged.approved_revision.asset_digests[index];
+    binding.visual_approval.binding_sha256 = approvalBindingSha256(
+      binding.article_ref, [binding.asset_sha256],
+    );
+  });
+
+  const forgedRecords = clone(records);
+  forgedRecords.dossier_source.record.used_by_article = clone(forged.article_ref);
+  forgedRecords.review.record.article_ref = clone(forged.article_ref);
+  forgedRecords.handoff_receipt.record.article_ref = clone(forged.article_ref);
+  forgedRecords.handoff_receipt.record.artifacts = forged.asset_bindings.map((binding) => ({
+    asset_sha256: binding.asset_sha256,
+  }));
+  forgedRecords.publish_approval.record = clone(forged.approved_revision);
+  delete forgedRecords.publish_approval.record.record_ref;
+  forgedRecords.visual_approvals.forEach((wrapper, index) => {
+    const binding = forged.asset_bindings[index];
+    wrapper.record = {
+      approved_by: binding.visual_approval.approved_by,
+      approved_at: binding.visual_approval.approved_at,
+      article_ref: clone(binding.article_ref),
+      asset_digests: [binding.asset_sha256],
+      binding_sha256: binding.visual_approval.binding_sha256,
+    };
+  });
+  forgedRecords.publish_run.record.manifest.expected_article_sha256 = forged.article_ref.content_hash;
+  const forgedOptions = {
+    resolveExternalRecord: createRecordBundleResolver(forgedRecords),
+  };
+  const forgedReferenceCodes = validateJourneyReferences(
+    forged, forgedRecords, forgedOptions,
+  ).map((entry) => entry.code);
+  const forgedGate = assessPublishGate(forged, {
+    articleRef: forged.article_ref,
+    assetDigests: forged.approved_revision.asset_digests,
+    referenceOptions: forgedOptions,
+  });
+  const forgedVisual = assessAssetApproval(forged, 0, {
+    articleRef: forged.article_ref,
+    assetDigest: forged.asset_bindings[0].asset_sha256,
+    referenceOptions: forgedOptions,
+  });
+  check(`fully forged caller metadata retaining old refs fails named ${CODES.HANDOFF_INVALID}`,
+    baseline.length === 0 && forgedReferenceCodes.includes(CODES.HANDOFF_INVALID) &&
+      !forgedGate.accepted && forgedGate.code === CODES.HANDOFF_INVALID &&
+      !forgedVisual.approval_valid && forgedVisual.code === CODES.HANDOFF_INVALID,
+    JSON.stringify({ forgedReferenceCodes, forgedGate, forgedVisual }));
+
+  const duplicateEnvelope = JSON.stringify(base).replace(
+    '"journey_id":', '"journey_id":"journey:forged","journey_id":',
+  );
+  const duplicateRecovery = recoverJourneyState(duplicateEnvelope, referenceOptions);
+  check(`duplicate envelope keys fail before canonicalization with named ${CODES.HANDOFF_INVALID}`,
+    baseline.length === 0 && !duplicateRecovery.ok &&
+      duplicateRecovery.code === CODES.HANDOFF_INVALID);
+
+  let escapedDuplicateCode = null;
+  try {
+    parseJourneyJson('{"a":1,"\\u0061":2}', 'escaped duplicate fixture');
+  } catch (error) {
+    escapedDuplicateCode = error.code;
+  }
+  check(`escaped-equivalent duplicate keys fail named ${CODES.HANDOFF_INVALID}`,
+    escapedDuplicateCode === CODES.HANDOFF_INVALID);
+
+  const duplicateRecordOptions = {
+    resolveExternalRecord(ref) {
+      const raw = fixtureResolver(ref);
+      if (ref.path !== records.publish_approval.record_ref.path || raw === undefined) return raw;
+      return raw.toString().replace(
+        '"approved_by":"owner"',
+        '"approved_by":"owner","approved_by":"forged"',
+      );
+    },
+  };
+  const duplicateRecordCodes = codes(base, duplicateRecordOptions);
+  check(`duplicate referenced-record keys fail named ${CODES.HANDOFF_INVALID} from a clean baseline`,
+    baseline.length === 0 && duplicateRecordCodes.includes(CODES.HANDOFF_INVALID));
+
+  const cli = resolve(ROOT, 'scripts/validate-journey-envelope.mjs');
+  const customWithRecords = spawnSync(
+    process.execPath, [cli, EXAMPLE, '--records', RECORDS],
+    { cwd: ROOT, encoding: 'utf8' },
+  );
+  check('custom-file CLI performs cross-record checking when given raw record bytes',
+    customWithRecords.status === 0,
+    `${customWithRecords.stdout}${customWithRecords.stderr}`);
+
+  const cliTemp = mkdtempSync(join(tmpdir(), 'sue-790-cli-'));
+  try {
+    const driftedRecords = clone(records);
+    driftedRecords.dossier_source.record.used_by_article.content_hash = '0'.repeat(64);
+    const driftedRecordsPath = join(cliTemp, 'drifted-records.json');
+    writeFileSync(driftedRecordsPath, JSON.stringify(driftedRecords), 'utf8');
+    const customDrift = spawnSync(
+      process.execPath, [cli, EXAMPLE, '--records', driftedRecordsPath],
+      { cwd: ROOT, encoding: 'utf8' },
+    );
+    check(`custom-file CLI actually cross-checks metadata and fails named ${CODES.STALE_REVISION}`,
+      customDrift.status !== 0 &&
+        `${customDrift.stdout}${customDrift.stderr}`.includes(CODES.STALE_REVISION),
+      `${customDrift.stdout}${customDrift.stderr}`);
+  } finally {
+    rmSync(cliTemp, { recursive: true, force: true });
+  }
+
+  const customWithoutRecords = spawnSync(
+    process.execPath, [cli, EXAMPLE], { cwd: ROOT, encoding: 'utf8' },
+  );
+  check(`custom-file CLI without an external resolver fails named ${CODES.BLOCKED_TRANSPORT}`,
+    customWithoutRecords.status !== 0 &&
+      `${customWithoutRecords.stdout}${customWithoutRecords.stderr}`.includes(CODES.BLOCKED_TRANSPORT),
+    `${customWithoutRecords.stdout}${customWithoutRecords.stderr}`);
 }
 
 console.log('contract boundaries — refs and digests only');

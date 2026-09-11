@@ -8,6 +8,7 @@
  */
 
 import { createHash } from 'node:crypto';
+import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -18,7 +19,7 @@ const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(HERE, '../..');
 export const SCHEMA_PATH = resolve(ROOT, 'schemas/journey-envelope.schema.json');
 
-export const loadSchema = (path = SCHEMA_PATH) => JSON.parse(readFileSync(path, 'utf8'));
+export const loadSchema = (path = SCHEMA_PATH) => parseJourneyJson(readFileSync(path), path);
 
 export const PROGRESS_STATES = Object.freeze([
   'RECEIVED',
@@ -118,6 +119,128 @@ const sha256Json = (value) => createHash('sha256')
 const present = (value) => value !== undefined;
 const meaningful = (value) => typeof value === 'string' && value.trim().length > 0;
 
+function duplicateKeyPath(serialized) {
+  let cursor = 0;
+  const whitespace = () => {
+    while (/\s/.test(serialized[cursor] ?? '')) cursor += 1;
+  };
+  const stringToken = () => {
+    const start = cursor;
+    cursor += 1;
+    while (cursor < serialized.length) {
+      if (serialized[cursor] === '\\') {
+        cursor += 2;
+        continue;
+      }
+      if (serialized[cursor] === '"') {
+        cursor += 1;
+        return JSON.parse(serialized.slice(start, cursor));
+      }
+      cursor += 1;
+    }
+    return '';
+  };
+  const value = (path) => {
+    whitespace();
+    if (serialized[cursor] === '{') return object(path);
+    if (serialized[cursor] === '[') return array(path);
+    if (serialized[cursor] === '"') {
+      stringToken();
+      return null;
+    }
+    while (cursor < serialized.length && !/[\s,}\]]/.test(serialized[cursor])) cursor += 1;
+    return null;
+  };
+  const object = (path) => {
+    cursor += 1;
+    whitespace();
+    const keys = new Set();
+    if (serialized[cursor] === '}') {
+      cursor += 1;
+      return null;
+    }
+    while (cursor < serialized.length) {
+      whitespace();
+      if (serialized[cursor] !== '"') return null;
+      const key = stringToken();
+      const keyPath = `${path}.${key}`;
+      if (keys.has(key)) return keyPath;
+      keys.add(key);
+      whitespace();
+      if (serialized[cursor] !== ':') return null;
+      cursor += 1;
+      const nested = value(keyPath);
+      if (nested) return nested;
+      whitespace();
+      if (serialized[cursor] === '}') {
+        cursor += 1;
+        return null;
+      }
+      if (serialized[cursor] !== ',') return null;
+      cursor += 1;
+    }
+    return null;
+  };
+  const array = (path) => {
+    cursor += 1;
+    whitespace();
+    let index = 0;
+    if (serialized[cursor] === ']') {
+      cursor += 1;
+      return null;
+    }
+    while (cursor < serialized.length) {
+      const nested = value(`${path}[${index}]`);
+      if (nested) return nested;
+      whitespace();
+      if (serialized[cursor] === ']') {
+        cursor += 1;
+        return null;
+      }
+      if (serialized[cursor] !== ',') return null;
+      cursor += 1;
+      index += 1;
+    }
+    return null;
+  };
+  return value('$');
+}
+
+/** Parse raw JSON while refusing ambiguous duplicate object keys. */
+export function parseJourneyJson(serialized, label = '$') {
+  const text = Buffer.isBuffer(serialized) ? serialized.toString('utf8') : serialized;
+  if (typeof text !== 'string') {
+    const error = new TypeError(`${label} must be supplied as raw JSON bytes or text`);
+    error.code = CODES.HANDOFF_INVALID;
+    throw error;
+  }
+  let duplicate;
+  try {
+    duplicate = duplicateKeyPath(text);
+  } catch (cause) {
+    const error = new SyntaxError(`${label} is not valid JSON: ${cause.message}`);
+    error.code = CODES.HANDOFF_INVALID;
+    throw error;
+  }
+  if (duplicate) {
+    const error = new SyntaxError(`${label} contains duplicate JSON key ${duplicate}`);
+    error.code = CODES.HANDOFF_INVALID;
+    throw error;
+  }
+  try {
+    return JSON.parse(text);
+  } catch (cause) {
+    const error = new SyntaxError(`${label} is not valid JSON: ${cause.message}`);
+    error.code = CODES.HANDOFF_INVALID;
+    throw error;
+  }
+}
+
+/** Canonical digest used by every record_ref.content_sha256 check. */
+export function canonicalRecordSha256(record) {
+  return sha256Json(record);
+}
+
 export function assetDigestSetHash(assetDigests) {
   return createHash('sha256').update(JSON.stringify(assetDigests), 'utf8').digest('hex');
 }
@@ -175,6 +298,132 @@ function walkFileRefs(value, path = '$', out = []) {
   }
   for (const [key, entry] of Object.entries(value)) walkFileRefs(entry, `${path}.${key}`, out);
   return out;
+}
+
+const LOCAL_REPOSITORY = 'suengj/ai-editorial-system';
+const referenceKey = (ref) => `${ref?.repository}@${ref?.commit}:${ref?.path}`;
+
+/**
+ * Resolve and verify one immutable record reference.
+ *
+ * `resolveExternalRecord(ref)` is the explicit SIT seam. It must return raw
+ * JSON bytes/text, never an already-parsed object. This module performs no
+ * network or cross-repository fetch itself.
+ */
+export function resolveAndVerifyJourneyReference(ref, {
+  localRoot = ROOT,
+  resolveExternalRecord,
+} = {}) {
+  let raw;
+  if (ref?.repository === LOCAL_REPOSITORY) {
+    try {
+      raw = execFileSync('git', ['show', `${ref.commit}:${ref.path}`], {
+        cwd: localRoot,
+        encoding: null,
+        stdio: ['ignore', 'pipe', 'pipe'],
+      });
+    } catch (cause) {
+      return {
+        ok: false,
+        code: CODES.HANDOFF_INVALID,
+        issue: issue(CODES.HANDOFF_INVALID, '$.record_ref',
+          `local referenced record is unresolvable: ${cause.message}`),
+      };
+    }
+  } else {
+    if (typeof resolveExternalRecord !== 'function') {
+      return {
+        ok: false,
+        code: CODES.BLOCKED_TRANSPORT,
+        issue: issue(CODES.BLOCKED_TRANSPORT, '$.record_ref',
+          `external reference ${referenceKey(ref)} requires the SUE-787 resolver seam`),
+      };
+    }
+    try {
+      raw = resolveExternalRecord(clone(ref));
+    } catch (cause) {
+      return {
+        ok: false,
+        code: CODES.BLOCKED_TRANSPORT,
+        issue: issue(CODES.BLOCKED_TRANSPORT, '$.record_ref',
+          `external reference ${referenceKey(ref)} could not be resolved: ${cause.message}`),
+      };
+    }
+    if (raw === undefined || raw === null) {
+      return {
+        ok: false,
+        code: CODES.BLOCKED_TRANSPORT,
+        issue: issue(CODES.BLOCKED_TRANSPORT, '$.record_ref',
+          `external reference ${referenceKey(ref)} was not resolved`),
+      };
+    }
+    if (!Buffer.isBuffer(raw) && typeof raw !== 'string') {
+      return {
+        ok: false,
+        code: CODES.HANDOFF_INVALID,
+        issue: issue(CODES.HANDOFF_INVALID, '$.record_ref',
+          'external resolver must return raw JSON bytes or text, not a parsed object'),
+      };
+    }
+  }
+
+  let record;
+  let actual;
+  if (ref.path.endsWith('.json')) {
+    try {
+      record = parseJourneyJson(raw, referenceKey(ref));
+    } catch (cause) {
+      return {
+        ok: false,
+        code: CODES.HANDOFF_INVALID,
+        issue: issue(CODES.HANDOFF_INVALID, '$.record_ref', cause.message),
+      };
+    }
+    actual = canonicalRecordSha256(record);
+  } else {
+    actual = createHash('sha256').update(raw).digest('hex');
+  }
+  if (actual !== ref?.content_sha256) {
+    return {
+      ok: false,
+      code: CODES.HANDOFF_INVALID,
+      issue: issue(CODES.HANDOFF_INVALID, '$.record_ref.content_sha256',
+        `referenced record digest mismatch: expected ${ref?.content_sha256}, got ${actual}`),
+    };
+  }
+  return { ok: true, code: null, record, canonical_sha256: actual };
+}
+
+function collectRecordWrappers(value, out = new Map()) {
+  if (Array.isArray(value)) {
+    value.forEach((entry) => collectRecordWrappers(entry, out));
+    return out;
+  }
+  if (!value || typeof value !== 'object') return out;
+  if (value.record_ref && typeof value.resolved_bytes_base64 === 'string') {
+    out.set(referenceKey(value.record_ref), Buffer.from(value.resolved_bytes_base64, 'base64'));
+  } else if (value.record_ref && Object.hasOwn(value, 'record')) {
+    out.set(referenceKey(value.record_ref), JSON.stringify(canonical(value.record)));
+  }
+  Object.values(value).forEach((entry) => collectRecordWrappers(entry, out));
+  return out;
+}
+
+/** Build a raw-byte external resolver from a strict-parsed fixture/SIT bundle. */
+export function createRecordBundleResolver(recordBundle) {
+  const index = collectRecordWrappers(recordBundle);
+  return (ref) => index.get(referenceKey(ref));
+}
+
+function verifyEnvelopeReferences(envelope, options, issues) {
+  const seen = new Set();
+  for (const { ref, path } of walkFileRefs(envelope)) {
+    const key = `${referenceKey(ref)}#${ref.content_sha256}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    const result = resolveAndVerifyJourneyReference(ref, options);
+    if (!result.ok) issues.push({ ...result.issue, where: path });
+  }
 }
 
 function valuesAtPath(value, parts) {
@@ -257,7 +506,11 @@ function validateDossierPath(envelope, issues) {
 }
 
 /** Validate structure plus the cross-field invariants JSON Schema cannot express. */
-export function validateJourneyEnvelope(envelope, { schema = loadSchema() } = {}) {
+export function validateJourneyEnvelope(envelope, {
+  schema = loadSchema(),
+  localRoot = ROOT,
+  resolveExternalRecord,
+} = {}) {
   const issues = [];
   for (const error of validate(envelope, schema)) {
     issues.push(issue(CODES.HANDOFF_INVALID, error.path, error.message));
@@ -272,6 +525,7 @@ export function validateJourneyEnvelope(envelope, { schema = loadSchema() } = {}
   }
   validateAuthority(envelope, issues);
   validateDossierPath(envelope, issues);
+  verifyEnvelopeReferences(envelope, { localRoot, resolveExternalRecord }, issues);
 
   const selection = envelope.candidate?.selection;
   if (selection !== null && selection !== undefined &&
@@ -438,7 +692,7 @@ export function validateJourneyEnvelope(envelope, { schema = loadSchema() } = {}
 export function validateJourneyEnvelopeFile(path, options = {}) {
   let envelope;
   try {
-    envelope = JSON.parse(readFileSync(path, 'utf8'));
+    envelope = parseJourneyJson(readFileSync(path), path);
   } catch (error) {
     return [issue(CODES.HANDOFF_INVALID, path, `unparseable journey envelope: ${error.message}`)];
   }
@@ -457,9 +711,9 @@ export function validateSUE789Interop({ manifest, receipt, result } = {}) {
     issues.push(issue(CODES.HANDOFF_INVALID, '$.manifest.expected_article_sha256',
       'manifest expected_article_sha256 must remain bare hex'));
   }
-  if (!meaningful(manifest?.expected_source_ref) || !/^[a-f0-9]{7,40}$/.test(manifest?.expected_source_sha ?? '')) {
-    issues.push(issue(CODES.HANDOFF_INVALID, '$.manifest.expected_source_ref',
-      'manifest source ref and source commit must be supplied together'));
+  if (!meaningful(manifest?.expected_source_ref) || !/^[a-f0-9]{40,64}$/.test(manifest?.expected_source_sha ?? '')) {
+    issues.push(issue(CODES.HANDOFF_INVALID, '$.manifest.expected_source_sha',
+      'manifest expected_source_ref requires a 40-64 character lowercase hex expected_source_sha'));
   }
   if (!meaningful(receipt?.article_ref) || !/^\/media\//.test(receipt?.production_ref ?? '') ||
       !prefixed.test(receipt?.production_sha256 ?? '')) {
@@ -504,7 +758,6 @@ function publishDecisionRecord(approval) {
   return {
     approved_by: approval?.approved_by,
     approved_at: approval?.approved_at,
-    record_ref: approval?.record_ref,
     article_ref: approval?.article_ref,
     asset_digests: approval?.asset_digests,
     asset_digest_set_hash: approval?.asset_digest_set_hash,
@@ -516,62 +769,88 @@ function visualDecisionRecord(binding) {
   return {
     approved_by: binding?.visual_approval?.approved_by,
     approved_at: binding?.visual_approval?.approved_at,
-    record_ref: binding?.visual_approval?.record_ref,
     article_ref: binding?.article_ref,
     asset_digests: [binding?.asset_sha256],
     binding_sha256: binding?.visual_approval?.binding_sha256,
   };
 }
 
+function resolvedWrapper(issues, wrapper, expectedRef, options, code, where) {
+  expectSame(issues, wrapper?.record_ref, expectedRef, CODES.HANDOFF_INVALID,
+    `${where}.record_ref`, 'record pointer disagrees with the envelope');
+  const resolution = resolveAndVerifyJourneyReference(expectedRef, options);
+  if (!resolution.ok) {
+    issues.push({ ...resolution.issue, where: `${where}.record_ref` });
+    return undefined;
+  }
+  expectSame(issues, wrapper?.record, resolution.record, code, `${where}.record`,
+    'caller-supplied record metadata disagrees with hash-verified record bytes');
+  return resolution.record;
+}
+
 /** Resolve independent record metadata and prove cross-repository agreement. */
-export function validateJourneyReferences(envelope, records) {
-  const issues = validateJourneyEnvelope(envelope);
+export function validateJourneyReferences(envelope, records, options = {}) {
+  const issues = validateJourneyEnvelope(envelope, options);
   if (issues.length > 0) return issues;
   if (!records || typeof records !== 'object') {
     return [issue(CODES.HANDOFF_INVALID, '$.records', 'independent referenced records are required')];
   }
-  expectSame(issues, records.candidate_ledger?.record_ref, envelope.candidate.ledger_ref,
-    CODES.HANDOFF_INVALID, '$.records.candidate_ledger.record_ref', 'candidate ledger pointer disagrees');
-  expectSame(issues, records.candidate_ledger?.candidate,
+  const candidateLedger = resolvedWrapper(issues, records.candidate_ledger,
+    envelope.candidate.ledger_ref, options, CODES.HANDOFF_INVALID, '$.records.candidate_ledger');
+  expectSame(issues, records.dossier_source?.record_ref, envelope.dossier,
+    CODES.HANDOFF_INVALID, '$.records.dossier_source.record_ref', 'dossier pointer disagrees');
+  const dossierSource = records.dossier_source?.record;
+  const review = resolvedWrapper(issues, records.review,
+    envelope.review_ref, options, CODES.STALE_REVISION, '$.records.review');
+  const handoffReceipt = resolvedWrapper(issues, records.handoff_receipt,
+    envelope.handoff_receipt_ref, options, CODES.HANDOFF_INVALID, '$.records.handoff_receipt');
+  const publishApproval = resolvedWrapper(issues, records.publish_approval,
+    envelope.approved_revision.record_ref, options, CODES.STALE_REVISION, '$.records.publish_approval');
+  const visualApprovals = envelope.asset_bindings.map((binding, index) => resolvedWrapper(
+    issues,
+    records.visual_approvals?.[index],
+    binding.visual_approval.record_ref,
+    options,
+    CODES.STALE_REVISION,
+    `$.records.visual_approvals[${index}]`,
+  ));
+  const publishRun = resolvedWrapper(issues, records.publish_run,
+    envelope.publish_run.record_ref, options, CODES.HANDOFF_INVALID, '$.records.publish_run');
+  const deployment = resolvedWrapper(issues, records.deployment,
+    envelope.deployed_artifact.record_ref, options, CODES.HANDOFF_INVALID, '$.records.deployment');
+  const liveVerification = resolvedWrapper(issues, records.live_verification,
+    envelope.live_verification_ref, options, CODES.HANDOFF_INVALID, '$.records.live_verification');
+
+  expectSame(issues, candidateLedger?.candidate,
     { slug: envelope.candidate.slug, selection: envelope.candidate.selection },
     CODES.HANDOFF_INVALID, '$.records.candidate_ledger.candidate', 'candidate selection disagrees');
-  expectSame(issues, records.dossier_source?.identity, envelope.dossier,
+  expectSame(issues, dossierSource?.identity, envelope.dossier,
     CODES.STALE_REVISION, '$.records.dossier_source.identity', 'exact dossier revision disagrees');
-  expectSame(issues, records.dossier_source?.used_by_article, envelope.article_ref,
+  expectSame(issues, dossierSource?.used_by_article, envelope.article_ref,
     CODES.STALE_REVISION, '$.records.dossier_source.used_by_article', 'dossier-to-article binding disagrees');
-  expectSame(issues, records.review?.record_ref, envelope.review_ref,
-    CODES.HANDOFF_INVALID, '$.records.review.record_ref', 'editorial review pointer disagrees');
-  expectSame(issues, records.review?.article_ref, envelope.article_ref,
+  expectSame(issues, review?.article_ref, envelope.article_ref,
     CODES.STALE_REVISION, '$.records.review.article_ref', 'reviewed article revision disagrees');
-  expectSame(issues, records.handoff_receipt?.record_ref, envelope.handoff_receipt_ref,
-    CODES.HANDOFF_INVALID, '$.records.handoff_receipt.record_ref', 'handoff receipt pointer disagrees');
-  expectSame(issues, records.handoff_receipt?.article_ref, envelope.article_ref,
+  expectSame(issues, handoffReceipt?.article_ref, envelope.article_ref,
     CODES.STALE_REVISION, '$.records.handoff_receipt.article_ref', 'handoff article revision disagrees');
-  expectSame(issues, records.handoff_receipt?.artifacts?.map((entry) => entry.asset_sha256),
+  expectSame(issues, handoffReceipt?.artifacts?.map((entry) => entry.asset_sha256),
     envelope.asset_bindings.map((entry) => entry.asset_sha256),
     CODES.MEDIA_DIGEST_MISMATCH, '$.records.handoff_receipt.artifacts', 'handoff asset order or digest disagrees');
-  expectSame(issues, records.publish_approval, publishDecisionRecord(envelope.approved_revision),
+  expectSame(issues, publishApproval, publishDecisionRecord(envelope.approved_revision),
     CODES.STALE_REVISION, '$.records.publish_approval', 'resolved publish decision disagrees');
-  expectSame(issues, records.visual_approvals, envelope.asset_bindings.map(visualDecisionRecord),
+  expectSame(issues, visualApprovals, envelope.asset_bindings.map(visualDecisionRecord),
     CODES.STALE_REVISION, '$.records.visual_approvals', 'resolved visual decision binding disagrees');
-  expectSame(issues, records.publish_run?.record_ref, envelope.publish_run.record_ref,
-    CODES.HANDOFF_INVALID, '$.records.publish_run.record_ref', 'publish run pointer disagrees');
-  expectSame(issues, records.publish_run?.run_id, envelope.publish_run.run_id,
+  expectSame(issues, publishRun?.run_id, envelope.publish_run.run_id,
     CODES.HANDOFF_INVALID, '$.records.publish_run.run_id', 'publish run identity disagrees');
   issues.push(...validateSUE789Interop({
-    manifest: records.publish_run?.manifest,
-    receipt: records.publish_run?.receipt,
-    result: records.live_verification?.result,
+    manifest: publishRun?.manifest,
+    receipt: publishRun?.receipt,
+    result: liveVerification?.result,
   }));
-  expectSame(issues, records.deployment?.record_ref, envelope.deployed_artifact.record_ref,
-    CODES.HANDOFF_INVALID, '$.records.deployment.record_ref', 'deployment pointer disagrees');
-  expectSame(issues, records.deployment?.deployment_id, envelope.deployed_artifact.deployment_id,
+  expectSame(issues, deployment?.deployment_id, envelope.deployed_artifact.deployment_id,
     CODES.HANDOFF_INVALID, '$.records.deployment.deployment_id', 'deployment identity disagrees');
-  expectSame(issues, records.deployment?.source_commit, envelope.source_commit,
+  expectSame(issues, deployment?.source_commit, envelope.source_commit,
     CODES.HANDOFF_INVALID, '$.records.deployment.source_commit', 'source commit disagrees');
-  expectSame(issues, records.live_verification?.record_ref, envelope.live_verification_ref,
-    CODES.HANDOFF_INVALID, '$.records.live_verification.record_ref', 'live verification pointer disagrees');
-  expectSame(issues, records.live_verification?.result, envelope.live_verification,
+  expectSame(issues, liveVerification?.result, envelope.live_verification,
     CODES.HANDOFF_INVALID, '$.records.live_verification.result', 'live read-back result disagrees');
   return issues;
 }
@@ -580,16 +859,19 @@ export function validateJourneyReferences(envelope, records) {
 export function recoverJourneyState(serialized, options = {}) {
   let envelope;
   try {
-    envelope = JSON.parse(serialized);
+    envelope = parseJourneyJson(serialized, 'persisted journey envelope');
   } catch (error) {
     return {
       ok: false,
       code: CODES.HANDOFF_INVALID,
+      state: CODES.HANDOFF_INVALID,
       issues: [issue(CODES.HANDOFF_INVALID, '$', `unparseable journey envelope: ${error.message}`)],
     };
   }
   const issues = validateJourneyEnvelope(envelope, options);
-  if (issues.length > 0) return { ok: false, code: issues[0].code, issues };
+  if (issues.length > 0) {
+    return { ok: false, code: issues[0].code, state: issues[0].code, issues };
+  }
   const terminal = envelope.state === 'NO_ARTICLE';
   return {
     ok: true,
@@ -603,8 +885,8 @@ export function recoverJourneyState(serialized, options = {}) {
 }
 
 /** Execute the one bounded recovery probe selected by persisted state. */
-export function resumeJourney(serialized, adapters = {}) {
-  const recovered = recoverJourneyState(serialized);
+export function resumeJourney(serialized, adapters = {}, referenceOptions = {}) {
+  const recovered = recoverJourneyState(serialized, referenceOptions);
   if (!recovered.ok) return recovered;
   if (recovered.terminal) return { ...recovered, invoked: false, operation: null };
   if (!INTERRUPT_STATES.includes(recovered.state)) {
@@ -634,8 +916,8 @@ export function resumeJourney(serialized, adapters = {}) {
 }
 
 /** Return the linked identity chain after resolving independent record metadata. */
-export function reconstructIdentityChain(envelope, records) {
-  const issues = validateJourneyReferences(envelope, records);
+export function reconstructIdentityChain(envelope, records, referenceOptions = {}) {
+  const issues = validateJourneyReferences(envelope, records, referenceOptions);
   if (issues.length > 0) return { ok: false, code: issues[0].code, issues };
   if (envelope.last_good_state !== 'LIVE_VERIFIED') {
     const incomplete = issue(CODES.HANDOFF_INVALID, '$.last_good_state',
@@ -646,17 +928,17 @@ export function reconstructIdentityChain(envelope, records) {
     ok: true,
     code: null,
     chain: {
-      candidate: clone(records.candidate_ledger.candidate),
-      dossier: clone(records.dossier_source.identity),
-      article_ref: clone(records.handoff_receipt.article_ref),
+      candidate: clone(records.candidate_ledger.record.candidate),
+      dossier: clone(records.dossier_source.record.identity),
+      article_ref: clone(records.handoff_receipt.record.article_ref),
       handoff_receipt_ref: clone(records.handoff_receipt.record_ref),
-      assets: clone(records.handoff_receipt.artifacts),
-      approved_revision: clone(records.publish_approval),
-      visual_approvals: clone(records.visual_approvals),
-      publish_run: { run_id: records.publish_run.run_id, record_ref: clone(records.publish_run.record_ref) },
-      source_commit: clone(records.deployment.source_commit),
-      deployed_artifact: { deployment_id: records.deployment.deployment_id, record_ref: clone(records.deployment.record_ref) },
-      live_verification: clone(records.live_verification.result),
+      assets: clone(records.handoff_receipt.record.artifacts),
+      approved_revision: clone(records.publish_approval.record),
+      visual_approvals: clone(records.visual_approvals.map((entry) => entry.record)),
+      publish_run: { run_id: records.publish_run.record.run_id, record_ref: clone(records.publish_run.record_ref) },
+      source_commit: clone(records.deployment.record.source_commit),
+      deployed_artifact: { deployment_id: records.deployment.record.deployment_id, record_ref: clone(records.deployment.record_ref) },
+      live_verification: clone(records.live_verification.record.result),
     },
   };
 }
@@ -665,9 +947,9 @@ export function reconstructIdentityChain(envelope, records) {
 export function assessPublishGate(envelope, {
   articleRef = envelope?.article_ref,
   assetDigests,
-  approvalRecord,
+  referenceOptions = {},
 } = {}) {
-  const baselineIssues = validateJourneyEnvelope(envelope);
+  const baselineIssues = validateJourneyEnvelope(envelope, referenceOptions);
   if (baselineIssues.length > 0) {
     return { accepted: false, code: baselineIssues[0].code, issues: baselineIssues };
   }
@@ -675,7 +957,14 @@ export function assessPublishGate(envelope, {
     const stale = issue(CODES.STALE_REVISION, '$.state', 'a stale envelope cannot pass the publish gate');
     return { accepted: false, code: CODES.STALE_REVISION, issues: [stale] };
   }
-  if (!approvalRecord || !same(approvalRecord, publishDecisionRecord(envelope.approved_revision))) {
+  const decision = resolveAndVerifyJourneyReference(
+    envelope.approved_revision.record_ref,
+    referenceOptions,
+  );
+  if (!decision.ok) {
+    return { accepted: false, code: decision.code, issues: [decision.issue] };
+  }
+  if (!same(decision.record, publishDecisionRecord(envelope.approved_revision))) {
     const stale = issue(CODES.STALE_REVISION, '$.approved_revision.record_ref',
       'the resolved external publish decision does not match the envelope approval binding');
     return { accepted: false, code: CODES.STALE_REVISION, issues: [stale] };
@@ -702,9 +991,9 @@ export function assessPublishGate(envelope, {
 export function assessAssetApproval(envelope, receiptArtifactIndex, {
   articleRef,
   assetDigest,
-  approvalRecord,
+  referenceOptions = {},
 } = {}) {
-  const baselineIssues = validateJourneyEnvelope(envelope);
+  const baselineIssues = validateJourneyEnvelope(envelope, referenceOptions);
   if (baselineIssues.length > 0) {
     return { approval_valid: false, presentable: false, code: baselineIssues[0].code, lineage: null, issues: baselineIssues };
   }
@@ -714,7 +1003,14 @@ export function assessAssetApproval(envelope, receiptArtifactIndex, {
     return { approval_valid: false, presentable: false, code: CODES.HANDOFF_INVALID, lineage: null };
   }
   const lineage = classifyArtifact({ article_ref: binding.article_ref }, articleForLineage(articleRef));
-  const externallyBound = same(approvalRecord, visualDecisionRecord(binding));
+  const decision = resolveAndVerifyJourneyReference(
+    binding.visual_approval.record_ref,
+    referenceOptions,
+  );
+  if (!decision.ok) {
+    return { approval_valid: false, presentable: false, code: decision.code, lineage, issues: [decision.issue] };
+  }
+  const externallyBound = same(decision.record, visualDecisionRecord(binding));
   const selfBound = binding.visual_approval.binding_sha256 ===
     approvalBindingSha256(binding.article_ref, [binding.asset_sha256]);
   if (assetDigest !== binding.asset_sha256 || !lineage.presentable || !selfBound || !externallyBound) {
@@ -724,8 +1020,8 @@ export function assessAssetApproval(envelope, receiptArtifactIndex, {
 }
 
 /** Record a typed pause while preserving every existing identity and digest. */
-export function recordInterrupt(envelope, code, { observedAt, reasonRef } = {}) {
-  const baselineIssues = validateJourneyEnvelope(envelope);
+export function recordInterrupt(envelope, code, { observedAt, reasonRef, referenceOptions = {} } = {}) {
+  const baselineIssues = validateJourneyEnvelope(envelope, referenceOptions);
   if (baselineIssues.length > 0 || !INTERRUPT_STATES.includes(code) || !PROGRESS_INDEX.has(envelope?.state)) {
     return {
       ok: false,
@@ -753,7 +1049,7 @@ export function recordInterrupt(envelope, code, { observedAt, reasonRef } = {}) 
     observed_at: observedAt,
     ...(reasonRef ? { reason_ref: clone(reasonRef) } : {}),
   };
-  const issues = validateJourneyEnvelope(next);
+  const issues = validateJourneyEnvelope(next, referenceOptions);
   return issues.length > 0
     ? { ok: false, code: issues[0].code, issues }
     : { ok: true, code, envelope: next, terminal: code === 'NO_ARTICLE', recovery_operation: RESUME_OPERATIONS[code] ?? null };

@@ -10,7 +10,7 @@
       "repository": "suengj/intelligence-library",
       "commit": "5bf6b44",
       "path": "intelligence/candidates/ledger.json",
-      "content_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      "content_sha256": "4bf64473c2b05c5eb97fecc09704d6432ea4e2a5487825f21037f047608d5533"
     },
     "selection": {
       "selected_by": "owner",
@@ -23,7 +23,7 @@
     "repository": "suengj/intelligence-library",
     "commit": "5bf6b44",
     "path": "intelligence/dossiers/agent-cost-curve.md",
-    "content_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "content_sha256": "96a9b92794c569435051d97f5e0ec6773a36ac400279349bbf7005fd586dd78e",
     "evidence_role": "supporting"
   },
   "article_ref": {
@@ -33,18 +33,18 @@
     "claims_hash": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
     "commit": "a996889"
   },
-  "journey_binding_sha256": "19f2ff08775a4d99d9b249d09b0a79028c5b7935bbb26b386a09a3cb46be286b",
+  "journey_binding_sha256": "ff45633876b5c579aef93c4a3fb03a4a0c67064ab7dd459bead62980dbe6aae3",
   "review_ref": {
     "repository": "suengj/ai-editorial-system",
-    "commit": "a996889",
-    "path": "reviews/editorial/agent-cost-curve.json",
-    "content_sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+    "commit": "4f3fc2ce086f65a8536189eec09990771fea7292",
+    "path": "scripts/fixtures/journey-envelope/records/editorial-review.json",
+    "content_sha256": "2c9b39ca4cd586f6c36ad67132a1d6e656cd41f2ac0582e54216a20067ea6aaf"
   },
   "handoff_receipt_ref": {
     "repository": "suengj/ai-editorial-system",
-    "commit": "a996889",
-    "path": "handoffs/agent-cost-curve/handoff-receipt.json",
-    "content_sha256": "1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef"
+    "commit": "4f3fc2ce086f65a8536189eec09990771fea7292",
+    "path": "scripts/fixtures/journey-envelope/records/handoff-receipt.json",
+    "content_sha256": "efa67d4a30ec72b67658f5f786a6091d4a4f9277669674161731fe6b3acdd7e0"
   },
   "approved_revision": {
     "approved_by": "owner",
@@ -53,7 +53,7 @@
       "repository": "suengj/suengj-com",
       "commit": "a4e9022",
       "path": "handoffs/agent-cost-curve/publish-approval.json",
-      "content_sha256": "234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1"
+      "content_sha256": "51704584e6644db31431200ddb26b61167a17117e5b06f4694ed0cd5c26edefb"
     },
     "article_ref": {
       "article_id": "art:agent-cost-curve",
@@ -85,9 +85,9 @@
         "approved_at": "2026-09-11T05:30:00Z",
         "record_ref": {
           "repository": "suengj/ai-editorial-system",
-          "commit": "9876543",
-          "path": "reviews/visual/agent-cost-curve-main.json",
-          "content_sha256": "34567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef12"
+          "commit": "4f3fc2ce086f65a8536189eec09990771fea7292",
+          "path": "scripts/fixtures/journey-envelope/records/visual-approval-main.json",
+          "content_sha256": "9ac95a5d357d8c7f42aa06332adcadfd9edb8425405243ef792f536b295a970d"
         },
         "binding_sha256": "a5460924a3ea80f2f547f318d4a5da51ccdb87067217587ab1c38a7b4bc56e0c"
       }
@@ -107,9 +107,9 @@
         "approved_at": "2026-09-11T06:00:00Z",
         "record_ref": {
           "repository": "suengj/ai-editorial-system",
-          "commit": "a996889",
-          "path": "reviews/visual/agent-cost-curve-detail.json",
-          "content_sha256": "4567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef123"
+          "commit": "4f3fc2ce086f65a8536189eec09990771fea7292",
+          "path": "scripts/fixtures/journey-envelope/records/visual-approval-detail.json",
+          "content_sha256": "9ff60baf2c6425925b23a4e43114eec73c8d0bb2f2da7cc283d90cee3ab67c72"
         },
         "binding_sha256": "eec56526d76008050aea28106cc9ae8a308d4d9a7c0ffacc1e151ef110f1717b"
       }
@@ -122,7 +122,7 @@
       "repository": "suengj/suengj-com",
       "commit": "a4e9022",
       "path": "handoffs/agent-cost-curve/publish-run.json",
-      "content_sha256": "567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234"
+      "content_sha256": "891b25171e398dbaa8fa8375920aaa1edf3d09f99d4c4bf681261609f9f9e06e"
     }
   },
   "source_commit": {
@@ -135,14 +135,14 @@
       "repository": "suengj/suengj-com",
       "commit": "a4e9022",
       "path": "handoffs/agent-cost-curve/deployment.json",
-      "content_sha256": "67890abcdef1234567890abcdef1234567890abcdef1234567890abcdef12345"
+      "content_sha256": "c767ffccd729f6cfd7dd6834bf3e4e77d0cf345a29a9dbe5573691140e20fdb7"
     }
   },
   "live_verification_ref": {
     "repository": "suengj/suengj-com",
     "commit": "a4e9022",
     "path": "handoffs/agent-cost-curve/live-verification.json",
-    "content_sha256": "890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567"
+    "content_sha256": "9476d9b5a9ef73cd1e8830cf8b331f732af8f832cf3cafb961c10b4d53c80e97"
   },
   "live_verification": {
     "state": "LIVE_VERIFIED",

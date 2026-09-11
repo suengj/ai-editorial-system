@@ -59,8 +59,15 @@ The handoff receipt remains authoritative for fields it already owns, including
 article identity and artifact identity/location. The envelope stores one
 `handoff_receipt_ref` and only the decision-required ordered digests plus
 receipt indices. `validateJourneyReferences()` resolves separately persisted
-metadata and requires exact agreement across the candidate ledger, dossier,
-review, handoff, approvals, publication, deployment, and live read-back.
+record bytes, verifies their `content_sha256`, and requires exact agreement
+across the candidate ledger, dossier, review, handoff, approvals, publication,
+deployment, and live read-back.
+
+Every file `record_ref` requires `content_sha256`. JSON record digests are bare
+lowercase SHA-256 over recursively key-sorted canonical JSON; non-JSON record
+digests are SHA-256 over the raw bytes. JSON is rejected before
+canonicalization if any object contains duplicate keys, including escaped
+spellings of the same decoded key.
 
 ## Two distinct, self-binding approvals
 
@@ -85,7 +92,7 @@ external decision reference. Reusing an old `record_ref` while rewriting the
 article tuple, asset lineage, or digests therefore returns `STALE_REVISION`.
 The independently resolved decision record must carry the same binding digest,
 so recomputing only the envelope cannot replace the external owner decision.
-Both assessment functions require that resolved decision metadata and compare
+Both assessment functions require the hash-verified decision record and compare
 it to the immutable `record_ref`, article tuple, ordered digest set, and binding
 digest before treating the recorded approval as usable.
 
@@ -169,6 +176,8 @@ The publication manifest's `expected_article_sha256` remains bare, while the
 materialization receipt's `production_sha256` and live result digests remain
 `sha256:`-prefixed. Exact form mismatches return `HANDOFF_INVALID`; a live media
 digest that disagrees with the receipt returns `MEDIA_DIGEST_MISMATCH`.
+`expected_source_sha` is exactly 40–64 lowercase hex, matching the merged
+SUE-789 downstream contract.
 
 ## Authority and refusal rules
 
@@ -185,14 +194,38 @@ unchanged: `STALE_REVISION`, `MEDIA_DIGEST_MISMATCH`,
 `ARTICLE_ANCHOR_MISSING`, `GIT_CONCURRENT_UPDATE`, and
 `DEPLOYMENT_PARTIAL`.
 
+### Record resolution boundary
+
+References into `suengj/ai-editorial-system` are resolved from the exact local
+Git object named by `commit:path`; a missing object or digest mismatch returns
+`HANDOFF_INVALID`. This module does not fetch another repository. For
+`suengj/intelligence-library` and `suengj/suengj-com`, the caller must supply
+`resolveExternalRecord(ref)`, which returns raw JSON bytes/text or raw non-JSON
+bytes for that exact ref. Returning a parsed object is invalid. A missing
+resolver, unavailable external record, or unresolved external path returns
+`BLOCKED_TRANSPORT`; validation and recovery never silently retain
+`LIVE_VERIFIED`.
+
+The committed record-bundle adapter exists for deterministic fixtures and SIT
+inputs; it is not a source of external authority. If a caller controls both the
+envelope and the supplied records, no purely local comparison can be
+authoritative. That is precisely why unresolved references fail closed here
+and why authentic cross-repository byte resolution is deferred to the SUE-787
+system-integration tests rather than certified by this envelope implementation.
+
 ## Validation
 
 ```bash
 npm run validate:journey
 npm run test:journey
+
+# A custom envelope also requires its resolved-record bundle.
+node scripts/validate-journey-envelope.mjs path/to/envelope.json \
+  --records path/to/resolved-records.json
 ```
 
 The validator uses the repository's JSON-schema-lite validator and the
 committed allow/deny fixture pair. Regression negatives start from a
-validator-clean baseline and assert a named failure code. Cross-record tests use
-separately persisted metadata rather than cloning the envelope.
+validator-clean baseline and assert a named failure code. Cross-record tests
+resolve raw records, recompute content hashes, and compare independently
+persisted metadata rather than cloning the envelope.

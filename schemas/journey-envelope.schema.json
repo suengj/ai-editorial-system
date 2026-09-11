@@ -32,6 +32,7 @@
     "prefixed_digest": { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$" },
     "commit": { "type": "string", "pattern": "^[a-f0-9]{7,40}$" },
     "file_ref": {
+      "description": "Immutable record pointer. JSON content_sha256 is over canonical parsed JSON; non-JSON content_sha256 is over raw bytes.",
       "type": "object",
       "additionalProperties": false,
       "required": ["repository", "commit", "path", "content_sha256"],
