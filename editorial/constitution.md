@@ -89,6 +89,16 @@ Source → frame → draft → final → artifact. At each step the trail back t
 evidence remains intact. An artifact that asserts a fact the article never
 verified is a defect, regardless of how good it looks.
 
+**Internal provenance is not reader-facing prose.** Pipeline labels and build
+vocabulary such as `P03`, batch names, manifest paths, `source_id`, repository
+paths, agent/harness names used only for production, or phrases like "our source
+set" must never appear in a published article unless that internal system is
+itself the explicit subject of the piece. The reader sees the recognizable
+source, institution, study, event, company, or case — with a citation where
+needed — not the machinery by which the editorial system found it. Internal
+traceability belongs in manifests, receipts, review records, and citations;
+it must not leak into narrative sentences as unexplained production jargon.
+
 ## 9. Density over volume
 
 Every paragraph changes what the reader knows or understands: a number, a
