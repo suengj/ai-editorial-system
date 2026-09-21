@@ -16,6 +16,12 @@ A Writer must not reproduce an observed tendency merely to "sound like Suengj".
 Repeated surface imitation is a voice failure even when each sentence is good
 in isolation.
 
+For owner-facing social writing, an explicit author overlay may add a different
+register without replacing these invariants. The current owner overlay is
+[`SUENGJ-STYLE.md`](SUENGJ-STYLE.md). It is optional and surface-aware; it
+must never leak into analytical publication prose merely because both are by
+the same author.
+
 ---
 
 ## 1. Korean carries the thought; terminology follows the domain — invariant
@@ -181,7 +187,21 @@ The profile may make Research more evidence-led, View more explicitly
 judgemental, News more compressed, Project more decision-oriented, and Note
 more observational. None of those registers may override the invariants here.
 
-## 12. Failure signatures
+## 12. Explicit author voice overlays
+
+A surface or request may name an author-specific voice overlay. An overlay is
+loaded **after** the shared invariants and content register, and may relax only
+soft/default style preferences that the overlay names explicitly. It may not
+change verified facts, numbers, dates, quotations, citations, terminology,
+thesis, or stated uncertainty.
+
+`SUENGJ-STYLE.md` is the current personal-social overlay. It permits genuine
+self-questioning, parenthetical side-comments, restrained emoji/exclamation,
+and optional postscripts on compatible social surfaces. Those forms remain
+failures when they are engagement machinery, imitation tokens, or when the
+default analytical register is in force.
+
+## 13. Failure signatures
 
 A draft is not voice-fit merely because it contains the right vocabulary or
 rhetorical moves. Flag for human or judge review when any of these dominate:
@@ -197,13 +217,16 @@ rhetorical moves. Flag for human or judge review when any of these dominate:
   making the connection.
 - **Synthetic rhythm** — paragraph and sentence lengths look regular because a
   rule was followed rather than because the material required it.
-- Rhetorical questions used as section transitions.
+- Rhetorical questions used as section transitions, except genuine
+  self-questioning explicitly permitted by a selected author overlay.
 - Enumerated "3 reasons why" framing when the reasons are not genuinely
   parallel.
 - Repeated generic section framing such as "What happened / Why it matters".
 - Analogies for decoration. A historical analogue appears only where it sharpens
   the argument and is then examined, not merely invoked.
-- Emoji, exclamation marks, second-person coaching.
+- Emoji and exclamation marks in the default analytical register; an explicit
+  social voice overlay may permit them sparingly. Second-person coaching remains
+  a failure unless the content type itself genuinely requires instruction.
 
 These are quality signatures, not AI-origin detectors. The system evaluates the
 prose it has, not who or what produced it.
