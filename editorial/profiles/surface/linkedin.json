@@ -1,0 +1,31 @@
+{
+  "schema_version": "1.0.0",
+  "surface": "linkedin",
+  "role": "publication",
+  "owner_system": "LinkedIn and the account owner — outside this repository.",
+  "authority": {
+    "surface_decides": [
+      "platform rendering, truncation, link treatment, and final publish action",
+      "platform-native metadata and distribution behaviour"
+    ],
+    "core_decides": [
+      "editorial content, verification, content-type fit, and voice fit"
+    ]
+  },
+  "constraints": {
+    "format": "feed post or article handoff; mobile-readable paragraphs, no forced creator-template structure",
+    "length_hint": "compact enough for feed reading; preserve a complete thought rather than optimizing to a fixed character target",
+    "citation_style": "inline source links or concise attribution when factual claims require them",
+    "register": "professional-personal; reflective first person is allowed, but generic thought-leadership hooks and engagement bait are not defaults",
+    "style_overlay_default": "suengj-style",
+    "style_intensity_default": "medium",
+    "hashtags": "optional, not required by the Core",
+    "call_to_action": "optional; omit unless the request or content purpose genuinely needs one"
+  },
+  "artifact_fit": ["text/brief"],
+  "publication_boundary": "Only the account owner or an explicitly authorised platform workflow may publish; this repository prepares text only.",
+  "replaceable": {
+    "value": true,
+    "note": "The surface profile is replaceable by another professional social network profile without changing content-type truth or the optional suengj-style overlay."
+  }
+}
