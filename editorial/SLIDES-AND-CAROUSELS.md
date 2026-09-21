@@ -301,7 +301,95 @@ An exception is a surface constraint that changes meaning — e.g. `reserve
 text-safe region` for a generated illustration or `comparison must remain
 side-by-side at presentation size`. That belongs in the artifact specification.
 
-## 11. Slide QA
+## 11. Series information-consistency contract
+
+A multi-frame slide or carousel set is **one information system**, not a
+collection of independently designed canvases. Once rendering begins, recurring
+information roles should remain stable across the set unless the meaning itself
+changes.
+
+This contract governs **information composition and typography roles only**.
+It does **not** choose or freeze palette, illustration medium, image tone,
+texture, depth, character treatment, lighting, or other art-direction choices.
+Those remain owned by the selected visual-language, brand, reference-authority,
+and rendering layers.
+
+### What stays stable across a series
+
+Lock the following once per series:
+
+- surface class and aspect ratio;
+- recurring information zones such as series label, headline, supporting text,
+  primary content, takeaway, source/citation, pagination, and brand/domain;
+- the **semantic typography roles** used by those zones — e.g. eyebrow,
+  headline, deck, section label, body, takeaway, source, pagination,
+  watermark/domain;
+- role hierarchy: the same semantic role resolves to the same typography token
+  references across every frame;
+- repeated metadata wording and punctuation, including exact page-count and
+  brand/domain strings;
+- the reading-order grammar for recurring zones;
+- the semantic meaning of any repeated icon, marker, or shape.
+
+Stable placement means a renderer-owned anchor or layout token such as
+`footer-left` or `headline-zone`, not hard-coded pixel coordinates. Exact font
+family, font size, line height, tracking, and related values remain
+surface/renderer tokens; editorial requires that the **same resolved tokens are
+reused for the same role throughout the series**.
+
+### Same role means same treatment
+
+A repeated role must not drift merely because frames were generated or composed
+independently.
+
+Examples:
+
+- a `headline` on frame 1 and frame 6 uses the same series typography role;
+- `source` text does not become visually equivalent to body copy on one
+  frame and caption copy on another;
+- `1 / 6`, `2 / 6`, ... remain one pagination component rather than six
+  separately styled labels;
+- a repeated domain/watermark such as `suengj.com` is one reusable
+  deterministic overlay, not text re-rendered independently by an image model.
+
+Conversely, different semantic roles should remain visibly distinguishable.
+Consistency must not flatten the hierarchy.
+
+### Do not force content into the template
+
+Series consistency is not permission to make every frame contain the same
+number of modules or the same internal diagram.
+
+If a frame needs more space:
+
+    split the beat
+    or compress the wording upstream
+    or change the local evidence/diagram arrangement
+
+Do **not** solve overflow by shrinking one frame's typography below the
+series role, tightening tracking arbitrarily, or demoting a headline into body
+text. Information clarity outranks template completion.
+
+### Series-level QA
+
+Review the full set together — preferably as a contact sheet or montage — in
+addition to frame-by-frame QA.
+
+Fail or revise when:
+
+- the same semantic text role changes font/weight/scale/tracking unexpectedly;
+- recurring zones jump without a semantic reason;
+- pagination, source lines, or brand/domain text drift in wording or treatment;
+- a repeated icon or shape changes meaning between frames;
+- one frame compensates for excess content by making type materially smaller;
+- the order of headline → evidence/explanation → takeaway/source becomes
+  ambiguous where that order is meant to recur.
+
+The consistency review asks whether the viewer can learn the series' information
+grammar once and reuse it on the next frame. It does not judge whether every
+frame has the same colour, illustration, or visual metaphor.
+
+## 12. Slide QA
 
 ### Message
 
@@ -333,7 +421,7 @@ side-by-side at presentation size`. That belongs in the artifact specification.
 - Do repeated evidence assets keep the same semantic meaning?
 - Does the selected visual-language module remain coherent across the set?
 
-## 12. Failure signatures
+## 13. Failure signatures
 
 | Failure | Why it fails |
 |---|---|
@@ -348,7 +436,7 @@ side-by-side at presentation size`. That belongs in the artifact specification.
 | Same density everywhere | Live, silent, reference, and video surfaces treated as identical |
 | Brand drift per slide | Visual novelty outranks series coherence |
 
-## 13. Stop rule
+## 14. Stop rule
 
 A slide sequence is ready for rendering when:
 
