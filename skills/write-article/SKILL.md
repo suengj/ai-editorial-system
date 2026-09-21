@@ -1,12 +1,13 @@
 ---
 name: write-article
-version: 0.5.0
+version: 0.6.0
 description: Draft a review-state article from an approved frame and a verified claim set, arguing the thesis rather than walking the sources.
 when_not_to_use: Do not use without a frame — inventing a thesis while drafting is the failure this Skill exists to prevent. Do not use for voice polishing, which is editorial-polish.
 inputs:
   - article frame
   - verified claim set
   - content-type profile
+  - optional author voice overlay selected explicitly or by the surface profile
   - source-target delta plan when the task adapts an incumbent/source into a materially different target
   - evidence visuals produced during research
 outputs:
@@ -81,8 +82,15 @@ not a reason to downgrade the Writer.
 The frame, the verified claim set, the content-type profile, the source→target
 delta plan when material adaptation is involved, and any evidence visuals
 produced during research. Only the context needed to make the target coherent —
-the constitution, the voice, the relevant profiles, and the load-bearing source
-truth. Not every profile, and not source bodies reloaded as prose exemplars.
+the constitution, the voice, the relevant profiles, the optional author voice
+overlay when selected, and the load-bearing source truth. Not every profile,
+and not source bodies reloaded as prose exemplars.
+
+When the user explicitly names an overlay such as `suengj-style`, that
+selection wins over the surface default. Otherwise, a surface profile may
+declare `style_overlay_default` and `style_intensity_default`. The overlay
+is prose authority only; it never widens claim, verification, or publication
+authority.
 
 Sources supply evidence. They do **not** supply the sentence order, section
 order, or coverage target the Writer should reproduce.
@@ -155,6 +163,14 @@ adding more style rules or looping the same weak realization indefinitely.
    evidence-led, View owns its judgment, News is compressed and event-led,
    Note may be loose, and Project is decision-oriented. Shared voice does not
    mean shared sentence architecture.
+
+   Then resolve any explicit author voice overlay. If the selected surface
+   declares a default overlay, load it unless the request overrides or disables
+   it. `suengj-style` is the current owner-facing social overlay. It may alter
+   rhythm, personal texture, parenthetical asides, self-questioning, or
+   platform-appropriate social markers only within its documented boundary;
+   it may not alter truth, uncertainty, content-type burden, or surface
+   publication authority.
 6. **Build around the work the argument actually needs.** A mechanism,
    boundary, consequence, comparison, chronology, example, or clarification
    may organise a passage. A distinction is one possible move, not the default.
@@ -226,6 +242,9 @@ adding more style rules or looping the same weak realization indefinitely.
 - No rhetorical move has a quota. A Writer that repeats a corpus tendency to
   signal authorship has failed `voice-fit` even when each sentence is locally
   acceptable.
+- An author overlay is optional and scoped. It must not leak from LinkedIn,
+  Instagram, or another owner-facing social target into a different surface
+  that did not select it.
 - For Korean output, grammatical correctness alone is insufficient if the
   discourse skeleton remains visibly translated from English.
 - Source coverage is not a quality metric. Argument coverage is.

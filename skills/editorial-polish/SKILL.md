@@ -1,12 +1,13 @@
 ---
 name: editorial-polish
-version: 0.3.0
+version: 0.4.0
 description: Apply preservation-first, language-native polish to an already coherent target draft, accepting only bounded edits that clearly beat the incumbent.
 when_not_to_use: Do not use to fix a factual problem or to perform audience/genre/depth reconstruction. Do not use to make text read as less machine-written; that is not the objective.
 inputs:
   - review draft
   - verified claim set
   - content-type profile
+  - optional author voice overlay that governed the draft
   - source-target delta plan / intervention ceiling when available
 outputs:
   - "one action: KEEP, LOCAL_POLISH, or UPSTREAM_REPLAN_REQUIRED"
@@ -72,9 +73,14 @@ edit merely by firing.
 
 ## Inputs
 
-The review draft, verified claim set, content-type profile, and — when the task
-came through SUE-610 routing — the Source→Target Delta plan and intervention
-ceiling.
+The review draft, verified claim set, content-type profile, the author voice
+overlay when one governed drafting, and — when the task came through SUE-610
+routing — the Source→Target Delta plan and intervention ceiling.
+
+Polish must know whether an overlay was active. Otherwise it can mistakenly
+"repair" intentional social features — for example a genuine parenthetical
+aside, self-question, postscript, or restrained emoji — back into the default
+analytical register.
 
 ## Outputs
 
@@ -157,10 +163,13 @@ Therefore:
 10. **Let rhythm follow the thought.** There is no preferred sentence length or
     point→mechanism→consequence quota. Split/merge only when pairwise reading
     improves.
-11. **Preserve the profile register.** Research may remain analytical, View
-    personally owned, News compressed, Note loose, and Project
-    decision-oriented. Polish must not converge them onto one generic report
-    voice.
+11. **Preserve the profile register and any selected author overlay.** Research
+    may remain analytical, View personally owned, News compressed, Note loose,
+    and Project decision-oriented. Polish must not converge them onto one
+    generic report voice. When `suengj-style` governed the draft, parentheses,
+    a genuine self-question, restrained social punctuation, or a postscript are
+    not defects by category; change them only when the local candidate is
+    clearly better under the overlay's own generation test.
 12. **Re-extract protected spans and compare.** Identical multisets, or the
     candidate fails.
 13. **Record edit surface and rationale.** A large edit surface is an escalation
@@ -212,8 +221,8 @@ Stop and return `UPSTREAM_REPLAN_REQUIRED` rather than editing when:
   technical, it hands it to `verify-claims`, while a register-only problem goes
   back to `write-article`. Wanting to change a number or technical term is not
   permission to change it;
-- the draft's audience, genre, knowledge depth, or structure is not yet the
-  requested target;
+- the draft's audience, genre, knowledge depth, structure, or explicitly
+  selected author voice overlay is not yet the requested target;
 - making the Korean natural requires changing thesis, factual qualification,
   or domain concept;
 - the local edit would grow into broad re-authoring;

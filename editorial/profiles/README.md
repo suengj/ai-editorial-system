@@ -69,6 +69,22 @@ profile's top-level fields are written to match them exactly
 A profile is the answer when nothing task-specific was said; an override is
 what the human actually said this time.
 
+## Surface-declared author voice overlays
+
+A surface may declare `constraints.style_overlay_default` and
+`constraints.style_intensity_default` when that destination normally uses an
+owner-specific voice. This is a default, not a new editorial-intent axis.
+
+The current examples are `surface/linkedin.json` and
+`surface/instagram.json`, which default to `suengj-style`. An explicit user
+request may select, change, or disable that overlay. The overlay is resolved
+after shared voice invariants and content register, and it never changes
+verification, evidence burden, factual qualification, or publish authority.
+
+This mechanism is deliberately narrow. Do not turn every stylistic preference
+into a new axis; add an axis only when it answers an independent intent
+question rather than tuning one owner's realization on a compatible surface.
+
 ## Voice core vs content register
 
 The shared voice should make the publication recognisable without making every
