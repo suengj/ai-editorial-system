@@ -288,7 +288,42 @@ Plan for:
 The infographic may be a discovery/summary surface; it must not become the only
 place where material evidence or qualifications exist.
 
-## 12. Infographic / poster QA
+## 12. Multi-plate and card-series consistency
+
+A single-canvas infographic follows this document directly. When one argument
+is distributed across **two or more independent plates/cards**, the set also
+inherits the series information-consistency contract in
+[`SLIDES-AND-CAROUSELS.md`](SLIDES-AND-CAROUSELS.md).
+
+The purpose is not to make every card look identical. It is to let the viewer
+learn the information grammar once.
+
+Across a multi-plate infographic series, keep stable where they recur:
+
+- semantic title/headline hierarchy;
+- recurring label, takeaway, source, pagination, and brand/domain roles;
+- the typography token assigned to each repeated semantic role;
+- recurring reading-order cues;
+- the meaning of repeated icons, markers, arrows, and module types;
+- the exact treatment of recurring provenance/metadata components.
+
+Individual plates may still change:
+
+- internal module count;
+- diagram or evidence form;
+- visual metaphor;
+- local spatial arrangement;
+- the amount of explanatory text required by the beat.
+
+Do not force a complex beat into a fixed number of boxes simply to preserve
+surface symmetry. When content exceeds the established information capacity,
+split or reframe it rather than shrinking typography or weakening hierarchy.
+
+This section governs **information structure and typographic role consistency
+only**. It has no authority to standardize palette, colour tone, illustration
+style, texture, lighting, materiality, or other art-direction choices.
+
+## 13. Infographic / poster QA
 
 ### Dominant message
 
@@ -318,7 +353,7 @@ place where material evidence or qualifications exist.
 - Can modules map back to stable beats?
 - Can a module be reused in slides/video without changing its claim?
 
-## 13. Failure signatures
+## 14. Failure signatures
 
 | Failure | Why it fails |
 |---|---|
@@ -333,7 +368,7 @@ place where material evidence or qualifications exist.
 | Poster-first truth | A claim exists only in the graphic, not the article |
 | Screenshot reuse | Cropped visual loses beat/provenance context |
 
-## 14. Stop rule
+## 15. Stop rule
 
 The spatial plan is ready when:
 
