@@ -11,12 +11,12 @@ quality gates.
 | [`profiles/`](profiles/) | Evidence burden, required fields, **content-type register**, and artifact fit | AES-P1.4 (SUE-441) |
 | [`MEDIA-STRATEGY.md`](MEDIA-STRATEGY.md) + [`artifact-priority.json`](artifact-priority.json) | Evidence vs distribution media, build-out order, and what would change it | AES-P1.5 (SUE-442) |
 | [`VISUAL-STORY-COMPILATION.md`](VISUAL-STORY-COMPILATION.md) | Shared argument-beat graph between a final article and multi-surface visual/spoken derivatives | Visual-story extension |
-| [`SLIDES-AND-CAROUSELS.md`](SLIDES-AND-CAROUSELS.md) | Sequential frame grammar, assertion–evidence profile, density modes, progressive reveal, and slide QA | Visual-story extension |
-| [`INFOGRAPHIC-AND-POSTER.md`](INFOGRAPHIC-AND-POSTER.md) | Spatial hierarchy, poster/infographic profiles, module reuse, evidence boundary, and spatial QA | Visual-story extension |
+| [`SLIDES-AND-CAROUSELS.md`](SLIDES-AND-CAROUSELS.md) | Sequential frame grammar, assertion–evidence profile, density modes, progressive reveal, **series information/typography-role consistency**, and slide QA | Visual-story extension |
+| [`INFOGRAPHIC-AND-POSTER.md`](INFOGRAPHIC-AND-POSTER.md) | Spatial hierarchy, poster/infographic profiles, module reuse, evidence boundary, **multi-plate/card-series information consistency**, and spatial QA | Visual-story extension |
 | [`VIDEO-STORYBOARD.md`](VIDEO-STORYBOARD.md) | Beat-indexed visual/narration synchronization, captions, temporal assembly, local repair, and video QA | Video extension |
 | [`IMAGE-GENERATION.md`](IMAGE-GENERATION.md) | Editorial role, routing, prompt construction, reference consistency, bounded revision, and visual QA for generated/edited images | Visual generation extension |
 | [`AI-IMAGE-GENERATION-GUIDE.md`](AI-IMAGE-GENERATION-GUIDE.md) | Production quality framework for generated editorial imagery — brand-compatible not UI-mimetic, generative-semantic vs deterministic-factual split, reference authority, direction discovery, and aesthetic QA | AES-V2.16 (SUE-605) |
-| [`IMAGE-TEXT-RENDERING-PROFILES.md`](IMAGE-TEXT-RENDERING-PROFILES.md) | Modular text handling for generated images: external overlay, hybrid, integrated generated text, or no text | Visual generation extension |
+| [`IMAGE-TEXT-RENDERING-PROFILES.md`](IMAGE-TEXT-RENDERING-PROFILES.md) | Modular text handling for generated images plus **deterministic repeated-series typography/brand text**: external overlay, hybrid, integrated generated text, or no text | Visual generation extension |
 | [`DIAGRAMMATIC-VISUAL-LANGUAGE.md`](DIAGRAMMATIC-VISUAL-LANGUAGE.md) | Diagrammatic editorial styling, geometric character grammar, thumbnail adaptation, reusable prompt blocks, and style QA | Visual language extension |
 | [`ARTICLE-ILLUSTRATION-ROUTING.md`](ARTICLE-ILLUSTRATION-ROUTING.md) | Article thesis → information type → renderer → illustration family routing, plus the current suengj.com Editorial Research Graphic profile | Article illustration extension |
 | [`ARTICLE-VISUAL-PUBLICATION-HANDOFF.md`](ARTICLE-VISUAL-PUBLICATION-HANDOFF.md) | Rendered article visual → semantic placement, external publication text, accessibility, lineage, and publication-layer handoff | Article illustration extension |
@@ -70,6 +70,7 @@ and timing.
 
 `SLIDES-AND-CAROUSELS.md` and `INFOGRAPHIC-AND-POSTER.md` define two different
 information geometries: sequential frames versus one spatial canvas.
+For multi-frame or multi-plate series, recurring information roles and typography-role tokens stay stable across the set; this consistency contract explicitly does **not** standardize palette, image tone, illustration style, materiality, or other art direction.
 `VIDEO-STORYBOARD.md` adds time and synchronization; it does not create another
 summary of the article.
 
