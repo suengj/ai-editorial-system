@@ -7,6 +7,7 @@ quality gates.
 |---|---|---|
 | [`constitution.md`](constitution.md) | Ten durable principles, with a precedence order for when they collide | AES-P1.3 (SUE-440) |
 | [`voice.md`](voice.md) | Shared prose identity and language-quality failure signatures; explicitly not a sentence template | AES-P1.3 (SUE-440) |
+| [`SUENGJ-STYLE.md`](SUENGJ-STYLE.md) | Optional owner-facing personal-social voice overlay; corpus-derived, surface-aware, never a truth override | Personal voice overlay |
 | [`quality-gates.md`](quality-gates.md) + [`quality-gates.json`](quality-gates.json) | Executable reject / fix / flag conditions | AES-P1.3 (SUE-440) |
 | [`profiles/`](profiles/) | Evidence burden, required fields, **content-type register**, and artifact fit | AES-P1.4 (SUE-441) |
 | [`MEDIA-STRATEGY.md`](MEDIA-STRATEGY.md) + [`artifact-priority.json`](artifact-priority.json) | Evidence vs distribution media, build-out order, and what would change it | AES-P1.5 (SUE-442) |
