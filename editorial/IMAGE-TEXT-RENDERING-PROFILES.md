@@ -148,6 +148,69 @@ text_is_visual_subject: true
 
 The rest of the generation workflow — thesis, provenance, bounded revision, and actual-pixel QA — remains the same.
 
+## 6. Repeated-series typography and brand text
+
+When two or more images belong to one infographic, card, slide, or carousel
+series, recurring text is treated as **one deterministic typography system**.
+
+The image generator may create text-safe regions or an integrated composition,
+but it must not independently redraw exact recurring series text on every frame
+when that text can be rendered deterministically.
+
+Typical repeated series text includes:
+
+- brand/domain or watermark text such as `suengj.com`;
+- page or frame count;
+- series label / eyebrow;
+- source label;
+- recurring footer metadata;
+- recurring section-label roles.
+
+### Lock once, reuse exactly
+
+For each semantic typography role, resolve once per series and reuse the same
+renderer token references for:
+
+    font family
+    font weight
+    font size / scale
+    line height
+    letter spacing / tracking
+    alignment / anchor
+
+The generic editorial core does **not** hard-code the actual typeface, colour,
+or pixel value. Exact typography and design tokens remain owned by the target
+surface/brand renderer. The rule here is that once those tokens resolve for a
+series, the same role must not silently resolve differently from frame to frame.
+
+Exact repeated strings also remain exact. `suengj.com` on six cards is one
+brand string rendered six times from the same overlay component, not six
+generative interpretations of the string.
+
+### Generative local edit is not a typography lock
+
+A bounded image edit can repair an exploratory mockup, but it does not provide
+a deterministic font guarantee. For production series assets, recurring brand
+text and typography roles should therefore be composited after generation or
+rendered through the publication layer whenever the selected text profile
+permits it.
+
+### Scope boundary
+
+This rule governs **typographic identity and information hierarchy only**.
+
+It must not force:
+
+- one palette across otherwise valid visual-language variants;
+- one illustration style;
+- one lighting or material treatment;
+- one background tone;
+- one visual metaphor.
+
+Those are art-direction decisions. Typography consistency prevents accidental
+series drift without turning the typography contract into a colour/style
+contract.
+
 ## One-line rule
 
 > **Keep the workflow stable and swap the text module: external overlay is the current diagrammatic-thumbnail default, not a universal constraint on future image generation.**
