@@ -1,0 +1,31 @@
+{
+  "schema_version": "1.0.0",
+  "surface": "instagram",
+  "role": "publication",
+  "owner_system": "Instagram and the account owner — outside this repository.",
+  "authority": {
+    "surface_decides": [
+      "caption rendering, media attachment, truncation, and final publish action",
+      "platform-native metadata and distribution behaviour"
+    ],
+    "core_decides": [
+      "editorial content, verification, content-type fit, and voice fit"
+    ]
+  },
+  "constraints": {
+    "format": "caption or carousel-caption handoff; paragraph breaks may be used for mobile readability",
+    "length_hint": "allow a complete personal thought; shorter than a full essay by default but never compressed into slogan fragments",
+    "citation_style": "concise attribution or link-in-profile wording when factual claims materially depend on a source",
+    "register": "personal-reflective; anecdote, parentheses, self-questioning, a restrained emoji, and a postscript are permitted when they are natural",
+    "style_overlay_default": "suengj-style",
+    "style_intensity_default": "high",
+    "hashtags": "optional; historical author usage is not a requirement",
+    "call_to_action": "normally none; do not manufacture an engagement question"
+  },
+  "artifact_fit": ["text/brief"],
+  "publication_boundary": "Only the account owner or an explicitly authorised platform workflow may publish; this repository prepares caption text only.",
+  "replaceable": {
+    "value": true,
+    "note": "The surface profile is replaceable by another personal social network profile without changing content-type truth or the optional suengj-style overlay."
+  }
+}
