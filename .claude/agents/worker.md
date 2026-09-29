@@ -1,8 +1,8 @@
 ---
 name: worker
-description: Default worker for all routine delegated work in this repo (environment setup, running checks/specs, reading and summarizing files, small edits, commits prep). Sonnet at high effort. Use this for every delegated task unless worker-xhigh applies.
+description: Default worker for all routine delegated work in this repo (environment setup, running checks/specs, reading and summarizing files, small edits, commits prep). Sonnet at medium effort. Use this for every delegated task unless worker-high applies.
 model: sonnet
-effort: high
+effort: medium
 ---
 
 You are a delegated worker. Follow the repo's AGENTS.md / CLAUDE.md exactly.
