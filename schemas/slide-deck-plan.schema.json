@@ -1,0 +1,217 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://suengj.com/schemas/slide-deck-plan.schema.json",
+  "title": "Slide deck plan",
+  "description": "Provider-neutral editorial planning contract for sequential slide/report-deck surfaces. It decides slide scope, function, information topology, semantic fit, evidence authority, and craft-reference requirements. Brand-specific layouts, reference IDs, theme tokens, typography, coordinates, renderer strategy, and rendering remain downstream.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "article_ref", "surface_profile", "slides"],
+  "properties": {
+    "schema_version": { "const": "1.0.0" },
+    "article_ref": { "$ref": "#/$defs/article_ref" },
+    "surface_profile": {
+      "enum": ["live_narrated", "video_frame", "silent_carousel", "reference_deck", "working_report"]
+    },
+    "slides": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/slide" }
+    }
+  },
+  "$defs": {
+    "article_ref": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["article_id", "version_number", "content_hash", "claims_hash"],
+      "properties": {
+        "article_id": { "type": "string", "minLength": 1 },
+        "version_number": { "type": ["integer", "string"] },
+        "content_hash": { "type": "string", "minLength": 1 },
+        "claims_hash": { "type": "string", "minLength": 1 }
+      }
+    },
+    "slide": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "slide_id",
+        "beat_ids",
+        "necessity",
+        "function",
+        "topology",
+        "primary_message",
+        "content_roles",
+        "semantic_fit",
+        "evidence_authority",
+        "reference_requirement"
+      ],
+      "properties": {
+        "slide_id": {
+          "type": "string",
+          "pattern": "^slide-[0-9]+$"
+        },
+        "beat_ids": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "necessity": { "$ref": "#/$defs/necessity" },
+        "function": {
+          "enum": [
+            "orient",
+            "assert",
+            "diagnose",
+            "show_evidence",
+            "compare",
+            "framework",
+            "explain_mechanism",
+            "qualify",
+            "before_after",
+            "recommend",
+            "prioritize",
+            "roadmap",
+            "decision",
+            "turn",
+            "show_consequence",
+            "close"
+          ]
+        },
+        "topology": {
+          "enum": [
+            "single_focus",
+            "sequential_flow",
+            "parallel_paths",
+            "evidence_to_implication",
+            "comparison",
+            "matrix",
+            "hierarchy",
+            "cycle",
+            "before_after",
+            "workstream_by_time"
+          ]
+        },
+        "primary_message": {
+          "type": "string",
+          "minLength": 1
+        },
+        "content_roles": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/content_role" }
+        },
+        "semantic_fit": { "$ref": "#/$defs/semantic_fit" },
+        "evidence_authority": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/evidence_authority" }
+        },
+        "reference_requirement": { "$ref": "#/$defs/reference_requirement" }
+      }
+    },
+    "necessity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["decision", "reason"],
+      "properties": {
+        "decision": {
+          "enum": ["KEEP_ONE", "SPLIT", "MERGE_PREVIOUS", "MERGE_NEXT", "APPENDIX_ONLY"]
+        },
+        "reason": { "type": "string", "minLength": 10 }
+      }
+    },
+    "content_role": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["role", "content"],
+      "properties": {
+        "role": {
+          "enum": [
+            "topic",
+            "headline",
+            "primary_evidence",
+            "secondary_evidence",
+            "annotation",
+            "implication",
+            "action",
+            "source_caveat"
+          ]
+        },
+        "content": { "type": "string", "minLength": 1 },
+        "claim_ids": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "source_references": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "semantic_fit": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "reasons", "repair"],
+      "properties": {
+        "status": { "enum": ["PASS", "FAIL"] },
+        "reasons": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "repair": {
+          "enum": ["NONE", "REWRITE", "SPLIT", "ALTERNATE_STRUCTURE"]
+        }
+      }
+    },
+    "evidence_authority": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["item_ref", "class", "visual_claim_limit"],
+      "properties": {
+        "item_ref": { "type": "string", "minLength": 1 },
+        "class": {
+          "enum": ["METRIC", "FACT", "INTERPRETATION", "HYPOTHESIS", "CONCEPT"]
+        },
+        "visual_claim_limit": {
+          "enum": [
+            "exact_evidence",
+            "factual_annotation",
+            "qualified_interpretation",
+            "qualified_hypothesis",
+            "conceptual_only"
+          ]
+        },
+        "source_references": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "reference_requirement": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["needed", "authority", "not_authority"],
+      "properties": {
+        "needed": { "type": "boolean" },
+        "authority": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "enum": ["hierarchy", "information_grouping", "spatial_relation", "density", "wording_structure"]
+          }
+        },
+        "not_authority": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "enum": ["factual_content", "metrics", "source_wording", "proprietary_expression", "logos"]
+          }
+        },
+        "preferred_function": { "type": "string" },
+        "preferred_topology": { "type": "string" }
+      }
+    }
+  }
+}
