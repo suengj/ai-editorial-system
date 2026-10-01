@@ -371,6 +371,22 @@ An exception is a surface constraint that changes meaning — e.g. `reserve
 text-safe region` for a generated illustration or `comparison must remain
 side-by-side at presentation size`. That belongs in the artifact specification.
 
+### Visual-language boundary
+
+Slide/report Structure stops at message arrangement: slide boundaries, function,
+topology, hierarchy, evidence placement, density, and recurring information
+roles.
+
+Tone, palette, typography character, line/shape treatment, materiality, depth,
+and whitespace resolve separately under
+[`VISUAL-STRUCTURE-AND-LANGUAGE.md`](VISUAL-STRUCTURE-AND-LANGUAGE.md).
+
+Therefore a `working_report` profile does not imply a navy consulting palette,
+and a suengj.com palette does not imply infographic geometry. The same
+SlideDeckPlan may be rendered in the publication's default visual language or
+with an explicitly authorized dimension-level override without changing slide
+boundaries unless actual fit QA exposes a structural defect.
+
 ## 11. Series information-consistency contract
 
 A multi-frame slide or carousel set is **one information system**, not a
