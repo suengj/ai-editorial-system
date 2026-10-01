@@ -42,15 +42,15 @@ Artifact Plan
         ↓
 Visual Story Plan
         ↓
-┌────────────────┬──────────────────┬──────────────────┐
-│ spatial        │ sequential       │ spoken           │
-│ infographic    │ slides/carousel  │ audio beat map   │
-│ poster         │ scrolly          │                  │
-└────────────────┴──────────────────┴──────────────────┘
-        ↓                               ↓
-visual renderers             compile-audio-script
-                                      ↓
-                              Canonical Spoken Script
+┌────────────────┬──────────────────────┬──────────────────┐
+│ spatial        │ sequential           │ spoken           │
+│ infographic    │ slide/carousel map   │ audio beat map   │
+│ poster         │ scrolly              │                  │
+└────────────────┴──────────────────────┴──────────────────┘
+        ↓                    ↓                 ↓
+spatial compiler      compile-slide-deck   compile-audio-script
+        ↓                    ↓                 ↓
+visual renderer        SlideDeckPlan       Canonical Spoken Script
                                       ↓
                                   TTS adapter
         └───────────────────────┬─────┘
@@ -111,8 +111,8 @@ Each surface decides how beats are spatially or sequentially realized.
 ```text
 poster        → several beats arranged in one spatial hierarchy
 infographic   → beats arranged as one spatial/vertical reading path
-slides        → usually one dominant beat per frame
-carousel      → compact self-contained sequential frames
+slides        → beat-level frame candidates handed to compile-slide-deck
+carousel      → compact sequential candidates; slide rules apply when deck-like
 scrolly       → progressive reveal over beats
 audio         → selected beat/dependency map handed to compile-audio-script
 ```
@@ -120,10 +120,25 @@ audio         → selected beat/dependency map handed to compile-audio-script
 A surface may omit a non-load-bearing beat or split a complex beat, but must
 record the mapping.
 
+For slide/report-deck surfaces, this level stops at **semantic frame
+candidates**. `compile-slide-deck` owns slide necessity, split/merge decisions,
+slide function, information topology, semantic fit/density preflight, and
+reference requirements before a renderer sees the job. It does not choose a
+brand-specific reference, theme, font, colour, exact coordinate, or rendering
+provider.
+
+Infographic/poster compilation does **not** pass through this slide/deck gate.
+Its single-canvas spatial logic remains governed by
+[`INFOGRAPHIC-AND-POSTER.md`](INFOGRAPHIC-AND-POSTER.md). This prevents
+working-report slide density and layout assumptions from leaking into the
+infographic lane.
+
 ### Level 3 — Media realization
 
 The surface plan is compiled into actual assets:
 
+- slide/report-deck mappings first become a provider-neutral `SlideDeckPlan`
+  via `skills/compile-slide-deck`;
 - deterministic charts / diagrams / SVG;
 - generated or edited imagery;
 - deterministic typography;
@@ -131,7 +146,7 @@ The surface plan is compiled into actual assets:
 - TTS render;
 - captions / accessibility metadata.
 
-Renderer choice belongs here, not in the Visual Story Plan.
+Renderer choice belongs here, not in the Visual Story Plan or SlideDeckPlan.
 
 ### Level 4 — Temporal assembly
 
