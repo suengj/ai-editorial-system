@@ -24,7 +24,8 @@
     "readability": "desktop, print, and normal presentation-size inspection are primary; mobile-first readability is not assumed",
     "planning_contract": "Use skills/compile-slide-deck and schemas/slide-deck-plan.schema.json before brand-specific layout or rendering.",
     "infographic_boundary": "This profile does not govern single-canvas infographic/poster composition and must not change editorial/INFOGRAPHIC-AND-POSTER.md defaults.",
-    "style_boundary": "No Samsung, consulting-firm, or other brand-specific colours, fonts, coordinates, layout families, or reference IDs are canonical here."
+    "style_boundary": "No Samsung, consulting-firm, or other brand-specific colours, fonts, coordinates, layout families, or reference IDs are canonical here.",
+    "visual_language_boundary": "Report-deck owns consumption density and decision-support readability, not visual identity. Resolve tone_manner, palette, typography_character, line_shape, materiality, depth, and whitespace under editorial/VISUAL-STRUCTURE-AND-LANGUAGE.md; brand defaults may be selectively overridden only through explicit authority."
   },
   "artifact_fit": [
     "visual/slide-image"
