@@ -150,34 +150,59 @@ Use a small reference set. Too many competing references create style dilution a
 
 For suengj.com editorial body imagery, recovered owner-preferred AI-labor visuals establish only an integrated human scene, AI/workflow layer, spatial narrative, restrained evidence modules, high whitespace, and depth/information-layering richer than the site UI system. Palette remains governed by [`profiles/brand/suengj-com.v1.json`](profiles/brand/suengj-com.v1.json) until a reference-authority record supersedes it under SUE-643. The tension between the references' depth treatment and the brand profile's current `depth_model: flat or nearly flat 2D` is an **OPEN**, tracked conflict for SUE-644 to resolve; this guide does not resolve it.
 
-## 6. Style consistency vs brand consistency
+## 6. Structure vs Visual Language vs brand
 
-Keep these separate.
+Keep these separate. The canonical boundary is
+[`VISUAL-STRUCTURE-AND-LANGUAGE.md`](VISUAL-STRUCTURE-AND-LANGUAGE.md).
+
+### Structure
+
+Owns the message geometry: information hierarchy, grouping, reading path,
+topology, semantic density, split/merge, and evidence placement required by the
+artifact.
+
+Structure is selected before visual styling. A report-slide structure is not a
+blue corporate style; an infographic structure is not a green publication
+style.
+
+### Visual Language
+
+Owns the expressive treatment after Structure is stable:
+
+- tone and manner;
+- palette;
+- typography character;
+- line/shape language;
+- whitespace;
+- materiality and depth.
+
+These dimensions may resolve independently. For example, keep suengj tone and
+whitespace while explicitly overriding only palette.
 
 ### Brand consistency
 
-Can constrain:
+The brand profile supplies the default visual-language bundle and ceilings:
 
 - overall restraint;
 - palette family;
-- typography outside the artwork;
+- typography character outside/protecting factual text;
 - whitespace discipline;
 - intellectual / editorial tone;
+- materiality ceilings;
 - avoidance of loud commercial or generic sci-fi clichés.
+
+A reference may outrank one brand dimension only through explicit
+dimension-level authority. It does not acquire authority over Structure or over
+the other visual-language dimensions.
 
 ### Visual style consistency
 
-Can constrain:
+A production direction may additionally constrain illustration medium,
+character treatment, lighting, texture, spatial storytelling, or information
+overlay behavior when the artifact actually needs them.
 
-- illustration medium;
-- character treatment;
-- depth and lighting;
-- material/texture;
-- spatial storytelling;
-- line/shape language;
-- information overlay behavior.
-
-Do **not** derive the second automatically from the website UI system.
+Do **not** derive Structure from visual style, and do not derive visual style
+automatically from website UI. Resolve each layer through its own authority.
 
 ## 7. Exploration before production
 
