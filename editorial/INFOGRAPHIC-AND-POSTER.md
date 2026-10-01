@@ -11,6 +11,11 @@ reading behavior from prose or a sequential deck.
 Research basis:
 [`../benchmarks/VISUAL-STORYTELLING-SLIDES-INFOGRAPHICS.md`](../benchmarks/VISUAL-STORYTELLING-SLIDES-INFOGRAPHICS.md).
 
+This document owns **spatial Structure**, not house style. Tone, palette,
+typography character, line/shape, materiality/depth, and whitespace resolve
+separately under
+[`VISUAL-STRUCTURE-AND-LANGUAGE.md`](VISUAL-STRUCTURE-AND-LANGUAGE.md).
+
 ## 1. Start with the dominant takeaway
 
 Before choosing layout, illustrations, or chart types, state:
