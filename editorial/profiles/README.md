@@ -85,6 +85,13 @@ This mechanism is deliberately narrow. Do not turn every stylistic preference
 into a new axis; add an axis only when it answers an independent intent
 question rather than tuning one owner's realization on a compatible surface.
 
+`surface/report-deck.json` is a different use of the same surface axis: it
+declares a **consumption constraint**, not a brand. It permits medium-high
+working-report density and low speaker dependency for `visual/slide-image`
+artifacts, while leaving actual layout, theme, typography, brand-specific
+reference selection, and rendering downstream. It explicitly does not govern
+single-canvas infographic/poster composition.
+
 ## Voice core vs content register
 
 The shared voice should make the publication recognisable without making every
