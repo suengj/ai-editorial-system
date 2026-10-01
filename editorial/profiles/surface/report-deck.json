@@ -1,0 +1,37 @@
+{
+  "schema_version": "1.0.0",
+  "surface": "report-deck",
+  "role": "consumption",
+  "owner_system": "Downstream slide/report renderer and final document host; outside this repository.",
+  "authority": {
+    "surface_decides": [
+      "actual layout family, theme, typography, spacing, pagination, and file format",
+      "brand-specific reference selection and renderer implementation",
+      "final export behaviour for PNG, PDF, PPTX, or equivalent deck formats"
+    ],
+    "core_decides": [
+      "verified claims and uncertainty",
+      "argument beats and slide-level semantic partitioning",
+      "slide function, information topology, semantic fit, and bounded craft-reference requirements"
+    ]
+  },
+  "constraints": {
+    "consumption_mode": "silent decision-support document; the deck should remain useful without a presenter",
+    "speaker_dependency": "low",
+    "visible_text_density": "medium to high when semantic fit passes; denser than a live presentation but never a license for unreadable text",
+    "evidence_density": "medium-high to high when multiple evidence elements jointly support one dominant slide message",
+    "provenance": "source lines, caveats, and material qualifications remain visible or otherwise resolvable from the artifact lineage",
+    "readability": "desktop, print, and normal presentation-size inspection are primary; mobile-first readability is not assumed",
+    "planning_contract": "Use skills/compile-slide-deck and schemas/slide-deck-plan.schema.json before brand-specific layout or rendering.",
+    "infographic_boundary": "This profile does not govern single-canvas infographic/poster composition and must not change editorial/INFOGRAPHIC-AND-POSTER.md defaults.",
+    "style_boundary": "No Samsung, consulting-firm, or other brand-specific colours, fonts, coordinates, layout families, or reference IDs are canonical here."
+  },
+  "artifact_fit": [
+    "visual/slide-image"
+  ],
+  "publication_boundary": "This repository prepares the semantic deck plan only. Rendering, approval, export, and publication remain downstream human/project responsibilities.",
+  "replaceable": {
+    "value": true,
+    "note": "A different report renderer or brand adapter may consume the same SlideDeckPlan without changing canonical claims, slide functions, topology, or the infographic lane."
+  }
+}
