@@ -40,10 +40,12 @@ frame-article → verify-claims → write-article → editorial-polish → human
                                       ↘ plan-artifacts
                                              ↓
                                   compile-visual-story
-                                   ↙                 ↘
-                         visual surfaces      compile-audio-script
-                                   \                 /
-                                    \→ video assembly
+                              ↙             ↓             ↘
+                    infographic/poster  compile-slide-deck  compile-audio-script
+                                            ↓                     ↓
+                                       SlideDeckPlan          spoken package
+                              \             |                    /
+                               \────────→ media realization ←────/
 ```
 
 `plan-artifacts` decides **whether** a derivative is worth building.
@@ -60,15 +62,18 @@ these Skills renders anything.
 | [`editorial-polish`](editorial-polish/) | How it reads — never what it claims | AES-P2.5 (SUE-447) |
 | [`plan-artifacts`](plan-artifacts/) | Which artifacts are worth building and what each must carry | AES-P2.6 (SUE-448) |
 | [`compile-visual-story`](compile-visual-story/) | One provider-neutral argument-beat graph and cross-surface mapping for approved slides, infographics, audio selection, and video | Visual-story extension |
+| [`compile-slide-deck`](compile-slide-deck/) | Sequential slide/report-deck planning: split/merge, function, topology, semantic fit, evidence authority, and reference requirements; never brand-specific layout or rendering | Slide/report-deck extension |
 | [`compile-audio-script`](compile-audio-script/) | Article → clean spoken structure, pronunciation/delivery state, semantic segments and timing budgets | Audio generation extension |
 
 The division is the design. Verification decides truth and may block a
 finalization; polish decides rhythm and may not touch a protected span; the
 human decides publication. Artifact planning decides whether a derivative
 exists; visual-story compilation keeps approved multi-surface derivatives
-semantically aligned; the audio compiler performs the reading→listening
-modality change; renderers produce files. No Skill in this set can publish or
-approve.
+semantically aligned; the slide-deck compiler deepens only the sequential
+slide/report-deck lane before brand-specific rendering; infographic/poster
+compilation remains spatial and independent; the audio compiler performs the
+reading→listening modality change; renderers produce files. No Skill in this
+set can publish or approve.
 
 For audio specifically, `plan-artifacts` owns **whether and why** an audio
 artifact should exist. `compile-audio-script` owns **how the finalized article

@@ -13,6 +13,7 @@ quality gates.
 | [`MEDIA-STRATEGY.md`](MEDIA-STRATEGY.md) + [`artifact-priority.json`](artifact-priority.json) | Evidence vs distribution media, build-out order, and what would change it | AES-P1.5 (SUE-442) |
 | [`VISUAL-STORY-COMPILATION.md`](VISUAL-STORY-COMPILATION.md) | Shared argument-beat graph between a final article and multi-surface visual/spoken derivatives | Visual-story extension |
 | [`SLIDES-AND-CAROUSELS.md`](SLIDES-AND-CAROUSELS.md) | Sequential frame grammar, assertion–evidence profile, density modes, progressive reveal, **series information/typography-role consistency**, and slide QA | Visual-story extension |
+| [`../skills/compile-slide-deck/`](../skills/compile-slide-deck/) + [`../schemas/slide-deck-plan.schema.json`](../schemas/slide-deck-plan.schema.json) | Sequential-surface planning layer: split/merge, slide function, information topology, semantic fit/density, evidence authority, and bounded reference requirements before brand-specific rendering | Slide/report-deck extension |
 | [`INFOGRAPHIC-AND-POSTER.md`](INFOGRAPHIC-AND-POSTER.md) | Spatial hierarchy, poster/infographic profiles, module reuse, evidence boundary, **multi-plate/card-series information consistency**, and spatial QA | Visual-story extension |
 | [`VIDEO-STORYBOARD.md`](VIDEO-STORYBOARD.md) | Beat-indexed visual/narration synchronization, captions, temporal assembly, local repair, and video QA | Video extension |
 | [`IMAGE-GENERATION.md`](IMAGE-GENERATION.md) | Editorial role, routing, prompt construction, reference consistency, bounded revision, and visual QA for generated/edited images | Visual generation extension |
@@ -50,8 +51,9 @@ LEVEL 1  Artifact Plan — which derivatives are worth making
 LEVEL 2  Visual Story Plan — shared argument beats / cross-surface mapping
               ↓
 LEVEL 3  Surface compilation
-         ├─ slides / carousel / scrolly
-         ├─ infographic / poster
+         ├─ slide/report-deck map → compile-slide-deck → SlideDeckPlan
+         ├─ infographic / poster → existing spatial compiler
+         ├─ carousel / scrolly as their sequential surface rules require
          └─ compile-audio-script → listener-first spoken script
               ↓
 LEVEL 4  Media realization
@@ -71,6 +73,12 @@ and timing.
 
 `SLIDES-AND-CAROUSELS.md` and `INFOGRAPHIC-AND-POSTER.md` define two different
 information geometries: sequential frames versus one spatial canvas.
+`compile-slide-deck` deepens only the sequential slide/report-deck lane: it
+decides split/merge, slide function, information topology, semantic fit, evidence
+authority, and reference requirements before a project renderer takes over.
+The infographic/poster lane does **not** pass through this compiler, so
+working-report density and slide-layout assumptions cannot leak into
+single-canvas infographic composition.
 For multi-frame or multi-plate series, recurring information roles and typography-role tokens stay stable across the set; this consistency contract explicitly does **not** standardize palette, image tone, illustration style, materiality, or other art direction.
 `VIDEO-STORYBOARD.md` adds time and synchronization; it does not create another
 summary of the article.
