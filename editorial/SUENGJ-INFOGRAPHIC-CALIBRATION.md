@@ -153,30 +153,31 @@ Minimal presentation is not minimal reasoning.
 
 The graphic should be able to carry a richer information model while remaining visually calm.
 
-## 6. Current aesthetic target
+## 6. Visual treatment is resolved outside the infographic structure
 
-Use the existing suengj.com taste profile as the rendering layer:
+This calibration owns **infographic information structure**: semantic density,
+module coverage, reading path, split rules, and visual-chrome budget. It does
+not own the publication palette or house tone.
 
-```text
-warm off-white field
-large functional whitespace
-thin charcoal / muted forest-green linework
-low color density
-restrained sand/camel accent
-little or no heavy card chrome
-small semantic iconography only when useful
-soft hierarchy
-subtle material depth allowed
-clear typography hierarchy
-```
+After the information architecture is approved, resolve tone, palette,
+typography character, line/shape, materiality/depth, and whitespace through
+[`VISUAL-STRUCTURE-AND-LANGUAGE.md`](VISUAL-STRUCTURE-AND-LANGUAGE.md).
 
-Avoid:
+For the default suengj.com publication, the current brand/taste profile normally
+produces the familiar warm off-white, muted forest/sage, restrained sand/camel,
+quiet charcoal, thin linework, and generous whitespace. Those are
+**visual-language defaults**, not requirements for something to count as a body
+infographic.
 
-- dashboard density;
-- marketing-infographic saturation;
-- icon-per-cell behavior;
-- heavy rounded cards around every module;
-- decorative arrows or connector webs;
+An explicitly authorized task/reference may therefore change a palette or other
+visual-language dimension without changing this infographic's approved
+information architecture.
+
+Still reject structure-level failure signatures:
+
+- dashboard-like micro-panel overload;
+- icon-per-cell composition that obscures the reading path;
+- decorative connector webs that imply unsupported relationships;
 - reducing information solely to create empty space;
 - adding unsupported content merely to make the infographic feel richer.
 
@@ -230,22 +231,23 @@ If no, use `replace`, `reposition`, or `skip`.
 
 Do not ask a renderer simply for a `minimal infographic`. That often causes semantic deletion.
 
-Instead compile in two layers:
+Instead compile in three explicit layers:
 
 ```text
 SEMANTIC SPEC
+- preserve claims, evidence, uncertainty, consequence
+
+STRUCTURE SPEC
 - preserve these modules
 - preserve these dimensions
 - preserve this reading order
 - preserve this consequence / tension
+- enforce the infographic split/readability rules
 
-VISUAL SPEC
-- high whitespace
-- thin rules
-- low color density
-- few enclosures
-- restrained iconography
-- editorial research spread feel
+VISUAL LANGUAGE
+- resolve tone / palette / typography character / line-shape
+- resolve materiality / depth / whitespace independently
+- inherit brand defaults unless an explicit authority overrides a dimension
 ```
 
 A reusable instruction is:
