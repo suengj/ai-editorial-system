@@ -26,21 +26,38 @@ BODY INFOGRAPHIC / EXPLANATORY RESEARCH GRAPHIC
 
 The shared publication tone is a rendering layer, not a shared information architecture.
 
-## 2. Shared suengj.com surface language
+## 2. Shared visual language, different Structure
 
-Both families inherit the publication-specific taste profile:
+Both families normally inherit the same suengj.com visual-language defaults, but
+those defaults are resolved **after** each family establishes its own information
+geometry.
 
-- warm off-white / neutral field;
-- muted forest / sage structural color;
-- restrained sand / camel accent;
-- quiet charcoal typography and linework;
-- generous negative space;
-- subtle material depth only when useful;
-- no glossy glass, cinematic 3D, dark drop shadows, neon, or generic startup illustration;
-- editorial/research-publication finish rather than marketing art;
-- structure should feel designed, not assembled from an icon library.
+See
+[`VISUAL-STRUCTURE-AND-LANGUAGE.md`](VISUAL-STRUCTURE-AND-LANGUAGE.md).
 
-This common layer should make thumbnail and infographic assets feel like they belong to the same publication even though their internal functions differ.
+For the default publication, the shared language includes the current
+warm-off-white / muted-forest-sage / restrained-sand-camel / quiet-charcoal
+family, generous functional whitespace, restrained material depth, and an
+editorial/research-publication tone.
+
+These properties make the assets feel related. They do not define what the
+artifact *is*.
+
+```text
+Thumbnail Structure
+→ thesis-first / sparse / identity
+
+Body infographic Structure
+→ information-first / modular / explanatory
+
+Shared Visual Language
+→ tone / palette / typography character / line-shape / materiality / whitespace
+```
+
+A task may selectively override one visual-language dimension through explicit
+authority without inheriting another artifact's Structure. A palette change does
+not turn an infographic into a thumbnail; a richer infographic structure does
+not grant permission to change the publication palette.
 
 ## 3. Family A — Thumbnail / cover / intro visual
 
