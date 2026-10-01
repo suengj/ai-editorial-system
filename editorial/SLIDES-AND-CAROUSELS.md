@@ -113,7 +113,55 @@ A single article section may become several slides when it contains several
 beats. Several article sections may collapse into one slide when they serve the
 same visual function.
 
-## 4. Four density profiles
+### 3A. Slide/deck planning is a sequential-surface gate
+
+For slides and report decks, the beat mapping is not yet a render-ready deck.
+Run the provider-neutral slide/deck planning step before any style or renderer
+selection.
+
+This gate is **specific to sequential slide-like surfaces**. It does not govern
+single-canvas infographic/poster composition, which remains owned by
+[`INFOGRAPHIC-AND-POSTER.md`](INFOGRAPHIC-AND-POSTER.md).
+
+For each candidate frame, decide:
+
+1. **Necessity / split-merge** — should this material remain one frame at all?
+   Allowed decisions are `KEEP_ONE`, `SPLIT`, `MERGE_PREVIOUS`,
+   `MERGE_NEXT`, or `APPENDIX_ONLY`.
+2. **Slide function** — what must the frame do? Common functions include
+   `orient`, `diagnose`, `show_evidence`, `compare`, `framework`,
+   `explain_mechanism`, `before_after`, `recommend`, `prioritize`,
+   `roadmap`, and `decision`.
+3. **Information topology** — how is the information related? Common topologies
+   include sequential flow, parallel paths, evidence → implication,
+   comparison, matrix, hierarchy, cycle, before → after, and workstream × time.
+4. **Semantic fit / density preflight** — can the headline, evidence,
+   qualification, and source/caveat remain legible at the target surface
+   density without dropping material information?
+5. **Reference requirement** — when craft references are useful, declare what
+   they may control (for example hierarchy, grouping, spatial relation, density)
+   and what they may not control (facts, metrics, source wording).
+
+A failed semantic fit routes upstream in this order:
+
+```text
+REWRITE
+→ SPLIT
+→ ALTERNATE_STRUCTURE
+```
+
+Do not repair an overloaded slide by defaulting to smaller text. The downstream
+renderer must run its own layout-specific fit check after it chooses an actual
+layout family; passing the editorial preflight does not certify a renderer
+layout.
+
+The machine handoff is
+[`../schemas/slide-deck-plan.schema.json`](../schemas/slide-deck-plan.schema.json),
+compiled by [`../skills/compile-slide-deck/`](../skills/compile-slide-deck/).
+Brand-specific reference IDs, theme tokens, fonts, colours, exact coordinates,
+and renderer strategy stay downstream.
+
+## 4. Five density profiles
 
 The same beat may need different visible text depending on how the surface is
 consumed.
@@ -170,6 +218,28 @@ speaker dependency: low
 
 Do not use this profile for projected live delivery merely because it feels
 safer to include every detail.
+
+### `working_report`
+
+The deck is a decision-support document that may be read without a presenter.
+
+```text
+visible text: medium to high
+evidence density: medium-high when justified
+speaker dependency: low
+provenance / caveat visibility: strong
+mobile-first requirement: no
+```
+
+This profile allows denser evidence-bearing modules than a live presentation,
+but it does not waive the one-dominant-reason rule or the semantic fit gate.
+Several tightly related evidence blocks may coexist when they jointly support
+one head message. Independent conclusions still split.
+
+Use the surface profile
+[`profiles/surface/report-deck.json`](profiles/surface/report-deck.json) when
+this is the intended consumption mode. Do not export working-report density to
+silent carousels, video frames, or infographics by default.
 
 ## 5. Visual evidence should dominate analytical frames
 
@@ -447,6 +517,7 @@ every frame has a primary function
 + frame order follows beat dependencies
 + density profile is explicit
 + narration dependency is explicit
++ slide/report-deck surfaces passed the slide/deck planning gate
 + accessibility/provenance needs are planned
 ```
 
