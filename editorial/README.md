@@ -12,6 +12,7 @@ quality gates.
 | [`profiles/`](profiles/) | Evidence burden, required fields, **content-type register**, and artifact fit | AES-P1.4 (SUE-441) |
 | [`MEDIA-STRATEGY.md`](MEDIA-STRATEGY.md) + [`artifact-priority.json`](artifact-priority.json) | Evidence vs distribution media, build-out order, and what would change it | AES-P1.5 (SUE-442) |
 | [`VISUAL-STORY-COMPILATION.md`](VISUAL-STORY-COMPILATION.md) | Shared argument-beat graph between a final article and multi-surface visual/spoken derivatives | Visual-story extension |
+| [`VISUAL-STRUCTURE-AND-LANGUAGE.md`](VISUAL-STRUCTURE-AND-LANGUAGE.md) | Orthogonal visual composition contract: artifact Structure owns message arrangement; Visual Language resolves tone/palette/type/line/materiality/depth/whitespace independently through existing brand/reference authority | Visual architecture extension |
 | [`SLIDES-AND-CAROUSELS.md`](SLIDES-AND-CAROUSELS.md) | Sequential frame grammar, assertion–evidence profile, density modes, progressive reveal, **series information/typography-role consistency**, and slide QA | Visual-story extension |
 | [`../skills/compile-slide-deck/`](../skills/compile-slide-deck/) + [`../schemas/slide-deck-plan.schema.json`](../schemas/slide-deck-plan.schema.json) | Sequential-surface planning layer: split/merge, slide function, information topology, semantic fit/density, evidence authority, and bounded reference requirements before brand-specific rendering | Slide/report-deck extension |
 | [`INFOGRAPHIC-AND-POSTER.md`](INFOGRAPHIC-AND-POSTER.md) | Spatial hierarchy, poster/infographic profiles, module reuse, evidence boundary, **multi-plate/card-series information consistency**, and spatial QA | Visual-story extension |
@@ -79,6 +80,15 @@ authority, and reference requirements before a project renderer takes over.
 The infographic/poster lane does **not** pass through this compiler, so
 working-report density and slide-layout assumptions cannot leak into
 single-canvas infographic composition.
+
+`VISUAL-STRUCTURE-AND-LANGUAGE.md` defines the next orthogonal boundary:
+artifact/surface contracts own **Structure** (message arrangement), while tone,
+palette, typography character, line/shape, materiality/depth, and whitespace
+resolve as **Visual Language** through the existing brand + reference-authority
+system. This lets an infographic and a report deck share one publication tone
+without sharing one layout, and lets a task override only palette without
+silently importing a reference's composition.
+
 For multi-frame or multi-plate series, recurring information roles and typography-role tokens stay stable across the set; this consistency contract explicitly does **not** standardize palette, image tone, illustration style, materiality, or other art direction.
 `VIDEO-STORYBOARD.md` adds time and synchronization; it does not create another
 summary of the article.

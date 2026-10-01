@@ -31,7 +31,11 @@
     "beginner-learner": "live_narrated or silent_carousel with low visible text and higher narration/self-contained-text dependency, never both omitted at once."
   },
   "renderer_preference": {
-    "order": ["deterministic", "hybrid", "generative"],
+    "order": [
+      "deterministic",
+      "hybrid",
+      "generative"
+    ],
     "rule": "Exact values rendered from traceable evidence remain deterministic; illustrative frames route through IMAGE-GENERATION.md and its selected visual-language module (SLIDES-AND-CAROUSELS.md §5)."
   },
   "readability_gate": {
@@ -69,5 +73,29 @@
     "editorial/SLIDES-AND-CAROUSELS.md",
     "editorial/VISUAL-STORY-COMPILATION.md",
     "editorial/IMAGE-TEXT-RENDERING-PROFILES.md"
-  ]
+  ],
+  "structure_authority": {
+    "contract": "editorial/SLIDES-AND-CAROUSELS.md",
+    "owns": [
+      "slide function",
+      "information topology",
+      "message/evidence hierarchy",
+      "density profile",
+      "sequential continuity",
+      "split trigger"
+    ],
+    "does_not_own": [
+      "tone_manner",
+      "palette",
+      "typography_character",
+      "line_shape",
+      "materiality",
+      "depth",
+      "whitespace"
+    ]
+  },
+  "visual_language_resolution": {
+    "contract": "editorial/VISUAL-STRUCTURE-AND-LANGUAGE.md",
+    "rule": "Resolve visual-language dimensions independently after slide/report Structure is approved. A working-report profile changes density and consumption assumptions, not the palette or house style."
+  }
 }

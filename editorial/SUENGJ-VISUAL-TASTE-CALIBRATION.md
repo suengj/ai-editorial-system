@@ -2,7 +2,7 @@
 
 > Snapshot: 2026-09-03
 >
-> This is a **publication-specific taste calibration**, not a global editorial constitution. It records current suengj.com preference evidence so future image/diagram prompts do not have to reconstruct aesthetic intent from chat memory.
+> This is a **publication-specific Visual Language calibration**, not a global editorial constitution and not an artifact Structure contract. It records current suengj.com preference evidence for tone, palette, typography character, line/shape, materiality/depth, and whitespace so future visual work does not have to reconstruct aesthetic intent from chat memory. Structure remains owned by the selected artifact/surface contract; see [`VISUAL-STRUCTURE-AND-LANGUAGE.md`](VISUAL-STRUCTURE-AND-LANGUAGE.md).
 
 ## 1. Preference evidence
 
