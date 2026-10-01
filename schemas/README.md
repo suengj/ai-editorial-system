@@ -9,6 +9,7 @@ Source, Article, and Artifact schemas plus lineage and staleness rules.
 | [`ANSWER-UNIT-CONTRACT.md`](ANSWER-UNIT-CONTRACT.md) | [`article.schema.json`](article.schema.json) `$defs.answer` | AEO-P2.3 (SUE-525) |
 | [`../docs/architecture/LANGUAGE-QUALITY-ARCHITECTURE.md`](../docs/architecture/LANGUAGE-QUALITY-ARCHITECTURE.md) | [`language-pack.schema.json`](language-pack.schema.json), [`polish-decision.schema.json`](polish-decision.schema.json) | AES-V2.17 (SUE-607), AES-V2.18 (SUE-610) |
 | [`../docs/architecture/SOURCE-TARGET-DELTA-PLANNING.md`](../docs/architecture/SOURCE-TARGET-DELTA-PLANNING.md) | [`delta-plan.schema.json`](delta-plan.schema.json) | AES-V2.18 (SUE-610) |
+| [`../editorial/SLIDES-AND-CAROUSELS.md`](../editorial/SLIDES-AND-CAROUSELS.md) + [`../skills/compile-slide-deck/`](../skills/compile-slide-deck/) | [`slide-deck-plan.schema.json`](slide-deck-plan.schema.json) | Slide/report-deck extension |
 
 Content types (`research`, `view`, `news`, `note`, `project`) and artifact
 kinds (`brief`, `full`, `sources`, `evidence_visual`, `slides`, `infographic`,
