@@ -34,6 +34,7 @@ governed_by:
   - editorial/constitution.md
   - editorial/VISUAL-STORY-COMPILATION.md
   - editorial/SLIDES-AND-CAROUSELS.md
+  - editorial/VISUAL-STRUCTURE-AND-LANGUAGE.md
   - editorial/MEDIA-STRATEGY.md
   - editorial/RIGHTS-AND-PROVENANCE.md
 allowed_tools:
@@ -71,6 +72,12 @@ project adapter / style system / renderer
 
 This Skill owns the missing sequential-surface decision layer. It does not
 render slides and it does not absorb the infographic lane.
+
+It also does not choose Visual Language. Tone, palette, typography character,
+line/shape, materiality/depth, and whitespace resolve after this Skill under
+`editorial/VISUAL-STRUCTURE-AND-LANGUAGE.md`. A downstream project may therefore
+apply a different authorized palette to the same SlideDeckPlan without
+recompiling slide boundaries or message topology.
 
 ## Inputs
 
