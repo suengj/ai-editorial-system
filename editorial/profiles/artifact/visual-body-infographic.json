@@ -31,7 +31,11 @@
     "child-upper-elementary": "Avoid this artifact class for a genuinely child-targeted piece unless the mechanism is essential; if used, cap at 2 modules, use plain-language labels only, avoid abstract encodings, and never make the legend load-bearing — simplifying the audience must never simplify the truth (docs/architecture/V2-EDITORIAL-LEARNING-CORE.md §9 constraint 1)."
   },
   "renderer_preference": {
-    "order": ["deterministic", "hybrid", "generative"],
+    "order": [
+      "deterministic",
+      "hybrid",
+      "generative"
+    ],
     "rule": "Exact labels, topology, arrows, evidence, comparison rows, chronology, and values remain deterministic, declared-and-verified, or otherwise auditable. That does not require the whole plate to be deterministic: integrated multimodal generation may own short structural text or bounded factual payload when the text-ownership contract permits it and post-render verification inspects the actual pixels/text. The deterministic lane remains the fallback for evidence that cannot tolerate variance."
   },
   "readability_gate": {
@@ -85,5 +89,30 @@
     "editorial/SUENGJ-VISUAL-TASTE-CALIBRATION.md",
     "editorial/ARTICLE-VISUAL-PUBLICATION-HANDOFF.md",
     "docs/architecture/V2-EDITORIAL-LEARNING-CORE.md"
-  ]
+  ],
+  "structure_authority": {
+    "contract": "editorial/SUENGJ-INFOGRAPHIC-CALIBRATION.md",
+    "owns": [
+      "primary question",
+      "semantic modules",
+      "reading path",
+      "split conditions",
+      "semantic density",
+      "visual-chrome budget",
+      "mobile first-read structure"
+    ],
+    "does_not_own": [
+      "tone_manner",
+      "palette",
+      "typography_character",
+      "line_shape",
+      "materiality",
+      "depth",
+      "whitespace"
+    ]
+  },
+  "visual_language_resolution": {
+    "contract": "editorial/VISUAL-STRUCTURE-AND-LANGUAGE.md",
+    "rule": "Resolve visual-language dimensions after infographic Structure is stable. Inherit brand defaults unless explicit task/reference authority overrides an individual dimension; never change Structure as a side-effect of a palette/tone override."
+  }
 }
