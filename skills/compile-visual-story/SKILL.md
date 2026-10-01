@@ -12,7 +12,8 @@ inputs:
   - optional visual-language contract
 outputs:
   - provider-neutral Visual Story Plan with stable beat ids
-  - surface mapping for each planned slide, infographic, audio, or video output
+  - beat-level surface mapping for each planned slide, infographic, audio, or video output
+  - explicit downstream handoff to compile-slide-deck for slide/report-deck surfaces
 requires:
   - article_ref with version_number, content_hash, and claims_hash
   - verified claim set for every fact-bearing beat
@@ -25,11 +26,13 @@ authority:
     - assign separate visual, text, narration-intent, transition, and accessibility responsibilities to a beat
     - omit secondary article material from a surface when the omission does not alter the thesis or retained claims
     - split or combine beats per surface while preserving the mapping
+    - emit provisional slide/frame candidates for downstream slide-deck compilation
   may_not:
     - add or verify a claim, calculation, analogy, quotation, or factual comparison
     - change the article thesis, confidence, uncertainty, or source attribution
     - write the final canonical spoken script when audio is planned
     - render images, charts, slides, audio, video, captions, or publication UI
+    - finalize slide necessity, information topology, working-report density, or craft-reference requirements when compile-slide-deck is the downstream owner
     - choose provider-specific models, APIs, slide themes, CSS, or design tokens
     - plan an artifact kind that the approved artifact plan skipped
     - publish, approve, or finalize an article or artifact
@@ -124,7 +127,7 @@ only for the kinds actually planned.
 Examples:
 
 ```text
-slides/carousel → SLIDES-AND-CAROUSELS.md
+slides/carousel → SLIDES-AND-CAROUSELS.md + downstream compile-slide-deck
 infographic/poster → INFOGRAPHIC-AND-POSTER.md
 audio → AUDIO-SCRIPT.md + downstream compile-audio-script Skill
 video → VIDEO-STORYBOARD.md
@@ -212,10 +215,12 @@ Example:
 ```yaml
 surfaces:
   slides:
-    - frame_id: slide-01
-      beat_ids: [beat-01]
-    - frame_id: slide-02
-      beat_ids: [beat-02, beat-03]
+    handoff: compile-slide-deck
+    candidates:
+      - frame_id: slide-01
+        beat_ids: [beat-01]
+      - frame_id: slide-02
+        beat_ids: [beat-02, beat-03]
   infographic:
     - module_id: module-A
       beat_ids: [beat-01, beat-02]
@@ -229,6 +234,12 @@ surfaces:
 
 A surface may omit a secondary beat. Record the omission; do not silently
 change its meaning.
+
+For slides and report decks, this mapping is **provisional**. Hand it to
+`compile-slide-deck`, which decides slide necessity/split-merge, slide function,
+information topology, semantic fit/density, and bounded craft-reference
+requirements. Do not apply that slide-specific compiler to infographic/poster
+mappings.
 
 ### 6. Assign channel responsibility
 
@@ -289,6 +300,8 @@ Different wording and density are allowed. Different meaning is not.
 - Exact evidence remains traceable; generative imagery never becomes evidence
   authority by passing through this Skill.
 - Visual language and renderer/provider remain replaceable downstream.
+- Slide/report-deck frame candidates remain provisional until `compile-slide-deck`.
+- Infographic/poster compilation remains independent of slide-specific planning gates.
 - Audio narration text remains owned by `compile-audio-script`.
 - The plan records exact article version identity.
 
@@ -316,6 +329,8 @@ A successful run can be audited without looking at rendered media:
 article_ref exact
 + every beat → verified claims
 + every frame/module/audio-selection → beat ids
++ slide/report-deck candidates identify compile-slide-deck as downstream owner
++ infographic/poster mappings remain outside the slide compiler
 + dependencies preserved
 + uncertainty preserved
 + channel responsibilities explicit
