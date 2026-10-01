@@ -85,6 +85,14 @@ This mechanism is deliberately narrow. Do not turn every stylistic preference
 into a new axis; add an axis only when it answers an independent intent
 question rather than tuning one owner's realization on a compatible surface.
 
+The same restraint applies to visual styling. There is **no separate
+visual-language intent axis**: `VISUAL-STRUCTURE-AND-LANGUAGE.md` composes the
+existing artifact, surface, brand, and reference axes instead. Artifact/surface
+profiles own Structure and consumption constraints; brand supplies default
+Visual Language; visual references may selectively override only explicitly
+authorized dimensions. This avoids a second style taxonomy that duplicates
+brand/reference semantics.
+
 `surface/report-deck.json` is a different use of the same surface axis: it
 declares a **consumption constraint**, not a brand. It permits medium-high
 working-report density and low speaker dependency for `visual/slide-image`
