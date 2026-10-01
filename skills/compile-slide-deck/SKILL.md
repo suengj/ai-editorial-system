@@ -72,6 +72,30 @@ project adapter / style system / renderer
 This Skill owns the missing sequential-surface decision layer. It does not
 render slides and it does not absorb the infographic lane.
 
+## Inputs
+
+A finalized Visual Story Plan with stable beat ids, exact article lineage,
+verified claims for every fact-bearing beat, the approved slide/carousel
+artifact decision, and the target sequential-surface density profile.
+
+## Outputs
+
+One provider-neutral `SlideDeckPlan` conforming to
+`schemas/slide-deck-plan.schema.json`. It contains slide partition decisions,
+function, topology, slide-level content roles, semantic fit, evidence authority,
+and bounded craft-reference requirements.
+
+## Preconditions
+
+Refuse unless:
+
+1. the Visual Story Plan carries the exact article version/content/claims
+   identity;
+2. every fact-bearing candidate resolves to verified claim lineage;
+3. `plan-artifacts` approved or allowed the requested slide/carousel artifact;
+4. the requested surface is sequential rather than a single-canvas
+   infographic/poster.
+
 ## Boundary with infographics
 
 Slides and infographics share verified claims and argument beats, but they do
