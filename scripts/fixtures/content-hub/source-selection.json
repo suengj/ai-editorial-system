@@ -1,0 +1,7 @@
+{
+  "source_aliases": ["p03"],
+  "optional_source_aliases": ["optional-archive"],
+  "destination_alias": "generated-content",
+  "destination_override": "article",
+  "handoff_fixture": "schemas/examples/package-p03-summarize-note.example.json"
+}
