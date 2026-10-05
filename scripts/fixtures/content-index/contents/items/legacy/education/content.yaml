@@ -1,0 +1,29 @@
+schema_version: "1.0.0"
+content_id: content:education-basics
+revision: 1
+producer_id: writer-legacy
+source_refs:
+  - src:drive:EXAMPLE_SOURCE_ID_01
+title: "Education basics legacy sample"
+classification: education
+status: draft
+artifacts:
+  - artifact_id: content:education-basics#master
+    kind: text
+    mime_type: text/plain
+    role: clean_master
+    locator: local:assets/master.txt
+    locator_state: PENDING_SYNC
+    sha256: debafc95d9c0f587b36c32d8e6e6bc88ff4072c03255b123cd20a89679977d85
+targets:
+  - channel: preview
+    account_alias: example-account
+    format: post
+    media: [content:education-basics#master]
+    caption:
+      inline: "Preview only"
+    title:
+      inline: "Education basics"
+    description:
+      artifact_ref: content:education-basics#master
+    privacy: private

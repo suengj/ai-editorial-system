@@ -1,0 +1,4 @@
+# Bounded fixture input for the content-index contract checks.
+manifests:
+  - contents/items/legacy/education/content.yaml
+  - contents/items/new/education/content.yaml

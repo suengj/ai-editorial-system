@@ -1,0 +1,1 @@
+Public-safe legacy clean master fixture.

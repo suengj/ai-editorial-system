@@ -1,0 +1,29 @@
+schema_version: "1.0.0"
+content_id: content:science-learning
+revision: 1
+producer_id: writer-legacy
+source_refs:
+  - src:drive:EXAMPLE_SOURCE_ID_02
+title: "Science learning new sample"
+classification: science_technology
+status: draft
+artifacts:
+  - artifact_id: content:science-learning#master
+    kind: text
+    mime_type: text/plain
+    role: clean_master
+    locator: local:assets/master.txt
+    locator_state: PENDING_SYNC
+    sha256: 206ea70e51f1879d030813d2f6271f04bc83657e88242311d8a20236491329c6
+targets:
+  - channel: preview
+    account_alias: example-account
+    format: post
+    media: [content:science-learning#master]
+    caption:
+      inline: "Preview only"
+    title:
+      inline: "Science learning"
+    description:
+      artifact_ref: content:science-learning#master
+    privacy: private
