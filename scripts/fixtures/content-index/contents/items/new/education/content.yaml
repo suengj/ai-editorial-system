@@ -6,7 +6,7 @@ source_refs:
   - src:drive:EXAMPLE_SOURCE_ID_02
 title: "Science learning new sample"
 classification: science_technology
-status: ready
+status: draft
 artifacts:
   - artifact_id: content:science-learning#master
     kind: text

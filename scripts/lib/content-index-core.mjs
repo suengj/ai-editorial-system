@@ -8,16 +8,35 @@ import { validate } from './json-schema-lite.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 export const ROOT = resolve(HERE, '../..');
-export const ALLOWLIST = resolve(ROOT, 'contents-allowed.yaml');
-export const INDEX = resolve(ROOT, 'contents-index.yaml');
 export const MANIFEST_SCHEMA = resolve(ROOT, 'schemas/content-manifest.schema.json');
+const SOURCE_SCHEMA = resolve(ROOT, 'schemas/source.schema.json');
+const ARTIFACT_SCHEMA = resolve(ROOT, 'schemas/artifact.schema.json');
 export const CODES = Object.freeze({ PARSE:'parse', SCHEMA:'schema', DUPLICATE:'duplicate-content-id', STALE:'stale-revision', CONFLICT:'concurrent-update-conflict', LOCATOR:'unknown-locator', ASSET:'asset-integrity', REF:'unknown-reference', AUTHORITY:'approval-disabled' });
 const issue = (code, where, message) => ({ code, where, message });
 const digest = (bytes) => createHash('sha256').update(bytes).digest('hex');
 export const readYaml = (path) => parseYaml(readFileSync(path, 'utf8'));
-export const loadManifestSchema = () => JSON.parse(readFileSync(MANIFEST_SCHEMA, 'utf8'));
+export function loadManifestSchema() {
+  const schema = JSON.parse(readFileSync(MANIFEST_SCHEMA, 'utf8'));
+  const source = JSON.parse(readFileSync(SOURCE_SCHEMA, 'utf8'));
+  const artifact = JSON.parse(readFileSync(ARTIFACT_SCHEMA, 'utf8'));
+  schema.$defs.shared = {
+    source_id: source.$defs.source.properties.source_id,
+    sha256: artifact.$defs.article_ref.properties.content_hash,
+  };
+  // Adapt canonical file references to the validator's local $defs-only model.
+  // The lite validator resolves local references, so expose the referenced
+  // canonical nodes under local aliases at validation time.
+  const refs = new Map([
+    ['./source.schema.json#/$defs/source/properties/source_id', '#/$defs/shared/source_id'],
+    ['./artifact.schema.json#/$defs/article_ref/properties/content_hash', '#/$defs/shared/sha256'],
+  ]);
+  for (const node of [schema.properties.source_refs.items, schema.$defs.artifact.properties.sha256, schema.$defs.artifact.properties.confirmed_sha256]) {
+    if (node.$ref && refs.has(node.$ref)) node.$ref = refs.get(node.$ref);
+  }
+  return schema;
+}
 
-export function loadAllowed(root = ROOT, allowlist = ALLOWLIST) {
+export function loadAllowed(root, allowlist) {
   const value = readYaml(allowlist);
   if (!Array.isArray(value?.manifests) || value.manifests.length === 0) throw new Error('allowlist must contain a non-empty manifests list');
   const unique = new Set();
@@ -67,7 +86,7 @@ export function validateManifest(manifest, manifestPath, schema = loadManifestSc
   return issues;
 }
 
-export function readManifests(root = ROOT, allowlist = ALLOWLIST) {
+export function readManifests(root, allowlist) {
   const entries = loadAllowed(root, allowlist);
   const seen = new Map();
   const rows = [];
@@ -101,7 +120,7 @@ export function validateArtifactTransition(previous, next) {
       if (next.revision <= previous.revision) issues.push(issue(CODES.STALE, artifact.artifact_id, 'new artifact requires an explicit content revision bump'));
       continue;
     }
-    const fileChanged = artifact.file_id && old.file_id !== artifact.file_id;
+    const fileChanged = old.file_id !== artifact.file_id;
     const bytesChanged = old.sha256 !== artifact.sha256;
     if ((fileChanged || bytesChanged) && next.revision <= previous.revision) {
       issues.push(issue(CODES.STALE, artifact.artifact_id, 'new file_id or changed bytes require an explicit content revision bump'));
@@ -124,6 +143,16 @@ export function assertPreviousRevision(indexedRevision, manifestRevision, expect
   }
 }
 
+export function assertManifestRevision(indexed, manifestRevision, manifestHash) {
+  if (!indexed) return;
+  if (manifestRevision < indexed.revision) {
+    throw new Error(`[${CODES.CONFLICT}] indexed revision ${indexed.revision} is newer than manifest revision ${manifestRevision}`);
+  }
+  if (manifestRevision === indexed.revision && manifestHash !== indexed.manifest_sha256) {
+    throw new Error(`[${CODES.CONFLICT}] manifest bytes changed without a revision bump for ${indexed.content_id}`);
+  }
+}
+
 const q = (s) => JSON.stringify(String(s));
 export function serializeIndex(index) {
   const lines = ['schema_version: "1.0.0"', 'items:'];
@@ -132,7 +161,7 @@ export function serializeIndex(index) {
   }
   return `${lines.join('\n')}\n`;
 }
-export function lookupContent(contentId, root = ROOT, allowlist = ALLOWLIST) {
+export function lookupContent(contentId, root, allowlist) {
   const found = readManifests(root, allowlist).filter((row) => row.manifest.content_id === contentId);
   if (found.length !== 1) throw new Error(`content lookup expected one ${contentId}, found ${found.length}`);
   return found[0];
