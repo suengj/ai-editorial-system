@@ -1,0 +1,78 @@
+# Public-safe template for the Drive-hosted SUE-1300 registry.
+# This file is illustrative and is not the operational hub config.
+schema_version: "1.0.0"
+bootstrap:
+  root_folder_id: 1Ez4nVsQvRLoakX_VU71QaQmgdo8Y4KkX
+  hub_path: config/content-hub.yaml
+sources:
+  - alias: p03
+    owner_repo: suengj/intelligence-library
+    allowed_artifact_types: [source, editorial_package]
+    lookup_scope: folder_recursive
+    schema_version: "1.0.0"
+    drive_folder_id: 1777fpf3nO2-4ISKAt_3D1ipiwgJddYY-
+  - alias: source-index
+    owner_repo: suengj/ai-editorial-system
+    allowed_artifact_types: [source]
+    lookup_scope: folder
+    schema_version: "1.0.0"
+    drive_folder_id: 1S-sGDHvkSC1tTKWPYWiSgxmGN2Fz7Clu
+  - alias: predictions
+    owner_repo: suengj/ai-editorial-system
+    allowed_artifact_types: [source, editorial_package]
+    lookup_scope: folder_recursive
+    schema_version: "1.0.0"
+    drive_folder_id: 1ilWd1e7kPx6qSoFTvhq_YpgwQUUC9Qyb
+producers:
+  - alias: p03-summary
+    owner_repo: suengj/intelligence-library
+    allowed_artifact_types: [source, editorial_package]
+    lookup_scope: folder_recursive
+    schema_version: "1.0.0"
+    drive_folder_id: 1777fpf3nO2-4ISKAt_3D1ipiwgJddYY-
+    producer_id: p03
+destinations:
+  - alias: generated-content
+    owner_repo: suengj/ai-editorial-system
+    allowed_artifact_types: [article, artifact, editorial_package, handoff_receipt]
+    lookup_scope: folder_recursive
+    schema_version: "1.0.0"
+    drive_folder_id: 1Ez4nVsQvRLoakX_VU71QaQmgdo8Y4KkX
+  - alias: article
+    owner_repo: suengj/ai-editorial-system
+    allowed_artifact_types: [article, handoff_receipt]
+    lookup_scope: folder_recursive
+    schema_version: "1.0.0"
+    drive_folder_id: 1xODiu8A6j4y_sOgPhmftwAleVk9lojxw
+  - alias: legacy-blog
+    owner_repo: suengj/ai-editorial-system
+    allowed_artifact_types: [article, handoff_receipt]
+    lookup_scope: folder_recursive
+    schema_version: "1.0.0"
+    drive_folder_id: 1r52yAwemikxEh5xQRU2J0d7_Fb4Iwu3s
+  - alias: legacy-images
+    owner_repo: suengj/ai-editorial-system
+    allowed_artifact_types: [artifact]
+    lookup_scope: folder_recursive
+    schema_version: "1.0.0"
+    drive_folder_id: 1aqOroOaafvKCs36YIzX8ZjJnBd5UjHrN
+taxonomy:
+  taxonomy_version: "1.0.0"
+  topics:
+    - id: ai_tech
+      label_en: AI & Tech
+      label_ko: AI·기술
+    - id: science_technology
+      label_en: Science & Technology
+      label_ko: 과학·기술
+    - id: investment_real_estate
+      label_en: Investment & Real Estate
+      label_ko: 투자 & 부동산
+    - id: education
+      label_en: Education
+      label_ko: 교육
+    - id: humanities_society_philosophy
+      label_en: Humanities, Society & Philosophy
+      label_ko: 인문·사회·철학
+  other_unknown_allowed: true
+  score_contract: Each topic and other_unknown is an independent integer score from 0 to 100; scores do not sum to 100.

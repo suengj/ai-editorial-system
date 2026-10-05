@@ -1,0 +1,5 @@
+{
+  "producer_id": "p03",
+  "producer_aliases": ["p03-summary", "p03-transcript"],
+  "provenance_rule": "keep producer_id p03 on existing artifacts after producer split"
+}

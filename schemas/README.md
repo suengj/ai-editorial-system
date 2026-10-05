@@ -4,6 +4,7 @@ Source, Article, and Artifact schemas plus lineage and staleness rules.
 
 | Contract | Machine schema | Issue |
 |---|---|---|
+| [`content-hub.schema.json`](content-hub.schema.json) | [`content-hub.example.yaml`](content-hub.example.yaml) | AES-CONTENT-HUB (SUE-1300) |
 | [`SOURCE-CONTRACT.md`](SOURCE-CONTRACT.md) | [`source.schema.json`](source.schema.json) | AES-P0.2 (SUE-435) |
 | [`ARTICLE-ARTIFACT-CONTRACT.md`](ARTICLE-ARTIFACT-CONTRACT.md) | [`article.schema.json`](article.schema.json), [`artifact.schema.json`](artifact.schema.json) | AES-P0.3 (SUE-436) |
 | [`ANSWER-UNIT-CONTRACT.md`](ANSWER-UNIT-CONTRACT.md) | [`article.schema.json`](article.schema.json) `$defs.answer` | AEO-P2.3 (SUE-525) |
@@ -25,6 +26,7 @@ or public material (`examples/`).
 Rejects: populated instance data from real private sources.
 
 ```bash
+npm run validate:content-hub && npm run test:content-hub
 npm run validate:source && npm run validate:article
 npm run test:source && npm run test:article
 ```

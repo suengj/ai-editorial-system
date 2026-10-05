@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://suengj.com/schemas/content-hub.schema.json",
+  "title": "Static Content Hub Registry",
+  "description": "Drive-hosted operational registry contract (SUE-1300). Git contains only this schema, public examples, and validators; the hub registers locations and contracts, never content or publication state.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "bootstrap", "sources", "producers", "destinations", "taxonomy"],
+  "properties": {
+    "schema_version": { "const": "1.0.0" },
+    "bootstrap": {
+      "type": "object", "additionalProperties": false,
+      "required": ["root_folder_id", "hub_path"],
+      "properties": {
+        "root_folder_id": { "type": "string", "minLength": 10 },
+        "hub_path": { "type": "string", "pattern": "^[^/].*content-hub\\.yaml$" },
+        "hub_file_id": { "type": "string", "minLength": 10 }
+      }
+    },
+    "sources": { "type": "array", "items": { "$ref": "#/$defs/entry" } },
+    "producers": { "type": "array", "items": { "$ref": "#/$defs/entry" } },
+    "destinations": { "type": "array", "items": { "$ref": "#/$defs/entry" } },
+    "taxonomy": {
+      "type": "object", "additionalProperties": false,
+      "required": ["taxonomy_version", "topics", "other_unknown_allowed"],
+      "properties": {
+        "taxonomy_version": { "type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$" },
+        "topics": {
+          "type": "array", "minItems": 5,
+          "items": {
+            "type": "object", "additionalProperties": false,
+            "required": ["id", "label_en", "label_ko"],
+            "properties": {
+              "id": { "enum": ["ai_tech", "science_technology", "investment_real_estate", "education", "humanities_society_philosophy"] },
+              "label_en": { "type": "string", "minLength": 1 },
+              "label_ko": { "type": "string", "minLength": 1 }
+            }
+          }
+        },
+        "other_unknown_allowed": { "type": "boolean", "const": true },
+        "score_contract": { "const": "Each topic and other_unknown is an independent integer score from 0 to 100; scores do not sum to 100." }
+      }
+    }
+  },
+  "$defs": {
+    "entry": {
+      "type": "object", "additionalProperties": false,
+      "required": ["alias", "owner_repo", "allowed_artifact_types", "lookup_scope", "schema_version", "drive_folder_id"],
+      "properties": {
+        "alias": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$" },
+        "owner_repo": { "type": "string", "pattern": "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$" },
+        "allowed_artifact_types": { "type": "array", "minItems": 1, "items": { "enum": ["source", "editorial_package", "article", "artifact", "handoff_receipt"] } },
+        "lookup_scope": { "type": "string", "enum": ["folder", "folder_recursive", "explicit_manifest"] },
+        "schema_version": { "type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$" },
+        "drive_folder_id": { "type": "string", "minLength": 10 },
+        "producer_id": { "type": "string", "minLength": 1, "description": "Retained producer identity used as provenance when producer aliases are split or renamed." }
+      }
+    }
+  }
+}
