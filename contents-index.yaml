@@ -1,0 +1,16 @@
+schema_version: "1.0.0"
+items:
+  - content_id: "content:education-basics"
+    manifest: "contents/items/legacy/education/content.yaml"
+    revision: 1
+    manifest_sha256: "d186123fe232bea13916cc7d0e7ffa08db3b9554689d36c109d4fcee233b2bc8"
+    title: "Education basics legacy sample"
+    classification: "education"
+    status: "draft"
+  - content_id: "content:science-learning"
+    manifest: "contents/items/new/education/content.yaml"
+    revision: 1
+    manifest_sha256: "d316d40da308b90892fa9ee1f5613c4b0fcac587a5c849b48310a5253a3efaf9"
+    title: "Science learning new sample"
+    classification: "science_technology"
+    status: "ready"

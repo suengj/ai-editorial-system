@@ -1,0 +1,4 @@
+# Bounded manifest input. Add locators explicitly; no directory or Drive scan occurs.
+manifests:
+  - contents/items/legacy/education/content.yaml
+  - contents/items/new/education/content.yaml
