@@ -44,7 +44,7 @@ try {
   const existing = new Map((parsedOld?.items ?? []).map((item) => [item.content_id, item]));
   for (const row of rows) {
     const indexed = existing.get(row.manifest.content_id);
-    const manifestHash = hash(readFileSync(resolve(ROOT, row.locator)));
+    const manifestHash = hash(readFileSync(row.path));
     assertManifestRevision(indexed, row.manifest.revision, manifestHash);
   }
   if (previous !== null) {
@@ -54,8 +54,9 @@ try {
     const indexed = existing.get(target.manifest.content_id);
     const expected = Number(previous);
     assertPreviousRevision(indexed?.revision, target.manifest.revision, expected);
-    if (indexed?.manifest) {
-      const previousManifest = readYaml(resolve(ROOT, indexed.manifest));
+    const previousRow = rows.find((row) => row.locator === indexed?.manifest);
+    if (previousRow) {
+      const previousManifest = readYaml(previousRow.path);
       const transitionIssues = validateArtifactTransition(previousManifest, target.manifest);
       if (transitionIssues.length) throw new Error(`[${CODES.STALE}] ${transitionIssues.map((i) => i.message).join('; ')}`);
     }

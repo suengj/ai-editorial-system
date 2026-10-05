@@ -41,11 +41,11 @@ export function loadAllowed(root, allowlist) {
   if (!Array.isArray(value?.manifests) || value.manifests.length === 0) throw new Error('allowlist must contain a non-empty manifests list');
   const unique = new Set();
   return value.manifests.map((locator) => {
-    if (typeof locator !== 'string' || isAbsolute(locator) || locator.split(/[\\/]/).includes('..') || !locator.endsWith('/content.yaml')) throw new Error(`unknown locator: ${locator}`);
+    if (typeof locator !== 'string' || !locator.endsWith('/content.yaml')) throw new Error(`unknown locator: ${locator}`);
     if (unique.has(locator)) throw new Error(`duplicate manifest locator: ${locator}`);
     unique.add(locator);
-    const path = resolve(root, locator);
-    if (!path.startsWith(`${resolve(root)}/`) || !existsSync(path)) throw new Error(`unknown locator: ${locator}`);
+    const path = isAbsolute(locator) ? resolve(locator) : resolve(dirname(resolve(allowlist)), locator);
+    if (!existsSync(path)) throw new Error(`unknown locator: ${locator}`);
     return { locator, path };
   });
 }
@@ -97,17 +97,17 @@ export function readManifests(root, allowlist) {
     if (problems.length) throw new Error(`${entry.locator}: ${problems.map((p) => `[${p.code}] ${p.message}`).join('; ')}`);
     if (seen.has(manifest.content_id)) throw new Error(`[${CODES.DUPLICATE}] ${manifest.content_id} at ${seen.get(manifest.content_id)} and ${entry.locator}`);
     seen.set(manifest.content_id, entry.locator);
-    rows.push({ locator: entry.locator, manifest });
+    rows.push({ locator: entry.locator, path: entry.path, manifest });
   }
   return rows;
 }
 
 export function buildIndex(rows, root = ROOT) {
-  return { schema_version: '1.0.0', items: rows.map(({ locator, manifest }) => ({
-    content_id: manifest.content_id, manifest: locator, revision: manifest.revision,
-    manifest_sha256: digest(readFileSync(resolve(root, locator))), title: manifest.title,
-    classification: manifest.classification, status: manifest.status,
-  })).sort((a,b) => a.content_id.localeCompare(b.content_id)) };
+  return { schema_version: '1.0.0', items: rows.map(({ locator, manifest, path }) => ({
+      content_id: manifest.content_id, manifest: locator, revision: manifest.revision,
+      manifest_sha256: digest(readFileSync(path ?? resolve(root, locator))), title: manifest.title,
+      classification: manifest.classification, status: manifest.status,
+    })).sort((a,b) => a.content_id.localeCompare(b.content_id)) };
 }
 
 /** Validate address/content identity edits against the prior revision. */

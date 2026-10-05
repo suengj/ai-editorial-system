@@ -15,7 +15,7 @@
     "test:content-hub": "node scripts/test-content-hub.mjs",
     "validate:content-index": "node scripts/validate-content-index.mjs",
     "test:content-index": "node scripts/test-content-index.mjs",
-    "content-index:rebuild": "node scripts/content-index.mjs --rebuild",
+    "content-index:rebuild": "node scripts/content-index.mjs --rebuild --allowlist scripts/fixtures/content-index/contents-allowed.yaml --index scripts/fixtures/content-index/contents-index.yaml",
     "validate:journey": "node scripts/validate-journey-envelope.mjs",
     "validate:article": "node scripts/validate-article-contract.mjs",
     "validate:rights": "node scripts/validate-rights.mjs",
