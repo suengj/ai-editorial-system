@@ -33,7 +33,7 @@ console.log('\nalias and destination resolution');
     destinationAlias: fixture.destination_alias,
     destinationOverride: fixture.destination_override,
   });
-  check('known source alias resolves to P03 folder', result.sources[0]?.alias === 'p03' && result.sources[0]?.drive_folder_id === '1777fpf3nO2-4ISKAt_3D1ipiwgJddYY-');
+  check('known source alias resolves to P03 folder', result.sources[0]?.alias === 'p03' && result.sources[0]?.drive_folder_id === 'EXAMPLE_DRIVE_FOLDER_ID_02');
   check('missing required source alias is rejected', resolveSelection(hub, { sourceAliases: ['missing'] }).issues.some((i) => i.code === CODES.ALIAS_MISSING));
   check('unresolved optional source is tolerated', result.issues.length === 0 && result.sources.length === 1);
   check('explicit destination override wins over configured default', result.destination?.alias === 'article');

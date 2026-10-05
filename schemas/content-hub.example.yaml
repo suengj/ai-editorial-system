@@ -2,7 +2,7 @@
 # This file is illustrative and is not the operational hub config.
 schema_version: "1.0.0"
 bootstrap:
-  root_folder_id: 1Ez4nVsQvRLoakX_VU71QaQmgdo8Y4KkX
+  root_folder_id: EXAMPLE_DRIVE_FOLDER_ID_01
   hub_path: config/content-hub.yaml
 sources:
   - alias: p03
@@ -10,26 +10,26 @@ sources:
     allowed_artifact_types: [source, editorial_package]
     lookup_scope: folder_recursive
     schema_version: "1.0.0"
-    drive_folder_id: 1777fpf3nO2-4ISKAt_3D1ipiwgJddYY-
+    drive_folder_id: EXAMPLE_DRIVE_FOLDER_ID_02
   - alias: source-index
     owner_repo: suengj/ai-editorial-system
     allowed_artifact_types: [source]
     lookup_scope: folder
     schema_version: "1.0.0"
-    drive_folder_id: 1S-sGDHvkSC1tTKWPYWiSgxmGN2Fz7Clu
+    drive_folder_id: EXAMPLE_DRIVE_FOLDER_ID_03
   - alias: predictions
     owner_repo: suengj/ai-editorial-system
     allowed_artifact_types: [source, editorial_package]
     lookup_scope: folder_recursive
     schema_version: "1.0.0"
-    drive_folder_id: 1ilWd1e7kPx6qSoFTvhq_YpgwQUUC9Qyb
+    drive_folder_id: EXAMPLE_DRIVE_FOLDER_ID_04
 producers:
   - alias: p03-summary
     owner_repo: suengj/intelligence-library
     allowed_artifact_types: [source, editorial_package]
     lookup_scope: folder_recursive
     schema_version: "1.0.0"
-    drive_folder_id: 1777fpf3nO2-4ISKAt_3D1ipiwgJddYY-
+    drive_folder_id: EXAMPLE_DRIVE_FOLDER_ID_02
     producer_id: p03
 destinations:
   - alias: generated-content
@@ -37,25 +37,25 @@ destinations:
     allowed_artifact_types: [article, artifact, editorial_package, handoff_receipt]
     lookup_scope: folder_recursive
     schema_version: "1.0.0"
-    drive_folder_id: 1Ez4nVsQvRLoakX_VU71QaQmgdo8Y4KkX
+    drive_folder_id: EXAMPLE_DRIVE_FOLDER_ID_01
   - alias: article
     owner_repo: suengj/ai-editorial-system
     allowed_artifact_types: [article, handoff_receipt]
     lookup_scope: folder_recursive
     schema_version: "1.0.0"
-    drive_folder_id: 1xODiu8A6j4y_sOgPhmftwAleVk9lojxw
+    drive_folder_id: EXAMPLE_DRIVE_FOLDER_ID_05
   - alias: legacy-blog
     owner_repo: suengj/ai-editorial-system
     allowed_artifact_types: [article, handoff_receipt]
     lookup_scope: folder_recursive
     schema_version: "1.0.0"
-    drive_folder_id: 1r52yAwemikxEh5xQRU2J0d7_Fb4Iwu3s
+    drive_folder_id: EXAMPLE_DRIVE_FOLDER_ID_06
   - alias: legacy-images
     owner_repo: suengj/ai-editorial-system
     allowed_artifact_types: [artifact]
     lookup_scope: folder_recursive
     schema_version: "1.0.0"
-    drive_folder_id: 1aqOroOaafvKCs36YIzX8ZjJnBd5UjHrN
+    drive_folder_id: EXAMPLE_DRIVE_FOLDER_ID_07
 taxonomy:
   taxonomy_version: "1.0.0"
   topics:
