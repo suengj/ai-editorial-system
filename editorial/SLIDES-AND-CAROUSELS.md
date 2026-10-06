@@ -226,6 +226,16 @@ Default rules:
 - source and timing metadata may remain accessible through a compact source/as-of
   note, caption, alt text, or artifact manifest. Do not give them equal visual
   weight with the editorial message;
+- **source identity is not distribution identity.** When a carousel is derived
+  from a suengj.com article, that only identifies the content source. Do not
+  automatically render `suengj.com`, its domain, slogan, watermark, site
+  navigation language, or publication branding on Instagram cards. Instagram is
+  treated as an independent distribution channel unless the request explicitly
+  selects the suengj.com brand for that artifact;
+- likewise, do not infer an Instagram account name, logo, watermark, or channel
+  identity from the source article. Distribution branding must be explicitly
+  selected by the request/profile; absent that selection, keep the card
+  brand-neutral except for necessary source attribution;
 - if a chart is the evidence, do not follow it with a dense explanatory strip.
   Use one truthful annotation or move the explanation to the next frame.
 
