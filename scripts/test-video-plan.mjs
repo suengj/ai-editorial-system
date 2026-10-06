@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { readdirSync, readFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { ROOT, validateVideoDocument } from './lib/video-plan-core.mjs';
 
@@ -10,6 +10,10 @@ function check(label, ok, detail = '') { if (ok) console.log(`  PASS ${label}`);
 function read(dir, file) { return JSON.parse(readFileSync(resolve(dir, file), 'utf8')); }
 function kind(file) { return ['video-plan', 'narration-script', 'tts-contract', 'bgm-catalog'].find((prefix) => file.startsWith(prefix)); }
 console.log('video contract allow fixtures');
+const renderSpecSchemaPath = resolve(ROOT, 'schemas/render-spec.schema.json');
+const renderSpecSchema = JSON.parse(readFileSync(renderSpecSchemaPath, 'utf8'));
+const watermarkPointer = '#/$defs/watermark';
+check('watermark_ref target schema and pointer exist', existsSync(renderSpecSchemaPath) && Boolean(renderSpecSchema.$defs?.watermark) && renderSpecSchema.properties?.watermark?.$ref === watermarkPointer);
 const allowFiles = readdirSync(allow).sort();
 check('expected allow fixtures are present', allowFiles.length === 8, allowFiles.join(', '));
 for (const file of allowFiles) {

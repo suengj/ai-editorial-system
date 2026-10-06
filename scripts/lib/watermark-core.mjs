@@ -56,7 +56,7 @@ export const sha256 = (buf) => `sha256:${createHash('sha256').update(buf).digest
 /**
  * Resolve config layers lowest to highest precedence, e.g.
  * [brandProfile.watermark_default, renderSpec.watermark, channelOverride].
- * Nested safe_margins merge per key; exclusion_zones replace.
+ * Nested safe_margins merge per key; exclusion_zones accumulate across layers.
  */
 export function resolveWatermark(...layers) {
   const out = { ...DEFAULT_WATERMARK, safe_margins: { ...DEFAULT_WATERMARK.safe_margins }, exclusion_zones: [] };
@@ -64,7 +64,7 @@ export function resolveWatermark(...layers) {
     if (!layer) continue;
     for (const [k, v] of Object.entries(layer)) {
       if (k === 'safe_margins') out.safe_margins = { ...out.safe_margins, ...v };
-      else if (k === 'exclusion_zones') out.exclusion_zones = v.map((z) => ({ ...z }));
+      else if (k === 'exclusion_zones') out.exclusion_zones.push(...v.map((z) => ({ ...z })));
       else out[k] = v;
     }
   }
