@@ -3,7 +3,10 @@
 A small, bounded profile for Instagram probability trend cards (prediction
 markets first). It reuses the existing lanes and adds nothing general:
 
-- brand/profile priority: [`profiles/brand/suengj-com.v1.json`](profiles/brand/suengj-com.v1.json) (SUE-565);
+- brand/profile priority: the explicitly selected distribution profile. The
+  `suengj-com.v1.json` profile applies only when the request explicitly chooses
+  suengj.com branding; deriving content from suengj.com does not select that
+  brand automatically;
 - deterministic chart/infographic evidence lane: [`INFOGRAPHIC-AND-POSTER.md`](INFOGRAPHIC-AND-POSTER.md),
   [`../schemas/VISUAL-BRIEF-AND-RENDER-SPEC-CONTRACT.md`](../schemas/VISUAL-BRIEF-AND-RENDER-SPEC-CONTRACT.md) (SUE-628 / SUE-667);
 - pixel review: [`../scripts/validate-visual-review.mjs`](../scripts/validate-visual-review.mjs).
