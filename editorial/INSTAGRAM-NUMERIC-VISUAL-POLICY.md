@@ -47,7 +47,7 @@ completion nor permission to post on social media.
   no watermark, or `enabled: false`, passes. When enabled, the text must be non-empty and match the
   declared text, it sits **behind the plot**, and opacity is about 7% (0.05–0.09) (`WATERMARK`).
 - On-image source attribution is the provider/site name only. The full URL and run provenance go in
-  the bundle/caption. A footer source containing `http` or `://` fails (`FOOTER_SOURCE_URL`).
+  the bundle/caption. A footer source containing `http`, `://`, `www.` or `/` fails (`FOOTER_SOURCE_URL`).
 - Approved mockups: `libfile_971c250507d88191829fd4b23a43cece` (dual-market-watermark.png) and the
   earlier version without a watermark, `libfile_ee0b381f05908191a08bb9b21e10f89f`. They approve the
   **visual direction only**.

@@ -72,6 +72,8 @@ const M = [
   ['watermark text differs from declared', 'single-smooth', (s) => { s.watermark.declared_text = 'other.com'; }, 'WATERMARK'],
   ['invalid title_origin', 'single-watermark-off', (s) => { s.title_origin = 'model_invented'; }, 'TITLE_ORIGIN'],
   ['URL in footer source', 'single-smooth', (s) => { s.footer.source = 'https://polymarket.com/event/x'; }, 'FOOTER_SOURCE_URL'],
+  ['scheme-less URL in footer source', 'single-smooth', (s) => { s.footer.source = 'polymarket.com/event/x'; }, 'FOOTER_SOURCE_URL'],
+  ['www host in footer source', 'single-smooth', (s) => { s.footer.source = 'www.polymarket.com'; }, 'FOOTER_SOURCE_URL'],
   ['footer missing coverage', 'single-smooth', (s) => { delete s.footer.coverage; }, 'FOOTER'],
   ['exact without same deadline', 'dual-exact', (s) => { s.comparison.criteria.same_deadline = false; }, 'COMPARISON_NOT_EXACT'],
   ['related merged label', 'dual-related', (s) => { s.comparison.merged_label = true; }, 'COMPARISON_RELATED_MERGED'],

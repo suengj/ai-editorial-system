@@ -29,7 +29,7 @@
   },
   "watermark": { "optional": true, "default_enabled": false, "text_configurable": true, "example_text": "suengj.com", "rule": "off unless requested; when enabled: non-empty declared text, behind the plot, opacity 0.05..0.09", "layer": "behind_plot", "opacity_target": 0.07, "opacity_min": 0.05, "opacity_max": 0.09 },
   "title_origin": { "allowed": ["source_rewrite", "request_summary", "source_verbatim"], "rule": "title is per-request AI-lane editorial output; deterministic lane only displays it; numbers must be grounded" },
-  "on_image_source": { "rule": "footer source shows the provider/site name only; full URL and run provenance go in the bundle/caption", "forbidden_substrings": ["http", "://"] },
+  "on_image_source": { "rule": "footer source shows the provider/site name only; full URL and run provenance go in the bundle/caption", "forbidden_substrings": ["http", "://", "www.", "/"] },
   "footer_required": ["period", "coverage", "source", "as_of"],
   "axis": {
     "bounds": [0, 100],
