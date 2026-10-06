@@ -181,7 +181,24 @@ whitespace while explicitly overriding only palette.
 
 ### Brand consistency
 
-The brand profile supplies the default visual-language bundle and ceilings:
+**Do not infer brand identity from content provenance.** A source article,
+repository, website, or canonical URL may determine what the visual is about,
+but it does not automatically determine the distribution brand. For example,
+an Instagram card derived from a suengj.com article is not a suengj.com-branded
+card unless the artifact request explicitly selects that brand/profile.
+
+Therefore, when the target surface is Instagram or another external distribution
+channel and no brand is explicitly selected:
+
+- do not insert the source site's domain, logo, slogan, watermark, or publication
+  chrome into the generated/composited pixels;
+- do not synthesize a channel identity from the source author/site;
+- keep only factual/source attribution required for provenance;
+- visual-language preferences may be reused as craft guidance when authorized,
+  but identity marks do not inherit with them.
+
+The brand profile supplies the default visual-language bundle and ceilings only
+after the distribution brand has been explicitly resolved:
 
 - overall restraint;
 - palette family;
