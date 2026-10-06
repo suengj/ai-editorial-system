@@ -1,0 +1,15 @@
+{
+  "schema_version": "1.0.0",
+  "request": "이 내용으로 1:1 카드 한 장. 아이보리·남색, 제목 두 줄, 워터마크 없음.",
+  "source": { "ref": "source.md", "scope": "illustrative" },
+  "profiles": { "surface": "instagram", "artifact": "visual/social-card" },
+  "task": {
+    "canvas": { "aspect_ratio": "1:1" },
+    "theme": { "background": "#F7F5F0", "foreground": "#14213D", "accent": "#2E5BFF" },
+    "watermark": { "enabled": false }
+  },
+  "layers": [
+    { "id": "headline", "kind": "text", "text": "한 번 정한 구조,\n필요한 부분만 수정", "source_ref": "source.md", "slot": { "x": 0.08, "y": 0.22, "width": 0.84, "height": 0.28 }, "font_size": 72, "weight": 700, "max_lines": 2 },
+    { "id": "support", "kind": "text", "text": "비율·문구·사진·차트를 분리하면\n같은 원본을 재사용할 수 있다.", "source_ref": "source.md", "slot": { "x": 0.08, "y": 0.58, "width": 0.84, "height": 0.18 }, "font_size": 38, "max_lines": 2 }
+  ]
+}

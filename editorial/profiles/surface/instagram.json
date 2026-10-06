@@ -22,8 +22,16 @@
     "hashtags": "optional; historical author usage is not a requirement",
     "call_to_action": "normally none; do not manufacture an engagement question"
   },
-  "artifact_fit": ["text/brief"],
-  "publication_boundary": "Only the account owner or an explicitly authorised platform workflow may publish; this repository prepares caption text only.",
+  "artifact_fit": ["text/brief", "visual/social-card", "visual/thumbnail", "visual/evidence-visual", "visual/body-infographic", "visual/slide-image"],
+  "visual_defaults": {
+    "canvas": { "width": 1080, "height": 1350 },
+    "execution_guide": "editorial/STRUCTURED-VISUAL-EXECUTION.md",
+    "geometry_rule": "Portrait is a recipe default, not a platform mandate. Explicit task geometry wins when compatible with the actual destination.",
+    "readability": "Check actual full-size and mobile pixels. Text budgets are soft; never delete essential qualifiers or shrink indefinitely to fit.",
+    "overflow": "Re-layout, move nonessential detail to caption, or split into a declared series; no silent truncation.",
+    "voice_boundary": "Personal caption defaults do not force on-image headlines or other accounts into a personal-reflective voice."
+  },
+  "publication_boundary": "Only the account owner or an explicitly authorised platform workflow may publish; this repository prepares caption text and candidate visual execution packets; local rendering does not grant publication approval.",
   "replaceable": {
     "value": true,
     "note": "The surface profile is replaceable by another personal social network profile without changing content-type truth or the optional suengj-style overlay."

@@ -1,0 +1,6 @@
+{
+  "type": "bar", "title": "가상 비교", "period": "동일 기준 시점", "source_note": "실행 테스트 자료",
+  "x": { "label": "구분", "tick_labels": { "1": "A", "2": "B", "3": "C" } },
+  "y": { "label": "건수", "unit": "건", "decimals": 0 },
+  "series": [{ "name": "표본", "claim": "illustrative-counts", "points": [[1,125],[2,180],[3,240]] }]
+}
