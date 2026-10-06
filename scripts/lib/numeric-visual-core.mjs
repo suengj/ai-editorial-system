@@ -206,8 +206,17 @@ export function checkNumericCard(spec, profile = loadNumericProfile()) {
   if (['fictional', 'illustrative', 'mock', 'mockup'].includes(String(spec.data_source ?? '').toLowerCase()) && spec.illustrative !== true) err('MOCKUP_NOT_ILLUSTRATIVE', 'illustrative', 'fictional/illustrative data requires illustrative:true');
 
   // ---- watermark / footer
-  const wm = spec.watermark ?? {};
-  if (wm.text !== profile.watermark.text || wm.layer !== profile.watermark.layer || !(wm.opacity >= profile.watermark.opacity_min && wm.opacity <= profile.watermark.opacity_max)) err('WATERMARK', 'watermark', 'suengj.com behind the plot at ~7% (0.05..0.09)');
+  const wm = spec.watermark;
+  // optional, default off: absent or enabled:false passes; a present watermark object without enabled:false is treated as enabled.
+  const wmOn = wm != null && wm.enabled !== false;
+  if (wm != null && typeof wm !== 'object') err('WATERMARK', 'watermark', 'watermark must be an object');
+  else if (wmOn) {
+    const text = typeof wm.text === 'string' ? wm.text.trim() : '';
+    const declared = wm.declared_text ?? wm.text; // declared_text = text requested for this card (configurable; suengj.com is only an example)
+    if (!text || text !== String(declared ?? '').trim() || wm.layer !== profile.watermark.layer || !(wm.opacity >= profile.watermark.opacity_min && wm.opacity <= profile.watermark.opacity_max)) err('WATERMARK', 'watermark', 'enabled watermark: non-empty declared text behind the plot at ~7% (0.05..0.09)');
+  }
+  if (spec.title_origin !== undefined && !profile.title_origin.allowed.includes(spec.title_origin)) err('TITLE_ORIGIN', 'title_origin', `title_origin must be one of ${profile.title_origin.allowed.join(', ')}`);
+  if (spec.footer?.source && profile.on_image_source.forbidden_substrings.some((x) => String(spec.footer.source).toLowerCase().includes(x))) err('FOOTER_SOURCE_URL', 'footer.source', 'on-image source is the provider/site name only; URLs go in the bundle/caption');
   for (const k of profile.footer_required) if (!spec.footer?.[k]) err('FOOTER', `footer.${k}`, 'footer needs period, coverage, source and as_of');
   if (endpoints.length && spec.footer?.as_of) {
     const latest = endpoints.map((e) => e.t).sort().at(-1);

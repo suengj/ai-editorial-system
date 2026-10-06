@@ -28,6 +28,10 @@ completion nor permission to post on social media.
   Any number in the AI title, bare or with a unit, must be a value the deterministic lane displays
   (`TITLE_NUMBER_UNGROUNDED`). A period claim such as 「7일」, 「1주」 or "7-day" must not exceed the
   observed span (`TITLE_PERIOD_UNOBSERVED`).
+- The title is per-request editorial output from the AI lane: a rewrite of the source market question
+  or a short summary of the user's request. The deterministic lane only displays it. Provenance is
+  recorded as `title_origin` ∈ {`source_rewrite`, `request_summary`, `source_verbatim`}; when present,
+  an unknown value fails (`TITLE_ORIGIN`).
 - An image model never draws or redraws the data chart. `rendering.image_ai_role` is `none` or
   `decorative_only`, and decorative assets never overlap the plot or carry data.
 
@@ -38,9 +42,12 @@ completion nor permission to post on social media.
 - Polymarket cobalt `#2E5BFF` and Kalshi coral `#FF6B5B`, used for those providers only.
 - Single market: one hero number plus the chart. Dual comparison: two equal number cards and two distinct lines.
 - Smooth lines from real observations, direct endpoint labels, and a period / coverage / source / as-of footer.
-- A `suengj.com` watermark sits **behind the plot** at about 7% opacity (0.05–0.09) and never covers
-  lines, axes or labels. This background layer is specific to this profile. It is not the SUE-1303
-  overlay, which keeps its exclusion zones.
+- The watermark is **optional and off by default** (`optional: true`, `default_enabled: false`). It is
+  used only when requested, and its text is configurable (`suengj.com` is just one example). A spec with
+  no watermark, or `enabled: false`, passes. When enabled, the text must be non-empty and match the
+  declared text, it sits **behind the plot**, and opacity is about 7% (0.05–0.09) (`WATERMARK`).
+- On-image source attribution is the provider/site name only. The full URL and run provenance go in
+  the bundle/caption. A footer source containing `http` or `://` fails (`FOOTER_SOURCE_URL`).
 - Approved mockups: `libfile_971c250507d88191829fd4b23a43cece` (dual-market-watermark.png) and the
   earlier version without a watermark, `libfile_ee0b381f05908191a08bb9b21e10f89f`. They approve the
   **visual direction only**.
@@ -110,6 +117,7 @@ Fixture/QA cases in `scripts/fixtures/numeric-visual/`:
 | Manifold play-money | `single-manifold-play-money` |
 | exact dual with %p spread | `dual-exact` |
 | related, separately labeled | `dual-related` |
+| watermark off (default), `title_origin` recorded | `single-watermark-off` |
 
 `scripts/test-numeric-visual.mjs` mutates these fixtures so that each rule above fails with its own code.
 

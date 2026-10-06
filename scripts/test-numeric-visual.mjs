@@ -13,7 +13,7 @@ const ok = (n, v, d = '') => { console.log(`${v ? 'PASS' : 'FAIL'} ${n}${!v && d
 const load = (id) => JSON.parse(readFileSync(resolve(FIX, `${id}.json`), 'utf8'));
 const clone = (x) => JSON.parse(JSON.stringify(x));
 
-const REQUIRED = ['single-smooth', 'single-sparse-gapped', 'single-short-history', 'single-zoom', 'single-flat-zero-hundred', 'single-manifold-play-money', 'dual-exact', 'dual-related', 'worked-example-illustrative-mockup'];
+const REQUIRED = ['single-smooth', 'single-sparse-gapped', 'single-short-history', 'single-zoom', 'single-flat-zero-hundred', 'single-manifold-play-money', 'dual-exact', 'dual-related', 'worked-example-illustrative-mockup', 'single-watermark-off'];
 const present = readdirSync(FIX).map((f) => f.replace(/\.json$/, ''));
 for (const id of REQUIRED) ok(`fixture present: ${id}`, present.includes(id));
 for (const id of present) { const r = checkNumericCard(load(id)); ok(`valid fixture passes: ${id}`, r.length === 0, JSON.stringify(r)); }
@@ -67,6 +67,11 @@ const M = [
   ['per-series axis in dual', 'dual-exact', (s) => { s.series[1].axis = { min: 30, max: 60 }; }, 'AXIS_PER_SERIES'],
   ['watermark over plot', 'single-smooth', (s) => { s.watermark.layer = 'over_plot'; }, 'WATERMARK'],
   ['watermark too strong', 'single-smooth', (s) => { s.watermark.opacity = 0.2; }, 'WATERMARK'],
+  ['watermark enabled with bad opacity', 'single-watermark-off', (s) => { s.watermark = { enabled: true, text: 'example.org', layer: 'behind_plot', opacity: 0.3 }; }, 'WATERMARK'],
+  ['watermark enabled with empty text', 'single-watermark-off', (s) => { s.watermark = { enabled: true, text: ' ', layer: 'behind_plot', opacity: 0.07 }; }, 'WATERMARK'],
+  ['watermark text differs from declared', 'single-smooth', (s) => { s.watermark.declared_text = 'other.com'; }, 'WATERMARK'],
+  ['invalid title_origin', 'single-watermark-off', (s) => { s.title_origin = 'model_invented'; }, 'TITLE_ORIGIN'],
+  ['URL in footer source', 'single-smooth', (s) => { s.footer.source = 'https://polymarket.com/event/x'; }, 'FOOTER_SOURCE_URL'],
   ['footer missing coverage', 'single-smooth', (s) => { delete s.footer.coverage; }, 'FOOTER'],
   ['exact without same deadline', 'dual-exact', (s) => { s.comparison.criteria.same_deadline = false; }, 'COMPARISON_NOT_EXACT'],
   ['related merged label', 'dual-related', (s) => { s.comparison.merged_label = true; }, 'COMPARISON_RELATED_MERGED'],
@@ -100,6 +105,10 @@ for (const [name, base, mut, code] of M) {
   const codes = checkNumericCard(s).map((e) => e.code);
   ok(`rejects ${name} → ${code}`, codes.includes(code), `got ${JSON.stringify(codes)}`);
 }
+// positive controls: watermark absent / custom text passes
+ok('spec with no watermark passes', (() => { const t = clone(load('single-smooth')); delete t.watermark; return checkNumericCard(t).length === 0; })());
+ok('custom watermark text passes when enabled', (() => { const t = clone(load('single-smooth')); t.watermark = { enabled: true, text: 'example.org', layer: 'behind_plot', opacity: 0.07 }; return checkNumericCard(t).length === 0; })());
+ok('profile marks watermark optional, default off', P.watermark.optional === true && P.watermark.default_enabled === false);
 // positive control: production publication passes when every gate is met
 const pub = clone(load('single-smooth')); pub.publication.requested = true; pub.qa.owner_approval = { status: 'approved', scope: 'production' };
 ok('publication allowed only with numeric+visual QA and owner production approval', checkNumericCard(pub).length === 0);
