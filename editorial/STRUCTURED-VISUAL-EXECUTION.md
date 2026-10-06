@@ -4,6 +4,8 @@
 
 사용자는 “1:1 카드, 심플하게, 사진은 오른쪽, 이 데이터는 그래프로, 남색과 아이보리, 워터마크 없음”처럼 말한다. LLM/agent가 아래 과정을 실행한다. 사용자에게 JSON 작성이나 모든 옵션 선택을 요구하지 않는다. 이 가이드는 새 이미지 엔진이 아니라 기존 규칙과 실제 도구 사이의 공통 진입점이다.
 
+카드뉴스/여러 장 요청은 아래 **§9 시리즈 실행**으로 이어진다. 기존 단일 이미지 경로와 승인 경계는 유지한다.
+
 ## 1. 처음 읽을 것과 재사용 경계
 
 | 판단/기능 | 기존 정본/실행 경로 |
@@ -117,3 +119,64 @@ node scripts/test-visual-execution.mjs
 새 대화에서 이 가이드만 진입점으로 삼아 실제 native 생성→bytes 확보→합성이 가능한지 확인한다. AI-tech 카드, 사진 카드, 실데이터 카드, 블로그 인포그래픽, 보고서와 3-frame 시리즈를 검토한다. 워터마크/제목/색상/비율만 바꾸는 후속 요청에서 원본과 사실이 보존되는지 확인한다. 실제 계정 preset·Drive 전달·기사 job 통합은 검증한 범위만 기록한다. headless 성공을 native 성공으로 대신하지 않는다.
 
 전체 owner playbook(SUE-571)은 이 **같은 진입점**을 참조한다. 이 문서를 복사한 채널별 프롬프트 매뉴얼을 만들지 않는다.
+
+## 9. 카드뉴스: 한 장씩 다시 설계하지 않는 시리즈 실행 (SUE-1345)
+
+카드뉴스 요청은 [SLIDES-AND-CAROUSELS.md](SLIDES-AND-CAROUSELS.md)의 `silent_carousel`과 §11 시리즈 일관성 계약을 먼저 적용한다. 보고서에서 주장→근거→의미의 연결을 차용하되 `working_report`의 높은 밀도를 옮기지 않는다. 인포그래픽의 한 질문·시각 위계 원칙을 재사용하되 긴 한 장을 기계적으로 잘라 카드로 만들지 않는다. 각 카드에는 주요 기능 하나와 이전/다음 카드와의 관계가 있어야 한다.
+
+자연어 요청 예:
+
+> 이 자료로 4:5 카드뉴스 3장을 만들어줘. 표지는 질문, 가운데는 근거, 마지막은 의미를 보여줘. 미니멀 에디토리얼로 하고 제목·출처·페이지 번호는 통일해. 숫자와 사진은 원본을 보존하고 워터마크는 빼줘. 2장 문구만 수정하면 나머지는 그대로 유지해.
+
+3장은 예시이지 고정 서사나 장수 규칙이 아니다. 사용자가 지정한 구성·장수와 자료의 beat를 바탕으로 LLM이 필요성/분할/순서를 결정한다. `beats`는 기존 Visual Story Plan의 필요한 ID·의존성을 실행용으로 투영한 것이며 두 번째 논지/사실 정본이 아니다. 기사 파생이면 기존 article/claim 계획과 실제 `job_ref`를 유지한다. 글 없는 요청은 §3 source-only 경로를 따른다.
+
+### 선택한 recipe와 공통 규칙
+
+[`visual-recipes.v1.json`](visual-recipes.v1.json)은 기존 task preset의 작은 조합이다. 새로운 style axis, 계정 DB, 전역 brand 변경이 아니다.
+
+| Recipe | 구성 방향 | 사실/시리즈 경계 |
+| --- | --- | --- |
+| `editorial-minimal` | 아이보리·남색, serif 중심, 타이포와 여백 | 정확한 문구·출처·페이지는 공통 조판 |
+| `dark-data` | 어두운 배경·밝은 강조색, 근거 그림 중심 | 실제 차트는 기존 renderer; 가상 성과 수치 금지 |
+| `pop-collage` | 강한 대비·콜라주 소재, 생성 그림 비중 확대 | 그림은 내용 슬롯 안에서 표현; 반복 문구는 별도 조판 |
+
+recipe 선택은 이번 작업의 디자인 지시다. 실제 brand/reference 권한과 사실·잠금을 우회하지 않는다. 호환 가능한 `task.theme`·`task.canvas` 지정이 recipe 기본값보다 우선한다. 한 시리즈에서는 색상·비율·역할별 타이포를 한 번 결정한다. 개별 카드가 임의로 다른 글자 크기/색으로 바꾸는 대신 시리즈 공통 옵션을 바꾸거나 카드를 분할한다. 한 번의 피드백을 영구 선호로 저장하지 않는다.
+
+현재 로컬 recipe는 본문 `text`, 근거/사진 `visual`, 좌우 비교 `split`의 세 가지 layout을 지원한다. 같은 시리즈에서 내부 layout은 달라도 eyebrow/headline/source/pagination은 공통 영역이다. 더 복잡한 infographic/report layout이나 전체 화면 integrated art는 기존 해당 경로를 사용하고 이 단순 preset이 모든 미감을 재현한다고 주장하지 않는다.
+
+### 실행과 결과
+
+```bash
+# 계획만 확인: 실제 원본 bytes/폰트/시각 품질 검증은 아님
+node scripts/render-carousel.mjs --plan scripts/fixtures/carousel/series.json \
+  --out /tmp/aes-series-plan --compile-only
+
+# 기존 single-image executor로 전체 시리즈 렌더
+node scripts/render-carousel.mjs --plan scripts/fixtures/carousel/series.json \
+  --out /tmp/aes-series-first
+
+# 같은 series_id의 수정 명세: 바뀌지 않은 프레임은 검증 후 재사용
+node scripts/render-carousel.mjs --plan /path/to/revised-series.json \
+  --previous /tmp/aes-series-first --out /tmp/aes-series-revised
+
+# 로컬 회귀 검사; CI를 실행하는 명령이 아님
+node scripts/test-carousel.mjs --render
+```
+
+내부 `series.json` 입력은 LLM/agent가 작성한다. 기본 필드는 `series_id / request / source / profiles / recipe / series_label / beats / frames`다. `profiles.artifact`는 기존 `visual/slide-image`를 사용한다. 각 frame에는 `id / function / beat_ids / takeaway / alt_text / headline / source_note / layout / blocks`가 있다. `blocks`의 text/image/chart/generated는 기존 레이어로 변환한다. source·chart·photo 경로는 입력 명세 파일 기준으로 해석된다. `task / typography / regions / layouts`는 시리즈 공통 override다. 지원하지 않는 필드를 조용히 버리지 않고 거절한다.
+
+각 frame은 `master.png / image.png / master.svg / execution.json / receipt.json`과 390px 폭 `phone.png`를 만든다. 전체에는 `series.json`, `contact-sheet.png`, `review-worklist.json` 및 frame별 실행 plan이 남는다. 합성기는 게시하지 않으며 manifest는 실제 출력 순서와 해시를 제공한다. 1–20 frame은 v0.1 로컬 자원 한도일 뿐 Instagram API 한도에 대한 주장이 아니다.
+
+### 영역 보호와 국소 수정
+
+반복 영역과 내용 슬롯은 0–1 좌표로 표현하고 실제 pixel slot으로 변환한다. 영역 충돌/알 수 없는 슬롯/중복 ID/누락된 beat/의존성 역전은 컴파일 시 거절한다. 생성 모델에는 선택한 미술 방향과 내용 슬롯의 역할을 전달한다. **빈 공간을 남기라는 프롬프트만 믿지 않고, 합성기가 생성 자산을 슬롯에 clip/fit한다.** 이는 슬롯 밖 덮어쓰기를 막는 것이며 그림 속 피사체의 품질이나 의미까지 보장하지 않는다. 정확한 원본 인물/제품은 기존 source-asset 합성을 이용한다.
+
+글이 넘치면 실제 glyph 측정에서 `TEXT_OVERFLOW`다. 자동 축약·작은 글자로 땜질·새 사실 생성은 하지 않는다. LLM이 필요한 qualifier를 지키며 문구를 재작성하거나 다음 카드로 분할한다. 기본 후보는 1개; 실제 실패가 확인되면 해당 프레임/레이어부터 수정한다. 무조건 A/B/C 생성이나 10–20장 실험은 요구하지 않는다.
+
+`--previous`는 source/레이어/선택 recipe/프로필/실행 코드·rasterizer·관측 가능한 폰트 환경과 이전 출력 해시가 같은 프레임만 새 디렉터리에 복사한다. 이전 bytes가 달라졌으면 거절한다. Fontconfig 환경을 관측할 수 없으면 재사용을 생략하고 렌더한다. 단순 명세만 같은 것이 재생산성 증거는 아니다. 생성 자산의 새 호출은 이 캐시가 대신하지 않으며 font/runtime이 다른 환경까지 같은 픽셀을 약속하지 않는다. 재사용한 이미지라도 시리즈 맥락이 달라졌으면 다시 의미를 검토한다. 승인 상태는 자동 상속하지 않는다.
+
+### Visual QA는 기존 reviewer에게 연결
+
+`review-worklist.json`은 **검토 대상 목록이지 검토 통과 기록이 아니다.** 기존 `skills/review-visual/`, SUE-646/647 및 §11 시리즈 검토로 각 full/phone 이미지와 전체 contact sheet를 확인한다. focal hierarchy, balance/whitespace, text readability, visual density, style coherence, 사진/차트 충돌, 카드 순서·반복 역할의 일관성을 구분한다. `dashboardization`, `box_overload`, `dense_text`, `style_dilution`, `reference_drift`, `factual_overlay_intrusion` 등 기존 실패 태그를 사용한다. 요청한 dark-data 방향을 무조건 dashboard라는 이유만으로 탈락시키거나 pop-collage를 모든 계정 기본 스타일로 승격하지 않는다.
+
+로컬 출력은 `RENDERED_NEEDS_REVIEW`다. 실제 원자료 진실/미감/게시 승인은 따로 확인한다. 생성 bytes가 없으면 `RENDER_REQUIRED`, 일부 프레임이 미완료면 시리즈는 `INCOMPLETE`이며 완성 contact sheet를 만들지 않는다. 이미지 모델 호출, 자동 inpainting/배경제거, native ChatGPT의 bytes 인계 및 실제 사용자 사진·PMC·블로그/보고서 미감 검증은 이 로컬 테스트로 통과시키지 않는다. SUE-1337 Phase4는 계속 사용자 담당이다.

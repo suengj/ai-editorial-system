@@ -1,0 +1,140 @@
+{
+  "schema_version": "1.0.0",
+  "scope": "Task-selected realization presets, not a new intent axis or a replacement brand/reference authority. No factual payload or approval.",
+  "regions": {
+    "eyebrow": {
+      "x": 0.06,
+      "y": 0.04,
+      "width": 0.88,
+      "height": 0.04
+    },
+    "headline": {
+      "x": 0.06,
+      "y": 0.1,
+      "width": 0.88,
+      "height": 0.21
+    },
+    "source": {
+      "x": 0.06,
+      "y": 0.88,
+      "width": 0.7,
+      "height": 0.035
+    },
+    "pagination": {
+      "x": 0.8,
+      "y": 0.88,
+      "width": 0.14,
+      "height": 0.035
+    }
+  },
+  "layouts": {
+    "text": {
+      "content": {
+        "x": 0.06,
+        "y": 0.35,
+        "width": 0.88,
+        "height": 0.45
+      }
+    },
+    "visual": {
+      "content": {
+        "x": 0.06,
+        "y": 0.34,
+        "width": 0.88,
+        "height": 0.48
+      }
+    },
+    "split": {
+      "left": {
+        "x": 0.06,
+        "y": 0.35,
+        "width": 0.4,
+        "height": 0.45
+      },
+      "right": {
+        "x": 0.52,
+        "y": 0.35,
+        "width": 0.42,
+        "height": 0.45
+      }
+    }
+  },
+  "typography": {
+    "eyebrow": {
+      "font_size": 28,
+      "weight": 500,
+      "max_lines": 1,
+      "line_height": 1.15
+    },
+    "headline": {
+      "font_size": 64,
+      "weight": 700,
+      "max_lines": 2,
+      "line_height": 1.2
+    },
+    "body": {
+      "font_size": 38,
+      "weight": 400,
+      "max_lines": 7,
+      "line_height": 1.4
+    },
+    "source": {
+      "font_size": 30,
+      "weight": 400,
+      "max_lines": 1,
+      "line_height": 1.15
+    },
+    "pagination": {
+      "font_size": 30,
+      "weight": 500,
+      "max_lines": 1,
+      "line_height": 1.15,
+      "align": "end"
+    }
+  },
+  "recipes": {
+    "editorial-minimal": {
+      "theme": {
+        "background": "#F7F4EC",
+        "foreground": "#14213D",
+        "accent": "#536756",
+        "font_family": "'Noto Serif CJK KR', 'Noto Serif KR', Georgia, serif"
+      },
+      "typography": {
+        "headline": {
+          "weight": 500
+        }
+      },
+      "generation_direction": "Restrained magazine composition; generous negative space; one clear subject; quiet material texture. No ornamental mini dashboards or icon grids. Typography remains in reserved compositor regions.",
+      "default_layout": "text"
+    },
+    "dark-data": {
+      "theme": {
+        "background": "#0B1824",
+        "foreground": "#F2F7F5",
+        "accent": "#88E0C0"
+      },
+      "typography": {
+        "headline": {
+          "weight": 700
+        }
+      },
+      "generation_direction": "High-contrast dark editorial composition with restrained mint accents. Illustration supports rather than competes with evidence. Never invent KPI tiles, chart marks, performance percentages, or product brands.",
+      "default_layout": "visual"
+    },
+    "pop-collage": {
+      "theme": {
+        "background": "#201528",
+        "foreground": "#FFF5EB",
+        "accent": "#F15AAB"
+      },
+      "typography": {
+        "headline": {
+          "weight": 800
+        }
+      },
+      "generation_direction": "Expressive paper collage with pink/orange/blue accents, torn edges, playful brush texture and one dominant silhouette. Restrict collage to its supplied content slot; no factual copy, faux numbers, logos, robot cliches or unrelated slogans unless specifically requested.",
+      "default_layout": "visual"
+    }
+  }
+}
