@@ -41,22 +41,59 @@ completion nor permission to post on social media.
 - Off-white `#F7F5F0` background with navy `#14213D` text.
 - Polymarket cobalt `#2E5BFF` and Kalshi coral `#FF6B5B`, used for those providers only.
 - Single market: one hero number plus the chart. Dual comparison: two equal number cards and two distinct lines.
-- Smooth lines from real observations, direct endpoint labels, and a period / coverage / source / as-of footer.
+- Smooth lines from real observations and direct endpoint labels. Period / coverage / source / as-of remain traceable metadata, but production artwork shows only the subset that materially helps the reader; `as_of` is a small note when visible, not a headline KPI.
 - The watermark is **optional and off by default** (`optional: true`, `default_enabled: false`). It is
   used only when requested, and its text is configurable (`suengj.com` is just one example). A spec with
   no watermark, or `enabled: false`, passes. When enabled, the text must be non-empty and match the
   declared text, it sits **behind the plot**, and opacity is about 7% (0.05–0.09) (`WATERMARK`).
-- On-image source attribution is the provider/site name only. The full URL and run provenance go in
+- When on-image source attribution is shown, use the provider/site name only. The full URL and run provenance go in
   the bundle/caption. A footer source containing `http`, `://`, `www.` or `/` fails (`FOOTER_SOURCE_URL`).
 - Approved mockups: `libfile_971c250507d88191829fd4b23a43cece` (dual-market-watermark.png) and the
   earlier version without a watermark, `libfile_ee0b381f05908191a08bb9b21e10f89f`. They approve the
   **visual direction only**.
 
+## 2A. Production card economy
+
+Instagram card news is a distribution surface, not an observability dashboard. Every visible
+element must earn its space at phone size.
+
+For a **single-market evidence card**, the default visible hierarchy is:
+
+```text
+grounded question / headline
+→ hero probability
+→ actual trend chart
+→ at most one short interpretive annotation when it materially improves reading
+```
+
+Default omissions from the pixels:
+
+- **volume and liquidity** — keep them in the artifact data/manifest; show them only when market depth,
+  participation, or price reliability is itself part of the editorial point;
+- **internal workflow identifiers** — never render Linear/SUE issue numbers, query/run IDs, condition
+  IDs, hashes, renderer names, local/cloud paths, or engineering status labels in a production card;
+- **generic boilerplate** such as `정보 제공용` or `투자 권유 아님` — do not add it by default.
+  Show legal/compliance wording only when the publication context explicitly requires it;
+- **post-chart explanation blocks** — do not append a mini-report below the graph merely because
+  source material exists. Put material explanation in a concise annotation, the caption, or a
+  dedicated analysis card;
+- **redundant metadata rows** — `as_of` belongs in a small note/footer or artifact metadata,
+  not beside the probability as an equal-weight metric.
+
+The card should answer one visual question quickly. If the reader also needs to understand **why**
+the market is pricing the event that way, use a separate analysis beat/card rather than turning
+the numeric card into a dashboard.
+
+The full production bundle may still retain richer provenance, source URLs, market identifiers,
+volume/liquidity, observation coverage, and QA receipts. **Pixel economy does not mean provenance
+loss; it means moving operational detail to the correct layer.**
+
 ## 3. Fact rules
 
 - The last point of the history is not the current quote, and `retrieved_at` is not `as_of`. Never
-  append a quote to the history. Endpoint labels come from the last history observation, and the
-  footer `as_of` is an actual observation or quote time.
+  append a quote to the history. Endpoint labels come from the last history observation. When
+  `as_of` is visible on the card, render it as a compact note using an actual observation or quote
+  time; it may otherwise live in the artifact metadata.
 - Show the actual observed period. If 7 days were requested but only 3 exist, label it 3 days, and
   never write "7-day change" without a valid 7-day baseline.
 - Values use `%` and deltas use `%p`. A delta is the last raw value minus a raw baseline
