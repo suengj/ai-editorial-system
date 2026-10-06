@@ -93,7 +93,7 @@
     "placement": "safe_zone",
     "max_lines": 2
   },
-  "watermark_ref": "editorial/profiles/visual/sue-1303.json#/watermark",
+  "watermark_ref": "schemas/render-spec.schema.json#/$defs/watermark",
   "audio_refs": [
     {
       "schema_version": "1.0.0",

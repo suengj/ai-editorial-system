@@ -79,7 +79,7 @@ read-only; they were not executed for this task.
 | Visual composition | RenderSpec and visual profiles | Reuse RenderSpec by `$ref`; keep crop-safe zone on each timed scene |
 | Audio script and pronunciation | AudioPlan, three audio profiles, audience-aware glossary and delivery | Reuse AudioPlan by `$ref`; NarrationScript extends its audience, synthetic-role and pronunciation definitions |
 | Video duration and scene timeline | No current AES video plan schema; storyboard document is prose | Add VideoPlan with short/long format, target duration, scene order, timing, text and asset refs |
-| Captions and watermark | Caption/display rules exist in visual/editorial guidance; no SUE-1303 watermark profile was found in this checkout | Add style and watermark **references only**; the sample points to the planned profile location and is not resolved here |
+| Captions and watermark | Caption/display rules exist in visual/editorial guidance; SUE-1303 defines the watermark in `schemas/render-spec.schema.json#/$defs/watermark` and provides `schemas/examples/watermark-suengj-com-sample.example.json` | Add style and watermark **references only**; `watermark_ref` identifies the RenderSpec watermark contract, and the sample gives a concrete default-OFF watermark configuration |
 | TTS provider capabilities/cost/timing | Audio render fields record lineage, but no provider account entitlement is established | Add provider-neutral adapter record; support stays unknown until evidenced, cost may be unknown, and returned timing granularity is explicit |
 | BGM catalog and rights | `shorts_gen` has a v1 BGM design direction (B-B), legacy music search code, but no v1 media runtime | Add a minimal catalog record with file/source/license and audio properties; OFF is a valid state |
 | Video rendering / upload | Legacy v0 code only; v1 runtime absent | Out of scope. Future `shorts_gen` executes; no FFmpeg or upload work here |
@@ -99,7 +99,8 @@ The additive fields are:
 
 - **VideoPlan:** short or long format; aspect ratio, size, fps, target length;
   ordered scenes with timing, visible text, asset ref, and crop-safe zone;
-  language/surface, caption style, watermark ref, audio refs, output location,
+  language/surface, caption style, watermark ref to
+  `schemas/render-spec.schema.json#/$defs/watermark`, audio refs, output location,
   and audio reconciliation state.
 - **NarrationScript:** speaker turns/roles, claim IDs and source refs, rate,
   pauses, intonation, audience-aware pronunciation list, and an explicit

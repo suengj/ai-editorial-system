@@ -35,6 +35,9 @@ ok('RenderSpec rejects diagonal placement', validateRenderSpec(withWm({ placemen
 ok('RenderSpec rejects unknown watermark field', validateRenderSpec(withWm({ engine: 'x' })).length > 0);
 const layered = resolveWatermark(brandWm, { enabled: true }, { text: 'channel.example', safe_margins: { bottom: 0.12 } });
 ok('account/channel override wins; unspecified fields inherit', layered.enabled && layered.text === 'channel.example' && layered.opacity === 0.08 && layered.safe_margins.bottom === 0.12 && layered.safe_margins.left === 0.05);
+const layoutZones = [{ zone_id: 'chart-area', x: 0.1, y: 0.2, width: 0.3, height: 0.2 }];
+const layeredZones = resolveWatermark({ exclusion_zones: layoutZones }, { exclusion_zones: [] });
+ok('empty override keeps earlier exclusion zones', layeredZones.exclusion_zones.length === 1 && layeredZones.exclusion_zones[0].zone_id === 'chart-area');
 ok('invalid resolved config is refused', throwsCode(() => resolveWatermark({ opacity: 0.9 }), 'invalid-config') && throwsCode(() => resolveWatermark({ placement: 'diagonal' }), 'invalid-config'));
 const core = readFileSync(resolve(ROOT, 'scripts/lib/watermark-core.mjs'), 'utf8') + readFileSync(resolve(ROOT, 'scripts/watermark.mjs'), 'utf8');
 ok('0 API/LLM calls: no network or provider imports', !/fetch\(|node:https?|node:net|openai|anthropic|gemini/i.test(core.replace(/^\s*\*.*$/gm, '')));

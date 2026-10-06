@@ -18,7 +18,7 @@
     "language": { "type": "string", "pattern": "^[a-z]{2,3}(-[A-Z]{2})?$" },
     "surface": { "type": "string", "minLength": 1 },
     "caption_style": { "type": "object", "additionalProperties": false, "required": ["profile_ref", "placement", "max_lines"], "properties": { "profile_ref": { "type": "string", "minLength": 1 }, "placement": { "enum": ["top", "center", "bottom", "safe_zone"] }, "max_lines": { "type": "integer", "minimum": 1 } } },
-    "watermark_ref": { "type": "string", "pattern": "^editorial/profiles/[^#]+#/.+$" },
+    "watermark_ref": { "type": "string", "pattern": "^schemas/render-spec\\.schema\\.json#/\\$defs/watermark$" },
     "audio_refs": { "type": "array", "items": { "$ref": "schemas/audio-plan.schema.json" } },
     "output_location": { "type": "string", "minLength": 1 },
     "audio_reconciliation": { "type": "object", "additionalProperties": false, "required": ["measured_audio_duration_seconds", "action"], "properties": { "measured_audio_duration_seconds": { "type": ["number", "null"], "minimum": 0 }, "action": { "enum": ["pending", "adjust_scene_timing", "revise_script", "blocked"] } } },
