@@ -89,7 +89,9 @@
     "validate:system": "node scripts/system-scorecard.mjs --validate",
     "system:check": "node scripts/system-scorecard.mjs --check",
     "test:schema-parity": "node scripts/test-schema-parity.mjs",
-    "check:model-roster": "node scripts/check-model-roster.mjs"
+    "check:model-roster": "node scripts/check-model-roster.mjs",
+    "validate:video": "node scripts/validate-video-plan.mjs",
+    "test:video": "node scripts/test-video-plan.mjs"
   },
   "repository": {
     "type": "git",

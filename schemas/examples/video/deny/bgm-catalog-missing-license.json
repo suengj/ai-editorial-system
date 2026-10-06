@@ -1,0 +1,27 @@
+{
+  "schema_version": "1.0.0",
+  "catalog_id": "bgm:off",
+  "status": "selected",
+  "tracks": [
+    {
+      "track_id": "track-unlicensed",
+      "file_ref": "media:bgm-01",
+      "source": "local library",
+      "mood": "calm",
+      "tempo_bpm": 80,
+      "energy": 0.2,
+      "vocal": false,
+      "loop_points": {
+        "start_seconds": 0,
+        "end_seconds": 8
+      },
+      "duration_seconds": 20
+    }
+  ],
+  "narration_ducking": {
+    "enabled": false,
+    "target_db": -18,
+    "attack_ms": 200,
+    "release_ms": 500
+  }
+}

@@ -1,0 +1,42 @@
+{
+  "schema_version": "1.0.0",
+  "script_id": "narration-script:ko-explainer-15s",
+  "mode": "monologue",
+  "language": "ko-KR",
+  "audience": {
+    "value": "general-reader",
+    "profile_ref": "editorial/profiles/audience/general-reader.json",
+    "traits_applied": [
+      "짧은 사고 단위",
+      "보통 속도, 서두르지 않음",
+      "첫 등장 전문 용어 풀이"
+    ]
+  },
+  "profile_ref": "editorial/profiles/artifact/audio-monologue.json",
+  "source_claims": [
+    {
+      "claim_id": "claim:verified-mechanism",
+      "source_ref": "pkg:ai-cost-explainer#verified_claims/claim:verified-mechanism",
+      "verified": true
+    }
+  ],
+  "turns": [
+    {
+      "speaker_role": "narrator",
+      "text": "자료를 볼 때는 결론보다 근거가 어떻게 이어지는지 먼저 살펴야 합니다. 원인과 결과를 나누어 보면 같은 숫자도 다른 의미를 가질 수 있습니다. 그래서 설명 영상은 주장을 짧게 줄이기보다, 판단에 필요한 연결을 남겨야 합니다.",
+      "claim_ids": [
+        "claim:verified-mechanism"
+      ],
+      "rate": 1,
+      "pause_after_ms": 350,
+      "intonation": "차분하게 설명하고 마지막 문장에서 핵심을 맺음"
+    }
+  ],
+  "pronunciation_plan": [],
+  "order": "draft_correct_then_pronunciation_plan_then_tts",
+  "fabrication_policy": {
+    "people": "no_fabricated_people",
+    "quotes": "only_source_linked_verified_quotes"
+  },
+  "timing_policy": "reconcile_to_measured_audio; never_compress_long_narration_to_6s"
+}

@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://suengj.com/schemas/tts-contract.schema.json",
+  "title": "Provider Neutral TTS Contract",
+  "type": "object", "additionalProperties": false,
+  "required": ["schema_version", "adapter_id", "provider", "voice", "locale", "support", "cost", "returned_timing_metadata", "duration_reconciliation"],
+  "properties": {
+    "schema_version": { "const": "1.0.0" },
+    "adapter_id": { "type": "string", "minLength": 1 },
+    "provider": { "type": "string", "minLength": 1 },
+    "voice": { "type": "string", "minLength": 1 },
+    "locale": { "type": "string", "minLength": 1 },
+    "support": { "type": "object", "additionalProperties": false, "required": ["status", "checked_at", "evidence_ref"], "properties": { "status": { "enum": ["unknown", "verified_supported", "verified_unsupported"] }, "checked_at": { "type": ["string", "null"] }, "evidence_ref": { "type": ["string", "null"] } } },
+    "cost": { "type": "object", "additionalProperties": false, "required": ["currency", "amount", "basis"], "properties": { "currency": { "type": "string", "minLength": 1 }, "amount": { "type": ["number", "null"], "minimum": 0 }, "basis": { "type": "string", "minLength": 1 } } },
+    "returned_timing_metadata": { "type": "object", "additionalProperties": false, "required": ["available", "unit", "granularity"], "properties": { "available": { "type": "boolean" }, "unit": { "type": ["string", "null"] }, "granularity": { "enum": ["none", "utterance", "word", "phoneme", "unknown"] } } },
+    "duration_reconciliation": { "const": "measure_returned_audio_and_reconcile_scene_timing; never_force_long_narration_to_6s" }
+  }
+}

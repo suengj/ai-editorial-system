@@ -1,0 +1,12 @@
+{
+  "schema_version": "1.0.0",
+  "catalog_id": "bgm:off",
+  "status": "off",
+  "tracks": [],
+  "narration_ducking": {
+    "enabled": false,
+    "target_db": -18,
+    "attack_ms": 200,
+    "release_ms": 500
+  }
+}
