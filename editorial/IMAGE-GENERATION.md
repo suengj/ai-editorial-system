@@ -222,7 +222,9 @@ A generated image is not accepted because the tool returned a file.
 - Does it remain legible at card/thumbnail scale where applicable?
 - Is necessary negative space preserved?
 - Are accidental text, logos, watermarks, malformed anatomy/objects, or visual
-  artifacts absent?
+  artifacts absent? (This checks the clean master for generator-introduced
+  marks. The intentional, default-OFF `suengj.com` overlay is a separate
+  deterministic derivative; see `IMAGE-TEXT-RENDERING-PROFILES.md` section 7.)
 
 ### Publication checks
 

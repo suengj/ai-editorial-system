@@ -29,6 +29,7 @@
     "visual_devices": { "type": "array", "items": { "type": "string", "minLength": 1 } },
     "forbidden_visual_devices": { "type": "array", "items": { "type": "string", "minLength": 1 } },
     "reference_authority": { "type": "object", "additionalProperties": false, "required": ["selected"], "properties": { "selected": { "type": "array", "items": { "type": "object", "additionalProperties": false, "required": ["ref_id", "evaluation_id", "authority", "not_authority", "rationale"], "properties": { "ref_id": { "type": "string", "pattern": "^ref:[a-z0-9]+(-[a-z0-9]+)*$" }, "evaluation_id": { "type": "string", "pattern": "^eval:[a-z0-9]+(-[a-z0-9]+)*$" }, "authority": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 } }, "not_authority": { "type": "array", "items": { "type": "string", "minLength": 1 } }, "rationale": { "type": "string", "minLength": 1 } } } } } },
+    "watermark": { "$ref": "#/$defs/watermark" },
     "text_handling": { "type": "object", "additionalProperties": false, "required": ["article_title"], "properties": { "article_title": { "const": "external_overlay" }, "deterministic_overlay": { "type": "array", "items": { "type": "string", "minLength": 1 } }, "text_ownership": { "$ref": "#/$defs/text_ownership" } } }
   },
   "$defs": {
@@ -126,6 +127,21 @@
         "derivative_of_surface_id": { "type": "string", "pattern": "^surface:[a-z0-9]+(-[a-z0-9]+)*$" },
         "derivative_of_asset_scope": { "const": "full" },
         "crop_anchors": { "type": "array", "minItems": 1, "items": { "type": "string", "pattern": "^anchor:[a-z0-9]+(-[a-z0-9]+)*$" } }
+      }
+    },
+    "watermark": {
+      "description": "Optional, default-OFF deterministic watermark overlay on a flattened PNG (SUE-1303). Every field is optional so a profile default, a RenderSpec, and an account/channel override can each set only what they change; omitted fields resolve to the defaults in scripts/lib/watermark-core.mjs (enabled=false). Glyphs are composited by the renderer, never drawn by an image model. This is not the accidental-watermark detection in editorial/IMAGE-GENERATION.md.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {"description": "Defaults to false (OFF). OFF is a byte-identical no-op.", "type": "boolean"},
+        "text": {"type": "string", "minLength": 1, "maxLength": 40, "pattern": "^[^\\r\\n<>&\"]+$"},
+        "color": {"type": "string", "pattern": "^#[0-9A-Fa-f]{6}$"},
+        "opacity": {"type": "number", "minimum": 0.02, "maximum": 0.3},
+        "placement": {"description": "Horizontal placements only. Diagonal is deliberately not allowed: it crosses content, which the exclusion-zone rule forbids.", "enum": ["lower-center", "lower-left", "lower-right"]},
+        "scale": {"description": "Font size as a fraction of image width.", "type": "number", "minimum": 0.01, "maximum": 0.06},
+        "safe_margins": {"description": "Fractions of image height (bottom) and width (left/right).", "type": "object", "additionalProperties": false, "properties": {"bottom": {"type": "number", "minimum": 0, "maximum": 0.4}, "left": {"type": "number", "minimum": 0, "maximum": 0.4}, "right": {"type": "number", "minimum": 0, "maximum": 0.4}}},
+        "exclusion_zones": {"description": "Layout-declared regions (numbers, charts, small text) the watermark must not touch, as image fractions. If the watermark box intersects one, the derivative is not produced.", "type": "array", "items": {"type": "object", "additionalProperties": false, "required": ["zone_id", "x", "y", "width", "height"], "properties": {"zone_id": {"type": "string", "minLength": 1}, "x": {"type": "number", "minimum": 0, "maximum": 1}, "y": {"type": "number", "minimum": 0, "maximum": 1}, "width": {"type": "number", "minimum": 0.0001, "maximum": 1}, "height": {"type": "number", "minimum": 0.0001, "maximum": 1}}}}
       }
     },
     "claim_set": {

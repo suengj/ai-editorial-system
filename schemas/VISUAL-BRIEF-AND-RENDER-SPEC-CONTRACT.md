@@ -107,3 +107,12 @@ SUE-646 vision review in PR C, not this text-contract validator.
 
 The SUE-638/SUE-639 approval lock remains solely on `visual-job`; neither this
 brief nor this RenderSpec grants machine approval, lock, or publication rights.
+
+## Optional watermark (SUE-1303)
+
+`render_spec.watermark` is an optional, default-OFF config block for a
+deterministic post-render overlay (`$defs/watermark`). It is not an authority
+over the semantic image: the master is never modified, an enabled run produces
+a separate derivative with master-hash lineage, and no generative runtime
+draws the text. Rules, exclusion zones, and limits:
+`editorial/IMAGE-TEXT-RENDERING-PROFILES.md` section 7.

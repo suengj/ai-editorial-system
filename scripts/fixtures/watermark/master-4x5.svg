@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1350" viewBox="0 0 1080 1350">
+  <!-- Synthetic sample master for SUE-1303 watermark tests. Not editorial content. -->
+  <rect width="1080" height="1350" fill="#F5F1E8"/>
+  <text x="75" y="120" font-family="Apple SD Gothic Neo, Helvetica, sans-serif" font-size="64" font-weight="700" fill="#2F3A33">워터마크 가독성 샘플</text>
+  <text x="75" y="190" font-family="Apple SD Gothic Neo, Helvetica, sans-serif" font-size="34" fill="#4B5563">Readability sample: Latin + 한글 fallback</text>
+  <rect x="129" y="490" width="194" height="210" fill="#7C9082"/>
+  <text x="129" y="480" font-family="Helvetica, sans-serif" font-size="40" font-weight="700" fill="#2F3A33">42%</text>
+  <text x="129" y="750" font-family="Helvetica, sans-serif" font-size="30" fill="#4B5563">2023</text>
+  <rect x="420" y="410" width="194" height="290" fill="#7C9082"/>
+  <text x="420" y="400" font-family="Helvetica, sans-serif" font-size="40" font-weight="700" fill="#2F3A33">58%</text>
+  <text x="420" y="750" font-family="Helvetica, sans-serif" font-size="30" fill="#4B5563">2024</text>
+  <rect x="711" y="345" width="194" height="355" fill="#7C9082"/>
+  <text x="711" y="335" font-family="Helvetica, sans-serif" font-size="40" font-weight="700" fill="#2F3A33">71%</text>
+  <text x="711" y="750" font-family="Helvetica, sans-serif" font-size="30" fill="#4B5563">2025</text>
+  <text x="75" y="1215" font-family="Helvetica, sans-serif" font-size="22" fill="#6B7280">Source: synthetic sample data, 출처: 합성 데이터 (small text)</text>
+</svg>

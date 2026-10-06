@@ -211,6 +211,64 @@ Those are art-direction decisions. Typography consistency prevents accidental
 series drift without turning the typography contract into a colour/style
 contract.
 
+## 7. Optional watermark overlay (SUE-1303)
+
+A watermark is the section 6 "brand/domain" overlay with an on/off switch. It
+extends the existing RenderSpec/brand profile; it is not a service, an engine,
+a DRM layer, or a security framework.
+
+**Config.** `schemas/render-spec.schema.json#/$defs/watermark`; the first
+sample is `schemas/examples/watermark-suengj-com-sample.example.json`. The
+pinned brand profile is not edited here (a change to it needs a calibration
+ledger record), so brand-level default wiring is a separate owner-gated step.
+Fields: `enabled` (default **false**), `text`, `color`, `opacity`, `placement`,
+`scale`, `safe_margins`, `exclusion_zones`. Every field is optional, so a profile
+layer, a RenderSpec, and an account/channel override each set only what they
+change; later layers win (`resolveWatermark(brand, renderSpec, channel)`).
+First sample: text `suengj.com`, `#9CA3AF`, opacity `0.08`, `lower-center`,
+horizontal. Placement is limited to horizontal lower-center/left/right.
+Diagonal is not offered: it crosses content, which the exclusion rule forbids.
+After sample review, adjust the profile values only.
+
+**Compositing.** `scripts/lib/watermark-core.mjs` (CLI: `scripts/watermark.mjs`)
+post-processes a flattened PNG. Exact glyphs come from the system SVG
+rasteriser (`rsvg-convert`) with a Korean-first, Latin-fallback font stack, then
+a plain alpha blend. No image model ever draws the text; 0 API/LLM calls.
+
+**OFF is a no-op.** With `enabled: false` the master bytes are returned
+unchanged and no file is written. The master is the publication asset.
+
+**ON is a separate derivative.** The derivative is a new file, with lineage
+(`master_sha256`, `derivative_sha256`, resolved config, glyph box, renderer,
+`api_calls: 0`) in a `<derivative>.lineage.json` sidecar and in a PNG `tEXt`
+chunk. The master is never overwritten. Every run starts from the clean master;
+a file that already carries the lineage chunk is refused as input, so an overlay
+can never be stacked twice. Same master + same config gives the same bytes on
+the same rasteriser.
+
+**Exclusion zones.** The watermark must never sit over numbers, charts, or
+small text. The layout declares those regions as fractional `exclusion_zones`
+(for example the chart plot, the source line). The measured glyph box is
+checked against every zone and against the safe margins; on any overlap or
+margin violation the run fails closed and no derivative is produced. Zones are
+declared by the layout, not detected from pixels. For 9:16 surfaces use a larger
+bottom margin (about 0.12) to clear platform UI.
+
+**Limits.** A single flattened PNG has no layers, so this is a low-opacity
+overlay on top of the image, not a placement "behind" the art. A renderer that
+owns source layers may place it above the background and below primary text.
+The watermark deters casual reuse and aids identification; it does not prevent
+copying and is not a security control. Cropping or retouching can remove it.
+Low opacity is deliberate: at 0.08 gray on a cream field it is barely visible,
+so judge it on real samples before tuning.
+
+**Not accidental-watermark detection.** `IMAGE-GENERATION.md` "Composition
+checks" rejects accidental text, logos, and watermarks that a generator
+hallucinated into the artwork. That check applies to the clean master and is
+unchanged. This section governs the intentional, deterministic, user-requested
+overlay added afterwards to a derivative. The two never share a code path: the
+master must pass the accidental check before any overlay exists.
+
 ## One-line rule
 
 > **Keep the workflow stable and swap the text module: external overlay is the current diagrammatic-thumbnail default, not a universal constraint on future image generation.**

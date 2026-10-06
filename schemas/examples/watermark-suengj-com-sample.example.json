@@ -1,0 +1,12 @@
+{
+  "_comment": "SUE-1303 first sample (owner-approved 2026-10-05). Shape: schemas/render-spec.schema.json#/$defs/watermark, used as render_spec.watermark or as an account/channel override layer. Default stays OFF; flip enabled per account/channel. The pinned brand profile is intentionally not edited (calibration ledger gate).",
+  "watermark": {
+    "enabled": false,
+    "text": "suengj.com",
+    "color": "#9CA3AF",
+    "opacity": 0.08,
+    "placement": "lower-center",
+    "scale": 0.03,
+    "safe_margins": { "bottom": 0.05, "left": 0.05, "right": 0.05 }
+  }
+}

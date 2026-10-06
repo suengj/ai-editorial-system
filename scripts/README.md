@@ -26,6 +26,8 @@ Validation and evaluation tooling. Node ESM, no build step, no dependencies.
 | `test-profiles.mjs` | Profiles differ by type; media strategy holds |
 | `test-skill-format.mjs` | Skill structure, authority boundary, vendor neutrality |
 | `test-skills-pipeline.mjs` | The Skill set as a pipeline: closed authority, aligned handoffs |
+| `watermark.mjs` | Optional default-OFF watermark derivative from a clean PNG master (SUE-1303) |
+| `test-watermark.mjs` | Watermark OFF no-op, exact text/opacity/size, no stacking, 4:5/9:16, font fallback |
 | `test-presentation.mjs` | Renderer neutrality, lossless fallbacks, role fit |
 | `test-eval.mjs` | The evaluation method's own regression suite |
 | `test-poc-artifacts.mjs` | Determinism, generator refusals, lineage and staleness |

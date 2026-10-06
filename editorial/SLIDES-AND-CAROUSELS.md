@@ -437,6 +437,8 @@ Examples:
   separately styled labels;
 - a repeated domain/watermark such as `suengj.com` is one reusable
   deterministic overlay, not text re-rendered independently by an image model.
+  It is optional and default OFF; the profile, derivative/master lineage, and
+  exclusion rules are in `IMAGE-TEXT-RENDERING-PROFILES.md` section 7.
 
 Conversely, different semantic roles should remain visibly distinguishable.
 Consistency must not flatten the hierarchy.
