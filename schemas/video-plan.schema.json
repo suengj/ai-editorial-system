@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://suengj.com/schemas/video-plan.schema.json",
+  "title": "AES Video Plan",
+  "description": "Editorially authoritative scene and edit plan. Rendering belongs to a downstream adapter.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "plan_id", "format", "aspect_ratio", "size", "fps", "target_duration_seconds", "scenes", "language", "surface", "caption_style", "watermark_ref", "audio_refs", "output_location", "render_spec", "editorial_package", "audio_reconciliation"],
+  "properties": {
+    "schema_version": { "const": "1.0.0" },
+    "plan_id": { "type": "string", "pattern": "^video-plan:[a-z0-9]+(-[a-z0-9]+)*$" },
+    "format": { "enum": ["short", "long"] },
+    "aspect_ratio": { "type": "string", "pattern": "^[0-9]+:[0-9]+$" },
+    "size": { "type": "object", "additionalProperties": false, "required": ["width", "height"], "properties": { "width": { "type": "integer", "minimum": 1 }, "height": { "type": "integer", "minimum": 1 } } },
+    "fps": { "type": "number", "minimum": 1 },
+    "target_duration_seconds": { "type": "integer", "minimum": 1 },
+    "scenes": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/scene" } },
+    "language": { "type": "string", "pattern": "^[a-z]{2,3}(-[A-Z]{2})?$" },
+    "surface": { "type": "string", "minLength": 1 },
+    "caption_style": { "type": "object", "additionalProperties": false, "required": ["profile_ref", "placement", "max_lines"], "properties": { "profile_ref": { "type": "string", "minLength": 1 }, "placement": { "enum": ["top", "center", "bottom", "safe_zone"] }, "max_lines": { "type": "integer", "minimum": 1 } } },
+    "watermark_ref": { "type": "string", "pattern": "^editorial/profiles/[^#]+#/.+$" },
+    "audio_refs": { "type": "array", "items": { "$ref": "schemas/audio-plan.schema.json" } },
+    "output_location": { "type": "string", "minLength": 1 },
+    "audio_reconciliation": { "type": "object", "additionalProperties": false, "required": ["measured_audio_duration_seconds", "action"], "properties": { "measured_audio_duration_seconds": { "type": ["number", "null"], "minimum": 0 }, "action": { "enum": ["pending", "adjust_scene_timing", "revise_script", "blocked"] } } },
+    "render_spec": { "$ref": "schemas/render-spec.schema.json" },
+    "editorial_package": { "$ref": "schemas/editorial-package.schema.json" },
+    "narration_script_ref": { "type": "string", "minLength": 1 },
+    "tts_contract_ref": { "type": "string", "minLength": 1 },
+    "bgm_catalog_ref": { "type": "string", "minLength": 1 }
+  },
+  "$defs": {
+    "scene": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "timing", "text", "asset_ref", "crop_safe_zone"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^scene-[a-z0-9]+(-[a-z0-9]+)*$" },
+        "timing": { "type": "object", "additionalProperties": false, "required": ["start_seconds", "end_seconds"], "properties": { "start_seconds": { "type": "number", "minimum": 0 }, "end_seconds": { "type": "number", "minimum": 0 } } },
+        "text": { "type": "string", "minLength": 1 },
+        "asset_ref": { "type": "string", "minLength": 1 },
+        "crop_safe_zone": { "type": "object", "additionalProperties": false, "required": ["x", "y", "width", "height"], "properties": { "x": { "type": "number", "minimum": 0 }, "y": { "type": "number", "minimum": 0 }, "width": { "type": "number", "minimum": 0 }, "height": { "type": "number", "minimum": 0 } } }
+      }
+    }
+  }
+}

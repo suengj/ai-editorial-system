@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://suengj.com/schemas/narration-script.schema.json",
+  "title": "Narration Script",
+  "description": "Video narration extension of SUE-566 audience-aware audio profiles. Draft and correct text before pronunciation planning and TTS.",
+  "type": "object", "additionalProperties": false,
+  "required": ["schema_version", "script_id", "mode", "language", "audience", "profile_ref", "source_claims", "turns", "pronunciation_plan", "order", "fabrication_policy"],
+  "properties": {
+    "schema_version": { "const": "1.0.0" },
+    "script_id": { "type": "string", "pattern": "^narration-script:[a-z0-9]+(-[a-z0-9]+)*$" },
+    "mode": { "enum": ["monologue", "dialogue"] },
+    "language": { "type": "string", "pattern": "^[a-z]{2,3}(-[A-Z]{2})?$" },
+    "audience": { "$ref": "schemas/audio-plan.schema.json#/$defs/audience" },
+    "profile_ref": { "type": "string", "pattern": "^editorial/profiles/artifact/audio-(monologue|dialogue|timed-narration)\\.json$" },
+    "source_claims": { "type": "array", "minItems": 1, "items": { "type": "object", "additionalProperties": false, "required": ["claim_id", "source_ref", "verified"], "properties": { "claim_id": { "type": "string", "minLength": 1 }, "source_ref": { "type": "string", "minLength": 1 }, "verified": { "type": "boolean" }, "quote": { "type": "boolean" } } } },
+    "turns": { "type": "array", "minItems": 1, "items": { "type": "object", "additionalProperties": false, "required": ["speaker_role", "text", "claim_ids", "rate", "pause_after_ms", "intonation"], "properties": { "speaker_role": { "type": "string", "minLength": 1 }, "text": { "type": "string", "minLength": 1 }, "claim_ids": { "type": "array", "items": { "type": "string", "minLength": 1 } }, "rate": { "type": "number", "minimum": 0.5 }, "pause_after_ms": { "type": "integer", "minimum": 0 }, "intonation": { "type": "string", "minLength": 1 }, "role": { "$ref": "schemas/audio-plan.schema.json#/$defs/speaker_role" } } } },
+    "pronunciation_plan": { "type": "array", "items": { "$ref": "schemas/audio-plan.schema.json#/$defs/pronunciation_entry" } },
+    "order": { "const": "draft_correct_then_pronunciation_plan_then_tts" },
+    "fabrication_policy": { "type": "object", "additionalProperties": false, "required": ["people", "quotes"], "properties": { "people": { "const": "no_fabricated_people" }, "quotes": { "const": "only_source_linked_verified_quotes" } } },
+    "timing_policy": { "const": "reconcile_to_measured_audio; never_compress_long_narration_to_6s" }
+  },
+  "$defs": {}
+}

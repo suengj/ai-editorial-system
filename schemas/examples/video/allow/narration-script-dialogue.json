@@ -1,0 +1,60 @@
+{
+  "schema_version": "1.0.0",
+  "script_id": "narration-script:dialogue-example",
+  "mode": "dialogue",
+  "language": "ko-KR",
+  "audience": {
+    "value": "beginner-learner",
+    "profile_ref": "editorial/profiles/audience/beginner-learner.json",
+    "traits_applied": [
+      "개념을 먼저 풀어 설명"
+    ]
+  },
+  "profile_ref": "editorial/profiles/artifact/audio-dialogue.json",
+  "source_claims": [
+    {
+      "claim_id": "claim:verified-mechanism",
+      "source_ref": "pkg:ai-cost-explainer#verified_claims/claim:verified-mechanism",
+      "verified": true
+    }
+  ],
+  "turns": [
+    {
+      "speaker_role": "learner",
+      "text": "같은 숫자인데 왜 의미가 달라지나요?",
+      "claim_ids": [],
+      "rate": 0.98,
+      "pause_after_ms": 250,
+      "intonation": "궁금함을 담되 과장하지 않음",
+      "role": {
+        "role_id": "learner",
+        "purpose": "용어를 모르는 독자의 질문을 명료하게 제기",
+        "knowledge_position": "개념을 처음 접함",
+        "persona_disclosure": "synthetic_non_source"
+      }
+    },
+    {
+      "speaker_role": "explainer",
+      "text": "숫자만 보면 원인과 조건이 빠져 있기 때문입니다. 근거가 어떤 관계를 보여 주는지 함께 봐야 합니다.",
+      "claim_ids": [
+        "claim:verified-mechanism"
+      ],
+      "rate": 1,
+      "pause_after_ms": 400,
+      "intonation": "차분한 설명",
+      "role": {
+        "role_id": "explainer",
+        "purpose": "검증된 설명을 전달",
+        "knowledge_position": "설명 내용을 알고 있음",
+        "persona_disclosure": "synthetic_non_source"
+      }
+    }
+  ],
+  "pronunciation_plan": [],
+  "order": "draft_correct_then_pronunciation_plan_then_tts",
+  "fabrication_policy": {
+    "people": "no_fabricated_people",
+    "quotes": "only_source_linked_verified_quotes"
+  },
+  "timing_policy": "reconcile_to_measured_audio; never_compress_long_narration_to_6s"
+}

@@ -1,0 +1,23 @@
+{
+  "schema_version": "1.0.0",
+  "adapter_id": "provider-neutral-unselected",
+  "provider": "unselected",
+  "voice": "unselected",
+  "locale": "ko-KR",
+  "support": {
+    "status": "unknown",
+    "checked_at": null,
+    "evidence_ref": null
+  },
+  "cost": {
+    "currency": "USD",
+    "amount": null,
+    "basis": "provider not selected; no account feature assumptions"
+  },
+  "returned_timing_metadata": {
+    "available": false,
+    "unit": null,
+    "granularity": "unknown"
+  },
+  "duration_reconciliation": "measure_returned_audio_and_reconcile_scene_timing; never_force_long_narration_to_6s"
+}

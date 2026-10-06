@@ -1,0 +1,321 @@
+{
+  "schema_version": "1.0.0",
+  "plan_id": "video-plan:forced-six-seconds",
+  "format": "short",
+  "aspect_ratio": "9:16",
+  "size": {
+    "width": 1080,
+    "height": 1920
+  },
+  "fps": 30,
+  "target_duration_seconds": 6,
+  "scenes": [
+    {
+      "id": "scene-forcedsixseconds-1",
+      "text": "긴 설명 전체를 여섯 초에 맞추기 위해 음성을 강제로 압축합니다.",
+      "asset_ref": "asset:visual-forced-six-seconds-1",
+      "crop_safe_zone": {
+        "x": 0.1,
+        "y": 0.12,
+        "width": 0.8,
+        "height": 0.72
+      },
+      "timing": {
+        "start_seconds": 0,
+        "end_seconds": 6
+      }
+    }
+  ],
+  "language": "ko-KR",
+  "surface": "youtube-shorts",
+  "caption_style": {
+    "profile_ref": "editorial/profiles/artifact/visual-social-card.json",
+    "placement": "safe_zone",
+    "max_lines": 2
+  },
+  "watermark_ref": "editorial/profiles/visual/sue-1303.json#/watermark",
+  "audio_refs": [
+    {
+      "schema_version": "1.0.0",
+      "plan_id": "audioplan:tokenized-money-markets-monologue-v1",
+      "article_ref": {
+        "article_id": "art:tokenized-money-markets",
+        "version_number": 3,
+        "content_hash": "6221d012edc4a68c865297394d3ebb29d145dc16c95d8eb86d4c81f964afb8fe",
+        "claims_hash": "c31221ee3cf26d8ffb8e788a6dfe5c161aaa8dbe3e4c4fbe805afa8a5daee37a"
+      },
+      "artifact_profile": "audio/monologue",
+      "profile_ref": "editorial/profiles/artifact/audio-monologue.json",
+      "audience": {
+        "value": "professional-generalist",
+        "profile_ref": "editorial/profiles/audience/professional-generalist.json",
+        "traits_applied": [
+          "modality_effects.audio.thought_unit_length=medium",
+          "modality_effects.audio.pace=normal conversational pace",
+          "modality_effects.audio.term_glossing=method-specific jargon only"
+        ]
+      },
+      "selected_reference_traits": {
+        "adopt": [
+          "thought-breath-units",
+          "transitions"
+        ],
+        "avoid": [],
+        "do_not_copy": [
+          "performance-delivery"
+        ]
+      },
+      "spoken_script": {
+        "narration_text": "Tokenized money-market funds let an investor hold a claim on short-term government debt as an on-chain token instead of a fund-ledger entry. That single change moves settlement from a multi-day batch process to something close to real time. It also moves custody risk somewhere new: instead of trusting a transfer agent's books, the investor is trusting whoever controls the smart contract's mint and redeem functions. When those two functions are held by the same custodian that already ran the fund, the tokenized layer adds speed without changing who the investor is actually relying on. The open question the industry has not settled is what happens when a token holder wants to redeem faster than the underlying repo market can actually deliver cash. That mismatch, not the blockchain itself, is where the real risk in this structure lives.",
+        "narration_hash": "ea97607f686002bfab471a064f49b74dc4334403239c187bff45c4a8c34b330c",
+        "script_version": 1
+      },
+      "recompilation": {
+        "performed": true,
+        "identical_to_source_prose": false,
+        "structural_changes": [
+          "collapsed three article subsections (mechanism, custody, redemption risk) into one continuous spoken argument",
+          "removed inline citation markers and replaced attribution with verbal framing",
+          "added one semantic recurrence: the custody claim returns at the end with a narrower consequence about redemption timing"
+        ]
+      },
+      "segments": [
+        {
+          "segment_id": "seg-mechanism",
+          "narration_span_hash": "d4f2506dea9e5458338bad8521868d5544f182c4d4f521cb4a390e8b534463f6",
+          "previous_context": "",
+          "next_context": "custody risk follows the mechanism explanation",
+          "cues": []
+        },
+        {
+          "segment_id": "seg-custody-risk",
+          "narration_span_hash": "57dae7080c457c77fffb1c161f311475e3a2438e7ace8058ccaed24bd95dd998",
+          "previous_context": "mechanism: token replaces ledger entry",
+          "next_context": "redemption mismatch is the closing consequence",
+          "cues": [
+            "pause_short"
+          ]
+        },
+        {
+          "segment_id": "seg-redemption-mismatch",
+          "narration_span_hash": "9c6c687735abdec47315d2dc0b4c49fa64e3b00fe8723175c1e779bd42c6f5dc",
+          "previous_context": "custody risk: same custodian controls mint/redeem",
+          "next_context": "",
+          "cues": [
+            "emphasis"
+          ]
+        }
+      ],
+      "pronunciation": [
+        {
+          "term": "repo market",
+          "spoken_form": "repo market",
+          "pronunciation_ref": "repo-market"
+        },
+        {
+          "term": "on-chain",
+          "surface_text": "on-chain",
+          "spoken_form": "on chain"
+        }
+      ],
+      "delivery_intent": {
+        "register": "professional-generalist explanatory register, unhurried but not slow",
+        "pace": "normal conversational pace with a brief pause before the redemption-mismatch consequence",
+        "affect": "measured, analytical",
+        "global_cues": [
+          "pause_short",
+          "emphasis"
+        ]
+      },
+      "timing": {
+        "rendering_mode": "free",
+        "target_duration_ms": null,
+        "tolerance_ms": null
+      },
+      "script_l1": {
+        "performed": true,
+        "outcome": "pass",
+        "checklist": [
+          "thesis fidelity",
+          "claim and citation carry-through",
+          "no unverified derived numbers or analogies",
+          "no presenter scaffolding",
+          "clean narration text separated from delivery instructions"
+        ],
+        "reviewer": "model"
+      },
+      "render": null,
+      "attempts": 0,
+      "max_attempts": 3,
+      "qa": {
+        "performed": false,
+        "pronunciation_check": "not_yet",
+        "pacing_check": "not_yet",
+        "continuity_check": "not_yet",
+        "performance_check": "not_yet",
+        "directive_leak_check": "not_yet"
+      },
+      "cost": {
+        "renders_attempted": 0,
+        "renders_accepted": 0,
+        "cost_per_accepted_artifact": null
+      },
+      "status": "script_l1_pass"
+    }
+  ],
+  "output_location": "artifacts/video/forced-six-seconds.mp4",
+  "render_spec": {
+    "schema_version": "1.0.0",
+    "render_spec_id": "render-spec:liquidity-window-body",
+    "brief_id": "visual-brief:liquidity-window-body",
+    "target_geometry": "3:2 body figure",
+    "scene_structure": "Integrated causal scene with a continuous path meeting a closed gate.",
+    "focal_hierarchy": "Closed gate first, constrained path second, evidence module third.",
+    "reading_direction": "left to right",
+    "spatial_treatment": "layered_2d",
+    "materiality_treatment": "matte_2d",
+    "spatial_layers": {
+      "generative_semantic": [
+        "editorial causal scene",
+        "integrated environment"
+      ],
+      "deterministic_factual": [
+        "exact causal labels"
+      ]
+    },
+    "safe_zones": [
+      "lower-right deterministic factual overlay"
+    ],
+    "crop_resilience": "Primary gate/path relation remains centered after mobile crop.",
+    "crop_anchors": [
+      "anchor:primary-gate-path"
+    ],
+    "publication_display_surfaces": {
+      "desktop": {
+        "surface_id": "surface:body-desktop",
+        "asset_scope": "full",
+        "article_body_width_css_px": 672,
+        "viewport_width_css_px": 1280
+      },
+      "mobile": {
+        "surface_id": "surface:body-mobile",
+        "asset_scope": "mobile",
+        "viewport_width_css_px": 390,
+        "article_body_width_css_px": 390,
+        "derivative_of_surface_id": "surface:body-desktop",
+        "derivative_of_asset_scope": "full",
+        "crop_anchors": [
+          "anchor:primary-gate-path"
+        ]
+      }
+    },
+    "visual_devices": [
+      "integrated editorial scene",
+      "restrained evidence module",
+      "high whitespace"
+    ],
+    "forbidden_visual_devices": [
+      "ui_mimicry",
+      "dashboardization",
+      "flat_svg_aesthetic"
+    ],
+    "reference_authority": {
+      "selected": [
+        {
+          "ref_id": "ref:c4-model-containment",
+          "evaluation_id": "eval:c4-model-containment-2026-09-06-01",
+          "authority": [
+            "hierarchy"
+          ],
+          "not_authority": [
+            "palette-colour-role"
+          ],
+          "rationale": "Use the evaluated hierarchy lesson, not C4 notation or palette."
+        }
+      ]
+    },
+    "text_handling": {
+      "article_title": "external_overlay",
+      "deterministic_overlay": [
+        "exact causal labels"
+      ]
+    }
+  },
+  "editorial_package": {
+    "schema_version": "1.0.0",
+    "package_id": "pkg:adapt-inference-pricing-audio-2026-09-03",
+    "created_at": "2026-09-03T11:00:00Z",
+    "intent_ref": "intent:2026-09-03-inference-pricing-audio-adapt",
+    "transformation": {
+      "value": "adapt",
+      "profile_ref": "editorial/profiles/transformation/adapt.json"
+    },
+    "content_type": {
+      "value": "research",
+      "profile_ref": "editorial/profiles/content/research.json"
+    },
+    "audience": {
+      "value": "finance-beginner"
+    },
+    "target_surfaces": [
+      {
+        "value": "youtube"
+      }
+    ],
+    "sources": [],
+    "article_ref": {
+      "article_id": "art:ai-inference-pricing-and-saas-gross-margin",
+      "version_number": 4,
+      "content_hash": "d345cc94a0eed27c9d32796ef2a0f556a59c1366915c23faf6f7c8c575cb8b97",
+      "claims_hash": "76f13be6d99981075028dc7e2f64689db50281564572a41f3548bf227282ccfa",
+      "commit": "a1b2c3d"
+    },
+    "thesis": null,
+    "key_concepts": [],
+    "summary": "A two-voice dialogue script compressing the verified article for a finance-beginner audience: cheaper AI does not automatically repair a SaaS margin problem.",
+    "verified_claims": [],
+    "uncertainty": [],
+    "reference_profile_refs": [
+      "ref:dialogue-pacing-2026"
+    ],
+    "calibration_ref": "calibration:suengj-default@v3",
+    "proposed_artifacts": [
+      "audio/dialogue"
+    ],
+    "approved_artifacts": [],
+    "lineage": {
+      "claims_hash": "76f13be6d99981075028dc7e2f64689db50281564572a41f3548bf227282ccfa",
+      "package_hash": "8a29b63786a7be70beca83d67da8d48099434fd2bb62a3f82f54c904a7369978",
+      "supersedes": null,
+      "produced_by": {
+        "skill": {
+          "name": "compile-audio-script",
+          "version": "0.1.0"
+        },
+        "tool": {
+          "tool": "dialogue-script-compiler",
+          "tool_version": "0.1.0",
+          "provider": "internal",
+          "model": "dialogue-script-compiler",
+          "model_version": "0.1.0"
+        }
+      }
+    },
+    "rights": {
+      "quotable": true,
+      "redistributable": true,
+      "license": null,
+      "attribution": "",
+      "transcript_shaped": false,
+      "original_framing": true,
+      "synthesis_note": "Rebuilds the article's argument as a paced two-voice script for listening; introduces no claim the article does not already carry."
+    }
+  },
+  "narration_script_ref": "schemas/examples/video/allow/narration-script-6s.json",
+  "tts_contract_ref": "schemas/examples/video/allow/tts-contract-neutral.json",
+  "bgm_catalog_ref": "schemas/examples/video/allow/bgm-catalog-off.json",
+  "audio_reconciliation": {
+    "measured_audio_duration_seconds": 15,
+    "action": "adjust_scene_timing"
+  }
+}

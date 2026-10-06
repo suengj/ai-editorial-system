@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://suengj.com/schemas/bgm-catalog.schema.json",
+  "title": "BGM Catalog Entry",
+  "type": "object", "additionalProperties": false,
+  "required": ["schema_version", "catalog_id", "status", "tracks", "narration_ducking"],
+  "properties": {
+    "schema_version": { "const": "1.0.0" }, "catalog_id": { "type": "string", "minLength": 1 }, "status": { "enum": ["off", "selected"] },
+    "tracks": { "type": "array", "items": { "type": "object", "additionalProperties": false, "required": ["track_id", "file_ref", "license", "source", "mood", "tempo_bpm", "energy", "vocal", "loop_points", "duration_seconds"], "properties": { "track_id": { "type": "string", "minLength": 1 }, "file_ref": { "type": "string", "minLength": 1 }, "license": { "type": "string", "minLength": 1 }, "source": { "type": "string", "minLength": 1 }, "mood": { "type": "string", "minLength": 1 }, "tempo_bpm": { "type": ["number", "null"], "minimum": 0 }, "energy": { "type": "number", "minimum": 0 }, "vocal": { "type": "boolean" }, "loop_points": { "type": "object", "additionalProperties": false, "required": ["start_seconds", "end_seconds"], "properties": { "start_seconds": { "type": "number", "minimum": 0 }, "end_seconds": { "type": "number", "minimum": 0 } } }, "duration_seconds": { "type": "number", "minimum": 0 } } } },
+    "narration_ducking": { "type": "object", "additionalProperties": false, "required": ["enabled", "target_db", "attack_ms", "release_ms"], "properties": { "enabled": { "type": "boolean" }, "target_db": { "type": "number" }, "attack_ms": { "type": "integer", "minimum": 0 }, "release_ms": { "type": "integer", "minimum": 0 } } }
+  }
+}
