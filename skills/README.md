@@ -80,3 +80,16 @@ artifact should exist. `compile-audio-script` owns **how the finalized article
 becomes listener-first spoken structure**. A provider adapter owns **how that
 package is rendered by one TTS backend**. Voice IDs, SSML, audio tags, model
 names, and provider defaults therefore never become Skill authority.
+
+## Static image realization handoff
+
+For a natural-language image request, use the single entry
+[`../editorial/STRUCTURED-VISUAL-EXECUTION.md`](../editorial/STRUCTURED-VISUAL-EXECUTION.md).
+`intake-request` resolves intent; article-derived work still uses
+`plan-artifacts` and the existing semantic/claim gates. Report/deck structure
+still belongs to `compile-slide-deck`. The calling worker, not these planning
+Skills, hands resolved layers to `scripts/render-visual.mjs` or the existing
+image-generation/approved-media path. Source-only requests need real source
+bytes, not invented article IDs. This adds no Skill rendering or approval
+authority. Missing tools/assets remain explicit; Phase 4 native-session UAT
+is separate from local compositor tests.

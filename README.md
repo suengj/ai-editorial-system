@@ -57,13 +57,31 @@ mechanical-versus-semantic assurance counterexample. Its
 Design guidance and targeted fixtures are not a completed owner manual or
 proof that pending compiler/pilot work has run.
 
+## Image requests: one execution entry
+
+Start with [`editorial/STRUCTURED-VISUAL-EXECUTION.md`](editorial/STRUCTURED-VISUAL-EXECUTION.md).
+The calling LLM resolves a natural-language request through the existing
+profiles, then a small local realization tool composes prepared PNG assets,
+source-bound line/bar charts, measured Korean/Latin text and optional watermarks.
+It does not call an image model, publish, or replace VisualBrief/RenderSpec.
+Missing generated assets remain `RENDER_REQUIRED`; native-session and real-source
+UAT are Phase 4, not implied by the local integration tests.
+
+```bash
+node scripts/render-visual.mjs --plan scripts/fixtures/visual-execution/card.json --out /tmp/aes-card
+node scripts/test-visual-execution.mjs  # on-demand local raster integration, not CI
+```
+
+See [`evals/visual-execution/PHASE0-3-EVIDENCE.md`](evals/visual-execution/PHASE0-3-EVIDENCE.md)
+for the measured scope and remaining boundaries.
+
 ## What this repository is NOT
 
 - **Not a content store.** No canonical article archive, no drafts, no
   publication history.
 - **Not a source corpus.** No raw YouTube transcripts, no private research
   working set, no scraped third-party bodies.
-- **Not a publication engine.** No build, deploy, routing, or rendering logic.
+- **Not a publication engine.** No site build, deploy, routing, or publication rendering logic.
   `suengj-com` owns publication and must not be duplicated here.
 - **Not a runtime service.** No database, no vector store, no agent framework,
   no long-lived process.

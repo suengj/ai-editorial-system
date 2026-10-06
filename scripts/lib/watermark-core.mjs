@@ -163,9 +163,10 @@ export function watermarkSvg(cfg, width, height) {
 }
 
 /** Coverage mask (0..255) at full canvas size, plus its exact bounding box. */
-export function glyphMask(cfg, width, height) {
+export function glyphMask(cfg, width, height, rasterizer = null) {
   const { svg, size } = watermarkSvg(cfg, width, height);
-  const r = spawnSync('rsvg-convert', ['-f', 'png'], { input: svg, maxBuffer: 256 * 1024 * 1024 });
+  const r = rasterizer ? { status: 0, stdout: rasterizer.render(svg) }
+    : spawnSync('rsvg-convert', ['-f', 'png'], { input: svg, maxBuffer: 256 * 1024 * 1024 });
   if (r.error || r.status !== 0) throw new WatermarkError('rasterizer-unavailable', `rsvg-convert is required for glyph compositing: ${r.error?.message ?? r.stderr}`);
   const img = decodePng(r.stdout);
   const mask = Buffer.alloc(width * height); let x0 = width, y0 = height, x1 = -1, y1 = -1;
@@ -182,7 +183,8 @@ export function glyphMask(cfg, width, height) {
 /**
  * @returns {{applied:false, bytes:Buffer, status:'off'} | {applied:true, bytes:Buffer, status:'marked', lineage:object}}
  */
-export function applyWatermark(masterBytes, config, { masterRef = null } = {}) {
+export function applyWatermark(masterBytes, config, { masterRef = null, rasterizer = null } = {}) {
+  if (rasterizer && (typeof rasterizer.render !== 'function' || !rasterizer.version)) throw new WatermarkError('invalid-rasterizer', 'adapter needs render(svg) and a runtime version');
   const cfg = typeof config.enabled === 'boolean' && config.safe_margins && config.color ? config : resolveWatermark(config);
   const errs = validateWatermark(cfg);
   if (errs.length) throw new WatermarkError('invalid-config', errs.join('; '));
@@ -191,7 +193,7 @@ export function applyWatermark(masterBytes, config, { masterRef = null } = {}) {
   const img = decodePng(masterBytes);
   if (img.text[WATERMARK_CHUNK_KEY]) throw new WatermarkError('input-is-derivative', 'input already carries a watermark lineage chunk; supply the clean master, never a derivative');
   const { width, height, channels, pixels } = img;
-  const { mask, bbox, fontSize } = glyphMask(cfg, width, height);
+  const { mask, bbox, fontSize } = glyphMask(cfg, width, height, rasterizer);
 
   const m = cfg.safe_margins;
   const inSafe = bbox.x >= Math.floor(m.left * width) && bbox.x + bbox.width <= Math.ceil(width - m.right * width) && bbox.y + bbox.height <= Math.ceil(height - m.bottom * height * 0.5);
@@ -221,7 +223,7 @@ export function applyWatermark(masterBytes, config, { masterRef = null } = {}) {
       master_ref: masterRef, master_sha256: masterSha, derivative_sha256: sha256(bytes),
       watermark: { text: cfg.text, color: cfg.color.toUpperCase(), opacity: cfg.opacity, placement: cfg.placement, scale: cfg.scale, font_size_px: fontSize, safe_margins: cfg.safe_margins, exclusion_zones: cfg.exclusion_zones, bbox_px: bbox },
       geometry: { width, height },
-      renderer: { tool: WATERMARK_TOOL, tool_version: WATERMARK_TOOL_VERSION, glyph_rasterizer: rasterizerVersion(), font_stack: FONT_STACK },
+      renderer: { tool: WATERMARK_TOOL, tool_version: WATERMARK_TOOL_VERSION, glyph_rasterizer: rasterizer?.version ?? rasterizerVersion(), font_stack: FONT_STACK },
       api_calls: 0,
       limits: 'low-opacity overlay on a flattened PNG; deters reuse, does not prevent copying',
     },

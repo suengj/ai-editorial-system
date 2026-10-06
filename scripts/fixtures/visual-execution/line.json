@@ -1,0 +1,6 @@
+{
+  "type": "line", "title": "가상 시계열", "period": "day 1–4", "source_note": "실행 테스트 자료",
+  "x": { "label": "관측일", "tick_labels": { "1": "day 1", "4": "day 4" } },
+  "y": { "label": "관측 건수", "unit": "건", "decimals": 0 },
+  "series": [{ "name": "표본", "claim": "illustrative-counts", "points": [[1,125],[2,180],[3,160],[4,240]] }]
+}
