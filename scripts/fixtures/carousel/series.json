@@ -1,0 +1,14 @@
+{
+  "schema_version":"1.0.0","series_id":"carousel-smoke",
+  "request":"가상 설계 예시로 3장 카드뉴스. 핵심 메시지, 근거, 정리 순서. 워터마크 없음.",
+  "source":{"ref":"source.md","scope":"illustrative"},
+  "profiles":{"surface":"instagram","artifact":"visual/slide-image"},
+  "recipe":"editorial-minimal","series_label":"카드뉴스 설계 예시",
+  "task":{"canvas":{"width":1080,"aspect_ratio":"4:5"},"watermark":{"enabled":false}},
+  "beats":[{"id":"question","depends_on":[]},{"id":"evidence","depends_on":["question"]},{"id":"close","depends_on":["evidence"]}],
+  "frames":[
+    {"id":"opening","function":"orient","beat_ids":["question"],"takeaway":"한 장에는 하나의 주요 메시지를 둔다.","alt_text":"한 장 한 메시지 원칙을 설명하는 표지.","headline":"한 장에는\n하나의 메시지","source_note":"출처: 설계 예시","layout":"text","blocks":[{"id":"body","region":"content","kind":"text","text":"자료를 읽는 순서와\n보여주는 순서를 설계합니다.","source_ref":"source.md"}]},
+    {"id":"evidence","function":"show_evidence","beat_ids":["evidence"],"takeaway":"정확한 숫자는 원자료에서 렌더한다.","alt_text":"가상 건수 125, 180, 240을 나타낸 막대그래프.","headline":"숫자는\n원자료 그대로","source_note":"출처: 가상 테스트 자료","layout":"visual","blocks":[{"id":"chart","region":"content","kind":"chart","ref":"counts.json"}]},
+    {"id":"closing","function":"close","beat_ids":["close"],"takeaway":"수정된 카드만 다시 처리한다.","alt_text":"유지할 요소와 변경할 요소를 나란히 설명하는 카드.","headline":"바뀐 부분만\n다시 만듭니다","source_note":"출처: 설계 예시","layout":"split","blocks":[{"id":"keep","region":"left","kind":"text","text":"유지\n원본 사진\n데이터와 출처","source_ref":"source.md"},{"id":"change","region":"right","kind":"text","text":"변경\n선택한 제목\n요청한 문구","source_ref":"source.md"}]}
+  ]
+}
