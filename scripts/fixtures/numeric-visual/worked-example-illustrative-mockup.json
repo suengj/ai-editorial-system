@@ -1,0 +1,237 @@
+{
+  "_fixture": "worked-example-illustrative-mockup",
+  "profile": "instagram-numeric-visual.v1",
+  "mode": "dual",
+  "illustrative": true,
+  "visible_label": "ILLUSTRATIVE · 가상 데이터 예시 — not market evidence",
+  "canvas": {
+    "width": 1080,
+    "height": 1350,
+    "scale": 2
+  },
+  "palette": {
+    "background": "#F7F5F0",
+    "text": "#14213D"
+  },
+  "art_direction": {
+    "title": "두 시장이 보는 같은 질문",
+    "layout": "two-equal-cards-over-shared-chart",
+    "palette_choice": "brand off-white/navy + provider identity colours",
+    "hierarchy": [
+      "title",
+      "cards",
+      "chart",
+      "footer"
+    ],
+    "decorative_assets": []
+  },
+  "rendering": {
+    "chart_geometry": "deterministic",
+    "final_composition": "deterministic",
+    "image_ai_role": "none",
+    "renderer": "SUE-1331 PMC renderer (owned outside this repo)"
+  },
+  "layout": {
+    "number_cards": [
+      {
+        "series": "polymarket",
+        "size": "equal-half",
+        "caption": "polymarket · Yes"
+      },
+      {
+        "series": "kalshi",
+        "size": "equal-half",
+        "caption": "kalshi · Yes"
+      }
+    ]
+  },
+  "series": [
+    {
+      "provider": "polymarket",
+      "outcome": "Yes",
+      "label": "polymarket · Yes",
+      "color": "#2E5BFF",
+      "currency_context": "cash",
+      "history_type": "price_history",
+      "requested_window_days": 7,
+      "observations": [
+        {
+          "t": "2026-09-29T00:00:00Z",
+          "p": 40
+        },
+        {
+          "t": "2026-09-30T00:00:00Z",
+          "p": 42
+        },
+        {
+          "t": "2026-10-01T00:00:00Z",
+          "p": 45
+        },
+        {
+          "t": "2026-10-02T00:00:00Z",
+          "p": 47
+        },
+        {
+          "t": "2026-10-03T00:00:00Z",
+          "p": 50
+        },
+        {
+          "t": "2026-10-04T00:00:00Z",
+          "p": 52
+        },
+        {
+          "t": "2026-10-05T00:00:00Z",
+          "p": 54
+        },
+        {
+          "t": "2026-10-06T00:00:00Z",
+          "p": 55.5
+        }
+      ],
+      "current_quote": null,
+      "endpoint_label": {
+        "source": "history_last",
+        "t": "2026-10-06T00:00:00Z",
+        "value": 55.5,
+        "text": "55.5%"
+      },
+      "displayed_period": {
+        "start": "2026-09-29T00:00:00Z",
+        "end": "2026-10-06T00:00:00Z",
+        "label_days": 7
+      },
+      "delta": {
+        "baseline_t": "2026-09-29T00:00:00Z",
+        "window_days": 7,
+        "value_pp": 15.5,
+        "display": "+15.5%p"
+      }
+    },
+    {
+      "provider": "kalshi",
+      "outcome": "Yes",
+      "label": "kalshi · Yes",
+      "color": "#FF6B5B",
+      "currency_context": "cash",
+      "history_type": "price_history",
+      "requested_window_days": 7,
+      "observations": [
+        {
+          "t": "2026-09-29T00:00:00Z",
+          "p": 38
+        },
+        {
+          "t": "2026-09-30T00:00:00Z",
+          "p": 39
+        },
+        {
+          "t": "2026-10-01T00:00:00Z",
+          "p": 41
+        },
+        {
+          "t": "2026-10-02T00:00:00Z",
+          "p": 44
+        },
+        {
+          "t": "2026-10-03T00:00:00Z",
+          "p": 46
+        },
+        {
+          "t": "2026-10-04T00:00:00Z",
+          "p": 47.5
+        },
+        {
+          "t": "2026-10-05T00:00:00Z",
+          "p": 49
+        },
+        {
+          "t": "2026-10-06T00:00:00Z",
+          "p": 51
+        }
+      ],
+      "current_quote": null,
+      "endpoint_label": {
+        "source": "history_last",
+        "t": "2026-10-06T00:00:00Z",
+        "value": 51,
+        "text": "51.0%"
+      },
+      "displayed_period": {
+        "start": "2026-09-29T00:00:00Z",
+        "end": "2026-10-06T00:00:00Z",
+        "label_days": 7
+      },
+      "delta": {
+        "baseline_t": "2026-09-29T00:00:00Z",
+        "window_days": 7,
+        "value_pp": 13,
+        "display": "+13.0%p"
+      }
+    }
+  ],
+  "axis": {
+    "zoom_requested": false,
+    "min": 0,
+    "max": 100,
+    "zoomed": false,
+    "label": "0–100%"
+  },
+  "interpolation": {
+    "method": "shape_preserving_monotone",
+    "preserves_all_points": true
+  },
+  "gaps": {
+    "max_gap_hours": 24,
+    "render": "segment"
+  },
+  "watermark": {
+    "text": "suengj.com",
+    "layer": "behind_plot",
+    "opacity": 0.07
+  },
+  "footer": {
+    "period": "2026-09-29–2026-10-06 (7일 관측) / 2026-09-29–2026-10-06 (7일 관측)",
+    "coverage": "8 obs / 8 obs",
+    "source": "polymarket, kalshi",
+    "as_of": "2026-10-06T00:00:00Z"
+  },
+  "qa": {
+    "numeric_validation": {
+      "status": "not_applicable",
+      "checker": "scripts/lib/numeric-visual-core.mjs"
+    },
+    "visual_review": {
+      "status": "passed",
+      "full_size": true,
+      "phone_size": true,
+      "cases": [
+        "long_korean_title",
+        "endpoint_collision",
+        "watermark_contrast",
+        "sparse",
+        "flat",
+        "zero_percent",
+        "hundred_percent"
+      ],
+      "infrastructure": "scripts/validate-visual-review.mjs"
+    },
+    "owner_approval": {
+      "status": "approved",
+      "scope": "visual_direction"
+    }
+  },
+  "publication": {
+    "requested": false
+  },
+  "comparison": {
+    "match": "exact",
+    "criteria": {
+      "same_event": true,
+      "same_outcome_direction": true,
+      "same_deadline": true,
+      "same_resolution_rules": true,
+      "same_currency_context": true
+    },
+    "forward_fill": false
+  }
+}

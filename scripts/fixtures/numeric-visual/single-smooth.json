@@ -1,0 +1,156 @@
+{
+  "_fixture": "single-smooth",
+  "profile": "instagram-numeric-visual.v1",
+  "mode": "single",
+  "illustrative": false,
+  "canvas": {
+    "width": 1080,
+    "height": 1350,
+    "scale": 2
+  },
+  "palette": {
+    "background": "#F7F5F0",
+    "text": "#14213D"
+  },
+  "art_direction": {
+    "title": "금리 인하 확률, 일주일 새 58.0%",
+    "layout": "hero-number-over-chart",
+    "palette_choice": "brand off-white/navy + provider identity colours",
+    "hierarchy": [
+      "title",
+      "hero",
+      "chart",
+      "footer"
+    ],
+    "decorative_assets": []
+  },
+  "rendering": {
+    "chart_geometry": "deterministic",
+    "final_composition": "deterministic",
+    "image_ai_role": "none",
+    "renderer": "SUE-1331 PMC renderer (owned outside this repo)"
+  },
+  "layout": {
+    "hero_numbers": 1
+  },
+  "series": [
+    {
+      "provider": "polymarket",
+      "outcome": "Yes",
+      "label": "polymarket · Yes",
+      "color": "#2E5BFF",
+      "currency_context": "cash",
+      "history_type": "price_history",
+      "requested_window_days": 7,
+      "observations": [
+        {
+          "t": "2026-09-29T00:00:00Z",
+          "p": 41.5
+        },
+        {
+          "t": "2026-09-30T00:00:00Z",
+          "p": 43
+        },
+        {
+          "t": "2026-10-01T00:00:00Z",
+          "p": 46.2
+        },
+        {
+          "t": "2026-10-02T00:00:00Z",
+          "p": 49
+        },
+        {
+          "t": "2026-10-03T00:00:00Z",
+          "p": 51.5
+        },
+        {
+          "t": "2026-10-04T00:00:00Z",
+          "p": 54
+        },
+        {
+          "t": "2026-10-05T00:00:00Z",
+          "p": 56.8
+        },
+        {
+          "t": "2026-10-06T00:00:00Z",
+          "p": 58
+        }
+      ],
+      "current_quote": null,
+      "endpoint_label": {
+        "source": "history_last",
+        "t": "2026-10-06T00:00:00Z",
+        "value": 58,
+        "text": "58.0%"
+      },
+      "displayed_period": {
+        "start": "2026-09-29T00:00:00Z",
+        "end": "2026-10-06T00:00:00Z",
+        "label_days": 7
+      },
+      "delta": {
+        "baseline_t": "2026-09-29T00:00:00Z",
+        "window_days": 7,
+        "value_pp": 16.5,
+        "display": "+16.5%p"
+      },
+      "hero": {
+        "source": "history_last",
+        "text": "58.0%"
+      }
+    }
+  ],
+  "axis": {
+    "zoom_requested": false,
+    "min": 0,
+    "max": 100,
+    "zoomed": false,
+    "label": "0–100%"
+  },
+  "interpolation": {
+    "method": "shape_preserving_monotone",
+    "preserves_all_points": true
+  },
+  "gaps": {
+    "max_gap_hours": 24,
+    "render": "segment"
+  },
+  "watermark": {
+    "text": "suengj.com",
+    "layer": "behind_plot",
+    "opacity": 0.07
+  },
+  "footer": {
+    "period": "2026-09-29–2026-10-06 (7일 관측)",
+    "coverage": "8 obs",
+    "source": "polymarket",
+    "as_of": "2026-10-06T00:00:00Z"
+  },
+  "qa": {
+    "numeric_validation": {
+      "status": "passed",
+      "checker": "scripts/lib/numeric-visual-core.mjs"
+    },
+    "visual_review": {
+      "status": "passed",
+      "full_size": true,
+      "phone_size": true,
+      "cases": [
+        "long_korean_title",
+        "endpoint_collision",
+        "watermark_contrast",
+        "sparse",
+        "flat",
+        "zero_percent",
+        "hundred_percent"
+      ],
+      "infrastructure": "scripts/validate-visual-review.mjs"
+    },
+    "owner_approval": {
+      "status": "pending"
+    }
+  },
+  "publication": {
+    "requested": false
+  }
+}
