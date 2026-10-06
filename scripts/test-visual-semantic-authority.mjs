@@ -77,11 +77,11 @@ function textFreeV2() {
 
 console.log('\nregistry and structural closure');
 const committed = validateVisualSemanticAuthority();
-check('committed authority registry exactly covers 315 schema properties', committed.ok && committed.inventory.length === 315 && committed.registry.fields.length === 315,
+check('committed authority registry exactly covers 332 schema properties', committed.ok && committed.inventory.length === 332 && committed.registry.fields.length === 332,
   JSON.stringify(committed.issues));
 check('four fixed mounts replace the three opaque Visual Job properties exactly once',
   JSON.stringify(VISUAL_SCHEMA_MOUNTS.map((entry) => entry.mount)) === JSON.stringify(['/', '/visual_brief', '/render_spec', '/visual_production']) &&
-    buildSchemaFieldInventory().length === 315);
+    buildSchemaFieldInventory().length === 332);
 
 const allow = validateVisualSemanticAuthority(fixtureContext('allow'));
 check('allow schema/registry pair is accepted', allow.ok, JSON.stringify(allow.issues));
