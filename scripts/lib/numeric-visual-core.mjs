@@ -168,9 +168,24 @@ export function checkNumericCard(spec, profile = loadNumericProfile()) {
     }
   }
 
-  // ---- AI title may only quote displayed numbers
-  const nums = String(art.title ?? '').match(/[+−-]?\d+(?:\.\d+)?%p?/g) ?? [];
-  for (const n of nums) if (!displayed.has(n.replace('-', '−'))) err('TITLE_NUMBER_UNGROUNDED', 'art_direction.title', `title number ${n} is not a deterministically displayed value`);
+  // ---- AI title may only quote displayed numbers; period words must match the observed span
+  const title = String(art.title ?? '');
+  const spans = series.map((x) => (Array.isArray(x.observations) && x.observations.length > 1 ? observedDays(x.observations) : 0));
+  const minSpan = spans.length ? Math.min(...spans) : 0;
+  const periodRe = /(\d+(?:\.\d+)?)\s*(일|days?|-day|주|weeks?|-week)/gi;
+  for (const m of title.matchAll(periodRe)) {
+    const days = /주|week/i.test(m[2]) ? Number(m[1]) * 7 : Number(m[1]);
+    if (days > minSpan) err('TITLE_PERIOD_UNOBSERVED', 'art_direction.title', `title claims ${m[0]} but observed span is ${minSpan} day(s)`);
+  }
+  if (/(일주일|한 ?주|week)/i.test(title.replace(periodRe, '')) && minSpan < 7) err('TITLE_PERIOD_UNOBSERVED', 'art_direction.title', `title claims a week but observed span is ${minSpan} day(s)`);
+  const dispNums = [...displayed].map((x) => Number(x.replace('−', '-').replace(/%p?$/, '')));
+  for (const m of title.replace(periodRe, ' ').matchAll(/[+−-]?\d+(?:\.\d+)?(%p|%)?/g)) {
+    const n = m[0];
+    if (m[1] ? !displayed.has(n.replace('-', '−')) : !dispNums.some((v) => Math.abs(v) === Math.abs(Number(n.replace('−', '-'))))) err('TITLE_NUMBER_UNGROUNDED', 'art_direction.title', `title number ${n} is not a deterministically displayed value`);
+  }
+
+  // ---- mockup-like data must be labeled illustrative
+  if (['fictional', 'illustrative', 'mock', 'mockup'].includes(String(spec.data_source ?? '').toLowerCase()) && spec.illustrative !== true) err('MOCKUP_NOT_ILLUSTRATIVE', 'illustrative', 'fictional/illustrative data requires illustrative:true');
 
   // ---- watermark / footer
   const wm = spec.watermark ?? {};
@@ -185,6 +200,18 @@ export function checkNumericCard(spec, profile = loadNumericProfile()) {
 
   // ---- comparison
   if (mode === 'dual') {
+    const maxGapMs = profile.gaps.default_max_gap_hours * HOUR;
+    for (const [i, s] of series.entries()) {
+      const last = s.observations?.at?.(-1);
+      if (!s.as_of || !s.coverage) err('COMPARISON_PROVIDER_META_MISSING', `series[${i}]`, 'each provider needs its own as_of and coverage');
+      else if (last && s.as_of !== last.t) err('COMPARISON_AS_OF', `series[${i}].as_of`, 'provider as_of must equal its own last observation');
+    }
+    if (series.length === 2) {
+      const [a, b] = series.map((s) => s.displayed_period ?? {});
+      const far = (x, y) => !(Math.abs(ts(x) - ts(y)) <= maxGapMs);
+      if (far(a.start, b.start) || far(a.end, b.end)) err('COMPARISON_WINDOW_MISALIGNED', 'series[].displayed_period', `dual windows must align within ${profile.gaps.default_max_gap_hours}h`);
+      if (series[0].color === series[1].color) err('COMPARISON_COLORS_NOT_DISTINCT', 'series[].color', 'dual lines need distinct colours');
+    }
     const cmp = spec.comparison ?? {};
     const crit = cmp.criteria ?? {};
     const allTrue = profile.comparison.exact_requires.every((k) => crit[k] === true);

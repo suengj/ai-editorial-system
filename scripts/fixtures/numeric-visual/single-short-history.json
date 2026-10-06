@@ -3,6 +3,7 @@
   "profile": "instagram-numeric-visual.v1",
   "mode": "single",
   "illustrative": false,
+  "data_source": "fixture",
   "canvas": {
     "width": 1080,
     "height": 1350,
@@ -78,6 +79,8 @@
         "value_pp": 5.3,
         "display": "+5.3%p"
       },
+      "as_of": "2026-10-06T00:00:00Z",
+      "coverage": "4 obs, 2026-10-03–2026-10-06",
       "hero": {
         "source": "history_last",
         "text": "17.3%"

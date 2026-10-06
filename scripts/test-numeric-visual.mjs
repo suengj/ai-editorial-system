@@ -84,6 +84,16 @@ const M = [
   ['mockup unlabeled', 'worked-example-illustrative-mockup', (s) => { delete s.visible_label; }, 'ILLUSTRATIVE_UNLABELED'],
   ['mockup counted as production approval', 'worked-example-illustrative-mockup', (s) => { s.qa.owner_approval.scope = 'production'; }, 'ILLUSTRATIVE_AS_APPROVAL'],
   ['mockup published', 'worked-example-illustrative-mockup', (s) => { s.publication.requested = true; }, 'PUBLISH_ILLUSTRATIVE'],
+  ['dual window misaligned', 'dual-exact', (s) => { const r = s.series[1]; r.observations = r.observations.slice(-4); r.displayed_period = { start: r.observations[0].t, end: r.observations.at(-1).t, label_days: 3 }; delete r.delta; delete s.comparison.spread; }, 'COMPARISON_WINDOW_MISALIGNED'],
+  ['dual provider as_of missing', 'dual-exact', (s) => { delete s.series[0].as_of; }, 'COMPARISON_PROVIDER_META_MISSING'],
+  ['dual provider as_of wrong', 'dual-related', (s) => { s.series[1].as_of = s.series[1].observations[3].t; }, 'COMPARISON_AS_OF'],
+  ['dual provider coverage missing', 'dual-related', (s) => { s.series[1].coverage = ''; }, 'COMPARISON_PROVIDER_META_MISSING'],
+  ['dual lines same colour', 'dual-related', (s) => { s.series[1].provider = 'other'; s.series[1].color = '#3D5A80'; s.series[0].provider = 'other2'; s.series[0].color = '#3D5A80'; }, 'COMPARISON_COLORS_NOT_DISTINCT'],
+  ['title bare number', 'single-smooth', (s) => { s.art_direction.title = '확률 60 돌파'; }, 'TITLE_NUMBER_UNGROUNDED'],
+  ['title 7일 on 3-day history', 'single-short-history', (s) => { s.art_direction.title = '7일 새 급등'; }, 'TITLE_PERIOD_UNOBSERVED'],
+  ['title 1주 on 3-day history', 'single-short-history', (s) => { s.art_direction.title = '1주 변화'; }, 'TITLE_PERIOD_UNOBSERVED'],
+  ['title 7-day on 3-day history', 'single-short-history', (s) => { s.art_direction.title = '7-day move'; }, 'TITLE_PERIOD_UNOBSERVED'],
+  ['fictional data without illustrative flag', 'worked-example-illustrative-mockup', (s) => { s.illustrative = false; delete s.visible_label; s.qa.owner_approval = { status: 'pending' }; }, 'MOCKUP_NOT_ILLUSTRATIVE'],
 ];
 for (const [name, base, mut, code] of M) {
   const s = clone(load(base)); mut(s);
@@ -94,6 +104,7 @@ for (const [name, base, mut, code] of M) {
 const pub = clone(load('single-smooth')); pub.publication.requested = true; pub.qa.owner_approval = { status: 'approved', scope: 'production' };
 ok('publication allowed only with numeric+visual QA and owner production approval', checkNumericCard(pub).length === 0);
 const lab = clone(load('single-smooth')); lab.interpolation = { method: 'moving_average', requested: true, label: '3-point moving average (requested)', preserves_all_points: true };
+ok('title bare number matching a displayed value is allowed', (() => { const t = clone(load('single-smooth')); t.art_direction.title = '확률 58 근접'; return checkNumericCard(t).length === 0; })());
 ok('labeled, requested smoothing is allowed', checkNumericCard(lab).length === 0);
 
 console.log(bad ? `numeric-visual: FAIL (${bad})` : 'numeric-visual: OK');

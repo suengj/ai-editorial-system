@@ -3,6 +3,7 @@
   "profile": "instagram-numeric-visual.v1",
   "mode": "dual",
   "illustrative": false,
+  "data_source": "fixture",
   "canvas": {
     "width": 1080,
     "height": 1350,
@@ -104,7 +105,9 @@
         "window_days": 7,
         "value_pp": 15.5,
         "display": "+15.5%p"
-      }
+      },
+      "as_of": "2026-10-06T00:00:00Z",
+      "coverage": "8 obs, 2026-09-29–2026-10-06"
     },
     {
       "provider": "kalshi",
@@ -165,7 +168,9 @@
         "window_days": 7,
         "value_pp": 13,
         "display": "+13.0%p"
-      }
+      },
+      "as_of": "2026-10-06T00:00:00Z",
+      "coverage": "8 obs, 2026-09-29–2026-10-06"
     }
   ],
   "axis": {

@@ -25,7 +25,9 @@ completion nor permission to post on social media.
 | grounded title, layout, palette choice, hierarchy, optional decorative assets | exact numbers, axes, chart geometry, endpoint labels, footer, final composition |
 
 - The AI never changes or invents numbers, dates, quotes, sources, coverage or market conditions.
-  A number in the AI title must be a value the deterministic lane displays (`TITLE_NUMBER_UNGROUNDED`).
+  Any number in the AI title, bare or with a unit, must be a value the deterministic lane displays
+  (`TITLE_NUMBER_UNGROUNDED`). A period claim such as 「7일」, 「1주」 or "7-day" must not exceed the
+  observed span (`TITLE_PERIOD_UNOBSERVED`).
 - An image model never draws or redraws the data chart. `rendering.image_ai_role` is `none` or
   `decorative_only`, and decorative assets never overlap the plot or carry data.
 
@@ -68,6 +70,8 @@ completion nor permission to post on social media.
   collision, watermark contrast, sparse data, flat data, 0% and 100%.
 - Publication requires passed numeric QA, passed visual QA and the owner's explicit production
   approval. This repeats the existing owner gate. It adds no new approval layer.
+- A spec whose `data_source` is fictional, illustrative or mock must set `illustrative: true`
+  (`MOCKUP_NOT_ILLUSTRATIVE`).
 - A fictional mockup carries a visible "illustrative / 가상" label. It can approve visual direction
   only, and it is never factual, never production approval and never published.
 
@@ -75,7 +79,9 @@ completion nor permission to post on social media.
 
 - `exact` requires the same event, outcome direction, deadline, resolution rules and currency
   context. Anything less is `related`: label each series separately and never merge them.
-- Aligned windows, independent as-of and coverage for each provider, no forward-fill, and no
+- Each provider carries its own `as_of`, equal to its last observation, and its own non-empty
+  `coverage`. The two displayed windows must start and end within 24h of each other
+  (`COMPARISON_WINDOW_MISALIGNED`), and the two lines use distinct colours. No forward-fill and no
   invented consensus.
 - The spread is the difference between raw endpoints, shown in `%p` and only for exact matches.
   It is never profit or arbitrage.
@@ -111,6 +117,6 @@ Fixture/QA cases in `scripts/fixtures/numeric-visual/`:
 
 The checker enforces the spec. Rendered pixels are judged by the visual review records, and this
 repository does not inspect them. The checker cannot verify the following, which stay documented
-only: whether the PNG matches the spec, actual watermark contrast and collisions (visual review),
+only: whether data is fictional when `data_source` is missing or mislabeled, whether the PNG matches the spec, actual watermark contrast and collisions (visual review),
 whether the five `exact` criteria are factually true (reviewer attestation), and SUE-1331 renderer
 conformance.
