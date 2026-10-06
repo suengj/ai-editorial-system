@@ -206,6 +206,49 @@ mobile legibility: critical
 A carousel may need a short supporting sentence that would be spoken in a
 video.
 
+#### Instagram news-card compression
+
+For mobile-first Instagram/news carousels, `self-contained` does **not** mean
+`show every available field`. It means the reader can understand the frame's one
+main move without narration.
+
+Default rules:
+
+- remove any line that does not advance the current beat;
+- prefer one headline/assertion plus one supporting sentence over several
+  labels, subheads, footers, and metric tiles;
+- keep operational provenance off the pixels: issue numbers, run/query IDs,
+  hashes, renderer names, internal paths, implementation status, and engineering
+  notes belong in artifact metadata;
+- generic legal/editorial boilerplate is not decorative copy. Do not add
+  `정보 제공용`, `투자 권유 아님`, or similar language unless the target
+  publication/compliance context explicitly requires it;
+- source and timing metadata may remain accessible through a compact source/as-of
+  note, caption, alt text, or artifact manifest. Do not give them equal visual
+  weight with the editorial message;
+- if a chart is the evidence, do not follow it with a dense explanatory strip.
+  Use one truthful annotation or move the explanation to the next frame.
+
+A useful **three-card news + market** pattern is:
+
+```text
+1. NEWS
+   what happened + why it matters
+   real/source photo when rights and provenance allow
+
+2. MARKET
+   one market question + hero probability + actual trend chart
+   as-of only as a small note
+   no volume/liquidity unless market depth is itself the story
+
+3. WHY / WHAT NEXT
+   why the market may price the risk this way
+   + 2–3 concrete drivers or checkpoints that could reprice it
+```
+
+This is a recommended compilation pattern, not a fixed quota. Split or merge
+frames when the argument requires it.
+
 ### `reference_deck`
 
 Audience may return to the file without a speaker.
@@ -517,6 +560,9 @@ frame has the same colour, illustration, or visual metaphor.
 | Bullet transcription | Surface adds words but not understanding |
 | Headline/evidence mismatch | Two different claims compete in one frame |
 | Tiny-dashboard slide | Several independent visual questions presented at once |
+| Operational metadata leakage | Internal issue/run IDs and engineering detail are exposed instead of reader-facing content |
+| Carousel-as-report | Every available metric, caveat, and footer survives compression instead of selecting the few elements that carry the beat |
+| Boilerplate-by-default | Generic disclaimer/caution copy consumes scarce mobile space without an explicit publication/compliance requirement |
 | Decorative animation | Motion consumes attention without explanation |
 | Faux chart illustration | Generated marks impersonate evidence |
 | Voiceover transcript on screen | Redundant processing in narrated profile |
