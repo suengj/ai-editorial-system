@@ -107,5 +107,12 @@ const lab = clone(load('single-smooth')); lab.interpolation = { method: 'moving_
 ok('title bare number matching a displayed value is allowed', (() => { const t = clone(load('single-smooth')); t.art_direction.title = '확률 58 근접'; return checkNumericCard(t).length === 0; })());
 ok('labeled, requested smoothing is allowed', checkNumericCard(lab).length === 0);
 
+const yr = clone(load('single-smooth')); yr.deadline = '2026-10-31T00:00:00Z'; yr.art_direction.title = '2026년 10월 31일 마감 금리 인하 확률 58.0%';
+ok('title year and declared deadline date are not number claims', checkNumericCard(yr).length === 0, JSON.stringify(checkNumericCard(yr)));
+const yr2 = clone(yr); yr2.art_direction.title = '2026년 금리 인하 확률 60';
+ok('rejects bare probability next to a year → TITLE_NUMBER_UNGROUNDED', checkNumericCard(yr2).some((e) => e.code === 'TITLE_NUMBER_UNGROUNDED'));
+const yr3 = clone(yr); yr3.art_direction.title = '11월 15일 마감 금리 인하 확률 58.0%';
+ok('rejects undeclared date in title → TITLE_DATE_UNGROUNDED', checkNumericCard(yr3).some((e) => e.code === 'TITLE_DATE_UNGROUNDED'));
+
 console.log(bad ? `numeric-visual: FAIL (${bad})` : 'numeric-visual: OK');
 process.exit(bad ? 1 : 0);

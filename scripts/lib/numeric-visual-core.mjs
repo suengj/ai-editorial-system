@@ -169,7 +169,25 @@ export function checkNumericCard(spec, profile = loadNumericProfile()) {
   }
 
   // ---- AI title may only quote displayed numbers; period words must match the observed span
-  const title = String(art.title ?? '');
+  // Calendar years and dates are not claims: a year is always exempt; a month-day date is exempt only
+  // when it matches a declared deadline or a displayed period endpoint, else TITLE_DATE_UNGROUNDED.
+  const allowedDates = new Set([spec.deadline, spec.market?.deadline, ...series.flatMap((x) => [x.deadline, x.displayed_period?.start, x.displayed_period?.end])]
+    .filter(Boolean).map((v) => new Date(v)).filter((v) => !Number.isNaN(+v)).map((v) => `${v.getUTCMonth() + 1}-${v.getUTCDate()}`));
+  const MON = { jan: 1, feb: 2, mar: 3, apr: 4, may: 5, jun: 6, jul: 7, aug: 8, sep: 9, oct: 10, nov: 11, dec: 12 };
+  const dateRes = [
+    [/(?<![\d.])(?:19|20)\d{2}[-./](\d{1,2})[-./](\d{1,2})(?![\d.%])/g, (m) => [m[1], m[2]]],
+    [/(?:(?:19|20)\d{2}\s*년\s*)?(\d{1,2})\s*월\s*(\d{1,2})\s*일/g, (m) => [m[1], m[2]]],
+    [/\b(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\.?\s+(\d{1,2})(?:,?\s*(?:19|20)\d{2})?\b/gi, (m) => [MON[m[1].toLowerCase()], m[2]]],
+  ];
+  let title = String(art.title ?? '');
+  for (const [re, md] of dateRes) {
+    title = title.replace(re, (...a) => {
+      const [mo, dd] = md(a);
+      if (!allowedDates.has(`${Number(mo)}-${Number(dd)}`)) err('TITLE_DATE_UNGROUNDED', 'art_direction.title', `title date ${a[0]} is not the market deadline or a displayed period endpoint`);
+      return ' ';
+    });
+  }
+  title = title.replace(/(?<![\d.+−-])(?:19|20)\d{2}(?![\d.%])(?:\s*년)?/g, ' ');
   const spans = series.map((x) => (Array.isArray(x.observations) && x.observations.length > 1 ? observedDays(x.observations) : 0));
   const minSpan = spans.length ? Math.min(...spans) : 0;
   const periodRe = /(\d+(?:\.\d+)?)\s*(일|days?|-day|주|weeks?|-week)/gi;
