@@ -75,6 +75,25 @@ node scripts/test-visual-execution.mjs  # on-demand local raster integration, no
 See [`evals/visual-execution/PHASE0-3-EVIDENCE.md`](evals/visual-execution/PHASE0-3-EVIDENCE.md)
 for the measured scope and remaining boundaries.
 
+## Business idea magazine: a selected five-card series
+
+For “사업화 아이디어 카드 5장”, read
+[`editorial/BUSINESS-IDEA-MAGAZINE.md`](editorial/BUSINESS-IDEA-MAGAZINE.md)
+and its [`versioned series preset`](editorial/business-idea-magazine.v1.json).
+The sequence is cover → money flow → real case → comparison/deep dive →
+opportunity hypothesis + reader question. It does not change personal Instagram
+voice, infer an account, claim profitability, or publish.
+
+```bash
+node scripts/compile-business-magazine.mjs --packet /content/packet.json --out /tmp/bizmag-plan
+node scripts/render-carousel.mjs --plan /tmp/bizmag-plan/series.json --out /tmp/bizmag-images
+node scripts/test-business-magazine.mjs  # local, on demand; no CI dispatch
+```
+
+Compilation is not rendering. The existing carousel engine consumes prepared
+assets; native integrated generation is a separate, explicitly reviewed route.
+See the [measured scope and limits](evals/visual-execution/BUSINESS-MAGAZINE-EVIDENCE.md).
+
 ## What this repository is NOT
 
 - **Not a content store.** No canonical article archive, no drafts, no
