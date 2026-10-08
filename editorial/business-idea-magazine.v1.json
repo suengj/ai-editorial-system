@@ -1,0 +1,128 @@
+{
+  "schema_version": "1.0.0",
+  "id": "business-idea-magazine.v1",
+  "scope": "Explicitly selected series preset, not a new intent axis, account profile or global Instagram default.",
+  "positioning": [
+    "스타트업 미디어",
+    "비즈니스 스쿨 케이스 스터디",
+    "시각적인 아이디어 노트"
+  ],
+  "language": "ko",
+  "voice": "한국어 비즈니스 매거진: 명료한 설명, 구체적인 주어, 짧지만 완결된 문장. 개인 회고체와 성공담 과장 금지.",
+  "personal_voice_overlay": false,
+  "cta": "당신이라면 이 사업을 하시겠습니까?",
+  "frame_roles": [
+    "cover",
+    "money",
+    "case-a",
+    "case-b",
+    "opportunity"
+  ],
+  "frame_functions": [
+    "orient",
+    "explain_mechanism",
+    "show_evidence",
+    "compare",
+    "close"
+  ],
+  "recipe": "editorial-minimal",
+  "series_label": "BUSINESS IDEA / 001",
+  "series_options": {
+    "task": {
+      "canvas": {
+        "width": 1080,
+        "aspect_ratio": "4:5"
+      },
+      "theme": {
+        "background": "#F7F4EC",
+        "foreground": "#14213D",
+        "accent": "#536756",
+        "font_family": "'Noto Sans CJK KR', 'Noto Sans KR', sans-serif"
+      },
+      "text_policy": "hybrid_template",
+      "watermark": {
+        "enabled": false
+      }
+    },
+    "typography": {
+      "headline": {
+        "font_size": 68,
+        "weight": 700,
+        "max_lines": 2,
+        "line_height": 1.18
+      },
+      "body": {
+        "font_size": 38,
+        "weight": 400,
+        "max_lines": 6,
+        "line_height": 1.35
+      }
+    },
+    "regions": {
+      "headline": {
+        "x": 0.06,
+        "y": 0.11,
+        "width": 0.88,
+        "height": 0.19
+      }
+    },
+    "layouts": {
+      "split": {
+        "left": {
+          "x": 0.06,
+          "y": 0.34,
+          "width": 0.88,
+          "height": 0.26
+        },
+        "right": {
+          "x": 0.06,
+          "y": 0.63,
+          "width": 0.88,
+          "height": 0.2
+        }
+      }
+    }
+  },
+  "visual_direction": {
+    "identity": "같은 잡지의 다섯 페이지. 아이보리 종이, 짙은 남색 글자, 절제된 세이지 포인트. 표지는 대담하고 본문은 편안하게.",
+    "cover": "대형 한글 헤드라인, 한 문장 아이디어, 하나의 지배적인 사진 또는 사실로 오인되지 않는 콘셉트 이미지. 실물 잡지 목업이 아닌 화면을 채우는 완성 카드.",
+    "money": "상품/서비스 흐름과 돈의 흐름을 구분한 간결한 도식. 거래액과 수익을 혼동하지 않는다.",
+    "cases": "실제 회사명과 출처를 남기고 같은 비교 축을 사용한다. 타사 정체성을 시리즈 전체 색/폰트에 복사하지 않는다.",
+    "opportunity": "기회 가설 한 가지, 핵심 장애물 한 가지, 작은 첫 실험 한 가지, 마지막 질문.",
+    "invariants": [
+      "aspect",
+      "palette",
+      "headline-role",
+      "body-role",
+      "margins",
+      "folio",
+      "source-position"
+    ],
+    "avoid": [
+      "대시보드형 타일",
+      "장식용 수익 그래프",
+      "근거 없는 별점",
+      "가짜 앱 화면",
+      "매 장 다른 그림체",
+      "개인 계정 워터마크 추정"
+    ],
+    "native_route": "이 프로필은 미술 감독 계약이다. native 통합 생성과 로컬 합성은 별도 실행 경로이며 한쪽의 검증이 다른 쪽을 인증하지 않는다."
+  },
+  "evidence_rules": [
+    "사실/해석/가정을 분리한다.",
+    "실사례 존재는 수익성 검증이 아니다.",
+    "한국 시장 공백은 검색 전 단정하지 않는다.",
+    "비공개 수수료와 매출은 추정해 사실로 쓰지 않는다.",
+    "본문/캡션의 중요 사실은 출처 목록에 연결한다.",
+    "독립 자료는 성과 주장/교차검증에 필요할 때 찾는다. 장식적 숫자를 얻기 위해 리서치를 확대하지 않는다."
+  ],
+  "output_contract": [
+    "series.json",
+    "editorial-sidecar.json",
+    "caption.md",
+    "실제 생성된 카드 5장",
+    "phone previews",
+    "contact sheet"
+  ],
+  "approval": "REVIEW_REQUIRED; publication is never authorized by this preset."
+}
