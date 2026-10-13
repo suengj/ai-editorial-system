@@ -15,7 +15,7 @@
  */
 import { readFileSync, writeFileSync, mkdirSync, readdirSync, existsSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { selectExamples, loadManifest, RuleReader, validateFieldValue, compactText } from './resolve-core.mjs';
+import { selectExamples, loadManifest, RuleReader, validateFieldValue, compactText, normText } from './resolve-core.mjs';
 
 export const CANDIDATE_AFTER = 2;
 export const NO_APPROVED_REFERENCE = 'NO_APPROVED_REFERENCE';
@@ -53,15 +53,21 @@ export function assertScope(target, format, manifest = defaultManifest()) {
  * (other voice families' ids / rule files, locked-field assignments) and may not mention a locked-field topic at all:
  * a preference is about style, never about facts, figures, sources, rights or approval.
  */
+const CHANGE_WORDS = /없이|생략|빼|삭제|불필요|반올림|올림|내림|간주|치고|바꿔|바꾸|수정|변경|고쳐|무시|건너|제외|쓰지|말고|대신|처럼|skip|omit|without|round|assum|ignore|remov|delet|chang|edit|drop|replac|treat|pretend|override|waiv|no[- ]?need/iu;
 export function checkPreferenceText(text, target, manifest = defaultManifest(), what = 'instruction') {
   if (typeof text !== 'string' || !text.trim()) throw qerr('BAD_FIELD', `${what} text required`);
   const family = Object.hasOwn(manifest.sns_targets ?? {}, target) ? manifest.sns_targets[target].voice_family : null;
   const r = validateFieldValue('preference_text', text, manifest, { voiceFamily: family, isFlow: family === null });
   if (!r.ok) throw qerr('PREFERENCE_REFUSED', `${what} refused (${r.code}): ${r.message}`);
-  const c = compactText(text);
-  for (const [field, terms] of Object.entries(manifest.locked_field_terms ?? {})) {
-    const hit = [field, ...terms].find((t) => c.includes(compactText(t)));
-    if (hit) throw qerr('PREFERENCE_REFUSED', `${what} refused (LOCKED_TOPIC): it mentions "${hit}" (locked field ${field}); facts, figures, sources, rights and approval can never be changed by a preference`);
+  // A locked-field term is refused only when it co-occurs, in the same clause, with a change/removal/waiver word.
+  // A bare mention ("출처는 각 장 하단에 작게 표기") is a style preference and is accepted.
+  for (const clause of String(text).split(/[.,;:!?。，；\n·]+|\s(?:and|but|그리고|하지만)\s/iu)) {
+    const c = compactText(clause);
+    if (!CHANGE_WORDS.test(normText(clause)) && !CHANGE_WORDS.test(c)) continue;
+    for (const [field, terms] of Object.entries(manifest.locked_field_terms ?? {})) {
+      const hit = [field, ...terms].find((t) => c.includes(compactText(t)));
+      if (hit) throw qerr('PREFERENCE_REFUSED', `${what} refused (LOCKED_TOPIC): it asks to change/skip/round "${hit}" (locked field ${field}); facts, figures, sources, rights and approval can never be changed by a preference`);
+    }
   }
 }
 
@@ -123,7 +129,7 @@ export function recordImplicitFeedback(store, { task_id, target, format, kind, s
   if (typeof task_id !== 'string' || !task_id.trim()) throw qerr('TASK_REQUIRED', 'implicit feedback needs --task (it is task-local by definition)');
   if (typeof kind !== 'string' || !/^[\p{L}\p{N}][\p{L}\p{N} _-]{0,59}$/u.test(kind)) throw qerr('BAD_FIELD', 'kind must be a short label (letters, digits, space, - or _; at most 60 chars)');
   const scope = store.scopeKey(target, format);
-  checkPreferenceText(kind, target, store.manifest ?? defaultManifest(), 'kind');
+  refusing(store, { scope, statement: `${kind}${statement ? ` / ${statement}` : ''}`, mode: 'implicit' }, () => checkPreferenceText(kind, target, store.manifest ?? defaultManifest(), 'kind'));
   const rec = { schema: 'task-feedback/1', mode: 'implicit', task_id, target, format, scope, kind, statement, applies_to: 'this_task_only' };
   store.write(store.file('task-feedback', `${slug(task_id)}__${scope}__${slug(kind)}`), rec);
   const tasks = new Set(readDir(store.dir('task-feedback')).filter((r) => r.scope === scope && r.kind === kind).map((r) => r.task_id));
@@ -136,11 +142,24 @@ export function recordImplicitFeedback(store, { task_id, target, format, kind, s
   return { record: rec, candidate };
 }
 
+/** Runs a check; on PREFERENCE_REFUSED / NOT_EXPLICIT writes a small refusal record (scope, verbatim statement, reason code, time) and rethrows. */
+function refusing(store, { scope, statement, mode }, fn) {
+  try { fn(); } catch (e) {
+    if (e?.code === 'PREFERENCE_REFUSED' || e?.code === 'NOT_EXPLICIT') {
+      const at = new Date().toISOString();
+      store.write(store.file('refusals', `${scope}__${at.replace(/[^0-9]/g, '')}`), { schema: 'preference-refusal/1', mode, scope, statement, reason_code: e.code, reason: e.message, at });
+    }
+    throw e;
+  }
+}
+
 /** Explicit standing instruction -> new preference VERSION for this target+format only. At most ONE version is active. */
 export function applyExplicitPreference(store, { target, format, instruction, statement, task_id = null }) {
   const scope = store.scopeKey(target, format);
+  refusing(store, { scope, statement: `${statement} / ${instruction}`, mode: 'explicit' }, () => {
   if (!isStandingInstruction(statement)) throw qerr('NOT_EXPLICIT', 'not an explicit standing instruction: needs "앞으로 …" outside quotation marks and no "이번에만"-style limit; record it as implicit task feedback instead');
   checkPreferenceText(instruction, target, store.manifest ?? defaultManifest(), 'instruction');
+  });
   const path = store.file('preferences', scope);
   const cur = store.readOr(path, { schema: 'scoped-preference/1', target, format, scope, versions: [] });
   const prev = cur.versions.filter((v) => !v.rolled_back).at(-1) ?? null;

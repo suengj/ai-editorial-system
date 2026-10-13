@@ -418,8 +418,8 @@ export function resolveEditorial(intent, { targetId = null, flowId = null, overr
     rule_files: readLoads.some((l) => l.verification === VERIFY.DIRTY) ? 'dirty_unverified' : readLoads.length && readLoads.every((l) => l.verification === VERIFY.GIT_BLOB) ? 'git_verified' : 'unverified',
     dirty_unverified: readLoads.filter((l) => l.verification === VERIFY.DIRTY).map((l) => l.path),
     // REQUIRED rule files that could not be verified against git (dirty, or not a git checkout): the receipt says so in its hashed body.
-    integrity: (() => { const req = new Set(plan.files.filter((f) => f.required).map((f) => f.path)); const bad = readLoads.filter((l) => req.has(l.path) && l.verification !== VERIFY.GIT_BLOB).map((l) => l.path); return bad.length ? 'UNVERIFIED' : 'VERIFIED'; })(),
-    unverified_required: (() => { const req = new Set(plan.files.filter((f) => f.required).map((f) => f.path)); return readLoads.filter((l) => req.has(l.path) && l.verification !== VERIFY.GIT_BLOB).map((l) => l.path); })(),
+    integrity: (() => { const req = new Set(plan.files.filter((f) => f.required).map((f) => f.path)); return receipt.loads.some((l) => req.has(l.path) && (l.status !== READ.READ || l.verification !== VERIFY.GIT_BLOB)) ? 'UNVERIFIED' : 'VERIFIED'; })(),
+    unverified_required: (() => { const req = new Set(plan.files.filter((f) => f.required).map((f) => f.path)); return receipt.loads.filter((l) => req.has(l.path) && (l.status !== READ.READ || l.verification !== VERIFY.GIT_BLOB)).map((l) => l.path); })(),
     note: 'git_verified = every rule file byte-identical to its HEAD blob; dirty_unverified = file differs from HEAD in a dirty tree and is recorded, not verified; unverified = not a git checkout of this repository',
   };
 
@@ -468,6 +468,8 @@ export function resolveEditorial(intent, { targetId = null, flowId = null, overr
     visual: target?.visual ? { artifacts: target.visual.artifacts } : null,
     rule_files: receipt.loads.filter((l) => l.status === READ.READ).map((l) => ({ path: l.path, sha256: l.sha256 })),
     manifest_sha256: manifestHash,
+    integrity: receipt.integrity.integrity,
+    unverified_required: receipt.integrity.unverified_required,
   };
   // A blocked receipt carries NO profile: nothing downstream can mistake it for a resolved one.
   if (receipt.status !== STATUS.READY) return receipt;
@@ -587,6 +589,7 @@ export function gateRender(plan, receipt, manifest, ctx = {}) {
 }
 
 /** Signalytics-style delivery contract check (file names only; no Drive writes are ever represented). Called by `resolve-editorial.mjs --check-package <dir> --target <id>`. */
+export const DRIVE_TEXT_RE = /drive\.google\.com|docs\.google\.com|(^|[^\p{L}\p{N}])drive:/iu;
 export function checkDeliveryPackage(targetId, fileNames, manifest) {
   const c = manifest.sns_targets[targetId]?.output_contract;
   if (!c) return { ok: true, applicable: false, issues: [] };

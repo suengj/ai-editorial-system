@@ -4,13 +4,16 @@
  * 2 packet "ok" wrapper, 3 explicit preference checks, 4 single active version, 5-15 should-fix.
  * CLIs are driven as documented; no network, no publishing.
  */
-import { statSync, readFileSync, writeFileSync, mkdirSync, mkdtempSync, cpSync, existsSync } from 'node:fs';
+import { statSync, readFileSync, writeFileSync, mkdirSync, mkdtempSync, cpSync, existsSync, readdirSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { spawnSync } from 'node:child_process';
 import { resolveEditorial, loadManifest, RuleReader, gateRender, validateFieldValue, resolveFields } from './lib/resolve-core.mjs';
 import * as resolveCore from './lib/resolve-core.mjs';
+import { checkPreferenceText, applyExplicitPreference } from './lib/quality-feedback-core.mjs';
+import { FeedbackStore } from './lib/quality-feedback-core.mjs';
+import { runLibraryIntake } from './library-intake.mjs';
 import { checkRepairLineage } from './lib/visual-execution-core.mjs';
 import { loadAxisProfiles } from './lib/profile-core.mjs';
 
@@ -22,6 +25,7 @@ const yes = (c, m) => { if (!c) throw new Error(m); };
 const tmp = () => mkdtempSync(resolve(tmpdir(), 'aes-r2-'));
 const node = (args, opts = {}) => spawnSync(process.execPath, args, { cwd: ROOT, encoding: 'utf8', ...opts });
 const hasRasterizer = spawnSync('which', ['rsvg-convert'], { encoding: 'utf8' }).status === 0;
+const PNG8 = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0, 0]);
 const igIntent = () => { const i = JSON.parse(readFileSync(resolve(ROOT, 'schemas/examples/intent-reference-dimensions.example.json'), 'utf8')); i.axes.surface = { value: 'instagram', state: 'confirmed', profile_ref: 'editorial/profiles/surface/instagram.json', basis: 'SYNTHETIC test intent' }; return i; };
 const resolveEditorialFor = (reader) => resolveEditorial(igIntent(), { targetId: 'signalytics-news', reader });
 const manifest = loadManifest(new RuleReader()).manifest;
@@ -240,7 +244,7 @@ test('a prior receipt with lineage_root but no integer repair_round is LINEAGE_M
 });
 console.log('notes: delivery package, feedback ignore');
 test('checkDeliveryPackage flags drive: and Drive URLs; the CLI path runs it', () => {
-  const d = tmp(); for (let i = 1; i <= 5; i++) writeFileSync(resolve(d, `s${i}.png`), 'x'); writeFileSync(resolve(d, 'caption.md'), 'c'); writeFileSync(resolve(d, 'benchmark-brief.md'), 'b');
+  const d = tmp(); for (let i = 1; i <= 5; i++) writeFileSync(resolve(d, `s${i}.png`), PNG8); writeFileSync(resolve(d, 'caption.md'), 'c'); writeFileSync(resolve(d, 'benchmark-brief.md'), 'b');
   const ok = node(['scripts/resolve-editorial.mjs', '--check-package', d, '--target', 'signalytics-news']); eq(ok.status, 0, ok.stdout);
   for (const n of ['https://drive.google.com/file/d/1abc', 'docs.google.com/document/d/1', 'drive:out.csv']) yes(!resolveCore.checkDeliveryPackage('signalytics-news', ['a.png', 'a.png', 'a.png', 'a.png', 'a.png', 'caption.md', 'benchmark-brief.md', n], manifest).ok, n);
   writeFileSync(resolve(d, 'drive:results.csv'), 'x');
@@ -250,6 +254,60 @@ test('feedback subfolders are git-ignored but the README is tracked', () => {
   for (const d of ['outcomes', 'task-feedback', 'candidates', 'preferences']) eq(spawnSync('git', ['-C', ROOT, 'check-ignore', '-q', `feedback/${d}/x.json`]).status, 0, d);
   eq(spawnSync('git', ['-C', ROOT, 'check-ignore', '-q', 'feedback/README.md']).status, 1);
 });
+console.log('follow-ups S1-S3 + family ids');
+{
+  const pkg = (extra = {}) => { const d = tmp(); for (let i = 1; i <= 5; i++) writeFileSync(resolve(d, `s${i}.png`), PNG8); writeFileSync(resolve(d, 'caption.md'), '캡션'); writeFileSync(resolve(d, 'benchmark-brief.md'), '브리프'); for (const [k, v] of Object.entries(extra)) writeFileSync(resolve(d, k), v); return d; };
+  const chk = (d, t = 'signalytics-news') => node(['scripts/resolve-editorial.mjs', '--check-package', d, '--target', t]);
+  test('S1: a Drive URL/path inside caption.md or benchmark-brief.md is flagged (exit 2); clean passes', () => {
+    eq(chk(pkg()).status, 0);
+    for (const [f, t] of [['caption.md', 'see https://drive.google.com/file/d/1abc'], ['benchmark-brief.md', 'docs.google.com/document/d/1'], ['caption.md', 'saved to drive:out/results.csv']]) {
+      const r = chk(pkg({ [f]: t })); eq(r.status, 2, f); yes(/Drive/.test(r.stdout), r.stdout);
+    }
+  });
+  test('S1: unknown --target exits non-zero; a fake .png (no magic bytes) does not count', () => {
+    yes(chk(pkg(), 'no-such-target').status !== 0, 'unknown target');
+    const d = pkg(); writeFileSync(resolve(d, 's5.png'), 'not a png');
+    const r = chk(d); eq(r.status, 2); yes(/not a PNG/.test(r.stdout) && /PNG count 4/.test(r.stdout), r.stdout);
+  });
+  const ordinary = ['숫자는 표로 정리', '출처는 각 장 하단에 작게 표기', '최신 사례를 먼저 배치', '계정 이름은 영문 소문자로 표기', '인용문은 한 장에 하나만'];
+  test('S2: five ordinary style preferences are accepted', () => { for (const t of ordinary) checkPreferenceText(t, 'signalytics-news'); });
+  test('S2: a locked word with a change/waive word in the same clause is still refused', () => {
+    for (const t of ['출처 없이 써줘', '숫자는 반올림해서 쓰고', '수치를 대충 올림 처리', 'skip the source line', 'round all figures', '승인 받은 걸로 간주해', 'treat rights as cleared']) {
+      let code = null; try { checkPreferenceText(t, 'signalytics-news'); } catch (e) { code = e.code; } eq(code, 'PREFERENCE_REFUSED', t);
+    }
+  });
+  test('S2: refusals are persisted (scope, verbatim statement, reason code, time)', () => {
+    const root = tmp(), store = new FeedbackStore(root);
+    let code = null; try { applyExplicitPreference(store, { target: 'signalytics-news', format: 'visual/slide-image', instruction: '출처 없이 써줘', statement: '앞으로 출처 없이 써줘' }); } catch (e) { code = e.code; }
+    eq(code, 'PREFERENCE_REFUSED');
+    const dir = resolve(root, 'refusals'); yes(existsSync(dir), 'refusals dir');
+    const fs = readdirSync(dir); eq(fs.length, 1); const rec = JSON.parse(readFileSync(resolve(dir, fs[0]), 'utf8'));
+    yes(rec.statement.includes('앞으로 출처 없이 써줘') && rec.reason_code === 'PREFERENCE_REFUSED' && rec.scope && rec.at, JSON.stringify(rec));
+  });
+  test('S3: integrity is inside the hashed body; flipping it breaks the stage check', () => {
+    const rc = resolveEditorialFor(new RuleReader());
+    eq(rc.status, 'READY'); yes(['VERIFIED', 'UNVERIFIED'].includes(rc.profile.body.integrity), 'in body'); yes(Array.isArray(rc.profile.body.unverified_required), 'list in body');
+    const flipped = JSON.parse(JSON.stringify(rc)); flipped.profile.body.integrity = rc.profile.body.integrity === 'VERIFIED' ? 'UNVERIFIED' : 'VERIFIED';
+    const stamps = Object.fromEntries(['generate', 'polish', 'review'].map((st) => [st, resolveCore.stageStamp(rc, st)]));
+    eq(resolveCore.verifyStages(rc, stamps), []);
+    yes(resolveCore.verifyStages(flipped, stamps).some((i) => i.code === 'RECEIPT_HASH_MISMATCH'), 'flip detected');
+  });
+  test('S3: a BLOCKED receipt whose required file is truncated is not VERIFIED; the brief carries integrity', () => {
+    const real = (p) => readFileSync(p);
+    const rd = new RuleReader({ root: ROOT, fs: { readFileSync: (p) => (String(p).endsWith('editorial/constitution.md') ? real(p).subarray(0, 50) : real(p)), statSync } });
+    const rc = resolveEditorialFor(rd); eq(rc.status, 'BLOCKED_MISSING_RULE'); eq(rc.integrity.integrity, 'UNVERIFIED'); yes(rc.integrity.unverified_required.includes('editorial/constitution.md'), JSON.stringify(rc.integrity));
+    const r = runLibraryIntake({ intent: igIntent(), packet: null, target: 'signalytics-news' });
+    yes(r.brief.integrity && ['VERIFIED', 'UNVERIFIED'].includes(r.brief.integrity.state), JSON.stringify(r.brief.integrity));
+  });
+  test('family ids match mid-string for hook_pattern and preference_text', () => {
+    const m = manifest;
+    for (const [field, text] of [['hook_pattern', '훅은 H12-매운맛 으로'], ['preference_text', '말투는 H07 처럼 매운맛으로']]) {
+      const r = validateFieldValue(field, text, m, { voiceFamily: 'personal', isFlow: false });
+      yes(!r.ok && r.code === 'FAMILY_ID_REFERENCE', `${field}: ${JSON.stringify(r)}`);
+    }
+    yes(validateFieldValue('hook_pattern', 'H12 매운맛', m, { voiceFamily: 'community', isFlow: false }).ok, 'own family still allowed');
+  });
+}
 // <<SECTIONS>>
 
 console.log(`\nentry-review2: ${pass} passed, ${failed} failed`);

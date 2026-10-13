@@ -58,7 +58,7 @@ and is out of this package's scope.
 
 ## Quality-feedback subfolders (SUE-1426)
 
-`outcomes/`, `task-feedback/`, `candidates/` and `preferences/` are written by `scripts/quality-feedback.mjs` (and the
+`outcomes/`, `task-feedback/`, `candidates/`, `preferences/` and `refusals/` (refused preference statements with reason code and time) are written by `scripts/quality-feedback.mjs` (and the
 dogfood runs). They hold per-account preference text and task statements, so by default their contents are **git-ignored**
 (owner policy, conservative); only this README is tracked. To publish a specific record deliberately, `git add -f` it.
 The existing `records/` and `index.json` are unchanged.

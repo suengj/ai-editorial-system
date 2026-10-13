@@ -276,6 +276,7 @@ export function buildEditorialBrief({ intent, receipt, adapted = null, decision,
   return stable({
     brief_version: BRIEF_VERSION, intent_id: intent.intent_id ?? null,
     status: receipt.status !== 'READY' ? receipt.status : blocked.length ? 'READY_WITH_BLOCKED_USES' : 'READY',
+    integrity: receipt.integrity ? { state: receipt.integrity.integrity ?? null, unverified_required: receipt.integrity.unverified_required ?? [] } : null,
     target: receipt.target, profile: receipt.profile ? { id: receipt.profile.id, version: receipt.profile.version, resolved_hash: receipt.profile.resolved_hash } : null,
     library: {
       searched: decision.searched, skipped: decision.skipped, skip_reason: decision.skipped ? decision.reason : null,

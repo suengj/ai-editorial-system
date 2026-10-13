@@ -18,7 +18,7 @@ import { resolve } from 'node:path';
 import { createHash } from 'node:crypto';
 import { parseArgs } from 'node:util';
 import { validateIntent, loadSchema } from './lib/intent-core.mjs';
-import { RuleReader, loadManifest, resolveEditorial, verifyStages, stageStamp, checkDeliveryPackage, intentFromPlan, STATUS } from './lib/resolve-core.mjs';
+import { RuleReader, loadManifest, resolveEditorial, verifyStages, stageStamp, checkDeliveryPackage, DRIVE_TEXT_RE, intentFromPlan, STATUS } from './lib/resolve-core.mjs';
 
 try {
   const { values: v } = parseArgs({ options: { 'check-package': { type: 'string' }, stamp: { type: 'string' }, stamps: { type: 'string' }, intent: { type: 'string' }, plan: { type: 'string' }, 'library-merged': { type: 'string' }, target: { type: 'string' }, flow: { type: 'string' }, overrides: { type: 'string' }, 'task-kind': { type: 'string' }, out: { type: 'string' }, 'list-targets': { type: 'boolean', default: false }, flows: { type: 'boolean', default: false }, receipt: { type: 'string' }, stages: { type: 'string' } }, strict: true });
@@ -30,8 +30,20 @@ try {
     console.log(JSON.stringify(Object.entries(manifest.sns_targets).map(([id, t]) => ({ target: id, account: t.account, surface: t.surface, voice_family: t.voice_family, copy_files: t.copy_files, visual_artifacts: t.visual?.artifacts ?? null, status: t.status })), null, 2));
   } else if (v['check-package']) { // delivery package check: node scripts/resolve-editorial.mjs --check-package <dir> --target signalytics-news
     if (!v.target) throw new Error('usage: --check-package <dir> --target <id>');
-    const names = readdirSync(resolve(v['check-package']));
-    const out = checkDeliveryPackage(v.target, names, loadManifest(reader).manifest);
+    const dir = resolve(v['check-package']);
+    const { manifest } = loadManifest(reader);
+    if (!Object.hasOwn(manifest.sns_targets, v.target)) throw Object.assign(new Error(`unknown target "${v.target}"`), { code: 'UNKNOWN_TARGET' });
+    const PNG = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
+    const notPng = [], driveIn = [];
+    const names = readdirSync(dir).filter((n) => {
+      if (/\.png$/i.test(n)) { const b = readFileSync(resolve(dir, n)); if (!b.subarray(0, 8).equals(PNG)) { notPng.push(n); return false; } }
+      else if (/\.(md|json|txt|csv|url|html?)$/i.test(n) && DRIVE_TEXT_RE.test(readFileSync(resolve(dir, n), 'utf8'))) driveIn.push(n);
+      return true;
+    });
+    const out = checkDeliveryPackage(v.target, names, manifest);
+    for (const n of notPng) out.issues.push(`${n} is named .png but is not a PNG (magic bytes)`);
+    for (const n of driveIn) out.issues.push(`${n} contains a Drive URL/path (drive.google.com / docs.google.com / drive:)`);
+    out.ok = out.issues.length === 0;
     console.log(JSON.stringify(out, null, 2));
     if (!out.ok) process.exitCode = 2;
   } else if (v.receipt) {
