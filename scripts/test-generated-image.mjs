@@ -24,9 +24,10 @@ const root = mkdtempSync(resolve(tmpdir(), 'aes-genimg-')), input = resolve(root
 for (const f of ['source.md', 'counts.json']) copyFileSync(resolve(FIX, f), resolve(input, f));
 const png = (fn, alpha = 255) => { const w = 240, h = 240, p = Buffer.alloc(w * h * 4); for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) { const o = (y * w + x) * 4, [r, g, b] = fn(x, y); p[o] = r; p[o + 1] = g; p[o + 2] = b; p[o + 3] = alpha; } return encodePng({ width: w, height: h, channels: 4, pixels: p }); };
 const rich = png((x, y) => [(x * 7 + y * 3) % 256, (x * 2 + y * 11) % 256, (x ^ y) % 256]);
-const placeholder = png(() => [200, 120, 40]);                     // basic-shape / flat fill
+const placeholder = png(() => [200, 120, 40]);
+const fourColours = png((x, y) => [[200, 120, 40], [20, 60, 200], [240, 240, 20], [30, 160, 90]][(x >> 3) % 2 + 2 * ((y >> 3) % 2)]);                     // basic-shape / flat fill
 const invisible = png((x, y) => [(x * 7) % 256, (y * 5) % 256, (x ^ y) % 256], 0); // rich colours but fully transparent
-writeFileSync(resolve(input, 'rich.png'), rich); writeFileSync(resolve(input, 'flat.png'), placeholder); writeFileSync(resolve(input, 'clear.png'), invisible);
+writeFileSync(resolve(input, 'rich.png'), rich); writeFileSync(resolve(input, 'flat.png'), placeholder); writeFileSync(resolve(input, 'four.png'), fourColours); writeFileSync(resolve(input, 'clear.png'), invisible);
 const respBytes = Buffer.from('{"id":"inv-1","provider":"claude-native-image"}\n'); writeFileSync(resolve(input, 'response.json'), respBytes);
 const ev = (file, bytes, mode = 'native') => ({ provider: 'claude-native-image', model: 'test-model', invocation_id: 'inv-1', mode, asset_sha256: sha256(bytes), response_ref: 'response.json', response_sha256: sha256(respBytes) });
 const series = (block) => { const s = structuredClone(base); s.frames[0].layout = 'visual'; s.frames[0].blocks = [{ id: 'art', region: 'content', kind: 'generated', instruction: 'One quiet paper sculpture.', rights_note: 'Test asset authored for this test.', fit: 'cover', ...block }]; return s; };
@@ -68,13 +69,21 @@ await ok('S5: missing, wrong-sha or absent provider response file is GENERATION_
   assert.equal((await run(series({ ref: 'rich.png', generation: { ...ev('rich.png', rich), response_sha256: 'sha256:00' } }), 's5-badresp')).frames[0].status, GENERATION_NOT_VERIFIED);
   assert.equal((await run(series({ ref: 'rich.png', generation: { ...ev('rich.png', rich), response_ref: 'nope.json' } }), 's5-gone')).frames[0].status, GENERATION_NOT_VERIFIED);
 });
-await ok('S5: near-flat art passes only with a recorded owner|agent attestation (not a colour-count rule)', async () => {
-  const g = ev('flat.png', placeholder);
-  assert.equal((await run(series({ ref: 'flat.png', generation: g }), 's5-flat0')).frames[0].status, GENERATION_NOT_VERIFIED);
-  assert.equal((await run(series({ ref: 'flat.png', generation: { ...g, flat_art_attestation: { by: 'robot', reason: 'intentionally flat poster' } } }), 's5-flat1')).frames[0].status, GENERATION_NOT_VERIFIED);
-  const r = await run(series({ ref: 'flat.png', generation: { ...g, flat_art_attestation: { by: 'owner', reason: 'intentionally flat poster' } } }), 's5-flat2');
+await ok('S5/review2: near-flat (3-6 colour) art passes only with an owner|agent attestation; agent must name request_ref', async () => {
+  const g = ev('four.png', fourColours);
+  assert.equal((await run(series({ ref: 'four.png', generation: g }), 's5-flat0')).frames[0].status, GENERATION_NOT_VERIFIED);
+  assert.equal((await run(series({ ref: 'four.png', generation: { ...g, flat_art_attestation: { by: 'robot', reason: 'intentionally flat poster' } } }), 's5-flat1')).frames[0].status, GENERATION_NOT_VERIFIED);
+  assert.equal((await run(series({ ref: 'four.png', generation: { ...g, flat_art_attestation: { by: 'agent', reason: 'intentionally flat poster' } } }), 's5-flat1b')).frames[0].status, GENERATION_NOT_VERIFIED, 'agent without request_ref');
+  const a = await run(series({ ref: 'four.png', generation: { ...g, flat_art_attestation: { by: 'agent', reason: 'intentionally flat poster', request_ref: 'brief.json#slide-1' } } }), 's5-flat1c');
+  assert.notEqual(a.frames[0].status, GENERATION_NOT_VERIFIED);
+  const r = await run(series({ ref: 'four.png', generation: { ...g, flat_art_attestation: { by: 'owner', reason: 'intentionally flat poster' } } }), 's5-flat2');
   const rc = JSON.parse(readFileSync(resolve(root, 's5-flat2/opening/receipt.json'), 'utf8'));
   assert.equal(rc.generation[0].flat_art_attestation.by, 'owner'); assert.notEqual(r.frames[0].status, GENERATION_NOT_VERIFIED);
+});
+await ok('review2 #14: a single-colour asset is never a generated-image success, even with an attestation', async () => {
+  const g = ev('flat.png', placeholder);
+  for (const att of [{ by: 'owner', reason: 'intentionally flat poster' }, { by: 'agent', reason: 'intentionally flat poster', request_ref: 'brief.json#1' }])
+    assert.equal((await run(series({ ref: 'flat.png', generation: { ...g, flat_art_attestation: att } }), `s14-${att.by}`)).frames[0].status, GENERATION_NOT_VERIFIED, att.by);
 });
 await ok('S5: a kind:"image" layer that says it is generated gets the same checks', async () => {
   const mk = (extra) => { const s = series({ ref: 'rich.png' }); const b = s.frames[0].blocks[0]; b.kind = 'image'; delete b.instruction; delete b.generation; Object.assign(b, extra); return s; };

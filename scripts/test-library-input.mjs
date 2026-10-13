@@ -188,7 +188,11 @@ test('same task reuses reads; a new task re-reads and sees changed identity; sel
 
 console.log('real command path smoke (real python CLI + real AES CLIs; no image generation, NOT owner-approved)');
 const libRepo = process.env.INTELLIGENCE_LIBRARY_REPO ?? resolve(REPO_ROOT, '..', 'intelligence-library');
-if (!existsSync(join(libRepo, 'multimodal/units.py'))) { skipped++; console.log(`  SKIP library repo not found at ${libRepo} (set INTELLIGENCE_LIBRARY_REPO); smoke NOT_RUN`); } else {
+if (!existsSync(join(libRepo, 'multimodal/units.py'))) {
+  skipped++;
+  console.log(`\n  ################ SKIP ################\n  library repo not found at ${libRepo} (set INTELLIGENCE_LIBRARY_REPO): the real-command smoke is NOT_RUN.\n  This is a FAILURE for the aggregate gate unless ALLOW_LIBRARY_SKIP=1 is set explicitly.\n  ######################################`);
+  if (process.env.ALLOW_LIBRARY_SKIP !== '1') { fail++; console.log('  FAIL library smoke skipped without ALLOW_LIBRARY_SKIP=1'); }
+} else {
   test('search -> select -> handoff(--require-pinned) -> AES intake -> resolveEditorial -> brief; stops if AES stops consuming the packet', () => {
     const lib = makeLibrary([unitJson('knowledge', K[0], { topics: ['pricing'] }), unitJson('knowledge', 'unit-k-other', { topics: ['misc'] }), unitJson('editorial_pattern', P[0], { topics: ['hook'] }), unitJson('visual_reference', V[0], { topics: ['design'] })]);
     const py = (...a) => { const p = spawnSync('python3', ['-m', 'multimodal.units', ...a], { cwd: libRepo, encoding: 'utf8' }); if (p.status !== 0) throw new Error(`python ${a[0]}: ${p.stdout}${p.stderr}`); return JSON.parse(p.stdout); };
@@ -208,9 +212,16 @@ if (!existsSync(join(libRepo, 'multimodal/units.py'))) { skipped++; console.log(
     eq(brief.status, 'READY'); eq(brief.copy_plan.fact_sources.library.length, 1); eq(brief.copy_plan.expression_references.length, 1); eq(brief.visual_plan.visual_references.length, 1);
     eq(brief.visual_plan.artifacts, ['visual/slide-image']); yes(brief.profile.id === 'target:signalytics-news', 'resolved profile');
     // the merged intent is what resolve-editorial itself consumes: same hash from the standalone CLI
-    const res = node(['resolve-editorial.mjs', '--intent', join(out, 'a/intent.merged.json'), '--library-merged', '--target', 'signalytics-news', '--out', join(out, 'r.json')]);
+    const res = node(['resolve-editorial.mjs', '--intent', join(out, 'a/intent.merged.json'), '--library-merged', join(out, 'a/library-verified-refs.json'), '--target', 'signalytics-news', '--out', join(out, 'r.json')]);
     eq(res.status, 0, res.stderr); eq(JSON.parse(readFileSync(join(out, 'r.json'), 'utf8')).profile.resolved_hash, brief.profile.resolved_hash);
     yes(existsSync(join(out, 'a/source-manifest.library.json')), 'manifest emitted');
+    // review2 note: --library-merged only trusts ids the adapter verified in THIS run (sidecar bound to the intent bytes)
+    const noFlag = node(['resolve-editorial.mjs', '--intent', join(out, 'a/intent.merged.json'), '--target', 'signalytics-news', '--out', join(out, 'r0.json')]);
+    eq(noFlag.status, 1, 'without the sidecar the private ref:lib-* ids are unknown'); yes(/INTENT_INVALID/.test(noFlag.stderr), noFlag.stderr);
+    const side = JSON.parse(readFileSync(join(out, 'a/library-verified-refs.json'), 'utf8'));
+    writeFileSync(join(out, 'side-forged.json'), JSON.stringify({ ...side, merged_intent_sha256: 'f'.repeat(64) }));
+    const forged = node(['resolve-editorial.mjs', '--intent', join(out, 'a/intent.merged.json'), '--library-merged', join(out, 'side-forged.json'), '--target', 'signalytics-news', '--out', join(out, 'r1.json')]);
+    eq(forged.status, 1); yes(/LIBRARY_SIDECAR_MISMATCH/.test(forged.stderr), forged.stderr);
     // control: without the packet the library contribution disappears (fails if the entry ignores the packet)
     const none = node(['library-intake.mjs', '--intent', join(out, 'intent.json'), '--target', 'signalytics-news', '--fact-required', '--out-dir', join(out, 'b')]);
     eq(none.status, 0, none.stderr); const b2 = JSON.parse(readFileSync(join(out, 'b/brief.json'), 'utf8'));

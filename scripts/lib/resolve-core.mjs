@@ -586,7 +586,7 @@ export function gateRender(plan, receipt, manifest, ctx = {}) {
   return { ok: true, applies: true, resolved_hash: receipt.profile.resolved_hash, ...identity, revision: body.revision, revision_check: revisionCheck, current_revision: current, integrity: 'hash-checked, not cryptographically authenticated' };
 }
 
-/** Signalytics-style delivery contract check (file names only; no Drive writes are ever represented). */
+/** Signalytics-style delivery contract check (file names only; no Drive writes are ever represented). Called by `resolve-editorial.mjs --check-package <dir> --target <id>`. */
 export function checkDeliveryPackage(targetId, fileNames, manifest) {
   const c = manifest.sns_targets[targetId]?.output_contract;
   if (!c) return { ok: true, applicable: false, issues: [] };
@@ -594,6 +594,6 @@ export function checkDeliveryPackage(targetId, fileNames, manifest) {
   const pngs = fileNames.filter((f) => /\.png$/i.test(f)).length;
   if (pngs < c.png.min || pngs > c.png.max) issues.push(`PNG count ${pngs}, expected ${c.png.min}-${c.png.max}${c.png.sixth_conditional ? ' (sixth only when conditioned)' : ''}`);
   for (const f of c.required_files) if (!fileNames.includes(f)) issues.push(`missing ${f}`);
-  if (fileNames.some((f) => /^drive:/i.test(f))) issues.push('Drive result writes are forbidden');
+  if (fileNames.some((f) => /^drive:/i.test(f) || /(^|[\/\s"'(])(https?:\/\/)?(drive|docs)\.google\.com\b/i.test(f))) issues.push('Drive result writes/links are forbidden (drive: prefix or drive.google.com / docs.google.com URL)');
   return { ok: issues.length === 0, applicable: true, issues };
 }

@@ -10,6 +10,8 @@ import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { spawnSync } from 'node:child_process';
 import { resolveEditorial, loadManifest, RuleReader, gateRender, validateFieldValue, resolveFields } from './lib/resolve-core.mjs';
+import * as resolveCore from './lib/resolve-core.mjs';
+import { checkRepairLineage } from './lib/visual-execution-core.mjs';
 import { loadAxisProfiles } from './lib/profile-core.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url)), ROOT = resolve(HERE, '..');
@@ -226,6 +228,27 @@ test('prompt A names constitution.md, voice.md, STRUCTURED-VISUAL-EXECUTION.md a
   for (const w of ['editorial/constitution.md', 'editorial/voice.md', 'STRUCTURED-VISUAL-EXECUTION.md', 'axis_profile_paths']) yes(a.includes(w), w);
   yes((t.match(/NOT_APPLIED/g) ?? []).length >= 2 && /HUMAN_REQUIRED/.test(t), 'markers');
   yes(a.length < 1300, `prompt A stays short (${a.length})`);
+});
+console.log('15: repair round fails closed');
+test('a prior receipt with lineage_root but no integer repair_round is LINEAGE_MISMATCH, not round 0', () => {
+  const d = tmp();
+  for (const bad of [undefined, null, '1', 1.5, -1]) {
+    let code = null; try { checkRepairLineage({ lineage_root: 'x', repair_round: bad }, 'rendered', d, 'x'); } catch (e) { code = e.code; }
+    eq(code, 'LINEAGE_MISMATCH', String(bad));
+  }
+  yes(checkRepairLineage({ lineage_root: 'x', repair_round: 0 }, 'rendered', d, 'x').priorRound === 0, 'round 0 still fine');
+});
+console.log('notes: delivery package, feedback ignore');
+test('checkDeliveryPackage flags drive: and Drive URLs; the CLI path runs it', () => {
+  const d = tmp(); for (let i = 1; i <= 5; i++) writeFileSync(resolve(d, `s${i}.png`), 'x'); writeFileSync(resolve(d, 'caption.md'), 'c'); writeFileSync(resolve(d, 'benchmark-brief.md'), 'b');
+  const ok = node(['scripts/resolve-editorial.mjs', '--check-package', d, '--target', 'signalytics-news']); eq(ok.status, 0, ok.stdout);
+  for (const n of ['https://drive.google.com/file/d/1abc', 'docs.google.com/document/d/1', 'drive:out.csv']) yes(!resolveCore.checkDeliveryPackage('signalytics-news', ['a.png', 'a.png', 'a.png', 'a.png', 'a.png', 'caption.md', 'benchmark-brief.md', n], manifest).ok, n);
+  writeFileSync(resolve(d, 'drive:results.csv'), 'x');
+  eq(node(['scripts/resolve-editorial.mjs', '--check-package', d, '--target', 'signalytics-news']).status, 2);
+});
+test('feedback subfolders are git-ignored but the README is tracked', () => {
+  for (const d of ['outcomes', 'task-feedback', 'candidates', 'preferences']) eq(spawnSync('git', ['-C', ROOT, 'check-ignore', '-q', `feedback/${d}/x.json`]).status, 0, d);
+  eq(spawnSync('git', ['-C', ROOT, 'check-ignore', '-q', 'feedback/README.md']).status, 1);
 });
 // <<SECTIONS>>
 

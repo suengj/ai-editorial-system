@@ -42,6 +42,7 @@ function checkGeneration(l, file, png, baseDir) {
   if (!g || typeof g !== 'object') reasons.push('generation evidence missing (provider/model/invocation_id/mode/asset_sha256/response_ref)');
   else {
     keys(g, ['provider', 'model', 'invocation_id', 'mode', 'asset_sha256', 'response_ref', 'response_sha256', 'flat_art_attestation'], 'generation');
+    if (object(g.flat_art_attestation)) keys(g.flat_art_attestation, ['by', 'reason', 'request_ref'], 'generation.flat_art_attestation');
     if (!ALL_MODES.includes(g.mode)) fail('GENERATION_MODE', `mode must be one of ${ALL_MODES.join(', ')}`);
     for (const k of ['provider', 'model', 'invocation_id']) if (typeof g[k] !== 'string' || !g[k].trim()) reasons.push(`generation.${k} missing`);
     if (g.asset_sha256 !== file.sha256) reasons.push('generation.asset_sha256 does not match the supplied asset bytes');
@@ -54,9 +55,12 @@ function checkGeneration(l, file, png, baseDir) {
     attestation = g.flat_art_attestation ?? null;
   }
   const colours = distinctColours(png);
-  const attestOk = object(attestation) && ['owner', 'agent'].includes(attestation.by) && typeof attestation.reason === 'string' && attestation.reason.trim().length >= 8;
-  if (colours <= 6 && !attestOk) reasons.push(`asset has only ${colours} distinct colours: near-flat art stays NOT_VERIFIED without flat_art_attestation {by: owner|agent, reason}`);
-  return { reasons, distinct_colours: colours, mode: g?.mode ?? null, evidence_level: 'SELF_ATTESTED', machine_verified: ['asset_in_final_png'], response_sha256: responseSha, flat_art_attestation: colours <= 6 && attestOk ? { by: attestation.by, reason: attestation.reason } : null };
+  // An agent attestation must name the request/brief it corresponds to (request_ref); an owner attestation need not.
+  const attestOk = object(attestation) && ['owner', 'agent'].includes(attestation.by) && typeof attestation.reason === 'string' && attestation.reason.trim().length >= 8
+    && (attestation.by === 'owner' || (typeof attestation.request_ref === 'string' && attestation.request_ref.trim().length >= 3));
+  if (colours <= 2) reasons.push(`asset has only ${colours} distinct colour(s): a single-colour (near-flat/blank) asset is never a generated-image success, attested or not`);
+  else if (colours <= 6 && !attestOk) reasons.push(`asset has only ${colours} distinct colours (<=6 threshold): near-flat art stays NOT_VERIFIED without flat_art_attestation {by: owner|agent, reason[, request_ref required for agent]}`);
+  return { reasons, distinct_colours: colours, mode: g?.mode ?? null, evidence_level: 'SELF_ATTESTED', machine_verified: ['asset_in_final_png'], response_sha256: responseSha, flat_art_attestation: colours > 2 && colours <= 6 && attestOk ? { by: attestation.by, reason: attestation.reason } : null };
 }
 
 
@@ -292,7 +296,9 @@ export function appendLedger(baseDir, entry) { appendFileSync(ledgerPathFor(base
 export function checkRepairLineage(prior, priorStatus, baseDir, root, { enforceLimit = true } = {}) {
   if (!prior.lineage_root) fail('LINEAGE_MISMATCH', 'the previous run carries no lineage_root (made before the repair ledger); start a new base version');
   if (prior.lineage_root !== root) fail('LINEAGE_MISMATCH', 'the previous run was made from a different request/source/series; a repair must keep the same base. Omit the flag to start a new base.');
-  const priorOk = isRenderedOk(priorStatus), priorRound = prior.repair_round ?? 0;
+  // Fail closed: a receipt that has a lineage but no integer repair_round must not be read as round 0 (that would reset the budget).
+  if (!Number.isInteger(prior.repair_round) || prior.repair_round < 0) fail('LINEAGE_MISMATCH', 'the previous receipt has lineage_root but no non-negative integer repair_round; the repair budget cannot be established, start a new base version');
+  const priorOk = isRenderedOk(priorStatus), priorRound = prior.repair_round;
   if (priorOk && enforceLimit) enforceRepairLimit(priorRound, baseDir, root);
   return { priorOk, priorRound };
 }

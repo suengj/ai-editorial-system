@@ -71,3 +71,9 @@ Thumbs.db
 .idea/
 .vscode/
 *.swp
+
+# --- Quality feedback runtime records (SUE-1426): owner-private by default; see feedback/README.md ---------------
+feedback/outcomes/*
+feedback/task-feedback/*
+feedback/candidates/*
+feedback/preferences/*

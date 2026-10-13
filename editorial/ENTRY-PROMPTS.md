@@ -25,7 +25,7 @@ suengj/ai-editorial-system 의 editorial/entry-manifest.json 을 먼저 읽고, 
   (blog/news/report: --flow blog|news|report 를 --target 대신 사용)
 OUT/receipt.json 의 profile.resolved_hash 를 생성·polish·review 가 같이 쓰고(각 단계가 끝날 때 `node scripts/resolve-editorial.mjs --receipt OUT/receipt.json --stamp generate|polish|review --stamps OUT/stamps.json` 로 그 단계 stamp 를 추가/갱신하고, 마지막에 `--receipt OUT/receipt.json --stages OUT/stamps.json` 이 consistent:true 인지 확인; stamps.json = {"generate":{stage,profile_id,profile_version,resolved_hash},"polish":{…},"review":{…}}), Instagram/LinkedIn 이미지는 render-visual / render-carousel 에 --profile-receipt OUT/receipt.json 을 넘긴다(렌더용 receipt 는 task kind 가 visual 또는 both 여야 한다. intent 가 없으면 `node scripts/resolve-editorial.mjs --plan <series.json|request.json> --target <id> --out receipt.json`; 이전 revision receipt 로 일부러 렌더할 때만 --pinned-revision <rev>. receipt 는 무결성 확인용이며 암호학적 인증이 아니다). exit 2 (BLOCKED) 이면 멈추고 이유를 보고하라. OUT/brief.json 의 quality 블록(예문 상태·이 계정/포맷의 선호·후보)만 적용하고 공유 말투 profile 은 수정하지 마라.
 피드백: node scripts/quality-feedback.mjs outcome|implicit|explicit|show --target <id> --format <artifact> …  (수정/교정은 implicit = 이번 작업만, '앞으로 …' 지시만 explicit = 해당 계정·포맷 버전 선호).
-Signalytics: Chat PNG 5장(조건부 6장) + caption.md + benchmark-brief.md, Drive 결과 쓰기 금지(승인 자료 읽기만 허용). 게시·스케줄·계정 설정은 건드리지 마라.
+Signalytics: Chat PNG 5장(조건부 6장) + caption.md + benchmark-brief.md, Drive 결과 쓰기 금지(승인 자료 읽기만 허용). 패키지를 넘기기 전에 `node scripts/resolve-editorial.mjs --check-package <패키지 폴더> --target signalytics-news` 가 ok:true 여야 한다(PNG 수, caption.md, benchmark-brief.md, Drive 경로/URL 금지). 게시·스케줄·계정 설정은 건드리지 마라.
 ```
 
 Owner/UAT states (not asserted by this file): native image E2E (SUE-1337 Phase 4) = not run; aesthetic approval = owner only.

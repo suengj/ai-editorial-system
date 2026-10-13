@@ -5,27 +5,35 @@
  * precedence, maps the SNS target to its copy/visual profile, and writes ONE
  * resolved-profile receipt that generate, polish, review and render consume.
  *
- *   node scripts/resolve-editorial.mjs (--intent intent.json | --plan series.json|request.json) --target signalytics-news [--overrides o.json] [--task-kind text|visual|both] [--library-merged] [--out receipt.json]
+ *   node scripts/resolve-editorial.mjs (--intent intent.json | --plan series.json|request.json) --target signalytics-news [--overrides o.json] [--task-kind text|visual|both] [--library-merged library-verified-refs.json] [--out receipt.json]
+ *   node scripts/resolve-editorial.mjs --check-package <delivery-dir> --target signalytics-news   (PNG count / caption.md / benchmark-brief.md / no Drive paths)
  *   node scripts/resolve-editorial.mjs --list-targets
  *   node scripts/resolve-editorial.mjs --receipt receipt.json --stamp generate|polish|review --stamps stamps.json   (append/update that stage's stamp)
  *   node scripts/resolve-editorial.mjs --receipt receipt.json --stages stamps.json     (stage consistency check)
  *   stamps.json shape: { "generate": {stage, profile_id, profile_version, resolved_hash}, "polish": {...}, "review": {...} }
  * Exit 0 READY, 2 BLOCKED/inconsistent, 1 usage error. No network, LLM or publication.
  */
-import { readFileSync, writeFileSync } from 'node:fs';
+import { readFileSync, writeFileSync, readdirSync } from 'node:fs';
 import { resolve } from 'node:path';
+import { createHash } from 'node:crypto';
 import { parseArgs } from 'node:util';
 import { validateIntent, loadSchema } from './lib/intent-core.mjs';
-import { RuleReader, loadManifest, resolveEditorial, verifyStages, stageStamp, intentFromPlan, STATUS } from './lib/resolve-core.mjs';
+import { RuleReader, loadManifest, resolveEditorial, verifyStages, stageStamp, checkDeliveryPackage, intentFromPlan, STATUS } from './lib/resolve-core.mjs';
 
 try {
-  const { values: v } = parseArgs({ options: { stamp: { type: 'string' }, stamps: { type: 'string' }, intent: { type: 'string' }, plan: { type: 'string' }, 'library-merged': { type: 'boolean', default: false }, target: { type: 'string' }, flow: { type: 'string' }, overrides: { type: 'string' }, 'task-kind': { type: 'string' }, out: { type: 'string' }, 'list-targets': { type: 'boolean', default: false }, flows: { type: 'boolean', default: false }, receipt: { type: 'string' }, stages: { type: 'string' } }, strict: true });
+  const { values: v } = parseArgs({ options: { 'check-package': { type: 'string' }, stamp: { type: 'string' }, stamps: { type: 'string' }, intent: { type: 'string' }, plan: { type: 'string' }, 'library-merged': { type: 'string' }, target: { type: 'string' }, flow: { type: 'string' }, overrides: { type: 'string' }, 'task-kind': { type: 'string' }, out: { type: 'string' }, 'list-targets': { type: 'boolean', default: false }, flows: { type: 'boolean', default: false }, receipt: { type: 'string' }, stages: { type: 'string' } }, strict: true });
   const reader = new RuleReader();
   const json = (p) => JSON.parse(readFileSync(resolve(p), 'utf8'));
   if (v['list-targets']) {
     const { manifest } = loadManifest(reader);
     if (process.argv.includes('--flows')) { console.log(JSON.stringify(Object.entries(manifest.existing_flows).map(([id, f]) => ({ flow: id, surface: f.surface, status: f.status })), null, 2)); } else
     console.log(JSON.stringify(Object.entries(manifest.sns_targets).map(([id, t]) => ({ target: id, account: t.account, surface: t.surface, voice_family: t.voice_family, copy_files: t.copy_files, visual_artifacts: t.visual?.artifacts ?? null, status: t.status })), null, 2));
+  } else if (v['check-package']) { // delivery package check: node scripts/resolve-editorial.mjs --check-package <dir> --target signalytics-news
+    if (!v.target) throw new Error('usage: --check-package <dir> --target <id>');
+    const names = readdirSync(resolve(v['check-package']));
+    const out = checkDeliveryPackage(v.target, names, loadManifest(reader).manifest);
+    console.log(JSON.stringify(out, null, 2));
+    if (!out.ok) process.exitCode = 2;
   } else if (v.receipt) {
     if (v.stamp) { // append/update this stage's stamp: --receipt R --stamp generate|polish|review --stamps stamps.json
       if (!['generate', 'polish', 'review'].includes(v.stamp)) throw new Error('--stamp must be generate|polish|review');
@@ -46,12 +54,19 @@ try {
     }
   } else {
     if (v.intent && v.plan) throw new Error('--intent and --plan are mutually exclusive');
-    if (!v.intent && !v.plan) throw new Error('usage: node scripts/resolve-editorial.mjs (--intent intent.json | --plan series.json|request.json) --target <id>|--flow blog|news|report [--overrides o.json] [--task-kind text|visual|both] [--library-merged] [--out receipt.json] | --list-targets');
+    if (!v.intent && !v.plan) throw new Error('usage: node scripts/resolve-editorial.mjs (--intent intent.json | --plan series.json|request.json) --target <id>|--flow blog|news|report [--overrides o.json] [--task-kind text|visual|both] [--library-merged library-verified-refs.json] [--out receipt.json] | --list-targets');
     if (v.intent) { // the intent contract is enforced here too, not only by validate-intent
-      // --library-merged: the intent was produced by library-intake.mjs, which already validated it with the packet's ref ids;
-      // its private-library ref_ids (ref:lib-*) are not in the public catalog, so they are accepted as known here.
+      // --library-merged <library-verified-refs.json>: the sidecar library-intake.mjs wrote in THIS run next to intent.merged.json.
+      // It lists only the ref ids the adapter verified (path+hash), and is bound to the intent bytes by sha256, so ids written
+      // into an arbitrary intent cannot vouch for themselves.
       const raw = json(v.intent);
-      const extra = v['library-merged'] ? (raw?.inputs?.references ?? []).map((r) => r?.ref_id).filter((x) => typeof x === 'string' && x.startsWith('ref:lib-')) : [];
+      let extra = [];
+      if (v['library-merged']) {
+        const side = json(v['library-merged']);
+        const got = createHash('sha256').update(readFileSync(resolve(v.intent))).digest('hex');
+        if (side?.merged_intent_sha256 !== got || !Array.isArray(side.verified_ref_ids)) throw Object.assign(new Error('--library-merged sidecar does not belong to this intent (sha256 mismatch) or is malformed'), { code: 'LIBRARY_SIDECAR_MISMATCH' });
+        extra = side.verified_ref_ids.filter((x) => typeof x === 'string');
+      }
       const { issues } = validateIntent(raw, loadSchema(), { extraKnownRefs: extra });
       if (issues.length) throw Object.assign(new Error(`intent invalid (${issues.length}): ${issues.slice(0, 3).map((i) => `[${i.code}] ${i.where} ${i.message}`).join('; ')}`), { code: 'INTENT_INVALID' });
     }

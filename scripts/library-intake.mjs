@@ -13,6 +13,7 @@
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { parseArgs } from 'node:util';
+import { createHash } from 'node:crypto';
 import { RuleReader, resolveEditorial, loadManifest, REPO_ROOT, STATUS } from './lib/resolve-core.mjs';
 import { FeedbackStore, qualityBlock } from './lib/quality-feedback-core.mjs';
 import { validateIntent } from './lib/intent-core.mjs';
@@ -41,6 +42,8 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     const put = (n, o) => writeFileSync(resolve(dir, n), `${JSON.stringify(o, null, 2)}\n`);
     put('intent.merged.json', r.merged); put('receipt.json', r.receipt); put('brief.json', r.brief);
     if (r.adapted?.manifest) put('source-manifest.library.json', r.adapted.manifest);
+    // Verified-in-this-run ref ids, bound to the exact bytes of intent.merged.json (consumed by resolve-editorial --library-merged).
+    put('library-verified-refs.json', { merged_intent_sha256: createHash('sha256').update(readFileSync(resolve(dir, 'intent.merged.json'))).digest('hex'), verified_ref_ids: r.adapted?.inputs.references.map((x) => x.ref_id) ?? [] });
     const b = r.brief;
     console.error(`library-intake: ${b.status} library=${b.library.searched ? 'used' : `skipped(${b.library.skip_reason})`} selected=${b.library.selected.map((s) => `${s.id}:${s.authority}`).join(',') || '-'} blocked_uses=${b.blocked_uses.length} fallbacks=${b.library.fallbacks.length}`);
     if (r.receipt.status !== STATUS.READY) process.exitCode = 2;

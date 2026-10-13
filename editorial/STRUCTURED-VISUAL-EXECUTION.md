@@ -224,7 +224,7 @@ node scripts/test-carousel.mjs --render
 생성 증거(`provider`/`model`/`invocation_id`)는 호출자가 적은 문자열이므로 **`SELF_ATTESTED`** 로 표시한다. 기계가 확인하는 것은 "그 asset이 최종 PNG 픽셀에 실제로 들어갔는가" 하나뿐이다(`machine_verified: ["asset_in_final_png"]`).
 
 - `generation.response_ref` + `response_sha256`(공급자 raw response/metadata 파일)이 없거나 sha가 다르면 `GENERATION_NOT_VERIFIED`.
-- 색 6개 이하 규칙은 없다. 거의 단색인 asset은 `generation.flat_art_attestation: {by: "owner"|"agent", reason}`이 기록될 때만 통과하고, 없으면 NOT_VERIFIED로 남는다.
+- 색이 6개 이하(양자화한 distinct colour)인 asset은 `generation.flat_art_attestation: {by: "owner"|"agent", reason, request_ref}`이 기록될 때만 통과하고(agent 는 대응하는 요청/브리프를 `request_ref` 로 명시해야 한다), 없으면 NOT_VERIFIED로 남는다. 색이 2개 이하(단색/빈 이미지)는 attestation이 있어도 생성 이미지 성공이 될 수 없다.
 - `kind:"image"` 레이어도 `provenance.origin: "generated"`, `generation` 키, 또는 rights_note의 "generated/생성" 표기가 있으면 같은 검사를 받는다.
 - 성공하지 못한 결과의 PNG/SVG는 `rejected/` 아래에만 쓴다(최상위에 성공처럼 보이는 PNG를 남기지 않음). receipt/execution.json은 그대로 최상위에 둔다.
 
