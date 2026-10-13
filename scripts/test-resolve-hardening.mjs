@@ -330,5 +330,12 @@ test('trends-moa carousel (visual/slide-image) stays unmapped and is refused as 
   eq(g.code, 'ARTIFACT_NOT_MAPPED');
 });
 
+console.log('S2: validate-intent');
+test('validate-intent counts only READY plans as resolved; the multi-target SNS intent is a separate target-independent check', () => {
+  const r = run(['scripts/validate-intent.mjs', 'schemas/examples/intent-sns-instagram.example.json']);
+  yes(r.status === 0 && /0 load plan\(s\) resolved READY, 1 target-independent plan\(s\) read/.test(r.stdout), r.stdout + r.stderr);
+  const all = run(['scripts/validate-intent.mjs']); yes(all.status === 0 && /target-independent plan\(s\) read/.test(all.stdout), all.stdout.slice(-200));
+});
+
 console.log(`\nresolve-hardening: ${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

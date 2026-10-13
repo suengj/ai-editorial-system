@@ -14,7 +14,7 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { dirname, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { loadSchema, validateIntentFile } from './lib/intent-core.mjs';
-import { RuleReader, resolveEditorial, STATUS } from './lib/resolve-core.mjs';
+import { RuleReader, resolveEditorial, buildLoadPlan, loadManifest, READ, STATUS } from './lib/resolve-core.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = resolve(HERE, '..');
@@ -39,7 +39,8 @@ const schema = loadSchema();
 // delivery-time choice, so BLOCKED_TARGET_REQUIRED is not an intent error; a missing/truncated rule file is.
 const reader = new RuleReader();
 const planCache = new Map();
-let planned = 0;
+let planned = 0, targetIndependent = 0;
+const { manifest } = loadManifest(reader);
 
 let failed = 0;
 let noted = 0;
@@ -51,9 +52,19 @@ for (const target of targets) {
   if (issues.length === 0) {
     const rec = JSON.parse(readFileSync(target, 'utf8'));
     const res = resolveEditorial(rec, { reader, planCache, targetId: null });
-    if (res.status === STATUS.BLOCKED_MISSING_RULE) {
+    if (res.status === STATUS.READY) planned += 1;
+    else if (res.status === STATUS.BLOCKED_TARGET_REQUIRED) {
+      // The account is a delivery-time choice, so the surface-level, target-independent plan is what can be checked here:
+      // every required file in it must be readable. This is NOT counted as a resolved (READY) plan.
+      const plan = buildLoadPlan(rec, manifest, {});
+      const unread = plan.files.filter((f) => f.required).map((f) => ({ path: f.path, r: reader.read(f.path) })).filter((x) => x.r.status !== READ.READ);
+      if (unread.length) issues.push({ code: 'LOAD_PLAN_BLOCKED', where: 'load_plan', message: `target-independent plan: required rule file(s) not read: ${unread.map((u) => `${u.path}=${u.r.status}`).join(', ')}` });
+      else targetIndependent += 1;
+    } else if (res.status === STATUS.BLOCKED_MISSING_RULE) {
       issues.push({ code: 'LOAD_PLAN_BLOCKED', where: 'load_plan', message: `required rule file(s) not read: ${res.unread_required.map((u) => `${u.path}=${u.status}`).join(', ')}` });
-    } else planned += 1;
+    } else {
+      issues.push({ code: 'LOAD_PLAN_BLOCKED', where: 'load_plan', message: `resolver status ${res.status}: ${res.conflicts.map((c) => c.message).join('; ')}` });
+    }
   }
   if (issues.length === 0) {
     console.log(`intent: PASS — ${label}`);
@@ -68,5 +79,5 @@ if (failed) {
   console.error('\nSee schemas/EDITORIAL-INTENT-CONTRACT.md.');
   process.exit(1);
 }
-console.log(`\nintent: ${targets.length} record(s) PASS (${planned} load plan(s) resolved; ${reader.stats.reads} rule file read(s), ${reader.stats.hits} cache hit(s))${noted ? `, ${noted} note(s)` : ''}`);
+console.log(`\nintent: ${targets.length} record(s) PASS (${planned} load plan(s) resolved READY, ${targetIndependent} target-independent plan(s) read; ${reader.stats.reads} rule file read(s), ${reader.stats.hits} cache hit(s))${noted ? `, ${noted} note(s)` : ''}`);
 process.exit(0);
