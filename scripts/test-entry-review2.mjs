@@ -58,6 +58,16 @@ console.log('1: legacy report-deck slide images stay renderable');
   } else console.log('  skip render CLI tests (no rasterizer)');
 }
 
+console.log('2: Library CLI {ok:true} wrapper');
+const { parsePacket, PACKET_FORMAT, LIBRARY_REPO } = await import('./lib/library-input-core.mjs');
+{
+  const base = { format_version: PACKET_FORMAT, repository: LIBRARY_REPO, source_commit: null, working_tree_preview: true, publication_authorized: false, channels: {} };
+  const code = (fn) => { try { fn(); } catch (e) { return e.code; } return null; };
+  test('ok:true is accepted and dropped', () => { const p = parsePacket({ ok: true, ...base }); yes(!('ok' in p), 'ok kept'); });
+  test('ok:false / ok:"true" / ok:1 are rejected', () => { for (const v of [false, 'true', 1, null]) eq(code(() => parsePacket({ ok: v, ...base })), 'PACKET_SHAPE', String(v)); });
+  test('other unknown fields are still rejected', () => eq(code(() => parsePacket({ ...base, extra: 1 })), 'PACKET_UNKNOWN_FIELD'));
+}
+
 // <<SECTIONS>>
 
 console.log(`\nentry-review2: ${pass} passed, ${failed} failed`);

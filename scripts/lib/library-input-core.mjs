@@ -67,8 +67,14 @@ function gitHead(root) {
 }
 
 /** Strict structural check (unknown fields rejected). Throws LibraryInputError. */
-export function parsePacket(packet) {
-  if (!packet || typeof packet !== 'object' || Array.isArray(packet)) fail('PACKET_SHAPE', 'packet must be an object');
+export function parsePacket(input) {
+  if (!input || typeof input !== 'object' || Array.isArray(input)) fail('PACKET_SHAPE', 'packet must be an object');
+  // The Library CLI wraps every result as {"ok": true, ...}. Accept and drop exactly ok===true; anything else is refused.
+  let packet = input;
+  if (Object.hasOwn(input, 'ok')) {
+    if (input.ok !== true) fail('PACKET_SHAPE', `packet "ok" must be exactly true when present (got ${JSON.stringify(input.ok)}); a failed Library result is not a packet`);
+    const { ok, ...rest } = input; packet = rest;
+  }
   if (packet.format_version !== PACKET_FORMAT) fail('PACKET_FORMAT', `expected ${PACKET_FORMAT}`);
   const extra = Object.keys(packet).filter((k) => !PACKET_KEYS.includes(k));
   if (extra.length) fail('PACKET_UNKNOWN_FIELD', `unknown packet field(s): ${extra.join(', ')}`);

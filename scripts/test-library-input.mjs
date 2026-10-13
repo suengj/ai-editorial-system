@@ -199,7 +199,7 @@ if (!existsSync(join(libRepo, 'multimodal/units.py'))) { skipped++; console.log(
     const ids = [found.results[0].id, pat.results[0].id, vis.results[0].id];
     const out = mkdtempSync(join(tmpdir(), 'r3-out-'));
     const ho = py('handoff', '--root', lib, '--ids', ...ids, '--topic', 'pricing', '--surface', 'instagram', '--intensity', 'high', '--require-pinned');
-    const { ok, ...packet } = ho; writeFileSync(join(out, 'packet.json'), JSON.stringify(packet));
+    writeFileSync(join(out, 'packet.json'), JSON.stringify(ho)); // verbatim CLI stdout, including {"ok": true}
     writeFileSync(join(out, 'intent.json'), JSON.stringify(intent())); writeFileSync(join(out, 'sel.json'), JSON.stringify(SEL));
     const node = (args) => spawnSync('node', [resolve(HERE, args[0]), ...args.slice(1)], { cwd: REPO_ROOT, encoding: 'utf8' });
     const run = node(['library-intake.mjs', '--intent', join(out, 'intent.json'), '--target', 'signalytics-news', '--packet', join(out, 'packet.json'), '--library-root', lib, '--selections', join(out, 'sel.json'), '--fact-required', '--out-dir', join(out, 'a')]);
