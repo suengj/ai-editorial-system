@@ -94,7 +94,7 @@ export function planCarousel(series, catalog=loadVisualRecipes()) {
     addText('series-label',series.series_label,recurring.eyebrow,'eyebrow');
     addText('headline',f.headline,recurring.headline,'headline');
     for (const b of f.blocks) {
-      keys(b,['id','region','kind','ref','sha256','mode','fit','rights_note','protect','text','source_ref','instruction','generation'],'block');
+      keys(b,['id','region','kind','ref','sha256','mode','fit','rights_note','protect','text','source_ref','instruction','generation','provenance'],'block');
       need(slug(b.id) && !['series-label','headline','source','pagination'].includes(b.id) && !layers.some((l)=>l.id===b.id),'SERIES_LAYER_ID',String(b.id));
       need(layout[b.region] && !occupied.has(b.region),'SERIES_REGION',`unknown or duplicate region ${b.region}`); occupied.add(b.region);
       need(['text','image','chart','generated'].includes(b.kind),'SERIES_LAYER',String(b.kind));
@@ -107,7 +107,7 @@ export function planCarousel(series, catalog=loadVisualRecipes()) {
         keys(b,['id','region','kind','ref','sha256'],'chart block');
         need(text(b.ref),'SERIES_SOURCE',b.id);
       } else {
-        keys(b,['id','region','kind','ref','sha256','mode','fit','rights_note','protect',...(b.kind==='generated'?['instruction','generation']:[])],'image block');
+        keys(b,['id','region','kind','ref','sha256','mode','fit','rights_note','protect','provenance',...(b.kind==='generated'?['instruction','generation']:b.kind==='image'?['generation']:[])],'image block');
         if (b.kind==='generated') {
           need(text(b.instruction),'SERIES_GENERATION',b.id);
           layer.instruction = `${recipe.generation_direction}\nFrame purpose: ${f.takeaway}\n${b.instruction}\nCreate only the illustration for the content slot ${JSON.stringify(layer.slot)}. The compositor clips this asset to that slot; it adds headline, source, page count and watermark separately. Do not draw exact text, data, numbers or branding. A prompt alone is not pixel reservation.`;

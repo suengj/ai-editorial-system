@@ -5,7 +5,7 @@
  * Also: repair budget (1 base + 1 local fix) and byte-identical preservation of untouched frames.
  */
 import assert from 'node:assert/strict';
-import { readFileSync, writeFileSync, mkdirSync, mkdtempSync, copyFileSync } from 'node:fs';
+import { readFileSync, writeFileSync, mkdirSync, mkdtempSync, copyFileSync, existsSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
@@ -27,7 +27,8 @@ const rich = png((x, y) => [(x * 7 + y * 3) % 256, (x * 2 + y * 11) % 256, (x ^ 
 const placeholder = png(() => [200, 120, 40]);                     // basic-shape / flat fill
 const invisible = png((x, y) => [(x * 7) % 256, (y * 5) % 256, (x ^ y) % 256], 0); // rich colours but fully transparent
 writeFileSync(resolve(input, 'rich.png'), rich); writeFileSync(resolve(input, 'flat.png'), placeholder); writeFileSync(resolve(input, 'clear.png'), invisible);
-const ev = (file, bytes, mode = 'native') => ({ provider: 'claude-native-image', model: 'test-model', invocation_id: 'inv-1', mode, asset_sha256: sha256(bytes) });
+const respBytes = Buffer.from('{"id":"inv-1","provider":"claude-native-image"}\n'); writeFileSync(resolve(input, 'response.json'), respBytes);
+const ev = (file, bytes, mode = 'native') => ({ provider: 'claude-native-image', model: 'test-model', invocation_id: 'inv-1', mode, asset_sha256: sha256(bytes), response_ref: 'response.json', response_sha256: sha256(respBytes) });
 const series = (block) => { const s = structuredClone(base); s.frames[0].layout = 'visual'; s.frames[0].blocks = [{ id: 'art', region: 'content', kind: 'generated', instruction: 'One quiet paper sculpture.', rights_note: 'Test asset authored for this test.', fit: 'cover', ...block }]; return s; };
 const run = (s, dir, previousDir = null) => executeCarousel(s, { baseDir: input, outDir: resolve(root, dir), previousDir });
 
@@ -39,7 +40,7 @@ await ok('flat basic-shape placeholder with "real" evidence is GENERATION_NOT_VE
   const r = await run(series({ ref: 'flat.png', generation: ev('flat.png', placeholder) }), 'flat');
   assert.equal(r.frames[0].status, GENERATION_NOT_VERIFIED); assert.equal(r.status, 'INCOMPLETE');
   const rc = JSON.parse(readFileSync(resolve(root, 'flat/opening/receipt.json'), 'utf8'));
-  assert(rc.generation[0].not_verified_reasons.some((x) => /placeholder/.test(x)));
+  assert(rc.generation[0].not_verified_reasons.some((x) => /near-flat|placeholder/.test(x)));
 });
 await ok('mock mode is never generation success even with a rich asset', async () => {
   const r = await run(series({ ref: 'rich.png', generation: ev('rich.png', rich, 'mock') }), 'mock');
@@ -52,6 +53,41 @@ await ok('missing evidence and a sha mismatch are not success', async () => {
 await ok('an asset that does not change the final pixels is GENERATED_ASSET_NOT_USED', async () => {
   const r = await run(series({ ref: 'clear.png', generation: ev('clear.png', invisible) }), 'clear');
   assert.equal(r.frames[0].status, GENERATED_NOT_USED);
+});
+
+// SUE-1426 S5: generation evidence is SELF_ATTESTED; response file, flat-art attestation, image-layer laundering, rejected/ output.
+await ok('S5: success is labelled SELF_ATTESTED; only asset_in_final_png is machine-verified', async () => {
+  const r = await run(series({ ref: 'rich.png', generation: ev('rich.png', rich) }), 's5-ok');
+  const rc = JSON.parse(readFileSync(resolve(root, 's5-ok/opening/receipt.json'), 'utf8'));
+  assert.equal(rc.generation[0].evidence_level, 'SELF_ATTESTED'); assert.deepEqual(rc.generation[0].machine_verified, ['asset_in_final_png']);
+  assert.equal(rc.generation[0].response_sha256, sha256(respBytes)); assert.equal(r.frames[0].status, GENERATED_OK);
+});
+await ok('S5: missing, wrong-sha or absent provider response file is GENERATION_NOT_VERIFIED', async () => {
+  const noResp = { ...ev('rich.png', rich) }; delete noResp.response_ref; delete noResp.response_sha256;
+  assert.equal((await run(series({ ref: 'rich.png', generation: noResp }), 's5-noresp')).frames[0].status, GENERATION_NOT_VERIFIED);
+  assert.equal((await run(series({ ref: 'rich.png', generation: { ...ev('rich.png', rich), response_sha256: 'sha256:00' } }), 's5-badresp')).frames[0].status, GENERATION_NOT_VERIFIED);
+  assert.equal((await run(series({ ref: 'rich.png', generation: { ...ev('rich.png', rich), response_ref: 'nope.json' } }), 's5-gone')).frames[0].status, GENERATION_NOT_VERIFIED);
+});
+await ok('S5: near-flat art passes only with a recorded owner|agent attestation (not a colour-count rule)', async () => {
+  const g = ev('flat.png', placeholder);
+  assert.equal((await run(series({ ref: 'flat.png', generation: g }), 's5-flat0')).frames[0].status, GENERATION_NOT_VERIFIED);
+  assert.equal((await run(series({ ref: 'flat.png', generation: { ...g, flat_art_attestation: { by: 'robot', reason: 'intentionally flat poster' } } }), 's5-flat1')).frames[0].status, GENERATION_NOT_VERIFIED);
+  const r = await run(series({ ref: 'flat.png', generation: { ...g, flat_art_attestation: { by: 'owner', reason: 'intentionally flat poster' } } }), 's5-flat2');
+  const rc = JSON.parse(readFileSync(resolve(root, 's5-flat2/opening/receipt.json'), 'utf8'));
+  assert.equal(rc.generation[0].flat_art_attestation.by, 'owner'); assert.notEqual(r.frames[0].status, GENERATION_NOT_VERIFIED);
+});
+await ok('S5: a kind:"image" layer that says it is generated gets the same checks', async () => {
+  const mk = (extra) => { const s = series({ ref: 'rich.png' }); const b = s.frames[0].blocks[0]; b.kind = 'image'; delete b.instruction; delete b.generation; Object.assign(b, extra); return s; };
+  assert.equal((await run(mk({ provenance: { origin: 'generated' } }), 's5-img1')).frames[0].status, GENERATION_NOT_VERIFIED);
+  assert.equal((await run(mk({ rights_note: 'AI generated with a provider' }), 's5-img2')).frames[0].status, GENERATION_NOT_VERIFIED);
+  assert.equal((await run(mk({ provenance: { origin: 'generated' }, generation: ev('rich.png', rich) }), 's5-img3')).frames[0].status, GENERATED_OK);
+});
+await ok('S5: failed outputs live under rejected/; no success-looking PNG at the top level', async () => {
+  await run(series({ ref: 'flat.png', generation: ev('flat.png', placeholder) }), 's5-rej');
+  const d = resolve(root, 's5-rej/opening');
+  assert(!existsSync(resolve(d, 'image.png')) && !existsSync(resolve(d, 'master.png')));
+  assert(existsSync(resolve(d, 'rejected/image.png')) && existsSync(resolve(d, 'receipt.json')));
+  const rc = JSON.parse(readFileSync(resolve(d, 'receipt.json'), 'utf8')); assert.match(rc.outputs.image.ref, /^rejected\//);
 });
 let good;
 await ok('real-evidence rich asset is GENERATED_COMPOSED_NEEDS_REVIEW and the asset is measurably in the final PNG', async () => {

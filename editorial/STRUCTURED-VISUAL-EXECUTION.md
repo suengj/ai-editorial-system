@@ -219,6 +219,15 @@ node scripts/test-carousel.mjs --render
 - 이전 디렉터리 **옆**에 append-only `<base>.repair-ledger.jsonl`을 기록한다(base 디렉터리는 그대로). 같은 base에서 다른 출력 디렉터리로 두 번째 성공 수리(fan-out)를 하면 `REPAIR_LIMIT`. ledger가 깨지면 `LEDGER_CORRUPT`로 fail-closed.
 - 카드뉴스에서 모든 프레임이 바뀌면 국소 수정이 아니므로 `new_base_all_frames_changed`로 분류해 ledger에 `new_base`로 남기고 예산을 쓰지 않는다.
 
+### 생성 이미지 증거 (SUE-1426 S5)
+
+생성 증거(`provider`/`model`/`invocation_id`)는 호출자가 적은 문자열이므로 **`SELF_ATTESTED`** 로 표시한다. 기계가 확인하는 것은 "그 asset이 최종 PNG 픽셀에 실제로 들어갔는가" 하나뿐이다(`machine_verified: ["asset_in_final_png"]`).
+
+- `generation.response_ref` + `response_sha256`(공급자 raw response/metadata 파일)이 없거나 sha가 다르면 `GENERATION_NOT_VERIFIED`.
+- 색 6개 이하 규칙은 없다. 거의 단색인 asset은 `generation.flat_art_attestation: {by: "owner"|"agent", reason}`이 기록될 때만 통과하고, 없으면 NOT_VERIFIED로 남는다.
+- `kind:"image"` 레이어도 `provenance.origin: "generated"`, `generation` 키, 또는 rights_note의 "generated/생성" 표기가 있으면 같은 검사를 받는다.
+- 성공하지 못한 결과의 PNG/SVG는 `rejected/` 아래에만 쓴다(최상위에 성공처럼 보이는 PNG를 남기지 않음). receipt/execution.json은 그대로 최상위에 둔다.
+
 ### Visual QA는 기존 reviewer에게 연결
 
 `review-worklist.json`은 **검토 대상 목록이지 검토 통과 기록이 아니다.** 기존 `skills/review-visual/`, SUE-646/647 및 §11 시리즈 검토로 각 full/phone 이미지와 전체 contact sheet를 확인한다. focal hierarchy, balance/whitespace, text readability, visual density, style coherence, 사진/차트 충돌, 카드 순서·반복 역할의 일관성을 구분한다. `dashboardization`, `box_overload`, `dense_text`, `style_dilution`, `reference_drift`, `factual_overlay_intrusion` 등 기존 실패 태그를 사용한다. 요청한 dark-data 방향을 무조건 dashboard라는 이유만으로 탈락시키거나 pop-collage를 모든 계정 기본 스타일로 승격하지 않는다.
