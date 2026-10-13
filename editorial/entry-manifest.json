@@ -106,7 +106,7 @@
   "existing_flows": {
     "blog": { "surface": "suengj-com", "artifacts": ["text/article", "visual/evidence-visual", "visual/body-infographic"], "voice_family": null, "status": "CONNECTED_COMMON_ENTRY", "note": "Core constitution/voice only. SNS voice docs (personal/business/community) are never loaded; publication stays with suengj-com's own approval gate." },
     "news": { "surface": "newsletter", "artifacts": ["text/brief"], "voice_family": null, "status": "CONNECTED_COMMON_ENTRY", "note": "Newsletter/news brief on the newsletter surface; Signalytics news cards are the SNS target signalytics-news, not this flow." },
-    "report": { "surface": "report-deck", "artifacts": ["text/brief", "text/article"], "voice_family": null, "status": "CONNECTED_COMMON_ENTRY", "note": "Report/deck planning stays skills/compile-slide-deck + its schema; this flow only resolves the shared profile receipt." }
+    "report": { "surface": "report-deck", "artifacts": ["text/brief", "text/article", "visual/slide-image"], "voice_family": null, "status": "CONNECTED_COMMON_ENTRY", "note": "Report/deck planning stays skills/compile-slide-deck + its schema; this flow only resolves the shared profile receipt." }
   },
   "flows_not_connected": {
     "academic-paper": "surface profile exists but no flow was exercised here; left on the legacy path",

@@ -17,6 +17,7 @@ import { createHash } from 'node:crypto';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { spawnSync } from 'node:child_process';
+import { loadAxisProfiles } from './profile-core.mjs';
 
 export const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 export const MANIFEST_PATH = 'editorial/entry-manifest.json';
@@ -500,6 +501,10 @@ export function gateRender(plan, receipt, manifest, ctx = {}) {
     // A non-SNS surface label must not be a way around the gate: an SNS receipt, or an artifact only SNS targets map, still needs the full check.
     const flowArtifacts = new Set(Object.values(manifest.existing_flows ?? {}).flatMap((f) => f.artifacts));
     const snsOnly = new Set(Object.values(manifest.sns_targets).flatMap((t) => t.visual?.artifacts ?? []).filter((a) => !flowArtifacts.has(a)));
+    // Legacy behaviour kept: a non-SNS surface profile that itself declares the artifact (artifact_fit) was never SNS-gated.
+    let ownFit = [];
+    try { ownFit = loadAxisProfiles('surface')[surface]?.artifact_fit ?? []; } catch { ownFit = []; }
+    if (ownFit.includes(plan?.profiles?.artifact)) { snsOnly.delete(plan.profiles.artifact); }
     if (receipt?.target) return fail('PROFILE_TARGET_MISMATCH', `receipt names SNS target ${receipt.target.id} but the plan surface is ${surface}`);
     if (snsOnly.has(plan?.profiles?.artifact)) return fail('PROFILE_RECEIPT_REQUIRED', `artifact ${plan.profiles.artifact} is mapped only for SNS targets but the plan surface is ${surface}; set profiles.surface to the real SNS surface and pass --profile-receipt`);
     return { ok: true, applies: false };
