@@ -89,6 +89,14 @@ node scripts/test-visual-execution.mjs
 
 그 다음 `--profile-receipt receipt.json`을 `render-visual` / `render-carousel`에 넘긴다.
 
+게이트가 실제로 확인하는 것: receipt 상태 READY(해시된 본문 안의 status 포함), 본문 id가 `target:<id>`(flow는 `flow:<id>`)와 일치,
+task_kind가 `visual` 또는 `both`, 해당 target/artifact가 manifest에 매핑됨, 그 artifact의 시각 규칙 파일이 receipt에 로드되어 있고 현재 파일과 sha가 같음,
+manifest sha가 현재와 같음, revision이 현재와 같음. 이전 revision의 receipt로 의도적으로 렌더할 때만
+`--pinned-revision <receipt revision>`을 넘기며 출력에 `revision_check: pinned`로 기록된다.
+receipt는 **무결성 확인(integrity-checked)** 용이지 **암호학적 인증이 아니다** — 파일을 쓸 수 있는 사람은 해시를 다시 계산할 수 있다.
+게이트는 실수와 에이전트 오류를 막는 장치이지 위조를 막는 장치가 아니다.
+`resolve-editorial --plan`의 기본 task kind는 `visual`이다(렌더 대상이므로).
+
 원본 그림/글꼴 파일을 저장소에 넣지 않는다. 실제 사용자 파일은 기존 Drive/local locator, 생성물은 기존 전달 계층에 두며 이 저장소에는 작은 가상 테스트 자료만 둔다.
 
 ## 5. 내부 실행 sidecar의 최소 구조

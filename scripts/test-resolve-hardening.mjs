@@ -11,7 +11,7 @@ import { fileURLToPath } from 'node:url';
 import { spawnSync } from 'node:child_process';
 import * as realFs from 'node:fs';
 import { loadBusinessMagazineProfile } from './lib/business-magazine-core.mjs';
-import { RuleReader, READ, VERIFY, currentRevision, gitBlobId, gitState, resolveEditorial } from './lib/resolve-core.mjs';
+import { stageStamp, verifyStages, gateRender, hashOf, loadManifest, RuleReader, READ, VERIFY, currentRevision, gitBlobId, gitState, resolveEditorial } from './lib/resolve-core.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(HERE, '..');
@@ -189,6 +189,81 @@ test('flow receipts get the same domains (blog/news/report: suengj-style and voi
     blocked(resolveEditorial(it, { flowId: flow, overrides: { account_series: { hook_pattern: 'use trends-moa community voice' } }, reader: rd() }));
     blocked(resolveEditorial(it, { flowId: flow, overrides: { account_series: { visual_recipe: { approval: 'x' } } }, reader: rd() }));
   }
+});
+
+console.log('B3b: the render gate proves what it claims');
+{
+  const { manifest } = loadManifest(new RuleReader({ root: ROOT }));
+  const live = () => new RuleReader({ root: ROOT });
+  const plan = { profiles: { surface: 'instagram', artifact: 'visual/slide-image' } };
+  const mk = (target = 'signalytics-news', taskKind = 'visual', artifacts = ['visual/slide-image']) => resolveEditorial({ ...igIntent, axes: { ...igIntent.axes, artifacts: artifacts.map((value) => ({ value })) } }, { targetId: target, taskKind, reader: live() });
+  const rehash = (r) => { r.profile.resolved_hash = hashOf(r.profile.body); return r; };
+  const gate = (r, ctx = {}) => gateRender(plan, r, manifest, { reader: live(), ...ctx });
+  test('a genuine, current, visual receipt passes and the output states revision + integrity wording', () => {
+    const g = gate(mk()); yes(g.ok, JSON.stringify(g)); eq(g.revision_check, 'current'); yes(/not cryptographically authenticated/.test(g.integrity), 'wording');
+  });
+  test('hashed body carries status, target id, intent id, revision, task kind, manifest sha', () => {
+    const b = mk().profile.body;
+    for (const k of ['status', 'target_id', 'intent_id', 'revision', 'task_kind', 'manifest_sha256']) yes(b[k] !== undefined && b[k] !== null, `${k} missing`);
+  });
+  test('a receipt for another target cannot be relabelled (body id must equal target:<id>)', () => {
+    const r = mk('trends-moa', 'visual', ['visual/social-card']); r.target.id = 'signalytics-news';
+    eq(gate(r).code, 'PROFILE_TARGET_MISMATCH');
+  });
+  test('forged-and-rehashed: id swapped inside the body is still refused through target_id', () => {
+    const r = mk('trends-moa', 'visual', ['visual/social-card']); r.target.id = 'signalytics-news'; r.profile.body.id = 'target:signalytics-news'; rehash(r);
+    eq(gate(r).code, 'PROFILE_TARGET_MISMATCH');
+  });
+  test('a text-only receipt cannot authorise a render', () => {
+    eq(gate(mk('signalytics-news', 'text')).code, 'PROFILE_TASK_KIND');
+  });
+  test('a receipt whose body dropped the visual rule files is refused', () => {
+    const r = mk(); r.profile.body.rule_files = r.profile.body.rule_files.filter((f) => !/STRUCTURED-VISUAL/.test(f.path)); rehash(r);
+    eq(gate(r).code, 'VISUAL_RULES_NOT_LOADED');
+  });
+  test('a rule file changed after the receipt was resolved is refused', () => {
+    const r = mk(); const f = r.profile.body.rule_files.find((x) => /visual-recipes/.test(x.path)); f.sha256 = 'sha256:' + '0'.repeat(64); rehash(r);
+    eq(gate(r).code, 'VISUAL_RULES_CHANGED');
+  });
+  test('a receipt for a different manifest is refused', () => {
+    const r = mk(); r.profile.body.manifest_sha256 = 'sha256:' + '1'.repeat(64); rehash(r);
+    eq(gate(r).code, 'MANIFEST_CHANGED');
+  });
+  test('a stale revision is refused unless explicitly pinned; the pin is recorded', () => {
+    const r = mk(); r.profile.body.revision = 'abc1234'; rehash(r);
+    eq(gate(r).code, 'PROFILE_REVISION_STALE');
+    eq(gate(r, { pinnedRevision: 'zzz' }).code, 'PROFILE_REVISION_STALE');
+    const g = gate(r, { pinnedRevision: 'abc1234' }); yes(g.ok, JSON.stringify(g)); eq(g.revision_check, 'pinned'); eq(g.revision, 'abc1234');
+  });
+  test('a status that is not READY inside the hashed body is refused', () => {
+    const r = mk(); r.profile.body.status = 'BLOCKED_LEAK'; rehash(r); eq(gate(r).code, 'PROFILE_RECEIPT_NOT_READY');
+  });
+  test('render-visual CLI: stale receipt exits 1 PROFILE_REVISION_STALE; --pinned-revision renders and prints revision_check', () => {
+    const scratch = tmp(); const rp = resolve(scratch, 'r.json');
+    const res = run(['scripts/resolve-editorial.mjs', '--plan', 'scripts/fixtures/visual-execution/card.json', '--target', 'personal-instagram', '--out', rp]); eq(res.status, 0, res.stderr);
+    const r = JSON.parse(readFileSync(rp, 'utf8')); r.profile.body.revision = 'abc1234'; rehash(r); writeFileSync(rp, JSON.stringify(r));
+    const stale = run(['scripts/render-visual.mjs', '--plan', 'scripts/fixtures/visual-execution/card.json', '--profile-receipt', rp, '--compile-only', '--out', resolve(scratch, 'o1')]);
+    yes(stale.status === 1 && /PROFILE_REVISION_STALE/.test(stale.stderr), `${stale.status} ${stale.stderr}`);
+    const pinned = run(['scripts/render-visual.mjs', '--plan', 'scripts/fixtures/visual-execution/card.json', '--profile-receipt', rp, '--pinned-revision', 'abc1234', '--compile-only', '--out', resolve(scratch, 'o2')]);
+    yes(pinned.status === 0 && /"revision_check":"pinned"/.test(pinned.stdout), `${pinned.status} ${pinned.stdout}${pinned.stderr}`);
+  });
+  test('resolve-editorial --intent runs the intent validator (schema-invalid intent exits 1 INTENT_INVALID)', () => {
+    const f = resolve(tmp(), 'i.json'); writeFileSync(f, JSON.stringify(igIntent));
+    const r = run(['scripts/resolve-editorial.mjs', '--intent', f, '--target', 'trends-moa']);
+    yes(r.status === 1 && /INTENT_INVALID/.test(r.stderr), `${r.status} ${r.stderr}`);
+  });
+}
+
+console.log('S1: stage verification');
+const mk0 = () => resolveEditorial(igIntent, { targetId: 'signalytics-news', taskKind: 'visual', reader: new RuleReader({ root: ROOT }) });
+test('verifyStages: a non-READY receipt is NOT_READY even with a profile and matching stamps', () => {
+  const r = mk0(); const stamps = { generate: stageStamp(r, 'generate'), polish: stageStamp(r, 'polish'), review: stageStamp(r, 'review') };
+  eq(verifyStages(r, stamps), []);
+  const bl = structuredClone(r); bl.status = 'BLOCKED_LEAK';
+  eq(verifyStages(bl, stamps).map((i) => i.code), ['NOT_READY']);
+});
+test('review-l1 and review-visual skills carry the stage-check step', () => {
+  for (const f of ['skills/review-l1/SKILL.md', 'skills/review-visual/SKILL.md']) yes(/resolve-editorial\.mjs --receipt/.test(readFileSync(resolve(ROOT, f), 'utf8')), f);
 });
 
 console.log(`\nresolve-hardening: ${pass} passed, ${fail} failed`);

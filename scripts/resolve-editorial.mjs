@@ -5,7 +5,7 @@
  * precedence, maps the SNS target to its copy/visual profile, and writes ONE
  * resolved-profile receipt that generate, polish, review and render consume.
  *
- *   node scripts/resolve-editorial.mjs (--intent intent.json | --plan series.json|request.json) --target signalytics-news [--overrides o.json] [--task-kind text|visual|both] [--out receipt.json]
+ *   node scripts/resolve-editorial.mjs (--intent intent.json | --plan series.json|request.json) --target signalytics-news [--overrides o.json] [--task-kind text|visual|both] [--library-merged] [--out receipt.json]
  *   node scripts/resolve-editorial.mjs --list-targets
  *   node scripts/resolve-editorial.mjs --receipt receipt.json --stages stamps.json     (stage consistency check)
  * Exit 0 READY, 2 BLOCKED/inconsistent, 1 usage error. No network, LLM or publication.
@@ -13,10 +13,11 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { parseArgs } from 'node:util';
+import { validateIntent, loadSchema } from './lib/intent-core.mjs';
 import { RuleReader, loadManifest, resolveEditorial, verifyStages, intentFromPlan, STATUS } from './lib/resolve-core.mjs';
 
 try {
-  const { values: v } = parseArgs({ options: { intent: { type: 'string' }, plan: { type: 'string' }, target: { type: 'string' }, flow: { type: 'string' }, overrides: { type: 'string' }, 'task-kind': { type: 'string' }, out: { type: 'string' }, 'list-targets': { type: 'boolean', default: false }, flows: { type: 'boolean', default: false }, receipt: { type: 'string' }, stages: { type: 'string' } }, strict: true });
+  const { values: v } = parseArgs({ options: { intent: { type: 'string' }, plan: { type: 'string' }, 'library-merged': { type: 'boolean', default: false }, target: { type: 'string' }, flow: { type: 'string' }, overrides: { type: 'string' }, 'task-kind': { type: 'string' }, out: { type: 'string' }, 'list-targets': { type: 'boolean', default: false }, flows: { type: 'boolean', default: false }, receipt: { type: 'string' }, stages: { type: 'string' } }, strict: true });
   const reader = new RuleReader();
   const json = (p) => JSON.parse(readFileSync(resolve(p), 'utf8'));
   if (v['list-targets']) {
@@ -30,8 +31,17 @@ try {
     if (issues.length) process.exitCode = 2;
   } else {
     if (v.intent && v.plan) throw new Error('--intent and --plan are mutually exclusive');
-    if (!v.intent && !v.plan) throw new Error('usage: node scripts/resolve-editorial.mjs (--intent intent.json | --plan series.json|request.json) --target <id>|--flow blog|news|report [--overrides o.json] [--task-kind text|visual|both] [--out receipt.json] | --list-targets');
-    const receipt = resolveEditorial(v.plan ? intentFromPlan(json(v.plan)) : json(v.intent), { targetId: v.target ?? null, flowId: v.flow ?? null, overrides: v.overrides ? json(v.overrides) : {}, taskKind: v['task-kind'] ?? null, reader });
+    if (!v.intent && !v.plan) throw new Error('usage: node scripts/resolve-editorial.mjs (--intent intent.json | --plan series.json|request.json) --target <id>|--flow blog|news|report [--overrides o.json] [--task-kind text|visual|both] [--library-merged] [--out receipt.json] | --list-targets');
+    if (v.intent) { // the intent contract is enforced here too, not only by validate-intent
+      // --library-merged: the intent was produced by library-intake.mjs, which already validated it with the packet's ref ids;
+      // its private-library ref_ids (ref:lib-*) are not in the public catalog, so they are accepted as known here.
+      const raw = json(v.intent);
+      const extra = v['library-merged'] ? (raw?.inputs?.references ?? []).map((r) => r?.ref_id).filter((x) => typeof x === 'string' && x.startsWith('ref:lib-')) : [];
+      const { issues } = validateIntent(raw, loadSchema(), { extraKnownRefs: extra });
+      if (issues.length) throw Object.assign(new Error(`intent invalid (${issues.length}): ${issues.slice(0, 3).map((i) => `[${i.code}] ${i.where} ${i.message}`).join('; ')}`), { code: 'INTENT_INVALID' });
+    }
+    // A plan (series.json / request.json) is what gets rendered, so its receipt defaults to the visual task kind.
+    const receipt = resolveEditorial(v.plan ? intentFromPlan(json(v.plan)) : json(v.intent), { targetId: v.target ?? null, flowId: v.flow ?? null, overrides: v.overrides ? json(v.overrides) : {}, taskKind: v['task-kind'] ?? (v.plan ? 'visual' : null), reader });
     const body = `${JSON.stringify(receipt, null, 2)}\n`;
     if (v.out) writeFileSync(resolve(v.out), body); else process.stdout.write(body);
     console.error(`resolve: ${receipt.status}${receipt.profile ? ` profile=${receipt.profile.id} hash=${receipt.profile.resolved_hash.slice(0, 19)}` : ''}${receipt.conflicts.length ? ` conflicts=${receipt.conflicts.map((c) => c.code).join(',')}` : ''}`);

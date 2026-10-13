@@ -401,6 +401,11 @@ export function resolveEditorial(intent, { targetId = null, flowId = null, overr
   receipt.freshness = { rule_files: 'pinned_by_revision', dynamic_sources: 'reread_each_run', max_source_age_days: intent?.constraints?.max_source_age_days ?? null, cache_applies_to: 'rule files only' };
 
   const profileBody = {
+    status: receipt.status,
+    intent_id: receipt.intent_id,
+    revision: reader.revision,
+    target_id: targetId ?? null,
+    flow_id: flowId ?? null,
     id: targetId ? `target:${targetId}` : flowId ? `flow:${flowId}` : `surface:${surfaceId ?? 'none'}`,
     voice_family: target?.voice_family ?? null,
     task_kind: plan.task_kind,
@@ -431,6 +436,7 @@ export const stageStamp = (receipt, stage) => ({ stage, profile_id: receipt.prof
 
 export function verifyStages(receipt, stamps) {
   const issues = [];
+  if (receipt?.status !== STATUS.READY) return [{ code: 'NOT_READY', message: `receipt status is ${receipt?.status}; only a READY receipt can be stage-checked` }];
   if (!receipt?.profile) return [{ code: 'NO_PROFILE', message: 'receipt carries no resolved profile (status ' + receipt?.status + ')' }];
   if (hashOf(receipt.profile.body) !== receipt.profile.resolved_hash) issues.push({ code: 'RECEIPT_HASH_MISMATCH', message: 'profile body does not hash to its resolved_hash (tampered or stale)' });
   for (const stage of ['generate', 'polish', 'review']) {
@@ -452,26 +458,65 @@ export const SNS_SURFACES = ['instagram', 'linkedin'];
  * registered SNS surface needs a READY receipt whose target is on that surface,
  * has a visual mapping and allows the plan's artifact. Other surfaces pass through.
  */
-export function gateRender(plan, receipt, manifest) {
+/**
+ * Render gate. A receipt is INTEGRITY-CHECKED (its hashed body is internally consistent and matches the current
+ * rule files / manifest / revision); it is NOT cryptographically authenticated: anyone who can write a file can
+ * recompute a hash. The gate stops accidental and agent-error renders, not a determined forger.
+ *
+ * ctx = { reader?, pinnedRevision? }. The receipt's revision must equal the current revision, or the caller must
+ * pass pinnedRevision equal to the receipt's revision; the choice is recorded in the returned object.
+ */
+export function gateRender(plan, receipt, manifest, ctx = {}) {
   const surface = plan?.profiles?.surface;
-  if (!SNS_SURFACES.includes(surface)) {
-    // Legacy non-SNS render stays ungated unless a flow receipt is supplied; then it must be consistent.
-    if (!receipt?.flow) return { ok: true, applies: false };
-    const f = (code, message) => ({ ok: false, applies: true, code, message });
-    if (receipt.status !== STATUS.READY || !receipt.profile) return f('PROFILE_RECEIPT_NOT_READY', `receipt status ${receipt.status}`);
-    if (hashOf(receipt.profile.body) !== receipt.profile.resolved_hash) return f('PROFILE_RECEIPT_HASH_MISMATCH', 'receipt body does not match its resolved_hash');
-    if (receipt.flow.surface !== surface) return f('PROFILE_TARGET_MISMATCH', `flow receipt ${receipt.flow.id} is on surface ${receipt.flow.surface}, plan surface is ${surface}`);
-    return { ok: true, applies: true, resolved_hash: receipt.profile.resolved_hash, profile_id: receipt.profile.id };
-  }
   const fail = (code, message) => ({ ok: false, applies: true, code, message });
-  if (!receipt) return fail('PROFILE_RECEIPT_REQUIRED', `surface ${surface} is a registered SNS surface: run scripts/resolve-editorial.mjs --target <id> and pass --profile-receipt`);
+  const isSns = SNS_SURFACES.includes(surface);
+  if (!isSns && !receipt?.flow) return { ok: true, applies: false };
+  if (!receipt) return fail('PROFILE_RECEIPT_REQUIRED', `surface ${surface} is a registered SNS surface: run scripts/resolve-editorial.mjs --plan <plan.json> --target <id> --out receipt.json and pass --profile-receipt`);
   if (receipt.status !== STATUS.READY || !receipt.profile) return fail('PROFILE_RECEIPT_NOT_READY', `receipt status ${receipt.status}`);
-  if (hashOf(receipt.profile.body) !== receipt.profile.resolved_hash) return fail('PROFILE_RECEIPT_HASH_MISMATCH', 'receipt body does not match its resolved_hash');
-  const t = manifest.sns_targets[receipt.target?.id];
-  if (!t || t.surface !== surface) return fail('PROFILE_TARGET_MISMATCH', `receipt target ${receipt.target?.id} is not on surface ${surface}`);
-  if (!t.visual) return fail('NO_VISUAL_PROFILE', `target ${receipt.target.id} has no registered visual profile`);
-  if (!t.visual.artifacts.includes(plan.profiles.artifact)) return fail('ARTIFACT_NOT_MAPPED', `${plan.profiles.artifact} is not mapped for ${receipt.target.id}`);
-  return { ok: true, applies: true, resolved_hash: receipt.profile.resolved_hash, profile_id: receipt.profile.id };
+  const body = receipt.profile.body;
+  if (!isObj(body) || hashOf(body) !== receipt.profile.resolved_hash) return fail('PROFILE_RECEIPT_HASH_MISMATCH', 'receipt body does not match its resolved_hash');
+  if (body.status !== STATUS.READY) return fail('PROFILE_RECEIPT_NOT_READY', `hashed body status is ${body.status}`);
+  if (!['visual', 'both'].includes(body.task_kind)) return fail('PROFILE_TASK_KIND', `receipt was resolved for task_kind "${body.task_kind}"; rendering needs visual or both (resolve-editorial --task-kind visual)`);
+
+  let rules = [];
+  let identity;
+  if (isSns) {
+    const tid = receipt.target?.id;
+    const t = tid && Object.hasOwn(manifest.sns_targets, tid) ? manifest.sns_targets[tid] : null;
+    if (!t || t.surface !== surface) return fail('PROFILE_TARGET_MISMATCH', `receipt target ${tid} is not on surface ${surface}`);
+    if (body.id !== `target:${tid}` || body.target_id !== tid) return fail('PROFILE_TARGET_MISMATCH', `hashed profile id ${body.id} does not name target ${tid}`);
+    if (!t.visual) return fail('NO_VISUAL_PROFILE', `target ${tid} has no registered visual profile`);
+    if (!t.visual.artifacts.includes(plan.profiles.artifact)) return fail('ARTIFACT_NOT_MAPPED', `${plan.profiles.artifact} is not mapped for ${tid}`);
+    rules = [...t.visual.files, ...t.visual.values];
+    identity = { profile_id: receipt.profile.id, target: tid };
+  } else {
+    const fid = receipt.flow?.id;
+    const f = fid && Object.hasOwn(manifest.existing_flows ?? {}, fid) ? manifest.existing_flows[fid] : null;
+    if (!f || f.surface !== surface || receipt.flow.surface !== surface) return fail('PROFILE_TARGET_MISMATCH', `flow receipt ${fid} is on surface ${receipt.flow?.surface}, plan surface is ${surface}`);
+    if (body.id !== `flow:${fid}` || body.flow_id !== fid) return fail('PROFILE_TARGET_MISMATCH', `hashed profile id ${body.id} does not name flow ${fid}`);
+    if (!f.artifacts.includes(plan.profiles.artifact)) return fail('ARTIFACT_NOT_MAPPED', `${plan.profiles.artifact} is not mapped for flow ${fid}`);
+    identity = { profile_id: receipt.profile.id, flow: fid };
+  }
+  const reader = ctx.reader ?? new RuleReader();
+  const mf = reader.read(MANIFEST_PATH);
+  if (mf.status !== READ.READ) return fail('MANIFEST_UNREADABLE', `entry manifest ${mf.status}`);
+  if (body.manifest_sha256 !== mf.sha256 || receipt.manifest?.sha256 !== mf.sha256) return fail('MANIFEST_CHANGED', 'the entry manifest changed since this receipt was resolved; re-run resolve-editorial');
+  const current = reader.revision;
+  let revisionCheck = 'current';
+  if (body.revision !== current) {
+    if (ctx.pinnedRevision && ctx.pinnedRevision === body.revision) revisionCheck = 'pinned';
+    else return fail('PROFILE_REVISION_STALE', `receipt was resolved at revision ${body.revision}, current is ${current}; re-run resolve-editorial or pass --pinned-revision ${body.revision} to render against the pinned revision on purpose`);
+  }
+  const have = new Map((body.rule_files ?? []).map((r) => [r.path, r.sha256]));
+  for (const path of rules) {
+    if (!have.has(path)) return fail('VISUAL_RULES_NOT_LOADED', `receipt did not load visual rule file ${path} for ${plan.profiles.artifact}; resolve with --task-kind visual`);
+    if (revisionCheck === 'current') {
+      const cur = reader.read(path);
+      if (cur.status !== READ.READ) return fail('VISUAL_RULES_UNREADABLE', `${path}: ${cur.status}`);
+      if (cur.sha256 !== have.get(path)) return fail('VISUAL_RULES_CHANGED', `${path} changed since this receipt was resolved; re-run resolve-editorial`);
+    }
+  }
+  return { ok: true, applies: true, resolved_hash: receipt.profile.resolved_hash, ...identity, revision: body.revision, revision_check: revisionCheck, current_revision: current, integrity: 'hash-checked, not cryptographically authenticated' };
 }
 
 /** Signalytics-style delivery contract check (file names only; no Drive writes are ever represented). */

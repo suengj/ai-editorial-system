@@ -1,0 +1,65 @@
+{
+  "schema_version": "2.0.0",
+  "intent_id": "intent:2026-10-13-sns-instagram-signalytics-card",
+  "created_at": "2026-09-05T13:40:00Z",
+  "request": {
+    "utterance": "이번 주 비즈니스 아이디어 5장 캐러셀 만들어줘. 계정은 signalytics.news.",
+    "language": "ko",
+    "received_by": "claude-code",
+    "received_at": "2026-09-05T13:40:00Z"
+  },
+  "axes": {
+    "transformation": {
+      "value": "synthesize",
+      "state": "assumed",
+      "profile_ref": "editorial/profiles/transformation/synthesize.json",
+      "basis": "default_authorized; example intent for the SNS path."
+    },
+    "content_type": {
+      "value": "news",
+      "state": "assumed",
+      "profile_ref": "editorial/profiles/content/news.json",
+      "basis": "default_authorized; example intent for the SNS path."
+    },
+    "audience": {
+      "value": "professional-generalist",
+      "state": "assumed",
+      "profile_ref": "editorial/profiles/audience/professional-generalist.json",
+      "basis": "default_authorized; example intent for the SNS path."
+    },
+    "surface": {
+      "value": "instagram",
+      "state": "confirmed",
+      "profile_ref": "editorial/profiles/surface/instagram.json",
+      "basis": "The utterance named the Instagram carousel; the account (signalytics.news) is chosen at resolve time with --target, never inferred."
+    },
+    "artifacts": [
+      {
+        "value": "visual/slide-image",
+        "state": "confirmed",
+        "basis": "5-frame carousel requested."
+      }
+    ]
+  },
+  "inputs": {
+    "sources": [
+      {
+        "source_id": "src:drive:1MarketBriefToday",
+        "state": "confirmed"
+      }
+    ],
+    "references": []
+  },
+  "constraints": {
+    "output_language": "ko"
+  },
+  "overrides": [],
+  "clarification": {
+    "required": [],
+    "asked": [],
+    "resolution": "default_authorized",
+    "note": "Example only: shows an SNS intent. The target account is a delivery-time choice (scripts/resolve-editorial.mjs --intent <this> --target signalytics-news)."
+  },
+  "calibration_ref": "calibration:suengj-com-voice@v3",
+  "status": "ready"
+}

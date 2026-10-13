@@ -30,6 +30,7 @@ const fullIntent = (surface, artifacts = ['text/article']) => {
 };
 const rd = () => new RuleReader({ revision: 'test-rev' });
 const { manifest } = loadManifest(rd());
+const GCTX = { reader: rd() };
 const intent = (surface, artifacts = ['text/article']) => ({ intent_id: 'intent:test', request: { language: 'ko' }, axes: { transformation: { value: 'synthesize' }, content_type: { value: 'research' }, audience: { value: 'domain-practitioner' }, surface: { value: surface }, artifacts: artifacts.map((value) => ({ value })) } });
 const tmp = () => mkdtempSync(resolve(tmpdir(), 'qf-'));
 const rcpt = (surface, target, art) => resolveEditorial(intent(surface, art), { targetId: target, reader: rd() });
@@ -178,12 +179,12 @@ test('legacy compatibility: no-flow resolve on non-SNS surfaces is unchanged (RE
 });
 test('render gate: legacy non-SNS render stays ungated; a flow receipt is verified when supplied', () => {
   const plan = (surface) => ({ profiles: { surface, artifact: 'visual/evidence-visual' } });
-  eq(gateRender(plan('suengj-com'), null, manifest).applies, false);
-  const r = resolveEditorial(intent('suengj-com'), { flowId: 'blog', reader: rd() });
-  eq(gateRender(plan('suengj-com'), r, manifest).ok, true);
-  eq(gateRender(plan('report-deck'), r, manifest).code, 'PROFILE_TARGET_MISMATCH');
+  eq(gateRender(plan('suengj-com'), null, manifest, GCTX).applies, false);
+  const r = resolveEditorial(intent('suengj-com', ['visual/evidence-visual']), { flowId: 'blog', taskKind: 'visual', reader: rd() });
+  eq(gateRender(plan('suengj-com'), r, manifest, GCTX).ok, true);
+  eq(gateRender(plan('report-deck'), r, manifest, GCTX).code, 'PROFILE_TARGET_MISMATCH');
   const t = JSON.parse(JSON.stringify(r)); t.profile.body.fields.x = 1;
-  eq(gateRender(plan('suengj-com'), t, manifest).code, 'PROFILE_RECEIPT_HASH_MISMATCH');
+  eq(gateRender(plan('suengj-com'), t, manifest, GCTX).code, 'PROFILE_RECEIPT_HASH_MISMATCH');
 });
 test('flow stage stamps are verifiable like SNS ones', () => {
   const r = resolveEditorial(intent('report-deck', ['text/brief']), { flowId: 'report', reader: rd() });

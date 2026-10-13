@@ -6,7 +6,7 @@ import { isRenderedOk } from './lib/visual-execution-core.mjs';
 import { RuleReader, loadManifest, gateRender } from './lib/resolve-core.mjs';
 import { compileExecution, executeVisual, prepareOutput } from './lib/visual-execution-core.mjs';
 const args = process.argv.slice(2);
-const allowed = new Set(['--plan', '--out', '--preset', '--rasterizer', '--compile-only', '--profile-receipt', '--repair-of']);
+const allowed = new Set(['--plan', '--out', '--preset', '--rasterizer', '--compile-only', '--profile-receipt', '--repair-of', '--pinned-revision']);
 const opts = {};
 try {
   for (let i = 0; i < args.length; i++) {
@@ -19,7 +19,7 @@ try {
   const path = resolve(opts['--plan']), outDir = resolve(opts['--out']);
   const plan = JSON.parse(readFileSync(path, 'utf8'));
   // SUE-1426: registered SNS surfaces render only under a READY resolved-profile receipt (see scripts/resolve-editorial.mjs).
-  const gate = gateRender(plan, opts['--profile-receipt'] ? JSON.parse(readFileSync(resolve(opts['--profile-receipt']), 'utf8')) : null, loadManifest(new RuleReader()).manifest);
+  const gate = gateRender(plan, opts['--profile-receipt'] ? JSON.parse(readFileSync(resolve(opts['--profile-receipt']), 'utf8')) : null, loadManifest(new RuleReader()).manifest, { reader: new RuleReader(), pinnedRevision: opts['--pinned-revision'] ?? null });
   if (!gate.ok) throw Object.assign(new Error(gate.message), { code: gate.code });
   const preset = opts['--preset'] ? JSON.parse(readFileSync(resolve(opts['--preset']), 'utf8')) : {};
   let result;
@@ -29,7 +29,7 @@ try {
     mkdirSync(outDir, { recursive: true });
     writeFileSync(resolve(outDir, 'execution.json'), `${JSON.stringify(result, null, 2)}\n`);
   } else result = await executeVisual(plan, { baseDir: dirname(path), outDir, preset, rasterizer: opts['--rasterizer'] ?? 'auto', repairOf: opts['--repair-of'] ? resolve(opts['--repair-of']) : null });
-  console.log(JSON.stringify({ status: result.status, out: outDir, request_hash: result.request_hash, profile_hash: gate.resolved_hash ?? null, api_calls: 0, phase4: 'NOT_RUN' }));
+  console.log(JSON.stringify({ status: result.status, out: outDir, request_hash: result.request_hash, profile_hash: gate.resolved_hash ?? null, profile_revision: gate.revision ?? null, revision_check: gate.revision_check ?? null, api_calls: 0, phase4: 'NOT_RUN' }));
   if (!opts['--compile-only'] && !isRenderedOk(result.status)) process.exitCode = 2;
 } catch (err) {
   console.error(JSON.stringify({ status: 'FAILED', code: err.code ?? 'EXECUTION_FAILED', message: err.message }));

@@ -26,6 +26,7 @@ const intent = (surface, artifacts = ['text/article']) => ({ intent_id: 'intent:
 const reader = () => new RuleReader({ revision: 'test-rev' });
 const paths = (r) => r.loads.map((l) => l.path);
 const { manifest } = loadManifest(reader());
+const GCTX = { reader: reader() };
 
 console.log('load plan');
 test('text task for the personal LinkedIn target loads only its own voice doc and no visual or other-voice docs', () => {
@@ -181,13 +182,13 @@ console.log('render gate');
 const planFor = (surface, artifact) => ({ profiles: { surface, artifact } });
 test('SNS plan without a receipt, with a mismatched artifact, or with a tampered receipt is refused; a matching one passes', () => {
   const rec = resolveEditorial(intent('instagram', ['visual/slide-image']), { targetId: 'signalytics-news', taskKind: 'visual', reader: reader() });
-  eq(gateRender(planFor('instagram', 'visual/slide-image'), null, manifest).code, 'PROFILE_RECEIPT_REQUIRED');
-  eq(gateRender(planFor('instagram', 'visual/social-card'), rec, manifest).code, 'ARTIFACT_NOT_MAPPED');
+  eq(gateRender(planFor('instagram', 'visual/slide-image'), null, manifest, GCTX).code, 'PROFILE_RECEIPT_REQUIRED');
+  eq(gateRender(planFor('instagram', 'visual/social-card'), rec, manifest, GCTX).code, 'ARTIFACT_NOT_MAPPED');
   const t = structuredClone(rec); t.profile.body.fields.canvas = { width: 1 };
-  eq(gateRender(planFor('instagram', 'visual/slide-image'), t, manifest).code, 'PROFILE_RECEIPT_HASH_MISMATCH');
-  eq(gateRender(planFor('linkedin', 'visual/slide-image'), rec, manifest).code, 'PROFILE_TARGET_MISMATCH');
-  yes(gateRender(planFor('instagram', 'visual/slide-image'), rec, manifest).ok, 'matching refused');
-  yes(gateRender(planFor('suengj-com', 'visual/social-card'), null, manifest).applies === false, 'non-SNS surface should pass through');
+  eq(gateRender(planFor('instagram', 'visual/slide-image'), t, manifest, GCTX).code, 'PROFILE_RECEIPT_HASH_MISMATCH');
+  eq(gateRender(planFor('linkedin', 'visual/slide-image'), rec, manifest, GCTX).code, 'PROFILE_TARGET_MISMATCH');
+  yes(gateRender(planFor('instagram', 'visual/slide-image'), rec, manifest, GCTX).ok, 'matching refused');
+  yes(gateRender(planFor('suengj-com', 'visual/social-card'), null, manifest, GCTX).applies === false, 'non-SNS surface should pass through');
 });
 
 console.log('real entry points call the resolver');
@@ -207,7 +208,7 @@ test('behavioural: validate-intent reports the load plans it resolved', () => {
   yes(r.status === 0 && /load plan\(s\) resolved/.test(r.stdout), r.stdout.slice(-300));
 });
 test('behavioural: resolve-editorial CLI exits 2 on BLOCKED_TARGET_REQUIRED and 0 on READY', () => {
-  const dir = mkdtempSync(resolve(tmpdir(), 're-')); const f = resolve(dir, 'i.json'); writeFileSync(f, JSON.stringify(intent('instagram')));
+  const dir = mkdtempSync(resolve(tmpdir(), 're-')); const f = resolve(HERE, '../schemas/examples/intent-sns-instagram.example.json');
   yes(run(['scripts/resolve-editorial.mjs', '--intent', f]).status === 2, 'blocked exit');
   yes(run(['scripts/resolve-editorial.mjs', '--intent', f, '--target', 'trends-moa', '--out', resolve(dir, 'r.json')]).status === 0, 'ready exit');
 });

@@ -80,6 +80,10 @@ findings with evidence, an integrity read, and a routing outcome.
 
 ## Procedure
 
+0. **Stage check for SNS targets.** Before reviewing, confirm generate, polish and review ran under the same resolved profile:
+   `node scripts/resolve-editorial.mjs --receipt <receipt.json> --stages <stamps.json>` must report `consistent: true`
+   (exit 2 means stop and report; a receipt that is not READY is `NOT_READY`, never reviewable).
+
 1. **Select the reference set.** Same content type as the subject wherever
    possible — Research to Research, News to News. A cross-type reference is
    used only for a declared cross-cutting dimension; every other dimension
