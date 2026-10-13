@@ -219,6 +219,29 @@ if (!existsSync(join(libRepo, 'multimodal/units.py'))) { skipped++; console.log(
     eq(py('verify-packet', '--root', lib, '--file', join(out, 'packet.json')).all_ok, true);
   });
 }
+console.log('review2 #5/#6: pin forgery and missing_material');
+test('#5 uncommitted edit re-hashed into a "pinned" packet is not usable as fact_source', () => {
+  const root = makeLibrary(baseUnits()); const pk = packetFor(root, [K]);
+  const rel = unitPath('knowledge', K[0]); const u = JSON.parse(readFileSync(join(root, rel), 'utf8')); u.summary = 'edited but never committed';
+  put(root, rel, u); pk.channels.knowledge[0].sha256 = sha(readFileSync(join(root, rel)));
+  const a = adaptLibraryPacket(pk, { reader: new LibraryReader(root), selections: {} });
+  eq(a.items[0].verification, 'pin_blob_mismatch'); yes(!a.items[0].usable && a.inputs.sources.length === 0, 'must not become a source');
+  yes(a.blocked_uses.some((b) => b.use === 'fact_claims'), 'fact use blocked');
+});
+test('#5 a made-up commit is blocked, not merely noted as stale', () => {
+  const root = makeLibrary(baseUnits()); const pk = packetFor(root, [K]); pk.source_commit = 'a'.repeat(40);
+  const a = adaptLibraryPacket(pk, { reader: new LibraryReader(root), selections: {} });
+  eq(a.items[0].verification, 'pin_commit_missing'); yes(!a.items[0].usable && a.inputs.sources.length === 0, 'blocked');
+});
+test('#5 a genuinely committed, unchanged file stays usable', () => {
+  const root = makeLibrary(baseUnits()); const a = adaptLibraryPacket(packetFor(root, [K]), { reader: new LibraryReader(root), selections: {} });
+  yes(a.items[0].usable && a.inputs.sources.length === 1, JSON.stringify(a.items[0]));
+});
+test('#6 --fact-required with only a missing_material source is BLOCKED, not allowed_with_sources', () => {
+  const r = runLibraryIntake({ intent: intent([{ source_id: 'src:drive:1Missing', state: 'missing_material' }]), packet: null, target: 'signalytics-news', factRequired: true });
+  eq(r.brief.copy_plan.factual_claims, 'BLOCKED'); eq(r.brief.copy_plan.fact_sources.user, []);
+});
+
 test('static: the entry imports and calls the adapter and resolveEditorial', () => {
   const s = readFileSync(resolve(HERE, 'library-intake.mjs'), 'utf8');
   yes(/adaptLibraryPacket\(packet/.test(s) && /resolveEditorial\(merged/.test(s) && /mergeIntoIntent/.test(s), 'wiring');

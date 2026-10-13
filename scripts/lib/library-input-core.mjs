@@ -61,6 +61,20 @@ export class LibraryReader {
     return r;
   }
 }
+/**
+ * Pin verification (review2 #5): a packet that claims source_commit must match git, not just itself.
+ * The commit must exist in the library root, and each file's content must equal that commit's blob for the path.
+ */
+LibraryReader.prototype.pinCheck = function pinCheck(commit, path, buf) {
+  if (!this.root) return 'no_root';
+  this.commitOk ??= new Map();
+  if (!this.commitOk.has(commit)) this.commitOk.set(commit, spawnSync('git', ['-C', this.root, 'cat-file', '-e', `${commit}^{commit}`], { encoding: 'utf8' }).status === 0);
+  if (!this.commitOk.get(commit)) return this.head === null ? 'pin_unverifiable_no_git' : 'pin_commit_missing';
+  const g = spawnSync('git', ['-C', this.root, 'rev-parse', '--verify', '-q', `${commit}:${path}`], { encoding: 'utf8' });
+  if (g.status !== 0) return 'pin_not_in_commit';
+  const want = g.stdout.trim(), got = createHash('sha1').update(Buffer.concat([Buffer.from(`blob ${buf.length}\0`), buf])).digest('hex');
+  return want === got ? 'ok' : 'pin_blob_mismatch';
+};
 function gitHead(root) {
   const g = spawnSync('git', ['-C', root, 'rev-parse', 'HEAD'], { encoding: 'utf8' });
   return g.status === 0 ? g.stdout.trim() : null;
@@ -136,7 +150,8 @@ export function adaptLibraryPacket(rawPacket, { reader = new LibraryReader(null)
   for (const p of packet.provenance ?? []) {
     const r = reader.read(p.path);
     const noteLike = /^(notes|maps|intelligence\/knowledge)\/.+\.md$/.test(p.path);
-    const status = r.status === 'no_root' ? 'unverified_no_root' : r.status !== 'read' ? r.status : r.sha256 === p.sha256 ? 'verified' : 'hash_mismatch';
+    let status = r.status === 'no_root' ? 'unverified_no_root' : r.status !== 'read' ? r.status : r.sha256 === p.sha256 ? 'verified' : 'hash_mismatch';
+    if (status === 'verified' && pinned) { const pc = reader.pinCheck(packet.source_commit, p.path, r.buf); if (pc !== 'ok') status = pc; }
     if (!['verified'].includes(status)) provBad.push({ path: p.path, status });
     if (noteLike) out.supporting_notes.push({ path: p.path, sha256: p.sha256, verification: status, use: 'context_only', locator: `library://${LIBRARY_REPO}/${p.path}?rev=${packet.source_commit ?? 'working-tree-preview'}&sha256=${p.sha256}` });
   }
@@ -151,6 +166,7 @@ export function adaptLibraryPacket(rawPacket, { reader = new LibraryReader(null)
       if (r.status === 'no_root') item.verification = 'unverified_no_root';
       else if (r.status !== 'read') item.verification = r.status;
       else if (r.sha256 !== it.sha256) item.verification = 'hash_mismatch';
+      else if (pinned && (item.pin = reader.pinCheck(packet.source_commit, it.path, r.buf)) !== 'ok') item.verification = item.pin;
       else {
         item.verification = 'verified';
         let unit = null; try { unit = JSON.parse(r.buf.toString('utf8')); } catch { item.verification = 'unparseable'; }
@@ -248,7 +264,7 @@ export function libraryDecision(intent, { packet = null, noLibrary = false, fact
 /** Build the copy plan / visual plan brief from the resolved receipt and the adapted library input. */
 export function buildEditorialBrief({ intent, receipt, adapted = null, decision, factRequired = false, taskKind = null }) {
   const body = receipt.profile?.body ?? null;
-  const userSources = (intent.inputs?.sources ?? []).filter((s) => !String(s.source_id).includes(LIBRARY_REPO)).map((s) => s.source_id);
+  const userSources = (intent.inputs?.sources ?? []).filter((s) => !String(s.source_id).includes(LIBRARY_REPO) && s.state !== 'missing_material').map((s) => s.source_id);
   const librarySources = adapted?.items.filter((i) => i.source_id).map((i) => i.source_id) ?? [];
   const factAvailable = userSources.length + librarySources.length > 0;
   const blocked = [...(adapted?.blocked_uses ?? [])];
