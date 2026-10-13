@@ -139,15 +139,22 @@ SUE-1417 · 명시적으로 선택하는 시리즈 프로필. 새 서비스·DB�
 # 원고/근거 구조 점검 + 기존 carousel 입력 생성. 이미지 생성이 아님.
 node scripts/compile-business-magazine.mjs --packet /content/packet.json --out /tmp/bizmag-plan
 
-# 준비된 실제 자산을 기존 renderer로 합성. 미제공 생성자산은 완료가 아니다.
-node scripts/render-carousel.mjs --plan /tmp/bizmag-plan/series.json --out /tmp/bizmag-first
+# Instagram plan은 profile receipt 없이 렌더되지 않는다(SUE-1426). Signalytics 흐름은 packet.json에서
+# 시작해 intent.json이 없으므로, series.json의 surface/artifact에서 receipt를 만든다.
+node scripts/resolve-editorial.mjs --plan /tmp/bizmag-plan/series.json --target signalytics-news --out /tmp/bizmag-receipt.json
 
-# 기존 --previous 경로: 원본 및 바뀌지 않은 frame bytes의 재사용
-node scripts/render-carousel.mjs --plan /tmp/bizmag-revised/series.json --previous /tmp/bizmag-first --out /tmp/bizmag-second
+# 준비된 실제 자산을 기존 renderer로 합성. 미제공 생성자산은 완료가 아니다.
+node scripts/render-carousel.mjs --plan /tmp/bizmag-plan/series.json --profile-receipt /tmp/bizmag-receipt.json --out /tmp/bizmag-first
+
+# 기존 --previous 경로: 원본 및 바뀌지 않은 frame bytes의 재사용 (수정본도 같은 receipt로 게이트를 통과한다)
+node scripts/render-carousel.mjs --plan /tmp/bizmag-revised/series.json --profile-receipt /tmp/bizmag-receipt.json --previous /tmp/bizmag-first --out /tmp/bizmag-second
 
 # CI가 아닌 수동 로컬 검사
 node scripts/test-business-magazine.mjs
 ```
+
+`resolve-editorial --plan`은 계정을 추측하지 않는다(`--target`은 필수). receipt는 무결성 검사용
+기록이지 암호학적 인증이 아니다(§ STRUCTURED-VISUAL-EXECUTION.md 「SNS 렌더 게이트」).
 
 컴파일 결과: `series.json`, `editorial-sidecar.json`, `caption.md`, `generation-brief.md`.
 `PLANNED_NOT_RENDERED`는 그림도, 사실 인증도, 게시 승인도 아니다.

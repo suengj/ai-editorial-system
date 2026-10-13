@@ -50,24 +50,44 @@ Node.js 22 이상과 **rsvg-convert 또는 RSVG 지원 ImageMagick**이 필요�
 아래는 LLM/개발 agent가 실행할 명령이다. 첫 예제는 가상 자료의 조판 smoke이며 이미지 모델 시안이 아니다.
 
 ```bash
+# Instagram/LinkedIn plan: 먼저 receipt (intent.json 없이 plan의 surface/artifact로 만든다; --target 필수)
+node scripts/resolve-editorial.mjs \
+  --plan scripts/fixtures/visual-execution/card.json --target personal-instagram \
+  --out /tmp/aes-card-receipt.json
+
 node scripts/render-visual.mjs \
   --plan scripts/fixtures/visual-execution/card.json \
+  --profile-receipt /tmp/aes-card-receipt.json \
   --out /tmp/aes-card-first
 
 node scripts/render-visual.mjs \
   --plan /path/to/llm-resolved-plan.json \
+  --profile-receipt /path/to/receipt.json \
   --preset /path/to/account-visual-options.json \
   --out /tmp/aes-candidate-second \
   --rasterizer auto
 
 node scripts/render-visual.mjs \
   --plan /path/to/llm-resolved-plan.json \
+  --profile-receipt /path/to/receipt.json \
   --out /tmp/aes-plan-only --compile-only
 
 node scripts/test-visual-execution.mjs
 ```
 
 `--out`은 **새 빈 디렉터리**다. 재실행은 기존 입력/master에서 새 출력 디렉터리로 한다. 오래된 PNG를 실패한 새 실행의 결과로 착각하거나 입력을 덮는 일을 막는다. 완성 결과는 `image.png`, 깨끗한 합성 원본은 `master.png`/`master.svg`, 재실행 설명은 `execution.json`/`receipt.json`이다. 디렉터리 존재만으로 성공을 판단하지 말고 receipt 상태와 출력 hash를 확인한다.
+
+### SNS 렌더 게이트 (SUE-1426)
+
+`profiles.surface`가 `instagram`/`linkedin`인 plan은 READY profile receipt 없이 렌더되지 않는다
+(`PROFILE_RECEIPT_REQUIRED`, exit 1). receipt는 두 방법으로 만든다.
+
+- intent가 있으면: `node scripts/resolve-editorial.mjs --intent intent.json --target <id> --out receipt.json`
+- intent가 없는 흐름(Signalytics packet.json → series.json, 단일 request.json)이면:
+  `node scripts/resolve-editorial.mjs --plan <series.json|request.json> --target <id> --out receipt.json`
+  — plan의 `profiles.surface / artifact`에서 최소 요청을 만든다. 계정은 추측하지 않으므로 `--target`은 필수다.
+
+그 다음 `--profile-receipt receipt.json`을 `render-visual` / `render-carousel`에 넘긴다.
 
 원본 그림/글꼴 파일을 저장소에 넣지 않는다. 실제 사용자 파일은 기존 Drive/local locator, 생성물은 기존 전달 계층에 두며 이 저장소에는 작은 가상 테스트 자료만 둔다.
 
@@ -147,16 +167,23 @@ recipe 선택은 이번 작업의 디자인 지시다. 실제 brand/reference �
 ### 실행과 결과
 
 ```bash
+# Instagram/LinkedIn series는 receipt가 먼저 필요하다(--target 필수, intent.json 불필요)
+node scripts/resolve-editorial.mjs --plan scripts/fixtures/carousel/series.json \
+  --target personal-instagram --out /tmp/aes-series-receipt.json
+
 # 계획만 확인: 실제 원본 bytes/폰트/시각 품질 검증은 아님
 node scripts/render-carousel.mjs --plan scripts/fixtures/carousel/series.json \
+  --profile-receipt /tmp/aes-series-receipt.json \
   --out /tmp/aes-series-plan --compile-only
 
 # 기존 single-image executor로 전체 시리즈 렌더
 node scripts/render-carousel.mjs --plan scripts/fixtures/carousel/series.json \
+  --profile-receipt /tmp/aes-series-receipt.json \
   --out /tmp/aes-series-first
 
 # 같은 series_id의 수정 명세: 바뀌지 않은 프레임은 검증 후 재사용
 node scripts/render-carousel.mjs --plan /path/to/revised-series.json \
+  --profile-receipt /tmp/aes-series-receipt.json \
   --previous /tmp/aes-series-first --out /tmp/aes-series-revised
 
 # 로컬 회귀 검사; CI를 실행하는 명령이 아님

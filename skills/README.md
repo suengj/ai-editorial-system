@@ -93,3 +93,11 @@ image-generation/approved-media path. Source-only requests need real source
 bytes, not invented article IDs. This adds no Skill rendering or approval
 authority. Missing tools/assets remain explicit; Phase 4 native-session UAT
 is separate from local compositor tests.
+
+Instagram/LinkedIn plans are refused by `render-visual` / `render-carousel`
+without a READY profile receipt (`--profile-receipt`). With an intent:
+`resolve-editorial --intent … --target <id>`; without one (Signalytics
+packet → series, a single request.json):
+`resolve-editorial --plan <series.json|request.json> --target <id>`.
+The receipt is an integrity-checked record, not a cryptographically
+authenticated one.

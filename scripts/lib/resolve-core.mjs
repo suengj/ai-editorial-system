@@ -35,6 +35,19 @@ const isObj = (x) => x !== null && typeof x === 'object' && !Array.isArray(x);
 export const stable = (x) => (Array.isArray(x) ? x.map(stable) : isObj(x) ? Object.fromEntries(Object.keys(x).sort().map((k) => [k, stable(x[k])])) : x);
 export const hashOf = (x) => `sha256:${createHash('sha256').update(Buffer.isBuffer(x) ? x : JSON.stringify(stable(x))).digest('hex')}`;
 
+/**
+ * Flows that have no Editorial Intent (e.g. the Signalytics packet -> series.json flow) derive the
+ * minimal intent the resolver needs (surface + artifact) from the render plan itself. The receipt records
+ * that it was plan-derived; it grants no more than an intent with those two axes would.
+ */
+export function intentFromPlan(plan) {
+  const surface = plan?.profiles?.surface, artifact = plan?.profiles?.artifact;
+  if (typeof surface !== 'string' || typeof artifact !== 'string' || !surface || !artifact) {
+    throw Object.assign(new Error('plan has no profiles.surface / profiles.artifact to derive an entry request from'), { code: 'PLAN_PROFILES_MISSING' });
+  }
+  return { intent_id: `plan:${hashOf(plan)}`, derived_from: { kind: 'plan', surface, artifact }, request: {}, axes: { surface: { value: surface }, artifacts: [{ value: artifact }] } };
+}
+
 /** Best-effort revision of the rule tree: git HEAD (+dirty marker), else 'worktree'. */
 export function currentRevision(root = REPO_ROOT) {
   const head = spawnSync('git', ['-C', root, 'rev-parse', '--short', 'HEAD'], { encoding: 'utf8' });

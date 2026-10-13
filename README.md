@@ -68,7 +68,10 @@ Missing generated assets remain `RENDER_REQUIRED`; native-session and real-sourc
 UAT are Phase 4, not implied by the local integration tests.
 
 ```bash
-node scripts/render-visual.mjs --plan scripts/fixtures/visual-execution/card.json --out /tmp/aes-card
+# Instagram/LinkedIn plans render only under a READY profile receipt (SUE-1426). No intent.json is needed:
+# the receipt is derived from the plan's surface/artifact plus the account you name.
+node scripts/resolve-editorial.mjs --plan scripts/fixtures/visual-execution/card.json --target personal-instagram --out /tmp/aes-card-receipt.json
+node scripts/render-visual.mjs --plan scripts/fixtures/visual-execution/card.json --profile-receipt /tmp/aes-card-receipt.json --out /tmp/aes-card
 node scripts/test-visual-execution.mjs  # on-demand local raster integration, not CI
 ```
 
@@ -89,7 +92,8 @@ voice, infer an account, claim profitability, or publish.
 
 ```bash
 node scripts/compile-business-magazine.mjs --packet /content/packet.json --out /tmp/bizmag-plan
-node scripts/render-carousel.mjs --plan /tmp/bizmag-plan/series.json --out /tmp/bizmag-images
+node scripts/resolve-editorial.mjs --plan /tmp/bizmag-plan/series.json --target signalytics-news --out /tmp/bizmag-receipt.json
+node scripts/render-carousel.mjs --plan /tmp/bizmag-plan/series.json --profile-receipt /tmp/bizmag-receipt.json --out /tmp/bizmag-images
 node scripts/test-business-magazine.mjs  # local, on demand; no CI dispatch
 ```
 
