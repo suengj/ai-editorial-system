@@ -137,6 +137,9 @@ Therefore:
    (`node scripts/resolve-editorial.mjs --receipt <receipt.json> --stages <stamps.json>`
    exits 2 if generate, polish or review used a different profile). Polish must
    not change numbers, dates, quotes, sources or the direction of a claim.
+   Record this stage's stamp first:
+   `node scripts/resolve-editorial.mjs --receipt <receipt.json> --stamp polish --stamps <stamps.json>`
+   (creates or updates `stamps.json`; shape `{"generate":{stage,profile_id,profile_version,resolved_hash},"polish":{...},"review":{...}}`).
 
 1. **Read the delta plan first.** Confirm the draft is at P0/P1 for the axes
    Language Polish is allowed to touch. If not, route upstream.

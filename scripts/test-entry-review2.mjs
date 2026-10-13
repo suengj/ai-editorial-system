@@ -200,6 +200,33 @@ console.log('7: required rule-file integrity (truncation, HTML, stub, UNVERIFIED
     const rc = resolveEditorialFor(rd); eq(rc.status, 'BLOCKED_MISSING_RULE'); yes(rc.unread_required.some((u) => u.status === 'invalid' || u.status === 'invalid'), JSON.stringify(rc.unread_required.slice(0, 2)));
   });
 }
+console.log('11: stage stamps, documented sequence verbatim');
+{
+  test('--stamp generate|polish|review then --stages is consistent; a missing stage is not', () => {
+    const d = tmp(); writeFileSync(resolve(d, 'intent.json'), JSON.stringify(igIntent()));
+    const r = node(['scripts/resolve-editorial.mjs', '--intent', resolve(d, 'intent.json'), '--target', 'signalytics-news', '--task-kind', 'text', '--out', resolve(d, 'receipt.json')]);
+    eq(r.status, 0, r.stderr);
+    const stamp = (st) => node(['scripts/resolve-editorial.mjs', '--receipt', resolve(d, 'receipt.json'), '--stamp', st, '--stamps', resolve(d, 'stamps.json')]);
+    eq(stamp('generate').status, 0); eq(stamp('polish').status, 0);
+    const partial = node(['scripts/resolve-editorial.mjs', '--receipt', resolve(d, 'receipt.json'), '--stages', resolve(d, 'stamps.json')]);
+    eq(partial.status, 2); yes(/STAGE_MISSING/.test(partial.stdout), partial.stdout);
+    eq(stamp('review').status, 0); eq(stamp('review').status, 0, 'update is idempotent');
+    const full = node(['scripts/resolve-editorial.mjs', '--receipt', resolve(d, 'receipt.json'), '--stages', resolve(d, 'stamps.json')]);
+    eq(full.status, 0, full.stdout); eq(JSON.parse(full.stdout).consistent, true);
+    eq(Object.keys(JSON.parse(readFileSync(resolve(d, 'stamps.json'), 'utf8'))).sort(), ['generate', 'polish', 'review']);
+    eq(stamp('publish').status, 1);
+  });
+  test('docs: ENTRY-PROMPTS and the three skills show the --stamp command', () => {
+    for (const f of ['editorial/ENTRY-PROMPTS.md', 'skills/editorial-polish/SKILL.md', 'skills/review-visual/SKILL.md', 'skills/review-l1/SKILL.md']) yes(/--stamp /.test(readFileSync(resolve(ROOT, f), 'utf8')), f);
+  });
+}
+console.log('12: prompt A names the core files');
+test('prompt A names constitution.md, voice.md, STRUCTURED-VISUAL-EXECUTION.md and axis profiles; both stay NOT_APPLIED', () => {
+  const t = readFileSync(resolve(ROOT, 'editorial/ENTRY-PROMPTS.md'), 'utf8'); const a = t.slice(t.indexOf('## A.'), t.indexOf('## B.'));
+  for (const w of ['editorial/constitution.md', 'editorial/voice.md', 'STRUCTURED-VISUAL-EXECUTION.md', 'axis_profile_paths']) yes(a.includes(w), w);
+  yes((t.match(/NOT_APPLIED/g) ?? []).length >= 2 && /HUMAN_REQUIRED/.test(t), 'markers');
+  yes(a.length < 1300, `prompt A stays short (${a.length})`);
+});
 // <<SECTIONS>>
 
 console.log(`\nentry-review2: ${pass} passed, ${failed} failed`);

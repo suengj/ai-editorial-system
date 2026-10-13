@@ -83,6 +83,9 @@ findings with evidence, an integrity read, and a routing outcome.
 0. **Stage check for SNS targets.** Before reviewing, confirm generate, polish and review ran under the same resolved profile:
    `node scripts/resolve-editorial.mjs --receipt <receipt.json> --stages <stamps.json>` must report `consistent: true`
    (exit 2 means stop and report; a receipt that is not READY is `NOT_READY`, never reviewable).
+   Record this stage's stamp first:
+   `node scripts/resolve-editorial.mjs --receipt <receipt.json> --stamp review --stamps <stamps.json>`
+   (creates or updates `stamps.json`; shape `{"generate":{stage,profile_id,profile_version,resolved_hash},"polish":{...},"review":{...}}`).
 
 1. **Select the reference set.** Same content type as the subject wherever
    possible — Research to Research, News to News. A cross-type reference is
