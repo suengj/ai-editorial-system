@@ -4,7 +4,7 @@
  * This module resolves its explicit task delta; it is NOT another LLM/parser,
  * profile database, approval engine, publisher, or source-of-truth store.
  */
-import { readFileSync, writeFileSync, mkdirSync, existsSync, realpathSync, readdirSync } from 'node:fs';
+import { readFileSync, writeFileSync, mkdirSync, existsSync, realpathSync, readdirSync, appendFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { loadAxisProfiles } from './profile-core.mjs';
 import { sha256, resolveWatermark, applyWatermark, decodePng, encodePng, WATERMARK_CHUNK_KEY, FONT_STACK } from './watermark-core.mjs';
@@ -251,14 +251,50 @@ function imageElement(file, l) {
   return `<svg x="${b.x}" y="${b.y}" width="${b.width}" height="${b.height}" viewBox="0 0 ${b.width} ${b.height}" overflow="hidden"><image width="${b.width}" height="${b.height}" preserveAspectRatio="${ratio}" xlink:href="data:image/png;base64,${file.bytes.toString('base64')}"/></svg>`;
 }
 
+/**
+ * Repair budget lineage (SUE-1426 fix S4). The budget is a WORKFLOW CONTROL, not tamper-proof: omitting --repair-of /
+ * --previous starts a new base, and anyone who can copy a directory can start over. What it does stop is the honest
+ * mistakes: counting a failed run as a round, a second "local fix" from the same base (including fan-out into a
+ * different output directory) and repairing a different request with the same flag.
+ *
+ * lineage_root = hash of the base request identity (request text + source ref [+ series id]); a repair must carry the
+ * same root. The ledger is an append-only JSONL file BESIDE the base directory (`<base>.repair-ledger.jsonl`), so the
+ * base directory itself stays byte-identical.
+ */
+export const lineageRootOf = (parts) => digest(parts);
+export const ledgerPathFor = (baseDir) => `${resolve(baseDir)}.repair-ledger.jsonl`;
+export function readLedger(baseDir) {
+  const path = ledgerPathFor(baseDir);
+  if (!existsSync(path)) return [];
+  return readFileSync(path, 'utf8').split('\n').filter(Boolean).map((line, i) => {
+    try { return JSON.parse(line); } catch { return fail('LEDGER_CORRUPT', `${path} line ${i + 1} is not JSON; the repair ledger is append-only and fails closed`); }
+  });
+}
+export const countedRepairs = (baseDir, root) => readLedger(baseDir).filter((e) => e.lineage_root === root && e.outcome === 'repair_ok').length;
+export function appendLedger(baseDir, entry) { appendFileSync(ledgerPathFor(baseDir), `${JSON.stringify(entry)}\n`); }
+/** Shared pre-run check for both executors. Returns { priorOk, priorRound }. Throws LINEAGE_MISMATCH / REPAIR_LIMIT. */
+export function checkRepairLineage(prior, priorStatus, baseDir, root, { enforceLimit = true } = {}) {
+  if (!prior.lineage_root) fail('LINEAGE_MISMATCH', 'the previous run carries no lineage_root (made before the repair ledger); start a new base version');
+  if (prior.lineage_root !== root) fail('LINEAGE_MISMATCH', 'the previous run was made from a different request/source/series; a repair must keep the same base. Omit the flag to start a new base.');
+  const priorOk = isRenderedOk(priorStatus), priorRound = prior.repair_round ?? 0;
+  if (priorOk && enforceLimit) enforceRepairLimit(priorRound, baseDir, root);
+  return { priorOk, priorRound };
+}
+export function enforceRepairLimit(priorRound, baseDir, root) {
+  if (priorRound >= 1) fail('REPAIR_LIMIT', 'already repaired once; start a new base version instead of a second local fix');
+  if (countedRepairs(baseDir, root) >= 1) fail('REPAIR_LIMIT', `a repair of this base is already recorded in ${ledgerPathFor(baseDir)}; a second local fix (including from another output directory) needs a new base version`);
+}
+
 /** Writes clean master + optional derivative + packet/receipt; never publishes. */
 export async function executeVisual(plan, { baseDir = process.cwd(), preset = {}, outDir, rasterizer = 'auto', repairOf = null } = {}) {
-  // Enforced repair budget: one base version + ONE local fix. `repairOf` is the prior run directory.
-  let repairRound = 0, repairPrior = null;
+  // Enforced repair budget: one base version + ONE local fix. `repairOf` is the prior run directory. A round is only
+  // COUNTED when the prior run was rendered-OK and this run completes OK (see lineage helpers above).
+  const lineage = lineageRootOf({ kind: 'visual', request: plan?.request ?? null, source_ref: plan?.source?.ref ?? null });
+  let repairRound = 0, repairPrior = null, priorOk = false;
   if (repairOf) {
     const prior = JSON.parse(readFileSync(resolve(repairOf, 'receipt.json'), 'utf8'));
-    repairRound = (prior.repair_round ?? 0) + 1;
-    if (repairRound > 1) fail('REPAIR_LIMIT', 'already repaired once; start a new base version instead of a second local fix');
+    const chk = checkRepairLineage(prior, prior.status, repairOf, lineage);
+    priorOk = chk.priorOk; repairRound = chk.priorRound;
     repairPrior = { image_sha256: prior.outputs?.image?.sha256 ?? null, request_hash: prior.request_hash };
   }
   prepareOutput(outDir);
@@ -355,8 +391,9 @@ export async function executeVisual(plan, { baseDir = process.cwd(), preset = {}
   packet.status = !generationEvidence.length ? RENDER_OK
     : generationEvidence.some((g) => g.not_verified_reasons.length) ? GENERATION_NOT_VERIFIED
     : generationEvidence.some((g) => !g.asset_in_final_png) ? GENERATED_NOT_USED : GENERATED_OK;
+  const repairCounted = Boolean(repairOf) && priorOk && isRenderedOk(packet.status);
   const receipt = {
-    schema_version: EXECUTION_VERSION, repair_round: repairRound, repair_of: repairPrior, status: packet.status, request_hash: packet.request_hash, execution_hash: packet.execution_hash,
+    schema_version: EXECUTION_VERSION, lineage_root: lineage, repair_round: repairCounted ? repairRound + 1 : repairRound, repair_counted: repairCounted, repair_of: repairPrior, status: packet.status, request_hash: packet.request_hash, execution_hash: packet.execution_hash,
     renderer: { tool: 'aes-visual-execution', version: EXECUTION_VERSION, ...packet.rasterizer, font_stack: packet.theme.font_family },
     inputs: inputs.map((f) => ({ ref: f.ref, sha256: f.sha256 })), geometry: packet.canvas,
     outputs: { master: { ref: 'master.png', sha256: sha256(master) }, image: { ref: 'image.png', sha256: sha256(final) }, svg: { ref: 'master.svg', sha256: sha256(cleanSvg) } },
@@ -369,5 +406,6 @@ export async function executeVisual(plan, { baseDir = process.cwd(), preset = {}
   writeFileSync(resolve(outDir, 'image.png'), final);
   writeFileSync(resolve(outDir, 'execution.json'), `${JSON.stringify(packet, null, 2)}\n`);
   writeFileSync(resolve(outDir, 'receipt.json'), `${JSON.stringify(receipt, null, 2)}\n`);
+  if (repairOf) appendLedger(repairOf, { lineage_root: lineage, outcome: repairCounted ? 'repair_ok' : 'repair_not_counted', status: packet.status, prior_ok: priorOk, receipt_sha256: sha256(readFileSync(resolve(outDir, 'receipt.json'))) });
   return { ...packet, receipt };
 }

@@ -145,7 +145,7 @@ const basenameSafe=(root,path)=>{ need(typeof path==='string' && !relative(root,
 
 /** Existing executor owns typography, charts, source hashing and image bytes. */
 export async function executeCarousel(series,{baseDir=process.cwd(),outDir,rasterizer='auto',previousDir=null}={}) {
-  const {compileExecution,executeVisual,prepareOutput,isRenderedOk,GENERATED_OK,RENDER_OK}=await import('./visual-execution-core.mjs');
+  const {compileExecution,executeVisual,prepareOutput,isRenderedOk,GENERATED_OK,RENDER_OK,lineageRootOf,checkRepairLineage,enforceRepairLimit,appendLedger}=await import('./visual-execution-core.mjs');
   const {findRasterizer,rasterize,svgDocument}=await import('./svg-tools.mjs');
   const compiled=planCarousel(series); prepareOutput(outDir);
   const adapter=findRasterizer(rasterizer);
@@ -156,15 +156,22 @@ export async function executeCarousel(series,{baseDir=process.cwd(),outDir,raste
   for (const f of compiled.frames) packets.push(await compileExecution(f.plan,{baseDir,preset:compiled.preset}));
   const prior=previousDir?JSON.parse(readFileSync(resolve(previousDir,'series.json'),'utf8')):null;
   if (prior) need(prior.series_id===compiled.series_id && Array.isArray(prior.frames),'SERIES_REUSE','different or invalid prior series');
-  // Enforced repair budget (SUE-1426): 1 base version + ONE local fix. The round only advances when a frame is
-  // actually re-rendered, and a second repair is refused before anything is written.
+  // Enforced repair budget (SUE-1426). A workflow control, not tamper-proof (see lineage helpers in visual-execution-core).
+  // A round is COUNTED only when the prior series was rendered-OK, the run changed some but not all frames, and the new
+  // run completes OK. A repair that re-renders every frame is not a local fix: it is recorded as a NEW BASE.
+  const lineage=lineageRootOf({kind:'carousel',series_id:compiled.series_id,request:series.request??null,source_ref:series.source?.ref??null});
   const fpOf=(f,i)=>hash({packet:packets[i].execution_hash,recipe:compiled.recipe_hash,runtime});
   const reusableOld=(f,i)=>{const o=prior?.frames.find((p)=>p.id===f.id && p.fingerprint===fpOf(f,i) && isRenderedOk(p.status)); return adapter && runtime.font_environment && o && Object.keys(o.outputs??{}).length===5 ? o : null;};
   const rerender=compiled.frames.filter((f,i)=>!reusableOld(f,i)).map((f)=>f.id);
-  const repairRound=prior?((prior.repair_round??0)+(rerender.length?1:0)):0;
-  need(repairRound<=1,'REPAIR_LIMIT',`already repaired once (prior repair_round ${prior?.repair_round}); further changes need a new base version, not another local fix`);
+  let chk={priorOk:false,priorRound:0};
+  if (prior) chk=checkRepairLineage(prior,prior.status,resolve(previousDir),lineage,{enforceLimit:false});
+  const reuseObservable=Boolean(adapter&&runtime.font_environment);
+  const allChanged=Boolean(prior)&&chk.priorOk&&reuseObservable&&rerender.length===compiled.frames.length;
+  const wouldRepair=Boolean(prior)&&chk.priorOk&&rerender.length>0&&!allChanged;
+  if (wouldRepair) enforceRepairLimit(chk.priorRound,resolve(previousDir),lineage);
+  const repairRound=prior?(allChanged?0:chk.priorRound):0;
   mkdirSync(outDir,{recursive:true});
-  const result={repair_round:repairRound,repaired_frames:prior?rerender:[],schema_version:CAROUSEL_VERSION,series_id:compiled.series_id,recipe:compiled.recipe,recipe_hash:compiled.recipe_hash,runtime,
+  const result={lineage_root:lineage,repair_round:repairRound,repair_counted:false,classification:prior?(allChanged?'new_base_all_frames_changed':wouldRepair?'local_repair':'no_change_or_retry'):'base',repaired_frames:prior&&!allChanged?rerender:[],schema_version:CAROUSEL_VERSION,series_id:compiled.series_id,recipe:compiled.recipe,recipe_hash:compiled.recipe_hash,runtime,
     status:'INCOMPLETE',frames:[],qa:{mechanical:'PREFLIGHT_PASSED',visual:'NOT_REVIEWED',source_truth:'NOT_ESTABLISHED',publication:'NOT_AUTHORIZED'},publication_authorized:false};
   const save=()=>writeJson(resolve(outDir,'series.json'),result);
   try {
@@ -192,6 +199,7 @@ export async function executeCarousel(series,{baseDir=process.cwd(),outDir,raste
     }
     const complete=result.frames.every((f)=>isRenderedOk(f.status));
     result.status=!complete?'INCOMPLETE':result.frames.some((f)=>f.status===GENERATED_OK)?GENERATED_OK:RENDER_OK;
+    if (complete&&wouldRepair) {result.repair_round=chk.priorRound+1;result.repair_counted=true;}
     if (complete && adapter) {
       const {width,height}=packets[0].canvas, phoneWidth=390, phoneHeight=Math.round(phoneWidth*height/width);
       const tiles=[];
@@ -212,6 +220,8 @@ export async function executeCarousel(series,{baseDir=process.cwd(),outDir,raste
       dimensions:['focal_hierarchy','balance_whitespace','text_readability','visual_density','style_coherence','source_photo_chart_collision','sequence_and_role_consistency'],
       frames:result.frames.map((f)=>({id:f.id,full:f.outputs['image.png']??null,phone:f.phone??null,alt_text:f.alt_text,verdict:'NOT_REVIEWED'})),
       repair_routing:{text_or_collision:'fix the affected region/frame',fact:'correct source-bound evidence, never redraw by image AI',style:'change selected recipe dimension, not facts',concept:'bounded new direction after diagnosis'},publication_authorized:false});
-    save(); return result;
+    save();
+    if (prior) appendLedger(resolve(previousDir),{lineage_root:lineage,outcome:result.repair_counted?'repair_ok':allChanged&&complete?'new_base':'repair_not_counted',classification:result.classification,status:result.status,series_sha256:hash(readFileSync(resolve(outDir,'series.json')))});
+    return result;
   } catch(e) {result.error={code:e.code??'RENDER_FAILED',message:e.message};save();throw e;}
 }

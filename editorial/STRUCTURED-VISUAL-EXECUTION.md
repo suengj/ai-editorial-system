@@ -210,6 +210,15 @@ node scripts/test-carousel.mjs --render
 
 `--previous`는 source/레이어/선택 recipe/프로필/실행 코드·rasterizer·관측 가능한 폰트 환경과 이전 출력 해시가 같은 프레임만 새 디렉터리에 복사한다. 이전 bytes가 달라졌으면 거절한다. Fontconfig 환경을 관측할 수 없으면 재사용을 생략하고 렌더한다. 단순 명세만 같은 것이 재생산성 증거는 아니다. 생성 자산의 새 호출은 이 캐시가 대신하지 않으며 font/runtime이 다른 환경까지 같은 픽셀을 약속하지 않는다. 재사용한 이미지라도 시리즈 맥락이 달라졌으면 다시 의미를 검토한다. 승인 상태는 자동 상속하지 않는다.
 
+### 수리 예산(repair budget)과 ledger (SUE-1426 S4)
+
+수리 예산은 **워크플로 통제이지 변조 방지가 아니다.** `--repair-of`(단일 이미지) / `--previous`(카드뉴스)를 생략하면 언제나 **새 base**가 시작된다. 막는 것은 정직한 실수뿐이다.
+
+- 한 base에는 국소 수정 **1회**만 인정한다. 인정되는 round는 이전 run이 rendered-OK이고 새 run도 OK로 끝난 경우뿐이다. 실패한 run은 round를 쓰지 않는다.
+- receipt는 `lineage_root`(요청 + 원본 ref [+ series_id] 해시)를 가진다. 요청/원본/시리즈가 다르면 `LINEAGE_MISMATCH`로 거절한다.
+- 이전 디렉터리 **옆**에 append-only `<base>.repair-ledger.jsonl`을 기록한다(base 디렉터리는 그대로). 같은 base에서 다른 출력 디렉터리로 두 번째 성공 수리(fan-out)를 하면 `REPAIR_LIMIT`. ledger가 깨지면 `LEDGER_CORRUPT`로 fail-closed.
+- 카드뉴스에서 모든 프레임이 바뀌면 국소 수정이 아니므로 `new_base_all_frames_changed`로 분류해 ledger에 `new_base`로 남기고 예산을 쓰지 않는다.
+
 ### Visual QA는 기존 reviewer에게 연결
 
 `review-worklist.json`은 **검토 대상 목록이지 검토 통과 기록이 아니다.** 기존 `skills/review-visual/`, SUE-646/647 및 §11 시리즈 검토로 각 full/phone 이미지와 전체 contact sheet를 확인한다. focal hierarchy, balance/whitespace, text readability, visual density, style coherence, 사진/차트 충돌, 카드 순서·반복 역할의 일관성을 구분한다. `dashboardization`, `box_overload`, `dense_text`, `style_dilution`, `reference_drift`, `factual_overlay_intrusion` 등 기존 실패 태그를 사용한다. 요청한 dark-data 방향을 무조건 dashboard라는 이유만으로 탈락시키거나 pop-collage를 모든 계정 기본 스타일로 승격하지 않는다.

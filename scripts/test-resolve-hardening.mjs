@@ -337,5 +337,68 @@ test('validate-intent counts only READY plans as resolved; the multi-target SNS 
   const all = run(['scripts/validate-intent.mjs']); yes(all.status === 0 && /target-independent plan\(s\) read/.test(all.stdout), all.stdout.slice(-200));
 });
 
+console.log('S4: repair budget lineage and ledger');
+{
+  const { executeCarousel } = await import('./lib/carousel-core.mjs');
+  const { executeVisual } = await import('./lib/visual-execution-core.mjs');
+  const sha = (p) => hashOf(readFileSync(p));
+  const tree = (d) => readdirSync(d, { recursive: true }).filter((f) => statSync(resolve(d, f)).isFile()).sort().map((f) => `${f}:${sha(resolve(d, f))}`);
+  const rtest = (name, fn) => { if (!hasRasterizer) { console.log(`  skip ${name} (no rasterizer)`); return; } return fn().then(() => { pass++; console.log(`  ok   ${name}`); }, (e) => { fail++; console.log(`  FAIL ${name}\n       ${e.message}`); }); };
+  const root = tmp(), input = resolve(root, 'input'); mkdirSync(input);
+  for (const f of ['source.md', 'counts.json']) cpSync(resolve(ROOT, 'scripts/fixtures/carousel', f), resolve(input, f));
+  const base = JSON.parse(readFileSync(resolve(ROOT, 'scripts/fixtures/carousel/series.json'), 'utf8'));
+  const car = (series, dir, previousDir = null) => executeCarousel(series, { baseDir: input, outDir: resolve(root, dir), previousDir: previousDir && resolve(root, previousDir) });
+  const edit = (fn) => { const c = structuredClone(base); fn(c); return c; };
+  const rejects = async (p, code) => { try { await p; } catch (e) { if (e.code === code || String(e.message).startsWith(`${code}:`)) return; throw new Error(`expected ${code}, got ${e.code}: ${e.message}`); } throw new Error(`expected ${code}, resolved`); };
+  await rtest('carousel: base is round 0; one local repair is counted, recorded in a ledger BESIDE the base, base dir byte-identical', async () => {
+    const a = await car(base, 'a'); eq(a.repair_round, 0); yes(a.lineage_root, 'lineage root');
+    const before = tree(resolve(root, 'a'));
+    const b = await car(edit((c) => { c.frames[1].headline = '근거를\n분명하게 보여줍니다'; }), 'b', 'a');
+    eq(b.repair_round, 1); eq(b.repair_counted, true); eq(b.classification, 'local_repair');
+    eq(tree(resolve(root, 'a')), before); // base dir untouched
+    const ledger = readFileSync(resolve(root, 'a.repair-ledger.jsonl'), 'utf8').trim().split('\n').map((l) => JSON.parse(l));
+    eq(ledger.length, 1); eq(ledger[0].outcome, 'repair_ok'); eq(ledger[0].lineage_root, a.lineage_root);
+  });
+  await rtest('carousel: fan-out is refused (a second successful repair from the same base into another directory)', async () => {
+    await rejects(car(edit((c) => { c.frames[2].headline = '다른 곳을\n고칩니다'; }), 'c', 'a'), 'REPAIR_LIMIT');
+    yes(!existsSync(resolve(root, 'c/series.json')), 'nothing written');
+  });
+  await rtest('carousel: a different series/request cannot ride on another base (LINEAGE_MISMATCH)', async () => {
+    await rejects(car(edit((c) => { c.request = '전혀 다른 요청입니다'; }), 'd', 'a'), 'LINEAGE_MISMATCH');
+    await rejects(car(edit((c) => { c.series_id = 'other-series'; }), 'd2', 'a'), 'SERIES_REUSE');
+  });
+  await rtest('carousel: a repair that changes every frame is a NEW BASE, recorded, and does not spend the budget', async () => {
+    await car(base, 'a2');
+    const all = await car(edit((c) => { c.frames.forEach((f, i) => { f.headline = `전체를\n바꿉니다 ${i}`; }); }), 'e', 'a2');
+    eq(all.classification, 'new_base_all_frames_changed'); eq(all.repair_round, 0); eq(all.repair_counted, false);
+    const l = readFileSync(resolve(root, 'a2.repair-ledger.jsonl'), 'utf8'); yes(/"outcome":"new_base"/.test(l), l);
+    const one = await car(edit((c) => { c.frames[0].headline = '하나만\n고칩니다'; }), 'f', 'a2'); eq(one.repair_round, 1);
+  });
+  await rtest('carousel: a failed repair (overflow) is not counted and leaves the budget intact', async () => {
+    await car(base, 'a3');
+    await rejects(car(edit((c) => { c.frames[0].headline = '너무 긴 제목 '.repeat(8); }), 'g', 'a3'), 'TEXT_OVERFLOW');
+    const failed = JSON.parse(readFileSync(resolve(root, 'g/series.json'), 'utf8')); eq(failed.repair_round, 0); eq(failed.repair_counted, false);
+    const ok = await car(edit((c) => { c.frames[1].headline = '정상\n수정입니다'; }), 'h', 'a3'); eq(ok.repair_round, 1);
+  });
+  await rtest('single image: counted only on OK, fan-out refused, lineage enforced, corrupt ledger fails closed', async () => {
+    const vin = resolve(root, 'vin'); mkdirSync(vin); cpSync(resolve(ROOT, 'scripts/fixtures/visual-execution/source.md'), resolve(vin, 'source.md'));
+    const plan = JSON.parse(readFileSync(resolve(ROOT, 'scripts/fixtures/visual-execution/card.json'), 'utf8'));
+    const v0 = await executeVisual(plan, { baseDir: vin, outDir: resolve(root, 'v0') }); eq(v0.receipt.repair_round, 0);
+    const before = tree(resolve(root, 'v0'));
+    const v1 = await executeVisual(plan, { baseDir: vin, outDir: resolve(root, 'v1'), repairOf: resolve(root, 'v0') });
+    eq(v1.receipt.repair_round, 1); eq(v1.receipt.repair_counted, true); eq(tree(resolve(root, 'v0')), before);
+    await rejects(executeVisual(plan, { baseDir: vin, outDir: resolve(root, 'v1b'), repairOf: resolve(root, 'v0') }), 'REPAIR_LIMIT');
+    const other = structuredClone(plan); other.request = 'a different request entirely';
+    await executeVisual(plan, { baseDir: vin, outDir: resolve(root, 'w0') });
+    await rejects(executeVisual(other, { baseDir: vin, outDir: resolve(root, 'w1'), repairOf: resolve(root, 'w0') }), 'LINEAGE_MISMATCH');
+    writeFileSync(resolve(root, 'w0.repair-ledger.jsonl'), 'not json\n');
+    await rejects(executeVisual(plan, { baseDir: vin, outDir: resolve(root, 'w2'), repairOf: resolve(root, 'w0') }), 'LEDGER_CORRUPT');
+  });
+  test('docs state the budget is a workflow control and that omitting the flag starts a new base', () => {
+    const d = readFileSync(resolve(ROOT, 'editorial/STRUCTURED-VISUAL-EXECUTION.md'), 'utf8');
+    yes(/repair-ledger/.test(d) && /새 base|new base/i.test(d) && /tamper|변조/.test(d), 'repair doc missing');
+  });
+}
+
 console.log(`\nresolve-hardening: ${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);
