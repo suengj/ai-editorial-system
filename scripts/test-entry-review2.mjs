@@ -9,7 +9,7 @@ import { tmpdir } from 'node:os';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { spawnSync } from 'node:child_process';
-import { loadManifest, RuleReader, gateRender } from './lib/resolve-core.mjs';
+import { loadManifest, RuleReader, gateRender, validateFieldValue, resolveFields } from './lib/resolve-core.mjs';
 import { loadAxisProfiles } from './lib/profile-core.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url)), ROOT = resolve(HERE, '..');
@@ -66,6 +66,27 @@ const { parsePacket, PACKET_FORMAT, LIBRARY_REPO } = await import('./lib/library
   test('ok:true is accepted and dropped', () => { const p = parsePacket({ ok: true, ...base }); yes(!('ok' in p), 'ok kept'); });
   test('ok:false / ok:"true" / ok:1 are rejected', () => { for (const v of [false, 'true', 1, null]) eq(code(() => parsePacket({ ok: v, ...base })), 'PACKET_SHAPE', String(v)); });
   test('other unknown fields are still rejected', () => eq(code(() => parsePacket({ ...base, extra: 1 })), 'PACKET_UNKNOWN_FIELD'));
+}
+
+console.log('8: normalisation bypasses');
+{
+  const v = (f, val, fam) => validateFieldValue(f, val, manifest, { voiceFamily: fam });
+  const cases = [
+    ['full-width', 'hook_pattern', '\uFF53uengj-style', 'business'], ['zero-width', 'hook_pattern', 'suengj\u200b-style', 'business'],
+    ['U+2011 dash + .md', 'hook_pattern', 'SUENGJ\u2011STYLE.md', 'business'], ['dot separator', 'hook_pattern', 'suengj.style', 'business'],
+    ['space separator', 'call_to_action', 'use suengj style', 'community'], ['community id on personal', 'hook_pattern', 'H12-매운맛', 'personal'],
+    ['community id on business', 'hook_pattern', 'h03 hook', 'business'],
+    ['locked key with ZWSP', 'glossary_additions', { 'appro\u200bval': 'ok' }, 'personal'], ['locked assignment in array', 'glossary_additions', ['approval: granted'], 'personal'],
+    ['locked assignment (=)', 'visual_recipe', 'figures = rounded', 'personal'],
+  ];
+  for (const [name, f, val, fam] of cases) test(`blocked: ${name}`, () => yes(!v(f, val, fam).ok, JSON.stringify(v(f, val, fam))));
+  test('legit values still pass', () => {
+    yes(v('hook_pattern', 'H12-매운맛', 'community').ok, 'community own id'); yes(v('hook_pattern', '질문으로 시작', 'personal').ok, 'plain'); yes(v('call_to_action', '출처 보기', 'business').ok, 'plain cta');
+  });
+  test('resolveFields records the blocked override instead of applying it', () => {
+    const r = resolveFields({ explicit_request: { hook_pattern: 'H12-매운맛' } }, manifest, { voiceFamily: 'personal', isFlow: false });
+    yes(!('hook_pattern' in r.values), JSON.stringify(r));
+  });
 }
 
 // <<SECTIONS>>

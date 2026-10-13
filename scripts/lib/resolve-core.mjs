@@ -231,14 +231,16 @@ export function detectVoiceLeak(paths, voiceFamily, manifest) {
 }
 
 /** Normal form used for every domain comparison: NFC, trim, case-fold, whitespace/underscore runs -> hyphen. */
-export const normText = (x) => String(x).normalize('NFC').trim().toLowerCase().replace(/[\s_]+/g, '-');
+export const normText = (x) => String(x).normalize('NFKC').replace(/\p{Cf}/gu, '').replace(/[\u2010-\u2015\u2212\uFE58\uFE63\uFF0D]/g, '-').trim().toLowerCase().replace(/[\s_]+/g, '-');
+/** normText with every separator removed: "suengj.style", "suengj style" and "suengj-style" all become "suengjstyle". */
+export const compactText = (x) => normText(x).replace(/[^\p{L}\p{N}]/gu, '');
 
 /** First key at any depth that names a locked field (case/whitespace-insensitive), as a dotted path, else null. */
 function lockedKeyPath(value, locked, path = '') {
   if (Array.isArray(value)) { for (let i = 0; i < value.length; i++) { const r = lockedKeyPath(value[i], locked, `${path}[${i}]`); if (r) return r; } return null; }
   if (value !== null && typeof value === 'object') {
     for (const [k, v] of Object.entries(value)) {
-      if (locked.includes(normText(k))) return `${path}.${k}`.replace(/^\./, '');
+      if (locked.includes(normText(k)) || locked.map(compactText).includes(compactText(k))) return `${path}.${k}`.replace(/^\./, '');
       const r = lockedKeyPath(v, locked, `${path}.${k}`); if (r) return r;
     }
   }
@@ -277,15 +279,25 @@ export function validateFieldValue(field, value, manifest, ctx = {}) {
     const lk = lockedKeyPath(value, locked);
     if (lk) return bad('LOCKED_KEY_NESTED', `${field} carries a locked field name at "${lk}"; locked fields can never be set through an overlay`);
   }
-  // Voice isolation for free text: no other family's profile id / rule file name.
-  const mine = new Set((manifest.voice_profile_ids?.[ctx.voiceFamily] ?? []).map(normText));
+  // Voice isolation for free text: no other family's profile id / rule file name (separator-, width- and dash-insensitive).
+  const mine = new Set((manifest.voice_profile_ids?.[ctx.voiceFamily] ?? []).map(compactText));
+  const compacts = allStrings(value).map(compactText);
   for (const [fam, ids] of Object.entries(manifest.voice_profile_ids ?? {})) {
     if (fam.startsWith('_') || fam === ctx.voiceFamily) continue;
     for (const id of ids) {
-      const nid = normText(id);
+      const nid = compactText(id);
       if (mine.has(nid) || [...mine].some((m) => m.includes(nid) || nid.includes(m))) continue;
-      if (allStrings(value).some((t) => normText(t).includes(nid))) return bad('VOICE_REFERENCE', `${field} references the ${fam} voice ("${id}"); a ${ctx.voiceFamily ?? 'non-SNS'} request may not name another voice profile`, 'leak');
+      if (compacts.some((t) => t.includes(nid))) return bad('VOICE_REFERENCE', `${field} references the ${fam} voice ("${id}"); a ${ctx.voiceFamily ?? 'non-SNS'} request may not name another voice profile`, 'leak');
     }
+  }
+  // A locked-field word used as a key/value assignment inside a string ("approval: granted") is an attempt to set it.
+  const lockedWord = new RegExp(`(?:^|[^\\p{L}\\p{N}])(?:${manifest.locked_fields.map((w) => normText(w).replace(/[-]/g, '[-_ ]?')).join('|')})\\s*[:=]`, 'u');
+  for (const t of allStrings(value)) if (lockedWord.test(normText(t).replace(/-/g, ' ').replace(/ /g, ' ')) || lockedWord.test(normText(t))) return bad('LOCKED_ASSIGNMENT', `${field} contains a locked-field assignment ("${t.slice(0, 40)}"); facts/figures/sources/rights/approval can never be set through a preference or overlay`);
+  // Family-specific id spaces (e.g. community hook ids H01..) may not appear outside their family.
+  for (const [fam, pat] of Object.entries(dom.family_id_patterns ?? {})) {
+    if (fam === ctx.voiceFamily) continue;
+    const re = new RegExp(pat, 'i');
+    if (allStrings(value).some((t) => re.test(normText(t)))) return bad('FAMILY_ID_REFERENCE', `${field} uses an id of the ${fam} family ("${String(value).slice(0, 30)}"); not allowed for ${ctx.voiceFamily ?? 'a non-SNS flow'}`, 'leak');
   }
   return { ok: true, value };
 }
@@ -499,7 +511,7 @@ export function gateRender(plan, receipt, manifest, ctx = {}) {
   const isSns = SNS_SURFACES.includes(surface);
   if (!isSns && !receipt?.flow) {
     // A non-SNS surface label must not be a way around the gate: an SNS receipt, or an artifact only SNS targets map, still needs the full check.
-    const flowArtifacts = new Set(Object.values(manifest.existing_flows ?? {}).flatMap((f) => f.artifacts));
+    const flowArtifacts = new Set(Object.values(manifest.existing_flows ?? {}).filter((f) => f.surface === surface).flatMap((f) => f.artifacts));
     const snsOnly = new Set(Object.values(manifest.sns_targets).flatMap((t) => t.visual?.artifacts ?? []).filter((a) => !flowArtifacts.has(a)));
     // Legacy behaviour kept: a non-SNS surface profile that itself declares the artifact (artifact_fit) was never SNS-gated.
     let ownFit = [];
