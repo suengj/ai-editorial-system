@@ -80,6 +80,9 @@ for the measured scope and remaining boundaries.
 For “사업화 아이디어 카드 5장”, read
 [`editorial/BUSINESS-IDEA-MAGAZINE.md`](editorial/BUSINESS-IDEA-MAGAZINE.md)
 and its [`versioned series preset`](editorial/business-idea-magazine.v1.json).
+For Signalytics' two-company benchmarking and Chat-only delivery, read the
+[Signalytics-specific benchmark overlay](editorial/SIGNALYTICS-BENCHMARK-CARDS.md);
+this does not change the global five-frame compiler or other social profiles.
 The sequence is cover → money flow → real case → comparison/deep dive →
 opportunity hypothesis + reader question. It does not change personal Instagram
 voice, infer an account, claim profitability, or publish.
