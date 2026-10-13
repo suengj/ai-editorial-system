@@ -188,7 +188,7 @@ test('SNS plan without a receipt, with a mismatched artifact, or with a tampered
   eq(gateRender(planFor('instagram', 'visual/slide-image'), t, manifest, GCTX).code, 'PROFILE_RECEIPT_HASH_MISMATCH');
   eq(gateRender(planFor('linkedin', 'visual/slide-image'), rec, manifest, GCTX).code, 'PROFILE_TARGET_MISMATCH');
   yes(gateRender(planFor('instagram', 'visual/slide-image'), rec, manifest, GCTX).ok, 'matching refused');
-  yes(gateRender(planFor('suengj-com', 'visual/social-card'), null, manifest, GCTX).applies === false, 'non-SNS surface should pass through');
+  yes(gateRender(planFor('suengj-com', 'visual/evidence-visual'), null, manifest, GCTX).applies === false, 'non-SNS surface should pass through');
 });
 
 console.log('real entry points call the resolver');

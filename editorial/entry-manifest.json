@@ -73,7 +73,7 @@
       "surface": "instagram",
       "voice_family": "business",
       "copy_files": ["editorial/BUSINESS-IDEA-MAGAZINE.md", "editorial/SIGNALYTICS-BENCHMARK-CARDS.md"],
-      "copy_defaults": { "style_overlay": "none", "tone_intensity": "medium" },
+      "copy_defaults": { "style_overlay": "none" },
       "visual": {
         "artifacts": ["visual/slide-image"],
         "files": ["editorial/STRUCTURED-VISUAL-EXECUTION.md", "editorial/SLIDES-AND-CAROUSELS.md"],

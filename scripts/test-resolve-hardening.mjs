@@ -266,5 +266,69 @@ test('review-l1 and review-visual skills carry the stage-check step', () => {
   for (const f of ['skills/review-l1/SKILL.md', 'skills/review-visual/SKILL.md']) yes(/resolve-editorial\.mjs --receipt/.test(readFileSync(resolve(ROOT, f), 'utf8')), f);
 });
 
+console.log('S3: resolver robustness');
+{
+  const rd = () => new RuleReader({ root: ROOT, revision: 'test' });
+  const res = (over, o = {}) => resolveEditorial(igIntent, { targetId: 'signalytics-news', taskKind: 'visual', reader: rd(), ...o, overrides: over });
+  test('prototype-chain field/layer/target/flow names do not crash the resolver', () => {
+    for (const k of ['constructor', 'toString', '__proto__', 'hasOwnProperty']) {
+      const r = res(JSON.parse(`{"account_series":{"${k}":"x"},"${k}":{"tone_intensity":"low"}}`));
+      yes(r.conflicts.some((c) => c.code === 'UNKNOWN_FIELD' || c.code === 'UNKNOWN_LAYER'), `${k}: ${JSON.stringify(r.conflicts.map((c) => c.code))}`);
+      yes(String(resolveEditorial(igIntent, { targetId: k, reader: rd() }).status).startsWith('BLOCKED'), `target ${k}`);
+      yes(String(resolveEditorial({ ...igIntent, axes: { ...igIntent.axes, surface: { value: 'suengj-com' } } }, { flowId: k, reader: rd() }).status).startsWith('BLOCKED'), `flow ${k}`);
+    }
+  });
+  test('caller-supplied __sources cannot choose the recorded origin', () => {
+    const r = res({ account_series: { tone_intensity: 'low' }, __sources: { account_series: 'owner-approved by Suengjae' } });
+    eq(r.field_origins.tone_intensity.source, 'account_series');
+    yes(r.conflicts.some((c) => c.code === 'IGNORED_RESERVED_KEY'), 'recorded');
+  });
+  test('array / scalar layers give INVALID_LAYER records', () => {
+    for (const bad of [['x'], 'str', 3]) {
+      const r = res({ account_series: bad }); yes(r.conflicts.some((c) => c.code === 'INVALID_LAYER' && c.layer === 'account_series'), JSON.stringify(r.conflicts));
+    }
+    yes(res(['x']).conflicts.some((c) => c.code === 'INVALID_LAYER'), 'array overrides');
+  });
+  test('ids are validated before any path is built (case variants, traversal, wrong task kind)', () => {
+    const withAxis = (patch) => resolveEditorial({ ...igIntent, axes: { ...igIntent.axes, ...patch } }, { reader: rd() });
+    for (const surface of ['Instagram', '../surface/instagram', 'instagram ', 'instagram/../linkedin', 'a.b']) eq(withAxis({ surface: { value: surface } }).status, 'BLOCKED_INVALID_ID', surface);
+    eq(withAxis({ artifacts: [{ value: 'visual/../../x' }] }).status, 'BLOCKED_INVALID_ID');
+    eq(withAxis({ audience: { value: '../../etc/passwd' } }).status, 'BLOCKED_INVALID_ID');
+    eq(resolveEditorial(igIntent, { targetId: 'Signalytics-News', reader: rd() }).status, 'BLOCKED_INVALID_ID');
+    eq(resolveEditorial(igIntent, { targetId: 'signalytics-news', taskKind: 'constructor', reader: rd() }).status, 'BLOCKED_INVALID_ID');
+    const none = withAxis({ surface: { value: 'Instagram' } }); yes(!none.profile && none.loads.length === 0, 'nothing read');
+  });
+  test('gate: a non-SNS surface label cannot bypass an SNS receipt or an SNS-only artifact; case variants refused', () => {
+    const { manifest } = loadManifest(rd());
+    const rec = resolveEditorial(igIntent, { targetId: 'signalytics-news', taskKind: 'visual', reader: rd() });
+    const g = (surface, artifact, r) => gateRender({ profiles: { surface, artifact } }, r, manifest, { reader: rd(), pinnedRevision: rec.profile.body.revision });
+    eq(g('suengj-com', 'visual/slide-image', null).code, 'PROFILE_RECEIPT_REQUIRED');
+    eq(g('suengj-com', 'visual/slide-image', rec).code, 'PROFILE_TARGET_MISMATCH');
+    eq(g('Instagram', 'visual/slide-image', rec).code, 'INVALID_ID');
+    eq(g('suengj-com', 'visual/evidence-visual', null).applies, false);
+  });
+  test('render-visual CLI: an Instagram-only artifact labelled suengj-com is refused without a receipt', () => {
+    const scratch = tmp(); const plan = JSON.parse(readFileSync(resolve(ROOT, 'scripts/fixtures/visual-execution/card.json'), 'utf8')); plan.profiles.surface = 'suengj-com';
+    writeFileSync(resolve(scratch, 'p.json'), JSON.stringify(plan));
+    const r = run(['scripts/render-visual.mjs', '--plan', resolve(scratch, 'p.json'), '--compile-only', '--out', resolve(scratch, 'o')]);
+    yes(r.status === 1 && /PROFILE_RECEIPT_REQUIRED/.test(r.stderr), `${r.status} ${r.stderr}`);
+  });
+  test('the dead surface_brand_default layer: code and manifest comment agree', () => {
+    const rc = readFileSync(resolve(ROOT, 'scripts/lib/resolve-core.mjs'), 'utf8');
+    if (/surface_brand_default: \{\}/.test(rc)) yes(/surface_brand_default is intentionally empty/.test(rc), 'layer declared empty with no comment');
+  });
+}
+
+console.log('S6: manifest cleanups');
+test('signalytics-news has no invented tone_intensity default; the field is simply unset', () => {
+  eq(man.sns_targets['signalytics-news'].copy_defaults, { style_overlay: 'none' });
+  const r = withOv('signalytics-news', {}); eq(r.status, 'READY'); yes(!('tone_intensity' in r.profile.body.fields), 'no tone default');
+});
+test('trends-moa carousel (visual/slide-image) stays unmapped and is refused as ARTIFACT_NOT_MAPPED (owner question)', () => {
+  const rec = resolveEditorial(igIntent, { targetId: 'trends-moa', taskKind: 'visual', reader: new RuleReader({ root: ROOT }) });
+  const g = gateRender({ profiles: { surface: 'instagram', artifact: 'visual/slide-image' } }, rec, man, { reader: new RuleReader({ root: ROOT }) });
+  eq(g.code, 'ARTIFACT_NOT_MAPPED');
+});
+
 console.log(`\nresolve-hardening: ${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

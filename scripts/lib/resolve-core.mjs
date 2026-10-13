@@ -29,6 +29,7 @@ export const STATUS = Object.freeze({
   BLOCKED_UNKNOWN_TARGET: 'BLOCKED_UNKNOWN_TARGET',
   BLOCKED_LEAK: 'BLOCKED_LEAK',
   BLOCKED_FIELD_INVALID: 'BLOCKED_FIELD_INVALID',
+  BLOCKED_INVALID_ID: 'BLOCKED_INVALID_ID',
 });
 export const READ = Object.freeze({ READ: 'read', MISSING: 'missing', TRUNCATED: 'truncated', INACCESSIBLE: 'inaccessible', INVALID: 'invalid', MODIFIED: 'modified' });
 
@@ -152,6 +153,18 @@ export function loadManifest(reader) {
   return { manifest: JSON.parse(r.text), sha256: r.sha256 };
 }
 
+/** Ids that become file paths or manifest keys: lowercase kebab, optional one-level "modality/name". No dots, slashes beyond that, or case variants. */
+export const ID_RE = /^[a-z][a-z0-9-]*(\/[a-z][a-z0-9-]*)?$/;
+const TASK_KINDS = ['text', 'visual', 'both'];
+/** Every id the request would turn into a path or key; returns the first offender or null. */
+export function firstInvalidId(intent, { targetId, flowId, taskKind }) {
+  const a = intent?.axes ?? {};
+  const ids = [['target', targetId], ['flow', flowId], ['surface', a.surface?.value], ['transformation', a.transformation?.value], ['content_type', a.content_type?.value], ['audience', a.audience?.value], ...((Array.isArray(a.artifacts) ? a.artifacts : []).map((x) => ['artifact', x?.value]))];
+  for (const [what, v] of ids) if (v !== undefined && v !== null && (typeof v !== 'string' || !ID_RE.test(v))) return { what, value: v };
+  if (taskKind !== undefined && taskKind !== null && !TASK_KINDS.includes(taskKind)) return { what: 'task_kind', value: taskKind };
+  return null;
+}
+
 function taskKindOf(intent, override) {
   if (override) return override;
   const mods = new Set((intent?.axes?.artifacts ?? []).map((a) => String(a.value ?? '').split('/')[0]).filter(Boolean));
@@ -181,9 +194,9 @@ export function buildLoadPlan(intent, manifest, { targetId = null, taskKind = nu
   pick('surface', axes.surface?.value);
   for (const a of axes.artifacts ?? []) if (String(a.value ?? '').startsWith('visual/') || String(a.value ?? '').startsWith('audio/')) pick('artifact', a.value);
   const lang = intent?.constraints?.output_language ?? intent?.request?.language;
-  if (lang && manifest.language_packs[lang]) add(manifest.language_packs[lang], 'language');
+  if (typeof lang === 'string' && Object.hasOwn(manifest.language_packs, lang)) add(manifest.language_packs[lang], 'language');
 
-  const target = targetId ? manifest.sns_targets[targetId] : null;
+  const target = targetId && Object.hasOwn(manifest.sns_targets, targetId) ? manifest.sns_targets[targetId] : null;
   if (target) {
     // On-image copy is still copy: the target's own voice doc is loaded for visual tasks too (and only that voice).
     for (const p of target.copy_files) add(p, `copy:${target.voice_family}`);
@@ -278,35 +291,41 @@ export function validateFieldValue(field, value, manifest, ctx = {}) {
 
 /**
  * Field-wise precedence. layers = { explicit_request, task_row, sheet_override,
- * account_series, surface_brand_default } -> { field: value }.
+ * account_series, surface_brand_default } -> { field: value }. (surface_brand_default is intentionally empty today.)
  * Locked/unknown/not-allowed-at-this-layer fields are IGNORED and recorded.
  */
 export function resolveFields(layers, manifest, ctx = {}) {
   const values = {}; const origins = {}; const conflicts = [];
   const order = manifest.precedence;
-  for (const layer of Object.keys(layers ?? {})) {
+  const has = (o, k) => Object.hasOwn(o, k);
+  if (layers !== undefined && layers !== null && !isObj(layers)) conflicts.push({ code: 'INVALID_LAYER', layer: null, message: 'layers must be an object keyed by precedence layer name' });
+  const given = isObj(layers) ? layers : {};
+  for (const layer of Object.keys(given)) {
+    // `__sources` used to let a caller choose the origin text recorded for a field; origins are now always the layer name.
+    if (layer === '__sources') { conflicts.push({ code: 'IGNORED_RESERVED_KEY', layer, message: '"__sources" is not accepted; origins are the layer name' }); continue; }
     if (!order.includes(layer)) conflicts.push({ code: 'UNKNOWN_LAYER', layer, message: `layer "${layer}" is not in the precedence list` });
   }
   for (const layer of order) {
-    const set = layers?.[layer];
-    if (!isObj(set)) continue;
+    if (!has(given, layer)) continue;
+    const set = given[layer];
+    if (!isObj(set)) { if (set !== undefined && set !== null) conflicts.push({ code: 'INVALID_LAYER', layer, message: `layer "${layer}" must be an object of field values, got ${Array.isArray(set) ? 'array' : typeof set}`, ignored_value: set }); continue; }
     for (let [field, value] of Object.entries(set)) {
       if (manifest.locked_fields.includes(field)) {
         conflicts.push({ code: 'LOCKED_FIELD', field, layer, message: `"${field}" is a mandatory lock; no overlay may change it`, ignored_value: value });
         continue;
       }
-      const allowed = manifest.overridable_fields[field];
+      const allowed = has(manifest.overridable_fields, field) ? manifest.overridable_fields[field] : null;
       if (!allowed) { conflicts.push({ code: 'UNKNOWN_FIELD', field, layer, message: `"${field}" is not an overridable field`, ignored_value: value }); continue; }
       if (!allowed.includes(layer)) { conflicts.push({ code: 'LAYER_NOT_ALLOWED', field, layer, message: `"${field}" may not be set from layer ${layer}`, ignored_value: value }); continue; }
       const checked = validateFieldValue(field, value, manifest, ctx);
       if (!checked.ok) { conflicts.push({ code: checked.code, field, layer, block: checked.block, message: checked.message, ignored_value: value }); continue; }
       value = checked.value;
-      if (field in values && stable(values[field]) !== stable(value) && JSON.stringify(stable(values[field])) !== JSON.stringify(stable(value))) {
+      if (has(values, field) && stable(values[field]) !== stable(value) && JSON.stringify(stable(values[field])) !== JSON.stringify(stable(value))) {
         // Higher-precedence layer already supplied it (order is high -> low): record the shadowed value.
         conflicts.push({ code: 'SHADOWED', field, layer, message: `value from ${layer} shadowed by ${origins[field].layer}`, ignored_value: value });
         continue;
       }
-      if (!(field in values)) { values[field] = value; origins[field] = { layer, source: layers.__sources?.[layer] ?? layer }; }
+      if (!has(values, field)) { values[field] = value; origins[field] = { layer, source: layer }; }
     }
   }
   return { values, origins, conflicts };
@@ -323,7 +342,9 @@ export function resolveEditorial(intent, { targetId = null, flowId = null, overr
   };
 
   // R5: existing non-SNS flows (blog/news/report) use the same entry with NO voice family; SNS voices must never appear.
-  const flow = flowId ? manifest.existing_flows?.[flowId] ?? null : null;
+  const badId = firstInvalidId(intent, { targetId, flowId, taskKind });
+  if (badId) { receipt.status = STATUS.BLOCKED_INVALID_ID; receipt.conflicts.push({ code: 'INVALID_ID', message: `${badId.what} ${JSON.stringify(badId.value)} is not a valid id (lowercase kebab-case, optional modality/name); ids become file paths and are never normalised`, field: badId.what }); return receipt; }
+  const flow = flowId && Object.hasOwn(manifest.existing_flows ?? {}, flowId) ? manifest.existing_flows[flowId] : null;
   if (flowId) {
     const bad = (code, message) => { receipt.status = STATUS.BLOCKED_UNKNOWN_TARGET; receipt.conflicts.push({ code, message }); return receipt; };
     if (targetId) return bad('FLOW_AND_TARGET', 'a flow (non-SNS) and an SNS target are mutually exclusive');
@@ -333,7 +354,7 @@ export function resolveEditorial(intent, { targetId = null, flowId = null, overr
   }
   // Target routing: never guess an account. Surfaces with several registered targets need an explicit one.
   const targetsOnSurface = Object.entries(manifest.sns_targets).filter(([, t]) => t.surface === surfaceId).map(([id]) => id);
-  if (targetId && !manifest.sns_targets[targetId]) { receipt.status = STATUS.BLOCKED_UNKNOWN_TARGET; receipt.conflicts.push({ code: 'UNKNOWN_TARGET', message: `"${targetId}" is not a registered SNS target`, known: Object.keys(manifest.sns_targets) }); return receipt; }
+  if (targetId && !Object.hasOwn(manifest.sns_targets, targetId)) { receipt.status = STATUS.BLOCKED_UNKNOWN_TARGET; receipt.conflicts.push({ code: 'UNKNOWN_TARGET', message: `"${targetId}" is not a registered SNS target`, known: Object.keys(manifest.sns_targets) }); return receipt; }
   if (targetId && surfaceId && manifest.sns_targets[targetId].surface !== surfaceId) {
     receipt.status = STATUS.BLOCKED_UNKNOWN_TARGET;
     receipt.conflicts.push({ code: 'TARGET_SURFACE_MISMATCH', message: `target ${targetId} is on surface ${manifest.sns_targets[targetId].surface}, intent surface is ${surfaceId}` });
@@ -372,12 +393,16 @@ export function resolveEditorial(intent, { targetId = null, flowId = null, overr
     note: 'git_verified = every rule file byte-identical to its HEAD blob; dirty_unverified = file differs from HEAD in a dirty tree and is recorded, not verified; unverified = not a git checkout of this repository',
   };
 
-  // Field resolution (surface profile defaults are values the target/surface already declare).
-  const layers = { surface_brand_default: {}, account_series: {}, ...(overrides ?? {}) };
+  // Field resolution. surface_brand_default is intentionally empty: surface-profile defaults (e.g. instagram's
+  // style_overlay_default suengj-style) are personal-voice values and must not become the lowest-precedence fallback for
+  // another voice. Each target's own defaults are the account_series layer.
+  const layers = { surface_brand_default: {}, account_series: {}, ...(isObj(overrides) ? overrides : {}) };
+  if (overrides !== undefined && overrides !== null && !isObj(overrides)) receipt.conflicts.push({ code: 'INVALID_LAYER', layer: null, message: 'overrides must be an object keyed by layer name' });
   if (target) {
-    layers.account_series = { ...target.copy_defaults, ...(target.visual?.defaults ? { canvas: target.visual.defaults.canvas, text_policy: target.visual.defaults.text_policy } : {}), ...(overrides?.account_series ?? {}) };
+    if (overrides?.account_series !== undefined && overrides.account_series !== null && !isObj(overrides.account_series)) receipt.conflicts.push({ code: 'INVALID_LAYER', layer: 'account_series', message: `layer "account_series" must be an object of field values, got ${Array.isArray(overrides.account_series) ? 'array' : typeof overrides.account_series}`, ignored_value: overrides.account_series });
+    layers.account_series = { ...target.copy_defaults, ...(target.visual?.defaults ? { canvas: target.visual.defaults.canvas, text_policy: target.visual.defaults.text_policy } : {}), ...(isObj(overrides?.account_series) ? overrides.account_series : {}) };
     // The instagram surface profile defaults to suengj-style; only a personal target keeps it.
-    if (target.voice_family !== 'personal' && !('style_overlay' in (overrides?.account_series ?? {}))) layers.account_series.style_overlay = target.copy_defaults.style_overlay;
+    if (target.voice_family !== 'personal' && !(isObj(overrides?.account_series) && Object.hasOwn(overrides.account_series, 'style_overlay'))) layers.account_series.style_overlay = target.copy_defaults.style_overlay;
   }
   const fields = resolveFields(layers, manifest, { voiceFamily: target?.voice_family ?? null, isFlow: Boolean(flow) });
   receipt.conflicts.push(...fields.conflicts);
@@ -469,8 +494,16 @@ export const SNS_SURFACES = ['instagram', 'linkedin'];
 export function gateRender(plan, receipt, manifest, ctx = {}) {
   const surface = plan?.profiles?.surface;
   const fail = (code, message) => ({ ok: false, applies: true, code, message });
+  if (typeof surface === 'string' && !SNS_SURFACES.includes(surface) && SNS_SURFACES.includes(normText(surface))) return fail('INVALID_ID', `surface "${surface}" is a case/space variant of a registered SNS surface; ids are never normalised`);
   const isSns = SNS_SURFACES.includes(surface);
-  if (!isSns && !receipt?.flow) return { ok: true, applies: false };
+  if (!isSns && !receipt?.flow) {
+    // A non-SNS surface label must not be a way around the gate: an SNS receipt, or an artifact only SNS targets map, still needs the full check.
+    const flowArtifacts = new Set(Object.values(manifest.existing_flows ?? {}).flatMap((f) => f.artifacts));
+    const snsOnly = new Set(Object.values(manifest.sns_targets).flatMap((t) => t.visual?.artifacts ?? []).filter((a) => !flowArtifacts.has(a)));
+    if (receipt?.target) return fail('PROFILE_TARGET_MISMATCH', `receipt names SNS target ${receipt.target.id} but the plan surface is ${surface}`);
+    if (snsOnly.has(plan?.profiles?.artifact)) return fail('PROFILE_RECEIPT_REQUIRED', `artifact ${plan.profiles.artifact} is mapped only for SNS targets but the plan surface is ${surface}; set profiles.surface to the real SNS surface and pass --profile-receipt`);
+    return { ok: true, applies: false };
+  }
   if (!receipt) return fail('PROFILE_RECEIPT_REQUIRED', `surface ${surface} is a registered SNS surface: run scripts/resolve-editorial.mjs --plan <plan.json> --target <id> --out receipt.json and pass --profile-receipt`);
   if (receipt.status !== STATUS.READY || !receipt.profile) return fail('PROFILE_RECEIPT_NOT_READY', `receipt status ${receipt.status}`);
   const body = receipt.profile.body;
