@@ -126,8 +126,8 @@ test('light outcome record: only adoption / repeated errors / revision count; un
   const r2 = recordOutcome(st, { task_id: 'o2', target: 'trends-moa', format: 'text/article', first_result_adopted: false, repeated_errors: ['a', 'a', 'b'], revision_count: 2 }).record;
   eq(Object.keys(r2).sort(), ['first_result_adopted', 'format', 'profile_hash', 'repeated_errors', 'revision_count', 'schema', 'scope', 'target', 'task_id']);
   eq(r2.repeated_errors, ['a', 'b']);
-  throwsCode(() => recordOutcome(st, { task_id: 'o3', target: 't', format: 'f', revision_count: -1 }), 'BAD_FIELD');
-  throwsCode(() => recordOutcome(st, { task_id: 'o3', target: 't', format: 'f', first_result_adopted: 'maybe' }), 'BAD_FIELD');
+  throwsCode(() => recordOutcome(st, { task_id: 'o3', target: 'trends-moa', format: 'visual/social-card', revision_count: -1 }), 'BAD_FIELD');
+  throwsCode(() => recordOutcome(st, { task_id: 'o3', target: 'trends-moa', format: 'visual/social-card', first_result_adopted: 'maybe' }), 'BAD_FIELD');
   yes(!/views|ctr|engagement|score/i.test(JSON.stringify(r2)), 'no KPI fields');
 });
 test('normal path: library-intake brief carries example status + guidance (real CLI)', () => {
@@ -140,8 +140,8 @@ test('normal path: library-intake brief carries example status + guidance (real 
 });
 test('CLI quality-feedback records under a given root and rejects non-explicit "explicit"', () => {
   const root = tmp(); const run = (...a) => spawnSync('node', [resolve(HERE, 'quality-feedback.mjs'), '--root', root, ...a], { encoding: 'utf8' });
-  eq(run('outcome', '--task', 'c1', '--target', 'trends-moa', '--format', 'f', '--adopted', 'yes', '--revisions', '1').status, 0);
-  eq(run('explicit', '--target', 'trends-moa', '--format', 'f', '--instruction', 'i', '--statement', '그냥 수정').status, 1);
+  eq(run('outcome', '--task', 'c1', '--target', 'trends-moa', '--format', 'visual/social-card', '--adopted', 'yes', '--revisions', '1').status, 0);
+  eq(run('explicit', '--target', 'trends-moa', '--format', 'visual/social-card', '--instruction', 'i', '--statement', '그냥 수정').status, 1);
   yes(readdirSync(resolve(root, 'outcomes')).length === 1, 'outcome written');
 });
 
