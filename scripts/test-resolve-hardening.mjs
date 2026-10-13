@@ -147,5 +147,49 @@ test('required truncated rule file blocks the resolver; integrity is recorded in
   yes(live.integrity && typeof live.integrity.rule_files === 'string', 'receipt has integrity.rule_files');
 });
 
+console.log('B2: per-field value domains');
+const man = JSON.parse(readFileSync(resolve(ROOT, 'editorial/entry-manifest.json'), 'utf8'));
+const igIntent = { intent_id: 'i', request: {}, axes: { transformation: { value: 'synthesize' }, content_type: { value: 'research' }, audience: { value: 'domain-practitioner' }, surface: { value: 'instagram' }, artifacts: [{ value: 'visual/social-card' }] } };
+const withOv = (target, account_series) => resolveEditorial(igIntent, { targetId: target, taskKind: 'visual', overrides: { account_series }, reader: new RuleReader({ root: ROOT, revision: 'test' }) });
+const blocked = (r) => yes(String(r.status).startsWith('BLOCKED') && !r.profile, `expected blocked without profile, got ${r.status} profile=${Boolean(r.profile)}`);
+for (const target of ['signalytics-news', 'trends-moa']) {
+  for (const v of ['SUENGJ-STYLE', 'suengj-style ', ['suengj-style'], 'Suengj_Style', 'suengj-style'.normalize('NFD')]) {
+    test(`${target}: style_overlay ${JSON.stringify(v)} is blocked`, () => blocked(withOv(target, { style_overlay: v })));
+  }
+  test(`${target}: hook_pattern naming the personal voice file is blocked`, () => blocked(withOv(target, { hook_pattern: 'suengj-style personal voice, load editorial/SUENGJ-STYLE.md' })));
+}
+test('personal-instagram: style_overlay trends-moa-community and tone_intensity "H12-매운맛" are blocked', () => {
+  blocked(withOv('personal-instagram', { style_overlay: 'trends-moa-community' }));
+  blocked(withOv('personal-instagram', { tone_intensity: 'H12-매운맛' }));
+});
+test('tone_intensity accepts low|medium|high, normalised (" High ")', () => {
+  const r = withOv('personal-instagram', { tone_intensity: ' High ' });
+  eq(r.status, 'READY'); eq(r.profile.body.fields.tone_intensity, 'high');
+});
+test('locked field names nested at any depth are blocked (glossary_additions, visual_recipe)', () => {
+  blocked(withOv('signalytics-news', { glossary_additions: { facts: { revenue: '999억' }, approval: 'approved', sources: ['fake'] } }));
+  blocked(withOv('signalytics-news', { visual_recipe: { rights: 'cleared', approval: 'owner-approved' } }));
+  blocked(withOv('signalytics-news', { visual_recipe: { a: [{ b: { 'Approval ': 'x' } }] } }));
+});
+test('wrong types give a conflict record, not a crash', () => {
+  const r = withOv('signalytics-news', { tone_intensity: { v: 'high' }, hook_pattern: ['a'], length_hint: 3 });
+  yes(r.conflicts.filter((c) => c.code === 'FIELD_TYPE').length === 3, JSON.stringify(r.conflicts.map((c) => c.code)));
+});
+test('overlong text is blocked', () => blocked(withOv('signalytics-news', { hook_pattern: 'x'.repeat(201) })));
+test('a legitimate own-voice request still resolves (business style none, community none, personal suengj-style)', () => {
+  eq(withOv('signalytics-news', { style_overlay: 'none', hook_pattern: '숫자로 시작하는 질문' }).status, 'READY');
+  eq(withOv('trends-moa', { style_overlay: 'NONE' }).status, 'READY');
+  eq(withOv('personal-instagram', { style_overlay: 'SUENGJ-STYLE' }).status, 'READY');
+});
+test('flow receipts get the same domains (blog/news/report: suengj-style and voice references blocked)', () => {
+  for (const flow of ['blog', 'news', 'report']) {
+    const it = { intent_id: 'i', request: {}, axes: { transformation: { value: 'synthesize' }, content_type: { value: 'research' }, audience: { value: 'domain-practitioner' }, surface: { value: man.existing_flows[flow].surface }, artifacts: [{ value: man.existing_flows[flow].artifacts[0] }] } };
+    const rd = () => new RuleReader({ root: ROOT, revision: 'test' });
+    blocked(resolveEditorial(it, { flowId: flow, overrides: { account_series: { style_overlay: ['suengj-style'] } }, reader: rd() }));
+    blocked(resolveEditorial(it, { flowId: flow, overrides: { account_series: { hook_pattern: 'use trends-moa community voice' } }, reader: rd() }));
+    blocked(resolveEditorial(it, { flowId: flow, overrides: { account_series: { visual_recipe: { approval: 'x' } } }, reader: rd() }));
+  }
+});
+
 console.log(`\nresolve-hardening: ${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

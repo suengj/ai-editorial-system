@@ -28,6 +28,7 @@ export const STATUS = Object.freeze({
   BLOCKED_TARGET_REQUIRED: 'BLOCKED_TARGET_REQUIRED',
   BLOCKED_UNKNOWN_TARGET: 'BLOCKED_UNKNOWN_TARGET',
   BLOCKED_LEAK: 'BLOCKED_LEAK',
+  BLOCKED_FIELD_INVALID: 'BLOCKED_FIELD_INVALID',
 });
 export const READ = Object.freeze({ READ: 'read', MISSING: 'missing', TRUNCATED: 'truncated', INACCESSIBLE: 'inaccessible', INVALID: 'invalid', MODIFIED: 'modified' });
 
@@ -215,12 +216,72 @@ export function detectVoiceLeak(paths, voiceFamily, manifest) {
   return leaks;
 }
 
+/** Normal form used for every domain comparison: NFC, trim, case-fold, whitespace/underscore runs -> hyphen. */
+export const normText = (x) => String(x).normalize('NFC').trim().toLowerCase().replace(/[\s_]+/g, '-');
+
+/** First key at any depth that names a locked field (case/whitespace-insensitive), as a dotted path, else null. */
+function lockedKeyPath(value, locked, path = '') {
+  if (Array.isArray(value)) { for (let i = 0; i < value.length; i++) { const r = lockedKeyPath(value[i], locked, `${path}[${i}]`); if (r) return r; } return null; }
+  if (value !== null && typeof value === 'object') {
+    for (const [k, v] of Object.entries(value)) {
+      if (locked.includes(normText(k))) return `${path}.${k}`.replace(/^\./, '');
+      const r = lockedKeyPath(v, locked, `${path}.${k}`); if (r) return r;
+    }
+  }
+  return null;
+}
+const allStrings = (v, out = []) => { if (typeof v === 'string') out.push(v); else if (Array.isArray(v)) v.forEach((x) => allStrings(x, out)); else if (v && typeof v === 'object') for (const [k, x] of Object.entries(v)) { out.push(k); allStrings(x, out); } return out; };
+
+/**
+ * Validate one field value against manifest.field_domains. ctx = { voiceFamily|null, isFlow }.
+ * Returns { ok, value } (value normalised for enums) or { ok:false, code, message, block }.
+ * block = 'leak' for a reference to another voice family, 'invalid' for the rest.
+ */
+export function validateFieldValue(field, value, manifest, ctx = {}) {
+  const dom = manifest.field_domains?.[field];
+  if (!dom || field.startsWith('_')) return { ok: true, value };
+  const bad = (code, message, block = 'invalid') => ({ ok: false, code, message, block });
+  const family = ctx.voiceFamily ?? '_flow';
+  const locked = manifest.locked_fields.map(normText);
+  if (dom.type === 'enum' || dom.type === 'enum_by_voice_family') {
+    if (typeof value !== 'string') return bad('FIELD_TYPE', `${field} must be a string enum value, got ${Array.isArray(value) ? 'array' : typeof value}`);
+    const n = normText(value);
+    const allowed = dom.type === 'enum' ? dom.allowed : (Object.hasOwn(dom.allowed, family) ? dom.allowed[family] : []);
+    if (!allowed.includes(n)) {
+      const otherFamilyHasIt = dom.type === 'enum_by_voice_family' && Object.entries(dom.allowed).some(([f, a]) => f !== family && f !== '_flow' && a.includes(n) && !allowed.includes(n));
+      return bad('FIELD_DOMAIN', `${field}=${JSON.stringify(value)} is not allowed for ${family === '_flow' ? 'a non-SNS flow' : `voice family ${family}`} (allowed: ${allowed.join(', ') || 'none'})`, otherFamilyHasIt ? 'leak' : 'invalid');
+    }
+    return { ok: true, value: n };
+  }
+  if (dom.type === 'text') {
+    if (typeof value !== 'string') return bad('FIELD_TYPE', `${field} must be a string, got ${Array.isArray(value) ? 'array' : value === null ? 'null' : typeof value}`);
+    if (value.length > dom.max_length) return bad('FIELD_TOO_LONG', `${field} is ${value.length} chars; the cap is ${dom.max_length}`);
+  } else if (dom.type === 'structure') {
+    const t = Array.isArray(value) ? 'array' : value === null ? 'null' : typeof value;
+    if (!dom.value_types.includes(t)) return bad('FIELD_TYPE', `${field} must be ${dom.value_types.join(' or ')}, got ${t}`);
+    if (JSON.stringify(value).length > dom.max_json_length) return bad('FIELD_TOO_LONG', `${field} exceeds ${dom.max_json_length} JSON chars`);
+    const lk = lockedKeyPath(value, locked);
+    if (lk) return bad('LOCKED_KEY_NESTED', `${field} carries a locked field name at "${lk}"; locked fields can never be set through an overlay`);
+  }
+  // Voice isolation for free text: no other family's profile id / rule file name.
+  const mine = new Set((manifest.voice_profile_ids?.[ctx.voiceFamily] ?? []).map(normText));
+  for (const [fam, ids] of Object.entries(manifest.voice_profile_ids ?? {})) {
+    if (fam.startsWith('_') || fam === ctx.voiceFamily) continue;
+    for (const id of ids) {
+      const nid = normText(id);
+      if (mine.has(nid) || [...mine].some((m) => m.includes(nid) || nid.includes(m))) continue;
+      if (allStrings(value).some((t) => normText(t).includes(nid))) return bad('VOICE_REFERENCE', `${field} references the ${fam} voice ("${id}"); a ${ctx.voiceFamily ?? 'non-SNS'} request may not name another voice profile`, 'leak');
+    }
+  }
+  return { ok: true, value };
+}
+
 /**
  * Field-wise precedence. layers = { explicit_request, task_row, sheet_override,
  * account_series, surface_brand_default } -> { field: value }.
  * Locked/unknown/not-allowed-at-this-layer fields are IGNORED and recorded.
  */
-export function resolveFields(layers, manifest) {
+export function resolveFields(layers, manifest, ctx = {}) {
   const values = {}; const origins = {}; const conflicts = [];
   const order = manifest.precedence;
   for (const layer of Object.keys(layers ?? {})) {
@@ -229,7 +290,7 @@ export function resolveFields(layers, manifest) {
   for (const layer of order) {
     const set = layers?.[layer];
     if (!isObj(set)) continue;
-    for (const [field, value] of Object.entries(set)) {
+    for (let [field, value] of Object.entries(set)) {
       if (manifest.locked_fields.includes(field)) {
         conflicts.push({ code: 'LOCKED_FIELD', field, layer, message: `"${field}" is a mandatory lock; no overlay may change it`, ignored_value: value });
         continue;
@@ -237,6 +298,9 @@ export function resolveFields(layers, manifest) {
       const allowed = manifest.overridable_fields[field];
       if (!allowed) { conflicts.push({ code: 'UNKNOWN_FIELD', field, layer, message: `"${field}" is not an overridable field`, ignored_value: value }); continue; }
       if (!allowed.includes(layer)) { conflicts.push({ code: 'LAYER_NOT_ALLOWED', field, layer, message: `"${field}" may not be set from layer ${layer}`, ignored_value: value }); continue; }
+      const checked = validateFieldValue(field, value, manifest, ctx);
+      if (!checked.ok) { conflicts.push({ code: checked.code, field, layer, block: checked.block, message: checked.message, ignored_value: value }); continue; }
+      value = checked.value;
       if (field in values && stable(values[field]) !== stable(value) && JSON.stringify(stable(values[field])) !== JSON.stringify(stable(value))) {
         // Higher-precedence layer already supplied it (order is high -> low): record the shadowed value.
         conflicts.push({ code: 'SHADOWED', field, layer, message: `value from ${layer} shadowed by ${origins[field].layer}`, ignored_value: value });
@@ -315,9 +379,12 @@ export function resolveEditorial(intent, { targetId = null, flowId = null, overr
     // The instagram surface profile defaults to suengj-style; only a personal target keeps it.
     if (target.voice_family !== 'personal' && !('style_overlay' in (overrides?.account_series ?? {}))) layers.account_series.style_overlay = target.copy_defaults.style_overlay;
   }
-  const fields = resolveFields(layers, manifest);
+  const fields = resolveFields(layers, manifest, { voiceFamily: target?.voice_family ?? null, isFlow: Boolean(flow) });
   receipt.conflicts.push(...fields.conflicts);
   receipt.field_origins = fields.origins;
+  // A value outside its domain is never silently dropped: the run is blocked and the conflict names the field.
+  const bad = fields.conflicts.filter((c) => c.block);
+  if (bad.length && receipt.status === STATUS.READY) receipt.status = bad.some((c) => c.block === 'leak') ? STATUS.BLOCKED_LEAK : STATUS.BLOCKED_FIELD_INVALID;
 
   // Surface style_overlay_default must not leak a personal overlay into a non-personal voice.
   if (target && target.voice_family !== 'personal' && fields.values.style_overlay === 'suengj-style') {
@@ -342,6 +409,8 @@ export function resolveEditorial(intent, { targetId = null, flowId = null, overr
     rule_files: receipt.loads.filter((l) => l.status === READ.READ).map((l) => ({ path: l.path, sha256: l.sha256 })),
     manifest_sha256: manifestHash,
   };
+  // A blocked receipt carries NO profile: nothing downstream can mistake it for a resolved one.
+  if (receipt.status !== STATUS.READY) return receipt;
   receipt.profile = { id: profileBody.id, version: `${manifest.manifest_version}+${reader.revision}`, resolved_hash: hashOf(profileBody), body: profileBody };
   return receipt;
 }
