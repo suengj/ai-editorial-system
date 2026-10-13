@@ -29,3 +29,16 @@ Signalytics: Chat PNG 5장(조건부 6장) + caption.md + benchmark-brief.md, Dr
 ```
 
 Owner/UAT states (not asserted by this file): native image E2E (SUE-1337 Phase 4) = not run; aesthetic approval = owner only.
+
+## Gate for this change (SUE-1426)
+
+`npm run test:editorial-entry` is the gate for the common editorial entry (intent, profiles, resolve, hardening, quality feedback, library input, review-2 regressions, generated-image). It also runs inside `npm test`.
+The library smoke needs the `intelligence-library` clone (`INTELLIGENCE_LIBRARY_REPO`); when it is absent the gate FAILS unless `ALLOW_LIBRARY_SKIP=1` is set on purpose (then the smoke is printed as a loud SKIP, i.e. NOT_RUN).
+`npm run test:visual-execution` and `npm run test:carousel` are in scope but carry known pre-existing failures and are run separately. Library `pytest tests` and `python3 scripts/test_aes_entry_linkage.py main` (ai-workflow-registry) are the other two checks.
+
+## Notes on the checks
+
+- Rule-file integrity: a receipt records `integrity.integrity` = `VERIFIED` or `UNVERIFIED` (a REQUIRED rule file that is dirty, or checked outside git, could not be verified against its HEAD blob). `resolve-editorial.mjs` prints `integrity=UNVERIFIED` on its `resolve:` line. A required `.md` rule file shorter than 120 bytes or without a heading blocks.
+- Library packets: a pinned packet (`source_commit`, not a preview) is accepted only when the commit exists in the library clone and each file equals that commit's blob. An unpinned preview is never `all_ok` and never a fact source.
+- Explicit preferences (`quality-feedback.mjs explicit`): the target must be a registered target/flow; the text is checked against other voice families and locked-field words, refused with a recorded reason otherwise, and appears in the brief only as delimited DATA that can never override locks or the voice family. The "앞으로" keyword test is a sanity check only (quoted, limited or negated forms such as "이번에만" / "this time only" are rejected); the calling agent is responsible for judging intent, and the record stores the verbatim statement.
+- `feedback/outcomes|task-feedback|candidates|preferences` are git-ignored (see `feedback/README.md`).
