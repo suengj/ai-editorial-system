@@ -4,6 +4,8 @@ SUE-1417 · 명시적으로 선택하는 시리즈 프로필. 새 서비스·DB�
 진입 요청: **“사업 아이디어 매거진으로 만들어줘”**, **“사업화 아이디어 카드 5장”**.
 기존 `STRUCTURED-VISUAL-EXECUTION.md` §9, `SLIDES-AND-CAROUSELS.md`의
 `silent_carousel`, `AI-IMAGE-GENERATION-GUIDE.md`를 필요한 범위에서 재사용한다.
+> **Signalytics 전용 예외:** `signalytics.news` 일일 카드뉴스는 [`SIGNALYTICS-BENCHMARK-CARDS.md`](SIGNALYTICS-BENCHMARK-CARDS.md)의 **근거 기반 A/B 비교·리서치 깊이·Chat-only 출력**을 우선한다. 이는 이 5장 일반 프로필 전체를 6장으로 바꾸거나 타 계정에 적용하는 규칙이 아니다.
+
 
 ## 1. 편집 목적
 
