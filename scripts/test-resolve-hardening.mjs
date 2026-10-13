@@ -324,10 +324,12 @@ test('signalytics-news has no invented tone_intensity default; the field is simp
   eq(man.sns_targets['signalytics-news'].copy_defaults, { style_overlay: 'none' });
   const r = withOv('signalytics-news', {}); eq(r.status, 'READY'); yes(!('tone_intensity' in r.profile.body.fields), 'no tone default');
 });
-test('trends-moa carousel (visual/slide-image) stays unmapped and is refused as ARTIFACT_NOT_MAPPED (owner question)', () => {
+test('trends-moa carousel (visual/slide-image) is mapped (Manager decision) and passes the gate; an unmapped artifact is still ARTIFACT_NOT_MAPPED', () => {
   const rec = resolveEditorial(igIntent, { targetId: 'trends-moa', taskKind: 'visual', reader: new RuleReader({ root: ROOT }) });
   const g = gateRender({ profiles: { surface: 'instagram', artifact: 'visual/slide-image' } }, rec, man, { reader: new RuleReader({ root: ROOT }) });
-  eq(g.code, 'ARTIFACT_NOT_MAPPED');
+  eq(g.ok, true, JSON.stringify(g));
+  const u = gateRender({ profiles: { surface: 'instagram', artifact: 'visual/thumbnail' } }, rec, man, { reader: new RuleReader({ root: ROOT }) });
+  eq(u.code, 'ARTIFACT_NOT_MAPPED');
 });
 
 console.log('S2: validate-intent');

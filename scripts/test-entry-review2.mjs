@@ -308,6 +308,42 @@ console.log('follow-ups S1-S3 + family ids');
     yes(validateFieldValue('hook_pattern', 'H12 매운맛', m, { voiceFamily: 'community', isFlow: false }).ok, 'own family still allowed');
   });
 }
+console.log('trends-moa carousel (visual/slide-image) reuses generic carousel rules');
+{
+  const series = () => { const d = tmp(); cpSync(resolve(ROOT, 'scripts/fixtures/carousel'), d, { recursive: true }); const p = resolve(d, 'series.json'), s = JSON.parse(readFileSync(p, 'utf8')); s.task.canvas = { width: 1080, height: 1350 }; writeFileSync(p, JSON.stringify(s)); return { d, p }; };
+  const resolveFor = (d, p, t) => { const out = resolve(d, `r-${t}.json`); const r = node(['scripts/resolve-editorial.mjs', '--plan', p, '--target', t, '--task-kind', 'visual', '--out', out]); return { r, out }; };
+  const { d, p } = series();
+  const tm = resolveFor(d, p, 'trends-moa'), sg = resolveFor(d, p, 'signalytics-news');
+  test('manifest: trends-moa maps slide-image with only generic rule files; no business/personal doc or business values', () => {
+    const v = manifest.sns_targets['trends-moa'].visual;
+    yes(v.artifacts.includes('visual/slide-image'), 'unmapped');
+    eq(v.files, ['editorial/STRUCTURED-VISUAL-EXECUTION.md', 'editorial/SLIDES-AND-CAROUSELS.md']); eq(v.values, ['editorial/visual-recipes.v1.json']);
+    yes(!('output_contract' in manifest.sns_targets['trends-moa']), 'signalytics package contract leaked');
+  });
+  test('resolve --plan --target trends-moa is READY with the community voice doc and no business/personal doc in loads', () => {
+    eq(tm.r.status, 0, tm.r.stderr); const rc = JSON.parse(readFileSync(tm.out, 'utf8')); eq(rc.status, 'READY'); eq(rc.target.voice_family, 'community');
+    const paths = rc.profile.body.rule_files.map((x) => x.path);
+    yes(paths.includes('editorial/TRENDS-MOA-COMMUNITY-TONE.md') && paths.includes('editorial/SLIDES-AND-CAROUSELS.md'), paths.join());
+    for (const bad of ['BUSINESS-IDEA-MAGAZINE', 'SIGNALYTICS-BENCHMARK-CARDS', 'SUENGJ-STYLE', 'business-idea-magazine.v1']) yes(!paths.some((x) => x.includes(bad)), `${bad} loaded`);
+  });
+  if (hasRasterizer) {
+    test('render-carousel --profile-receipt renders for trends-moa; no output PNG is stamped with trends.moa/signalytics branding', () => {
+      const o = resolve(d, 'o-tm'), r = node(['scripts/render-carousel.mjs', '--plan', p, '--out', o, '--profile-receipt', tm.out]); eq(r.status, 0, r.stdout + r.stderr); yes(/target:trends-moa/.test(r.stdout), r.stdout);
+      yes(existsSync(resolve(o, 'opening/image.png')), 'no frame');
+    });
+    test('a signalytics-news receipt cannot be re-labelled as trends-moa (and vice versa): hash/profile-id mismatch refuses the render', () => {
+      for (const [src, dst] of [[sg.out, 'trends-moa'], [tm.out, 'signalytics-news']]) {
+        const rc = JSON.parse(readFileSync(src, 'utf8')); rc.target = { ...rc.target, id: dst }; const f = resolve(d, `x-${dst}.json`); writeFileSync(f, JSON.stringify(rc));
+        const r = node(['scripts/render-carousel.mjs', '--plan', p, '--out', resolve(d, `ox-${dst}`), '--profile-receipt', f]); eq(r.status, 1); yes(/PROFILE_TARGET_MISMATCH/.test(r.stderr), r.stderr);
+      }
+    });
+  }
+  test('--check-package: the Signalytics package contract (5-6 PNG, caption.md, benchmark-brief.md) is not applied to trends-moa', () => {
+    const pk = tmp(); writeFileSync(resolve(pk, 'a.png'), PNG8);
+    const t = node(['scripts/resolve-editorial.mjs', '--check-package', pk, '--target', 'trends-moa']); eq(t.status, 0, t.stdout); eq(JSON.parse(t.stdout).applicable, false);
+    eq(node(['scripts/resolve-editorial.mjs', '--check-package', pk, '--target', 'signalytics-news']).status, 2);
+  });
+}
 // <<SECTIONS>>
 
 console.log(`\nentry-review2: ${pass} passed, ${failed} failed`);
