@@ -94,7 +94,7 @@ export function planCarousel(series, catalog=loadVisualRecipes()) {
     addText('series-label',series.series_label,recurring.eyebrow,'eyebrow');
     addText('headline',f.headline,recurring.headline,'headline');
     for (const b of f.blocks) {
-      keys(b,['id','region','kind','ref','sha256','mode','fit','rights_note','protect','text','source_ref','instruction'],'block');
+      keys(b,['id','region','kind','ref','sha256','mode','fit','rights_note','protect','text','source_ref','instruction','generation'],'block');
       need(slug(b.id) && !['series-label','headline','source','pagination'].includes(b.id) && !layers.some((l)=>l.id===b.id),'SERIES_LAYER_ID',String(b.id));
       need(layout[b.region] && !occupied.has(b.region),'SERIES_REGION',`unknown or duplicate region ${b.region}`); occupied.add(b.region);
       need(['text','image','chart','generated'].includes(b.kind),'SERIES_LAYER',String(b.kind));
@@ -107,7 +107,7 @@ export function planCarousel(series, catalog=loadVisualRecipes()) {
         keys(b,['id','region','kind','ref','sha256'],'chart block');
         need(text(b.ref),'SERIES_SOURCE',b.id);
       } else {
-        keys(b,['id','region','kind','ref','sha256','mode','fit','rights_note','protect',...(b.kind==='generated'?['instruction']:[])],'image block');
+        keys(b,['id','region','kind','ref','sha256','mode','fit','rights_note','protect',...(b.kind==='generated'?['instruction','generation']:[])],'image block');
         if (b.kind==='generated') {
           need(text(b.instruction),'SERIES_GENERATION',b.id);
           layer.instruction = `${recipe.generation_direction}\nFrame purpose: ${f.takeaway}\n${b.instruction}\nCreate only the illustration for the content slot ${JSON.stringify(layer.slot)}. The compositor clips this asset to that slot; it adds headline, source, page count and watermark separately. Do not draw exact text, data, numbers or branding. A prompt alone is not pixel reservation.`;
@@ -145,7 +145,7 @@ const basenameSafe=(root,path)=>{ need(typeof path==='string' && !relative(root,
 
 /** Existing executor owns typography, charts, source hashing and image bytes. */
 export async function executeCarousel(series,{baseDir=process.cwd(),outDir,rasterizer='auto',previousDir=null}={}) {
-  const {compileExecution,executeVisual,prepareOutput}=await import('./visual-execution-core.mjs');
+  const {compileExecution,executeVisual,prepareOutput,isRenderedOk,GENERATED_OK,RENDER_OK}=await import('./visual-execution-core.mjs');
   const {findRasterizer,rasterize,svgDocument}=await import('./svg-tools.mjs');
   const compiled=planCarousel(series); prepareOutput(outDir);
   const adapter=findRasterizer(rasterizer);
@@ -156,14 +156,21 @@ export async function executeCarousel(series,{baseDir=process.cwd(),outDir,raste
   for (const f of compiled.frames) packets.push(await compileExecution(f.plan,{baseDir,preset:compiled.preset}));
   const prior=previousDir?JSON.parse(readFileSync(resolve(previousDir,'series.json'),'utf8')):null;
   if (prior) need(prior.series_id===compiled.series_id && Array.isArray(prior.frames),'SERIES_REUSE','different or invalid prior series');
+  // Enforced repair budget (SUE-1426): 1 base version + ONE local fix. The round only advances when a frame is
+  // actually re-rendered, and a second repair is refused before anything is written.
+  const fpOf=(f,i)=>hash({packet:packets[i].execution_hash,recipe:compiled.recipe_hash,runtime});
+  const reusableOld=(f,i)=>{const o=prior?.frames.find((p)=>p.id===f.id && p.fingerprint===fpOf(f,i) && isRenderedOk(p.status)); return adapter && runtime.font_environment && o && Object.keys(o.outputs??{}).length===5 ? o : null;};
+  const rerender=compiled.frames.filter((f,i)=>!reusableOld(f,i)).map((f)=>f.id);
+  const repairRound=prior?((prior.repair_round??0)+(rerender.length?1:0)):0;
+  need(repairRound<=1,'REPAIR_LIMIT',`already repaired once (prior repair_round ${prior?.repair_round}); further changes need a new base version, not another local fix`);
   mkdirSync(outDir,{recursive:true});
-  const result={schema_version:CAROUSEL_VERSION,series_id:compiled.series_id,recipe:compiled.recipe,recipe_hash:compiled.recipe_hash,runtime,
+  const result={repair_round:repairRound,repaired_frames:prior?rerender:[],schema_version:CAROUSEL_VERSION,series_id:compiled.series_id,recipe:compiled.recipe,recipe_hash:compiled.recipe_hash,runtime,
     status:'INCOMPLETE',frames:[],qa:{mechanical:'PREFLIGHT_PASSED',visual:'NOT_REVIEWED',source_truth:'NOT_ESTABLISHED',publication:'NOT_AUTHORIZED'},publication_authorized:false};
   const save=()=>writeJson(resolve(outDir,'series.json'),result);
   try {
     for (const [i,f] of compiled.frames.entries()) {
       const dir=resolve(outDir,f.id), fingerprint=hash({packet:packets[i].execution_hash,recipe:compiled.recipe_hash,runtime});
-      const old=prior?.frames.find((p)=>p.id===f.id && p.fingerprint===fingerprint && p.status==='RENDERED_NEEDS_REVIEW');
+      const old=prior?.frames.find((p)=>p.id===f.id && p.fingerprint===fingerprint && isRenderedOk(p.status));
       const entry={id:f.id,index:f.index,function:f.function,beat_ids:f.beat_ids,takeaway:f.takeaway,alt_text:f.alt_text,fingerprint,status:'NOT_RUN',reused:false,outputs:{}};
       if (adapter && runtime.font_environment && old && Object.keys(old.outputs??{}).length===5) {
         mkdirSync(dir,{recursive:true});
@@ -172,7 +179,7 @@ export async function executeCarousel(series,{baseDir=process.cwd(),outDir,raste
           const input=basenameSafe(resolve(previousDir),o.ref); need(hash(readFileSync(input))===o.sha256,'SERIES_REUSE',`changed prior ${f.id}/${name}`);
           copyFileSync(input,resolve(dir,name));
         }
-        entry.reused=true; entry.status='RENDERED_NEEDS_REVIEW';
+        entry.reused=true; entry.status=old.status;
       } else {
         const executed=await executeVisual(f.plan,{baseDir,preset:compiled.preset,outDir:dir,rasterizer});
         entry.status=executed.status;
@@ -180,11 +187,11 @@ export async function executeCarousel(series,{baseDir=process.cwd(),outDir,raste
       const checked=await compileExecution(f.plan,{baseDir,preset:compiled.preset});
       need(checked.execution_hash===packets[i].execution_hash,'SERIES_SOURCE_CHANGED',`${f.id}: inputs changed during execution`);
       writeJson(resolve(outDir,`${f.id}.plan.json`),f.plan);
-      if (entry.status==='RENDERED_NEEDS_REVIEW') for (const name of ['master.png','image.png','master.svg','execution.json','receipt.json']) entry.outputs[name]={ref:`${f.id}/${name}`,sha256:hash(readFileSync(resolve(dir,name)))};
+      if (isRenderedOk(entry.status)) for (const name of ['master.png','image.png','master.svg','execution.json','receipt.json']) entry.outputs[name]={ref:`${f.id}/${name}`,sha256:hash(readFileSync(resolve(dir,name)))};
       result.frames.push(entry); save();
     }
-    const complete=result.frames.every((f)=>f.status==='RENDERED_NEEDS_REVIEW');
-    result.status=complete?'RENDERED_NEEDS_REVIEW':'INCOMPLETE';
+    const complete=result.frames.every((f)=>isRenderedOk(f.status));
+    result.status=!complete?'INCOMPLETE':result.frames.some((f)=>f.status===GENERATED_OK)?GENERATED_OK:RENDER_OK;
     if (complete && adapter) {
       const {width,height}=packets[0].canvas, phoneWidth=390, phoneHeight=Math.round(phoneWidth*height/width);
       const tiles=[];

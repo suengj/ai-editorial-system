@@ -11,6 +11,39 @@ import { sha256, resolveWatermark, applyWatermark, decodePng, encodePng, WATERMA
 import { renderChartPanel, validateChartAgainstArticle } from './chart-renderer.mjs';
 import { esc, svgDocument, findRasterizer, rasterize, textMeasurer, wrapText } from './svg-tools.mjs';
 
+// SUE-1426 R2: a generated image only counts as image-generation success with real evidence
+// that the asset exists, is not a placeholder, and is visible in the final PNG.
+export const RENDER_OK = 'RENDERED_NEEDS_REVIEW';
+export const GENERATED_OK = 'GENERATED_COMPOSED_NEEDS_REVIEW';
+export const GENERATION_NOT_VERIFIED = 'GENERATION_NOT_VERIFIED';
+export const GENERATED_NOT_USED = 'GENERATED_ASSET_NOT_USED';
+export const isRenderedOk = (status) => status === RENDER_OK || status === GENERATED_OK;
+const REAL_MODES = ['api', 'native'];
+const ALL_MODES = [...REAL_MODES, 'mock', 'placeholder'];
+
+/** Distinct coarse colours: a basic-shape placeholder has very few. */
+export function distinctColours(png, step = 7) {
+  const seen = new Set(), ch = png.channels ?? 4, n = png.pixels.length / ch;
+  for (let i = 0; i < n; i += step) { const o = i * ch; seen.add(((png.pixels[o] >> 4) << 8) | ((png.pixels[o + 1] >> 4) << 4) | (png.pixels[o + 2] >> 4)); if (seen.size > 64) break; }
+  return seen.size;
+}
+
+function checkGeneration(l, file, png) {
+  const g = l.generation, reasons = [];
+  if (!g || typeof g !== 'object') reasons.push('generation evidence missing (provider/model/invocation_id/mode/asset_sha256)');
+  else {
+    keys(g, ['provider', 'model', 'invocation_id', 'mode', 'asset_sha256'], 'generation');
+    if (!ALL_MODES.includes(g.mode)) fail('GENERATION_MODE', `mode must be one of ${ALL_MODES.join(', ')}`);
+    for (const k of ['provider', 'model', 'invocation_id']) if (typeof g[k] !== 'string' || !g[k].trim()) reasons.push(`generation.${k} missing`);
+    if (g.asset_sha256 !== file.sha256) reasons.push('generation.asset_sha256 does not match the supplied asset bytes');
+    if (!REAL_MODES.includes(g.mode)) reasons.push(`generation.mode "${g.mode}" is not a real generation`);
+  }
+  const colours = distinctColours(png);
+  if (colours <= 6) reasons.push(`asset has only ${colours} distinct colours: looks like a basic-shape placeholder`);
+  return { reasons, distinct_colours: colours, mode: g?.mode ?? null };
+}
+
+
 export const EXECUTION_VERSION = '1.0.0';
 const object = (x) => x !== null && typeof x === 'object' && !Array.isArray(x);
 const stable = (x) => Array.isArray(x) ? x.map(stable) : object(x) ? Object.fromEntries(Object.keys(x).sort().map((k) => [k, stable(x[k])])) : x;
@@ -105,7 +138,7 @@ export async function compileExecution(plan, { baseDir = process.cwd(), preset =
   if (!Array.isArray(plan.layers) || !plan.layers.length || plan.layers.length > 32) fail('LAYERS', 'one to 32 layers required');
   const ids = new Set(), layers = [];
   for (const l of plan.layers) {
-    keys(l, ['id', 'kind', 'slot', 'ref', 'sha256', 'mode', 'fit', 'rights_note', 'protect', 'text', 'source_ref', 'font_size', 'weight', 'align', 'max_lines', 'line_height', 'color', 'instruction'], 'layer');
+    keys(l, ['id', 'kind', 'slot', 'ref', 'sha256', 'mode', 'fit', 'rights_note', 'protect', 'text', 'source_ref', 'font_size', 'weight', 'align', 'max_lines', 'line_height', 'color', 'instruction', 'generation'], 'layer');
     if (!/^[a-z0-9][a-z0-9-]*$/.test(l.id ?? '') || ids.has(l.id)) fail('LAYER_ID', 'layer IDs must be unique lowercase slugs');
     ids.add(l.id);
     if (!['text', 'image', 'chart', 'generated'].includes(l.kind)) fail('LAYER_KIND', String(l.kind));
@@ -113,7 +146,7 @@ export async function compileExecution(plan, { baseDir = process.cwd(), preset =
       text: ['text', 'source_ref', 'font_size', 'weight', 'align', 'max_lines', 'line_height', 'color'],
       chart: ['ref', 'sha256'],
       image: ['ref', 'sha256', 'mode', 'fit', 'rights_note', 'protect'],
-      generated: ['ref', 'sha256', 'mode', 'fit', 'rights_note', 'protect', 'instruction'],
+      generated: ['ref', 'sha256', 'mode', 'fit', 'rights_note', 'protect', 'instruction', 'generation'],
     };
     keys(l, ['id', 'kind', 'slot', ...permitted[l.kind]], `layer ${l.id}`);
     const pixelSlot = box(l.slot, canvas);
@@ -148,6 +181,7 @@ export async function compileExecution(plan, { baseDir = process.cwd(), preset =
         if (png.text[WATERMARK_CHUNK_KEY]) fail('INPUT_IS_DERIVATIVE', 'use the clean master; do not stack a previous watermark');
         if (next.mode === 'cutout_composite' && (png.channels !== 4 || !png.pixels.some((v, i) => i % 4 === 3 && v < 255))) fail('CUTOUT_REQUIRED', 'cutout mode requires a supplied PNG with actual alpha; no automatic background removal');
         next.native_geometry = { width: png.width, height: png.height };
+        if (l.kind === 'generated') next.generation_check = checkGeneration(l, file, png);
         for (const protectedBox of l.protect ?? []) {
           const p = box(protectedBox, { width: png.width, height: png.height });
           if (next.fit === 'cover') {
@@ -218,7 +252,15 @@ function imageElement(file, l) {
 }
 
 /** Writes clean master + optional derivative + packet/receipt; never publishes. */
-export async function executeVisual(plan, { baseDir = process.cwd(), preset = {}, outDir, rasterizer = 'auto' } = {}) {
+export async function executeVisual(plan, { baseDir = process.cwd(), preset = {}, outDir, rasterizer = 'auto', repairOf = null } = {}) {
+  // Enforced repair budget: one base version + ONE local fix. `repairOf` is the prior run directory.
+  let repairRound = 0, repairPrior = null;
+  if (repairOf) {
+    const prior = JSON.parse(readFileSync(resolve(repairOf, 'receipt.json'), 'utf8'));
+    repairRound = (prior.repair_round ?? 0) + 1;
+    if (repairRound > 1) fail('REPAIR_LIMIT', 'already repaired once; start a new base version instead of a second local fix');
+    repairPrior = { image_sha256: prior.outputs?.image?.sha256 ?? null, request_hash: prior.request_hash };
+  }
   prepareOutput(outDir);
   const packet = await compileExecution(plan, { baseDir, preset });
   const adapter = findRasterizer(rasterizer);
@@ -235,7 +277,7 @@ export async function executeVisual(plan, { baseDir = process.cwd(), preset = {}
   const inputs = [source]; if (plan.job_ref) inputs.push(localInput(plan.job_ref, baseDir));
   let article = null;
   if (plan.job_ref) { try { article = JSON.parse(source.bytes); } catch { /* article check requires the actual article JSON */ } }
-  const elements = [], charts = [], textEvidence = [], imageEvidence = [];
+  const elements = [], charts = [], textEvidence = [], imageEvidence = [], generated = [];
   const exclusions = [];
   for (const l of packet.layers) {
     const b = l.pixel_slot;
@@ -256,7 +298,9 @@ export async function executeVisual(plan, { baseDir = process.cwd(), preset = {}
         elements.push(`<svg x="${b.x}" y="${b.y}" width="${b.width}" height="${b.height}" overflow="hidden">${result.svg}</svg>`);
         charts.push({ id: l.id, source_ref: l.ref, source_sha256: file.sha256, ...result, svg: undefined });
       } else {
-        elements.push(imageElement(file, l));
+        const el = imageElement(file, l);
+        elements.push(el);
+        if (l.kind === 'generated') generated.push({ layer: l, el });
         imageEvidence.push({ id: l.id, ref: l.ref, source_sha256: file.sha256, mode: l.mode, fit: l.fit, source_geometry: l.native_geometry, slot: b, rights_note: l.rights_note, protect: l.protect ?? [] });
       }
     }
@@ -271,6 +315,20 @@ export async function executeVisual(plan, { baseDir = process.cwd(), preset = {}
   const master = rasterize(cleanSvg, adapter);
   const m = decodePng(master);
   if (m.width !== width || m.height !== height) fail('OUTPUT_GEOMETRY', 'rasterizer returned a different size');
+  // Generated-image honesty: evidence + placeholder check + proof the asset is visible in the composed master.
+  const generationEvidence = [];
+  for (const g of generated) {
+    const b = g.layer.pixel_slot, reasons = [...g.layer.generation_check.reasons];
+    const without = rasterize(svgDocument(width, height, background + elements.filter((e) => e !== g.el).join('')), adapter);
+    const a = decodePng(master), z = decodePng(without), ch = a.channels ?? 4;
+    let changed = 0, total = 0;
+    for (let y = Math.max(0, b.y); y < Math.min(height, b.y + b.height); y++) for (let x = Math.max(0, b.x); x < Math.min(width, b.x + b.width); x++) {
+      const o = (y * width + x) * ch; total++;
+      if (Math.abs(a.pixels[o] - z.pixels[o]) > 8 || Math.abs(a.pixels[o + 1] - z.pixels[o + 1]) > 8 || Math.abs(a.pixels[o + 2] - z.pixels[o + 2]) > 8) changed++;
+    }
+    const ratio = total ? changed / total : 0, consumed = ratio >= 0.02;
+    generationEvidence.push({ id: g.layer.id, ...(g.layer.generation ?? {}), distinct_colours: g.layer.generation_check.distinct_colours, slot_pixels: total, slot_pixels_changed_by_asset: changed, consumed_ratio: Number(ratio.toFixed(4)), asset_in_final_png: consumed, not_verified_reasons: reasons });
+  }
   const config = resolveWatermark(packet.watermark, { exclusion_zones: exclusions });
   const wmAdapter = { render: (svg) => rasterize(svg, adapter), version: adapter.version };
   let final = master, watermarkEvidence = null;
@@ -294,14 +352,16 @@ export async function executeVisual(plan, { baseDir = process.cwd(), preset = {}
     for (const f of inputs) if (realpathSync(f.path) === target || (existsSync(target) && realpathSync(target) === realpathSync(f.path))) fail('SOURCE_OVERWRITE', `output would replace input ${f.ref}`);
   }
   for (const f of inputs) localInput(f.ref, baseDir, f.sha256);
-  packet.status = 'RENDERED_NEEDS_REVIEW';
+  packet.status = !generationEvidence.length ? RENDER_OK
+    : generationEvidence.some((g) => g.not_verified_reasons.length) ? GENERATION_NOT_VERIFIED
+    : generationEvidence.some((g) => !g.asset_in_final_png) ? GENERATED_NOT_USED : GENERATED_OK;
   const receipt = {
-    schema_version: EXECUTION_VERSION, status: packet.status, request_hash: packet.request_hash, execution_hash: packet.execution_hash,
+    schema_version: EXECUTION_VERSION, repair_round: repairRound, repair_of: repairPrior, status: packet.status, request_hash: packet.request_hash, execution_hash: packet.execution_hash,
     renderer: { tool: 'aes-visual-execution', version: EXECUTION_VERSION, ...packet.rasterizer, font_stack: packet.theme.font_family },
     inputs: inputs.map((f) => ({ ref: f.ref, sha256: f.sha256 })), geometry: packet.canvas,
     outputs: { master: { ref: 'master.png', sha256: sha256(master) }, image: { ref: 'image.png', sha256: sha256(final) }, svg: { ref: 'master.svg', sha256: sha256(cleanSvg) } },
-    text: textEvidence, charts, images: imageEvidence, watermark: watermarkEvidence,
-    checks: { output_geometry: 'PASS', text_fit: 'PASS', inputs_rechecked: 'PASS', numeric_render_binding: charts.length ? 'PASS' : 'NOT_APPLICABLE', actual_pixel_semantic_review: 'NOT_RUN_PHASE4', source_truth: 'NOT_ESTABLISHED_BY_RENDERER' },
+    text: textEvidence, charts, images: imageEvidence, generation: generationEvidence, watermark: watermarkEvidence,
+    checks: { output_geometry: 'PASS', text_fit: 'PASS', inputs_rechecked: 'PASS', numeric_render_binding: charts.length ? 'PASS' : 'NOT_APPLICABLE', generated_image: generationEvidence.length ? packet.status : 'NOT_APPLICABLE', actual_pixel_semantic_review: 'NOT_RUN_PHASE4', source_truth: 'NOT_ESTABLISHED_BY_RENDERER' },
     api_calls: 0, publication_authorized: false,
   };
   writeFileSync(resolve(outDir, 'master.svg'), cleanSvg);

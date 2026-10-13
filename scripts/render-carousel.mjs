@@ -3,6 +3,7 @@
 import { readFileSync, writeFileSync, mkdirSync, existsSync, readdirSync } from 'node:fs';
 import { resolve, dirname } from 'node:path';
 import { parseArgs } from 'node:util';
+import { isRenderedOk } from './lib/visual-execution-core.mjs';
 import { RuleReader, loadManifest, gateRender } from './lib/resolve-core.mjs';
 import { planCarousel, executeCarousel } from './lib/carousel-core.mjs';
 
@@ -21,6 +22,6 @@ try {
   } else {
     const result=await executeCarousel(series,{baseDir:dirname(path),outDir:out,rasterizer:values.rasterizer,previousDir:values.previous?resolve(values.previous):null});
     console.log(`${result.status}: ${result.frames.length} frames; ${result.frames.filter((f)=>f.reused).length} reused; visual approval NOT_GRANTED`);
-    if (result.status!=='RENDERED_NEEDS_REVIEW') process.exitCode=2;
+    if (!isRenderedOk(result.status)) process.exitCode=2;
   }
 } catch(e) { console.error(`[${e.code??'ERROR'}] ${e.message}`); process.exitCode=1; }

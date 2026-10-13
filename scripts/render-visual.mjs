@@ -2,10 +2,11 @@
 /** See editorial/STRUCTURED-VISUAL-EXECUTION.md. No CI, network or model calls. */
 import { readFileSync, mkdirSync, writeFileSync } from 'node:fs';
 import { resolve, dirname } from 'node:path';
+import { isRenderedOk } from './lib/visual-execution-core.mjs';
 import { RuleReader, loadManifest, gateRender } from './lib/resolve-core.mjs';
 import { compileExecution, executeVisual, prepareOutput } from './lib/visual-execution-core.mjs';
 const args = process.argv.slice(2);
-const allowed = new Set(['--plan', '--out', '--preset', '--rasterizer', '--compile-only', '--profile-receipt']);
+const allowed = new Set(['--plan', '--out', '--preset', '--rasterizer', '--compile-only', '--profile-receipt', '--repair-of']);
 const opts = {};
 try {
   for (let i = 0; i < args.length; i++) {
@@ -27,9 +28,9 @@ try {
     result = await compileExecution(plan, { baseDir: dirname(path), preset });
     mkdirSync(outDir, { recursive: true });
     writeFileSync(resolve(outDir, 'execution.json'), `${JSON.stringify(result, null, 2)}\n`);
-  } else result = await executeVisual(plan, { baseDir: dirname(path), outDir, preset, rasterizer: opts['--rasterizer'] ?? 'auto' });
+  } else result = await executeVisual(plan, { baseDir: dirname(path), outDir, preset, rasterizer: opts['--rasterizer'] ?? 'auto', repairOf: opts['--repair-of'] ? resolve(opts['--repair-of']) : null });
   console.log(JSON.stringify({ status: result.status, out: outDir, request_hash: result.request_hash, profile_hash: gate.resolved_hash ?? null, api_calls: 0, phase4: 'NOT_RUN' }));
-  if (!opts['--compile-only'] && result.status !== 'RENDERED_NEEDS_REVIEW') process.exitCode = 2;
+  if (!opts['--compile-only'] && !isRenderedOk(result.status)) process.exitCode = 2;
 } catch (err) {
   console.error(JSON.stringify({ status: 'FAILED', code: err.code ?? 'EXECUTION_FAILED', message: err.message }));
   process.exitCode = 1;
