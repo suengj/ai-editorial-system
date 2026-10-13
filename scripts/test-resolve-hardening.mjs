@@ -9,7 +9,9 @@ import { tmpdir } from 'node:os';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { spawnSync } from 'node:child_process';
+import * as realFs from 'node:fs';
 import { loadBusinessMagazineProfile } from './lib/business-magazine-core.mjs';
+import { RuleReader, READ, VERIFY, currentRevision, gitBlobId, gitState, resolveEditorial } from './lib/resolve-core.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(HERE, '..');
@@ -88,6 +90,61 @@ test('resolve-editorial --plan derives surface/artifact; the account is never in
   eq(r.status, 2); yes(/TARGET_REQUIRED/.test(r.stderr + r.stdout), 'target required');
   const ok = run(['scripts/resolve-editorial.mjs', '--plan', 'scripts/fixtures/carousel/series.json', '--target', 'signalytics-news']);
   eq(ok.status, 0, ok.stderr);
+});
+
+console.log('B1: RuleReader validity');
+const sh = (cwd, ...a) => spawnSync('git', ['-C', cwd, ...a], { encoding: 'utf8' });
+function repoWith(files) {
+  const d = tmp(); sh(d, 'init', '-q'); sh(d, 'config', 'user.email', 't@t'); sh(d, 'config', 'user.name', 't');
+  for (const [f, c] of Object.entries(files)) { mkdirSync(dirname(resolve(d, f)), { recursive: true }); writeFileSync(resolve(d, f), c); }
+  sh(d, 'add', '-A'); sh(d, 'commit', '-q', '-m', 'x'); return d;
+}
+test('git blob id matches git hash-object', () => {
+  const d = repoWith({ 'editorial/a.md': 'hello\n' });
+  eq(gitBlobId(Buffer.from('hello\n')), sh(d, 'rev-parse', 'HEAD:editorial/a.md').stdout.trim());
+});
+test('0-byte rule file is truncated, not read', () => {
+  const d = repoWith({ 'editorial/a.md': '' });
+  eq(new RuleReader({ root: d }).read('editorial/a.md').status, READ.TRUNCATED);
+});
+test('invalid JSON rule file is invalid', () => {
+  const d = repoWith({ 'editorial/a.json': '{"a": ' });
+  eq(new RuleReader({ root: d }).read('editorial/a.json').status, READ.INVALID);
+});
+test('clean tree: committed bytes verified; a file whose bytes differ from the HEAD blob while git reports clean is truncated/modified', () => {
+  const d = repoWith({ 'editorial/a.md': '0123456789\n' });
+  const ok = new RuleReader({ root: d }).read('editorial/a.md');
+  eq(ok.status, READ.READ); eq(ok.verification, VERIFY.GIT_BLOB);
+  writeFileSync(resolve(d, 'editorial/a.md'), '0123'); // cut, but pretend status is stale/clean
+  const st = gitState(d); st.dirty = new Set();
+  const r = new RuleReader({ root: d, git: st }).read('editorial/a.md');
+  eq(r.status, READ.TRUNCATED);
+  writeFileSync(resolve(d, 'editorial/a.md'), 'abcdefghijklmnop\n');
+  const m = new RuleReader({ root: d, git: st }).read('editorial/a.md');
+  eq(m.status, READ.MODIFIED);
+});
+test('dirty tree: modified file is dirty_unverified; recorded, not verified', () => {
+  const d = repoWith({ 'editorial/a.md': 'v1\n' });
+  writeFileSync(resolve(d, 'editorial/a.md'), 'v2 edited\n');
+  const r = new RuleReader({ root: d }).read('editorial/a.md');
+  eq(r.status, READ.READ); eq(r.verification, VERIFY.DIRTY);
+});
+test('revision with a non-repository root is UNKNOWN (no parent-repo leakage)', () => {
+  const d = repoWith({ 'editorial/a.md': 'x' });
+  const sub = resolve(d, 'copy'); mkdirSync(sub);
+  eq(currentRevision(sub), 'UNKNOWN');
+  yes(currentRevision(d) !== 'UNKNOWN', 'real root should resolve');
+});
+test('required truncated rule file blocks the resolver; integrity is recorded in the receipt', () => {
+  const intent = { intent_id: 'i', request: {}, axes: { transformation: { value: 'synthesize' }, content_type: { value: 'research' }, audience: { value: 'domain-practitioner' }, surface: { value: 'instagram' }, artifacts: [{ value: 'visual/social-card' }] } };
+  const { readFileSync: rf, statSync: sf } = realFs;
+  const cut = (p) => /editorial\/(?!entry-manifest)[^/]+\.(md|json)$/.test(p.replace(ROOT + '/', ''));
+  const fs = { statSync: (p) => sf(p), readFileSync: (p) => (cut(p) ? Buffer.alloc(0) : rf(p)) };
+  const r = resolveEditorial(intent, { targetId: 'trends-moa', taskKind: 'visual', reader: new RuleReader({ root: ROOT, fs }) });
+  yes(String(r.status).startsWith('BLOCKED'), `status ${r.status}`);
+  yes(r.unread_required.length > 0, 'unread_required lists the truncated file');
+  const live = resolveEditorial(intent, { targetId: 'trends-moa', taskKind: 'visual', reader: new RuleReader({ root: ROOT }) });
+  yes(live.integrity && typeof live.integrity.rule_files === 'string', 'receipt has integrity.rule_files');
 });
 
 console.log(`\nresolve-hardening: ${pass} passed, ${fail} failed`);

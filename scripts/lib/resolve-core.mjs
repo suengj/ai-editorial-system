@@ -12,7 +12,7 @@
  * resolved by the calling LLM (it passes target/overrides); this code only does
  * deterministic assembly, conflict detection and validation.
  */
-import { readFileSync as realRead, statSync as realStat } from 'node:fs';
+import { readFileSync as realRead, statSync as realStat, realpathSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -29,7 +29,7 @@ export const STATUS = Object.freeze({
   BLOCKED_UNKNOWN_TARGET: 'BLOCKED_UNKNOWN_TARGET',
   BLOCKED_LEAK: 'BLOCKED_LEAK',
 });
-export const READ = Object.freeze({ READ: 'read', MISSING: 'missing', TRUNCATED: 'truncated', INACCESSIBLE: 'inaccessible' });
+export const READ = Object.freeze({ READ: 'read', MISSING: 'missing', TRUNCATED: 'truncated', INACCESSIBLE: 'inaccessible', INVALID: 'invalid', MODIFIED: 'modified' });
 
 const isObj = (x) => x !== null && typeof x === 'object' && !Array.isArray(x);
 export const stable = (x) => (Array.isArray(x) ? x.map(stable) : isObj(x) ? Object.fromEntries(Object.keys(x).sort().map((k) => [k, stable(x[k])])) : x);
@@ -48,25 +48,61 @@ export function intentFromPlan(plan) {
   return { intent_id: `plan:${hashOf(plan)}`, derived_from: { kind: 'plan', surface, artifact }, request: {}, axes: { surface: { value: surface }, artifacts: [{ value: artifact }] } };
 }
 
-/** Best-effort revision of the rule tree: git HEAD (+dirty marker), else 'worktree'. */
-export function currentRevision(root = REPO_ROOT) {
-  const head = spawnSync('git', ['-C', root, 'rev-parse', '--short', 'HEAD'], { encoding: 'utf8' });
-  if (head.status !== 0) return 'worktree';
-  const dirty = spawnSync('git', ['-C', root, 'status', '--porcelain', '--', 'editorial', 'skills'], { encoding: 'utf8' });
-  return `${head.stdout.trim()}${dirty.stdout.trim() ? '+dirty' : ''}`;
-}
+export const UNKNOWN_REVISION = 'UNKNOWN';
+/** How a rule file's bytes were checked against git. */
+export const VERIFY = Object.freeze({ GIT_BLOB: 'git_blob_verified', DIRTY: 'dirty_unverified', NO_GIT: 'unverified_no_git' });
+const gitOut = (root, args) => spawnSync('git', ['-C', root, ...args], { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 });
+/** git blob id of bytes, identical to `git hash-object --stdin` (no filters). */
+export const gitBlobId = (buf) => createHash('sha1').update(Buffer.concat([Buffer.from(`blob ${buf.length}\0`), buf])).digest('hex');
+const sameDir = (a, b) => { try { return realpathSync(a) === realpathSync(b); } catch { return false; } };
 
 /**
- * Reads rule files once per (path, revision). A dirty/worktree revision is
- * additionally validated by size+mtime so an edited file is never served stale.
- * `fs` is injectable so truncation/inaccessible handling is testable.
+ * Git state of `root`, only when `root` IS the repository top level. `git -C root` walks up to a parent
+ * repository (a non-git copy under $HOME would otherwise report the home repo's revision), so the top level must
+ * equal the expected root; anything else is UNKNOWN. `tree`/`dirty` cover the rule trees only.
+ */
+export function gitState(root = REPO_ROOT, { full = true } = {}) {
+  const top = gitOut(root, ['rev-parse', '--show-toplevel']);
+  if (top.status !== 0 || !sameDir(top.stdout.trim(), root)) return { ok: false, revision: UNKNOWN_REVISION };
+  const head = gitOut(root, ['rev-parse', '--short', 'HEAD']);
+  if (head.status !== 0) return { ok: false, revision: UNKNOWN_REVISION };
+  const st = gitOut(root, ['status', '--porcelain', '-z', '-uall', '--', 'editorial', 'skills']);
+  const dirty = new Set();
+  const parts = st.stdout.split('\0').filter(Boolean);
+  for (let i = 0; i < parts.length; i++) { const e = parts[i]; dirty.add(e.slice(3)); if (/^[RC]/.test(e)) i += 1; }
+  const state = { ok: true, revision: `${head.stdout.trim()}${dirty.size ? '+dirty' : ''}`, dirty };
+  if (full) {
+    state.tree = new Map();
+    for (const line of gitOut(root, ['ls-tree', '-r', '-l', 'HEAD', '--', 'editorial', 'skills']).stdout.split('\n')) {
+      const m = /^\d+ blob ([0-9a-f]{40})\s+(\d+|-)\t(.+)$/.exec(line);
+      if (m) state.tree.set(m[3], { blob: m[1], size: Number(m[2]) });
+    }
+  }
+  return state;
+}
+
+/** Best-effort revision of the rule tree: git HEAD (+dirty marker) of THIS repository, else 'UNKNOWN'. */
+export function currentRevision(root = REPO_ROOT) { return gitState(root, { full: false }).revision; }
+
+/**
+ * Reads rule files once per (path, revision). A dirty/unknown revision is additionally validated by
+ * size+mtime so an edited file is never served stale. `fs` is injectable so truncation/inaccessible handling
+ * is testable.
+ *
+ * A required rule file is `read` only when it is non-empty, not shorter than its own size, valid JSON if it is
+ * a .json file, and (inside a git repository) byte-identical to its HEAD blob. On a dirty file that differs
+ * from HEAD the bytes cannot be verified: it is `read` with verification `dirty_unverified`, recorded as such
+ * in the load record and the receipt, never as verified.
  */
 export class RuleReader {
-  constructor({ root = REPO_ROOT, revision = currentRevision(root), fs = { readFileSync: realRead, statSync: realStat } } = {}) {
-    this.root = root; this.revision = revision; this.fs = fs;
-    this.cache = new Map();
+  constructor({ root = REPO_ROOT, revision = null, fs = { readFileSync: realRead, statSync: realStat }, git = null } = {}) {
+    this.root = root; this.fs = fs; this.cache = new Map();
     this.stats = { reads: 0, hits: 0 };
+    this._git = git;
+    this.revision = revision ?? this.#git().revision;
   }
+
+  #git() { return (this._git ??= gitState(this.root)); }
 
   read(path) {
     const abs = resolve(this.root, path);
@@ -79,18 +115,31 @@ export class RuleReader {
     let buf;
     try { buf = this.fs.readFileSync(abs); } catch (e) { return this.#fail(path, e); }
     this.stats.reads += 1;
-    // A short read relative to the file's own size is a truncated read, never "read".
-    const status = buf.length < st.size ? READ.TRUNCATED : READ.READ;
-    const entry = { path, status, bytes: buf.length, expected_bytes: st.size, sha256: hashOf(buf), revision: this.revision };
-    if (status === READ.READ) { this.cache.set(key, { stamp, entry, text: buf.toString('utf8') }); }
-    return { ...entry, cached: false, text: buf.toString('utf8') };
+    const entry = { path, status: READ.READ, bytes: buf.length, expected_bytes: st.size, sha256: hashOf(buf), revision: this.revision, verification: VERIFY.NO_GIT };
+    const text = buf.toString('utf8');
+    const git = this.#git();
+    const rel = path.split('\\').join('/');
+    if (buf.length === 0) { entry.status = READ.TRUNCATED; entry.reason = 'empty file'; }
+    else if (buf.length < st.size) { entry.status = READ.TRUNCATED; entry.reason = 'short read'; }
+    else if (git.ok) {
+      const want = git.tree.get(rel), got = gitBlobId(buf);
+      entry.git_blob = got;
+      if (want && want.blob === got) entry.verification = VERIFY.GIT_BLOB;
+      else if (git.dirty.has(rel)) entry.verification = VERIFY.DIRTY;
+      else { entry.status = want && buf.length < want.size ? READ.TRUNCATED : READ.MODIFIED; entry.reason = want ? `differs from HEAD blob ${want.blob.slice(0, 12)}` : 'not tracked at HEAD'; entry.expected_git_blob = want?.blob ?? null; }
+    }
+    if (entry.status === READ.READ && /\.json$/i.test(path)) {
+      try { JSON.parse(text); } catch (e) { entry.status = READ.INVALID; entry.reason = `invalid JSON: ${e.message}`; }
+    }
+    if (entry.status === READ.READ) this.cache.set(key, { stamp, entry, text });
+    return { ...entry, cached: false, text };
   }
 
   text(path) { const e = this.cache.get(`${path}@${this.revision}`); return e ? e.text : this.read(path).text; }
 
   #fail(path, e) {
     const status = e?.code === 'ENOENT' ? READ.MISSING : READ.INACCESSIBLE;
-    return { path, status, bytes: 0, expected_bytes: null, sha256: null, revision: this.revision, error: e?.code ?? String(e) };
+    return { path, status, bytes: 0, expected_bytes: null, sha256: null, revision: this.revision, verification: null, error: e?.code ?? String(e) };
   }
 }
 
@@ -248,10 +297,16 @@ export function resolveEditorial(intent, { targetId = null, flowId = null, overr
 
   for (const f of plan.files) {
     const r = reader.read(f.path);
-    receipt.loads.push({ path: f.path, role: f.role, status: r.status, sha256: r.sha256, bytes: r.bytes, expected_bytes: r.expected_bytes, cached: Boolean(r.cached), ...(r.error ? { error: r.error } : {}) });
+    receipt.loads.push({ path: f.path, role: f.role, status: r.status, verification: r.verification ?? null, sha256: r.sha256, bytes: r.bytes, expected_bytes: r.expected_bytes, cached: Boolean(r.cached), ...(r.error ? { error: r.error } : {}), ...(r.reason ? { reason: r.reason } : {}) });
     if (f.required && r.status !== READ.READ) receipt.unread_required.push({ path: f.path, status: r.status });
   }
   if (receipt.unread_required.length) receipt.status = STATUS.BLOCKED_MISSING_RULE;
+  const readLoads = receipt.loads.filter((l) => l.status === READ.READ);
+  receipt.integrity = {
+    rule_files: readLoads.some((l) => l.verification === VERIFY.DIRTY) ? 'dirty_unverified' : readLoads.length && readLoads.every((l) => l.verification === VERIFY.GIT_BLOB) ? 'git_verified' : 'unverified',
+    dirty_unverified: readLoads.filter((l) => l.verification === VERIFY.DIRTY).map((l) => l.path),
+    note: 'git_verified = every rule file byte-identical to its HEAD blob; dirty_unverified = file differs from HEAD in a dirty tree and is recorded, not verified; unverified = not a git checkout of this repository',
+  };
 
   // Field resolution (surface profile defaults are values the target/surface already declare).
   const layers = { surface_brand_default: {}, account_series: {}, ...(overrides ?? {}) };
