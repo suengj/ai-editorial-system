@@ -4,12 +4,12 @@
  * 2 packet "ok" wrapper, 3 explicit preference checks, 4 single active version, 5-15 should-fix.
  * CLIs are driven as documented; no network, no publishing.
  */
-import { readFileSync, writeFileSync, mkdirSync, mkdtempSync, cpSync, existsSync } from 'node:fs';
+import { statSync, readFileSync, writeFileSync, mkdirSync, mkdtempSync, cpSync, existsSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { spawnSync } from 'node:child_process';
-import { loadManifest, RuleReader, gateRender, validateFieldValue, resolveFields } from './lib/resolve-core.mjs';
+import { resolveEditorial, loadManifest, RuleReader, gateRender, validateFieldValue, resolveFields } from './lib/resolve-core.mjs';
 import { loadAxisProfiles } from './lib/profile-core.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url)), ROOT = resolve(HERE, '..');
@@ -20,6 +20,8 @@ const yes = (c, m) => { if (!c) throw new Error(m); };
 const tmp = () => mkdtempSync(resolve(tmpdir(), 'aes-r2-'));
 const node = (args, opts = {}) => spawnSync(process.execPath, args, { cwd: ROOT, encoding: 'utf8', ...opts });
 const hasRasterizer = spawnSync('which', ['rsvg-convert'], { encoding: 'utf8' }).status === 0;
+const igIntent = () => { const i = JSON.parse(readFileSync(resolve(ROOT, 'schemas/examples/intent-reference-dimensions.example.json'), 'utf8')); i.axes.surface = { value: 'instagram', state: 'confirmed', profile_ref: 'editorial/profiles/surface/instagram.json', basis: 'SYNTHETIC test intent' }; return i; };
+const resolveEditorialFor = (reader) => resolveEditorial(igIntent(), { targetId: 'signalytics-news', reader });
 const manifest = loadManifest(new RuleReader()).manifest;
 
 console.log('1: legacy report-deck slide images stay renderable');
@@ -161,6 +163,43 @@ const qf = await import('./lib/quality-feedback-core.mjs');
   });
 }
 
+console.log('7: required rule-file integrity (truncation, HTML, stub, UNVERIFIED)');
+{
+  const mkRepo = () => { const r = tmp(); mkdirSync(resolve(r, 'editorial'), { recursive: true });
+    const body = `# Rule\n\n${'A real rule document line that is long enough to be a rule.\n'.repeat(8)}`;
+    writeFileSync(resolve(r, 'editorial/rule.md'), body);
+    for (const a of [['init', '-q'], ['add', '-A'], ['-c', 'user.name=t', '-c', 'user.email=t@t', 'commit', '-qm', 'x']]) spawnSync('git', ['-C', r, ...a]);
+    return { r, body }; };
+  test('a dirty file that is a strict prefix of its HEAD blob is truncated', () => {
+    const { r, body } = mkRepo(); writeFileSync(resolve(r, 'editorial/rule.md'), body.slice(0, 200));
+    const e = new RuleReader({ root: r }).read('editorial/rule.md'); eq(e.status, 'truncated'); yes(/prefix/.test(e.reason), e.reason);
+  });
+  test('a genuine dirty edit (not a prefix) stays read + dirty_unverified', () => {
+    const { r, body } = mkRepo(); writeFileSync(resolve(r, 'editorial/rule.md'), `${body}\nextra line\n`);
+    const e = new RuleReader({ root: r }).read('editorial/rule.md'); eq(e.status, 'read'); eq(e.verification, 'dirty_unverified');
+  });
+  test('a .md starting with <html / <!DOCTYPE (case-insensitive, after whitespace) is invalid', () => {
+    for (const head of ['<html><body>404</body></html>', '  \n<!DOCTYPE html>', '<HTML>', '<!doctype html>']) {
+      const { r } = mkRepo(); writeFileSync(resolve(r, 'editorial/page.md'), `${head}${' x'.repeat(100)}`);
+      eq(new RuleReader({ root: r }).read('editorial/page.md').status, 'invalid', head);
+    }
+  });
+  test('receipt carries integrity=UNVERIFIED outside git / when dirty, and the CLI line prints it', () => {
+    const d = tmp(); writeFileSync(resolve(d, 'intent.json'), JSON.stringify(igIntent()));
+    const out = node(['scripts/resolve-editorial.mjs', '--intent', resolve(d, 'intent.json'), '--target', 'signalytics-news', '--out', resolve(d, 'r.json')]);
+    const rc = JSON.parse(readFileSync(resolve(d, 'r.json'), 'utf8'));
+    yes(['VERIFIED', 'UNVERIFIED'].includes(rc.integrity.integrity), JSON.stringify(rc.integrity));
+    if (rc.integrity.integrity === 'UNVERIFIED') yes(/integrity=UNVERIFIED/.test(out.stderr), out.stderr);
+    // injected non-git reader => required files cannot be verified
+    const rd = new RuleReader({ root: ROOT, git: { ok: false, revision: 'UNKNOWN' } });
+    const rc2 = resolveEditorialFor(rd);
+    eq(rc2.integrity.integrity, 'UNVERIFIED'); yes(rc2.integrity.unverified_required.length > 0, 'listed');
+  });
+  test('a 40-byte stub required .md rule file blocks (sanity floor)', () => {
+    const rd = new RuleReader({ root: ROOT, fs: { readFileSync: (p) => (String(p).endsWith('.md') ? Buffer.from('# stub\nnothing here\n') : readFileSync(p)), statSync: (p) => (String(p).endsWith('.md') ? { size: Buffer.byteLength('# stub\nnothing here\n'), mtimeMs: 1 } : statSync(p)) }, git: { ok: false, revision: 'UNKNOWN' } });
+    const rc = resolveEditorialFor(rd); eq(rc.status, 'BLOCKED_MISSING_RULE'); yes(rc.unread_required.some((u) => u.status === 'invalid' || u.status === 'invalid'), JSON.stringify(rc.unread_required.slice(0, 2)));
+  });
+}
 // <<SECTIONS>>
 
 console.log(`\nentry-review2: ${pass} passed, ${failed} failed`);

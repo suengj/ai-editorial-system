@@ -32,6 +32,7 @@ export const STATUS = Object.freeze({
   BLOCKED_FIELD_INVALID: 'BLOCKED_FIELD_INVALID',
   BLOCKED_INVALID_ID: 'BLOCKED_INVALID_ID',
 });
+const MD_MIN_BYTES = 120;
 export const READ = Object.freeze({ READ: 'read', MISSING: 'missing', TRUNCATED: 'truncated', INACCESSIBLE: 'inaccessible', INVALID: 'invalid', MODIFIED: 'modified' });
 
 const isObj = (x) => x !== null && typeof x === 'object' && !Array.isArray(x);
@@ -128,9 +129,17 @@ export class RuleReader {
       const want = git.tree.get(rel), got = gitBlobId(buf);
       entry.git_blob = got;
       if (want && want.blob === got) entry.verification = VERIFY.GIT_BLOB;
-      else if (git.dirty.has(rel)) entry.verification = VERIFY.DIRTY;
+      else if (git.dirty.has(rel)) {
+        entry.verification = VERIFY.DIRTY;
+        // A dirty file that is a strict prefix of its HEAD blob is a cut-off copy, not an edit.
+        if (want && buf.length < want.size) {
+          const head = spawnSync('git', ['-C', this.root, 'cat-file', 'blob', want.blob], { maxBuffer: 64 * 1024 * 1024 });
+          if (head.status === 0 && head.stdout.length > buf.length && head.stdout.subarray(0, buf.length).equals(buf)) { entry.status = READ.TRUNCATED; entry.reason = `strict prefix of HEAD blob ${want.blob.slice(0, 12)} (cut off)`; }
+        }
+      }
       else { entry.status = want && buf.length < want.size ? READ.TRUNCATED : READ.MODIFIED; entry.reason = want ? `differs from HEAD blob ${want.blob.slice(0, 12)}` : 'not tracked at HEAD'; entry.expected_git_blob = want?.blob ?? null; }
     }
+    if (entry.status === READ.READ && /\.md$/i.test(path) && /^\s*<(html|!doctype)/i.test(text)) { entry.status = READ.INVALID; entry.reason = 'markdown rule file starts with HTML (an error page or wrong download)'; }
     if (entry.status === READ.READ && /\.json$/i.test(path)) {
       try { JSON.parse(text); } catch (e) { entry.status = READ.INVALID; entry.reason = `invalid JSON: ${e.message}`; }
     }
@@ -397,12 +406,20 @@ export function resolveEditorial(intent, { targetId = null, flowId = null, overr
     const r = reader.read(f.path);
     receipt.loads.push({ path: f.path, role: f.role, status: r.status, verification: r.verification ?? null, sha256: r.sha256, bytes: r.bytes, expected_bytes: r.expected_bytes, cached: Boolean(r.cached), ...(r.error ? { error: r.error } : {}), ...(r.reason ? { reason: r.reason } : {}) });
     if (f.required && r.status !== READ.READ) receipt.unread_required.push({ path: f.path, status: r.status });
+    // Sanity floor for a required .md rule file: a stub (<120 bytes or no heading) cannot be a rule document.
+    else if (f.required && /\.md$/i.test(f.path) && (r.bytes < MD_MIN_BYTES || !/^#{1,6}\s+\S/m.test(r.text ?? ''))) {
+      receipt.loads[receipt.loads.length - 1].status = READ.INVALID; receipt.loads[receipt.loads.length - 1].reason = `required .md rule file below sanity floor (>=${MD_MIN_BYTES} bytes and a heading)`;
+      receipt.unread_required.push({ path: f.path, status: READ.INVALID });
+    }
   }
   if (receipt.unread_required.length) receipt.status = STATUS.BLOCKED_MISSING_RULE;
   const readLoads = receipt.loads.filter((l) => l.status === READ.READ);
   receipt.integrity = {
     rule_files: readLoads.some((l) => l.verification === VERIFY.DIRTY) ? 'dirty_unverified' : readLoads.length && readLoads.every((l) => l.verification === VERIFY.GIT_BLOB) ? 'git_verified' : 'unverified',
     dirty_unverified: readLoads.filter((l) => l.verification === VERIFY.DIRTY).map((l) => l.path),
+    // REQUIRED rule files that could not be verified against git (dirty, or not a git checkout): the receipt says so in its hashed body.
+    integrity: (() => { const req = new Set(plan.files.filter((f) => f.required).map((f) => f.path)); const bad = readLoads.filter((l) => req.has(l.path) && l.verification !== VERIFY.GIT_BLOB).map((l) => l.path); return bad.length ? 'UNVERIFIED' : 'VERIFIED'; })(),
+    unverified_required: (() => { const req = new Set(plan.files.filter((f) => f.required).map((f) => f.path)); return readLoads.filter((l) => req.has(l.path) && l.verification !== VERIFY.GIT_BLOB).map((l) => l.path); })(),
     note: 'git_verified = every rule file byte-identical to its HEAD blob; dirty_unverified = file differs from HEAD in a dirty tree and is recorded, not verified; unverified = not a git checkout of this repository',
   };
 

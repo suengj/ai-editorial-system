@@ -44,7 +44,7 @@ try {
     const receipt = resolveEditorial(v.plan ? intentFromPlan(json(v.plan)) : json(v.intent), { targetId: v.target ?? null, flowId: v.flow ?? null, overrides: v.overrides ? json(v.overrides) : {}, taskKind: v['task-kind'] ?? (v.plan ? 'visual' : null), reader });
     const body = `${JSON.stringify(receipt, null, 2)}\n`;
     if (v.out) writeFileSync(resolve(v.out), body); else process.stdout.write(body);
-    console.error(`resolve: ${receipt.status}${receipt.profile ? ` profile=${receipt.profile.id} hash=${receipt.profile.resolved_hash.slice(0, 19)}` : ''}${receipt.conflicts.length ? ` conflicts=${receipt.conflicts.map((c) => c.code).join(',')}` : ''}`);
+    console.error(`resolve: ${receipt.status}${receipt.profile ? ` profile=${receipt.profile.id} hash=${receipt.profile.resolved_hash.slice(0, 19)}` : ''}${receipt.integrity?.integrity === 'UNVERIFIED' ? ` integrity=UNVERIFIED(${receipt.integrity.unverified_required.length} required rule file(s) not git-verified)` : ''}${receipt.conflicts.length ? ` conflicts=${receipt.conflicts.map((c) => c.code).join(',')}` : ''}`);
     if (receipt.status !== STATUS.READY) process.exitCode = 2;
   }
 } catch (e) { console.error(`[${e.code ?? 'ERROR'}] ${e.message}`); process.exitCode = 1; }
