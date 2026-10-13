@@ -16,11 +16,12 @@ import { parseArgs } from 'node:util';
 import { RuleReader, loadManifest, resolveEditorial, verifyStages, STATUS } from './lib/resolve-core.mjs';
 
 try {
-  const { values: v } = parseArgs({ options: { intent: { type: 'string' }, target: { type: 'string' }, overrides: { type: 'string' }, 'task-kind': { type: 'string' }, out: { type: 'string' }, 'list-targets': { type: 'boolean', default: false }, receipt: { type: 'string' }, stages: { type: 'string' } }, strict: true });
+  const { values: v } = parseArgs({ options: { intent: { type: 'string' }, target: { type: 'string' }, flow: { type: 'string' }, overrides: { type: 'string' }, 'task-kind': { type: 'string' }, out: { type: 'string' }, 'list-targets': { type: 'boolean', default: false }, flows: { type: 'boolean', default: false }, receipt: { type: 'string' }, stages: { type: 'string' } }, strict: true });
   const reader = new RuleReader();
   const json = (p) => JSON.parse(readFileSync(resolve(p), 'utf8'));
   if (v['list-targets']) {
     const { manifest } = loadManifest(reader);
+    if (process.argv.includes('--flows')) { console.log(JSON.stringify(Object.entries(manifest.existing_flows).map(([id, f]) => ({ flow: id, surface: f.surface, status: f.status })), null, 2)); } else
     console.log(JSON.stringify(Object.entries(manifest.sns_targets).map(([id, t]) => ({ target: id, account: t.account, surface: t.surface, voice_family: t.voice_family, copy_files: t.copy_files, visual_artifacts: t.visual?.artifacts ?? null, status: t.status })), null, 2));
   } else if (v.receipt) {
     if (!v.stages) throw new Error('usage: --receipt receipt.json --stages stamps.json');
@@ -28,8 +29,8 @@ try {
     console.log(JSON.stringify({ consistent: issues.length === 0, issues }, null, 2));
     if (issues.length) process.exitCode = 2;
   } else {
-    if (!v.intent) throw new Error('usage: node scripts/resolve-editorial.mjs --intent intent.json --target <id> [--overrides o.json] [--task-kind text|visual|both] [--out receipt.json] | --list-targets');
-    const receipt = resolveEditorial(json(v.intent), { targetId: v.target ?? null, overrides: v.overrides ? json(v.overrides) : {}, taskKind: v['task-kind'] ?? null, reader });
+    if (!v.intent) throw new Error('usage: node scripts/resolve-editorial.mjs --intent intent.json --target <id>|--flow blog|news|report [--overrides o.json] [--task-kind text|visual|both] [--out receipt.json] | --list-targets');
+    const receipt = resolveEditorial(json(v.intent), { targetId: v.target ?? null, flowId: v.flow ?? null, overrides: v.overrides ? json(v.overrides) : {}, taskKind: v['task-kind'] ?? null, reader });
     const body = `${JSON.stringify(receipt, null, 2)}\n`;
     if (v.out) writeFileSync(resolve(v.out), body); else process.stdout.write(body);
     console.error(`resolve: ${receipt.status}${receipt.profile ? ` profile=${receipt.profile.id} hash=${receipt.profile.resolved_hash.slice(0, 19)}` : ''}${receipt.conflicts.length ? ` conflicts=${receipt.conflicts.map((c) => c.code).join(',')}` : ''}`);

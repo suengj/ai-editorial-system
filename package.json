@@ -31,6 +31,7 @@
     "check:profile": "node scripts/check-profile.mjs",
     "test:generated-image": "node scripts/test-generated-image.mjs",
     "test:resolve": "node scripts/test-resolve.mjs",
+    "test:quality-feedback": "node scripts/test-quality-feedback.mjs",
     "test:library-input": "node scripts/test-library-input.mjs",
     "test:profiles": "node scripts/test-profiles.mjs",
     "validate:skills": "node scripts/validate-skills.mjs",

@@ -187,7 +187,7 @@ export function resolveFields(layers, manifest) {
 }
 
 /** Whole resolution: plan -> reads -> fields -> one resolved profile + receipt. */
-export function resolveEditorial(intent, { targetId = null, overrides = {}, taskKind = null, reader = new RuleReader(), planCache = null } = {}) {
+export function resolveEditorial(intent, { targetId = null, flowId = null, overrides = {}, taskKind = null, reader = new RuleReader(), planCache = null } = {}) {
   const { manifest, sha256: manifestHash } = loadManifest(reader);
   const surfaceId = intent?.axes?.surface?.value ?? null;
   const receipt = {
@@ -196,6 +196,15 @@ export function resolveEditorial(intent, { targetId = null, overrides = {}, task
     target: null, load_plan: null, loads: [], unread_required: [], conflicts: [], field_origins: {}, freshness: null, profile: null,
   };
 
+  // R5: existing non-SNS flows (blog/news/report) use the same entry with NO voice family; SNS voices must never appear.
+  const flow = flowId ? manifest.existing_flows?.[flowId] ?? null : null;
+  if (flowId) {
+    const bad = (code, message) => { receipt.status = STATUS.BLOCKED_UNKNOWN_TARGET; receipt.conflicts.push({ code, message }); return receipt; };
+    if (targetId) return bad('FLOW_AND_TARGET', 'a flow (non-SNS) and an SNS target are mutually exclusive');
+    if (!flow) return bad('UNKNOWN_FLOW', `"${flowId}" is not a registered existing flow (known: ${Object.keys(manifest.existing_flows ?? {}).join(', ')})`);
+    if (surfaceId && flow.surface !== surfaceId) return bad('FLOW_SURFACE_MISMATCH', `flow ${flowId} is on surface ${flow.surface}, intent surface is ${surfaceId}`);
+    receipt.flow = { id: flowId, surface: flow.surface, status: flow.status };
+  }
   // Target routing: never guess an account. Surfaces with several registered targets need an explicit one.
   const targetsOnSurface = Object.entries(manifest.sns_targets).filter(([, t]) => t.surface === surfaceId).map(([id]) => id);
   if (targetId && !manifest.sns_targets[targetId]) { receipt.status = STATUS.BLOCKED_UNKNOWN_TARGET; receipt.conflicts.push({ code: 'UNKNOWN_TARGET', message: `"${targetId}" is not a registered SNS target`, known: Object.keys(manifest.sns_targets) }); return receipt; }
@@ -212,15 +221,15 @@ export function resolveEditorial(intent, { targetId = null, overrides = {}, task
   const target = targetId ? manifest.sns_targets[targetId] : null;
   receipt.target = target ? { id: targetId, surface: target.surface, account: target.account, voice_family: target.voice_family, status: target.status } : null;
 
-  const cacheKey = hashOf({ revision: reader.revision, manifestHash, targetId, kind: taskKind, intent_axes: intent?.axes ?? null, lang: intent?.constraints?.output_language ?? null });
+  const cacheKey = hashOf({ revision: reader.revision, manifestHash, targetId, flowId, kind: taskKind, intent_axes: intent?.axes ?? null, lang: intent?.constraints?.output_language ?? null });
   let plan = planCache?.get(cacheKey);
   const planReused = Boolean(plan);
   if (!plan) { plan = buildLoadPlan(intent, manifest, { targetId, taskKind }); planCache?.set(cacheKey, plan); }
   receipt.load_plan = { ...plan, reused: planReused, cache_key: cacheKey };
 
   // Voice isolation: the plan itself must not carry another family's docs.
-  if (target) {
-    const leaks = detectVoiceLeak(plan.files.map((f) => f.path), target.voice_family, manifest);
+  if (target || flow) {
+    const leaks = detectVoiceLeak(plan.files.map((f) => f.path), target?.voice_family ?? null, manifest);
     if (leaks.length) { receipt.status = STATUS.BLOCKED_LEAK; receipt.conflicts.push(...leaks.map((l) => ({ code: 'VOICE_LEAK', ...l }))); return receipt; }
   }
 
@@ -248,11 +257,16 @@ export function resolveEditorial(intent, { targetId = null, overrides = {}, task
     receipt.conflicts.push({ code: 'VOICE_LEAK', message: `style_overlay suengj-style resolved for ${target.voice_family} target ${targetId}` });
   }
 
+  if (flow && fields.values.style_overlay === 'suengj-style') {
+    receipt.status = STATUS.BLOCKED_LEAK;
+    receipt.conflicts.push({ code: 'VOICE_LEAK', message: `style_overlay suengj-style resolved for non-SNS flow ${flowId}` });
+  }
+
   // Dynamic facts are never served from cache: freshness stays a per-run re-read.
   receipt.freshness = { rule_files: 'pinned_by_revision', dynamic_sources: 'reread_each_run', max_source_age_days: intent?.constraints?.max_source_age_days ?? null, cache_applies_to: 'rule files only' };
 
   const profileBody = {
-    id: targetId ? `target:${targetId}` : `surface:${surfaceId ?? 'none'}`,
+    id: targetId ? `target:${targetId}` : flowId ? `flow:${flowId}` : `surface:${surfaceId ?? 'none'}`,
     voice_family: target?.voice_family ?? null,
     task_kind: plan.task_kind,
     fields: fields.values,
@@ -303,7 +317,15 @@ export const SNS_SURFACES = ['instagram', 'linkedin'];
  */
 export function gateRender(plan, receipt, manifest) {
   const surface = plan?.profiles?.surface;
-  if (!SNS_SURFACES.includes(surface)) return { ok: true, applies: false };
+  if (!SNS_SURFACES.includes(surface)) {
+    // Legacy non-SNS render stays ungated unless a flow receipt is supplied; then it must be consistent.
+    if (!receipt?.flow) return { ok: true, applies: false };
+    const f = (code, message) => ({ ok: false, applies: true, code, message });
+    if (receipt.status !== STATUS.READY || !receipt.profile) return f('PROFILE_RECEIPT_NOT_READY', `receipt status ${receipt.status}`);
+    if (hashOf(receipt.profile.body) !== receipt.profile.resolved_hash) return f('PROFILE_RECEIPT_HASH_MISMATCH', 'receipt body does not match its resolved_hash');
+    if (receipt.flow.surface !== surface) return f('PROFILE_TARGET_MISMATCH', `flow receipt ${receipt.flow.id} is on surface ${receipt.flow.surface}, plan surface is ${surface}`);
+    return { ok: true, applies: true, resolved_hash: receipt.profile.resolved_hash, profile_id: receipt.profile.id };
+  }
   const fail = (code, message) => ({ ok: false, applies: true, code, message });
   if (!receipt) return fail('PROFILE_RECEIPT_REQUIRED', `surface ${surface} is a registered SNS surface: run scripts/resolve-editorial.mjs --target <id> and pass --profile-receipt`);
   if (receipt.status !== STATUS.READY || !receipt.profile) return fail('PROFILE_RECEIPT_NOT_READY', `receipt status ${receipt.status}`);
