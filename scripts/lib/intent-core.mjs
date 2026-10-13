@@ -72,7 +72,7 @@ function classifyProfileRef(value, axisId, { axes, cache }) {
  * `issues` fail the run, `notes` surface a known, declared gap (a reference
  * to a planned/deferred profile) without failing it.
  */
-export function validateIntent(intent, schema = loadSchema(), { axes = loadAxes() } = {}) {
+export function validateIntent(intent, schema = loadSchema(), { axes = loadAxes(), extraKnownRefs = [] } = {}) {
   const issues = [];
   const notes = [];
   const cache = new Map();
@@ -183,7 +183,7 @@ export function validateIntent(intent, schema = loadSchema(), { axes = loadAxes(
   const contentTypeResult = evaluateContentTypeMateriality(intent, { axes });
   checkComputedMaterial('axes.content_type', axesValue.content_type.state, contentTypeResult);
 
-  for (const [i, refResult] of evaluateReferenceMateriality(intent).entries()) {
+  for (const [i, refResult] of evaluateReferenceMateriality(intent, { extraKnownRefs }).entries()) {
     checkComputedMaterial(refResult.path, intent.inputs.references[i]?.state, refResult);
   }
 

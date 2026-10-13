@@ -162,3 +162,16 @@ npm run test:eval       # integrity + prose-regression corpus
 
 Admits: Markdown rules, machine-readable gate and profile definitions.
 Rejects: article prose, examples containing private material.
+
+## Library input (SUE-1572 / R3)
+
+Optional selected inputs from the Intelligence Library enter through the existing intake, not a parallel router:
+
+```
+python -m multimodal.units search --query ... [--scope editorial_pattern|visual_reference]   # in intelligence-library; ranking only, not fact/style quality
+python -m multimodal.units handoff --ids ... --topic ... --require-pinned > packet.json
+node scripts/library-intake.mjs --intent intent.json --target <id> --packet packet.json --library-root <library> \
+     [--selections sel.json] [--fact-required] [--allow-preview] --out-dir DIR     # -> intent.merged.json, receipt.json, brief.json
+```
+
+`knowledge` becomes a fact source only when pinned, hash-verified, active and `supported`; `editorial_pattern` / `visual_reference` become craft references with explicit dimensions and never carry fact authority. Library text is data. Without `--packet` the flow proceeds on the user's own sources and records why. Contract and tests: `scripts/lib/library-input-core.mjs`, `scripts/test-library-input.mjs`.

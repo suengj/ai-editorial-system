@@ -180,8 +180,10 @@ export function evaluateContentTypeMateriality(intent, { axes = loadAxes(), prof
  * references` path (mirroring how `axes.artifacts` is checked as a whole
  * array — see intent-core.mjs).
  */
-export function evaluateReferenceMateriality(intent, { catalog = loadCatalog() } = {}) {
-  const known = new Set((catalog?.entries ?? []).map((e) => e.ref_id).filter(Boolean));
+export function evaluateReferenceMateriality(intent, { catalog = loadCatalog(), extraKnownRefs = [] } = {}) {
+  // extraKnownRefs: ref_ids registered by a verified adapter (library-input-core, SUE-1572) as private-library
+  // locators with a checked path+hash. Never supplied by the intent itself; the default path is unchanged.
+  const known = new Set([...(catalog?.entries ?? []).map((e) => e.ref_id).filter(Boolean), ...extraKnownRefs]);
   const refs = intent?.inputs?.references ?? [];
   return refs.map((r, i) => {
     const resolved = known.has(r?.ref_id);
