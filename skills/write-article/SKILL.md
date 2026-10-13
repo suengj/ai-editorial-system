@@ -145,6 +145,12 @@ adding more style rules or looping the same weak realization indefinitely.
 
 ## Procedure
 
+0. **Use the resolved profile for SNS copy.** For an SNS target, work from the
+   receipt written by `node scripts/resolve-editorial.mjs` (see
+   `intake-request`) and stamp the draft with that receipt's
+   `profile.resolved_hash`. Use only that receipt's voice document; do not load
+   another voice family (personal, business, community stay separate).
+
 1. **Enter the actual argument, not the first source.** The opening starts at
    the problem, observation, tension, event, or position the piece is about.
    The thesis becomes legible early, but `voice.md` does not require every

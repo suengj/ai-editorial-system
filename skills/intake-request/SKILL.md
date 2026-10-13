@@ -201,6 +201,16 @@ Exactly one Editorial Intent record. `status` is one of:
    fix any reported issue before treating the intent as final. A record that
    fails its own contract is not an intake result.
 
+9a. **Resolve the editorial profile for an SNS delivery.** When the surface is
+    a registered SNS surface (instagram, linkedin), run
+    `node scripts/resolve-editorial.mjs --intent <intent.json> --target <id> --out <receipt.json>`
+    (`--list-targets` shows personal-linkedin, personal-instagram,
+    signalytics-news, trends-moa). It builds the selective load plan, applies
+    the field precedence and locks, and writes one resolved-profile receipt. The
+    account is never inferred: with no `--target` it exits 2
+    (`BLOCKED_TARGET_REQUIRED`). A rule file reported `missing`, `truncated` or
+    `inaccessible` blocks; do not describe it as read.
+
 10. **Hand off.** `status: ready` or `status: blocked_on_clarification` (with
     the human's answer merged back in once given) goes to `frame-article` or
     the equivalent downstream Skill for the requested artifact. `declined`

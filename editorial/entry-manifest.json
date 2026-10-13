@@ -1,0 +1,105 @@
+{
+  "schema_version": "1.0.0",
+  "manifest_version": "2026-10-13.1",
+  "description": "Routing/entry manifest (SUE-1426 R1/R2). It stores IDs, scopes and file REFERENCES only; rule text stays in the canonical MD/JSON files it points to. scripts/lib/resolve-core.mjs reads this to build the selective load plan, resolve per-field precedence and map each registered SNS target to its copy and visual profile. Nothing here grants publication, account or approval authority.",
+  "task_kinds": {
+    "text": { "core": ["editorial/constitution.md", "editorial/voice.md"] },
+    "visual": { "core": ["editorial/constitution.md", "editorial/STRUCTURED-VISUAL-EXECUTION.md"] }
+  },
+  "axis_profile_paths": {
+    "transformation": "editorial/profiles/transformation/{id}.json",
+    "content_type": "editorial/profiles/content/{id}.json",
+    "audience": "editorial/profiles/audience/{id}.json",
+    "surface": "editorial/profiles/surface/{id}.json",
+    "artifact": "editorial/profiles/artifact/{id_dashed}.json"
+  },
+  "language_packs": { "ko": "editorial/profiles/language/ko-KR.json", "ko-KR": "editorial/profiles/language/ko-KR.json" },
+  "locked_fields": ["facts", "figures", "numbers", "quotations", "sources", "citations", "rights", "approval", "publication_authority", "account_identity", "freshness"],
+  "precedence": ["explicit_request", "task_row", "sheet_override", "account_series", "surface_brand_default"],
+  "overridable_fields": {
+    "tone_intensity": ["explicit_request", "task_row", "sheet_override", "account_series", "surface_brand_default"],
+    "hook_pattern": ["explicit_request", "task_row", "sheet_override", "account_series"],
+    "length_hint": ["explicit_request", "task_row", "sheet_override", "account_series", "surface_brand_default"],
+    "call_to_action": ["explicit_request", "task_row", "account_series", "surface_brand_default"],
+    "style_overlay": ["explicit_request", "account_series", "surface_brand_default"],
+    "canvas": ["explicit_request", "task_row", "sheet_override", "account_series", "surface_brand_default"],
+    "text_policy": ["explicit_request", "task_row", "sheet_override", "account_series", "surface_brand_default"],
+    "visual_recipe": ["explicit_request", "task_row", "sheet_override", "account_series", "surface_brand_default"],
+    "image_role": ["explicit_request", "task_row", "sheet_override", "account_series"],
+    "glossary_additions": ["explicit_request", "task_row", "sheet_override", "account_series"]
+  },
+  "voice_docs": {
+    "personal": ["editorial/SUENGJ-STYLE.md"],
+    "business": ["editorial/BUSINESS-IDEA-MAGAZINE.md", "editorial/SIGNALYTICS-BENCHMARK-CARDS.md", "editorial/business-idea-magazine.v1.json"],
+    "community": ["editorial/TRENDS-MOA-COMMUNITY-TONE.md"]
+  },
+  "example_policy": {
+    "default": "style_description_only",
+    "load_only_for": ["ambiguity", "failure", "quality_comparison"],
+    "min": 2,
+    "max": 3,
+    "approved_only": true,
+    "absent": "NO_APPROVED_REFERENCE"
+  },
+  "sns_targets": {
+    "personal-linkedin": {
+      "account": "owner personal LinkedIn (identity/credentials are not stored here)",
+      "surface": "linkedin",
+      "voice_family": "personal",
+      "copy_files": ["editorial/SUENGJ-STYLE.md"],
+      "copy_defaults": { "style_overlay": "suengj-style", "tone_intensity": "medium" },
+      "visual": null,
+      "visual_note": "surface/linkedin.json artifact_fit is text/brief only; no visual profile is registered for LinkedIn, none is invented.",
+      "status": "COPY_MAPPED_NO_VISUAL_PROFILE"
+    },
+    "personal-instagram": {
+      "account": "owner personal Instagram (identity/credentials are not stored here)",
+      "surface": "instagram",
+      "voice_family": "personal",
+      "copy_files": ["editorial/SUENGJ-STYLE.md"],
+      "copy_defaults": { "style_overlay": "suengj-style", "tone_intensity": "high" },
+      "visual": {
+        "artifacts": ["visual/social-card", "visual/thumbnail", "visual/evidence-visual", "visual/body-infographic", "visual/slide-image"],
+        "files": ["editorial/STRUCTURED-VISUAL-EXECUTION.md"],
+        "values": ["editorial/visual-recipes.v1.json"],
+        "defaults": { "canvas": { "width": 1080, "height": 1350 }, "text_policy": "hybrid_template" }
+      },
+      "status": "COPY_AND_VISUAL_MAPPED"
+    },
+    "signalytics-news": {
+      "account": "signalytics.news",
+      "surface": "instagram",
+      "voice_family": "business",
+      "copy_files": ["editorial/BUSINESS-IDEA-MAGAZINE.md", "editorial/SIGNALYTICS-BENCHMARK-CARDS.md"],
+      "copy_defaults": { "style_overlay": "none", "tone_intensity": "medium" },
+      "visual": {
+        "artifacts": ["visual/slide-image"],
+        "files": ["editorial/STRUCTURED-VISUAL-EXECUTION.md", "editorial/SLIDES-AND-CAROUSELS.md"],
+        "values": ["editorial/visual-recipes.v1.json", "editorial/business-idea-magazine.v1.json"],
+        "defaults": { "canvas": { "width": 1080, "aspect_ratio": "4:5" }, "text_policy": "hybrid_template" }
+      },
+      "output_contract": {
+        "png": { "min": 5, "max": 6, "sixth_conditional": true },
+        "required_files": ["caption.md", "benchmark-brief.md"],
+        "drive_result_writes": false,
+        "publication": false
+      },
+      "status": "COPY_AND_VISUAL_MAPPED"
+    },
+    "trends-moa": {
+      "account": "trends.moa",
+      "surface": "instagram",
+      "voice_family": "community",
+      "copy_files": ["editorial/TRENDS-MOA-COMMUNITY-TONE.md"],
+      "copy_defaults": { "style_overlay": "none", "tone_intensity": "medium" },
+      "visual": {
+        "artifacts": ["visual/social-card", "visual/body-infographic"],
+        "files": ["editorial/STRUCTURED-VISUAL-EXECUTION.md"],
+        "values": ["editorial/visual-recipes.v1.json"],
+        "defaults": { "canvas": { "width": 1080, "height": 1350 }, "text_policy": "hybrid_template" }
+      },
+      "status": "COPY_AND_VISUAL_MAPPED"
+    }
+  },
+  "registered_but_unmapped_note": "ai-workflow-registry extensions.yaml lists youtube/threads/naver/x as disabled or NOT_VERIFIED; they are intentionally not mapped here."
+}

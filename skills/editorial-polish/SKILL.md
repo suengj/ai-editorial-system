@@ -132,6 +132,12 @@ Therefore:
 
 ## Procedure
 
+0. **Polish under the same resolved profile.** For an SNS target, polish with
+   the same receipt `profile.resolved_hash` the draft was written under
+   (`node scripts/resolve-editorial.mjs --receipt <receipt.json> --stages <stamps.json>`
+   exits 2 if generate, polish or review used a different profile). Polish must
+   not change numbers, dates, quotes, sources or the direction of a claim.
+
 1. **Read the delta plan first.** Confirm the draft is at P0/P1 for the axes
    Language Polish is allowed to touch. If not, route upstream.
 2. **Extract protected spans** before editing: numbers with units, dates,
