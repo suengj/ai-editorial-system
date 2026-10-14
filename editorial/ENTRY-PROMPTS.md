@@ -6,10 +6,18 @@ Nothing here is auto-applied to a ChatGPT project, a chat, the registry runner o
 | Where | State |
 | -- | -- |
 | New ChatGPT conversation | `HUMAN_REQUIRED` / `NOT_APPLIED` — paste prompt A as the first message (or into the project's instructions). ChatGPT-native cannot run the Node commands; it can only read the listed files and follow the rules. |
-| Existing local/server agents (Claude Code, Codex-class, registry runner) | `HUMAN_REQUIRED` / `NOT_APPLIED` — put prompt B into that agent's instructions. The registry only carries a reference (`aes_entry`), it does not inject text. |
+| Existing local/server agents (Claude Code, Codex-class, registry runner) | Repo-root `AGENTS.md` / `CLAUDE.md` now expose the selected task entry to compatible agents; **runtime discovery is not verified**. If the agent does not load repository instruction files, install prompt B explicitly. A Registry `aes_entry` by itself does not execute Node. |
 
 Targets: `personal-linkedin`, `personal-instagram`, `signalytics-news`, `trends-moa` (list: `node scripts/resolve-editorial.mjs --list-targets`).
 Existing non-SNS flows: `blog`, `news`, `report` (`--list-targets --flows`). Other channels are not mapped.
+
+## 2026-10-14 P0 repository activation
+
+- **Compatible coding agents:** the root `AGENTS.md` and `CLAUDE.md` route editorial tasks to this file and `editorial/entry-manifest.json`. This is repo-local discovery, not a guarantee that every CLI or hosted agent reads them; confirm the actual selected profile in its receipt.
+- **Registry selected jobs:** `ai-workflow-registry/dispatcher.yaml` names the selected-job-only `aes_entry` bootstrap and tells an interpreting runner how to load only the chosen manifest rules. It is a declarative contract, **not** proof that ChatGPT's current scheduled task prompt incorporated the update.
+- **ChatGPT Project / independent new chats:** still `HUMAN_REQUIRED / NOT_APPLIED` until the operator pastes section A into that Project's instructions or the conversation. GitHub access cannot edit the ChatGPT Project's UI settings. Do not claim global activation by merging this commit.
+- **No fabricated E2E:** the script/manifest connection, exact PNG proof and local tests remain separate from a real ChatGPT-native image generation run and owner visual acceptance.
+- **trends.moa:** current owner-selected production HIGH intensity is the default in `entry-manifest.json`, matching Registry `production-v2.yaml`; explicit task overrides remain governed by the normal field-wise precedence rules.
 
 ## A. New ChatGPT conversation
 
