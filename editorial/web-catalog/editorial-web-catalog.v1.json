@@ -1,0 +1,4244 @@
+{
+  "axis_profile_paths": {
+    "artifact": "editorial/profiles/artifact/{id_dashed}.json",
+    "audience": "editorial/profiles/audience/{id}.json",
+    "content_type": "editorial/profiles/content/{id}.json",
+    "surface": "editorial/profiles/surface/{id}.json",
+    "transformation": "editorial/profiles/transformation/{id}.json"
+  },
+  "carousel_series": {
+    "beats": {
+      "max": 60,
+      "min": 1
+    },
+    "block_fields": [
+      "id",
+      "region",
+      "kind",
+      "ref",
+      "sha256",
+      "mode",
+      "fit",
+      "rights_note",
+      "protect",
+      "text",
+      "source_ref",
+      "instruction",
+      "generation",
+      "provenance"
+    ],
+    "block_kinds": [
+      "text",
+      "image",
+      "chart",
+      "generated"
+    ],
+    "frame_fields": [
+      "id",
+      "function",
+      "beat_ids",
+      "takeaway",
+      "alt_text",
+      "headline",
+      "source_note",
+      "layout",
+      "blocks",
+      "caption",
+      "job_ref"
+    ],
+    "frame_functions": [
+      "orient",
+      "assert",
+      "show_evidence",
+      "explain_mechanism",
+      "compare",
+      "qualify",
+      "turn",
+      "show_consequence",
+      "decision",
+      "close"
+    ],
+    "frames": {
+      "max": 20,
+      "min": 1
+    },
+    "schema_version": "1.0.0",
+    "series_fields": [
+      "schema_version",
+      "series_id",
+      "request",
+      "source",
+      "profiles",
+      "recipe",
+      "task",
+      "typography",
+      "regions",
+      "layouts",
+      "series_label",
+      "beats",
+      "frames"
+    ],
+    "signalytics_png": {
+      "max": 6,
+      "min": 5,
+      "sixth_conditional": true
+    }
+  },
+  "catalog_version": "1.0.0",
+  "content_digest": "sha256:ea6680a86e3c9df87338d039581ddc01a314e0ca9827bd44651046569a35fafa",
+  "field_domains": {
+    "call_to_action": {
+      "max_length": 200,
+      "type": "text"
+    },
+    "canvas": {
+      "max_json_length": 200,
+      "type": "structure",
+      "value_types": [
+        "object"
+      ]
+    },
+    "glossary_additions": {
+      "max_json_length": 4000,
+      "type": "structure",
+      "value_types": [
+        "object",
+        "array"
+      ]
+    },
+    "hook_pattern": {
+      "family_id_patterns": {
+        "community": "(?<![a-z0-9])h\\d{2}(?![a-z0-9])"
+      },
+      "max_length": 200,
+      "type": "text"
+    },
+    "image_role": {
+      "max_length": 80,
+      "type": "text"
+    },
+    "length_hint": {
+      "max_length": 80,
+      "type": "text"
+    },
+    "preference_text": {
+      "family_id_patterns": {
+        "community": "(?<![a-z0-9])h\\d{2}(?![a-z0-9])"
+      },
+      "max_length": 500,
+      "type": "text"
+    },
+    "style_overlay": {
+      "allowed": {
+        "_flow": [
+          "none"
+        ],
+        "business": [
+          "none"
+        ],
+        "community": [
+          "none"
+        ],
+        "personal": [
+          "suengj-style"
+        ]
+      },
+      "type": "enum_by_voice_family"
+    },
+    "text_policy": {
+      "max_length": 80,
+      "type": "text"
+    },
+    "tone_intensity": {
+      "allowed": [
+        "low",
+        "medium",
+        "high"
+      ],
+      "type": "enum"
+    },
+    "visual_recipe": {
+      "max_json_length": 4000,
+      "type": "structure",
+      "value_types": [
+        "object",
+        "string"
+      ]
+    }
+  },
+  "flows": [
+    {
+      "artifacts": [
+        "text/article",
+        "visual/evidence-visual",
+        "visual/body-infographic"
+      ],
+      "channel": "suengj-com",
+      "id": "blog",
+      "label": "blog",
+      "rule_refs": {
+        "text": [
+          {
+            "path": "editorial/constitution.md",
+            "role": "core:text",
+            "sha256": "6a6b58a9fce5f29099d74c23f10587c6560904ffe0a6a7c001e2ab330b2b6997"
+          },
+          {
+            "path": "editorial/voice.md",
+            "role": "core:text",
+            "sha256": "f6c953c4a2c0792bc0189f016343df299373caf5f104958efc864c47e92deaaa"
+          }
+        ],
+        "visual": [
+          {
+            "path": "editorial/STRUCTURED-VISUAL-EXECUTION.md",
+            "role": "core:visual",
+            "sha256": "ca9bd8b4dfce215159d3fecb782ae637b3db721fde33673639d73793fd1a4fac"
+          },
+          {
+            "path": "editorial/constitution.md",
+            "role": "core:visual",
+            "sha256": "6a6b58a9fce5f29099d74c23f10587c6560904ffe0a6a7c001e2ab330b2b6997"
+          }
+        ]
+      },
+      "status": "CONNECTED_COMMON_ENTRY",
+      "task_kinds": [
+        "text",
+        "visual"
+      ],
+      "voice_family": null
+    },
+    {
+      "artifacts": [
+        "text/brief"
+      ],
+      "channel": "newsletter",
+      "id": "news",
+      "label": "news",
+      "rule_refs": {
+        "text": [
+          {
+            "path": "editorial/constitution.md",
+            "role": "core:text",
+            "sha256": "6a6b58a9fce5f29099d74c23f10587c6560904ffe0a6a7c001e2ab330b2b6997"
+          },
+          {
+            "path": "editorial/voice.md",
+            "role": "core:text",
+            "sha256": "f6c953c4a2c0792bc0189f016343df299373caf5f104958efc864c47e92deaaa"
+          }
+        ]
+      },
+      "status": "CONNECTED_COMMON_ENTRY",
+      "task_kinds": [
+        "text"
+      ],
+      "voice_family": null
+    },
+    {
+      "artifacts": [
+        "text/brief",
+        "text/article",
+        "visual/slide-image"
+      ],
+      "channel": "report-deck",
+      "id": "report",
+      "label": "report",
+      "rule_refs": {
+        "text": [
+          {
+            "path": "editorial/constitution.md",
+            "role": "core:text",
+            "sha256": "6a6b58a9fce5f29099d74c23f10587c6560904ffe0a6a7c001e2ab330b2b6997"
+          },
+          {
+            "path": "editorial/voice.md",
+            "role": "core:text",
+            "sha256": "f6c953c4a2c0792bc0189f016343df299373caf5f104958efc864c47e92deaaa"
+          }
+        ],
+        "visual": [
+          {
+            "path": "editorial/STRUCTURED-VISUAL-EXECUTION.md",
+            "role": "core:visual",
+            "sha256": "ca9bd8b4dfce215159d3fecb782ae637b3db721fde33673639d73793fd1a4fac"
+          },
+          {
+            "path": "editorial/constitution.md",
+            "role": "core:visual",
+            "sha256": "6a6b58a9fce5f29099d74c23f10587c6560904ffe0a6a7c001e2ab330b2b6997"
+          }
+        ]
+      },
+      "status": "CONNECTED_COMMON_ENTRY",
+      "task_kinds": [
+        "text",
+        "visual"
+      ],
+      "voice_family": null
+    }
+  ],
+  "generated_from": {
+    "manifest": {
+      "manifest_version": "2026-10-13.1",
+      "path": "editorial/entry-manifest.json",
+      "sha256": "ed8806431fc64c2534229b5fbe32116d3f57b5645b91b8f6761306bbd37cc247"
+    },
+    "note": "The AES git commit is deliberately not embedded. The consumer pins the AES commit and this file's sha256.",
+    "profile_version_semantics": "<manifest_version>+<aes_commit>; the consumer supplies aes_commit from its own pin",
+    "rule_refs_scope": "rule_refs are the target/flow-fixed subset only. Axis and language profile files are resolved per request via axis_profile_paths / language_packs. Approved-example excerpts are never included."
+  },
+  "language_packs": {
+    "ko": "editorial/profiles/language/ko-KR.json",
+    "ko-KR": "editorial/profiles/language/ko-KR.json"
+  },
+  "locked_fields": [
+    "account_identity",
+    "approval",
+    "citations",
+    "facts",
+    "figures",
+    "freshness",
+    "numbers",
+    "publication_authority",
+    "quotations",
+    "rights",
+    "sources"
+  ],
+  "overridable_fields": {
+    "call_to_action": [
+      "explicit_request",
+      "task_row",
+      "account_series",
+      "surface_brand_default"
+    ],
+    "canvas": [
+      "explicit_request",
+      "task_row",
+      "sheet_override",
+      "account_series",
+      "surface_brand_default"
+    ],
+    "glossary_additions": [
+      "explicit_request",
+      "task_row",
+      "sheet_override",
+      "account_series"
+    ],
+    "hook_pattern": [
+      "explicit_request",
+      "task_row",
+      "sheet_override",
+      "account_series"
+    ],
+    "image_role": [
+      "explicit_request",
+      "task_row",
+      "sheet_override",
+      "account_series"
+    ],
+    "length_hint": [
+      "explicit_request",
+      "task_row",
+      "sheet_override",
+      "account_series",
+      "surface_brand_default"
+    ],
+    "style_overlay": [
+      "explicit_request",
+      "account_series",
+      "surface_brand_default"
+    ],
+    "text_policy": [
+      "explicit_request",
+      "task_row",
+      "sheet_override",
+      "account_series",
+      "surface_brand_default"
+    ],
+    "tone_intensity": [
+      "explicit_request",
+      "task_row",
+      "sheet_override",
+      "account_series",
+      "surface_brand_default"
+    ],
+    "visual_recipe": [
+      "explicit_request",
+      "task_row",
+      "sheet_override",
+      "account_series",
+      "surface_brand_default"
+    ]
+  },
+  "precedence": [
+    "explicit_request",
+    "task_row",
+    "sheet_override",
+    "account_series",
+    "surface_brand_default"
+  ],
+  "quality_gates": {
+    "copy_gates": [
+      {
+        "id": "G-01",
+        "severity": "reject",
+        "title": "prompt-echo"
+      },
+      {
+        "id": "G-03",
+        "severity": "reject",
+        "title": "scaffolding-leak"
+      },
+      {
+        "id": "G-06",
+        "severity": "fix",
+        "title": "filler-phrase"
+      }
+    ],
+    "protected_spans": {
+      "classes": [
+        "numbers",
+        "dates",
+        "citation-markers",
+        "quotations",
+        "urls",
+        "technical-terms"
+      ],
+      "id": "polish-invariants",
+      "severity": "reject"
+    }
+  },
+  "schemas": {
+    "audio-plan": {
+      "id": "https://suengj.com/schemas/audio-plan.schema.json",
+      "path": "schemas/audio-plan.schema.json",
+      "schema": {
+        "$defs": {
+          "article_ref": {
+            "additionalProperties": false,
+            "properties": {
+              "article_id": {
+                "pattern": "^art:[a-z0-9]+(-[a-z0-9]+)*$",
+                "type": "string"
+              },
+              "claims_hash": {
+                "pattern": "^[a-f0-9]{64}$",
+                "type": "string"
+              },
+              "commit": {
+                "pattern": "^[a-f0-9]{7,40}$",
+                "type": "string"
+              },
+              "content_hash": {
+                "pattern": "^[a-f0-9]{64}$",
+                "type": "string"
+              },
+              "version_number": {
+                "minimum": 1,
+                "type": "integer"
+              }
+            },
+            "required": [
+              "article_id",
+              "version_number",
+              "content_hash",
+              "claims_hash"
+            ],
+            "type": "object"
+          },
+          "audience": {
+            "additionalProperties": false,
+            "properties": {
+              "profile_ref": {
+                "pattern": "^editorial/profiles/audience/",
+                "type": "string"
+              },
+              "traits_applied": {
+                "description": "Which concrete audience.modality_effects.audio adjustments were actually applied to this plan, not the whole profile.",
+                "items": {
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              "value": {
+                "enum": [
+                  "general-reader",
+                  "professional-generalist",
+                  "domain-practitioner",
+                  "domain-expert",
+                  "beginner-learner",
+                  "child-upper-elementary"
+                ]
+              }
+            },
+            "required": [
+              "value",
+              "profile_ref",
+              "traits_applied"
+            ],
+            "type": "object"
+          },
+          "delivery_intent": {
+            "additionalProperties": false,
+            "description": "Provider-neutral performance direction (AUDIO-SCRIPT.md §12, §13) — augmented from register/audience, never an invented persona. Never SSML, audio tags, or provider syntax.",
+            "properties": {
+              "affect": {
+                "type": "string"
+              },
+              "global_cues": {
+                "items": {
+                  "$ref": "#/$defs/performance_cue"
+                },
+                "type": "array"
+              },
+              "pace": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "register": {
+                "minLength": 1,
+                "type": "string"
+              }
+            },
+            "required": [
+              "register",
+              "pace"
+            ],
+            "type": "object"
+          },
+          "performance_cue": {
+            "enum": [
+              "pause_short",
+              "pause_medium",
+              "emphasis",
+              "pace_slow",
+              "pace_fast",
+              "pronunciation_ref",
+              "speaker"
+            ]
+          },
+          "pronunciation_entry": {
+            "additionalProperties": false,
+            "properties": {
+              "pronunciation_ref": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "spoken_form": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "surface_text": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "term": {
+                "minLength": 1,
+                "type": "string"
+              }
+            },
+            "required": [
+              "term",
+              "spoken_form"
+            ],
+            "type": "object"
+          },
+          "segment": {
+            "additionalProperties": false,
+            "properties": {
+              "beat_id": {
+                "description": "Links to the shared argument-beat graph (editorial/VISUAL-STORY-COMPILATION.md §3). Required for audio/timed-narration — checked by scripts/lib/audio-plan-core.mjs.",
+                "pattern": "^beat-[a-z0-9]+(-[a-z0-9]+)*$",
+                "type": "string"
+              },
+              "cues": {
+                "items": {
+                  "$ref": "#/$defs/performance_cue"
+                },
+                "type": "array"
+              },
+              "narration_span_hash": {
+                "pattern": "^[a-f0-9]{64}$",
+                "type": "string"
+              },
+              "next_context": {
+                "type": "string"
+              },
+              "previous_context": {
+                "type": "string"
+              },
+              "segment_id": {
+                "pattern": "^seg-[a-z0-9]+(-[a-z0-9]+)*$",
+                "type": "string"
+              },
+              "speaker": {
+                "description": "Speaking role id for audio/dialogue segments; must resolve to one of dialogue.speaker_roles[].role_id.",
+                "minLength": 1,
+                "type": "string"
+              },
+              "target_duration_ms": {
+                "minimum": 0,
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "segment_id",
+              "narration_span_hash"
+            ],
+            "type": "object"
+          },
+          "selected_reference_traits": {
+            "additionalProperties": false,
+            "description": "Traits only, never a reference body (docs/architecture/V2-EDITORIAL-LEARNING-CORE.md §2; editorial/profiles/reference/audio.json).",
+            "properties": {
+              "adopt": {
+                "items": {
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              "authoritative_override": {
+                "items": {
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              "avoid": {
+                "items": {
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              "do_not_copy": {
+                "items": {
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "type": "array"
+              }
+            },
+            "required": [
+              "adopt",
+              "avoid",
+              "do_not_copy"
+            ],
+            "type": "object"
+          },
+          "speaker_role": {
+            "additionalProperties": false,
+            "properties": {
+              "knowledge_position": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "persona_disclosure": {
+                "description": "AUDIO-SCRIPT.md §15: a synthetic speaker may never be presented as a real source. The only value this schema accepts is the explicit non-source disclosure — any other value fails validation structurally.",
+                "enum": [
+                  "synthetic_non_source"
+                ]
+              },
+              "purpose": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "role_id": {
+                "minLength": 1,
+                "type": "string"
+              }
+            },
+            "required": [
+              "role_id",
+              "purpose",
+              "knowledge_position",
+              "persona_disclosure"
+            ],
+            "type": "object"
+          }
+        },
+        "$id": "https://suengj.com/schemas/audio-plan.schema.json",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "additionalProperties": false,
+        "description": "The pre-TTS contract (AES-V2.8 / SUE-566). Records the compiled canonical spoken script and every state a bad audio artifact must route back to — audience, artifact profile, reference traits, pronunciation, delivery, script L1 review — before an expensive render is attempted. Mirrors the lineage and gate structure of schemas/visual-job.schema.json rather than inventing a parallel one. See schemas/AUDIO-PLAN-CONTRACT.md.",
+        "properties": {
+          "article_ref": {
+            "$ref": "#/$defs/article_ref"
+          },
+          "artifact_profile": {
+            "description": "An audio artifact profile id from the artifact axis (editorial/profiles/axes.json, editorial/profiles/artifact/audio-*.json). The vocabulary is owned by that directory, not this enum (docs/architecture/V2-EDITORIAL-LEARNING-CORE.md §8 extension rule) — real membership is enforced by scripts/lib/audio-plan-core.mjs's UNKNOWN_PROFILE check against the directory, not by this pattern alone.",
+            "pattern": "^audio/[a-z0-9]+(-[a-z0-9]+)*$",
+            "type": "string"
+          },
+          "attempts": {
+            "minimum": 0,
+            "type": "integer"
+          },
+          "audience": {
+            "$ref": "#/$defs/audience"
+          },
+          "cost": {
+            "additionalProperties": false,
+            "description": "Cost per accepted artifact, not raw render count (docs/architecture/V2-EDITORIAL-LEARNING-CORE.md §9).",
+            "properties": {
+              "cost_per_accepted_artifact": {
+                "minimum": 0,
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "renders_accepted": {
+                "minimum": 0,
+                "type": "integer"
+              },
+              "renders_attempted": {
+                "minimum": 0,
+                "type": "integer"
+              }
+            },
+            "required": [
+              "renders_attempted",
+              "renders_accepted",
+              "cost_per_accepted_artifact"
+            ],
+            "type": "object"
+          },
+          "delivery_intent": {
+            "$ref": "#/$defs/delivery_intent"
+          },
+          "dialogue": {
+            "additionalProperties": false,
+            "description": "Required and validated only when artifact_profile is audio/dialogue (checked by scripts/lib/audio-plan-core.mjs, since this schema subset has no conditional keyword).",
+            "properties": {
+              "agreement_policy": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "knowledge_asymmetry": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "persona_boundary_statement": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "speaker_roles": {
+                "items": {
+                  "$ref": "#/$defs/speaker_role"
+                },
+                "type": "array"
+              },
+              "turn_policy": {
+                "additionalProperties": false,
+                "properties": {
+                  "interruption_conditions": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "turn_length": {
+                    "minLength": 1,
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "turn_length",
+                  "interruption_conditions"
+                ],
+                "type": "object"
+              }
+            },
+            "required": [
+              "speaker_roles",
+              "knowledge_asymmetry",
+              "turn_policy",
+              "agreement_policy",
+              "persona_boundary_statement"
+            ],
+            "type": "object"
+          },
+          "max_attempts": {
+            "minimum": 1,
+            "type": "integer"
+          },
+          "package_ref": {
+            "description": "Editorial Package reference, when this plan is compiled from a package rather than a single article. Exactly one of article_ref/package_ref must be present — checked by scripts/lib/audio-plan-core.mjs, not by this schema.",
+            "minLength": 1,
+            "type": "string"
+          },
+          "plan_id": {
+            "pattern": "^audioplan:[a-z0-9]+(-[a-z0-9]+)*$",
+            "type": "string"
+          },
+          "profile_ref": {
+            "pattern": "^editorial/profiles/artifact/",
+            "type": "string"
+          },
+          "pronunciation": {
+            "description": "Provider-neutral pronunciation glossary (AUDIO-SCRIPT.md §10, §11).",
+            "items": {
+              "$ref": "#/$defs/pronunciation_entry"
+            },
+            "type": "array"
+          },
+          "qa": {
+            "additionalProperties": false,
+            "description": "Rendered-audio QA (AUDIO-SCRIPT.md §20 'Render QA'). Structurally separate from script_l1 — a correct transcript certifies nothing about pronunciation, pacing, continuity, or performance.",
+            "properties": {
+              "continuity_check": {
+                "enum": [
+                  "pass",
+                  "fail",
+                  "not_yet"
+                ]
+              },
+              "directive_leak_check": {
+                "enum": [
+                  "pass",
+                  "fail",
+                  "not_yet"
+                ]
+              },
+              "notes": {
+                "type": "string"
+              },
+              "pacing_check": {
+                "enum": [
+                  "pass",
+                  "fail",
+                  "not_yet"
+                ]
+              },
+              "performance_check": {
+                "enum": [
+                  "pass",
+                  "fail",
+                  "not_yet"
+                ]
+              },
+              "performed": {
+                "type": "boolean"
+              },
+              "pronunciation_check": {
+                "enum": [
+                  "pass",
+                  "fail",
+                  "not_yet"
+                ]
+              }
+            },
+            "required": [
+              "performed",
+              "pronunciation_check",
+              "pacing_check",
+              "continuity_check",
+              "performance_check",
+              "directive_leak_check"
+            ],
+            "type": "object"
+          },
+          "recompilation": {
+            "additionalProperties": false,
+            "description": "Evidence that the article was recompiled for listening rather than sent to TTS as-is (AUDIO-SCRIPT.md §1). Required so skipping this step is structurally visible.",
+            "properties": {
+              "identical_to_source_prose": {
+                "description": "Must be false. true means the narration_text is the article prose read aloud with no listening-structure recompilation — the default failure this contract exists to prevent.",
+                "type": "boolean"
+              },
+              "performed": {
+                "type": "boolean"
+              },
+              "structural_changes": {
+                "description": "What changed between article prose and spoken script (reordering, compression, recurrence added, transitions rewritten).",
+                "items": {
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "type": "array"
+              }
+            },
+            "required": [
+              "performed",
+              "identical_to_source_prose"
+            ],
+            "type": "object"
+          },
+          "render": {
+            "additionalProperties": false,
+            "description": "Rendering lineage only (provider/model/version/voice) — never editorial state. Nullable because a plan below the render gate has not rendered yet.",
+            "properties": {
+              "model": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "model_version": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "provider": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "quality_tier": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "tool": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "tool_version": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "voice_id": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "voice_provenance_class": {
+                "description": "editorial/RIGHTS-AND-PROVENANCE.md §4 'Generated voice provenance' table.",
+                "enum": [
+                  "provider_stock",
+                  "synthetic_designed",
+                  "owner_cloned",
+                  "licensed_voice_actor",
+                  "third_party_imitation"
+                ]
+              }
+            },
+            "required": [
+              "tool",
+              "provider",
+              "model",
+              "model_version",
+              "voice_provenance_class"
+            ],
+            "type": [
+              "object",
+              "null"
+            ]
+          },
+          "schema_version": {
+            "const": "1.0.0"
+          },
+          "script_l1": {
+            "additionalProperties": false,
+            "description": "L1 spoken-naturalness review (AUDIO-SCRIPT.md §20 'Script QA'). Cheap preflight that must pass before an expensive render (docs/architecture/V2-EDITORIAL-LEARNING-CORE.md §9).",
+            "properties": {
+              "checklist": {
+                "items": {
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              "outcome": {
+                "enum": [
+                  "pass",
+                  "fail",
+                  "not_yet"
+                ]
+              },
+              "performed": {
+                "type": "boolean"
+              },
+              "reviewer": {
+                "enum": [
+                  "model",
+                  "human"
+                ]
+              }
+            },
+            "required": [
+              "performed",
+              "outcome"
+            ],
+            "type": "object"
+          },
+          "segments": {
+            "description": "Semantic segment plan (AUDIO-SCRIPT.md §17). Segment boundaries are chosen by meaning first, then fit to provider limits.",
+            "items": {
+              "$ref": "#/$defs/segment"
+            },
+            "type": "array"
+          },
+          "selected_reference_traits": {
+            "$ref": "#/$defs/selected_reference_traits"
+          },
+          "spoken_script": {
+            "additionalProperties": false,
+            "description": "The canonical narration_text SSOT (AUDIO-SCRIPT.md §2). Clean spoken text only — never provider markup, stage directions, or delivery instructions.",
+            "properties": {
+              "narration_hash": {
+                "pattern": "^[a-f0-9]{64}$",
+                "type": "string"
+              },
+              "narration_text": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "script_version": {
+                "minimum": 1,
+                "type": "integer"
+              }
+            },
+            "required": [
+              "narration_text",
+              "narration_hash",
+              "script_version"
+            ],
+            "type": "object"
+          },
+          "status": {
+            "enum": [
+              "planned",
+              "script_compiled",
+              "script_l1_review",
+              "script_l1_pass",
+              "script_l1_fail",
+              "ready_for_render",
+              "rendering",
+              "rendered",
+              "qa_pass",
+              "qa_fail",
+              "accepted",
+              "rejected"
+            ]
+          },
+          "timing": {
+            "additionalProperties": false,
+            "properties": {
+              "rendering_mode": {
+                "enum": [
+                  "free",
+                  "timed"
+                ]
+              },
+              "target_duration_ms": {
+                "minimum": 0,
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              },
+              "tolerance_ms": {
+                "minimum": 0,
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "rendering_mode"
+            ],
+            "type": "object"
+          }
+        },
+        "required": [
+          "schema_version",
+          "plan_id",
+          "artifact_profile",
+          "profile_ref",
+          "audience",
+          "selected_reference_traits",
+          "spoken_script",
+          "recompilation",
+          "segments",
+          "pronunciation",
+          "delivery_intent",
+          "timing",
+          "script_l1",
+          "render",
+          "attempts",
+          "max_attempts",
+          "qa",
+          "cost",
+          "status"
+        ],
+        "title": "Audio Plan",
+        "type": "object"
+      },
+      "sha256": "2fbc4adf35170c4c0a35dc16b626296e9639f93f4d6d338a718540286064c44d"
+    },
+    "editorial-intent": {
+      "id": "https://suengj.com/schemas/editorial-intent.schema.json",
+      "path": "schemas/editorial-intent.schema.json",
+      "schema": {
+        "$defs": {
+          "artifact_request": {
+            "additionalProperties": false,
+            "properties": {
+              "basis": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "count": {
+                "minimum": 1,
+                "type": "integer"
+              },
+              "profile_ref": {
+                "pattern": "^editorial/profiles/artifact/",
+                "type": "string"
+              },
+              "state": {
+                "$ref": "#/$defs/resolution_state"
+              },
+              "value": {
+                "description": "Artifact profile id, namespaced by modality: `text/article`, `visual/body-infographic`, `audio/dialogue`. The modality prefix is what keeps text, visual, and audio generation contracts separate.",
+                "pattern": "^(text|visual|audio|video)/[a-z0-9]+(-[a-z0-9]+)*$",
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "value",
+              "state"
+            ],
+            "type": "object"
+          },
+          "audience_axis": {
+            "additionalProperties": false,
+            "description": "Audience is the one axis shared by every modality: it changes explanation depth in text, information density in visuals, and pace and assumed knowledge in audio. A preset plus task-specific trait overrides, never a rigid bucket.",
+            "properties": {
+              "basis": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "profile_ref": {
+                "pattern": "^editorial/profiles/audience/",
+                "type": "string"
+              },
+              "state": {
+                "$ref": "#/$defs/resolution_state"
+              },
+              "traits": {
+                "additionalProperties": false,
+                "description": "Task-specific deviations from the preset. Only traits that materially change delivery belong here — demographics that change nothing are ceremonial and are omitted.",
+                "properties": {
+                  "accessibility": {
+                    "items": {
+                      "minLength": 1,
+                      "type": "string"
+                    },
+                    "type": "array"
+                  },
+                  "attention_context": {
+                    "enum": [
+                      "glance",
+                      "reading",
+                      "study",
+                      "listening"
+                    ]
+                  },
+                  "domain_familiarity": {
+                    "type": "string"
+                  },
+                  "expertise": {
+                    "enum": [
+                      "novice",
+                      "informed",
+                      "practitioner",
+                      "expert"
+                    ]
+                  },
+                  "jargon_tolerance": {
+                    "enum": [
+                      "none",
+                      "low",
+                      "moderate",
+                      "high"
+                    ]
+                  },
+                  "life_stage": {
+                    "description": "Recorded only when it materially affects communication — a child audience changes vocabulary and example choice; an age number that changes nothing does not belong here.",
+                    "type": "string"
+                  },
+                  "occupation": {
+                    "type": "string"
+                  },
+                  "purpose": {
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              },
+              "value": {
+                "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "value",
+              "state"
+            ],
+            "type": "object"
+          },
+          "axis_value": {
+            "additionalProperties": false,
+            "properties": {
+              "basis": {
+                "description": "Why this value. For `confirmed`, the span of the utterance or the upstream contract that fixed it. For `assumed`, the inference. Required in practice for audit; a value with no basis cannot be routed when it turns out wrong.",
+                "minLength": 1,
+                "type": "string"
+              },
+              "profile_ref": {
+                "description": "Repository path of the resolved profile. Absent when unresolved.",
+                "pattern": "^editorial/profiles/",
+                "type": "string"
+              },
+              "state": {
+                "$ref": "#/$defs/resolution_state"
+              },
+              "value": {
+                "description": "Profile id within the matching axis directory under editorial/profiles/. null only when state is missing_material.",
+                "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "value",
+              "state"
+            ],
+            "type": "object"
+          },
+          "question": {
+            "additionalProperties": false,
+            "properties": {
+              "answer": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "default": {
+                "type": "string"
+              },
+              "field": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "options": {
+                "description": "Choices with a marked default beat an open prompt. A clarification with no options is a defect unless the field genuinely has an open range.",
+                "items": {
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              "question": {
+                "minLength": 1,
+                "type": "string"
+              }
+            },
+            "required": [
+              "field",
+              "question"
+            ],
+            "type": "object"
+          },
+          "reference_input": {
+            "additionalProperties": false,
+            "description": "Material that can inform craft. Carries no factual authority: an evaluation of a reference may never become a verified claim.",
+            "properties": {
+              "dimensions": {
+                "description": "Which dimensions of this reference the human actually wants applied. `이 reference는 정보 구조는 좋은데 색감은 싫어` becomes dimensions plus a task override, not wholesale imitation.",
+                "items": {
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              "modality": {
+                "enum": [
+                  "text",
+                  "visual",
+                  "audio",
+                  "video"
+                ]
+              },
+              "note": {
+                "type": "string"
+              },
+              "ref_id": {
+                "pattern": "^ref:[a-z0-9]+(-[a-z0-9]+)*$",
+                "type": "string"
+              },
+              "state": {
+                "$ref": "#/$defs/resolution_state"
+              }
+            },
+            "required": [
+              "ref_id",
+              "state"
+            ],
+            "type": "object"
+          },
+          "resolution_state": {
+            "description": "confirmed: the human said it, or an authoritative upstream contract did — the only state that may inform durable calibration. assumed: safely inferred for this run; never durable preference evidence. missing_material: absent and materially outcome-changing.",
+            "enum": [
+              "confirmed",
+              "assumed",
+              "missing_material"
+            ]
+          },
+          "source_input": {
+            "additionalProperties": false,
+            "description": "Material that can establish fact. Referenced by id and never copied into this repository.",
+            "properties": {
+              "note": {
+                "type": "string"
+              },
+              "source_id": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "state": {
+                "$ref": "#/$defs/resolution_state"
+              },
+              "uri": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "source_id",
+              "state"
+            ],
+            "type": "object"
+          }
+        },
+        "$id": "https://suengj.com/schemas/editorial-intent.schema.json",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "additionalProperties": false,
+        "description": "The structured result of natural-language intake (AES-V2.1 / SUE-559) expressed over five independent axes (AES-V2.2 / SUE-560). A human writes sentences; an agent writes this. Every axis value carries a resolution state, and only `confirmed` values may ever inform durable calibration.",
+        "properties": {
+          "axes": {
+            "additionalProperties": false,
+            "description": "The five independent axes. They do not collapse into one another: a transformation is not a content type, a surface is not an audience, an artifact is not a style.",
+            "properties": {
+              "artifacts": {
+                "description": "One or more requested artifacts. Empty means the artifact axis is still unresolved and must appear in clarification.required.",
+                "items": {
+                  "$ref": "#/$defs/artifact_request"
+                },
+                "type": "array"
+              },
+              "audience": {
+                "$ref": "#/$defs/audience_axis"
+              },
+              "content_type": {
+                "$ref": "#/$defs/axis_value"
+              },
+              "surface": {
+                "$ref": "#/$defs/axis_value"
+              },
+              "transformation": {
+                "$ref": "#/$defs/axis_value"
+              }
+            },
+            "required": [
+              "transformation",
+              "content_type",
+              "audience",
+              "surface",
+              "artifacts"
+            ],
+            "type": "object"
+          },
+          "calibration_ref": {
+            "description": "The calibration version active at intake (AES-V2.10). Recorded so a later verdict can be attributed to the calibration that produced it rather than to whichever is current.",
+            "pattern": "^calibration:[a-z0-9]+(-[a-z0-9]+)*@v[0-9]+$",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "clarification": {
+            "additionalProperties": false,
+            "description": "The exception path. Questions are asked only when a missing field would materially change thesis, audience fit, transformation fidelity, artifact route, publication constraint, or cost.",
+            "properties": {
+              "asked": {
+                "description": "Normally 0-3 entries. An intake that asks four or more questions has failed its own gate and must record why in `note`.",
+                "items": {
+                  "$ref": "#/$defs/question"
+                },
+                "type": "array"
+              },
+              "note": {
+                "type": "string"
+              },
+              "required": {
+                "description": "Axis or constraint paths currently in state `missing_material`. Non-empty forces status `blocked_on_clarification`.",
+                "items": {
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              "resolution": {
+                "description": "proceeded: nothing material was missing. answered: the human supplied the missing values. default_authorized: the human said `알아서 해` / `use default`, which authorizes `assumed` for this run and nothing beyond it. unresolved: still blocked.",
+                "enum": [
+                  "proceeded",
+                  "answered",
+                  "default_authorized",
+                  "unresolved"
+                ]
+              }
+            },
+            "required": [
+              "required",
+              "asked",
+              "resolution"
+            ],
+            "type": "object"
+          },
+          "constraints": {
+            "additionalProperties": false,
+            "properties": {
+              "deadline": {
+                "format": "date",
+                "type": "string"
+              },
+              "length_hint": {
+                "type": "string"
+              },
+              "max_source_age_days": {
+                "description": "Freshness ceiling when the request is time-sensitive. Absent means the content-type profile decides.",
+                "minimum": 0,
+                "type": "integer"
+              },
+              "must_avoid": {
+                "items": {
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              "must_cover": {
+                "items": {
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              "output_language": {
+                "pattern": "^[a-z]{2}(-[A-Za-z0-9]{2,8})*$",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "created_at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "inputs": {
+            "additionalProperties": false,
+            "description": "Source and Reference are separate lists because they are separate kinds of authority. A reference can never establish a fact; a source can never dictate a composition.",
+            "properties": {
+              "references": {
+                "items": {
+                  "$ref": "#/$defs/reference_input"
+                },
+                "type": "array"
+              },
+              "sources": {
+                "items": {
+                  "$ref": "#/$defs/source_input"
+                },
+                "type": "array"
+              }
+            },
+            "required": [
+              "sources",
+              "references"
+            ],
+            "type": "object"
+          },
+          "intent_id": {
+            "description": "Stable id for this intake. Lineage anchor: every downstream frame, plan, artifact, and feedback record cites it.",
+            "pattern": "^intent:[0-9]{4}-[0-9]{2}-[0-9]{2}-[a-z0-9]+(-[a-z0-9]+)*$",
+            "type": "string"
+          },
+          "overrides": {
+            "description": "Values the human set for THIS RUN only. Task-scoped by construction — an override is never durable preference, and V2.10 calibration may not read this array.",
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "field": {
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "rationale": {
+                  "type": "string"
+                },
+                "stated_by": {
+                  "enum": [
+                    "human",
+                    "upstream_contract"
+                  ]
+                },
+                "value": {
+                  "type": [
+                    "string",
+                    "number",
+                    "boolean",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "field",
+                "value",
+                "stated_by"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "request": {
+            "additionalProperties": false,
+            "description": "What the human actually said, kept verbatim. The intake is auditable only if the utterance survives next to its interpretation.",
+            "properties": {
+              "language": {
+                "description": "BCP-47 language of the request itself. Not the output language — that is constraints.output_language.",
+                "pattern": "^[a-z]{2}(-[A-Za-z0-9]{2,8})*$",
+                "type": "string"
+              },
+              "received_at": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "received_by": {
+                "description": "Agent runtime that performed intake, e.g. `claude-code`, `chatgpt`. Recorded so an intake defect can be attributed.",
+                "type": "string"
+              },
+              "utterance": {
+                "minLength": 1,
+                "type": "string"
+              }
+            },
+            "required": [
+              "utterance",
+              "language"
+            ],
+            "type": "object"
+          },
+          "schema_version": {
+            "const": "2.0.0"
+          },
+          "status": {
+            "description": "ready: the intent may drive framing/planning. blocked_on_clarification: at least one material field is unresolved. declined: intake refused the request and recorded why in clarification.note.",
+            "enum": [
+              "ready",
+              "blocked_on_clarification",
+              "declined"
+            ]
+          }
+        },
+        "required": [
+          "schema_version",
+          "intent_id",
+          "created_at",
+          "request",
+          "axes",
+          "inputs",
+          "clarification",
+          "status"
+        ],
+        "title": "Editorial Intent",
+        "type": "object"
+      },
+      "sha256": "93c97a1ecbe2da26a570f67e7a32cabe8e1250ab382f2dc4bb15f65d19c4a5dc"
+    },
+    "editorial-package": {
+      "id": "https://suengj.com/schemas/editorial-package.schema.json",
+      "path": "schemas/editorial-package.schema.json",
+      "schema": {
+        "$defs": {
+          "artifact_ref": {
+            "pattern": "^(text|visual|audio|video)/[a-z0-9]+(-[a-z0-9]+)*(#[a-z0-9]+(-[a-z0-9]+)*)?$",
+            "type": "string"
+          },
+          "axis_ref_audience": {
+            "additionalProperties": false,
+            "properties": {
+              "profile_ref": {
+                "pattern": "^editorial/profiles/audience/",
+                "type": "string"
+              },
+              "value": {
+                "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
+                "type": "string"
+              }
+            },
+            "required": [
+              "value"
+            ],
+            "type": "object"
+          },
+          "axis_ref_content": {
+            "additionalProperties": false,
+            "properties": {
+              "profile_ref": {
+                "pattern": "^editorial/profiles/content/",
+                "type": "string"
+              },
+              "value": {
+                "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
+                "type": "string"
+              }
+            },
+            "required": [
+              "value"
+            ],
+            "type": "object"
+          },
+          "axis_ref_surface": {
+            "additionalProperties": false,
+            "properties": {
+              "profile_ref": {
+                "pattern": "^editorial/profiles/surface/",
+                "type": "string"
+              },
+              "value": {
+                "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
+                "type": "string"
+              }
+            },
+            "required": [
+              "value"
+            ],
+            "type": "object"
+          },
+          "lineage": {
+            "additionalProperties": false,
+            "description": "Consistent with the V1 staleness rule (ARTICLE-ARTIFACT-CONTRACT.md): claims_hash unchanged means cosmetic drift, changed means material drift and dependent artifacts are stale.",
+            "properties": {
+              "claims_hash": {
+                "description": "sha256 over the ordered verified-claim set (id, text, status) — same convention as article.schema.json#/$defs/version/properties/claims_hash. When article_ref is set, must equal article_ref.claims_hash: the package does not compute a second claims_hash for claims it does not hold. null only when this package carries no claims at all (e.g. a pure translate/adapt of non-factual material).",
+                "pattern": "^[a-f0-9]{64}$",
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "package_hash": {
+                "description": "sha256 over this package's own normalised content (everything except this lineage block). Lets a consumer detect a changed package without a diff.",
+                "pattern": "^[a-f0-9]{64}$",
+                "type": "string"
+              },
+              "produced_by": {
+                "additionalProperties": false,
+                "description": "Vendor-neutral: a Skill is the orchestration contract, the tool is a replaceable worker. `tool` carries the same full runtime-lineage shape as visual-job.schema.json's `renderer` block (docs/architecture/V2-EDITORIAL-LEARNING-CORE.md §7 model-drift contract) rather than a second spelling of it — a package's writer/framer identity is exactly as detectable as its renderer's.",
+                "properties": {
+                  "skill": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "name": {
+                        "minLength": 1,
+                        "type": "string"
+                      },
+                      "version": {
+                        "pattern": "^\\d+\\.\\d+\\.\\d+$",
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "name",
+                      "version"
+                    ],
+                    "type": "object"
+                  },
+                  "tool": {
+                    "additionalProperties": false,
+                    "description": "Full runtime lineage. Field names deliberately match visual-job.schema.json's `renderer`/`runtime` $defs: tool/tool_version identify the compiling pipeline; provider/model/model_version identify the generative runtime, and are still recorded for a deterministic tool as the tool's own identity so the field is never blank.",
+                    "properties": {
+                      "model": {
+                        "minLength": 1,
+                        "type": "string"
+                      },
+                      "model_version": {
+                        "minLength": 1,
+                        "type": "string"
+                      },
+                      "provider": {
+                        "minLength": 1,
+                        "type": "string"
+                      },
+                      "quality_tier": {
+                        "minLength": 1,
+                        "type": "string"
+                      },
+                      "tool": {
+                        "minLength": 1,
+                        "type": "string"
+                      },
+                      "tool_version": {
+                        "minLength": 1,
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "tool",
+                      "provider",
+                      "model",
+                      "model_version"
+                    ],
+                    "type": "object"
+                  }
+                },
+                "required": [
+                  "skill",
+                  "tool"
+                ],
+                "type": "object"
+              },
+              "supersedes": {
+                "pattern": "^pkg:[a-z0-9]+(-[a-z0-9]+)*$",
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "claims_hash",
+              "package_hash",
+              "supersedes",
+              "produced_by"
+            ],
+            "type": "object"
+          },
+          "source_ref": {
+            "additionalProperties": false,
+            "description": "Reference and provenance only — mirrors source.schema.json identity fields. No field here can carry a source body.",
+            "properties": {
+              "hash": {
+                "additionalProperties": false,
+                "properties": {
+                  "algo": {
+                    "const": "sha256"
+                  },
+                  "value": {
+                    "pattern": "^[a-f0-9]{64}$",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "algo",
+                  "value"
+                ],
+                "type": "object"
+              },
+              "retrieved_at": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "role": {
+                "enum": [
+                  "primary",
+                  "supporting",
+                  "contradicting",
+                  "background"
+                ]
+              },
+              "source_id": {
+                "pattern": "^src:(drive|github|web|local):[a-zA-Z0-9._@/-]{3,200}$",
+                "type": "string"
+              },
+              "uri": {
+                "minLength": 1,
+                "type": "string"
+              }
+            },
+            "required": [
+              "source_id",
+              "role"
+            ],
+            "type": "object"
+          },
+          "verified_claim": {
+            "additionalProperties": false,
+            "description": "Field-for-field mirror of article.schema.json#/$defs/verification/properties/claims/items.",
+            "properties": {
+              "claim_id": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "evidence": {
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "authority": {
+                      "enum": [
+                        "primary",
+                        "secondary",
+                        "aggregator"
+                      ]
+                    },
+                    "retrieved_at": {
+                      "format": "date",
+                      "type": "string"
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "url": {
+                      "minLength": 1,
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "url",
+                    "retrieved_at"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              "kind": {
+                "enum": [
+                  "number",
+                  "date",
+                  "quotation",
+                  "attribution",
+                  "assertion"
+                ]
+              },
+              "status": {
+                "enum": [
+                  "verified",
+                  "unverified",
+                  "contradicted",
+                  "not_applicable"
+                ]
+              },
+              "text": {
+                "minLength": 1,
+                "type": "string"
+              }
+            },
+            "required": [
+              "claim_id",
+              "text",
+              "kind",
+              "status"
+            ],
+            "type": "object"
+          }
+        },
+        "$id": "https://suengj.com/schemas/editorial-package.schema.json",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "additionalProperties": false,
+        "description": "The destination-neutral handoff object for AES-V2.9 (SUE-567). Carries the minimum reusable semantics of one verified body of work — enough for it to reach several surfaces (suengj.com, NotebookLM, an academic export, a promotional channel) without duplicating source truth or the Article contract. Not an Article: where an Article already exists, this package cites it by `article_ref` rather than copying its frame or claims. See schemas/EDITORIAL-PACKAGE-CONTRACT.md for the rules this schema cannot express.",
+        "properties": {
+          "approved_artifacts": {
+            "description": "Artifact ids a human has approved for handoff to an adapter.",
+            "items": {
+              "$ref": "#/$defs/artifact_ref"
+            },
+            "type": "array"
+          },
+          "article_ref": {
+            "additionalProperties": false,
+            "description": "Set when a V1 Article already carries the verified frame and claims this package draws on. Same shape as artifact.schema.json#/$defs/article_ref. When set, thesis/key_concepts/summary/verified_claims are null/empty on this package — the article is cited, not copied. null when there is no article (a package that exists because no Article was warranted, e.g. a P03 summarize-to-note).",
+            "properties": {
+              "article_id": {
+                "pattern": "^art:[a-z0-9]+(-[a-z0-9]+)*$",
+                "type": "string"
+              },
+              "claims_hash": {
+                "pattern": "^[a-f0-9]{64}$",
+                "type": "string"
+              },
+              "commit": {
+                "pattern": "^[a-f0-9]{7,40}$",
+                "type": "string"
+              },
+              "content_hash": {
+                "pattern": "^[a-f0-9]{64}$",
+                "type": "string"
+              },
+              "version_number": {
+                "minimum": 1,
+                "type": "integer"
+              }
+            },
+            "required": [
+              "article_id",
+              "version_number",
+              "content_hash",
+              "claims_hash"
+            ],
+            "type": [
+              "object",
+              "null"
+            ]
+          },
+          "audience": {
+            "$ref": "#/$defs/axis_ref_audience"
+          },
+          "calibration_ref": {
+            "description": "The calibration version active when this package's content was produced. Same pattern as editorial-intent.schema.json#/properties/calibration_ref.",
+            "pattern": "^calibration:[a-z0-9]+(-[a-z0-9]+)*@v[0-9]+$",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "content_type": {
+            "$ref": "#/$defs/axis_ref_content"
+          },
+          "created_at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "intent_ref": {
+            "description": "The `intent_id` of the editorial-intent record this package fulfils. Same pattern as editorial-intent.schema.json#/properties/intent_id — the package is downstream of intake, never a second intake.",
+            "pattern": "^intent:[0-9]{4}-[0-9]{2}-[0-9]{2}-[a-z0-9]+(-[a-z0-9]+)*$",
+            "type": "string"
+          },
+          "key_concepts": {
+            "items": {
+              "minLength": 1,
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "lineage": {
+            "$ref": "#/$defs/lineage"
+          },
+          "package_id": {
+            "description": "Stable identity. Lineage anchor for downstream adapters and feedback.",
+            "pattern": "^pkg:[a-z0-9]+(-[a-z0-9]+)*$",
+            "type": "string"
+          },
+          "proposed_artifacts": {
+            "description": "Artifact ids this package could still produce, namespaced by modality so text/visual/audio/video generation contracts stay separate.",
+            "items": {
+              "$ref": "#/$defs/artifact_ref"
+            },
+            "type": "array"
+          },
+          "reference_profile_refs": {
+            "description": "Which reference material's craft evidence was active while this package's content was produced. Never a factual source — see V2-EDITORIAL-LEARNING-CORE.md section 2.",
+            "items": {
+              "pattern": "^ref:[a-z0-9]+(-[a-z0-9]+)*$",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "rights": {
+            "additionalProperties": false,
+            "description": "Carries forward source.schema.json's rights fields and article.schema.json's transformation record rather than inventing a third rights model. Optional: a package built entirely from original, unsourced synthesis may omit it.",
+            "properties": {
+              "attribution": {
+                "type": "string"
+              },
+              "license": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "original_framing": {
+                "type": "boolean"
+              },
+              "quotable": {
+                "type": "boolean"
+              },
+              "redistributable": {
+                "type": "boolean"
+              },
+              "synthesis_note": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "transcript_shaped": {
+                "description": "Same meaning as article.schema.json#/$defs/transformation/properties/transcript_shaped. True blocks handoff to any adapter — see the contract doc.",
+                "type": "boolean"
+              }
+            },
+            "type": "object"
+          },
+          "schema_version": {
+            "const": "1.0.0"
+          },
+          "sources": {
+            "description": "Refs and provenance only. Never a source body — enforced structurally: this object has no field capable of holding one.",
+            "items": {
+              "$ref": "#/$defs/source_ref"
+            },
+            "type": "array"
+          },
+          "summary": {
+            "description": "One self-contained compression, capped like the Article AnswerUnit so it stays a summary rather than a second article.",
+            "maxLength": 400,
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "target_surfaces": {
+            "description": "A package may legitimately serve more than one surface — that is the reason it exists instead of an Article. Non-empty is a validator rule (json-schema-lite cannot express minItems).",
+            "items": {
+              "$ref": "#/$defs/axis_ref_surface"
+            },
+            "type": "array"
+          },
+          "thesis": {
+            "description": "Required (non-null) when this package is the sole carrier of a new argument — synthesize/original with no article_ref. null when article_ref is set (the article's frame.thesis is the thesis) or when the transformation does not produce one (extract, translate).",
+            "minLength": 1,
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "transformation": {
+            "additionalProperties": false,
+            "description": "What this package's content may claim to have done to its sources. Semantics live in editorial/profiles/transformation/<value>.json (owned there, not here) — this field only names and points at the profile.",
+            "properties": {
+              "profile_ref": {
+                "pattern": "^editorial/profiles/transformation/",
+                "type": "string"
+              },
+              "value": {
+                "enum": [
+                  "extract",
+                  "summarize",
+                  "compress",
+                  "synthesize",
+                  "rewrite",
+                  "recreate",
+                  "translate",
+                  "adapt",
+                  "original"
+                ]
+              }
+            },
+            "required": [
+              "value",
+              "profile_ref"
+            ],
+            "type": "object"
+          },
+          "uncertainty": {
+            "description": "What is not known. May not be empty for synthesize/original packages — a validator rule (schemas/EDITORIAL-PACKAGE-CONTRACT.md), not expressible here.",
+            "items": {
+              "minLength": 1,
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "verified_claims": {
+            "description": "Same field names and semantics as article.schema.json#/$defs/verification/properties/claims — the same contract expressed at package scope, never a second claim model. Empty when article_ref is set: the claims live in the article and are cited via lineage.claims_hash, not restated here.",
+            "items": {
+              "$ref": "#/$defs/verified_claim"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "schema_version",
+          "package_id",
+          "created_at",
+          "intent_ref",
+          "transformation",
+          "content_type",
+          "audience",
+          "target_surfaces",
+          "sources",
+          "article_ref",
+          "thesis",
+          "key_concepts",
+          "summary",
+          "verified_claims",
+          "uncertainty",
+          "lineage"
+        ],
+        "title": "Editorial Package",
+        "type": "object"
+      },
+      "sha256": "a96a07b146f1c859745bb6beca18b73f9168c7ed1b31cdcf334c55bb810ae118"
+    },
+    "feedback-record": {
+      "id": "https://suengj.com/schemas/feedback-record.schema.json",
+      "path": "schemas/feedback-record.schema.json",
+      "schema": {
+        "$defs": {
+          "evaluator": {
+            "additionalProperties": false,
+            "properties": {
+              "agent": {
+                "additionalProperties": false,
+                "description": "Present only when type is \"agent\".",
+                "properties": {
+                  "model": {
+                    "type": "string"
+                  },
+                  "runtime": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "version": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "runtime"
+                ],
+                "type": "object"
+              },
+              "type": {
+                "enum": [
+                  "human",
+                  "agent"
+                ]
+              }
+            },
+            "required": [
+              "type"
+            ],
+            "type": "object"
+          },
+          "routing": {
+            "additionalProperties": false,
+            "description": "Which layer (docs/architecture/V2-EDITORIAL-LEARNING-CORE.md §5) produced the failure or success this feedback names. Abstention must be expressible: layer null with abstained true says the record could not tell rather than guessing.",
+            "properties": {
+              "abstained": {
+                "description": "True when this record cannot name a layer with confidence.",
+                "type": "boolean"
+              },
+              "confidence": {
+                "enum": [
+                  "low",
+                  "medium",
+                  "high"
+                ]
+              },
+              "layer": {
+                "enum": [
+                  "intake",
+                  "reference",
+                  "audience",
+                  "frame",
+                  "verification",
+                  "surface",
+                  "calibration",
+                  null
+                ],
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "modality_layer": {
+                "description": "Modality-specific routing detail, e.g. a TEXT/VISUAL/AUDIO sub-concern. Free text; the shared layer above is the enumerated one.",
+                "type": "string"
+              },
+              "rationale": {
+                "minLength": 1,
+                "type": "string"
+              }
+            },
+            "required": [
+              "abstained",
+              "rationale"
+            ],
+            "type": "object"
+          }
+        },
+        "$id": "https://suengj.com/schemas/feedback-record.schema.json",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "additionalProperties": false,
+        "description": "One append-only record of human or agent feedback on a generated output (AES-V2.3 / SUE-561). Distinct from a reference evaluation: this judges what the system produced, not third-party material. See docs/architecture/V2-EDITORIAL-LEARNING-CORE.md §5 (layers) and §6 (four separate signals, never averaged).",
+        "properties": {
+          "basis": {
+            "description": "explicit_human_feedback: the human said it. model_inference: an agent judged it.",
+            "enum": [
+              "explicit_human_feedback",
+              "model_inference"
+            ]
+          },
+          "calibration_ref": {
+            "pattern": "^calibration:[a-z0-9]+(-[a-z0-9]+)*@v[0-9]+$",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "created_at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "evaluator": {
+            "$ref": "#/$defs/evaluator"
+          },
+          "evidence_links": {
+            "description": "Ids of other feedback or evaluation records this one corroborates. Required (non-empty) when scope is calibration_candidate — a single record, human- or agent-authored, never promotes itself; it must point at the repeated independent evidence it joins. AES-V2.10 still owns the actual promotion.",
+            "items": {
+              "minLength": 1,
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "feedback_id": {
+            "description": "Stable id. On disk at feedback/records/<slug-after-feedback:>.json.",
+            "pattern": "^feedback:[a-z0-9]+(-[a-z0-9]+)*$",
+            "type": "string"
+          },
+          "owner_verdict": {
+            "description": "Distinct from verdict: whether the owner actually accepted the output, not the evaluator's read of its quality. unknown is the required default when no owner acceptance/rejection has actually been expressed — it is never omitted and never inferred as accepted from publication, an L1 pass, silence, or time passing.",
+            "enum": [
+              "accepted",
+              "rejected",
+              "needs_rework",
+              "unknown"
+            ]
+          },
+          "routing": {
+            "$ref": "#/$defs/routing"
+          },
+          "schema_version": {
+            "const": "1.0.0"
+          },
+          "scope": {
+            "description": "task_local (the safe default) or calibration_candidate. A single record may never be calibration_candidate on its own basis alone — see references/REFERENCE-EVALUATION-PROTOCOL.md and AES-V2.10, which owns promotion into durable calibration.",
+            "enum": [
+              "task_local",
+              "calibration_candidate"
+            ]
+          },
+          "signal": {
+            "description": "The four V2 signals stay separate and are never averaged into one score.",
+            "enum": [
+              "objective_quality",
+              "audience_fit",
+              "publication_fit",
+              "owner_preference"
+            ]
+          },
+          "statement": {
+            "description": "What the human actually said, verbatim where possible.",
+            "minLength": 1,
+            "type": "string"
+          },
+          "subject": {
+            "additionalProperties": false,
+            "properties": {
+              "artifact_profile": {
+                "pattern": "^editorial/profiles/artifact/",
+                "type": "string"
+              },
+              "intent_ref": {
+                "pattern": "^intent:[0-9]{4}-[0-9]{2}-[0-9]{2}-[a-z0-9]+(-[a-z0-9]+)*$",
+                "type": "string"
+              },
+              "kind": {
+                "enum": [
+                  "artifact",
+                  "article",
+                  "package"
+                ]
+              },
+              "ref": {
+                "description": "Id or path of the generated thing this feedback is about.",
+                "minLength": 1,
+                "type": "string"
+              }
+            },
+            "required": [
+              "kind",
+              "ref"
+            ],
+            "type": "object"
+          },
+          "verdict": {
+            "enum": [
+              "good",
+              "bad",
+              "mixed"
+            ]
+          }
+        },
+        "required": [
+          "schema_version",
+          "feedback_id",
+          "created_at",
+          "subject",
+          "evaluator",
+          "basis",
+          "signal",
+          "verdict",
+          "owner_verdict",
+          "statement",
+          "routing",
+          "scope"
+        ],
+        "title": "Feedback record",
+        "type": "object"
+      },
+      "sha256": "705a99f9a61482c4688367e378d52c2f939ac5fed06120f08794df829e0e31d4"
+    },
+    "narration-script": {
+      "id": "https://suengj.com/schemas/narration-script.schema.json",
+      "path": "schemas/narration-script.schema.json",
+      "schema": {
+        "$defs": {},
+        "$id": "https://suengj.com/schemas/narration-script.schema.json",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "additionalProperties": false,
+        "description": "Video narration extension of SUE-566 audience-aware audio profiles. Draft and correct text before pronunciation planning and TTS.",
+        "properties": {
+          "audience": {
+            "$ref": "schemas/audio-plan.schema.json#/$defs/audience"
+          },
+          "fabrication_policy": {
+            "additionalProperties": false,
+            "properties": {
+              "people": {
+                "const": "no_fabricated_people"
+              },
+              "quotes": {
+                "const": "only_source_linked_verified_quotes"
+              }
+            },
+            "required": [
+              "people",
+              "quotes"
+            ],
+            "type": "object"
+          },
+          "language": {
+            "pattern": "^[a-z]{2,3}(-[A-Z]{2})?$",
+            "type": "string"
+          },
+          "mode": {
+            "enum": [
+              "monologue",
+              "dialogue"
+            ]
+          },
+          "order": {
+            "const": "draft_correct_then_pronunciation_plan_then_tts"
+          },
+          "profile_ref": {
+            "pattern": "^editorial/profiles/artifact/audio-(monologue|dialogue|timed-narration)\\.json$",
+            "type": "string"
+          },
+          "pronunciation_plan": {
+            "items": {
+              "$ref": "schemas/audio-plan.schema.json#/$defs/pronunciation_entry"
+            },
+            "type": "array"
+          },
+          "schema_version": {
+            "const": "1.0.0"
+          },
+          "script_id": {
+            "pattern": "^narration-script:[a-z0-9]+(-[a-z0-9]+)*$",
+            "type": "string"
+          },
+          "source_claims": {
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "claim_id": {
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "quote": {
+                  "type": "boolean"
+                },
+                "source_ref": {
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "verified": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "claim_id",
+                "source_ref",
+                "verified"
+              ],
+              "type": "object"
+            },
+            "minItems": 1,
+            "type": "array"
+          },
+          "timing_policy": {
+            "const": "reconcile_to_measured_audio; never_compress_long_narration_to_6s"
+          },
+          "turns": {
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "claim_ids": {
+                  "items": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                "intonation": {
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "pause_after_ms": {
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "rate": {
+                  "minimum": 0.5,
+                  "type": "number"
+                },
+                "role": {
+                  "$ref": "schemas/audio-plan.schema.json#/$defs/speaker_role"
+                },
+                "speaker_role": {
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "text": {
+                  "minLength": 1,
+                  "type": "string"
+                }
+              },
+              "required": [
+                "speaker_role",
+                "text",
+                "claim_ids",
+                "rate",
+                "pause_after_ms",
+                "intonation"
+              ],
+              "type": "object"
+            },
+            "minItems": 1,
+            "type": "array"
+          }
+        },
+        "required": [
+          "schema_version",
+          "script_id",
+          "mode",
+          "language",
+          "audience",
+          "profile_ref",
+          "source_claims",
+          "turns",
+          "pronunciation_plan",
+          "order",
+          "fabrication_policy"
+        ],
+        "title": "Narration Script",
+        "type": "object"
+      },
+      "sha256": "ad7af83e042f0d37004d6d7ecd5d472accf8ee4238c6f3c77b0167ad59fded7a"
+    },
+    "render-spec": {
+      "id": "https://suengj.com/schemas/render-spec.schema.json",
+      "path": "schemas/render-spec.schema.json",
+      "schema": {
+        "$defs": {
+          "claim_set": {
+            "additionalProperties": false,
+            "description": "Authoritative article claim identity. The article_ref claims_hash binds this declared set to the upstream article version.",
+            "properties": {
+              "article_id": {
+                "pattern": "^art:[a-z0-9]+(-[a-z0-9]+)*$",
+                "type": "string"
+              },
+              "claim_ids": {
+                "items": {
+                  "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
+                  "type": "string"
+                },
+                "minItems": 1,
+                "type": "array"
+              },
+              "claims_hash": {
+                "pattern": "^[a-f0-9]{64}$",
+                "type": "string"
+              }
+            },
+            "required": [
+              "article_id",
+              "claims_hash",
+              "claim_ids"
+            ],
+            "type": "object"
+          },
+          "desktop_publication_display_surface": {
+            "additionalProperties": false,
+            "properties": {
+              "article_body_width_css_px": {
+                "const": 672
+              },
+              "asset_scope": {
+                "const": "full"
+              },
+              "surface_id": {
+                "pattern": "^surface:[a-z0-9]+(-[a-z0-9]+)*$",
+                "type": "string"
+              },
+              "viewport_width_css_px": {
+                "minimum": 672,
+                "type": "integer"
+              }
+            },
+            "required": [
+              "surface_id",
+              "asset_scope",
+              "article_body_width_css_px",
+              "viewport_width_css_px"
+            ],
+            "type": "object"
+          },
+          "information_hierarchy": {
+            "additionalProperties": false,
+            "description": "Integrated reader hierarchy that must remain coherent with the selected reference authority.",
+            "properties": {
+              "detail": {
+                "items": {
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              "primary": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "supporting": {
+                "items": {
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "type": "array"
+              }
+            },
+            "required": [
+              "primary",
+              "supporting",
+              "detail"
+            ],
+            "type": "object"
+          },
+          "mobile_publication_display_surface": {
+            "additionalProperties": false,
+            "properties": {
+              "article_body_width_css_px": {
+                "minimum": 1,
+                "type": "integer"
+              },
+              "asset_scope": {
+                "const": "mobile"
+              },
+              "crop_anchors": {
+                "items": {
+                  "pattern": "^anchor:[a-z0-9]+(-[a-z0-9]+)*$",
+                  "type": "string"
+                },
+                "minItems": 1,
+                "type": "array"
+              },
+              "derivative_of_asset_scope": {
+                "const": "full"
+              },
+              "derivative_of_surface_id": {
+                "pattern": "^surface:[a-z0-9]+(-[a-z0-9]+)*$",
+                "type": "string"
+              },
+              "surface_id": {
+                "pattern": "^surface:[a-z0-9]+(-[a-z0-9]+)*$",
+                "type": "string"
+              },
+              "viewport_width_css_px": {
+                "minimum": 1,
+                "type": "integer"
+              }
+            },
+            "required": [
+              "surface_id",
+              "asset_scope",
+              "viewport_width_css_px",
+              "article_body_width_css_px",
+              "derivative_of_surface_id",
+              "derivative_of_asset_scope",
+              "crop_anchors"
+            ],
+            "type": "object"
+          },
+          "publication_display_surfaces": {
+            "additionalProperties": false,
+            "description": "Authoritative publication-display geometry for the full and mobile surfaces. These are RenderSpec declarations, not review assertions.",
+            "properties": {
+              "desktop": {
+                "$ref": "#/$defs/desktop_publication_display_surface"
+              },
+              "mobile": {
+                "$ref": "#/$defs/mobile_publication_display_surface"
+              }
+            },
+            "required": [
+              "desktop",
+              "mobile"
+            ],
+            "type": "object"
+          },
+          "text_item": {
+            "additionalProperties": false,
+            "properties": {
+              "exact_text": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "source_ref": {
+                "minLength": 1,
+                "type": "string"
+              }
+            },
+            "required": [
+              "exact_text",
+              "source_ref"
+            ],
+            "type": "object"
+          },
+          "text_ownership": {
+            "additionalProperties": false,
+            "description": "The three V2.17 ownership classes. Verified generative facts carry a canonical payload, source lineage, and mandatory post-render verification.",
+            "properties": {
+              "article_title": {
+                "const": "deterministic_external_text"
+              },
+              "deterministic_external_text": {
+                "additionalProperties": false,
+                "properties": {
+                  "includes": {
+                    "items": {
+                      "enum": [
+                        "citations",
+                        "dense_text",
+                        "sensitive_text"
+                      ]
+                    },
+                    "type": "array"
+                  },
+                  "items": {
+                    "items": {
+                      "$ref": "#/$defs/text_item"
+                    },
+                    "type": "array"
+                  }
+                },
+                "required": [
+                  "items",
+                  "includes"
+                ],
+                "type": "object"
+              },
+              "generative_structural_text": {
+                "additionalProperties": false,
+                "properties": {
+                  "items": {
+                    "items": {
+                      "minLength": 1,
+                      "type": "string"
+                    },
+                    "type": "array"
+                  }
+                },
+                "required": [
+                  "items"
+                ],
+                "type": "object"
+              },
+              "verified_generative_fact": {
+                "additionalProperties": false,
+                "description": "Null explicitly represents that this ownership class has no items; an object declares generated facts that require authoritative payload lineage and post-render verification.",
+                "properties": {
+                  "canonical_payload": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "items": {
+                        "items": {
+                          "$ref": "#/$defs/text_item"
+                        },
+                        "type": "array"
+                      },
+                      "payload_ref": {
+                        "pattern": "^payload:[a-z0-9]+(-[a-z0-9]+)*$",
+                        "type": "string"
+                      },
+                      "payload_sha256": {
+                        "pattern": "^sha256:[a-f0-9]{64}$",
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "payload_ref",
+                      "payload_sha256",
+                      "items"
+                    ],
+                    "type": "object"
+                  },
+                  "claim_set": {
+                    "$ref": "#/$defs/claim_set"
+                  },
+                  "post_render_verification": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "asset_digest_bound": {
+                        "const": true
+                      },
+                      "required": {
+                        "const": true
+                      },
+                      "review_dimension": {
+                        "const": "factual"
+                      }
+                    },
+                    "required": [
+                      "required",
+                      "review_dimension",
+                      "asset_digest_bound"
+                    ],
+                    "type": "object"
+                  },
+                  "source_lineage": {
+                    "items": {
+                      "minLength": 1,
+                      "type": "string"
+                    },
+                    "minItems": 1,
+                    "type": "array"
+                  }
+                },
+                "required": [
+                  "canonical_payload",
+                  "source_lineage",
+                  "claim_set",
+                  "post_render_verification"
+                ],
+                "type": [
+                  "object",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "article_title",
+              "generative_structural_text",
+              "verified_generative_fact",
+              "deterministic_external_text"
+            ],
+            "type": "object"
+          },
+          "watermark": {
+            "additionalProperties": false,
+            "description": "Optional, default-OFF deterministic watermark overlay on a flattened PNG (SUE-1303). Every field is optional so a profile default, a RenderSpec, and an account/channel override can each set only what they change; omitted fields resolve to the defaults in scripts/lib/watermark-core.mjs (enabled=false). Glyphs are composited by the renderer, never drawn by an image model. This is not the accidental-watermark detection in editorial/IMAGE-GENERATION.md.",
+            "properties": {
+              "color": {
+                "pattern": "^#[0-9A-Fa-f]{6}$",
+                "type": "string"
+              },
+              "enabled": {
+                "description": "Defaults to false (OFF). OFF is a byte-identical no-op.",
+                "type": "boolean"
+              },
+              "exclusion_zones": {
+                "description": "Layout-declared regions (numbers, charts, small text) the watermark must not touch, as image fractions. If the watermark box intersects one, the derivative is not produced.",
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "height": {
+                      "maximum": 1,
+                      "minimum": 0.0001,
+                      "type": "number"
+                    },
+                    "width": {
+                      "maximum": 1,
+                      "minimum": 0.0001,
+                      "type": "number"
+                    },
+                    "x": {
+                      "maximum": 1,
+                      "minimum": 0,
+                      "type": "number"
+                    },
+                    "y": {
+                      "maximum": 1,
+                      "minimum": 0,
+                      "type": "number"
+                    },
+                    "zone_id": {
+                      "minLength": 1,
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "zone_id",
+                    "x",
+                    "y",
+                    "width",
+                    "height"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              "opacity": {
+                "maximum": 0.3,
+                "minimum": 0.02,
+                "type": "number"
+              },
+              "placement": {
+                "description": "Horizontal placements only. Diagonal is deliberately not allowed: it crosses content, which the exclusion-zone rule forbids.",
+                "enum": [
+                  "lower-center",
+                  "lower-left",
+                  "lower-right"
+                ]
+              },
+              "safe_margins": {
+                "additionalProperties": false,
+                "description": "Fractions of image height (bottom) and width (left/right).",
+                "properties": {
+                  "bottom": {
+                    "maximum": 0.4,
+                    "minimum": 0,
+                    "type": "number"
+                  },
+                  "left": {
+                    "maximum": 0.4,
+                    "minimum": 0,
+                    "type": "number"
+                  },
+                  "right": {
+                    "maximum": 0.4,
+                    "minimum": 0,
+                    "type": "number"
+                  }
+                },
+                "type": "object"
+              },
+              "scale": {
+                "description": "Font size as a fraction of image width.",
+                "maximum": 0.06,
+                "minimum": 0.01,
+                "type": "number"
+              },
+              "text": {
+                "maxLength": 40,
+                "minLength": 1,
+                "pattern": "^[^\\r\\n<>&\"]+$",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          }
+        },
+        "$id": "https://suengj.com/schemas/render-spec.schema.json",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "additionalProperties": false,
+        "description": "Durable renderer-neutral scene/composition contract for a Visual Brief.",
+        "properties": {
+          "brief_id": {
+            "pattern": "^visual-brief:[a-z0-9]+(-[a-z0-9]+)*$",
+            "type": "string"
+          },
+          "crop_anchors": {
+            "description": "Semantic anchors that a publication crop may preserve. Review records may select only one of these declared anchors.",
+            "items": {
+              "pattern": "^anchor:[a-z0-9]+(-[a-z0-9]+)*$",
+              "type": "string"
+            },
+            "minItems": 1,
+            "type": "array"
+          },
+          "crop_resilience": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "focal_hierarchy": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "forbidden_visual_devices": {
+            "items": {
+              "minLength": 1,
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "information_hierarchy": {
+            "$ref": "#/$defs/information_hierarchy"
+          },
+          "materiality_treatment": {
+            "enum": [
+              "matte_2d",
+              "quiet_linework",
+              "soft_tonal_separation"
+            ]
+          },
+          "publication_display_surfaces": {
+            "$ref": "#/$defs/publication_display_surfaces"
+          },
+          "reading_direction": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "reference_authority": {
+            "additionalProperties": false,
+            "properties": {
+              "selected": {
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "authority": {
+                      "items": {
+                        "minLength": 1,
+                        "type": "string"
+                      },
+                      "minItems": 1,
+                      "type": "array"
+                    },
+                    "evaluation_id": {
+                      "pattern": "^eval:[a-z0-9]+(-[a-z0-9]+)*$",
+                      "type": "string"
+                    },
+                    "not_authority": {
+                      "items": {
+                        "minLength": 1,
+                        "type": "string"
+                      },
+                      "type": "array"
+                    },
+                    "rationale": {
+                      "minLength": 1,
+                      "type": "string"
+                    },
+                    "ref_id": {
+                      "pattern": "^ref:[a-z0-9]+(-[a-z0-9]+)*$",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "ref_id",
+                    "evaluation_id",
+                    "authority",
+                    "not_authority",
+                    "rationale"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
+              }
+            },
+            "required": [
+              "selected"
+            ],
+            "type": "object"
+          },
+          "render_spec_id": {
+            "pattern": "^render-spec:[a-z0-9]+(-[a-z0-9]+)*$",
+            "type": "string"
+          },
+          "safe_zones": {
+            "items": {
+              "minLength": 1,
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "scene_structure": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "schema_version": {
+            "const": "1.0.0"
+          },
+          "spatial_layers": {
+            "additionalProperties": false,
+            "properties": {
+              "deterministic_factual": {
+                "items": {
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              "generative_semantic": {
+                "items": {
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "type": "array"
+              }
+            },
+            "required": [
+              "generative_semantic",
+              "deterministic_factual"
+            ],
+            "type": "object"
+          },
+          "spatial_treatment": {
+            "enum": [
+              "flat_2d",
+              "layered_2d",
+              "shallow_depth",
+              "deep_scene"
+            ]
+          },
+          "target_geometry": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "text_handling": {
+            "additionalProperties": false,
+            "properties": {
+              "article_title": {
+                "const": "external_overlay"
+              },
+              "deterministic_overlay": {
+                "items": {
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              "text_ownership": {
+                "$ref": "#/$defs/text_ownership"
+              }
+            },
+            "required": [
+              "article_title"
+            ],
+            "type": "object"
+          },
+          "visual_devices": {
+            "items": {
+              "minLength": 1,
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "watermark": {
+            "$ref": "#/$defs/watermark"
+          }
+        },
+        "required": [
+          "schema_version",
+          "render_spec_id",
+          "brief_id",
+          "target_geometry",
+          "scene_structure",
+          "focal_hierarchy",
+          "reading_direction",
+          "spatial_treatment",
+          "materiality_treatment",
+          "spatial_layers",
+          "safe_zones",
+          "crop_resilience",
+          "visual_devices",
+          "forbidden_visual_devices",
+          "reference_authority",
+          "text_handling"
+        ],
+        "title": "Render Spec",
+        "type": "object"
+      },
+      "sha256": "fdb43daac13730e656aca24947c786d10e898261bf18680280a1ffd124db4f10"
+    },
+    "tts-contract": {
+      "id": "https://suengj.com/schemas/tts-contract.schema.json",
+      "path": "schemas/tts-contract.schema.json",
+      "schema": {
+        "$id": "https://suengj.com/schemas/tts-contract.schema.json",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "additionalProperties": false,
+        "properties": {
+          "adapter_id": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "cost": {
+            "additionalProperties": false,
+            "properties": {
+              "amount": {
+                "minimum": 0,
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "basis": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "currency": {
+                "minLength": 1,
+                "type": "string"
+              }
+            },
+            "required": [
+              "currency",
+              "amount",
+              "basis"
+            ],
+            "type": "object"
+          },
+          "duration_reconciliation": {
+            "const": "measure_returned_audio_and_reconcile_scene_timing; never_force_long_narration_to_6s"
+          },
+          "locale": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "provider": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "returned_timing_metadata": {
+            "additionalProperties": false,
+            "properties": {
+              "available": {
+                "type": "boolean"
+              },
+              "granularity": {
+                "enum": [
+                  "none",
+                  "utterance",
+                  "word",
+                  "phoneme",
+                  "unknown"
+                ]
+              },
+              "unit": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "available",
+              "unit",
+              "granularity"
+            ],
+            "type": "object"
+          },
+          "schema_version": {
+            "const": "1.0.0"
+          },
+          "support": {
+            "additionalProperties": false,
+            "properties": {
+              "checked_at": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "evidence_ref": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "status": {
+                "enum": [
+                  "unknown",
+                  "verified_supported",
+                  "verified_unsupported"
+                ]
+              }
+            },
+            "required": [
+              "status",
+              "checked_at",
+              "evidence_ref"
+            ],
+            "type": "object"
+          },
+          "voice": {
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "schema_version",
+          "adapter_id",
+          "provider",
+          "voice",
+          "locale",
+          "support",
+          "cost",
+          "returned_timing_metadata",
+          "duration_reconciliation"
+        ],
+        "title": "Provider Neutral TTS Contract",
+        "type": "object"
+      },
+      "sha256": "6cde9a2b573f30c3a2fad4edd9e328689ae388cc02371d2bd6db9badecb88aea"
+    },
+    "video-plan": {
+      "id": "https://suengj.com/schemas/video-plan.schema.json",
+      "path": "schemas/video-plan.schema.json",
+      "schema": {
+        "$defs": {
+          "scene": {
+            "additionalProperties": false,
+            "properties": {
+              "asset_ref": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "crop_safe_zone": {
+                "additionalProperties": false,
+                "properties": {
+                  "height": {
+                    "minimum": 0,
+                    "type": "number"
+                  },
+                  "width": {
+                    "minimum": 0,
+                    "type": "number"
+                  },
+                  "x": {
+                    "minimum": 0,
+                    "type": "number"
+                  },
+                  "y": {
+                    "minimum": 0,
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "x",
+                  "y",
+                  "width",
+                  "height"
+                ],
+                "type": "object"
+              },
+              "id": {
+                "pattern": "^scene-[a-z0-9]+(-[a-z0-9]+)*$",
+                "type": "string"
+              },
+              "text": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "timing": {
+                "additionalProperties": false,
+                "properties": {
+                  "end_seconds": {
+                    "minimum": 0,
+                    "type": "number"
+                  },
+                  "start_seconds": {
+                    "minimum": 0,
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "start_seconds",
+                  "end_seconds"
+                ],
+                "type": "object"
+              }
+            },
+            "required": [
+              "id",
+              "timing",
+              "text",
+              "asset_ref",
+              "crop_safe_zone"
+            ],
+            "type": "object"
+          }
+        },
+        "$id": "https://suengj.com/schemas/video-plan.schema.json",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "additionalProperties": false,
+        "description": "Editorially authoritative scene and edit plan. Rendering belongs to a downstream adapter.",
+        "properties": {
+          "aspect_ratio": {
+            "pattern": "^[0-9]+:[0-9]+$",
+            "type": "string"
+          },
+          "audio_reconciliation": {
+            "additionalProperties": false,
+            "properties": {
+              "action": {
+                "enum": [
+                  "pending",
+                  "adjust_scene_timing",
+                  "revise_script",
+                  "blocked"
+                ]
+              },
+              "measured_audio_duration_seconds": {
+                "minimum": 0,
+                "type": [
+                  "number",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "measured_audio_duration_seconds",
+              "action"
+            ],
+            "type": "object"
+          },
+          "audio_refs": {
+            "items": {
+              "$ref": "schemas/audio-plan.schema.json"
+            },
+            "type": "array"
+          },
+          "bgm_catalog_ref": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "caption_style": {
+            "additionalProperties": false,
+            "properties": {
+              "max_lines": {
+                "minimum": 1,
+                "type": "integer"
+              },
+              "placement": {
+                "enum": [
+                  "top",
+                  "center",
+                  "bottom",
+                  "safe_zone"
+                ]
+              },
+              "profile_ref": {
+                "minLength": 1,
+                "type": "string"
+              }
+            },
+            "required": [
+              "profile_ref",
+              "placement",
+              "max_lines"
+            ],
+            "type": "object"
+          },
+          "editorial_package": {
+            "$ref": "schemas/editorial-package.schema.json"
+          },
+          "format": {
+            "enum": [
+              "short",
+              "long"
+            ]
+          },
+          "fps": {
+            "minimum": 1,
+            "type": "number"
+          },
+          "language": {
+            "pattern": "^[a-z]{2,3}(-[A-Z]{2})?$",
+            "type": "string"
+          },
+          "narration_script_ref": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "output_location": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "plan_id": {
+            "pattern": "^video-plan:[a-z0-9]+(-[a-z0-9]+)*$",
+            "type": "string"
+          },
+          "render_spec": {
+            "$ref": "schemas/render-spec.schema.json"
+          },
+          "scenes": {
+            "items": {
+              "$ref": "#/$defs/scene"
+            },
+            "minItems": 1,
+            "type": "array"
+          },
+          "schema_version": {
+            "const": "1.0.0"
+          },
+          "size": {
+            "additionalProperties": false,
+            "properties": {
+              "height": {
+                "minimum": 1,
+                "type": "integer"
+              },
+              "width": {
+                "minimum": 1,
+                "type": "integer"
+              }
+            },
+            "required": [
+              "width",
+              "height"
+            ],
+            "type": "object"
+          },
+          "surface": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "target_duration_seconds": {
+            "minimum": 1,
+            "type": "integer"
+          },
+          "tts_contract_ref": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "watermark_ref": {
+            "pattern": "^schemas/render-spec\\.schema\\.json#/\\$defs/watermark$",
+            "type": "string"
+          }
+        },
+        "required": [
+          "schema_version",
+          "plan_id",
+          "format",
+          "aspect_ratio",
+          "size",
+          "fps",
+          "target_duration_seconds",
+          "scenes",
+          "language",
+          "surface",
+          "caption_style",
+          "watermark_ref",
+          "audio_refs",
+          "output_location",
+          "render_spec",
+          "editorial_package",
+          "audio_reconciliation"
+        ],
+        "title": "AES Video Plan",
+        "type": "object"
+      },
+      "sha256": "3bb266ca95e5c8976d9c965ca7b089fb27e8dfa9d066a5cb4afe0bd317eb6a91"
+    },
+    "visual-brief": {
+      "id": "https://suengj.com/schemas/visual-brief.schema.json",
+      "path": "schemas/visual-brief.schema.json",
+      "schema": {
+        "$defs": {
+          "claim_set": {
+            "additionalProperties": false,
+            "description": "Authoritative article claim identity. The article_ref claims_hash binds this declared set to the upstream article version.",
+            "properties": {
+              "article_id": {
+                "pattern": "^art:[a-z0-9]+(-[a-z0-9]+)*$",
+                "type": "string"
+              },
+              "claim_ids": {
+                "items": {
+                  "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
+                  "type": "string"
+                },
+                "minItems": 1,
+                "type": "array"
+              },
+              "claims_hash": {
+                "pattern": "^[a-f0-9]{64}$",
+                "type": "string"
+              }
+            },
+            "required": [
+              "article_id",
+              "claims_hash",
+              "claim_ids"
+            ],
+            "type": "object"
+          },
+          "information_hierarchy": {
+            "additionalProperties": false,
+            "description": "Integrated reader hierarchy. The primary takeaway is visually dominant; supporting and detail text are subordinate.",
+            "properties": {
+              "detail": {
+                "items": {
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              "primary": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "supporting": {
+                "items": {
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "type": "array"
+              }
+            },
+            "required": [
+              "primary",
+              "supporting",
+              "detail"
+            ],
+            "type": "object"
+          },
+          "text_item": {
+            "additionalProperties": false,
+            "properties": {
+              "exact_text": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "source_ref": {
+                "minLength": 1,
+                "type": "string"
+              }
+            },
+            "required": [
+              "exact_text",
+              "source_ref"
+            ],
+            "type": "object"
+          },
+          "text_ownership": {
+            "additionalProperties": false,
+            "description": "The three V2.17 ownership classes. Verified generative facts carry a canonical payload, source lineage, and mandatory post-render verification.",
+            "properties": {
+              "article_title": {
+                "const": "deterministic_external_text"
+              },
+              "deterministic_external_text": {
+                "additionalProperties": false,
+                "properties": {
+                  "includes": {
+                    "items": {
+                      "enum": [
+                        "citations",
+                        "dense_text",
+                        "sensitive_text"
+                      ]
+                    },
+                    "type": "array"
+                  },
+                  "items": {
+                    "items": {
+                      "$ref": "#/$defs/text_item"
+                    },
+                    "type": "array"
+                  }
+                },
+                "required": [
+                  "items",
+                  "includes"
+                ],
+                "type": "object"
+              },
+              "generative_structural_text": {
+                "additionalProperties": false,
+                "properties": {
+                  "items": {
+                    "items": {
+                      "minLength": 1,
+                      "type": "string"
+                    },
+                    "type": "array"
+                  }
+                },
+                "required": [
+                  "items"
+                ],
+                "type": "object"
+              },
+              "verified_generative_fact": {
+                "additionalProperties": false,
+                "description": "Null explicitly represents that this ownership class has no items; an object declares generated facts that require authoritative payload lineage and post-render verification.",
+                "properties": {
+                  "canonical_payload": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "items": {
+                        "items": {
+                          "$ref": "#/$defs/text_item"
+                        },
+                        "type": "array"
+                      },
+                      "payload_ref": {
+                        "pattern": "^payload:[a-z0-9]+(-[a-z0-9]+)*$",
+                        "type": "string"
+                      },
+                      "payload_sha256": {
+                        "pattern": "^sha256:[a-f0-9]{64}$",
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "payload_ref",
+                      "payload_sha256",
+                      "items"
+                    ],
+                    "type": "object"
+                  },
+                  "claim_set": {
+                    "$ref": "#/$defs/claim_set"
+                  },
+                  "post_render_verification": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "asset_digest_bound": {
+                        "const": true
+                      },
+                      "required": {
+                        "const": true
+                      },
+                      "review_dimension": {
+                        "const": "factual"
+                      }
+                    },
+                    "required": [
+                      "required",
+                      "review_dimension",
+                      "asset_digest_bound"
+                    ],
+                    "type": "object"
+                  },
+                  "source_lineage": {
+                    "items": {
+                      "minLength": 1,
+                      "type": "string"
+                    },
+                    "minItems": 1,
+                    "type": "array"
+                  }
+                },
+                "required": [
+                  "canonical_payload",
+                  "source_lineage",
+                  "claim_set",
+                  "post_render_verification"
+                ],
+                "type": [
+                  "object",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "article_title",
+              "generative_structural_text",
+              "verified_generative_fact",
+              "deterministic_external_text"
+            ],
+            "type": "object"
+          }
+        },
+        "$id": "https://suengj.com/schemas/visual-brief.schema.json",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "additionalProperties": false,
+        "description": "Durable editorial semantics for a generative or hybrid visual. Provider prompts are compiled outputs, never this authority.",
+        "properties": {
+          "article_ref": {
+            "additionalProperties": false,
+            "properties": {
+              "article_id": {
+                "pattern": "^art:[a-z0-9]+(-[a-z0-9]+)*$",
+                "type": "string"
+              },
+              "claims_hash": {
+                "pattern": "^[a-f0-9]{64}$",
+                "type": "string"
+              },
+              "content_hash": {
+                "pattern": "^[a-f0-9]{64}$",
+                "type": "string"
+              },
+              "version_number": {
+                "minimum": 1,
+                "type": "integer"
+              }
+            },
+            "required": [
+              "article_id",
+              "version_number",
+              "content_hash",
+              "claims_hash"
+            ],
+            "type": "object"
+          },
+          "article_thesis": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "artifact_profile": {
+            "pattern": "^visual/[a-z0-9]+(-[a-z0-9]+)*$",
+            "type": "string"
+          },
+          "brief_id": {
+            "pattern": "^visual-brief:[a-z0-9]+(-[a-z0-9]+)*$",
+            "type": "string"
+          },
+          "editorial_purpose": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "factual_invariants": {
+            "items": {
+              "minLength": 1,
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "failure_modes_to_avoid": {
+            "items": {
+              "minLength": 1,
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "information_hierarchy": {
+            "$ref": "#/$defs/information_hierarchy"
+          },
+          "reader_outcome": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "reference_requirements": {
+            "additionalProperties": false,
+            "properties": {
+              "forbidden_literal_copy": {
+                "items": {
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              "rationale": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "required_dimensions": {
+                "items": {
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "type": "array"
+              }
+            },
+            "required": [
+              "required_dimensions",
+              "forbidden_literal_copy",
+              "rationale"
+            ],
+            "type": "object"
+          },
+          "schema_version": {
+            "const": "1.0.0"
+          },
+          "semantic_role": {
+            "enum": [
+              "identity",
+              "navigation",
+              "explanation",
+              "distribution",
+              "atmosphere"
+            ]
+          },
+          "text_ownership": {
+            "$ref": "#/$defs/text_ownership"
+          },
+          "visual_story": {
+            "additionalProperties": false,
+            "properties": {
+              "metaphor_or_relationship": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "primary_question": {
+                "minLength": 1,
+                "type": "string"
+              }
+            },
+            "required": [
+              "primary_question",
+              "metaphor_or_relationship"
+            ],
+            "type": "object"
+          }
+        },
+        "required": [
+          "schema_version",
+          "brief_id",
+          "article_ref",
+          "editorial_purpose",
+          "article_thesis",
+          "reader_outcome",
+          "artifact_profile",
+          "semantic_role",
+          "visual_story",
+          "factual_invariants",
+          "failure_modes_to_avoid",
+          "reference_requirements"
+        ],
+        "title": "Visual Brief",
+        "type": "object"
+      },
+      "sha256": "8bcf57d2542534fbc8051be06744fd2d0ce9678f212dac7d1a811fd32d8fdc25"
+    }
+  },
+  "schemas_missing_refs": [],
+  "targets": [
+    {
+      "channel": "instagram",
+      "copy_defaults": {
+        "style_overlay": "suengj-style",
+        "tone_intensity": "high"
+      },
+      "id": "personal-instagram",
+      "label": "owner personal Instagram (identity/credentials are not stored here)",
+      "output_contract": null,
+      "rule_refs": {
+        "text": [
+          {
+            "path": "editorial/SUENGJ-STYLE.md",
+            "role": "copy:personal",
+            "sha256": "940048146aa3153057bac123411f981414a02aabaf460d3ae30da8766cad7e11"
+          },
+          {
+            "path": "editorial/constitution.md",
+            "role": "core:text",
+            "sha256": "6a6b58a9fce5f29099d74c23f10587c6560904ffe0a6a7c001e2ab330b2b6997"
+          },
+          {
+            "path": "editorial/voice.md",
+            "role": "core:text",
+            "sha256": "f6c953c4a2c0792bc0189f016343df299373caf5f104958efc864c47e92deaaa"
+          }
+        ],
+        "visual": [
+          {
+            "path": "editorial/STRUCTURED-VISUAL-EXECUTION.md",
+            "role": "core:visual",
+            "sha256": "ca9bd8b4dfce215159d3fecb782ae637b3db721fde33673639d73793fd1a4fac"
+          },
+          {
+            "path": "editorial/SUENGJ-STYLE.md",
+            "role": "copy:personal",
+            "sha256": "940048146aa3153057bac123411f981414a02aabaf460d3ae30da8766cad7e11"
+          },
+          {
+            "path": "editorial/constitution.md",
+            "role": "core:visual",
+            "sha256": "6a6b58a9fce5f29099d74c23f10587c6560904ffe0a6a7c001e2ab330b2b6997"
+          },
+          {
+            "path": "editorial/visual-recipes.v1.json",
+            "role": "visual:values",
+            "sha256": "456667a0cb2c3ac993c93de8c63005df72f8d4521de1ee7cde394359082c6a04"
+          }
+        ]
+      },
+      "status": "COPY_AND_VISUAL_MAPPED",
+      "task_kinds": [
+        "text",
+        "visual"
+      ],
+      "visual_artifacts": [
+        "visual/social-card",
+        "visual/thumbnail",
+        "visual/evidence-visual",
+        "visual/body-infographic",
+        "visual/slide-image"
+      ],
+      "visual_defaults": {
+        "canvas": {
+          "height": 1350,
+          "width": 1080
+        },
+        "text_policy": "hybrid_template"
+      },
+      "voice_family": "personal"
+    },
+    {
+      "channel": "linkedin",
+      "copy_defaults": {
+        "style_overlay": "suengj-style",
+        "tone_intensity": "medium"
+      },
+      "id": "personal-linkedin",
+      "label": "owner personal LinkedIn (identity/credentials are not stored here)",
+      "output_contract": null,
+      "rule_refs": {
+        "text": [
+          {
+            "path": "editorial/SUENGJ-STYLE.md",
+            "role": "copy:personal",
+            "sha256": "940048146aa3153057bac123411f981414a02aabaf460d3ae30da8766cad7e11"
+          },
+          {
+            "path": "editorial/constitution.md",
+            "role": "core:text",
+            "sha256": "6a6b58a9fce5f29099d74c23f10587c6560904ffe0a6a7c001e2ab330b2b6997"
+          },
+          {
+            "path": "editorial/voice.md",
+            "role": "core:text",
+            "sha256": "f6c953c4a2c0792bc0189f016343df299373caf5f104958efc864c47e92deaaa"
+          }
+        ]
+      },
+      "status": "COPY_MAPPED_NO_VISUAL_PROFILE",
+      "task_kinds": [
+        "text"
+      ],
+      "visual_artifacts": [],
+      "visual_defaults": null,
+      "voice_family": "personal"
+    },
+    {
+      "channel": "instagram",
+      "copy_defaults": {
+        "style_overlay": "none"
+      },
+      "id": "signalytics-news",
+      "label": "signalytics.news",
+      "output_contract": {
+        "drive_result_writes": false,
+        "png": {
+          "max": 6,
+          "min": 5,
+          "sixth_conditional": true
+        },
+        "publication": false,
+        "required_files": [
+          "caption.md",
+          "benchmark-brief.md"
+        ]
+      },
+      "rule_refs": {
+        "text": [
+          {
+            "path": "editorial/BUSINESS-IDEA-MAGAZINE.md",
+            "role": "copy:business",
+            "sha256": "a7425dc356f743bfde00f33461ea7be2fd51c52335ed6ae2fc2f8f83b3698e57"
+          },
+          {
+            "path": "editorial/SIGNALYTICS-BENCHMARK-CARDS.md",
+            "role": "copy:business",
+            "sha256": "92b81872e5edaa1da1e9938fd67e98a4dcae1c48b90e22c5ddc9cb69169b0170"
+          },
+          {
+            "path": "editorial/constitution.md",
+            "role": "core:text",
+            "sha256": "6a6b58a9fce5f29099d74c23f10587c6560904ffe0a6a7c001e2ab330b2b6997"
+          },
+          {
+            "path": "editorial/voice.md",
+            "role": "core:text",
+            "sha256": "f6c953c4a2c0792bc0189f016343df299373caf5f104958efc864c47e92deaaa"
+          }
+        ],
+        "visual": [
+          {
+            "path": "editorial/BUSINESS-IDEA-MAGAZINE.md",
+            "role": "copy:business",
+            "sha256": "a7425dc356f743bfde00f33461ea7be2fd51c52335ed6ae2fc2f8f83b3698e57"
+          },
+          {
+            "path": "editorial/SIGNALYTICS-BENCHMARK-CARDS.md",
+            "role": "copy:business",
+            "sha256": "92b81872e5edaa1da1e9938fd67e98a4dcae1c48b90e22c5ddc9cb69169b0170"
+          },
+          {
+            "path": "editorial/SLIDES-AND-CAROUSELS.md",
+            "role": "visual:rules",
+            "sha256": "e1b7d3a64082a7643e08a41fb1728663ab09b7051a0d81fed72d10281fb06b50"
+          },
+          {
+            "path": "editorial/STRUCTURED-VISUAL-EXECUTION.md",
+            "role": "core:visual",
+            "sha256": "ca9bd8b4dfce215159d3fecb782ae637b3db721fde33673639d73793fd1a4fac"
+          },
+          {
+            "path": "editorial/business-idea-magazine.v1.json",
+            "role": "visual:values",
+            "sha256": "35435a0f257b4a05175ab102dbe415e5a9661fd2c184386f43dfc3b0bd922a60"
+          },
+          {
+            "path": "editorial/constitution.md",
+            "role": "core:visual",
+            "sha256": "6a6b58a9fce5f29099d74c23f10587c6560904ffe0a6a7c001e2ab330b2b6997"
+          },
+          {
+            "path": "editorial/visual-recipes.v1.json",
+            "role": "visual:values",
+            "sha256": "456667a0cb2c3ac993c93de8c63005df72f8d4521de1ee7cde394359082c6a04"
+          }
+        ]
+      },
+      "status": "COPY_AND_VISUAL_MAPPED",
+      "task_kinds": [
+        "text",
+        "visual"
+      ],
+      "visual_artifacts": [
+        "visual/slide-image"
+      ],
+      "visual_defaults": {
+        "canvas": {
+          "aspect_ratio": "4:5",
+          "width": 1080
+        },
+        "text_policy": "hybrid_template"
+      },
+      "voice_family": "business"
+    },
+    {
+      "channel": "instagram",
+      "copy_defaults": {
+        "style_overlay": "none",
+        "tone_intensity": "high"
+      },
+      "id": "trends-moa",
+      "label": "trends.moa",
+      "output_contract": null,
+      "rule_refs": {
+        "text": [
+          {
+            "path": "editorial/TRENDS-MOA-COMMUNITY-TONE.md",
+            "role": "copy:community",
+            "sha256": "e8e0acdedae92ca18106436003ef8355d3a35e67577edbea576c740c9d52f383"
+          },
+          {
+            "path": "editorial/constitution.md",
+            "role": "core:text",
+            "sha256": "6a6b58a9fce5f29099d74c23f10587c6560904ffe0a6a7c001e2ab330b2b6997"
+          },
+          {
+            "path": "editorial/voice.md",
+            "role": "core:text",
+            "sha256": "f6c953c4a2c0792bc0189f016343df299373caf5f104958efc864c47e92deaaa"
+          }
+        ],
+        "visual": [
+          {
+            "path": "editorial/SLIDES-AND-CAROUSELS.md",
+            "role": "visual:rules",
+            "sha256": "e1b7d3a64082a7643e08a41fb1728663ab09b7051a0d81fed72d10281fb06b50"
+          },
+          {
+            "path": "editorial/STRUCTURED-VISUAL-EXECUTION.md",
+            "role": "core:visual",
+            "sha256": "ca9bd8b4dfce215159d3fecb782ae637b3db721fde33673639d73793fd1a4fac"
+          },
+          {
+            "path": "editorial/TRENDS-MOA-COMMUNITY-TONE.md",
+            "role": "copy:community",
+            "sha256": "e8e0acdedae92ca18106436003ef8355d3a35e67577edbea576c740c9d52f383"
+          },
+          {
+            "path": "editorial/constitution.md",
+            "role": "core:visual",
+            "sha256": "6a6b58a9fce5f29099d74c23f10587c6560904ffe0a6a7c001e2ab330b2b6997"
+          },
+          {
+            "path": "editorial/visual-recipes.v1.json",
+            "role": "visual:values",
+            "sha256": "456667a0cb2c3ac993c93de8c63005df72f8d4521de1ee7cde394359082c6a04"
+          }
+        ]
+      },
+      "status": "COPY_AND_VISUAL_MAPPED",
+      "task_kinds": [
+        "text",
+        "visual"
+      ],
+      "visual_artifacts": [
+        "visual/social-card",
+        "visual/body-infographic",
+        "visual/slide-image"
+      ],
+      "visual_defaults": {
+        "canvas": {
+          "height": 1350,
+          "width": 1080
+        },
+        "text_policy": "hybrid_template"
+      },
+      "voice_family": "community"
+    }
+  ],
+  "visual_recipes": {
+    "path": "editorial/visual-recipes.v1.json",
+    "recipes": {
+      "layouts": {
+        "split": {
+          "left": {
+            "height": 0.45,
+            "width": 0.4,
+            "x": 0.06,
+            "y": 0.35
+          },
+          "right": {
+            "height": 0.45,
+            "width": 0.42,
+            "x": 0.52,
+            "y": 0.35
+          }
+        },
+        "text": {
+          "content": {
+            "height": 0.45,
+            "width": 0.88,
+            "x": 0.06,
+            "y": 0.35
+          }
+        },
+        "visual": {
+          "content": {
+            "height": 0.48,
+            "width": 0.88,
+            "x": 0.06,
+            "y": 0.34
+          }
+        }
+      },
+      "recipes": {
+        "dark-data": {
+          "default_layout": "visual",
+          "generation_direction": "High-contrast dark editorial composition with restrained mint accents. Illustration supports rather than competes with evidence. Never invent KPI tiles, chart marks, performance percentages, or product brands.",
+          "theme": {
+            "accent": "#88E0C0",
+            "background": "#0B1824",
+            "foreground": "#F2F7F5"
+          },
+          "typography": {
+            "headline": {
+              "weight": 700
+            }
+          }
+        },
+        "editorial-minimal": {
+          "default_layout": "text",
+          "generation_direction": "Restrained magazine composition; generous negative space; one clear subject; quiet material texture. No ornamental mini dashboards or icon grids. Typography remains in reserved compositor regions.",
+          "theme": {
+            "accent": "#536756",
+            "background": "#F7F4EC",
+            "font_family": "'Noto Serif CJK KR', 'Noto Serif KR', Georgia, serif",
+            "foreground": "#14213D"
+          },
+          "typography": {
+            "headline": {
+              "weight": 500
+            }
+          }
+        },
+        "pop-collage": {
+          "default_layout": "visual",
+          "generation_direction": "Expressive paper collage with pink/orange/blue accents, torn edges, playful brush texture and one dominant silhouette. Restrict collage to its supplied content slot; no factual copy, faux numbers, logos, robot cliches or unrelated slogans unless specifically requested.",
+          "theme": {
+            "accent": "#F15AAB",
+            "background": "#201528",
+            "foreground": "#FFF5EB"
+          },
+          "typography": {
+            "headline": {
+              "weight": 800
+            }
+          }
+        }
+      },
+      "regions": {
+        "eyebrow": {
+          "height": 0.04,
+          "width": 0.88,
+          "x": 0.06,
+          "y": 0.04
+        },
+        "headline": {
+          "height": 0.21,
+          "width": 0.88,
+          "x": 0.06,
+          "y": 0.1
+        },
+        "pagination": {
+          "height": 0.035,
+          "width": 0.14,
+          "x": 0.8,
+          "y": 0.88
+        },
+        "source": {
+          "height": 0.035,
+          "width": 0.7,
+          "x": 0.06,
+          "y": 0.88
+        }
+      },
+      "schema_version": "1.0.0",
+      "scope": "Task-selected realization presets, not a new intent axis or a replacement brand/reference authority. No factual payload or approval.",
+      "typography": {
+        "body": {
+          "font_size": 38,
+          "line_height": 1.4,
+          "max_lines": 7,
+          "weight": 400
+        },
+        "eyebrow": {
+          "font_size": 28,
+          "line_height": 1.15,
+          "max_lines": 1,
+          "weight": 500
+        },
+        "headline": {
+          "font_size": 64,
+          "line_height": 1.2,
+          "max_lines": 2,
+          "weight": 700
+        },
+        "pagination": {
+          "align": "end",
+          "font_size": 30,
+          "line_height": 1.15,
+          "max_lines": 1,
+          "weight": 500
+        },
+        "source": {
+          "font_size": 30,
+          "line_height": 1.15,
+          "max_lines": 1,
+          "weight": 400
+        }
+      }
+    },
+    "sha256": "456667a0cb2c3ac993c93de8c63005df72f8d4521de1ee7cde394359082c6a04"
+  }
+}

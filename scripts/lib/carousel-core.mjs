@@ -10,6 +10,16 @@ import { spawnSync } from 'node:child_process';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 export const CAROUSEL_VERSION = '1.0.0';
+/** Series constraints as data (single source for planCarousel and the web catalog export). */
+export const CAROUSEL_CONSTRAINTS = Object.freeze({
+  frames: Object.freeze({ min: 1, max: 20 }),
+  beats: Object.freeze({ min: 1, max: 60 }),
+  series_fields: Object.freeze(['schema_version','series_id','request','source','profiles','recipe','task','typography','regions','layouts','series_label','beats','frames']),
+  frame_fields: Object.freeze(['id','function','beat_ids','takeaway','alt_text','headline','source_note','layout','blocks','caption','job_ref']),
+  block_fields: Object.freeze(['id','region','kind','ref','sha256','mode','fit','rights_note','protect','text','source_ref','instruction','generation','provenance']),
+  block_kinds: Object.freeze(['text','image','chart','generated']),
+  frame_functions: Object.freeze(['orient','assert','show_evidence','explain_mechanism','compare','qualify','turn','show_consequence','decision','close']),
+});
 const obj = (x) => x && typeof x === 'object' && !Array.isArray(x);
 const stable = (x) => Array.isArray(x) ? x.map(stable) : obj(x) ? Object.fromEntries(Object.keys(x).sort().map((k) => [k, stable(x[k])])) : x;
 const hash = (x) => `sha256:${createHash('sha256').update(Buffer.isBuffer(x) ? x : JSON.stringify(stable(x))).digest('hex')}`;
@@ -36,7 +46,7 @@ export function loadVisualRecipes() { return JSON.parse(readFileSync(resolve(ROO
 
 /** Pure planning: emits unchanged v1 single-image plans, not rendered evidence. */
 export function planCarousel(series, catalog=loadVisualRecipes()) {
-  keys(series, ['schema_version','series_id','request','source','profiles','recipe','task','typography','regions','layouts','series_label','beats','frames'], 'series');
+  keys(series, CAROUSEL_CONSTRAINTS.series_fields, 'series');
   need(series.schema_version === CAROUSEL_VERSION && slug(series.series_id), 'SERIES_VERSION', 'v1 and a slug series_id are required');
   need(text(series.request) && text(series.series_label), 'SERIES_INPUT', 'request and series_label are required');
   keys(series.source, ['ref','sha256','scope'], 'source');
@@ -64,8 +74,8 @@ export function planCarousel(series, catalog=loadVisualRecipes()) {
     need(Object.keys(catalog.layouts[name]).every((k)=>layout[k]), 'SERIES_REGION', `missing region in ${name}`);
     checkRegions({...recurring,...layout});
   }
-  need(Array.isArray(series.frames) && series.frames.length >= 1 && series.frames.length <= 20, 'SERIES_FRAMES', '1–20 is a local v1 resource bound, not an Instagram platform limit');
-  need(Array.isArray(series.beats) && series.beats.length > 0 && series.beats.length <= 60, 'SERIES_BEATS', 'declare the carried beat graph');
+  need(Array.isArray(series.frames) && series.frames.length >= CAROUSEL_CONSTRAINTS.frames.min && series.frames.length <= CAROUSEL_CONSTRAINTS.frames.max, 'SERIES_FRAMES', '1–20 is a local v1 resource bound, not an Instagram platform limit');
+  need(Array.isArray(series.beats) && series.beats.length >= CAROUSEL_CONSTRAINTS.beats.min && series.beats.length <= CAROUSEL_CONSTRAINTS.beats.max, 'SERIES_BEATS', 'declare the carried beat graph');
   const beats = new Map();
   for (const b of series.beats) {
     keys(b,['id','depends_on'],'beat');
@@ -75,9 +85,9 @@ export function planCarousel(series, catalog=loadVisualRecipes()) {
   }
   for (const b of beats.values()) for (const dep of b.depends_on) need(beats.has(dep) && dep!==b.id, 'SERIES_BEATS', `unresolved/self dependency ${dep}`);
   const used = new Set(), ids = new Set(), frames=[];
-  const functions = ['orient','assert','show_evidence','explain_mechanism','compare','qualify','turn','show_consequence','decision','close'];
+  const functions = CAROUSEL_CONSTRAINTS.frame_functions;
   for (const [i,f] of series.frames.entries()) {
-    keys(f,['id','function','beat_ids','takeaway','alt_text','headline','source_note','layout','blocks','caption','job_ref'],'frame');
+    keys(f,CAROUSEL_CONSTRAINTS.frame_fields,'frame');
     need(slug(f.id) && !ids.has(f.id), 'SERIES_FRAME_ID', 'unique frame slug required'); ids.add(f.id);
     need(functions.includes(f.function) && text(f.takeaway) && text(f.alt_text) && text(f.headline) && text(f.source_note), 'SERIES_MEANING', `${f.id}: function, takeaway, alt text, headline and source_note required`);
     need(Array.isArray(f.beat_ids) && f.beat_ids.length && new Set(f.beat_ids).size===f.beat_ids.length, 'SERIES_BEATS', f.id);
@@ -94,10 +104,10 @@ export function planCarousel(series, catalog=loadVisualRecipes()) {
     addText('series-label',series.series_label,recurring.eyebrow,'eyebrow');
     addText('headline',f.headline,recurring.headline,'headline');
     for (const b of f.blocks) {
-      keys(b,['id','region','kind','ref','sha256','mode','fit','rights_note','protect','text','source_ref','instruction','generation','provenance'],'block');
+      keys(b,CAROUSEL_CONSTRAINTS.block_fields,'block');
       need(slug(b.id) && !['series-label','headline','source','pagination'].includes(b.id) && !layers.some((l)=>l.id===b.id),'SERIES_LAYER_ID',String(b.id));
       need(layout[b.region] && !occupied.has(b.region),'SERIES_REGION',`unknown or duplicate region ${b.region}`); occupied.add(b.region);
-      need(['text','image','chart','generated'].includes(b.kind),'SERIES_LAYER',String(b.kind));
+      need(CAROUSEL_CONSTRAINTS.block_kinds.includes(b.kind),'SERIES_LAYER',String(b.kind));
       const {region,...layer}=b; layer.slot=layout[region];
       if (b.kind==='text') {
         keys(b,['id','region','kind','text','source_ref'],'text block');

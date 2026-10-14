@@ -18,6 +18,8 @@ Validation and evaluation tooling. Node ESM, no build step, no dependencies.
 | `validate-hitl.mjs` | Review record and finalization receipt (AES-P5.1) |
 | `run-matrix.mjs` | Cross-source acceptance matrix (AES-P5.2) |
 | `generate-handoff.mjs` | Build and validate the suengj-com handoff receipt (AES-P6.1) |
+| `export-web-catalog.mjs` | Public-safe web catalog (`editorial/web-catalog/editorial-web-catalog.v1.json`); `--check` fails when stale |
+| `test-web-catalog.mjs` | Catalog determinism, drift detection, no rule prose / private content |
 | `test-repo-boundary.mjs` | Allow/deny regression for the charter |
 | `test-source-contract.mjs` | Mutation regression over the source example |
 | `test-article-contract.mjs` | Mutation regression over the article/artifact example |
@@ -66,3 +68,9 @@ npm test               # all fourteen regression suites
 ```
 
 Rejects: credentials, deploy logic, imports from `suengj-com`.
+
+## Web catalog export
+
+`node scripts/export-web-catalog.mjs` (or `npm run web-catalog:build`) writes `editorial/web-catalog/editorial-web-catalog.v1.json`; `--check` (`npm run web-catalog:check`) exits non-zero when the committed file is stale. Rerun the build and commit the file whenever `editorial/entry-manifest.json`, a registered rule file, `visual-recipes.v1.json`, a listed schema or the carousel constraints change.
+
+The Editorial Studio web app consumes this file by **pinned AES commit + sha256**. The AES commit is not embedded in the file (output stays deterministic); the consumer records it. The catalog carries **no rule text**: only target/flow ids, precedence, override domains, locked fields, rule references (`path` + `sha256`), visual recipes, JSON schemas, carousel series constraints and quality-gate ids/titles. Approved-example excerpts, private indexes, Drive ids and credentials are never included. Rule prose is fetched from the pinned commit by path and verified against the `sha256`.
