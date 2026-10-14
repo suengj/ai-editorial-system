@@ -71,6 +71,12 @@ failure than an honestly small one.
 | `corpus:placeholder-generated-output-lineage` | `generated_output` + `lineage_ref`, for the L1 anti-collapse rule |
 | `corpus:placeholder-academic-rejected` | a rejected entry is retained as evidence, not deleted |
 
+## Owner-selected excerpt references (2026-10-14)
+
+Ten real excerpt-scoped human selections are now recorded under `entries/owner-picked-personal-20261014-*.json`. Only the selected *sentences*, not their full source posts, were endorsed. Exact excerpts and private original Drive locator remain under commit-pinned `suengj/intelligence-library/docs/owner-approved-personal-style-2026-10-14.md`; the public repository stores metadata and the private GitHub pointer only.
+
+`editorial/approved-examples.json` limits the selected references to `personal-linkedin` and `personal-instagram`. The existing default is **style description only**; on ambiguity, failure, or quality comparison the existing engine returns at most three references. Currently the first three curator-ordered entries (question opening, technical definition, analytical transition) are selected, not semantically chosen for each task. Other seven entries remain reference candidates and should not be claimed automatically loaded. The canonical `editorial/SUENGJ-STYLE.md` is unchanged; the distinct inferred interpretation is `editorial/SUENGJ-STYLE-20261014-PROPOSAL.md`.
+
 ## Growth plan
 
 The acceptance target is 10–20 real owner-reviewed outputs across useful

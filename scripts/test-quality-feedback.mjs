@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Focused tests: R4 quality feedback wiring + R5 existing-flow common entry (SUE-1426).
- * Fixtures are SYNTHETIC (labelled): no real owner approval, example, habit frequency or experience is represented.
+ * Most fixtures are synthetic. The owner-excerpt isolation test checks real metadata pointers only, not private source prose.
  * CI: NOT_RUN_BY_OWNER_REQUEST.
  */
 import { mkdtempSync, readFileSync, existsSync, readdirSync } from 'node:fs';
@@ -143,6 +143,34 @@ test('CLI quality-feedback records under a given root and rejects non-explicit "
   eq(run('outcome', '--task', 'c1', '--target', 'trends-moa', '--format', 'visual/social-card', '--adopted', 'yes', '--revisions', '1').status, 0);
   eq(run('explicit', '--target', 'trends-moa', '--format', 'visual/social-card', '--instruction', 'i', '--statement', '그냥 수정').status, 1);
   yes(readdirSync(resolve(root, 'outcomes')).length === 1, 'outcome written');
+});
+
+
+test('2026-10-14 owner-chosen personal excerpts are scoped and never auto-read', () => {
+  const approvals = JSON.parse(readFileSync(resolve(REPO_ROOT, 'editorial/approved-examples.json'), 'utf8')).approvals;
+  eq(approvals.length, 10);
+  for (const row of approvals) {
+    eq(row.voice_family, 'personal');
+    eq([...row.targets].sort(), ['personal-instagram', 'personal-linkedin']);
+    const entry = JSON.parse(readFileSync(resolve(REPO_ROOT, 'evals/real-output-corpus/entries', row.entry_id.slice(7) + '.json'), 'utf8'));
+    eq(entry.owner_verdict, 'accepted'); eq(entry.reference_eligible, true);
+    yes(entry.reference_eligible_rationale.includes('excerpt only'), 'never approve an entire historical post');
+    yes(entry.source_ref.locator.includes('https://github.com/suengj/intelligence-library/blob/') && entry.source_ref.locator.includes('#L'), 'private commit-pinned source required');
+    yes(!entry.source_ref.locator.includes('docs.google.com'), 'private Drive ID must not be made public');
+  }
+  for (const target of ['personal-instagram', 'personal-linkedin']) {
+    const r = rcpt(target === 'personal-instagram' ? 'instagram' : 'linkedin', target, ['text/article']);
+    const active = loadApprovedCandidates(r, { repoRoot: REPO_ROOT });
+    eq(active.candidates.length, 10); eq(active.rejected.length, 0);
+    eq(exampleStep(r, manifest, { repoRoot: REPO_ROOT }).loaded.length, 0);
+    const comparison = exampleStep(r, manifest, { repoRoot: REPO_ROOT, reason: 'quality_comparison' });
+    eq(comparison.status, 'LOADED'); eq(comparison.loaded.length, 3);
+  }
+  for (const target of ['signalytics-news', 'trends-moa']) {
+    const r = rcpt('instagram', target, ['text/article']);
+    eq(loadApprovedCandidates(r, { repoRoot: REPO_ROOT }).candidates.length, 0);
+    eq(exampleStep(r, manifest, { repoRoot: REPO_ROOT, reason: 'quality_comparison' }).status, NO_APPROVED_REFERENCE);
+  }
 });
 
 console.log('R5 existing flows through the common entry');

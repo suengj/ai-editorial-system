@@ -1,5 +1,86 @@
 {
   "schema_version": "1.0.0",
-  "description": "Pointer index (SUE-1426 R4): which EXISTING real-output-corpus entries the owner has approved as comparison examples for which voice family / target. Locators and entry ids only; no corpus text is copied here. An entry counts only if the corpus entry itself is owner_verdict=accepted AND reference_eligible=true AND is not a synthetic placeholder. Nothing is invented: an empty list means NO_APPROVED_REFERENCE for that target.",
-  "approvals": []
+  "description": "Pointer-only positive owner-approved excerpt comparison index. 2026-10-14 selections apply solely to personal LinkedIn/Instagram, not full original posts. Original text resides only in private intelligence-library at pinned paths. Description-only generation is default; ambiguity/failure/quality_comparison permits 2–3 approved examples.",
+  "approvals": [
+    {
+      "entry_id": "corpus:owner-picked-personal-20261014-o1",
+      "voice_family": "personal",
+      "targets": [
+        "personal-linkedin",
+        "personal-instagram"
+      ]
+    },
+    {
+      "entry_id": "corpus:owner-picked-personal-20261014-t1",
+      "voice_family": "personal",
+      "targets": [
+        "personal-linkedin",
+        "personal-instagram"
+      ]
+    },
+    {
+      "entry_id": "corpus:owner-picked-personal-20261014-l1",
+      "voice_family": "personal",
+      "targets": [
+        "personal-linkedin",
+        "personal-instagram"
+      ]
+    },
+    {
+      "entry_id": "corpus:owner-picked-personal-20261014-o3",
+      "voice_family": "personal",
+      "targets": [
+        "personal-linkedin",
+        "personal-instagram"
+      ]
+    },
+    {
+      "entry_id": "corpus:owner-picked-personal-20261014-t2",
+      "voice_family": "personal",
+      "targets": [
+        "personal-linkedin",
+        "personal-instagram"
+      ]
+    },
+    {
+      "entry_id": "corpus:owner-picked-personal-20261014-p1",
+      "voice_family": "personal",
+      "targets": [
+        "personal-linkedin",
+        "personal-instagram"
+      ]
+    },
+    {
+      "entry_id": "corpus:owner-picked-personal-20261014-p3",
+      "voice_family": "personal",
+      "targets": [
+        "personal-linkedin",
+        "personal-instagram"
+      ]
+    },
+    {
+      "entry_id": "corpus:owner-picked-personal-20261014-e1",
+      "voice_family": "personal",
+      "targets": [
+        "personal-linkedin",
+        "personal-instagram"
+      ]
+    },
+    {
+      "entry_id": "corpus:owner-picked-personal-20261014-h1",
+      "voice_family": "personal",
+      "targets": [
+        "personal-linkedin",
+        "personal-instagram"
+      ]
+    },
+    {
+      "entry_id": "corpus:owner-picked-personal-20261014-h2",
+      "voice_family": "personal",
+      "targets": [
+        "personal-linkedin",
+        "personal-instagram"
+      ]
+    }
+  ]
 }
