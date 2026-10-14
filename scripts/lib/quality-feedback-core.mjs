@@ -80,7 +80,9 @@ const readDir = (d) => (existsSync(d) ? readdirSync(d).filter((f) => f.endsWith(
 export function loadApprovedCandidates(receipt, { repoRoot, approvals = null, corpus = null } = {}) {
   const idx = approvals ?? readJson(resolve(repoRoot, APPROVALS_PATH));
   if (idx.approvals !== undefined && !Array.isArray(idx.approvals)) throw qerr('APPROVALS_SHAPE', 'approved-examples.approvals must be an array');
-  const entries = corpus ?? readDir(resolve(repoRoot, 'evals/real-output-corpus/entries'));
+  // Private excerpt-only indexing never scans the generic L1 corpus.
+  const hasCorpusRefs = (idx.approvals ?? []).some((a) => a?.kind !== 'owner_selected_excerpt');
+  const entries = corpus ?? (hasCorpusRefs ? readDir(resolve(repoRoot, 'evals/real-output-corpus/entries')) : []);
   const byId = new Map(entries.map((e) => [e.entry_id, e]));
   const out = []; const rejected = []; const seenIds = new Set();
   for (const a of idx.approvals ?? []) {
@@ -120,7 +122,7 @@ export function exampleStep(receipt, manifest, { reason = null, repoRoot, approv
   if (!reason) return { policy: manifest.example_policy.default, status: 'STYLE_DESCRIPTION_ONLY', loaded: [] };
   const { candidates, rejected } = loadApprovedCandidates(receipt, { repoRoot, approvals, corpus });
   const sel = selectExamples(receipt, manifest, { reason, candidates });
-  return { policy: manifest.example_policy.default, reason, status: sel.status, loaded: (sel.loaded ?? []).map((c) => ({ entry_id: c.entry_id, locator: c.locator })), private_read_required: (sel.loaded ?? []).some((c) => c.private_read_required === true), source_text_read: false, skipped_candidates: rejected, note: sel.note ?? null };
+  return { policy: manifest.example_policy.default, reason, status: sel.status, loaded: (sel.loaded ?? []).map((c) => ({ entry_id: c.entry_id, locator: c.locator })), private_read_required: (sel.loaded ?? []).some((c) => c.private_read_required === true), source_text_read: false, skipped_candidates: rejected, note: (sel.loaded ?? []).some((c) => c.private_read_required === true) ? 'PRIVATE_REFERENCE_POINTERS_SELECTED_NOT_FETCHED: caller must fetch only selected private excerpt lines; do not claim source text read in this CLI' : (sel.note ?? null) };
 }
 
 // --- feedback store ---------------------------------------------------------
