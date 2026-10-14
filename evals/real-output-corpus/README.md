@@ -71,11 +71,15 @@ failure than an honestly small one.
 | `corpus:placeholder-generated-output-lineage` | `generated_output` + `lineage_ref`, for the L1 anti-collapse rule |
 | `corpus:placeholder-academic-rejected` | a rejected entry is retained as evidence, not deleted |
 
-## Owner-selected excerpt references (2026-10-14)
+## Owner-selected personal excerpts (2026-10-14)
 
-Ten real excerpt-scoped human selections are now recorded under `entries/owner-picked-personal-20261014-*.json`. Only the selected *sentences*, not their full source posts, were endorsed. Exact excerpts and private original Drive locator remain under commit-pinned `suengj/intelligence-library/docs/owner-approved-personal-style-2026-10-14.md`; the public repository stores metadata and the private GitHub pointer only.
+The owner chose ten exact sentences from historical personal social posts as preferred voice evidence. They are **not** entire accepted outputs and therefore are deliberately **not put in this global L1 corpus**; otherwise unrelated account reviews could select them as universal GOOD examples.
 
-`editorial/approved-examples.json` limits the selected references to `personal-linkedin` and `personal-instagram`. The existing default is **style description only**; on ambiguity, failure, or quality comparison the existing engine returns at most three references. Currently the first three curator-ordered entries (question opening, technical definition, analytical transition) are selected, not semantically chosen for each task. Other seven entries remain reference candidates and should not be claimed automatically loaded. The canonical `editorial/SUENGJ-STYLE.md` is unchanged; the distinct inferred interpretation is `editorial/SUENGJ-STYLE-20261014-PROPOSAL.md`.
+The metadata-only `editorial/approved-examples.json` includes `kind: owner_selected_excerpt` rows, restricted to `personal-linkedin` and `personal-instagram`. Original excerpts and the private Google Docs source reference live solely in commit-pinned private `suengj/intelligence-library/docs/owner-approved-personal-style-2026-10-14.md`.
+
+Normal generation stays `style_description_only`. On ambiguity/failure/quality_comparison the selected 2–3 references are **locators only**, and the calling authorized agent must fetch the specific private excerpts. `source_text_read:false` explicitly prevents a selected locator from claiming a successful private read. With the current deterministic selector, the first three references are question opening, accessible definition, and case-to-issue transition; the remaining seven stay in the approved index but are not dynamically relevance-ranked.
+
+The proposed style *interpretation* is at `editorial/SUENGJ-STYLE-20261014-PROPOSAL.md`; the canonical `SUENGJ-STYLE.md` is unchanged.
 
 ## Growth plan
 

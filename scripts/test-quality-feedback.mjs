@@ -62,16 +62,41 @@ test('default request loads no examples; unknown reason loads none', () => {
   eq(exampleStep(r, manifest, { repoRoot: REPO_ROOT, approvals, corpus }).status, 'STYLE_DESCRIPTION_ONLY');
   eq(exampleStep(r, manifest, { reason: 'curiosity', repoRoot: REPO_ROOT, approvals, corpus }).status, 'NOT_LOADED');
 });
-test('absent approvals for a target => NO_APPROVED_REFERENCE (real repo index has none)', () => {
-  for (const [surface, t] of [['instagram', 'trends-moa'], ['instagram', 'signalytics-news'], ['linkedin', 'personal-linkedin'], ['instagram', 'personal-instagram']]) {
-    const r = rcpt(surface, t, ['text/article']);
-    const s = exampleStep(r, manifest, { reason: 'failure', repoRoot: REPO_ROOT });
-    eq(s.status, NO_APPROVED_REFERENCE, t); eq(s.loaded, []);
-  }
-});
-test('real repo corpus (all synthetic placeholders) can never yield an approved example', () => {
+
+test('owner-chosen excerpts: source metadata stays private, personal scope only', () => {
   const idx = JSON.parse(readFileSync(resolve(REPO_ROOT, 'editorial/approved-examples.json'), 'utf8'));
-  eq(idx.approvals, []);
+  eq(idx.approvals.length, 10);
+  for (const a of idx.approvals) {
+    eq(a.kind, 'owner_selected_excerpt'); eq(a.voice_family, 'personal');
+    eq([...a.targets].sort(), ['personal-instagram', 'personal-linkedin']);
+    eq(a.recorded_by.type, 'human'); eq(a.owner_verdict, 'accepted'); eq(a.reference_eligible, true);
+    yes(a.source_ref.locator.includes('suengj/intelligence-library/blob/') && a.source_ref.locator.includes('#L'), 'private pinned source');
+    yes(!a.source_ref.locator.includes('docs.google.com'), 'no private Google Docs URL in public repo');
+  }
+  for (const target of ['personal-instagram', 'personal-linkedin']) {
+    const r = rcpt(target === 'personal-instagram' ? 'instagram' : 'linkedin', target, ['text/article']);
+    eq(loadApprovedCandidates(r, { repoRoot: REPO_ROOT }).candidates.length, 10);
+    eq(exampleStep(r, manifest, { repoRoot: REPO_ROOT }).loaded, []);
+    const chosen = exampleStep(r, manifest, { repoRoot: REPO_ROOT, reason: 'quality_comparison' });
+    eq(chosen.status, 'LOADED'); eq(chosen.loaded.length, 3);
+    eq(chosen.private_read_required, true); eq(chosen.source_text_read, false);
+  }
+  for (const target of ['signalytics-news', 'trends-moa']) {
+    const r = rcpt('instagram', target, ['text/article']);
+    eq(loadApprovedCandidates(r, { repoRoot: REPO_ROOT }).candidates.length, 0);
+    const s = exampleStep(r, manifest, { reason: 'failure', repoRoot: REPO_ROOT });
+    eq(s.status, NO_APPROVED_REFERENCE); eq(s.loaded, []);
+  }
+  for (const surface of ['suengj-com', 'newsletter', 'report-deck']) {
+    const r = resolveEditorial(intent(surface), { reader: rd() });
+    eq(loadApprovedCandidates(r, { repoRoot: REPO_ROOT }).candidates.length, 0);
+  }
+  const bad = structuredClone(idx); bad.approvals[0].targets = ['signalytics-news'];
+  const r = rcpt('instagram', 'personal-instagram', ['text/article']);
+  const checked = loadApprovedCandidates(r, { repoRoot: REPO_ROOT, approvals: bad });
+  yes(checked.rejected.some((c) => c.reason === 'excerpt scope must be personal targets only'));
+  const files = readdirSync(resolve(REPO_ROOT, 'evals/real-output-corpus/entries'));
+  yes(!files.some((f) => f.startsWith('owner-picked-personal-20261014')), 'excerpt must not enter global L1 corpus');
 });
 
 console.log('R4 feedback scoping');
@@ -145,33 +170,6 @@ test('CLI quality-feedback records under a given root and rejects non-explicit "
   yes(readdirSync(resolve(root, 'outcomes')).length === 1, 'outcome written');
 });
 
-
-test('2026-10-14 owner-chosen personal excerpts are scoped and never auto-read', () => {
-  const approvals = JSON.parse(readFileSync(resolve(REPO_ROOT, 'editorial/approved-examples.json'), 'utf8')).approvals;
-  eq(approvals.length, 10);
-  for (const row of approvals) {
-    eq(row.voice_family, 'personal');
-    eq([...row.targets].sort(), ['personal-instagram', 'personal-linkedin']);
-    const entry = JSON.parse(readFileSync(resolve(REPO_ROOT, 'evals/real-output-corpus/entries', row.entry_id.slice(7) + '.json'), 'utf8'));
-    eq(entry.owner_verdict, 'accepted'); eq(entry.reference_eligible, true);
-    yes(entry.reference_eligible_rationale.includes('excerpt only'), 'never approve an entire historical post');
-    yes(entry.source_ref.locator.includes('https://github.com/suengj/intelligence-library/blob/') && entry.source_ref.locator.includes('#L'), 'private commit-pinned source required');
-    yes(!entry.source_ref.locator.includes('docs.google.com'), 'private Drive ID must not be made public');
-  }
-  for (const target of ['personal-instagram', 'personal-linkedin']) {
-    const r = rcpt(target === 'personal-instagram' ? 'instagram' : 'linkedin', target, ['text/article']);
-    const active = loadApprovedCandidates(r, { repoRoot: REPO_ROOT });
-    eq(active.candidates.length, 10); eq(active.rejected.length, 0);
-    eq(exampleStep(r, manifest, { repoRoot: REPO_ROOT }).loaded.length, 0);
-    const comparison = exampleStep(r, manifest, { repoRoot: REPO_ROOT, reason: 'quality_comparison' });
-    eq(comparison.status, 'LOADED'); eq(comparison.loaded.length, 3);
-  }
-  for (const target of ['signalytics-news', 'trends-moa']) {
-    const r = rcpt('instagram', target, ['text/article']);
-    eq(loadApprovedCandidates(r, { repoRoot: REPO_ROOT }).candidates.length, 0);
-    eq(exampleStep(r, manifest, { repoRoot: REPO_ROOT, reason: 'quality_comparison' }).status, NO_APPROVED_REFERENCE);
-  }
-});
 
 console.log('R5 existing flows through the common entry');
 const SNS_DOCS = Object.values(manifest.voice_docs).flat();

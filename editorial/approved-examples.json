@@ -1,86 +1,256 @@
 {
-  "schema_version": "1.0.0",
-  "description": "Pointer-only positive owner-approved excerpt comparison index. 2026-10-14 selections apply solely to personal LinkedIn/Instagram, not full original posts. Original text resides only in private intelligence-library at pinned paths. Description-only generation is default; ambiguity/failure/quality_comparison permits 2–3 approved examples.",
+  "schema_version": "1.1.0",
+  "description": "Explicit human-selected personal author-voice snippets are scoped here, not in the global GOOD real-output corpus. Approved excerpt text lives solely in a commit-pinned private intelligence-library file. Routine generation uses style description only; for ambiguity, failure or quality comparison the resolver selects at most three metadata pointers that require a separate authorized private read. No automatic other-account reuse or general article approval.",
   "approvals": [
     {
-      "entry_id": "corpus:owner-picked-personal-20261014-o1",
+      "entry_id": "excerpt:owner-personal-20261014-o1",
+      "kind": "owner_selected_excerpt",
       "voice_family": "personal",
       "targets": [
         "personal-linkedin",
         "personal-instagram"
-      ]
+      ],
+      "source_ref": {
+        "kind": "url",
+        "locator": "https://github.com/suengj/intelligence-library/blob/9c7cd5cd53f5c7927a920f7a6cf86a20c4164951/docs/owner-approved-personal-style-2026-10-14.md#L13"
+      },
+      "owner_verdict": "accepted",
+      "reference_eligible": true,
+      "reference_eligible_rationale": "Owner chose sentence O1 as a positive personal LinkedIn/Instagram voice reference on 2026-10-14. Only the exact excerpt, not the entire historical post, was endorsed.",
+      "recorded_by": {
+        "type": "human"
+      },
+      "dimensions": {
+        "strong": [
+          "observation-to-question opening"
+        ],
+        "weak": []
+      }
     },
     {
-      "entry_id": "corpus:owner-picked-personal-20261014-t1",
+      "entry_id": "excerpt:owner-personal-20261014-t1",
+      "kind": "owner_selected_excerpt",
       "voice_family": "personal",
       "targets": [
         "personal-linkedin",
         "personal-instagram"
-      ]
+      ],
+      "source_ref": {
+        "kind": "url",
+        "locator": "https://github.com/suengj/intelligence-library/blob/9c7cd5cd53f5c7927a920f7a6cf86a20c4164951/docs/owner-approved-personal-style-2026-10-14.md#L16"
+      },
+      "owner_verdict": "accepted",
+      "reference_eligible": true,
+      "reference_eligible_rationale": "Owner chose sentence T1 as a positive personal LinkedIn/Instagram voice reference on 2026-10-14. Only the exact excerpt, not the entire historical post, was endorsed.",
+      "recorded_by": {
+        "type": "human"
+      },
+      "dimensions": {
+        "strong": [
+          "accessible technical definition"
+        ],
+        "weak": []
+      }
     },
     {
-      "entry_id": "corpus:owner-picked-personal-20261014-l1",
+      "entry_id": "excerpt:owner-personal-20261014-l1",
+      "kind": "owner_selected_excerpt",
       "voice_family": "personal",
       "targets": [
         "personal-linkedin",
         "personal-instagram"
-      ]
+      ],
+      "source_ref": {
+        "kind": "url",
+        "locator": "https://github.com/suengj/intelligence-library/blob/9c7cd5cd53f5c7927a920f7a6cf86a20c4164951/docs/owner-approved-personal-style-2026-10-14.md#L15"
+      },
+      "owner_verdict": "accepted",
+      "reference_eligible": true,
+      "reference_eligible_rationale": "Owner chose sentence L1 as a positive personal LinkedIn/Instagram voice reference on 2026-10-14. Only the exact excerpt, not the entire historical post, was endorsed.",
+      "recorded_by": {
+        "type": "human"
+      },
+      "dimensions": {
+        "strong": [
+          "concrete examples to critical issue"
+        ],
+        "weak": []
+      }
     },
     {
-      "entry_id": "corpus:owner-picked-personal-20261014-o3",
+      "entry_id": "excerpt:owner-personal-20261014-o3",
+      "kind": "owner_selected_excerpt",
       "voice_family": "personal",
       "targets": [
         "personal-linkedin",
         "personal-instagram"
-      ]
+      ],
+      "source_ref": {
+        "kind": "url",
+        "locator": "https://github.com/suengj/intelligence-library/blob/9c7cd5cd53f5c7927a920f7a6cf86a20c4164951/docs/owner-approved-personal-style-2026-10-14.md#L14"
+      },
+      "owner_verdict": "accepted",
+      "reference_eligible": true,
+      "reference_eligible_rationale": "Owner chose sentence O3 as a positive personal LinkedIn/Instagram voice reference on 2026-10-14. Only the exact excerpt, not the entire historical post, was endorsed.",
+      "recorded_by": {
+        "type": "human"
+      },
+      "dimensions": {
+        "strong": [
+          "accumulated-interest opening"
+        ],
+        "weak": []
+      }
     },
     {
-      "entry_id": "corpus:owner-picked-personal-20261014-t2",
+      "entry_id": "excerpt:owner-personal-20261014-t2",
+      "kind": "owner_selected_excerpt",
       "voice_family": "personal",
       "targets": [
         "personal-linkedin",
         "personal-instagram"
-      ]
+      ],
+      "source_ref": {
+        "kind": "url",
+        "locator": "https://github.com/suengj/intelligence-library/blob/9c7cd5cd53f5c7927a920f7a6cf86a20c4164951/docs/owner-approved-personal-style-2026-10-14.md#L17"
+      },
+      "owner_verdict": "accepted",
+      "reference_eligible": true,
+      "reference_eligible_rationale": "Owner chose sentence T2 as a positive personal LinkedIn/Instagram voice reference on 2026-10-14. Only the exact excerpt, not the entire historical post, was endorsed.",
+      "recorded_by": {
+        "type": "human"
+      },
+      "dimensions": {
+        "strong": [
+          "compact definition of the act of analysis"
+        ],
+        "weak": []
+      }
     },
     {
-      "entry_id": "corpus:owner-picked-personal-20261014-p1",
+      "entry_id": "excerpt:owner-personal-20261014-p1",
+      "kind": "owner_selected_excerpt",
       "voice_family": "personal",
       "targets": [
         "personal-linkedin",
         "personal-instagram"
-      ]
+      ],
+      "source_ref": {
+        "kind": "url",
+        "locator": "https://github.com/suengj/intelligence-library/blob/9c7cd5cd53f5c7927a920f7a6cf86a20c4164951/docs/owner-approved-personal-style-2026-10-14.md#L18"
+      },
+      "owner_verdict": "accepted",
+      "reference_eligible": true,
+      "reference_eligible_rationale": "Owner chose sentence P1 as a positive personal LinkedIn/Instagram voice reference on 2026-10-14. Only the exact excerpt, not the entire historical post, was endorsed.",
+      "recorded_by": {
+        "type": "human"
+      },
+      "dimensions": {
+        "strong": [
+          "authored curiosity"
+        ],
+        "weak": []
+      }
     },
     {
-      "entry_id": "corpus:owner-picked-personal-20261014-p3",
+      "entry_id": "excerpt:owner-personal-20261014-p3",
+      "kind": "owner_selected_excerpt",
       "voice_family": "personal",
       "targets": [
         "personal-linkedin",
         "personal-instagram"
-      ]
+      ],
+      "source_ref": {
+        "kind": "url",
+        "locator": "https://github.com/suengj/intelligence-library/blob/9c7cd5cd53f5c7927a920f7a6cf86a20c4164951/docs/owner-approved-personal-style-2026-10-14.md#L19"
+      },
+      "owner_verdict": "accepted",
+      "reference_eligible": true,
+      "reference_eligible_rationale": "Owner chose sentence P3 as a positive personal LinkedIn/Instagram voice reference on 2026-10-14. Only the exact excerpt, not the entire historical post, was endorsed.",
+      "recorded_by": {
+        "type": "human"
+      },
+      "dimensions": {
+        "strong": [
+          "personally owned conceptual framing"
+        ],
+        "weak": []
+      }
     },
     {
-      "entry_id": "corpus:owner-picked-personal-20261014-e1",
+      "entry_id": "excerpt:owner-personal-20261014-e1",
+      "kind": "owner_selected_excerpt",
       "voice_family": "personal",
       "targets": [
         "personal-linkedin",
         "personal-instagram"
-      ]
+      ],
+      "source_ref": {
+        "kind": "url",
+        "locator": "https://github.com/suengj/intelligence-library/blob/9c7cd5cd53f5c7927a920f7a6cf86a20c4164951/docs/owner-approved-personal-style-2026-10-14.md#L22"
+      },
+      "owner_verdict": "accepted",
+      "reference_eligible": true,
+      "reference_eligible_rationale": "Owner chose sentence E1 as a positive personal LinkedIn/Instagram voice reference on 2026-10-14. Only the exact excerpt, not the entire historical post, was endorsed.",
+      "recorded_by": {
+        "type": "human"
+      },
+      "dimensions": {
+        "strong": [
+          "return to real work ending"
+        ],
+        "weak": []
+      }
     },
     {
-      "entry_id": "corpus:owner-picked-personal-20261014-h1",
+      "entry_id": "excerpt:owner-personal-20261014-h1",
+      "kind": "owner_selected_excerpt",
       "voice_family": "personal",
       "targets": [
         "personal-linkedin",
         "personal-instagram"
-      ]
+      ],
+      "source_ref": {
+        "kind": "url",
+        "locator": "https://github.com/suengj/intelligence-library/blob/9c7cd5cd53f5c7927a920f7a6cf86a20c4164951/docs/owner-approved-personal-style-2026-10-14.md#L20"
+      },
+      "owner_verdict": "accepted",
+      "reference_eligible": true,
+      "reference_eligible_rationale": "Owner chose sentence H1 as a positive personal LinkedIn/Instagram voice reference on 2026-10-14. Only the exact excerpt, not the entire historical post, was endorsed.",
+      "recorded_by": {
+        "type": "human"
+      },
+      "dimensions": {
+        "strong": [
+          "brief self-deprecating aside"
+        ],
+        "weak": []
+      }
     },
     {
-      "entry_id": "corpus:owner-picked-personal-20261014-h2",
+      "entry_id": "excerpt:owner-personal-20261014-h2",
+      "kind": "owner_selected_excerpt",
       "voice_family": "personal",
       "targets": [
         "personal-linkedin",
         "personal-instagram"
-      ]
+      ],
+      "source_ref": {
+        "kind": "url",
+        "locator": "https://github.com/suengj/intelligence-library/blob/9c7cd5cd53f5c7927a920f7a6cf86a20c4164951/docs/owner-approved-personal-style-2026-10-14.md#L21"
+      },
+      "owner_verdict": "accepted",
+      "reference_eligible": true,
+      "reference_eligible_rationale": "Owner chose sentence H2 as a positive personal LinkedIn/Instagram voice reference on 2026-10-14. Only the exact excerpt, not the entire historical post, was endorsed.",
+      "recorded_by": {
+        "type": "human"
+      },
+      "dimensions": {
+        "strong": [
+          "quiet self-directed study/work aside"
+        ],
+        "weak": []
+      }
     }
   ]
 }

@@ -6,7 +6,7 @@
 
 - Allowed: `personal-linkedin`, `personal-instagram` only.
 - Denied: `signalytics-news`, `trends-moa`, `blog`, `news`, `report`, other brands, general constitution and `editorial/voice.md`.
-- Private source of the exact selected excerpts is in `suengj/intelligence-library/docs/owner-approved-personal-style-2026-10-14.md`; the public repo stores pointer-only real-output records. No original 132-post corpus bodies, private Drive link or owner-specific anecdotes are to be copied to the public repo.
+- Private source of the exact selected excerpts is in `suengj/intelligence-library/docs/owner-approved-personal-style-2026-10-14.md`; the public repo stores scoped pointer-only approved-example entries **outside** the generic real-output corpus. No original 132-post corpus bodies, private Drive link or owner-specific anecdotes are to be copied to the public repo.
 - Existing facts/figures/citations/uncertainty/rights/approval precedence never changes. Selected older claims and recollections are **rhetorical reference only**, not a current-world fact source.
 
 ## Evidence-ranked voice traits (inferred from the owner's ten explicit choices)
