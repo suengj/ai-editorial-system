@@ -75,7 +75,7 @@ export function planCarousel(series, catalog=loadVisualRecipes()) {
     checkRegions({...recurring,...layout});
   }
   need(Array.isArray(series.frames) && series.frames.length >= CAROUSEL_CONSTRAINTS.frames.min && series.frames.length <= CAROUSEL_CONSTRAINTS.frames.max, 'SERIES_FRAMES', '1–20 is a local v1 resource bound, not an Instagram platform limit');
-  need(Array.isArray(series.beats) && series.beats.length > 0 && series.beats.length <= CAROUSEL_CONSTRAINTS.beats.max, 'SERIES_BEATS', 'declare the carried beat graph');
+  need(Array.isArray(series.beats) && series.beats.length >= CAROUSEL_CONSTRAINTS.beats.min && series.beats.length <= CAROUSEL_CONSTRAINTS.beats.max, 'SERIES_BEATS', 'declare the carried beat graph');
   const beats = new Map();
   for (const b of series.beats) {
     keys(b,['id','depends_on'],'beat');

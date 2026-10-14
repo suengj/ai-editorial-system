@@ -85,7 +85,7 @@
     }
   },
   "catalog_version": "1.0.0",
-  "content_digest": "sha256:3315dc4949a479bb59af7e357a5cd11619a46e4be18d0d464e8362eb256ed492",
+  "content_digest": "sha256:ea6680a86e3c9df87338d039581ddc01a314e0ca9827bd44651046569a35fafa",
   "field_domains": {
     "call_to_action": {
       "max_length": 200,
@@ -176,24 +176,37 @@
       "channel": "suengj-com",
       "id": "blog",
       "label": "blog",
-      "rule_refs": [
-        {
-          "path": "editorial/STRUCTURED-VISUAL-EXECUTION.md",
-          "role": "core:visual",
-          "sha256": "ca9bd8b4dfce215159d3fecb782ae637b3db721fde33673639d73793fd1a4fac"
-        },
-        {
-          "path": "editorial/constitution.md",
-          "role": "core:text",
-          "sha256": "6a6b58a9fce5f29099d74c23f10587c6560904ffe0a6a7c001e2ab330b2b6997"
-        },
-        {
-          "path": "editorial/voice.md",
-          "role": "core:text",
-          "sha256": "f6c953c4a2c0792bc0189f016343df299373caf5f104958efc864c47e92deaaa"
-        }
-      ],
+      "rule_refs": {
+        "text": [
+          {
+            "path": "editorial/constitution.md",
+            "role": "core:text",
+            "sha256": "6a6b58a9fce5f29099d74c23f10587c6560904ffe0a6a7c001e2ab330b2b6997"
+          },
+          {
+            "path": "editorial/voice.md",
+            "role": "core:text",
+            "sha256": "f6c953c4a2c0792bc0189f016343df299373caf5f104958efc864c47e92deaaa"
+          }
+        ],
+        "visual": [
+          {
+            "path": "editorial/STRUCTURED-VISUAL-EXECUTION.md",
+            "role": "core:visual",
+            "sha256": "ca9bd8b4dfce215159d3fecb782ae637b3db721fde33673639d73793fd1a4fac"
+          },
+          {
+            "path": "editorial/constitution.md",
+            "role": "core:visual",
+            "sha256": "6a6b58a9fce5f29099d74c23f10587c6560904ffe0a6a7c001e2ab330b2b6997"
+          }
+        ]
+      },
       "status": "CONNECTED_COMMON_ENTRY",
+      "task_kinds": [
+        "text",
+        "visual"
+      ],
       "voice_family": null
     },
     {
@@ -203,24 +216,24 @@
       "channel": "newsletter",
       "id": "news",
       "label": "news",
-      "rule_refs": [
-        {
-          "path": "editorial/STRUCTURED-VISUAL-EXECUTION.md",
-          "role": "core:visual",
-          "sha256": "ca9bd8b4dfce215159d3fecb782ae637b3db721fde33673639d73793fd1a4fac"
-        },
-        {
-          "path": "editorial/constitution.md",
-          "role": "core:text",
-          "sha256": "6a6b58a9fce5f29099d74c23f10587c6560904ffe0a6a7c001e2ab330b2b6997"
-        },
-        {
-          "path": "editorial/voice.md",
-          "role": "core:text",
-          "sha256": "f6c953c4a2c0792bc0189f016343df299373caf5f104958efc864c47e92deaaa"
-        }
-      ],
+      "rule_refs": {
+        "text": [
+          {
+            "path": "editorial/constitution.md",
+            "role": "core:text",
+            "sha256": "6a6b58a9fce5f29099d74c23f10587c6560904ffe0a6a7c001e2ab330b2b6997"
+          },
+          {
+            "path": "editorial/voice.md",
+            "role": "core:text",
+            "sha256": "f6c953c4a2c0792bc0189f016343df299373caf5f104958efc864c47e92deaaa"
+          }
+        ]
+      },
       "status": "CONNECTED_COMMON_ENTRY",
+      "task_kinds": [
+        "text"
+      ],
       "voice_family": null
     },
     {
@@ -232,24 +245,37 @@
       "channel": "report-deck",
       "id": "report",
       "label": "report",
-      "rule_refs": [
-        {
-          "path": "editorial/STRUCTURED-VISUAL-EXECUTION.md",
-          "role": "core:visual",
-          "sha256": "ca9bd8b4dfce215159d3fecb782ae637b3db721fde33673639d73793fd1a4fac"
-        },
-        {
-          "path": "editorial/constitution.md",
-          "role": "core:text",
-          "sha256": "6a6b58a9fce5f29099d74c23f10587c6560904ffe0a6a7c001e2ab330b2b6997"
-        },
-        {
-          "path": "editorial/voice.md",
-          "role": "core:text",
-          "sha256": "f6c953c4a2c0792bc0189f016343df299373caf5f104958efc864c47e92deaaa"
-        }
-      ],
+      "rule_refs": {
+        "text": [
+          {
+            "path": "editorial/constitution.md",
+            "role": "core:text",
+            "sha256": "6a6b58a9fce5f29099d74c23f10587c6560904ffe0a6a7c001e2ab330b2b6997"
+          },
+          {
+            "path": "editorial/voice.md",
+            "role": "core:text",
+            "sha256": "f6c953c4a2c0792bc0189f016343df299373caf5f104958efc864c47e92deaaa"
+          }
+        ],
+        "visual": [
+          {
+            "path": "editorial/STRUCTURED-VISUAL-EXECUTION.md",
+            "role": "core:visual",
+            "sha256": "ca9bd8b4dfce215159d3fecb782ae637b3db721fde33673639d73793fd1a4fac"
+          },
+          {
+            "path": "editorial/constitution.md",
+            "role": "core:visual",
+            "sha256": "6a6b58a9fce5f29099d74c23f10587c6560904ffe0a6a7c001e2ab330b2b6997"
+          }
+        ]
+      },
       "status": "CONNECTED_COMMON_ENTRY",
+      "task_kinds": [
+        "text",
+        "visual"
+      ],
       "voice_family": null
     }
   ],
@@ -260,7 +286,8 @@
       "sha256": "ed8806431fc64c2534229b5fbe32116d3f57b5645b91b8f6761306bbd37cc247"
     },
     "note": "The AES git commit is deliberately not embedded. The consumer pins the AES commit and this file's sha256.",
-    "profile_version_semantics": "<manifest_version>+<aes_commit>; the consumer supplies aes_commit from its own pin"
+    "profile_version_semantics": "<manifest_version>+<aes_commit>; the consumer supplies aes_commit from its own pin",
+    "rule_refs_scope": "rule_refs are the target/flow-fixed subset only. Axis and language profile files are resolved per request via axis_profile_paths / language_packs. Approved-example excerpts are never included."
   },
   "language_packs": {
     "ko": "editorial/profiles/language/ko-KR.json",
@@ -384,6 +411,663 @@
     }
   },
   "schemas": {
+    "audio-plan": {
+      "id": "https://suengj.com/schemas/audio-plan.schema.json",
+      "path": "schemas/audio-plan.schema.json",
+      "schema": {
+        "$defs": {
+          "article_ref": {
+            "additionalProperties": false,
+            "properties": {
+              "article_id": {
+                "pattern": "^art:[a-z0-9]+(-[a-z0-9]+)*$",
+                "type": "string"
+              },
+              "claims_hash": {
+                "pattern": "^[a-f0-9]{64}$",
+                "type": "string"
+              },
+              "commit": {
+                "pattern": "^[a-f0-9]{7,40}$",
+                "type": "string"
+              },
+              "content_hash": {
+                "pattern": "^[a-f0-9]{64}$",
+                "type": "string"
+              },
+              "version_number": {
+                "minimum": 1,
+                "type": "integer"
+              }
+            },
+            "required": [
+              "article_id",
+              "version_number",
+              "content_hash",
+              "claims_hash"
+            ],
+            "type": "object"
+          },
+          "audience": {
+            "additionalProperties": false,
+            "properties": {
+              "profile_ref": {
+                "pattern": "^editorial/profiles/audience/",
+                "type": "string"
+              },
+              "traits_applied": {
+                "description": "Which concrete audience.modality_effects.audio adjustments were actually applied to this plan, not the whole profile.",
+                "items": {
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              "value": {
+                "enum": [
+                  "general-reader",
+                  "professional-generalist",
+                  "domain-practitioner",
+                  "domain-expert",
+                  "beginner-learner",
+                  "child-upper-elementary"
+                ]
+              }
+            },
+            "required": [
+              "value",
+              "profile_ref",
+              "traits_applied"
+            ],
+            "type": "object"
+          },
+          "delivery_intent": {
+            "additionalProperties": false,
+            "description": "Provider-neutral performance direction (AUDIO-SCRIPT.md §12, §13) — augmented from register/audience, never an invented persona. Never SSML, audio tags, or provider syntax.",
+            "properties": {
+              "affect": {
+                "type": "string"
+              },
+              "global_cues": {
+                "items": {
+                  "$ref": "#/$defs/performance_cue"
+                },
+                "type": "array"
+              },
+              "pace": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "register": {
+                "minLength": 1,
+                "type": "string"
+              }
+            },
+            "required": [
+              "register",
+              "pace"
+            ],
+            "type": "object"
+          },
+          "performance_cue": {
+            "enum": [
+              "pause_short",
+              "pause_medium",
+              "emphasis",
+              "pace_slow",
+              "pace_fast",
+              "pronunciation_ref",
+              "speaker"
+            ]
+          },
+          "pronunciation_entry": {
+            "additionalProperties": false,
+            "properties": {
+              "pronunciation_ref": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "spoken_form": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "surface_text": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "term": {
+                "minLength": 1,
+                "type": "string"
+              }
+            },
+            "required": [
+              "term",
+              "spoken_form"
+            ],
+            "type": "object"
+          },
+          "segment": {
+            "additionalProperties": false,
+            "properties": {
+              "beat_id": {
+                "description": "Links to the shared argument-beat graph (editorial/VISUAL-STORY-COMPILATION.md §3). Required for audio/timed-narration — checked by scripts/lib/audio-plan-core.mjs.",
+                "pattern": "^beat-[a-z0-9]+(-[a-z0-9]+)*$",
+                "type": "string"
+              },
+              "cues": {
+                "items": {
+                  "$ref": "#/$defs/performance_cue"
+                },
+                "type": "array"
+              },
+              "narration_span_hash": {
+                "pattern": "^[a-f0-9]{64}$",
+                "type": "string"
+              },
+              "next_context": {
+                "type": "string"
+              },
+              "previous_context": {
+                "type": "string"
+              },
+              "segment_id": {
+                "pattern": "^seg-[a-z0-9]+(-[a-z0-9]+)*$",
+                "type": "string"
+              },
+              "speaker": {
+                "description": "Speaking role id for audio/dialogue segments; must resolve to one of dialogue.speaker_roles[].role_id.",
+                "minLength": 1,
+                "type": "string"
+              },
+              "target_duration_ms": {
+                "minimum": 0,
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "segment_id",
+              "narration_span_hash"
+            ],
+            "type": "object"
+          },
+          "selected_reference_traits": {
+            "additionalProperties": false,
+            "description": "Traits only, never a reference body (docs/architecture/V2-EDITORIAL-LEARNING-CORE.md §2; editorial/profiles/reference/audio.json).",
+            "properties": {
+              "adopt": {
+                "items": {
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              "authoritative_override": {
+                "items": {
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              "avoid": {
+                "items": {
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              "do_not_copy": {
+                "items": {
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "type": "array"
+              }
+            },
+            "required": [
+              "adopt",
+              "avoid",
+              "do_not_copy"
+            ],
+            "type": "object"
+          },
+          "speaker_role": {
+            "additionalProperties": false,
+            "properties": {
+              "knowledge_position": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "persona_disclosure": {
+                "description": "AUDIO-SCRIPT.md §15: a synthetic speaker may never be presented as a real source. The only value this schema accepts is the explicit non-source disclosure — any other value fails validation structurally.",
+                "enum": [
+                  "synthetic_non_source"
+                ]
+              },
+              "purpose": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "role_id": {
+                "minLength": 1,
+                "type": "string"
+              }
+            },
+            "required": [
+              "role_id",
+              "purpose",
+              "knowledge_position",
+              "persona_disclosure"
+            ],
+            "type": "object"
+          }
+        },
+        "$id": "https://suengj.com/schemas/audio-plan.schema.json",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "additionalProperties": false,
+        "description": "The pre-TTS contract (AES-V2.8 / SUE-566). Records the compiled canonical spoken script and every state a bad audio artifact must route back to — audience, artifact profile, reference traits, pronunciation, delivery, script L1 review — before an expensive render is attempted. Mirrors the lineage and gate structure of schemas/visual-job.schema.json rather than inventing a parallel one. See schemas/AUDIO-PLAN-CONTRACT.md.",
+        "properties": {
+          "article_ref": {
+            "$ref": "#/$defs/article_ref"
+          },
+          "artifact_profile": {
+            "description": "An audio artifact profile id from the artifact axis (editorial/profiles/axes.json, editorial/profiles/artifact/audio-*.json). The vocabulary is owned by that directory, not this enum (docs/architecture/V2-EDITORIAL-LEARNING-CORE.md §8 extension rule) — real membership is enforced by scripts/lib/audio-plan-core.mjs's UNKNOWN_PROFILE check against the directory, not by this pattern alone.",
+            "pattern": "^audio/[a-z0-9]+(-[a-z0-9]+)*$",
+            "type": "string"
+          },
+          "attempts": {
+            "minimum": 0,
+            "type": "integer"
+          },
+          "audience": {
+            "$ref": "#/$defs/audience"
+          },
+          "cost": {
+            "additionalProperties": false,
+            "description": "Cost per accepted artifact, not raw render count (docs/architecture/V2-EDITORIAL-LEARNING-CORE.md §9).",
+            "properties": {
+              "cost_per_accepted_artifact": {
+                "minimum": 0,
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "renders_accepted": {
+                "minimum": 0,
+                "type": "integer"
+              },
+              "renders_attempted": {
+                "minimum": 0,
+                "type": "integer"
+              }
+            },
+            "required": [
+              "renders_attempted",
+              "renders_accepted",
+              "cost_per_accepted_artifact"
+            ],
+            "type": "object"
+          },
+          "delivery_intent": {
+            "$ref": "#/$defs/delivery_intent"
+          },
+          "dialogue": {
+            "additionalProperties": false,
+            "description": "Required and validated only when artifact_profile is audio/dialogue (checked by scripts/lib/audio-plan-core.mjs, since this schema subset has no conditional keyword).",
+            "properties": {
+              "agreement_policy": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "knowledge_asymmetry": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "persona_boundary_statement": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "speaker_roles": {
+                "items": {
+                  "$ref": "#/$defs/speaker_role"
+                },
+                "type": "array"
+              },
+              "turn_policy": {
+                "additionalProperties": false,
+                "properties": {
+                  "interruption_conditions": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "turn_length": {
+                    "minLength": 1,
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "turn_length",
+                  "interruption_conditions"
+                ],
+                "type": "object"
+              }
+            },
+            "required": [
+              "speaker_roles",
+              "knowledge_asymmetry",
+              "turn_policy",
+              "agreement_policy",
+              "persona_boundary_statement"
+            ],
+            "type": "object"
+          },
+          "max_attempts": {
+            "minimum": 1,
+            "type": "integer"
+          },
+          "package_ref": {
+            "description": "Editorial Package reference, when this plan is compiled from a package rather than a single article. Exactly one of article_ref/package_ref must be present — checked by scripts/lib/audio-plan-core.mjs, not by this schema.",
+            "minLength": 1,
+            "type": "string"
+          },
+          "plan_id": {
+            "pattern": "^audioplan:[a-z0-9]+(-[a-z0-9]+)*$",
+            "type": "string"
+          },
+          "profile_ref": {
+            "pattern": "^editorial/profiles/artifact/",
+            "type": "string"
+          },
+          "pronunciation": {
+            "description": "Provider-neutral pronunciation glossary (AUDIO-SCRIPT.md §10, §11).",
+            "items": {
+              "$ref": "#/$defs/pronunciation_entry"
+            },
+            "type": "array"
+          },
+          "qa": {
+            "additionalProperties": false,
+            "description": "Rendered-audio QA (AUDIO-SCRIPT.md §20 'Render QA'). Structurally separate from script_l1 — a correct transcript certifies nothing about pronunciation, pacing, continuity, or performance.",
+            "properties": {
+              "continuity_check": {
+                "enum": [
+                  "pass",
+                  "fail",
+                  "not_yet"
+                ]
+              },
+              "directive_leak_check": {
+                "enum": [
+                  "pass",
+                  "fail",
+                  "not_yet"
+                ]
+              },
+              "notes": {
+                "type": "string"
+              },
+              "pacing_check": {
+                "enum": [
+                  "pass",
+                  "fail",
+                  "not_yet"
+                ]
+              },
+              "performance_check": {
+                "enum": [
+                  "pass",
+                  "fail",
+                  "not_yet"
+                ]
+              },
+              "performed": {
+                "type": "boolean"
+              },
+              "pronunciation_check": {
+                "enum": [
+                  "pass",
+                  "fail",
+                  "not_yet"
+                ]
+              }
+            },
+            "required": [
+              "performed",
+              "pronunciation_check",
+              "pacing_check",
+              "continuity_check",
+              "performance_check",
+              "directive_leak_check"
+            ],
+            "type": "object"
+          },
+          "recompilation": {
+            "additionalProperties": false,
+            "description": "Evidence that the article was recompiled for listening rather than sent to TTS as-is (AUDIO-SCRIPT.md §1). Required so skipping this step is structurally visible.",
+            "properties": {
+              "identical_to_source_prose": {
+                "description": "Must be false. true means the narration_text is the article prose read aloud with no listening-structure recompilation — the default failure this contract exists to prevent.",
+                "type": "boolean"
+              },
+              "performed": {
+                "type": "boolean"
+              },
+              "structural_changes": {
+                "description": "What changed between article prose and spoken script (reordering, compression, recurrence added, transitions rewritten).",
+                "items": {
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "type": "array"
+              }
+            },
+            "required": [
+              "performed",
+              "identical_to_source_prose"
+            ],
+            "type": "object"
+          },
+          "render": {
+            "additionalProperties": false,
+            "description": "Rendering lineage only (provider/model/version/voice) — never editorial state. Nullable because a plan below the render gate has not rendered yet.",
+            "properties": {
+              "model": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "model_version": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "provider": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "quality_tier": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "tool": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "tool_version": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "voice_id": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "voice_provenance_class": {
+                "description": "editorial/RIGHTS-AND-PROVENANCE.md §4 'Generated voice provenance' table.",
+                "enum": [
+                  "provider_stock",
+                  "synthetic_designed",
+                  "owner_cloned",
+                  "licensed_voice_actor",
+                  "third_party_imitation"
+                ]
+              }
+            },
+            "required": [
+              "tool",
+              "provider",
+              "model",
+              "model_version",
+              "voice_provenance_class"
+            ],
+            "type": [
+              "object",
+              "null"
+            ]
+          },
+          "schema_version": {
+            "const": "1.0.0"
+          },
+          "script_l1": {
+            "additionalProperties": false,
+            "description": "L1 spoken-naturalness review (AUDIO-SCRIPT.md §20 'Script QA'). Cheap preflight that must pass before an expensive render (docs/architecture/V2-EDITORIAL-LEARNING-CORE.md §9).",
+            "properties": {
+              "checklist": {
+                "items": {
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              "outcome": {
+                "enum": [
+                  "pass",
+                  "fail",
+                  "not_yet"
+                ]
+              },
+              "performed": {
+                "type": "boolean"
+              },
+              "reviewer": {
+                "enum": [
+                  "model",
+                  "human"
+                ]
+              }
+            },
+            "required": [
+              "performed",
+              "outcome"
+            ],
+            "type": "object"
+          },
+          "segments": {
+            "description": "Semantic segment plan (AUDIO-SCRIPT.md §17). Segment boundaries are chosen by meaning first, then fit to provider limits.",
+            "items": {
+              "$ref": "#/$defs/segment"
+            },
+            "type": "array"
+          },
+          "selected_reference_traits": {
+            "$ref": "#/$defs/selected_reference_traits"
+          },
+          "spoken_script": {
+            "additionalProperties": false,
+            "description": "The canonical narration_text SSOT (AUDIO-SCRIPT.md §2). Clean spoken text only — never provider markup, stage directions, or delivery instructions.",
+            "properties": {
+              "narration_hash": {
+                "pattern": "^[a-f0-9]{64}$",
+                "type": "string"
+              },
+              "narration_text": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "script_version": {
+                "minimum": 1,
+                "type": "integer"
+              }
+            },
+            "required": [
+              "narration_text",
+              "narration_hash",
+              "script_version"
+            ],
+            "type": "object"
+          },
+          "status": {
+            "enum": [
+              "planned",
+              "script_compiled",
+              "script_l1_review",
+              "script_l1_pass",
+              "script_l1_fail",
+              "ready_for_render",
+              "rendering",
+              "rendered",
+              "qa_pass",
+              "qa_fail",
+              "accepted",
+              "rejected"
+            ]
+          },
+          "timing": {
+            "additionalProperties": false,
+            "properties": {
+              "rendering_mode": {
+                "enum": [
+                  "free",
+                  "timed"
+                ]
+              },
+              "target_duration_ms": {
+                "minimum": 0,
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              },
+              "tolerance_ms": {
+                "minimum": 0,
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "rendering_mode"
+            ],
+            "type": "object"
+          }
+        },
+        "required": [
+          "schema_version",
+          "plan_id",
+          "artifact_profile",
+          "profile_ref",
+          "audience",
+          "selected_reference_traits",
+          "spoken_script",
+          "recompilation",
+          "segments",
+          "pronunciation",
+          "delivery_intent",
+          "timing",
+          "script_l1",
+          "render",
+          "attempts",
+          "max_attempts",
+          "qa",
+          "cost",
+          "status"
+        ],
+        "title": "Audio Plan",
+        "type": "object"
+      },
+      "sha256": "2fbc4adf35170c4c0a35dc16b626296e9639f93f4d6d338a718540286064c44d"
+    },
     "editorial-intent": {
       "id": "https://suengj.com/schemas/editorial-intent.schema.json",
       "path": "schemas/editorial-intent.schema.json",
@@ -881,6 +1565,517 @@
         "type": "object"
       },
       "sha256": "93c97a1ecbe2da26a570f67e7a32cabe8e1250ab382f2dc4bb15f65d19c4a5dc"
+    },
+    "editorial-package": {
+      "id": "https://suengj.com/schemas/editorial-package.schema.json",
+      "path": "schemas/editorial-package.schema.json",
+      "schema": {
+        "$defs": {
+          "artifact_ref": {
+            "pattern": "^(text|visual|audio|video)/[a-z0-9]+(-[a-z0-9]+)*(#[a-z0-9]+(-[a-z0-9]+)*)?$",
+            "type": "string"
+          },
+          "axis_ref_audience": {
+            "additionalProperties": false,
+            "properties": {
+              "profile_ref": {
+                "pattern": "^editorial/profiles/audience/",
+                "type": "string"
+              },
+              "value": {
+                "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
+                "type": "string"
+              }
+            },
+            "required": [
+              "value"
+            ],
+            "type": "object"
+          },
+          "axis_ref_content": {
+            "additionalProperties": false,
+            "properties": {
+              "profile_ref": {
+                "pattern": "^editorial/profiles/content/",
+                "type": "string"
+              },
+              "value": {
+                "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
+                "type": "string"
+              }
+            },
+            "required": [
+              "value"
+            ],
+            "type": "object"
+          },
+          "axis_ref_surface": {
+            "additionalProperties": false,
+            "properties": {
+              "profile_ref": {
+                "pattern": "^editorial/profiles/surface/",
+                "type": "string"
+              },
+              "value": {
+                "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
+                "type": "string"
+              }
+            },
+            "required": [
+              "value"
+            ],
+            "type": "object"
+          },
+          "lineage": {
+            "additionalProperties": false,
+            "description": "Consistent with the V1 staleness rule (ARTICLE-ARTIFACT-CONTRACT.md): claims_hash unchanged means cosmetic drift, changed means material drift and dependent artifacts are stale.",
+            "properties": {
+              "claims_hash": {
+                "description": "sha256 over the ordered verified-claim set (id, text, status) — same convention as article.schema.json#/$defs/version/properties/claims_hash. When article_ref is set, must equal article_ref.claims_hash: the package does not compute a second claims_hash for claims it does not hold. null only when this package carries no claims at all (e.g. a pure translate/adapt of non-factual material).",
+                "pattern": "^[a-f0-9]{64}$",
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "package_hash": {
+                "description": "sha256 over this package's own normalised content (everything except this lineage block). Lets a consumer detect a changed package without a diff.",
+                "pattern": "^[a-f0-9]{64}$",
+                "type": "string"
+              },
+              "produced_by": {
+                "additionalProperties": false,
+                "description": "Vendor-neutral: a Skill is the orchestration contract, the tool is a replaceable worker. `tool` carries the same full runtime-lineage shape as visual-job.schema.json's `renderer` block (docs/architecture/V2-EDITORIAL-LEARNING-CORE.md §7 model-drift contract) rather than a second spelling of it — a package's writer/framer identity is exactly as detectable as its renderer's.",
+                "properties": {
+                  "skill": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "name": {
+                        "minLength": 1,
+                        "type": "string"
+                      },
+                      "version": {
+                        "pattern": "^\\d+\\.\\d+\\.\\d+$",
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "name",
+                      "version"
+                    ],
+                    "type": "object"
+                  },
+                  "tool": {
+                    "additionalProperties": false,
+                    "description": "Full runtime lineage. Field names deliberately match visual-job.schema.json's `renderer`/`runtime` $defs: tool/tool_version identify the compiling pipeline; provider/model/model_version identify the generative runtime, and are still recorded for a deterministic tool as the tool's own identity so the field is never blank.",
+                    "properties": {
+                      "model": {
+                        "minLength": 1,
+                        "type": "string"
+                      },
+                      "model_version": {
+                        "minLength": 1,
+                        "type": "string"
+                      },
+                      "provider": {
+                        "minLength": 1,
+                        "type": "string"
+                      },
+                      "quality_tier": {
+                        "minLength": 1,
+                        "type": "string"
+                      },
+                      "tool": {
+                        "minLength": 1,
+                        "type": "string"
+                      },
+                      "tool_version": {
+                        "minLength": 1,
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "tool",
+                      "provider",
+                      "model",
+                      "model_version"
+                    ],
+                    "type": "object"
+                  }
+                },
+                "required": [
+                  "skill",
+                  "tool"
+                ],
+                "type": "object"
+              },
+              "supersedes": {
+                "pattern": "^pkg:[a-z0-9]+(-[a-z0-9]+)*$",
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "claims_hash",
+              "package_hash",
+              "supersedes",
+              "produced_by"
+            ],
+            "type": "object"
+          },
+          "source_ref": {
+            "additionalProperties": false,
+            "description": "Reference and provenance only — mirrors source.schema.json identity fields. No field here can carry a source body.",
+            "properties": {
+              "hash": {
+                "additionalProperties": false,
+                "properties": {
+                  "algo": {
+                    "const": "sha256"
+                  },
+                  "value": {
+                    "pattern": "^[a-f0-9]{64}$",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "algo",
+                  "value"
+                ],
+                "type": "object"
+              },
+              "retrieved_at": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "role": {
+                "enum": [
+                  "primary",
+                  "supporting",
+                  "contradicting",
+                  "background"
+                ]
+              },
+              "source_id": {
+                "pattern": "^src:(drive|github|web|local):[a-zA-Z0-9._@/-]{3,200}$",
+                "type": "string"
+              },
+              "uri": {
+                "minLength": 1,
+                "type": "string"
+              }
+            },
+            "required": [
+              "source_id",
+              "role"
+            ],
+            "type": "object"
+          },
+          "verified_claim": {
+            "additionalProperties": false,
+            "description": "Field-for-field mirror of article.schema.json#/$defs/verification/properties/claims/items.",
+            "properties": {
+              "claim_id": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "evidence": {
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "authority": {
+                      "enum": [
+                        "primary",
+                        "secondary",
+                        "aggregator"
+                      ]
+                    },
+                    "retrieved_at": {
+                      "format": "date",
+                      "type": "string"
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "url": {
+                      "minLength": 1,
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "url",
+                    "retrieved_at"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              "kind": {
+                "enum": [
+                  "number",
+                  "date",
+                  "quotation",
+                  "attribution",
+                  "assertion"
+                ]
+              },
+              "status": {
+                "enum": [
+                  "verified",
+                  "unverified",
+                  "contradicted",
+                  "not_applicable"
+                ]
+              },
+              "text": {
+                "minLength": 1,
+                "type": "string"
+              }
+            },
+            "required": [
+              "claim_id",
+              "text",
+              "kind",
+              "status"
+            ],
+            "type": "object"
+          }
+        },
+        "$id": "https://suengj.com/schemas/editorial-package.schema.json",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "additionalProperties": false,
+        "description": "The destination-neutral handoff object for AES-V2.9 (SUE-567). Carries the minimum reusable semantics of one verified body of work — enough for it to reach several surfaces (suengj.com, NotebookLM, an academic export, a promotional channel) without duplicating source truth or the Article contract. Not an Article: where an Article already exists, this package cites it by `article_ref` rather than copying its frame or claims. See schemas/EDITORIAL-PACKAGE-CONTRACT.md for the rules this schema cannot express.",
+        "properties": {
+          "approved_artifacts": {
+            "description": "Artifact ids a human has approved for handoff to an adapter.",
+            "items": {
+              "$ref": "#/$defs/artifact_ref"
+            },
+            "type": "array"
+          },
+          "article_ref": {
+            "additionalProperties": false,
+            "description": "Set when a V1 Article already carries the verified frame and claims this package draws on. Same shape as artifact.schema.json#/$defs/article_ref. When set, thesis/key_concepts/summary/verified_claims are null/empty on this package — the article is cited, not copied. null when there is no article (a package that exists because no Article was warranted, e.g. a P03 summarize-to-note).",
+            "properties": {
+              "article_id": {
+                "pattern": "^art:[a-z0-9]+(-[a-z0-9]+)*$",
+                "type": "string"
+              },
+              "claims_hash": {
+                "pattern": "^[a-f0-9]{64}$",
+                "type": "string"
+              },
+              "commit": {
+                "pattern": "^[a-f0-9]{7,40}$",
+                "type": "string"
+              },
+              "content_hash": {
+                "pattern": "^[a-f0-9]{64}$",
+                "type": "string"
+              },
+              "version_number": {
+                "minimum": 1,
+                "type": "integer"
+              }
+            },
+            "required": [
+              "article_id",
+              "version_number",
+              "content_hash",
+              "claims_hash"
+            ],
+            "type": [
+              "object",
+              "null"
+            ]
+          },
+          "audience": {
+            "$ref": "#/$defs/axis_ref_audience"
+          },
+          "calibration_ref": {
+            "description": "The calibration version active when this package's content was produced. Same pattern as editorial-intent.schema.json#/properties/calibration_ref.",
+            "pattern": "^calibration:[a-z0-9]+(-[a-z0-9]+)*@v[0-9]+$",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "content_type": {
+            "$ref": "#/$defs/axis_ref_content"
+          },
+          "created_at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "intent_ref": {
+            "description": "The `intent_id` of the editorial-intent record this package fulfils. Same pattern as editorial-intent.schema.json#/properties/intent_id — the package is downstream of intake, never a second intake.",
+            "pattern": "^intent:[0-9]{4}-[0-9]{2}-[0-9]{2}-[a-z0-9]+(-[a-z0-9]+)*$",
+            "type": "string"
+          },
+          "key_concepts": {
+            "items": {
+              "minLength": 1,
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "lineage": {
+            "$ref": "#/$defs/lineage"
+          },
+          "package_id": {
+            "description": "Stable identity. Lineage anchor for downstream adapters and feedback.",
+            "pattern": "^pkg:[a-z0-9]+(-[a-z0-9]+)*$",
+            "type": "string"
+          },
+          "proposed_artifacts": {
+            "description": "Artifact ids this package could still produce, namespaced by modality so text/visual/audio/video generation contracts stay separate.",
+            "items": {
+              "$ref": "#/$defs/artifact_ref"
+            },
+            "type": "array"
+          },
+          "reference_profile_refs": {
+            "description": "Which reference material's craft evidence was active while this package's content was produced. Never a factual source — see V2-EDITORIAL-LEARNING-CORE.md section 2.",
+            "items": {
+              "pattern": "^ref:[a-z0-9]+(-[a-z0-9]+)*$",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "rights": {
+            "additionalProperties": false,
+            "description": "Carries forward source.schema.json's rights fields and article.schema.json's transformation record rather than inventing a third rights model. Optional: a package built entirely from original, unsourced synthesis may omit it.",
+            "properties": {
+              "attribution": {
+                "type": "string"
+              },
+              "license": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "original_framing": {
+                "type": "boolean"
+              },
+              "quotable": {
+                "type": "boolean"
+              },
+              "redistributable": {
+                "type": "boolean"
+              },
+              "synthesis_note": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "transcript_shaped": {
+                "description": "Same meaning as article.schema.json#/$defs/transformation/properties/transcript_shaped. True blocks handoff to any adapter — see the contract doc.",
+                "type": "boolean"
+              }
+            },
+            "type": "object"
+          },
+          "schema_version": {
+            "const": "1.0.0"
+          },
+          "sources": {
+            "description": "Refs and provenance only. Never a source body — enforced structurally: this object has no field capable of holding one.",
+            "items": {
+              "$ref": "#/$defs/source_ref"
+            },
+            "type": "array"
+          },
+          "summary": {
+            "description": "One self-contained compression, capped like the Article AnswerUnit so it stays a summary rather than a second article.",
+            "maxLength": 400,
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "target_surfaces": {
+            "description": "A package may legitimately serve more than one surface — that is the reason it exists instead of an Article. Non-empty is a validator rule (json-schema-lite cannot express minItems).",
+            "items": {
+              "$ref": "#/$defs/axis_ref_surface"
+            },
+            "type": "array"
+          },
+          "thesis": {
+            "description": "Required (non-null) when this package is the sole carrier of a new argument — synthesize/original with no article_ref. null when article_ref is set (the article's frame.thesis is the thesis) or when the transformation does not produce one (extract, translate).",
+            "minLength": 1,
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "transformation": {
+            "additionalProperties": false,
+            "description": "What this package's content may claim to have done to its sources. Semantics live in editorial/profiles/transformation/<value>.json (owned there, not here) — this field only names and points at the profile.",
+            "properties": {
+              "profile_ref": {
+                "pattern": "^editorial/profiles/transformation/",
+                "type": "string"
+              },
+              "value": {
+                "enum": [
+                  "extract",
+                  "summarize",
+                  "compress",
+                  "synthesize",
+                  "rewrite",
+                  "recreate",
+                  "translate",
+                  "adapt",
+                  "original"
+                ]
+              }
+            },
+            "required": [
+              "value",
+              "profile_ref"
+            ],
+            "type": "object"
+          },
+          "uncertainty": {
+            "description": "What is not known. May not be empty for synthesize/original packages — a validator rule (schemas/EDITORIAL-PACKAGE-CONTRACT.md), not expressible here.",
+            "items": {
+              "minLength": 1,
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "verified_claims": {
+            "description": "Same field names and semantics as article.schema.json#/$defs/verification/properties/claims — the same contract expressed at package scope, never a second claim model. Empty when article_ref is set: the claims live in the article and are cited via lineage.claims_hash, not restated here.",
+            "items": {
+              "$ref": "#/$defs/verified_claim"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "schema_version",
+          "package_id",
+          "created_at",
+          "intent_ref",
+          "transformation",
+          "content_type",
+          "audience",
+          "target_surfaces",
+          "sources",
+          "article_ref",
+          "thesis",
+          "key_concepts",
+          "summary",
+          "verified_claims",
+          "uncertainty",
+          "lineage"
+        ],
+        "title": "Editorial Package",
+        "type": "object"
+      },
+      "sha256": "a96a07b146f1c859745bb6beca18b73f9168c7ed1b31cdcf334c55bb810ae118"
     },
     "feedback-record": {
       "id": "https://suengj.com/schemas/feedback-record.schema.json",
@@ -2620,6 +3815,7 @@
       "sha256": "8bcf57d2542534fbc8051be06744fd2d0ce9678f212dac7d1a811fd32d8fdc25"
     }
   },
+  "schemas_missing_refs": [],
   "targets": [
     {
       "channel": "instagram",

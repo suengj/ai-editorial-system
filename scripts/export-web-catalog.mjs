@@ -28,6 +28,9 @@ const SCHEMAS = {
   'video-plan': 'schemas/video-plan.schema.json',
   'narration-script': 'schemas/narration-script.schema.json',
   'tts-contract': 'schemas/tts-contract.schema.json',
+  // Referenced by video-plan / narration-script ($ref schemas/...): included so the web can validate standalone.
+  'audio-plan': 'schemas/audio-plan.schema.json',
+  'editorial-package': 'schemas/editorial-package.schema.json',
 };
 // Only gates that govern unwanted copy. Ids/names/severity only: no patterns, no rationale prose.
 const COPY_GATES = ['G-01', 'G-03', 'G-06'];
@@ -73,8 +76,9 @@ export function buildCatalog() {
 
   const flows = Object.keys(manifest.existing_flows).sort().map((id) => {
     const f = manifest.existing_flows[id];
-    const r = resolveEditorial(stubIntent(f.surface, f.artifacts), { flowId: id, taskKind: 'both', reader });
-    return { id, label: id, channel: f.surface, status: f.status, artifacts: f.artifacts, voice_family: f.voice_family, rule_refs: ruleRefs(r, `flow ${id}`) };
+    const receipts = { text: resolveEditorial(stubIntent(f.surface, f.artifacts), { flowId: id, taskKind: 'text', reader }) };
+    if (f.artifacts.some((a) => a.startsWith('visual/'))) receipts.visual = resolveEditorial(stubIntent(f.surface, f.artifacts), { flowId: id, taskKind: 'visual', reader });
+    return { id, label: id, channel: f.surface, status: f.status, artifacts: f.artifacts, voice_family: f.voice_family, task_kinds: Object.keys(receipts).sort(), rule_refs: Object.fromEntries(Object.entries(receipts).map(([k, r]) => [k, ruleRefs(r, `flow ${id}/${k}`)])) };
   });
 
   const schemas = Object.fromEntries(Object.entries(SCHEMAS).sort().map(([name, rel]) => {
@@ -82,6 +86,9 @@ export function buildCatalog() {
     return [name, { id: body.$id, path: rel, sha256: sha(readBytes(rel)), schema: body }];
   }));
 
+  // Any "schemas/..." $ref not shipped in the catalog is listed, never silently dropped.
+  const shipped = new Set(Object.values(SCHEMAS));
+  const missing_refs = [...new Set(JSON.stringify(Object.values(schemas).map((x) => x.schema)).match(/"\$ref":"(schemas\/[^"#]+)/g)?.map((m) => m.split('"').pop()) ?? [])].filter((r) => !shipped.has(r)).sort();
   const recipes = readJson(VISUAL_RECIPES);
   const gates = COPY_GATES.map((gid) => {
     const g = gatesDoc.gates.find((x) => x.id === gid);
@@ -93,6 +100,7 @@ export function buildCatalog() {
     catalog_version: CATALOG_VERSION,
     generated_from: {
       manifest: { path: 'editorial/entry-manifest.json', manifest_version: manifest.manifest_version, sha256: manifestHash.replace(/^sha256:/, '') },
+      rule_refs_scope: 'rule_refs are the target/flow-fixed subset only. Axis and language profile files are resolved per request via axis_profile_paths / language_packs. Approved-example excerpts are never included.',
       note: 'The AES git commit is deliberately not embedded. The consumer pins the AES commit and this file\'s sha256.',
       profile_version_semantics: '<manifest_version>+<aes_commit>; the consumer supplies aes_commit from its own pin',
     },
@@ -106,6 +114,7 @@ export function buildCatalog() {
     precedence: manifest.precedence,
     quality_gates: { copy_gates: gates, protected_spans: { id: gatesDoc.protectedSpans.id, severity: gatesDoc.protectedSpans.severity, classes: [...gatesDoc.protectedSpans.classes] } },
     schemas,
+    schemas_missing_refs: missing_refs,
     targets,
     visual_recipes: { path: VISUAL_RECIPES, sha256: sha(readBytes(VISUAL_RECIPES)), recipes },
   };
@@ -116,7 +125,7 @@ export function buildCatalog() {
 export const render = (catalog = buildCatalog()) => `${JSON.stringify(stable(catalog), null, 2)}\n`;
 
 function main() {
-  const out = resolve(REPO_ROOT, OUT_PATH);
+  const out = process.env.WEB_CATALOG_OUT ? resolve(process.env.WEB_CATALOG_OUT) : resolve(REPO_ROOT, OUT_PATH);
   const next = render();
   if (process.argv.includes('--check')) {
     const cur = existsSync(out) ? readFileSync(out, 'utf8') : null;
