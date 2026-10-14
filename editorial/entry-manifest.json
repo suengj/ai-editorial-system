@@ -94,7 +94,7 @@
       "surface": "instagram",
       "voice_family": "community",
       "copy_files": ["editorial/TRENDS-MOA-COMMUNITY-TONE.md"],
-      "copy_defaults": { "style_overlay": "none", "tone_intensity": "medium" },
+      "copy_defaults": { "style_overlay": "none", "tone_intensity": "high" },
       "visual": {
         "artifacts": ["visual/social-card", "visual/body-infographic", "visual/slide-image"],
         "files": ["editorial/STRUCTURED-VISUAL-EXECUTION.md", "editorial/SLIDES-AND-CAROUSELS.md"],

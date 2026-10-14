@@ -42,6 +42,14 @@ test('visual task for trends.moa loads the community doc, visual rules, and not 
   yes(paths(r).includes('editorial/STRUCTURED-VISUAL-EXECUTION.md') && paths(r).includes('editorial/visual-recipes.v1.json'), 'visual docs');
   yes(!paths(r).includes('editorial/SUENGJ-STYLE.md') && !paths(r).includes('editorial/SIGNALYTICS-BENCHMARK-CARDS.md'), 'no other voice');
 });
+test('trends.moa default intensity is owner-approved HIGH and retains community voice isolation', () => {
+  const r = resolveEditorial(intent('instagram', ['visual/social-card']), { targetId: 'trends-moa', taskKind: 'both', reader: reader() });
+  eq(r.status, STATUS.READY);
+  eq(r.profile.body.fields.tone_intensity, 'high');
+  eq(r.field_origins.tone_intensity.layer, 'account_series');
+  yes(paths(r).includes('editorial/TRENDS-MOA-COMMUNITY-TONE.md'), 'community style loaded');
+  yes(!paths(r).includes('editorial/SUENGJ-STYLE.md'), 'personal style must not leak');
+});
 test('the same revision reuses the read cache and the plan cache', () => {
   const rd = reader(); const pc = new Map();
   const a = resolveEditorial(intent('linkedin'), { targetId: 'personal-linkedin', reader: rd, planCache: pc });
