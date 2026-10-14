@@ -71,6 +71,16 @@ failure than an honestly small one.
 | `corpus:placeholder-generated-output-lineage` | `generated_output` + `lineage_ref`, for the L1 anti-collapse rule |
 | `corpus:placeholder-academic-rejected` | a rejected entry is retained as evidence, not deleted |
 
+## Owner-selected personal excerpts (2026-10-14)
+
+The owner chose ten exact sentences from historical personal social posts as preferred voice evidence. They are **not** entire accepted outputs and therefore are deliberately **not put in this global L1 corpus**; otherwise unrelated account reviews could select them as universal GOOD examples.
+
+The metadata-only `editorial/approved-examples.json` includes `kind: owner_selected_excerpt` rows, restricted to `personal-linkedin` and `personal-instagram`. Original excerpts and the private Google Docs source reference live solely in commit-pinned private `suengj/intelligence-library/docs/owner-approved-personal-style-2026-10-14.md`.
+
+Normal generation stays `style_description_only`. On ambiguity/failure/quality_comparison the selected 2–3 references are **locators only**, and the calling authorized agent must fetch the specific private excerpts. `source_text_read:false` explicitly prevents a selected locator from claiming a successful private read. With the current deterministic selector, the first three references are question opening, accessible definition, and case-to-issue transition; the remaining seven stay in the approved index but are not dynamically relevance-ranked.
+
+The proposed style *interpretation* is at `editorial/SUENGJ-STYLE-20261014-PROPOSAL.md`; the canonical `SUENGJ-STYLE.md` is unchanged.
+
 ## Growth plan
 
 The acceptance target is 10–20 real owner-reviewed outputs across useful

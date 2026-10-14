@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Focused tests: R4 quality feedback wiring + R5 existing-flow common entry (SUE-1426).
- * Fixtures are SYNTHETIC (labelled): no real owner approval, example, habit frequency or experience is represented.
+ * Most fixtures are synthetic. The owner-excerpt isolation test checks real metadata pointers only, not private source prose.
  * CI: NOT_RUN_BY_OWNER_REQUEST.
  */
 import { mkdtempSync, readFileSync, existsSync, readdirSync } from 'node:fs';
@@ -62,16 +62,41 @@ test('default request loads no examples; unknown reason loads none', () => {
   eq(exampleStep(r, manifest, { repoRoot: REPO_ROOT, approvals, corpus }).status, 'STYLE_DESCRIPTION_ONLY');
   eq(exampleStep(r, manifest, { reason: 'curiosity', repoRoot: REPO_ROOT, approvals, corpus }).status, 'NOT_LOADED');
 });
-test('absent approvals for a target => NO_APPROVED_REFERENCE (real repo index has none)', () => {
-  for (const [surface, t] of [['instagram', 'trends-moa'], ['instagram', 'signalytics-news'], ['linkedin', 'personal-linkedin'], ['instagram', 'personal-instagram']]) {
-    const r = rcpt(surface, t, ['text/article']);
-    const s = exampleStep(r, manifest, { reason: 'failure', repoRoot: REPO_ROOT });
-    eq(s.status, NO_APPROVED_REFERENCE, t); eq(s.loaded, []);
-  }
-});
-test('real repo corpus (all synthetic placeholders) can never yield an approved example', () => {
+
+test('owner-chosen excerpts: source metadata stays private, personal scope only', () => {
   const idx = JSON.parse(readFileSync(resolve(REPO_ROOT, 'editorial/approved-examples.json'), 'utf8'));
-  eq(idx.approvals, []);
+  eq(idx.approvals.length, 10);
+  for (const a of idx.approvals) {
+    eq(a.kind, 'owner_selected_excerpt'); eq(a.voice_family, 'personal');
+    eq([...a.targets].sort(), ['personal-instagram', 'personal-linkedin']);
+    eq(a.recorded_by.type, 'human'); eq(a.owner_verdict, 'accepted'); eq(a.reference_eligible, true);
+    yes(a.source_ref.locator.includes('suengj/intelligence-library/blob/') && a.source_ref.locator.includes('#L'), 'private pinned source');
+    yes(!a.source_ref.locator.includes('docs.google.com'), 'no private Google Docs URL in public repo');
+  }
+  for (const target of ['personal-instagram', 'personal-linkedin']) {
+    const r = rcpt(target === 'personal-instagram' ? 'instagram' : 'linkedin', target, ['text/article']);
+    eq(loadApprovedCandidates(r, { repoRoot: REPO_ROOT }).candidates.length, 10);
+    eq(exampleStep(r, manifest, { repoRoot: REPO_ROOT }).loaded, []);
+    const chosen = exampleStep(r, manifest, { repoRoot: REPO_ROOT, reason: 'quality_comparison' });
+    eq(chosen.status, 'LOADED'); eq(chosen.loaded.length, 3);
+    eq(chosen.private_read_required, true); eq(chosen.source_text_read, false);
+  }
+  for (const target of ['signalytics-news', 'trends-moa']) {
+    const r = rcpt('instagram', target, ['text/article']);
+    eq(loadApprovedCandidates(r, { repoRoot: REPO_ROOT }).candidates.length, 0);
+    const s = exampleStep(r, manifest, { reason: 'failure', repoRoot: REPO_ROOT });
+    eq(s.status, NO_APPROVED_REFERENCE); eq(s.loaded, []);
+  }
+  for (const surface of ['suengj-com', 'newsletter', 'report-deck']) {
+    const r = resolveEditorial(intent(surface), { reader: rd() });
+    eq(loadApprovedCandidates(r, { repoRoot: REPO_ROOT }).candidates.length, 0);
+  }
+  const bad = structuredClone(idx); bad.approvals[0].targets = ['signalytics-news'];
+  const r = rcpt('instagram', 'personal-instagram', ['text/article']);
+  const checked = loadApprovedCandidates(r, { repoRoot: REPO_ROOT, approvals: bad });
+  yes(checked.rejected.some((c) => c.reason === 'excerpt scope must be personal targets only'));
+  const files = readdirSync(resolve(REPO_ROOT, 'evals/real-output-corpus/entries'));
+  yes(!files.some((f) => f.startsWith('owner-picked-personal-20261014')), 'excerpt must not enter global L1 corpus');
 });
 
 console.log('R4 feedback scoping');
@@ -144,6 +169,7 @@ test('CLI quality-feedback records under a given root and rejects non-explicit "
   eq(run('explicit', '--target', 'trends-moa', '--format', 'visual/social-card', '--instruction', 'i', '--statement', '그냥 수정').status, 1);
   yes(readdirSync(resolve(root, 'outcomes')).length === 1, 'outcome written');
 });
+
 
 console.log('R5 existing flows through the common entry');
 const SNS_DOCS = Object.values(manifest.voice_docs).flat();

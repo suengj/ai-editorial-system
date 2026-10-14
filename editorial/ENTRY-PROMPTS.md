@@ -19,6 +19,14 @@ Existing non-SNS flows: `blog`, `news`, `report` (`--list-targets --flows`). Oth
 - **No fabricated E2E:** the script/manifest connection, exact PNG proof and local tests remain separate from a real ChatGPT-native image generation run and owner visual acceptance.
 - **trends.moa:** current owner-selected production HIGH intensity is the default in `entry-manifest.json`, matching Registry `production-v2.yaml`; explicit task overrides remain governed by the normal field-wise precedence rules.
 
+## Owner-approved personal excerpt lookup (2026-10-14)
+
+For personal LinkedIn/Instagram only, the ten owner-approved **sentence-level** positive examples are indexed by `editorial/approved-examples.json` with `kind: owner_selected_excerpt`. They do **not** enter the generic L1 real-output corpus. No other target may use them.
+
+Routine writing stays style-description-only. On `ambiguity`, `failure` or `quality_comparison`, the current resolver returns **at most three metadata pointers**. If `private_read_required:true` or `source_text_read:false`, an authorized calling agent must follow only those selected commit-pinned private `suengj/intelligence-library` file line references and read their exact text using available tools. Do not load the 132-post source corpus; do not infer access from URL existence; if a line is unavailable, report `PRIVATE_REFERENCE_UNAVAILABLE`, not source text read or style match. Never reveal private Google Doc identifiers or excerpt text in the public repo, or use this personal voice for Signalytics/trends.moa/non-SNS flows.
+
+`editorial/SUENGJ-STYLE-20261014-PROPOSAL.md` is only a candidate for later approval. The canonical `editorial/SUENGJ-STYLE.md` remains unchanged.
+
 ## A. New ChatGPT conversation
 
 ```text

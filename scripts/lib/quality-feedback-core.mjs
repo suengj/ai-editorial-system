@@ -76,11 +76,13 @@ const isPlaceholder = (e) => [e?.source_ref?.locator, e?.entry_id, e?.status, e?
 const readJson = (p) => JSON.parse(readFileSync(p, 'utf8'));
 const readDir = (d) => (existsSync(d) ? readdirSync(d).filter((f) => f.endsWith('.json')).sort().map((f) => readJson(resolve(d, f))) : []);
 
-/** Approved corpus material for a receipt's target: only index-listed, corpus-confirmed, non-placeholder entries. */
+/** Explicit excerpt selections are personal-only; historical corpus GOOD references retain existing checks. */
 export function loadApprovedCandidates(receipt, { repoRoot, approvals = null, corpus = null } = {}) {
   const idx = approvals ?? readJson(resolve(repoRoot, APPROVALS_PATH));
   if (idx.approvals !== undefined && !Array.isArray(idx.approvals)) throw qerr('APPROVALS_SHAPE', 'approved-examples.approvals must be an array');
-  const entries = corpus ?? readDir(resolve(repoRoot, 'evals/real-output-corpus/entries'));
+  // Private excerpt-only indexing never scans the generic L1 corpus.
+  const hasCorpusRefs = (idx.approvals ?? []).some((a) => a?.kind !== 'owner_selected_excerpt');
+  const entries = corpus ?? (hasCorpusRefs ? readDir(resolve(repoRoot, 'evals/real-output-corpus/entries')) : []);
   const byId = new Map(entries.map((e) => [e.entry_id, e]));
   const out = []; const rejected = []; const seenIds = new Set();
   for (const a of idx.approvals ?? []) {
@@ -88,6 +90,25 @@ export function loadApprovedCandidates(receipt, { repoRoot, approvals = null, co
     if (a.targets !== undefined && !Array.isArray(a.targets)) throw qerr('APPROVALS_SHAPE', `approval ${a.entry_id}: targets must be an array`);
     if (seenIds.has(a.entry_id)) { rejected.push({ entry_id: a.entry_id, reason: 'duplicate approval row (first one wins)' }); continue; }
     seenIds.add(a.entry_id);
+    if (a.kind === 'owner_selected_excerpt') {
+      // A human explicitly approved a *sentence* for these two personal surfaces.
+      // This must never become a generic GOOD corpus reference available to other accounts.
+      const allow = ['personal-linkedin', 'personal-instagram'];
+      const address = a.source_ref?.locator;
+      const approved = a.owner_verdict === 'accepted' && a.reference_eligible === true
+        && a.recorded_by?.type === 'human' && typeof a.reference_eligible_rationale === 'string' && a.reference_eligible_rationale.trim();
+      const privatePinned = typeof address === 'string' && /^https:\/\/github\.com\/suengj\/intelligence-library\/blob\/[a-f0-9]{40}\/docs\/owner-approved-personal-style-2026-10-14\.md#L\d+$/.test(address);
+      const scopeOk = a.voice_family === 'personal' && Array.isArray(a.targets)
+        && a.targets.length > 0 && a.targets.every((t) => allow.includes(t));
+      const why = !approved ? 'excerpt needs explicit human approval plus rationale'
+        : !privatePinned ? 'excerpt source must be pinned in private library'
+        : !scopeOk ? 'excerpt scope must be personal targets only'
+        : !receipt?.target || !a.targets.includes(receipt.target.id) || receipt.target.voice_family !== 'personal' ? 'other target' : null;
+      if (why) { rejected.push({ entry_id: a.entry_id, reason: why }); continue; }
+      out.push({ entry_id: a.entry_id, locator: address, approval_status: 'approved', voice_family: 'personal', dimensions: a.dimensions ?? null, private_read_required: true });
+      continue;
+    }
+    if (a.kind !== undefined) { rejected.push({ entry_id: a.entry_id, reason: 'unsupported approval kind' }); continue; }
     const e = byId.get(a.entry_id);
     const why = !e ? 'corpus entry not found' : isPlaceholder(e) ? 'synthetic placeholder' : e.owner_verdict !== 'accepted' ? `owner_verdict=${e.owner_verdict}` : e.reference_eligible !== true ? 'not reference_eligible' : !a.voice_family ? 'approval row has no voice_family (a family-less row would match every flow)' : a.voice_family !== receipt?.target?.voice_family ? 'other voice family' : (a.targets && !a.targets.includes(receipt.target.id)) ? 'other target' : null;
     if (why) { rejected.push({ entry_id: a.entry_id, reason: why }); continue; }
@@ -101,7 +122,7 @@ export function exampleStep(receipt, manifest, { reason = null, repoRoot, approv
   if (!reason) return { policy: manifest.example_policy.default, status: 'STYLE_DESCRIPTION_ONLY', loaded: [] };
   const { candidates, rejected } = loadApprovedCandidates(receipt, { repoRoot, approvals, corpus });
   const sel = selectExamples(receipt, manifest, { reason, candidates });
-  return { policy: manifest.example_policy.default, reason, status: sel.status, loaded: (sel.loaded ?? []).map((c) => ({ entry_id: c.entry_id, locator: c.locator })), skipped_candidates: rejected, note: sel.note ?? null };
+  return { policy: manifest.example_policy.default, reason, status: sel.status, loaded: (sel.loaded ?? []).map((c) => ({ entry_id: c.entry_id, locator: c.locator })), private_read_required: (sel.loaded ?? []).some((c) => c.private_read_required === true), source_text_read: false, skipped_candidates: rejected, note: (sel.loaded ?? []).some((c) => c.private_read_required === true) ? 'PRIVATE_REFERENCE_POINTERS_SELECTED_NOT_FETCHED: caller must fetch only selected private excerpt lines; do not claim source text read in this CLI' : (sel.note ?? null) };
 }
 
 // --- feedback store ---------------------------------------------------------
