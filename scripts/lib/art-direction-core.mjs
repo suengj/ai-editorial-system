@@ -7,6 +7,7 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const EXPECTED_ROLES = ['cover', 'money', 'case-a', 'case-b', 'opportunity'];
 const VISUAL_MODES = ['hero_image', 'mechanism_flow', 'case_pathway', 'case_contrast', 'synthesis_stack', 'text_focus'];
 const BLOCK_KINDS = ['text', 'image', 'generated', 'chart', 'diagram'];
+const GENERATED_BLOCK_ROLES = new Set(['concept-art', 'scene', 'texture', 'atmosphere', 'illustration']);
 const ASSET_SOURCES = ['generated', 'authorized_original', 'deterministic_diagram', 'none'];
 const PROTECTED_FIELDS = ['title', 'headline', 'body', 'numbers', 'company_names', 'sources', 'citations'];
 const object = (v) => v !== null && typeof v === 'object' && !Array.isArray(v);
@@ -93,12 +94,19 @@ export function validateArtDirectionPlan(plan, { evidence, packet, profile, cata
     if (asset.source === 'deterministic_diagram' && diagrams.length !== 1) add(`${at}.asset`, 'deterministic_diagram requires exactly one chart or diagram block');
     if (asset.source === 'none' && (generated.length || originals.length || diagrams.length)) add(`${at}.asset`, 'source=none cannot include image, generated, chart, or diagram blocks');
     if (new Set([...generated, ...originals, ...diagrams]).size > 1) add(`${at}.blocks`, 'one visual asset block per frame is supported');
+    for (const b of generated) if (!GENERATED_BLOCK_ROLES.has(b.role)) add(`${at}.blocks.${b.id}`, `generated role must be one of: ${[...GENERATED_BLOCK_ROLES].join(', ')}`);
+    if (generated.length) {
+      const protectedTexts = [
+        ...(evidence?.cases ?? []).map(c => c?.name),
+        ...(frame.protected?.claim_ids ?? []).map(id => claims.get(id)?.text),
+      ].filter(nonblank);
+      const promptFields = [frame.message, frame.focal_subject, asset?.rationale].filter(nonblank);
+      if (promptFields.some(value => /\d/.test(value) || protectedTexts.some(secret => value.toLocaleLowerCase().includes(secret.toLocaleLowerCase())))) {
+        add(`${at}.message`, 'generated-art prompt text cannot contain digits, company names, or protected claim text');
+      }
+    }
     if (frame.role === 'money') {
       if (!diagrams.length) add(`${at}.blocks`, 'money mechanics require a deterministic chart or diagram block');
-      for (const b of generated) if (/(number|flow|arrow|money|revenue|cost|payment|value)/i.test(b.role)) add(`${at}.blocks.${b.id}`, 'money numbers and flow labels must be deterministic');
-    }
-    if (['case-a', 'case-b'].includes(frame.role) && asset.source === 'generated') {
-      for (const b of generated) if (/(screenshot|logo)/i.test(b.role)) add(`${at}.blocks.${b.id}`, 'case frames cannot generate product screenshots or logos');
     }
     const protectedData = frame.protected;
     exactKeys(protectedData, ['claim_ids', 'fields'], `${at}.protected`, add);
@@ -123,12 +131,9 @@ export function validateArtDirectionPlan(plan, { evidence, packet, profile, cata
       if (!boundClaims.some(c => c.source_ids?.includes(ref))) add(`${at}.protected.claim_ids`, 'trend frame must cite a claim backed by trend_evidence_ref');
     }
   }
-  const expectedSource = expectedProfile;
-  if (plan.profile && expectedSource && ![expectedSource, profile.id].includes(plan.profile)) add('profile', 'does not match the compiler profile');
-
+  const signature = (f) => JSON.stringify({ layout: f?.layout, block_roles: (f?.blocks ?? []).map(b => b?.role).sort() });
   let start = 0;
   while (start < frames.length) {
-    const signature = (f) => JSON.stringify({ layout: f?.layout, block_roles: (f?.blocks ?? []).map(b => b?.role).sort() });
     let end = start + 1;
     while (end < frames.length && signature(frames[end]) === signature(frames[start])) end++;
     if (end - start >= 3) warnings.push({ code: 'LAYOUT_REPETITION', start_index: start, end_index: end - 1, count: end - start, signature: JSON.parse(signature(frames[start])) });

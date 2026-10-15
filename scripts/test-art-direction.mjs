@@ -8,7 +8,7 @@ import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { compileBusinessMagazine, loadBusinessMagazineProfile } from './lib/business-magazine-core.mjs';
 import { artDirectionHash, validateArtDirectionPlan } from './lib/art-direction-core.mjs';
-import { planCarousel, executeCarousel, loadVisualRecipes } from './lib/carousel-core.mjs';
+import { planCarousel, executeCarousel, loadVisualRecipes, receiptConfirmsGeneratedAsset } from './lib/carousel-core.mjs';
 import { renderChartPanel } from './lib/chart-renderer.mjs';
 import { encodePng, decodePng } from './lib/watermark-core.mjs';
 
@@ -123,11 +123,26 @@ await test('generated blocks require a requested generated asset', () => {
   const bad = structuredClone(plan); bad.frames[0].asset.need = false;
   assert(checked(bad).errors.some(e => e.path === 'frames[0].asset.need'));
 });
-await test('case frames reject generated product screenshots and logos', () => {
-  const bad = structuredClone(plan), f = bad.frames[2];
-  f.blocks = [{ id: 'case-screenshot', kind: 'generated', role: 'product_screenshot', region: 'left' }, { id: 'copy', kind: 'text', role: 'evidence', region: 'right' }];
-  f.reading_order = ['case-screenshot', 'copy']; f.asset = { need: true, source: 'generated', rationale: 'Synthetic negative case.' };
-  assert(checked(bad).errors.some(e => e.message.includes('cannot generate product screenshots or logos')));
+await test('generated blocks use an allow-list on every frame role', () => {
+  const forbidden = ['logo', 'brand-mark', 'screenshot', 'ui', 'headline', 'title', 'copy', 'number', 'label', 'source', 'chart', 'flow', 'diagram'];
+  for (const role of forbidden) for (const frameRole of ['cover', 'money', 'opportunity']) {
+    const bad = structuredClone(plan), f = bad.frames.find(item => item.role === frameRole);
+    f.blocks[0] = { ...f.blocks[0], id: 'forbidden-generated', kind: 'generated', role };
+    f.asset = { need: true, source: 'generated', rationale: 'Synthetic negative fixture.' };
+    const issue = checked(bad).errors.find(e => e.path.endsWith('forbidden-generated'));
+    assert(issue?.message.includes('generated role must be one of'), `${frameRole}/${role} was not rejected`);
+  }
+  const trended = insertTrend();
+  trended.p.frames[4].blocks = [{ id: 'trend-ui', kind: 'generated', role: 'ui', region: 'content' }];
+  trended.p.frames[4].reading_order = ['trend-ui'];
+  trended.p.frames[4].asset = { need: true, source: 'generated', rationale: 'Synthetic negative fixture.' };
+  assert(checked(trended.p, trended.pck).errors.some(e => e.path.endsWith('trend-ui') && e.message.includes('generated role must be one of')));
+});
+await test('generated prompt text rejects digits, company names and protected claim text', () => {
+  for (const [field, value] of [['message', 'Illustrate 2 abstract forms.'], ['focal_subject', 'Synthetic A'], ['message', 'A small paid experiment is proposed.']]) {
+    const bad = structuredClone(plan); bad.frames[0][field] = value;
+    assert(checked(bad).errors.some(e => e.message.includes('generated-art prompt text')));
+  }
 });
 await test('protected claim ids must exist and belong to the packet frame', () => {
   const bad = structuredClone(plan); bad.frames[2].protected.claim_ids = ['missing'];
@@ -183,6 +198,11 @@ await test('carousel rejects generated-asset metadata detached from its block or
   malformedHash.art_direction_sha256 = 'not-a-digest';
   assert.throws(() => planCarousel(malformedHash), /art_direction_sha256 must be a SHA-256 digest/);
 });
+await test('stale consumed receipt cannot pass when execution was not rendered-OK', () => {
+  const stale = { outputs: { master: { sha256: 'sha256:old-run' } }, generation: [{ id: 'cover-art', asset_in_final_png: true }] };
+  assert.equal(receiptConfirmsGeneratedAsset('NOT_RUN', stale, 'sha256:old-run', 'cover-art'), false);
+  assert.equal(receiptConfirmsGeneratedAsset('GENERATED_COMPOSED_NEEDS_REVIEW', stale, 'sha256:current-run', 'cover-art'), false);
+});
 await test('additive layouts pass existing carousel region and invariant validation', () => {
   const compiled = compileBusinessMagazine(packet, evidence, { sourceRef: '/stable/evidence.json', asOf: day, artDirection: plan });
   const carousel = planCarousel(compiled.series);
@@ -193,6 +213,18 @@ await test('additive layouts pass existing carousel region and invariant validat
   assert(heroLayers.some(l => l.kind === 'solid' && l.id === 'hero-text-safe-band'));
   assert(heroLayers.find(l => l.id === 'source').slot.y >= 0.88);
   assert(heroLayers.find(l => l.id === 'pagination').slot.y >= 0.88);
+});
+await test('full-bleed text regions must be inside a declared safe band', () => {
+  const compiled = compileBusinessMagazine(packet, evidence, { sourceRef: '/stable/evidence.json', asOf: day, artDirection: plan });
+  const unsafeLayout = structuredClone(catalog);
+  unsafeLayout.layouts.hero.copy = { ...unsafeLayout.layouts.hero.copy, y: 0.62 };
+  assert.throws(() => planCarousel(compiled.series, unsafeLayout), e => e.code === 'SERIES_TEXT_SAFE_BAND');
+  const unbanded = structuredClone(catalog);
+  unbanded.layout_effects.hero.solid_bands = [];
+  unbanded.layouts.hero.art = { x: 0, y: 0.94, width: 1, height: 0.06 };
+  assert.throws(() => planCarousel(compiled.series, unbanded), e => e.code === 'SERIES_REGION');
+  unbanded.layouts.hero.art = { x: 0, y: 0, width: 1, height: 0.9 };
+  assert.throws(() => planCarousel(compiled.series, unbanded), e => e.code === 'SERIES_COLLISION');
 });
 await test('deterministic money diagram keeps packet labels verbatim', () => {
   const compiled = compileBusinessMagazine(packet, evidence, { sourceRef: '/stable/evidence.json', asOf: day, artDirection: plan });
@@ -256,7 +288,10 @@ try {
   await test('generated requirement without consumed asset remains RENDER_REQUIRED and NOT_REVIEWED', async () => {
     const compiled = compileBusinessMagazine(packet, evidence, { sourceRef: 'evidence.json', asOf: day, baseDir: temp, artDirection: plan });
     writeDerived(compiled, temp);
-    const result = await executeCarousel(compiled.series, { baseDir: temp, outDir: resolve(temp, 'render') });
+    const staleOut = resolve(temp, 'render');
+    mkdirSync(resolve(staleOut, 'cover'), { recursive: true });
+    writeFileSync(resolve(staleOut, 'cover/receipt.json'), JSON.stringify({ status: 'RENDERED_NEEDS_REVIEW', outputs: { master: { sha256: 'sha256:stale' } }, generation: [{ id: 'cover-art', asset_in_final_png: true }] }));
+    const result = await executeCarousel(compiled.series, { baseDir: temp, outDir: staleOut });
     const cover = result.frames.find(f => f.id === 'cover');
     assert.equal(result.status, 'INCOMPLETE');
     assert.equal(cover.status, 'RENDER_REQUIRED');
@@ -264,8 +299,35 @@ try {
     const worklist = JSON.parse(readFileSync(resolve(temp, 'render/review-worklist.json'), 'utf8'));
     assert.equal(worklist.status, 'NOT_REVIEWED');
     assert(worklist.avoid_tags.includes('box_overload'));
+    assert(worklist.avoid_tags.includes('ui_mimicry'));
+    assert(!worklist.avoid_tags.includes('fake_screenshot'));
     assert.equal(worklist.frames.find(f => f.id === 'cover').verdict, 'NOT_REVIEWED');
     assert.equal(existsSync(resolve(temp, 'render/contact-sheet.png')), false);
+  });
+  await test('generated hero asset is evidenced as consumed in this run final PNG', async () => {
+    const generatedPlan = structuredClone(plan), generatedPacket = structuredClone(packet);
+    const generated = generatedPlan.frames[0].blocks[0];
+    generatedPlan.frames[0].asset.rationale = 'Synthetic gradient pixels exercise the local composition path.';
+    const pixels = Buffer.alloc(160 * 160 * 4);
+    for (let y = 0; y < 160; y++) for (let x = 0; x < 160; x++) {
+      const i = (y * 160 + x) * 4; pixels[i] = x; pixels[i + 1] = y; pixels[i + 2] = (x + y) % 256; pixels[i + 3] = 255;
+    }
+    const imageBytes = encodePng({ width: 160, height: 160, channels: 4, pixels });
+    const assetPath = resolve(temp, 'generated-hero.png'); writeFileSync(assetPath, imageBytes);
+    const responseBytes = Buffer.from('Synthetic fixture response metadata.');
+    writeFileSync(resolve(temp, 'synthetic-response.json'), responseBytes);
+    generatedPacket.frames[0].visual = { kind: 'generated', ref: assetPath, fit: 'contain', rights_note: 'Synthetic generated gradient fixture.', generation: {
+      provider: 'synthetic-test', model: 'gradient-fixture', invocation_id: 'fixture-run', mode: 'native',
+      asset_sha256: `sha256:${createHash('sha256').update(imageBytes).digest('hex')}`, response_ref: 'synthetic-response.json',
+      response_sha256: `sha256:${createHash('sha256').update(responseBytes).digest('hex')}`,
+    } };
+    const compiled = compileBusinessMagazine(generatedPacket, evidence, { sourceRef: 'evidence.json', asOf: day, baseDir: temp, artDirection: generatedPlan });
+    const result = await executeCarousel(compiled.series, { baseDir: temp, outDir: resolve(temp, 'generated-render') });
+    const cover = result.frames.find(f => f.id === 'cover');
+    assert.equal(cover.status, 'GENERATED_COMPOSED_NEEDS_REVIEW');
+    assert.equal(cover.art_direction_asset_in_final_png, true);
+    const receipt = JSON.parse(readFileSync(resolve(temp, 'generated-render/cover/receipt.json'), 'utf8'));
+    assert.equal(receipt.outputs.master.sha256, `sha256:${createHash('sha256').update(readFileSync(resolve(temp, 'generated-render/cover/master.png'))).digest('hex')}`);
   });
   await test('hero bands composite over full-bleed synthetic art in the existing renderer', async () => {
     const heroPlan = structuredClone(plan), heroPacket = structuredClone(packet);
