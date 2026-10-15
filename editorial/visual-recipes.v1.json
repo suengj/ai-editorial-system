@@ -57,6 +57,83 @@
         "width": 0.42,
         "height": 0.45
       }
+    },
+    "hero": {
+      "art": {
+        "x": 0,
+        "y": 0,
+        "width": 1,
+        "height": 1
+      },
+      "copy": {
+        "x": 0.06,
+        "y": 0.36,
+        "width": 0.88,
+        "height": 0.24
+      }
+    },
+    "flow": {
+      "diagram": {
+        "x": 0.06,
+        "y": 0.34,
+        "width": 0.88,
+        "height": 0.37
+      },
+      "copy": {
+        "x": 0.06,
+        "y": 0.73,
+        "width": 0.88,
+        "height": 0.11
+      }
+    },
+    "columns": {
+      "left": {
+        "x": 0.06,
+        "y": 0.34,
+        "width": 0.42,
+        "height": 0.38
+      },
+      "right": {
+        "x": 0.52,
+        "y": 0.34,
+        "width": 0.42,
+        "height": 0.38
+      },
+      "copy": {
+        "x": 0.06,
+        "y": 0.75,
+        "width": 0.88,
+        "height": 0.09
+      }
+    },
+    "stack": {
+      "principle": {
+        "x": 0.06,
+        "y": 0.34,
+        "width": 0.88,
+        "height": 0.14
+      },
+      "constraint": {
+        "x": 0.06,
+        "y": 0.5,
+        "width": 0.88,
+        "height": 0.14
+      },
+      "first-test": {
+        "x": 0.06,
+        "y": 0.66,
+        "width": 0.88,
+        "height": 0.14
+      }
+    }
+  },
+  "layout_effects": {
+    "hero": {
+      "background_regions": ["art"],
+      "solid_bands": [
+        { "id": "hero-text-safe-band", "x": 0, "y": 0.035, "width": 1, "height": 0.565, "fill": "theme.background" },
+        { "id": "hero-source-safe-band", "x": 0, "y": 0.85, "width": 1, "height": 0.08, "fill": "theme.background" }
+      ]
     }
   },
   "typography": {

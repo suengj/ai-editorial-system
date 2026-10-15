@@ -2,7 +2,7 @@
  * The caller/LLM owns editorial interpretation. This module never generates,
  * verifies claims, approves, publishes, or introduces another visual axis.
  */
-import { readFileSync, writeFileSync, mkdirSync, existsSync, copyFileSync, statSync } from 'node:fs';
+import { readFileSync, writeFileSync, mkdirSync, existsSync, copyFileSync, statSync, unlinkSync, rmdirSync } from 'node:fs';
 import { resolve, dirname, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createHash } from 'node:crypto';
@@ -14,8 +14,8 @@ export const CAROUSEL_VERSION = '1.0.0';
 export const CAROUSEL_CONSTRAINTS = Object.freeze({
   frames: Object.freeze({ min: 1, max: 20 }),
   beats: Object.freeze({ min: 1, max: 60 }),
-  series_fields: Object.freeze(['schema_version','series_id','request','source','profiles','recipe','task','typography','regions','layouts','series_label','beats','frames']),
-  frame_fields: Object.freeze(['id','function','beat_ids','takeaway','alt_text','headline','source_note','layout','blocks','caption','job_ref']),
+  series_fields: Object.freeze(['schema_version','series_id','request','source','profiles','recipe','task','typography','regions','layouts','series_label','beats','frames','art_direction_sha256']),
+  frame_fields: Object.freeze(['id','function','beat_ids','takeaway','alt_text','headline','source_note','layout','blocks','caption','job_ref','art_direction']),
   block_fields: Object.freeze(['id','region','kind','ref','sha256','mode','fit','rights_note','protect','text','source_ref','instruction','generation','provenance']),
   block_kinds: Object.freeze(['text','image','chart','generated']),
   frame_functions: Object.freeze(['orient','assert','show_evidence','explain_mechanism','compare','qualify','turn','show_consequence','decision','close']),
@@ -23,6 +23,11 @@ export const CAROUSEL_CONSTRAINTS = Object.freeze({
 const obj = (x) => x && typeof x === 'object' && !Array.isArray(x);
 const stable = (x) => Array.isArray(x) ? x.map(stable) : obj(x) ? Object.fromEntries(Object.keys(x).sort().map((k) => [k, stable(x[k])])) : x;
 const hash = (x) => `sha256:${createHash('sha256').update(Buffer.isBuffer(x) ? x : JSON.stringify(stable(x))).digest('hex')}`;
+export function receiptConfirmsGeneratedAsset(status, receipt, masterSha256, blockId) {
+  return ['RENDERED_NEEDS_REVIEW', 'GENERATED_COMPOSED_NEEDS_REVIEW'].includes(status)
+    && receipt?.outputs?.master?.sha256 === masterSha256
+    && receipt?.generation?.some(g => g.id === blockId && g.asset_in_final_png === true) === true;
+}
 const fail = (code, message) => { const e = new Error(message); e.code = code; throw e; };
 const need = (condition, code, message) => { if (!condition) fail(code, message); };
 const text = (s) => typeof s === 'string' && s.trim().length > 0;
@@ -32,14 +37,19 @@ function keys(value, allowed, where) {
   for (const key of Object.keys(value)) need(allowed.includes(key), 'SERIES_UNKNOWN_FIELD', `${where}.${key}`);
 }
 const overlaps = (a, b) => a.x < b.x+b.width-1e-8 && a.x+a.width > b.x+1e-8 && a.y < b.y+b.height-1e-8 && a.y+a.height > b.y+1e-8;
-function checkRegions(regions) {
+function checkRegions(regions, { bandedBackgroundRegions = [] } = {}) {
   for (const [id, r] of Object.entries(regions)) {
     keys(r, ['x','y','width','height'], `region ${id}`);
-    need(['x','y','width','height'].every((k) => Number.isFinite(r[k]) && r[k] >= 0 && r[k] <= 1) && r.width > 0 && r.height > 0 && r.x+r.width <= 1 && r.y+r.height <= 0.93,
+    const maxY = bandedBackgroundRegions.includes(id) ? 1 : 0.93;
+    need(['x','y','width','height'].every((k) => Number.isFinite(r[k]) && r[k] >= 0 && r[k] <= 1) && r.width > 0 && r.height > 0 && r.x+r.width <= 1 && r.y+r.height <= maxY,
       'SERIES_REGION', `${id}: normalized region must fit above the reserved watermark/illustrative footer`);
   }
   const pairs = Object.entries(regions);
-  for (let i=0;i<pairs.length;i++) for (let j=0;j<i;j++) need(!overlaps(pairs[i][1],pairs[j][1]), 'SERIES_COLLISION', `${pairs[i][0]} overlaps ${pairs[j][0]}`);
+  for (let i=0;i<pairs.length;i++) for (let j=0;j<i;j++) {
+    const [a] = pairs[i], [b] = pairs[j];
+    if (bandedBackgroundRegions.includes(a) || bandedBackgroundRegions.includes(b)) continue;
+    need(!overlaps(pairs[i][1],pairs[j][1]), 'SERIES_COLLISION', `${a} overlaps ${b}`);
+  }
 }
 const mergeRoles = (base, override={}) => Object.fromEntries(Object.entries(base).map(([role, style]) => [role, {...style, ...(override[role] ?? {})}]));
 export function loadVisualRecipes() { return JSON.parse(readFileSync(resolve(ROOT, 'editorial/visual-recipes.v1.json'), 'utf8')); }
@@ -48,6 +58,7 @@ export function loadVisualRecipes() { return JSON.parse(readFileSync(resolve(ROO
 export function planCarousel(series, catalog=loadVisualRecipes()) {
   keys(series, CAROUSEL_CONSTRAINTS.series_fields, 'series');
   need(series.schema_version === CAROUSEL_VERSION && slug(series.series_id), 'SERIES_VERSION', 'v1 and a slug series_id are required');
+  if (series.art_direction_sha256 !== undefined) need(typeof series.art_direction_sha256 === 'string' && /^sha256:[a-f0-9]{64}$/.test(series.art_direction_sha256), 'SERIES_ART_DIRECTION', 'art_direction_sha256 must be a SHA-256 digest');
   need(text(series.request) && text(series.series_label), 'SERIES_INPUT', 'request and series_label are required');
   keys(series.source, ['ref','sha256','scope'], 'source');
   need(text(series.source.ref) && ['source_bound','illustrative'].includes(series.source.scope), 'SERIES_SOURCE', 'actual source ref and scope required');
@@ -72,7 +83,20 @@ export function planCarousel(series, catalog=loadVisualRecipes()) {
   for (const [name,layout] of Object.entries(layouts)) {
     keys(layout,Object.keys(catalog.layouts[name]),`layouts.${name}`);
     need(Object.keys(catalog.layouts[name]).every((k)=>layout[k]), 'SERIES_REGION', `missing region in ${name}`);
-    checkRegions({...recurring,...layout});
+    const effect = catalog.layout_effects?.[name] ?? {};
+    const backgroundRegions = effect.background_regions ?? [];
+    need(Array.isArray(backgroundRegions) && backgroundRegions.every((id) => Object.hasOwn(layout, id)), 'SERIES_LAYOUT_EFFECT', `${name}: invalid background region`);
+    const solidBands = effect.solid_bands ?? [];
+    const bandedBackgroundRegions = solidBands.length ? backgroundRegions : [];
+    checkRegions({...recurring,...layout},{bandedBackgroundRegions});
+    for (const band of solidBands) {
+      need(obj(band) && /^[a-z0-9][a-z0-9-]*$/.test(band.id ?? '') && ['x','y','width','height'].every(k => Number.isFinite(band[k]) && band[k] >= 0 && band[k] <= 1) && band.width > 0 && band.height > 0 && band.x + band.width <= 1 && band.y + band.height <= 1 && (band.fill === 'theme.background' || /^#[0-9a-f]{6}$/i.test(band.fill ?? '')), 'SERIES_LAYOUT_EFFECT', `${name}: invalid solid band`);
+    }
+    if (backgroundRegions.length) {
+      const contains = (outer, inner) => inner.x >= outer.x && inner.y >= outer.y && inner.x + inner.width <= outer.x + outer.width && inner.y + inner.height <= outer.y + outer.height;
+      const textRegions = [recurring.eyebrow, recurring.headline, recurring.source, recurring.pagination];
+      need(solidBands.length > 0 && textRegions.every(region => solidBands.some(band => contains(band, region))), 'SERIES_TEXT_SAFE_BAND', `${name}: recurring text regions must fit inside a declared solid/scrim text-safe band`);
+    }
   }
   need(Array.isArray(series.frames) && series.frames.length >= CAROUSEL_CONSTRAINTS.frames.min && series.frames.length <= CAROUSEL_CONSTRAINTS.frames.max, 'SERIES_FRAMES', '1–20 is a local v1 resource bound, not an Instagram platform limit');
   need(Array.isArray(series.beats) && series.beats.length >= CAROUSEL_CONSTRAINTS.beats.min && series.beats.length <= CAROUSEL_CONSTRAINTS.beats.max, 'SERIES_BEATS', 'declare the carried beat graph');
@@ -99,7 +123,19 @@ export function planCarousel(series, catalog=loadVisualRecipes()) {
     const layoutName = f.layout ?? recipe.default_layout, layout = layouts[layoutName];
     need(layout, 'SERIES_LAYOUT', String(layoutName));
     need(Array.isArray(f.blocks) && f.blocks.length > 0 && f.blocks.length <= Object.keys(layout).length, 'SERIES_BLOCKS', `${f.id}: one block per region; split independent messages`);
-    const layers=[], occupied=new Set();
+    const textSafeEffect = catalog.layout_effects?.[layoutName] ?? {};
+    if ((textSafeEffect.background_regions ?? []).length) {
+      const bands = textSafeEffect.solid_bands ?? [];
+      const contains = (outer, inner) => inner && inner.x >= outer.x && inner.y >= outer.y && inner.x + inner.width <= outer.x + outer.width && inner.y + inner.height <= outer.y + outer.height;
+      for (const b of f.blocks) if (b?.kind === 'text') need(bands.some(band => contains(band, layout[b.region])), 'SERIES_TEXT_SAFE_BAND', `${layoutName}.${b.region}: text region must fit inside a declared solid/scrim text-safe band`);
+    }
+    if (f.art_direction !== undefined) {
+      keys(f.art_direction,['plan_id','visual_mode','focal_subject','message','reading_order','asset','asset_block_id','avoid','protected','brand_elements','reuse'],'frame.art_direction');
+      need(text(f.art_direction.plan_id) && text(f.art_direction.focal_subject) && text(f.art_direction.message) && Array.isArray(f.art_direction.reading_order) && Array.isArray(f.art_direction.avoid) && obj(f.art_direction.asset), 'SERIES_ART_DIRECTION', f.id);
+      need(/^sha256:[a-f0-9]{64}$/.test(series.art_direction_sha256 ?? ''), 'SERIES_ART_DIRECTION', `${f.id}: plan hash required`);
+      need(typeof f.art_direction.asset.need === 'boolean' && ['generated','authorized_original','deterministic_diagram','none'].includes(f.art_direction.asset.source), 'SERIES_ART_DIRECTION', `${f.id}: invalid asset declaration`);
+    }
+    const layers=[], backgroundLayers=[], occupied=new Set();
     const addText = (id,value,slot,role,source_ref='request') => layers.push({id,kind:'text',text:value,source_ref,slot,...typography[role]});
     addText('series-label',series.series_label,recurring.eyebrow,'eyebrow');
     addText('headline',f.headline,recurring.headline,'headline');
@@ -123,16 +159,34 @@ export function planCarousel(series, catalog=loadVisualRecipes()) {
           layer.instruction = `${recipe.generation_direction}\nFrame purpose: ${f.takeaway}\n${b.instruction}\nCreate only the illustration for the content slot ${JSON.stringify(layer.slot)}. The compositor clips this asset to that slot; it adds headline, source, page count and watermark separately. Do not draw exact text, data, numbers or branding. A prompt alone is not pixel reservation.`;
         } else need(text(b.ref),'SERIES_SOURCE',b.id);
       }
-      layers.push(layer);
+      if ((catalog.layout_effects?.[layoutName]?.background_regions ?? []).includes(b.region)) backgroundLayers.push(layer);
+      else layers.push(layer);
+    }
+    if (f.art_direction) {
+      const generatedBlocks = f.blocks.filter((b) => b.kind === 'generated');
+      if (f.art_direction.asset.source === 'generated') {
+        need(f.art_direction.asset.need === true && generatedBlocks.length === 1 && f.art_direction.asset_block_id === generatedBlocks[0].id, 'SERIES_ART_DIRECTION', `${f.id}: generated asset declaration must bind to exactly one generated block`);
+      } else need(generatedBlocks.length === 0, 'SERIES_ART_DIRECTION', `${f.id}: generated block conflicts with the declared asset source`);
+    }
+    const effect = catalog.layout_effects?.[layoutName];
+    if (effect) {
+      const contentLayers = layers.splice(0);
+      const bands = (effect.solid_bands ?? []).map((band) => ({
+        id: band.id,
+        kind: 'solid',
+        color: band.fill === 'theme.background' ? (task.theme?.background ?? recipe.theme.background) : band.fill,
+        slot: { x: band.x, y: band.y, width: band.width, height: band.height },
+      }));
+      layers.push(...backgroundLayers, ...bands, ...contentLayers);
     }
     addText('source',f.source_note,recurring.source,'source',series.source.ref);
     addText('pagination',`${i+1} / ${series.frames.length}`,recurring.pagination,'pagination');
     const plan = {schema_version:'1.0.0',request:series.request,source:series.source,profiles:series.profiles,task:structuredClone(task),layers,caption:f.caption??''};
     if (f.job_ref) plan.job_ref=f.job_ref;
-    frames.push({id:f.id,index:i+1,function:f.function,beat_ids:f.beat_ids,takeaway:f.takeaway,alt_text:f.alt_text,layout:layoutName,plan});
+    frames.push({id:f.id,index:i+1,function:f.function,beat_ids:f.beat_ids,takeaway:f.takeaway,alt_text:f.alt_text,layout:layoutName,...(f.art_direction?{art_direction:structuredClone(f.art_direction)}:{}),plan});
   }
   need([...beats.keys()].every((id)=>used.has(id)),'SERIES_BEAT_MISSING','a declared beat is not represented');
-  return {schema_version:CAROUSEL_VERSION,series_id:series.series_id,recipe:series.recipe,recipe_hash:hash({version:catalog.schema_version,recipe,regions:recurring,layouts,typography}),preset,typography,frames,
+  return {schema_version:CAROUSEL_VERSION,series_id:series.series_id,recipe:series.recipe,recipe_hash:hash({version:catalog.schema_version,recipe,regions:recurring,layouts,typography,layout_effects:catalog.layout_effects??{}}),...(series.art_direction_sha256?{art_direction_sha256:series.art_direction_sha256}:{}),preset,typography,frames,
     density_profile:'silent_carousel',narration_dependency:'none',
     review_contract:'editorial/SLIDES-AND-CAROUSELS.md#11-series-information-consistency-contract',
     review_owner:'skills/review-visual/; SUE-646/647; user Phase4 SUE-1337',
@@ -157,7 +211,13 @@ const basenameSafe=(root,path)=>{ need(typeof path==='string' && !relative(root,
 export async function executeCarousel(series,{baseDir=process.cwd(),outDir,rasterizer='auto',previousDir=null}={}) {
   const {compileExecution,executeVisual,prepareOutput,isRenderedOk,GENERATED_OK,RENDER_OK,lineageRootOf,checkRepairLineage,enforceRepairLimit,appendLedger}=await import('./visual-execution-core.mjs');
   const {findRasterizer,rasterize,svgDocument}=await import('./svg-tools.mjs');
-  const compiled=planCarousel(series); prepareOutput(outDir);
+  const compiled=planCarousel(series);
+  if (outDir && existsSync(outDir)) for (const f of compiled.frames) {
+    const staleReceipt = resolve(outDir, f.id, 'receipt.json');
+    if (existsSync(staleReceipt)) unlinkSync(staleReceipt);
+    try { rmdirSync(resolve(outDir, f.id)); } catch {}
+  }
+  prepareOutput(outDir);
   const adapter=findRasterizer(rasterizer);
   const codeFiles=['carousel-core.mjs','visual-execution-core.mjs','svg-tools.mjs','chart-renderer.mjs','watermark-core.mjs'];
   const runtime={adapter:adapter?{name:adapter.name,version:adapter.version}:null,font_environment:fontEnvironment(),code:codeFiles.map((p)=>hash(readFileSync(resolve(ROOT,'scripts/lib',p))))};
@@ -183,12 +243,15 @@ export async function executeCarousel(series,{baseDir=process.cwd(),outDir,raste
   mkdirSync(outDir,{recursive:true});
   const result={lineage_root:lineage,repair_round:repairRound,repair_counted:false,classification:prior?(allChanged?'new_base_all_frames_changed':wouldRepair?'local_repair':'no_change_or_retry'):'base',repaired_frames:prior&&!allChanged?rerender:[],schema_version:CAROUSEL_VERSION,series_id:compiled.series_id,recipe:compiled.recipe,recipe_hash:compiled.recipe_hash,runtime,
     status:'INCOMPLETE',frames:[],qa:{mechanical:'PREFLIGHT_PASSED',visual:'NOT_REVIEWED',source_truth:'NOT_ESTABLISHED',publication:'NOT_AUTHORIZED'},publication_authorized:false};
+  if (series.art_direction_sha256) result.art_direction_sha256 = series.art_direction_sha256;
   const save=()=>writeJson(resolve(outDir,'series.json'),result);
   try {
     for (const [i,f] of compiled.frames.entries()) {
       const dir=resolve(outDir,f.id), fingerprint=hash({packet:packets[i].execution_hash,recipe:compiled.recipe_hash,runtime});
       const old=prior?.frames.find((p)=>p.id===f.id && p.fingerprint===fingerprint && isRenderedOk(p.status));
       const entry={id:f.id,index:f.index,function:f.function,beat_ids:f.beat_ids,takeaway:f.takeaway,alt_text:f.alt_text,fingerprint,status:'NOT_RUN',reused:false,outputs:{}};
+      const receiptPath = resolve(dir,'receipt.json');
+      if (existsSync(receiptPath)) unlinkSync(receiptPath);
       if (adapter && runtime.font_environment && old && Object.keys(old.outputs??{}).length===5) {
         mkdirSync(dir,{recursive:true});
         for (const name of ['master.png','image.png','master.svg','execution.json','receipt.json']) {
@@ -200,6 +263,18 @@ export async function executeCarousel(series,{baseDir=process.cwd(),outDir,raste
       } else {
         const executed=await executeVisual(f.plan,{baseDir,preset:compiled.preset,outDir:dir,rasterizer});
         entry.status=executed.status;
+      }
+      if (f.art_direction?.asset?.source === 'generated') {
+        let consumed = false;
+        if (isRenderedOk(entry.status) && existsSync(receiptPath) && existsSync(resolve(dir,'master.png'))) {
+          try {
+            const receipt = JSON.parse(readFileSync(receiptPath,'utf8'));
+            const masterHash = hash(readFileSync(resolve(dir,'master.png')));
+            consumed = receiptConfirmsGeneratedAsset(entry.status, receipt, masterHash, f.art_direction.asset_block_id);
+          } catch { consumed = false; }
+        }
+        entry.art_direction_asset_in_final_png = consumed;
+        if (!consumed) entry.status = 'RENDER_REQUIRED';
       }
       const checked=await compileExecution(f.plan,{baseDir,preset:compiled.preset});
       need(checked.execution_hash===packets[i].execution_hash,'SERIES_SOURCE_CHANGED',`${f.id}: inputs changed during execution`);
@@ -224,11 +299,12 @@ export async function executeCarousel(series,{baseDir=process.cwd(),outDir,raste
       const sheet=rasterize(svgDocument(Math.min(3,result.frames.length)*phoneWidth,Math.ceil(result.frames.length/3)*phoneHeight,tiles.join('')),adapter);
       writeFileSync(resolve(outDir,'contact-sheet.png'),sheet); result.contact_sheet={ref:'contact-sheet.png',sha256:hash(sheet)};
     }
-    writeJson(resolve(outDir,'review-worklist.json'),{series_id:series.series_id,review_owner:compiled.review_owner,status:'NOT_REVIEWED',not_a_visual_review_record:true,
+    writeJson(resolve(outDir,'review-worklist.json'),{series_id:series.series_id,...(series.art_direction_sha256?{art_direction_sha256:series.art_direction_sha256}:{}),review_owner:compiled.review_owner,status:'NOT_REVIEWED',not_a_visual_review_record:true,
       known_failure_tags:['dashboardization','box_overload','dense_text','style_dilution','reference_drift','factual_overlay_intrusion','weak_visual_thesis'],
+      avoid_tags:[...new Set(series.frames.flatMap(f=>f.art_direction?.avoid??[]).map(tag=>tag==='fake_screenshot'?'ui_mimicry':tag))].sort(),
       contract:compiled.review_contract,contact_sheet:result.contact_sheet??null,
       dimensions:['focal_hierarchy','balance_whitespace','text_readability','visual_density','style_coherence','source_photo_chart_collision','sequence_and_role_consistency'],
-      frames:result.frames.map((f)=>({id:f.id,full:f.outputs['image.png']??null,phone:f.phone??null,alt_text:f.alt_text,verdict:'NOT_REVIEWED'})),
+      frames:result.frames.map((f)=>({id:f.id,full:f.outputs['image.png']??null,phone:f.phone??null,alt_text:f.alt_text,...(series.frames.find(x=>x.id===f.id)?.art_direction?{art_direction:series.frames.find(x=>x.id===f.id).art_direction}:{}),verdict:'NOT_REVIEWED'})),
       repair_routing:{text_or_collision:'fix the affected region/frame',fact:'correct source-bound evidence, never redraw by image AI',style:'change selected recipe dimension, not facts',concept:'bounded new direction after diagnosis'},publication_authorized:false});
     save();
     if (prior) appendLedger(resolve(previousDir),{lineage_root:lineage,outcome:result.repair_counted?'repair_ok':allChanged&&complete?'new_base':'repair_not_counted',classification:result.classification,status:result.status,series_sha256:hash(readFileSync(resolve(outDir,'series.json')))});

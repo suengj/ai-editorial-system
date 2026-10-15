@@ -32,8 +32,8 @@
       }
     },
     "verdict": { "enum": ["PASS_TO_HUMAN_REVIEW", "REVISE", "REROUTE", "SKIP"] },
-    "defect_tags": { "type": "array", "items": { "enum": ["dashboardization", "ui_mimicry", "flat_svg_aesthetic", "generic_icon_grid", "box_overload", "over_minimalization", "weak_visual_thesis", "style_dilution", "dense_text", "reference_drift", "factual_overlay_intrusion", "wrong_number", "missing_qualifier", "hallucinated_label", "unreadable_publication_display_size"] } },
-    "primary_tag": { "enum": ["dashboardization", "ui_mimicry", "flat_svg_aesthetic", "generic_icon_grid", "box_overload", "over_minimalization", "weak_visual_thesis", "style_dilution", "dense_text", "reference_drift", "factual_overlay_intrusion", "wrong_number", "missing_qualifier", "hallucinated_label", "unreadable_publication_display_size", null] },
+    "defect_tags": { "type": "array", "items": { "enum": ["dashboardization", "ui_mimicry", "flat_svg_aesthetic", "generic_icon_grid", "fake_screenshot", "fake_logo", "invented_chart", "box_overload", "over_minimalization", "weak_visual_thesis", "style_dilution", "dense_text", "reference_drift", "factual_overlay_intrusion", "wrong_number", "missing_qualifier", "hallucinated_label", "unreadable_publication_display_size"] } },
+    "primary_tag": { "enum": ["dashboardization", "ui_mimicry", "flat_svg_aesthetic", "generic_icon_grid", "fake_screenshot", "fake_logo", "invented_chart", "box_overload", "over_minimalization", "weak_visual_thesis", "style_dilution", "dense_text", "reference_drift", "factual_overlay_intrusion", "wrong_number", "missing_qualifier", "hallucinated_label", "unreadable_publication_display_size", null] },
     "failure_class": { "enum": ["wrong_concept", "local_defect", "low_fidelity", "facts_or_text_wrong", "reference_drift", "dashboardization", "human_likes_candidate", null] },
     "next_action": { "enum": ["new_direction", "local_edit", "fidelity_derivative", "factual_overlay_repair", "recompile_reference_authority", "reroute_composition_renderer", "human_approval_required", "human_judgement"] },
     "feedback_ref": { "type": "string", "pattern": "^feedback:[a-z0-9-]+$" },

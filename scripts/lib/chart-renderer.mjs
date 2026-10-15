@@ -158,11 +158,62 @@ export function validateChartAgainstArticle(spec, article) {
  * untouched. This bounded line/bar panel reads the SAME source spec shape;
  * it does not fetch markets, smooth observations, or own source authority.
  */
-export const PANEL_RENDERER_VERSION = '1.0.0';
+export const PANEL_RENDERER_VERSION = '1.1.0';
+function renderFlowDiagramPanel(spec, { width = 900, height = 520, theme = {}, measure = null } = {}) {
+  const fail = (message) => { throw new Error(`FLOW_INVALID: ${message}`); };
+  if (![width, height].every(Number.isFinite) || width < 400 || height < 260) fail('panel must be at least 400x260');
+  const expected = ['value', 'payment', 'revenue', 'cost'];
+  if (!Array.isArray(spec.nodes) || spec.nodes.length !== 4 || spec.nodes.some((node, i) => node?.id !== expected[i] || typeof node.label !== 'string' || !node.label.trim() || typeof node.text !== 'string' || !node.text.trim())) fail('four ordered, labeled money fields are required');
+  if (!Array.isArray(spec.edges) || spec.edges.length !== 1 || spec.edges[0]?.from !== 'value' || spec.edges[0]?.to !== 'payment') fail('only the declared value-to-payment relation is supported');
+  const fg = theme.foreground ?? '#222222', accent = theme.accent ?? fg;
+  for (const color of [fg, accent]) if (!/^#[0-9a-f]{6}$/i.test(color)) fail('theme colors must be #RRGGBB');
+  const font = theme.font_family ?? 'Noto Sans CJK KR, Pretendard, sans-serif';
+  const fs = Math.max(18, Math.min(26, width / 36));
+  const labelSize = Math.round(fs * 0.86);
+  const tw = (text) => measure ? measure(text, fs, 400) : [...String(text)].length * fs;
+  const wrap = (text, maxWidth, maxLines) => {
+    const lines = [];
+    let line = '';
+    for (const word of text.split(/\s+/).filter(Boolean)) {
+      const candidate = line ? `${line} ${word}` : word;
+      if (tw(candidate) <= maxWidth) { line = candidate; continue; }
+      if (line) { lines.push(line); line = ''; }
+      if (tw(word) <= maxWidth) { line = word; continue; }
+      for (const { segment } of new Intl.Segmenter('ko', { granularity: 'grapheme' }).segment(word)) {
+        if (tw(line + segment) > maxWidth) { if (!line) fail('a glyph does not fit'); lines.push(line); line = segment; }
+        else line += segment;
+      }
+    }
+    if (line) lines.push(line);
+    if (lines.length > maxLines) fail(`money text does not fit without truncation: ${text}`);
+    return lines;
+  };
+  const padX = Math.max(26, Math.round(width * 0.035)), gap = Math.max(22, Math.round(width * 0.035));
+  const nodeWidth = (width - padX * 2 - gap) / 2;
+  const rowHeight = Math.min(Math.round(height * 0.36), 180), top = Math.round(height * 0.12), lower = height - rowHeight - Math.round(height * 0.12);
+  const positions = [
+    { x: padX, y: top }, { x: padX + nodeWidth + gap, y: top },
+    { x: padX, y: lower }, { x: padX + nodeWidth + gap, y: lower },
+  ];
+  const els = [];
+  for (const [i, node] of spec.nodes.entries()) {
+    const p = positions[i], textLines = wrap(node.text, nodeWidth - 36, 3);
+    if (textLines.length * fs * 1.25 + labelSize * 1.5 > rowHeight - 24) fail(`money text does not fit without truncation: ${node.text}`);
+    els.push(`<rect x="${n(p.x)}" y="${n(p.y)}" width="${n(nodeWidth)}" height="${rowHeight}" rx="4" fill="none" stroke="${i < 2 ? accent : fg}" stroke-width="2" stroke-opacity="0.8"/>`);
+    els.push(`<text x="${n(p.x + 18)}" y="${n(p.y + labelSize + 16)}" font-family="${esc(font)}" font-size="${labelSize}" font-weight="600" fill="${fg}">${esc(node.label)}</text>`);
+    els.push(`<text x="${n(p.x + 18)}" y="${n(p.y + labelSize + 28)}" font-family="${esc(font)}" font-size="${fs}" fill="${fg}">${textLines.map((line, j) => `<tspan x="${n(p.x + 18)}" y="${n(p.y + labelSize + 28 + (j + 1) * fs * 1.25)}">${esc(line)}</tspan>`).join('')}</text>`);
+  }
+  const from = positions[0], to = positions[1], y = from.y + rowHeight / 2;
+  els.push(`<defs><marker id="flow-arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="${accent}"/></marker></defs>`);
+  els.push(`<line x1="${n(from.x + nodeWidth + 3)}" y1="${n(y)}" x2="${n(to.x - 7)}" y2="${n(y)}" stroke="${accent}" stroke-width="3" marker-end="url(#flow-arrow)"/>`);
+  return { svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}">${els.join('')}</svg>`, displayed: spec.nodes.map(n_ => ({ id: n_.id, label: n_.label, text: n_.text })), edges: structuredClone(spec.edges), renderer_version: PANEL_RENDERER_VERSION };
+}
+
 export function renderChartPanel(spec, { width = 900, height = 520, theme = {}, measure = null } = {}) {
   const fail = (m) => { throw new Error(`CHART_INVALID: ${m}`); };
   const obj = (v) => v && typeof v === 'object' && !Array.isArray(v);
-  if (!obj(spec) || !['line', 'bar'].includes(spec.type)) fail('supported types: line, bar');
+  if (!obj(spec) || !['line', 'bar', 'flow'].includes(spec.type)) fail('supported types: line, bar, flow');
+  if (spec.type === 'flow') return renderFlowDiagramPanel(spec, { width, height, theme, measure });
   for (const k of ['title', 'period', 'source_note']) if (typeof spec[k] !== 'string' || !spec[k].trim()) fail(`${k} is required`);
   if (!spec.x?.label || !spec.y?.label || typeof spec.y.unit !== 'string') fail('axis labels and explicit unit are required');
   if (![width, height].every(Number.isFinite) || width < 400 || height < 260) fail('panel must be at least 400x260');

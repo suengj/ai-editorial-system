@@ -49,7 +49,7 @@
     "failure_tags": {
       "type": "array",
       "items": {
-        "enum": ["dashboardization", "ui_mimicry", "flat_svg_aesthetic", "generic_icon_grid", "box_overload", "over_minimalization", "weak_visual_thesis", "style_dilution", "dense_text", "reference_drift", "factual_overlay_intrusion", "wrong_number", "missing_qualifier", "hallucinated_label", "unreadable_publication_display_size"]
+        "enum": ["dashboardization", "ui_mimicry", "flat_svg_aesthetic", "generic_icon_grid", "fake_screenshot", "fake_logo", "invented_chart", "box_overload", "over_minimalization", "weak_visual_thesis", "style_dilution", "dense_text", "reference_drift", "factual_overlay_intrusion", "wrong_number", "missing_qualifier", "hallucinated_label", "unreadable_publication_display_size"]
       }
     },
     "usage_limit": {
