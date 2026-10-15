@@ -21,6 +21,7 @@ export const CATALOG_VERSION = '1.0.0';
 export const OUT_PATH = 'editorial/web-catalog/editorial-web-catalog.v1.json';
 const VISUAL_RECIPES = 'editorial/visual-recipes.v1.json';
 const SCHEMAS = {
+  'art-direction-plan': 'schemas/art-direction-plan.schema.json',
   'editorial-intent': 'schemas/editorial-intent.schema.json',
   'visual-brief': 'schemas/visual-brief.schema.json',
   'render-spec': 'schemas/render-spec.schema.json',

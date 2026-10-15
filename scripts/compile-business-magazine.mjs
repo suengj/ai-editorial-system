@@ -20,11 +20,17 @@ try {
   const out = resolve(options['--out']);
   mkdirSync(dirname(out), { recursive: true });
   mkdirSync(out); // EEXIST intentionally refuses stale output/accidental overwrite.
+  for (const [ref, asset] of Object.entries(compiled.derived_assets ?? {})) {
+    const target = resolve(out, ref);
+    if (!target.startsWith(`${out}/`)) throw new Error(`derived asset path escapes output: ${ref}`);
+    mkdirSync(dirname(target), { recursive: true });
+    writeFileSync(target, `${JSON.stringify(asset, null, 2)}\n`);
+  }
   writeFileSync(resolve(out, 'series.json'), JSON.stringify(compiled.series, null, 2) + '\n');
   writeFileSync(resolve(out, 'editorial-sidecar.json'), JSON.stringify(compiled.sidecar, null, 2) + '\n');
   writeFileSync(resolve(out, 'caption.md'), compiled.caption);
   writeFileSync(resolve(out, 'generation-brief.md'), compiled.generation_brief + '\n');
-  console.log(JSON.stringify({ status: 'PLANNED_NOT_RENDERED', frames: 5, out, publication_authorized: false }));
+  console.log(JSON.stringify({ status: 'PLANNED_NOT_RENDERED', frames: compiled.series.frames.length, out, publication_authorized: false }));
 } catch (error) {
   console.error(`${error.code ?? 'BIZ_COMPILE_FAILED'}: ${error.message}`);
   process.exitCode = 1;

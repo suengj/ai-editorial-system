@@ -161,12 +161,13 @@ export async function compileExecution(plan, { baseDir = process.cwd(), preset =
     keys(l, ['id', 'kind', 'slot', 'ref', 'sha256', 'mode', 'fit', 'rights_note', 'protect', 'text', 'source_ref', 'font_size', 'weight', 'align', 'max_lines', 'line_height', 'color', 'instruction', 'generation', 'provenance'], 'layer');
     if (!/^[a-z0-9][a-z0-9-]*$/.test(l.id ?? '') || ids.has(l.id)) fail('LAYER_ID', 'layer IDs must be unique lowercase slugs');
     ids.add(l.id);
-    if (!['text', 'image', 'chart', 'generated'].includes(l.kind)) fail('LAYER_KIND', String(l.kind));
+    if (!['text', 'image', 'chart', 'generated', 'solid'].includes(l.kind)) fail('LAYER_KIND', String(l.kind));
     const permitted = {
       text: ['text', 'source_ref', 'font_size', 'weight', 'align', 'max_lines', 'line_height', 'color'],
       chart: ['ref', 'sha256'],
       image: ['ref', 'sha256', 'mode', 'fit', 'rights_note', 'protect', 'provenance', 'generation'],
       generated: ['ref', 'sha256', 'mode', 'fit', 'rights_note', 'protect', 'instruction', 'generation'],
+      solid: ['color'],
     };
     keys(l, ['id', 'kind', 'slot', ...permitted[l.kind]], `layer ${l.id}`);
     const pixelSlot = box(l.slot, canvas);
@@ -182,6 +183,9 @@ export async function compileExecution(plan, { baseDir = process.cwd(), preset =
       next.align = l.align ?? 'start'; next.line_height = l.line_height ?? 1.25;
       if (!Number.isFinite(next.font_size) || next.font_size < 10 || next.font_size > 256 || !Number.isInteger(next.max_lines) || next.max_lines < 1 || next.max_lines > 30 || ![400, 500, 600, 700, 800].includes(next.weight) || !['start', 'middle', 'end'].includes(next.align) || !(next.line_height >= 1.05 && next.line_height <= 2)) fail('TEXT_STYLE', l.id);
       if (l.color && !/^#[a-f0-9]{6}$/i.test(l.color)) fail('INVALID_COLOR', l.id);
+    } else if (l.kind === 'solid') {
+      if (!/^#[a-f0-9]{6}$/i.test(l.color ?? '')) fail('INVALID_COLOR', `${l.id} solid color must be #RRGGBB`);
+      next.color = l.color;
     } else if (l.kind === 'generated' && !l.ref) {
       str(l.instruction, 'generated layer instruction');
       next.status = 'RENDER_REQUIRED';
@@ -191,7 +195,7 @@ export async function compileExecution(plan, { baseDir = process.cwd(), preset =
       if (l.kind === 'chart') {
         // Chart values stay in their existing canonical spec, not in the prompt.
         const chart = JSON.parse(file.bytes);
-        if (!['line', 'bar'].includes(chart.type)) fail('CHART_BINDING', 'v1 binds line/bar; use an existing rendered evidence image for another geometry');
+        if (!['line', 'bar', 'flow'].includes(chart.type)) fail('CHART_BINDING', 'v1 binds line/bar/flow; use an existing rendered evidence image for another geometry');
       } else {
         next.mode = l.mode ?? 'exact_composite'; next.fit = l.fit ?? 'contain';
         if (!['exact_composite', 'cutout_composite'].includes(next.mode)) fail('EDIT_REQUIRED', 'supply the actual edited background/cutout; no inpainting is performed by this compositor');
@@ -344,6 +348,8 @@ export async function executeVisual(plan, { baseDir = process.cwd(), preset = {}
       const x = b.x + (l.align === 'middle' ? b.width / 2 : l.align === 'end' ? b.width : 0);
       elements.push(`<text font-family="${esc(packet.theme.font_family)}" font-size="${l.font_size}" font-weight="${l.weight}" fill="${l.color ?? packet.theme.foreground}" text-anchor="${l.align}">${lines.map((t, i) => `<tspan x="${x}" y="${b.y + l.font_size + i * l.font_size * l.line_height}">${esc(t)}</tspan>`).join('')}</text>`);
       textEvidence.push({ id: l.id, text: l.text, source_ref: l.source_ref, lines, font_size: l.font_size, slot: b });
+    } else if (l.kind === 'solid') {
+      elements.push(`<rect x="${b.x}" y="${b.y}" width="${b.width}" height="${b.height}" fill="${l.color}"/>`);
     } else {
       const file = localInput(l.ref, baseDir, l.sha256); inputs.push(file);
       if (l.kind === 'chart') {

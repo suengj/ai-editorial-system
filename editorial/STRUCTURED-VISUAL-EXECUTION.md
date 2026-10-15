@@ -233,3 +233,11 @@ node scripts/test-carousel.mjs --render
 `review-worklist.json`은 **검토 대상 목록이지 검토 통과 기록이 아니다.** 기존 `skills/review-visual/`, SUE-646/647 및 §11 시리즈 검토로 각 full/phone 이미지와 전체 contact sheet를 확인한다. focal hierarchy, balance/whitespace, text readability, visual density, style coherence, 사진/차트 충돌, 카드 순서·반복 역할의 일관성을 구분한다. `dashboardization`, `box_overload`, `dense_text`, `style_dilution`, `reference_drift`, `factual_overlay_intrusion` 등 기존 실패 태그를 사용한다. 요청한 dark-data 방향을 무조건 dashboard라는 이유만으로 탈락시키거나 pop-collage를 모든 계정 기본 스타일로 승격하지 않는다.
 
 로컬 출력은 `RENDERED_NEEDS_REVIEW`다. 실제 원자료 진실/미감/게시 승인은 따로 확인한다. 생성 bytes가 없으면 `RENDER_REQUIRED`, 일부 프레임이 미완료면 시리즈는 `INCOMPLETE`이며 완성 contact sheet를 만들지 않는다. 이미지 모델 호출, 자동 inpainting/배경제거, native ChatGPT의 bytes 인계 및 실제 사용자 사진·PMC·블로그/보고서 미감 검증은 이 로컬 테스트로 통과시키지 않는다. SUE-1337 Phase4는 계속 사용자 담당이다.
+
+### Optional ArtDirectionPlan (M1)
+
+`schemas/art-direction-plan.schema.json` defines an optional, additive plan for the business magazine compiler. It records the message, focal subject, reading order, block roles, asset rights/source, exact protected claims and fields, review tags, brand invariants, and reused recipes. The validator requires the five magazine roles in order; a `trend` frame is allowed only with a source-backed `trend_evidence_ref`. Repeated layout and block-role signatures produce `LAYOUT_REPETITION` as a review warning, never a diversity failure.
+
+The path is `packet.art_direction` → `compileBusinessMagazine` → `series.json` and sidecar → `planCarousel` → existing `render-carousel` / `render-visual`. A money `diagram` uses a deterministic SVG flow layer in the existing chart/compositor path; generated blocks remain pending until their asset is verified in the final PNG. The plan hash is carried as `art_direction_sha256`, and avoid tags appear in the still-unreviewed carousel worklist.
+
+The web catalog exports the schema and additive layouts. Editorial Studio can adopt them after updating its pinned catalog and running its own `npm run aes:check`; this change does not move that pin or assert Studio adoption.

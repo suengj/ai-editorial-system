@@ -1,0 +1,92 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://suengj.com/schemas/art-direction-plan.schema.json",
+  "title": "Carousel art direction plan",
+  "description": "Optional, additive direction for the existing business magazine compiler and carousel renderer. It carries no publication authority.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "plan_id", "profile", "brand", "frames"],
+  "properties": {
+    "schema_version": { "const": "1.0.0" },
+    "plan_id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" },
+    "profile": { "type": "string", "minLength": 1 },
+    "brand": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["locked_invariants"],
+      "properties": {
+        "locked_invariants": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "type": "string", "minLength": 1 } }
+      }
+    },
+    "trend_evidence_ref": { "type": "string", "minLength": 1 },
+    "frames": {
+      "type": "array",
+      "minItems": 5,
+      "maxItems": 6,
+      "items": { "$ref": "#/$defs/frame" }
+    }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "frames": { "contains": { "properties": { "role": { "const": "trend" } }, "required": ["role"] } } } },
+      "then": { "required": ["trend_evidence_ref"] }
+    },
+    {
+      "if": { "required": ["trend_evidence_ref"] },
+      "then": { "properties": { "frames": { "contains": { "properties": { "role": { "const": "trend" } }, "required": ["role"] } } } }
+    }
+  ],
+  "$defs": {
+    "frame": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["role", "layout", "message", "visual_mode", "focal_subject", "reading_order", "blocks", "asset", "protected", "avoid", "brand_elements", "reuse"],
+      "properties": {
+        "role": { "enum": ["cover", "money", "case-a", "case-b", "opportunity", "trend"] },
+        "layout": { "enum": ["hero", "flow", "columns", "stack", "text", "visual", "split"] },
+        "message": { "type": "string", "minLength": 1, "maxLength": 240 },
+        "visual_mode": { "enum": ["hero_image", "mechanism_flow", "case_pathway", "case_contrast", "synthesis_stack", "text_focus"] },
+        "focal_subject": { "type": "string", "minLength": 1, "maxLength": 160 },
+        "reading_order": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" } },
+        "blocks": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["id", "kind", "role", "region"],
+            "properties": {
+              "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" },
+              "kind": { "enum": ["text", "image", "generated", "chart", "diagram"] },
+              "role": { "type": "string", "minLength": 1 },
+              "region": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" }
+            }
+          }
+        },
+        "asset": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["need", "source", "rationale"],
+          "properties": {
+            "need": { "type": "boolean" },
+            "source": { "enum": ["generated", "authorized_original", "deterministic_diagram", "none"] },
+            "rationale": { "type": "string", "minLength": 1 },
+            "rights_note": { "type": "string", "minLength": 1 }
+          }
+        },
+        "protected": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["claim_ids", "fields"],
+          "properties": {
+            "claim_ids": { "type": "array", "uniqueItems": true, "items": { "type": "string", "minLength": 1 } },
+            "fields": { "type": "array", "uniqueItems": true, "items": { "enum": ["title", "headline", "body", "numbers", "company_names", "sources", "citations"] } }
+          }
+        },
+        "avoid": { "type": "array", "uniqueItems": true, "items": { "type": "string", "minLength": 1 } },
+        "brand_elements": { "type": "array", "uniqueItems": true, "items": { "type": "string", "minLength": 1 } },
+        "reuse": { "type": "array", "uniqueItems": true, "items": { "type": "string", "minLength": 1 } }
+      }
+    }
+  }
+}

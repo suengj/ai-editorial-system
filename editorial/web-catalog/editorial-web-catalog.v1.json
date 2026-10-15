@@ -44,7 +44,8 @@
       "layout",
       "blocks",
       "caption",
-      "job_ref"
+      "job_ref",
+      "art_direction"
     ],
     "frame_functions": [
       "orient",
@@ -76,7 +77,8 @@
       "layouts",
       "series_label",
       "beats",
-      "frames"
+      "frames",
+      "art_direction_sha256"
     ],
     "signalytics_png": {
       "max": 6,
@@ -85,7 +87,7 @@
     }
   },
   "catalog_version": "1.0.0",
-  "content_digest": "sha256:ea6680a86e3c9df87338d039581ddc01a314e0ca9827bd44651046569a35fafa",
+  "content_digest": "sha256:175ec74b65b69d58d548e964efcc5c61e95cab7b44b569ba72c446729cb4ed99",
   "field_domains": {
     "call_to_action": {
       "max_length": 200,
@@ -193,7 +195,7 @@
           {
             "path": "editorial/STRUCTURED-VISUAL-EXECUTION.md",
             "role": "core:visual",
-            "sha256": "ca9bd8b4dfce215159d3fecb782ae637b3db721fde33673639d73793fd1a4fac"
+            "sha256": "48a369221d6fa4163953a5a16acccf90bc98de746ee768436078ccb0e0a6e513"
           },
           {
             "path": "editorial/constitution.md",
@@ -262,7 +264,7 @@
           {
             "path": "editorial/STRUCTURED-VISUAL-EXECUTION.md",
             "role": "core:visual",
-            "sha256": "ca9bd8b4dfce215159d3fecb782ae637b3db721fde33673639d73793fd1a4fac"
+            "sha256": "48a369221d6fa4163953a5a16acccf90bc98de746ee768436078ccb0e0a6e513"
           },
           {
             "path": "editorial/constitution.md",
@@ -411,6 +413,313 @@
     }
   },
   "schemas": {
+    "art-direction-plan": {
+      "id": "https://suengj.com/schemas/art-direction-plan.schema.json",
+      "path": "schemas/art-direction-plan.schema.json",
+      "schema": {
+        "$defs": {
+          "frame": {
+            "additionalProperties": false,
+            "properties": {
+              "asset": {
+                "additionalProperties": false,
+                "properties": {
+                  "need": {
+                    "type": "boolean"
+                  },
+                  "rationale": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "rights_note": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "source": {
+                    "enum": [
+                      "generated",
+                      "authorized_original",
+                      "deterministic_diagram",
+                      "none"
+                    ]
+                  }
+                },
+                "required": [
+                  "need",
+                  "source",
+                  "rationale"
+                ],
+                "type": "object"
+              },
+              "avoid": {
+                "items": {
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "type": "array",
+                "uniqueItems": true
+              },
+              "blocks": {
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "id": {
+                      "pattern": "^[a-z0-9][a-z0-9-]*$",
+                      "type": "string"
+                    },
+                    "kind": {
+                      "enum": [
+                        "text",
+                        "image",
+                        "generated",
+                        "chart",
+                        "diagram"
+                      ]
+                    },
+                    "region": {
+                      "pattern": "^[a-z0-9][a-z0-9-]*$",
+                      "type": "string"
+                    },
+                    "role": {
+                      "minLength": 1,
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "kind",
+                    "role",
+                    "region"
+                  ],
+                  "type": "object"
+                },
+                "minItems": 1,
+                "type": "array"
+              },
+              "brand_elements": {
+                "items": {
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "type": "array",
+                "uniqueItems": true
+              },
+              "focal_subject": {
+                "maxLength": 160,
+                "minLength": 1,
+                "type": "string"
+              },
+              "layout": {
+                "enum": [
+                  "hero",
+                  "flow",
+                  "columns",
+                  "stack",
+                  "text",
+                  "visual",
+                  "split"
+                ]
+              },
+              "message": {
+                "maxLength": 240,
+                "minLength": 1,
+                "type": "string"
+              },
+              "protected": {
+                "additionalProperties": false,
+                "properties": {
+                  "claim_ids": {
+                    "items": {
+                      "minLength": 1,
+                      "type": "string"
+                    },
+                    "type": "array",
+                    "uniqueItems": true
+                  },
+                  "fields": {
+                    "items": {
+                      "enum": [
+                        "title",
+                        "headline",
+                        "body",
+                        "numbers",
+                        "company_names",
+                        "sources",
+                        "citations"
+                      ]
+                    },
+                    "type": "array",
+                    "uniqueItems": true
+                  }
+                },
+                "required": [
+                  "claim_ids",
+                  "fields"
+                ],
+                "type": "object"
+              },
+              "reading_order": {
+                "items": {
+                  "pattern": "^[a-z0-9][a-z0-9-]*$",
+                  "type": "string"
+                },
+                "minItems": 1,
+                "type": "array",
+                "uniqueItems": true
+              },
+              "reuse": {
+                "items": {
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "type": "array",
+                "uniqueItems": true
+              },
+              "role": {
+                "enum": [
+                  "cover",
+                  "money",
+                  "case-a",
+                  "case-b",
+                  "opportunity",
+                  "trend"
+                ]
+              },
+              "visual_mode": {
+                "enum": [
+                  "hero_image",
+                  "mechanism_flow",
+                  "case_pathway",
+                  "case_contrast",
+                  "synthesis_stack",
+                  "text_focus"
+                ]
+              }
+            },
+            "required": [
+              "role",
+              "layout",
+              "message",
+              "visual_mode",
+              "focal_subject",
+              "reading_order",
+              "blocks",
+              "asset",
+              "protected",
+              "avoid",
+              "brand_elements",
+              "reuse"
+            ],
+            "type": "object"
+          }
+        },
+        "$id": "https://suengj.com/schemas/art-direction-plan.schema.json",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "additionalProperties": false,
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "frames": {
+                  "contains": {
+                    "properties": {
+                      "role": {
+                        "const": "trend"
+                      }
+                    },
+                    "required": [
+                      "role"
+                    ]
+                  }
+                }
+              }
+            },
+            "then": {
+              "required": [
+                "trend_evidence_ref"
+              ]
+            }
+          },
+          {
+            "if": {
+              "required": [
+                "trend_evidence_ref"
+              ]
+            },
+            "then": {
+              "properties": {
+                "frames": {
+                  "contains": {
+                    "properties": {
+                      "role": {
+                        "const": "trend"
+                      }
+                    },
+                    "required": [
+                      "role"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "description": "Optional, additive direction for the existing business magazine compiler and carousel renderer. It carries no publication authority.",
+        "properties": {
+          "brand": {
+            "additionalProperties": false,
+            "properties": {
+              "locked_invariants": {
+                "items": {
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "minItems": 1,
+                "type": "array",
+                "uniqueItems": true
+              }
+            },
+            "required": [
+              "locked_invariants"
+            ],
+            "type": "object"
+          },
+          "frames": {
+            "items": {
+              "$ref": "#/$defs/frame"
+            },
+            "maxItems": 6,
+            "minItems": 5,
+            "type": "array"
+          },
+          "plan_id": {
+            "pattern": "^[a-z0-9][a-z0-9-]*$",
+            "type": "string"
+          },
+          "profile": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "schema_version": {
+            "const": "1.0.0"
+          },
+          "trend_evidence_ref": {
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "schema_version",
+          "plan_id",
+          "profile",
+          "brand",
+          "frames"
+        ],
+        "title": "Carousel art direction plan",
+        "type": "object"
+      },
+      "sha256": "7009186aac373855f6bef88338679e2449a2769fb438377c03858ecbdfc95b85"
+    },
     "audio-plan": {
       "id": "https://suengj.com/schemas/audio-plan.schema.json",
       "path": "schemas/audio-plan.schema.json",
@@ -3848,7 +4157,7 @@
           {
             "path": "editorial/STRUCTURED-VISUAL-EXECUTION.md",
             "role": "core:visual",
-            "sha256": "ca9bd8b4dfce215159d3fecb782ae637b3db721fde33673639d73793fd1a4fac"
+            "sha256": "48a369221d6fa4163953a5a16acccf90bc98de746ee768436078ccb0e0a6e513"
           },
           {
             "path": "editorial/SUENGJ-STYLE.md",
@@ -3863,7 +4172,7 @@
           {
             "path": "editorial/visual-recipes.v1.json",
             "role": "visual:values",
-            "sha256": "456667a0cb2c3ac993c93de8c63005df72f8d4521de1ee7cde394359082c6a04"
+            "sha256": "e75ed2bf3770cc9f5107e8397dcae14a7e23fc4a15951add602222261eca7663"
           }
         ]
       },
@@ -3986,7 +4295,7 @@
           {
             "path": "editorial/STRUCTURED-VISUAL-EXECUTION.md",
             "role": "core:visual",
-            "sha256": "ca9bd8b4dfce215159d3fecb782ae637b3db721fde33673639d73793fd1a4fac"
+            "sha256": "48a369221d6fa4163953a5a16acccf90bc98de746ee768436078ccb0e0a6e513"
           },
           {
             "path": "editorial/business-idea-magazine.v1.json",
@@ -4001,7 +4310,7 @@
           {
             "path": "editorial/visual-recipes.v1.json",
             "role": "visual:values",
-            "sha256": "456667a0cb2c3ac993c93de8c63005df72f8d4521de1ee7cde394359082c6a04"
+            "sha256": "e75ed2bf3770cc9f5107e8397dcae14a7e23fc4a15951add602222261eca7663"
           }
         ]
       },
@@ -4058,7 +4367,7 @@
           {
             "path": "editorial/STRUCTURED-VISUAL-EXECUTION.md",
             "role": "core:visual",
-            "sha256": "ca9bd8b4dfce215159d3fecb782ae637b3db721fde33673639d73793fd1a4fac"
+            "sha256": "48a369221d6fa4163953a5a16acccf90bc98de746ee768436078ccb0e0a6e513"
           },
           {
             "path": "editorial/TRENDS-MOA-COMMUNITY-TONE.md",
@@ -4073,7 +4382,7 @@
           {
             "path": "editorial/visual-recipes.v1.json",
             "role": "visual:values",
-            "sha256": "456667a0cb2c3ac993c93de8c63005df72f8d4521de1ee7cde394359082c6a04"
+            "sha256": "e75ed2bf3770cc9f5107e8397dcae14a7e23fc4a15951add602222261eca7663"
           }
         ]
       },
@@ -4100,7 +4409,80 @@
   "visual_recipes": {
     "path": "editorial/visual-recipes.v1.json",
     "recipes": {
+      "layout_effects": {
+        "hero": {
+          "background_regions": [
+            "art"
+          ],
+          "solid_bands": [
+            {
+              "fill": "theme.background",
+              "height": 0.565,
+              "id": "hero-text-safe-band",
+              "width": 1,
+              "x": 0,
+              "y": 0.035
+            },
+            {
+              "fill": "theme.background",
+              "height": 0.08,
+              "id": "hero-source-safe-band",
+              "width": 1,
+              "x": 0,
+              "y": 0.85
+            }
+          ]
+        }
+      },
       "layouts": {
+        "columns": {
+          "copy": {
+            "height": 0.09,
+            "width": 0.88,
+            "x": 0.06,
+            "y": 0.75
+          },
+          "left": {
+            "height": 0.38,
+            "width": 0.42,
+            "x": 0.06,
+            "y": 0.34
+          },
+          "right": {
+            "height": 0.38,
+            "width": 0.42,
+            "x": 0.52,
+            "y": 0.34
+          }
+        },
+        "flow": {
+          "copy": {
+            "height": 0.11,
+            "width": 0.88,
+            "x": 0.06,
+            "y": 0.73
+          },
+          "diagram": {
+            "height": 0.37,
+            "width": 0.88,
+            "x": 0.06,
+            "y": 0.34
+          }
+        },
+        "hero": {
+          "art": {
+            "height": 1,
+            "width": 1,
+            "x": 0,
+            "y": 0
+          },
+          "copy": {
+            "height": 0.24,
+            "width": 0.88,
+            "x": 0.06,
+            "y": 0.36
+          }
+        },
         "split": {
           "left": {
             "height": 0.45,
@@ -4113,6 +4495,26 @@
             "width": 0.42,
             "x": 0.52,
             "y": 0.35
+          }
+        },
+        "stack": {
+          "constraint": {
+            "height": 0.14,
+            "width": 0.88,
+            "x": 0.06,
+            "y": 0.5
+          },
+          "first-test": {
+            "height": 0.14,
+            "width": 0.88,
+            "x": 0.06,
+            "y": 0.66
+          },
+          "principle": {
+            "height": 0.14,
+            "width": 0.88,
+            "x": 0.06,
+            "y": 0.34
           }
         },
         "text": {
@@ -4239,6 +4641,6 @@
         }
       }
     },
-    "sha256": "456667a0cb2c3ac993c93de8c63005df72f8d4521de1ee7cde394359082c6a04"
+    "sha256": "e75ed2bf3770cc9f5107e8397dcae14a7e23fc4a15951add602222261eca7663"
   }
 }
