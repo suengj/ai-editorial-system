@@ -103,7 +103,7 @@
     }
   },
   "catalog_version": "1.0.0",
-  "content_digest": "sha256:7ec1411cfe015f73b48b9b817512399a6a323e2bf1ea44b189f2cc517a2fe577",
+  "content_digest": "sha256:8f719204f82595dc199f0a2323e37fea0524ce6df872885c5a014b4668109dd6",
   "field_domains": {
     "call_to_action": {
       "max_length": 200,
@@ -4307,7 +4307,7 @@
           {
             "path": "editorial/SUENGJ-STYLE.md",
             "role": "copy:personal",
-            "sha256": "940048146aa3153057bac123411f981414a02aabaf460d3ae30da8766cad7e11"
+            "sha256": "438a35e1d6c497d87f7bcaa84cfda2d9c02c08a32dc879d449983f20bb55933e"
           },
           {
             "path": "editorial/constitution.md",
@@ -4329,7 +4329,7 @@
           {
             "path": "editorial/SUENGJ-STYLE.md",
             "role": "copy:personal",
-            "sha256": "940048146aa3153057bac123411f981414a02aabaf460d3ae30da8766cad7e11"
+            "sha256": "438a35e1d6c497d87f7bcaa84cfda2d9c02c08a32dc879d449983f20bb55933e"
           },
           {
             "path": "editorial/constitution.md",
@@ -4378,7 +4378,7 @@
           {
             "path": "editorial/SUENGJ-STYLE.md",
             "role": "copy:personal",
-            "sha256": "940048146aa3153057bac123411f981414a02aabaf460d3ae30da8766cad7e11"
+            "sha256": "438a35e1d6c497d87f7bcaa84cfda2d9c02c08a32dc879d449983f20bb55933e"
           },
           {
             "path": "editorial/constitution.md",

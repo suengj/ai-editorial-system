@@ -79,7 +79,7 @@ The metadata-only `editorial/approved-examples.json` includes `kind: owner_selec
 
 Normal generation stays `style_description_only`. On ambiguity/failure/quality_comparison the selected 2–3 references are **locators only**, and the calling authorized agent must fetch the specific private excerpts. `source_text_read:false` explicitly prevents a selected locator from claiming a successful private read. With the current deterministic selector, the first three references are question opening, accessible definition, and case-to-issue transition; the remaining seven stay in the approved index but are not dynamically relevance-ranked.
 
-The proposed style *interpretation* is at `editorial/SUENGJ-STYLE-20261014-PROPOSAL.md`; the canonical `SUENGJ-STYLE.md` is unchanged.
+The proposed style *interpretation* is at `editorial/SUENGJ-STYLE-20261014-PROPOSAL.md`; it was promoted into canonical `SUENGJ-STYLE.md` on 2026-10-16 as an owner-approved trial.
 
 ## Growth plan
 

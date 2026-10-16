@@ -37,6 +37,14 @@ Observed corpus signals include:
 Do not reproduce those markers mechanically. A draft that inserts them to
 signal authorship is imitation, not voice fit.
 
+All 132 historical posts are descriptive corpus evidence. Separately, ten
+excerpts (O1, O3, L1, T1, T2, P1, P3, H1, H2, E1) are individually
+owner-approved positive style evidence **only** for `personal-linkedin` and
+`personal-instagram`; this is not acceptance of their whole source posts.
+`signalytics-news`, `trends-moa`, `blog`, `news` and `report` must not use
+them. Owner-approved 2026-10-16 as a trial; refine through usage feedback
+(rationale: `editorial/SUENGJ-STYLE-20261014-PROPOSAL.md`).
+
 ## Authority and precedence
 
 This overlay may change **how** a social post sounds. It may not change what is
@@ -68,6 +76,11 @@ Good direction:
 - own the interpretation as a position rather than disguising it as neutral fact;
 - let uncertainty remain visible when the thought is genuinely provisional.
 
+Leading preference: open with *either* a truthful observation turned into a
+question (O1) *or* accumulated topical interest the author has actually held
+(O3), then develop the author's own hypothesis. Do not claim expertise or
+fabricate memory or experience.
+
 The voice can say `내가 보기에는`, `생각이 든다`, `아닐까 싶다` when that
 is the honest epistemic status. It should not hedge a verified fact merely to
 sound personal.
@@ -90,6 +103,11 @@ Use them only when the thought actually turns.
 
 The target effect is not “many connectives.” It is the feeling that the author
 is testing his own sentence while writing it.
+
+Foreground `specific case(s) -> explanatory concept -> contrasted mechanisms or
+core question` (L1, T1, T2), in ordinary Korean a general reader can follow;
+state what a concept does before specialist detail. A true explanatory contrast
+is welcome; a mechanically repeated `not X but Y` is not.
 
 ## 3. Parentheses are a side channel
 
@@ -131,6 +149,10 @@ prevents the anecdote from remaining a diary entry.
 For a strong social post, the personal episode and the abstract idea should
 illuminate each other.
 
+First-person curiosity or a personally coined concept can anchor an argument
+(P1, P3), but neither is mandatory and neither licenses inventing a personal
+episode or reusing an old self-description for an unrelated event.
+
 ## 6. Humour is dry, local, and usually self-directed
 
 Humour appears as a small release valve:
@@ -143,6 +165,9 @@ Humour appears as a small release valve:
 
 Do not turn the whole piece into banter. Do not manufacture punchlines. Do not
 use sarcasm to substitute for an argument.
+
+H1/H2 are small side-channel examples, not a recipe: no required aside, emoji
+or work mention per post.
 
 ## 7. Epistemic softness is part of the voice, not indecision
 
@@ -198,6 +223,9 @@ Unlike the default analytical profile, a personal social post may close on:
 A postscript is a characteristic option, not a required signature.
 
 Do not force uplift, a lesson, or a call to action.
+
+E1 shows one possible close: `argument -> my next real task` or an open
+inquiry. It is an option, never a per-post requirement.
 
 ## 11. English and specialist terms stay natural
 
@@ -256,7 +284,8 @@ Use `medium` unless the request says otherwise.
 Keep the author's movement of thought, but compress private detail that does not
 help a professional reader understand the idea. Prefer a concrete observation
 plus an owned interpretation over a generic “lesson learned.” A CTA is optional
-and normally omitted. Hashtags are not required.
+and normally omitted. Hashtags are not required. Keep the mechanism; collapse
+nonessential anecdote.
 
 ### Instagram
 
@@ -264,7 +293,9 @@ Use `high` for a personal caption and `medium` for a professional account.
 
 Allow more anecdotal detail, parentheses, a small joke, and a postscript.
 Emoji is permitted but should feel like punctuation from the author, not
-platform optimisation. Hashtags are optional; historical corpus frequency does
+platform optimisation. A short aside or a more visible observational scene may
+stay; the thought architecture is the same as LinkedIn, with different
+compression. Hashtags are optional; historical corpus frequency does
 not make them mandatory today.
 
 ## 14. Failure signatures
@@ -301,3 +332,11 @@ Before accepting a draft, ask:
 
 The goal is recognisable continuity of mind, not recognisable repetition of
 phrases.
+
+## 16. Approved-examples comparison gate
+
+Routine generation loads no excerpt text. Only on ambiguity, failure or quality
+comparison, select at most 2-3 pointers from `editorial/approved-examples.json`
+and read them from the private source. If the private source is unavailable,
+record that limit; never fabricate or paraphrase quotes. Schema PASS is not
+evidence of stylistic improvement; author judgment decides.

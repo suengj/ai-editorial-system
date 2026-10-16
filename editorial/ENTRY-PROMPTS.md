@@ -25,7 +25,7 @@ For personal LinkedIn/Instagram only, the ten owner-approved **sentence-level** 
 
 Routine writing stays style-description-only. On `ambiguity`, `failure` or `quality_comparison`, the current resolver returns **at most three metadata pointers**. If `private_read_required:true` or `source_text_read:false`, an authorized calling agent must follow only those selected commit-pinned private `suengj/intelligence-library` file line references and read their exact text using available tools. Do not load the 132-post source corpus; do not infer access from URL existence; if a line is unavailable, report `PRIVATE_REFERENCE_UNAVAILABLE`, not source text read or style match. Never reveal private Google Doc identifiers or excerpt text in the public repo, or use this personal voice for Signalytics/trends.moa/non-SNS flows.
 
-`editorial/SUENGJ-STYLE-20261014-PROPOSAL.md` is only a candidate for later approval. The canonical `editorial/SUENGJ-STYLE.md` remains unchanged.
+`editorial/SUENGJ-STYLE-20261014-PROPOSAL.md` was promoted into the canonical `editorial/SUENGJ-STYLE.md` on 2026-10-16 as an owner-approved trial (personal-linkedin/personal-instagram only); the proposal is kept as rationale.
 
 ## A. New ChatGPT conversation
 
