@@ -80,6 +80,14 @@ check('QA accepts evidence-backed PASS, FAILED, and PARTIAL outcomes', ['video-q
 const unresolvedSourceQa = clone(read(ALLOW, 'video-qa-pass.json'));
 unresolvedSourceQa.checks.source_evidence_resolution = { status:'not_yet', evidence_refs:[] };
 check('video QA cannot PASS until source extraction evidence is independently resolved', codes('video-qa', unresolvedSourceQa, { videoPlan: narratedPlan }).includes(CODES.QA_EVIDENCE));
+const qaBadFps = clone(read(ALLOW, 'video-qa-pass.json'));
+qaBadFps.measurable_evidence.find((entry) => entry.metric === 'video.fps').value = 0;
+check('video QA rejects zero or plan-mismatched fps measurements', codes('video-qa', qaBadFps, audioContext).includes(CODES.QA_EVIDENCE));
+const qaBadDuration = clone(read(ALLOW, 'video-qa-pass.json'));
+qaBadDuration.measurable_evidence.find((entry) => entry.metric === 'video.duration_seconds').value = 900;
+check('video QA rejects duration measurements beyond the plan', codes('video-qa', qaBadDuration, audioContext).includes(CODES.QA_EVIDENCE));
+const qaMissingPlanApproval = clone(narratedPlan); qaMissingPlanApproval.approval.evidence_ref = null;
+check('video QA cannot PASS when approved plan evidence is null', codes('video-qa', read(ALLOW, 'video-qa-pass.json'), { ...audioContext, videoPlan:qaMissingPlanApproval }).includes(CODES.QA_GATE));
 check('standalone narration, audio, QA, and BGM validation fail closed without the referenced plan context', [
   codes('narration-script-v2', script), codes('audio-plan-v2', audioPlan), codes('video-qa', read(ALLOW, 'video-qa-pass.json')),
   codes('bgm-catalog-v2', read(ALLOW, 'bgm-catalog-v2-auto-match.json')),
@@ -96,10 +104,21 @@ check('audio segments and captions cannot drift from canonical narration text', 
 const incompleteCaptions = clone(audioPlan);
 incompleteCaptions.captions.segments.splice(1, 2);
 check('rendered audio requires one caption segment for every spoken scene', codes('audio-plan-v2', incompleteCaptions, audioContext).includes(CODES.CAPTION_MISMATCH));
+const outOfBoundsCaption = clone(audioPlan);
+outOfBoundsCaption.captions.segments[0].start_seconds = 999;
+outOfBoundsCaption.captions.segments[0].end_seconds = 1000;
+check('caption timing must stay inside the referenced scene and measured audio', codes('audio-plan-v2', outOfBoundsCaption, audioContext).includes(CODES.CAPTION_MISMATCH));
 const inventedProtectedValue = clone(script);
 inventedProtectedValue.protected_values[0] = { kind:'quote', exact_text:'an invented quotation', source_ref:'source-1', locked:true };
 const inventedIssues = codes('narration-script-v2', inventedProtectedValue, { videoPlan: narratedPlan });
 check('protected narration text must match an extracted source span and appear in spoken text', inventedIssues.includes(CODES.PROTECTED_VALUE_UNVERIFIED) && inventedIssues.includes(CODES.PROTECTED_TEXT_MISMATCH));
+const omittedProtectedValues = clone(script); omittedProtectedValues.protected_values = [];
+check('removing protected_values cannot bypass source-span coverage', codes('narration-script-v2', omittedProtectedValues, audioContext).includes(CODES.PROTECTED_VALUE_UNVERIFIED));
+const falseProtectedText = clone(narratedPlan);
+falseProtectedText.scenes[0].on_screen_text[0] = { exact_text:'999 seconds', source_ref:'source-1', protected:true };
+check('protected on-screen text must match a verified source span', codes('video-plan-v2', falseProtectedText, audioContext).includes(CODES.PROTECTED_VALUE_UNVERIFIED));
+const falseFigure = clone(narratedPlan); falseFigure.figures = [{ exact_value:999, unit:'seconds', source_ref:'source-1', locked:true }];
+check('locked figures must match verified source spans', codes('video-plan-v2', falseFigure, audioContext).includes(CODES.PROTECTED_VALUE_UNVERIFIED));
 const detachedSpanReceipt = clone(narratedPlan);
 detachedSpanReceipt.source_evidence.sources[0].protected_spans[0].source_sha256 = 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb';
 check('protected source spans must bind the exact span hash and byte range to the pinned source and extraction receipt', codes('video-plan-v2', detachedSpanReceipt).includes(CODES.PROTECTED_VALUE_UNVERIFIED));
@@ -158,6 +177,15 @@ for (const field of ['source_evidence','rights','figures','approval']) {
   const changed = clone(example45); changed.change_requests = [{ field, requested_value: 'user-requested-change' }];
   check(`${field} cannot be changed by a user request`, codes('video-plan-v2', changed).includes(CODES.LOCKED_FIELD));
 }
+const nestedLockedRequest = clone(example45);
+nestedLockedRequest.change_requests = [{ field:'captions', requested_value:{ enabled:true, nested:{ rights:{ status:'verified' } } } }];
+check('caption change requests cannot smuggle nested locked-field edits', codes('video-plan-v2', nestedLockedRequest).includes(CODES.LOCKED_FIELD));
+const malformedRequest = clone(example45);
+malformedRequest.change_requests = [{ field:'captions', requested_value:'turn captions off' }];
+check('change request payloads must match their field shape', codes('video-plan-v2', malformedRequest).includes(CODES.UNSUPPORTED_FIELD));
+const reversedLoop = clone(read(ALLOW, 'bgm-catalog-v2-auto-match.json'));
+reversedLoop.tracks[0].loop_points = { start_seconds:50, end_seconds:10 };
+check('BGM catalog rejects reversed loop points', codes('bgm-catalog-v2', reversedLoop, { videoPlan:narratedPlan }).includes(CODES.BGM_UNSAFE));
 const captionsOff = clone(narratedPlan); captionsOff.captions.enabled = false;
 check('narrated video requires default-on captions', codes('video-plan-v2', captionsOff).includes(CODES.CAPTIONS_REQUIRED));
 

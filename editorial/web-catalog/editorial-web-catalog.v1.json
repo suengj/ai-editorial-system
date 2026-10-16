@@ -103,7 +103,7 @@
     }
   },
   "catalog_version": "1.0.0",
-  "content_digest": "sha256:020e810dc5c17940ec03f582e8d925f5db214af8f392fe5c3a2980578d89fa29",
+  "content_digest": "sha256:0c013676f2515e7c5fb789f80ef119bc27d98a24fa8ec69cf526c0b8ff9762c7",
   "field_domains": {
     "call_to_action": {
       "max_length": 200,
@@ -6934,7 +6934,7 @@
       },
       {
         "path": "editorial/VIDEO-ENGINE-MAPPING.md",
-        "sha256": "1d74a9bc29e5b8ddfc6b58c0b67ef116dbdcfc4a1a4ae70944e6dc9ed190a912"
+        "sha256": "8c995fb7312f62e8e5f32e98a7fbca086be7af1fd70eae1b3142bb324c24bb64"
       },
       {
         "path": "editorial/VIDEO-STORYBOARD.md",

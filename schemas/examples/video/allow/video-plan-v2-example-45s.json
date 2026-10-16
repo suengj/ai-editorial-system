@@ -282,13 +282,5 @@
     "status": "approved",
     "evidence_ref": "fixture://approval/example-45s"
   },
-  "change_requests": [],
-  "figures": [
-    {
-      "exact_value": "45",
-      "unit": "seconds",
-      "source_ref": "source-1",
-      "locked": true
-    }
-  ]
+  "change_requests": []
 }

@@ -126,6 +126,52 @@ function isProtectedSpanResolved(source, span, context) {
     : Array.isArray(verified) && verified.includes(protectedSpanKey(source, span));
 }
 
+function sourceBoundSpan(plan, sourceRef, exactText, context, kinds = null) {
+  const source = sourceForReference(plan, sourceRef);
+  return source?.protected_spans?.some((span) => span.exact_text === exactText
+    && (!kinds || kinds.includes(span.kind))
+    && protectedSpanReceiptIsBound(source, span)
+    && isProtectedSpanResolved(source, span, context)) ?? false;
+}
+
+function recursivelyContainsLockedField(value) {
+  if (Array.isArray(value)) return value.some(recursivelyContainsLockedField);
+  if (!value || typeof value !== 'object') return false;
+  return Object.entries(value).some(([key, nested]) => LOCKED_CHANGE_FIELDS.has(key) || recursivelyContainsLockedField(nested));
+}
+
+function validChangeRequestShape(request) {
+  const value = request.requested_value;
+  switch (request.field) {
+    case 'source_evidence': case 'rights': case 'figures': case 'approval': return false;
+    case 'target_duration_seconds': return typeof value === 'number' && Number.isFinite(value) && value > 0;
+    case 'aspect_ratio': return ['16:9', '9:16', '1:1', '4:5'].includes(value);
+    case 'semantic_controls': return value && typeof value === 'object' && !Array.isArray(value)
+      && Object.entries(value).every(([key, entry]) => ({
+        thinking: ['off', 'quiet', 'countdown', 'progress_ring', 'progress_bar', 'auto'],
+        reveal: ['instant', 'step_by_step', 'delayed', 'auto'],
+        presentation: ['sequential', 'simultaneous', 'hybrid', 'auto'],
+      })[key]?.includes(entry));
+    case 'captions': return value && typeof value === 'object' && !Array.isArray(value)
+      && Object.keys(value).every((key) => ['enabled', 'max_lines', 'safe_zone', 'protected_exact_text', 'alignment_status'].includes(key))
+      && (!('enabled' in value) || typeof value.enabled === 'boolean')
+      && (!('max_lines' in value) || [1, 2].includes(value.max_lines))
+      && (!('safe_zone' in value) || ['caption-safe', 'all-safe'].includes(value.safe_zone))
+      && (!('protected_exact_text' in value) || (Array.isArray(value.protected_exact_text) && value.protected_exact_text.every((x) => typeof x === 'string')))
+      && (!('alignment_status' in value) || ['not_yet', 'pass', 'fail'].includes(value.alignment_status));
+    case 'narration': return typeof value === 'string' || (value !== null && typeof value === 'object' && !Array.isArray(value)
+      && Object.keys(value).every((key) => ['goal', 'audience', 'voice', 'tone', 'pace', 'pause_after_ms', 'emphasis'].includes(key))
+      && Object.entries(value).every(([key, entry]) => {
+        if (['goal', 'voice', 'tone', 'pace'].includes(key)) return typeof entry === 'string' && entry.trim().length > 0;
+        if (key === 'audience') return ['general-reader', 'professional-generalist', 'domain-practitioner', 'domain-expert', 'beginner-learner', 'child-upper-elementary'].includes(entry);
+        if (key === 'pause_after_ms') return Array.isArray(entry) && entry.every((x) => Number.isInteger(x) && x >= 0);
+        if (key === 'emphasis') return Array.isArray(entry) && entry.every((x) => typeof x === 'string' && x.length > 0);
+        return false;
+      }));
+    default: return false;
+  }
+}
+
 function validateVideoPlanV2(doc, issues, context) {
   const pins = profilePins();
   const pin = pins[doc.profile_ref.profile_id];
@@ -158,6 +204,9 @@ function validateVideoPlanV2(doc, issues, context) {
     previousEnd = scene.timing.end_seconds;
     for (const ref of scene.source_refs) if (!sourceRefs.has(ref)) issues.push(issueFor(CODES.SOURCE_MISSING, doc, `scene ${scene.scene_id} references undeclared source ${ref}`));
     for (const text of scene.on_screen_text) if (!sourceRefs.has(text.source_ref) || !scene.source_refs.includes(text.source_ref)) issues.push(issueFor(CODES.SOURCE_MISSING, doc, `on-screen text in ${scene.scene_id} references an undeclared or out-of-scene source ${text.source_ref}`));
+    for (const text of scene.on_screen_text) if (text.protected && !sourceBoundSpan(doc, text.source_ref, text.exact_text, context)) {
+      issues.push(issueFor(CODES.PROTECTED_VALUE_UNVERIFIED, doc, `protected on-screen text in ${scene.scene_id} is not bound to verified source bytes`));
+    }
     for (const layer of scene.layers) {
       if (!sourceRefs.has(layer.source_ref) || !sourceRefs.has(layer.rights_ref) || !scene.source_refs.includes(layer.source_ref) || layer.rights_ref !== layer.source_ref) issues.push(issueFor(CODES.SOURCE_MISSING, doc, `layer ${layer.layer_id} does not resolve the same in-scene source and rights record`));
       if (layer.timing.start_seconds < scene.timing.start_seconds || layer.timing.end_seconds > scene.timing.end_seconds || layer.timing.start_seconds >= layer.timing.end_seconds) {
@@ -177,8 +226,25 @@ function validateVideoPlanV2(doc, issues, context) {
   }
   if (doc.ordering_exception) for (const ref of doc.ordering_exception.source_refs) if (!sourceRefs.has(ref)) issues.push(issueFor(CODES.SOURCE_MISSING, doc, `ordering exception references undeclared source ${ref}`));
 
-  for (const figure of doc.figures ?? []) if (!sourceRefs.has(figure.source_ref)) issues.push(issueFor(CODES.SOURCE_MISSING, doc, `figure value references undeclared source ${figure.source_ref}`));
-  for (const request of doc.change_requests) if (LOCKED_CHANGE_FIELDS.has(request.field)) issues.push(issueFor(CODES.LOCKED_FIELD, doc, `${request.field} is locked and cannot be changed by a user request`));
+  for (const figure of doc.figures ?? []) {
+    if (!sourceRefs.has(figure.source_ref)) issues.push(issueFor(CODES.SOURCE_MISSING, doc, `figure value references undeclared source ${figure.source_ref}`));
+    const exact = String(figure.exact_value);
+    const exactWithUnit = figure.unit ? `${exact} ${figure.unit}` : exact;
+    if (!sourceBoundSpan(doc, figure.source_ref, exact, context, ['number', 'date', 'name', 'quote'])
+      && !sourceBoundSpan(doc, figure.source_ref, exactWithUnit, context, ['number', 'date', 'name', 'quote'])) {
+      issues.push(issueFor(CODES.PROTECTED_VALUE_UNVERIFIED, doc, `locked figure ${exact} is not bound to verified source bytes`));
+    }
+    if (figure.unit && !sourceBoundSpan(doc, figure.source_ref, exactWithUnit, context, ['number', 'date', 'name', 'quote'])
+      && !sourceBoundSpan(doc, figure.source_ref, figure.unit, context, ['unit'])) {
+      issues.push(issueFor(CODES.PROTECTED_VALUE_UNVERIFIED, doc, `figure unit ${figure.unit} is not bound to verified source bytes`));
+    }
+  }
+  for (const request of doc.change_requests) {
+    if (LOCKED_CHANGE_FIELDS.has(request.field) || recursivelyContainsLockedField(request.requested_value)) {
+      issues.push(issueFor(CODES.LOCKED_FIELD, doc, `${request.field} request contains a locked source, rights, figures, or approval change`));
+    }
+    if (!validChangeRequestShape(request)) issues.push(issueFor(CODES.UNSUPPORTED_FIELD, doc, `requested_value has an invalid shape for ${request.field}`));
+  }
 
   if (doc.audio.narration_mode === 'narrated') {
     if (!doc.audio.narration_script_ref || !doc.audio.audio_plan_ref || !doc.audio.tts_contract_ref) issues.push(issueFor(CODES.NARRATION_REF, doc, 'narrated plans require narration_script_ref, audio_plan_ref, and tts_contract_ref'));
@@ -228,6 +294,11 @@ function validateNarrationV2(doc, issues, context) {
     else if (plan && !hasProtectedSourceSpan(plan, value, context)) issues.push(issueFor(CODES.PROTECTED_VALUE_UNVERIFIED, doc, `protected ${value.kind} ${value.exact_text} does not match locally verified source bytes or a trusted resolver receipt`));
     if (!doc.turns.some((turn) => turn.spoken_text.includes(value.exact_text))) issues.push(issueFor(CODES.PROTECTED_TEXT_MISMATCH, doc, `protected ${value.kind} ${value.exact_text} is absent from canonical spoken text`));
   }
+  if (plan) for (const source of plan.source_evidence.sources) for (const span of source.protected_spans ?? []) {
+    if (!doc.protected_values.some((value) => [source.source_id, source.source_ref].includes(value.source_ref) && value.kind === span.kind && value.exact_text === span.exact_text)) {
+      issues.push(issueFor(CODES.PROTECTED_VALUE_UNVERIFIED, doc, `source-protected span ${span.span_id} is omitted from narration protected_values`));
+    }
+  }
   for (const entry of doc.pronunciation_glossary) if (!refs.has(entry.source_ref)) issues.push(issueFor(CODES.SOURCE_MISSING, doc, `pronunciation entry ${entry.term} references undeclared source ${entry.source_ref}`));
   const check = doc.canonical_script_check;
   if (check.outcome !== 'not_yet' && (check.performed !== true || !knownRightsText(check.evidence_ref))) issues.push(issueFor(CODES.PRE_TTS_GATE, doc, 'a completed pre-TTS canonical script check requires performed=true and evidence_ref'));
@@ -253,6 +324,11 @@ function validateAudioPlanV2(doc, issues, context) {
       else if (!hasProtectedSourceSpan(plan, value, context)) issues.push(issueFor(CODES.PROTECTED_VALUE_UNVERIFIED, doc, `protected ${value.kind} ${value.exact_text} does not match locally verified source bytes or a trusted resolver receipt`));
       if (!doc.segments.some((segment) => segment.spoken_text.includes(value.exact_text))) issues.push(issueFor(CODES.PROTECTED_TEXT_MISMATCH, doc, `protected ${value.kind} ${value.exact_text} is absent from canonical spoken segments`));
       if (!doc.captions.segments.some((caption) => caption.exact_text.includes(value.exact_text) && caption.protected_exact_words.includes(value.exact_text))) issues.push(issueFor(CODES.CAPTION_MISMATCH, doc, `protected ${value.kind} ${value.exact_text} is absent or unprotected in captions`));
+    }
+    for (const source of plan.source_evidence.sources) for (const span of source.protected_spans ?? []) {
+      if (!doc.protected_values.some((value) => [source.source_id, source.source_ref].includes(value.source_ref) && value.kind === span.kind && value.exact_text === span.exact_text)) {
+        issues.push(issueFor(CODES.PROTECTED_VALUE_UNVERIFIED, doc, `source-protected span ${span.span_id} is omitted from audio protected_values`));
+      }
     }
     for (const entry of doc.pronunciation_glossary) if (!refs.has(entry.source_ref)) issues.push(issueFor(CODES.SOURCE_MISSING, doc, `pronunciation entry ${entry.term} references undeclared source ${entry.source_ref}`));
     const target = plan.target_duration_seconds;
@@ -314,8 +390,12 @@ function validateAudioPlanV2(doc, issues, context) {
   }
   for (const caption of doc.captions.segments) {
     const segment = doc.segments.find((s) => s.scene_id === caption.scene_id);
+    const scene = plan?.scenes.find((s) => s.scene_id === caption.scene_id);
     if (segment && caption.exact_text !== segment.spoken_text) issues.push(issueFor(CODES.CAPTION_MISMATCH, doc, `caption text for ${caption.scene_id} does not match canonical spoken text`));
     if (caption.start_seconds >= caption.end_seconds) issues.push(issueFor(CODES.CAPTION_MISMATCH, doc, `caption timing for ${caption.scene_id} is invalid`));
+    if (scene && (caption.start_seconds < scene.timing.start_seconds || caption.end_seconds > scene.timing.end_seconds)) issues.push(issueFor(CODES.CAPTION_MISMATCH, doc, `caption timing for ${caption.scene_id} falls outside its scene bounds`));
+    const measured = doc.measurement.measured_audio_duration_seconds;
+    if (measured !== null && caption.end_seconds > measured) issues.push(issueFor(CODES.CAPTION_MISMATCH, doc, `caption timing for ${caption.scene_id} exceeds measured audio duration`));
     if (caption.lines.join(' ') !== caption.exact_text) issues.push(issueFor(CODES.CAPTION_MISMATCH, doc, `caption lines for ${caption.scene_id} do not reconstruct exact_text`));
     for (const word of caption.protected_exact_words) if (!caption.exact_text.includes(word)) issues.push(issueFor(CODES.CAPTION_MISMATCH, doc, `protected caption word ${word} is missing from exact_text`));
   }
@@ -368,33 +448,58 @@ function validateVideoQa(doc, issues, context) {
   if (Object.values(doc.gates).some((x) => x.required !== true)) issues.push(issueFor(CODES.QA_GATE, doc, 'cost, rights, and approval gates are required and cannot be disabled'));
   for (const [name, check] of Object.entries(doc.checks)) if (check.status === 'pass' && !check.evidence_refs.length) issues.push(issueFor(CODES.QA_EVIDENCE, doc, `${name} passed without an evidence reference`));
   for (const [name, gate] of Object.entries(doc.gates)) if (gate.status === 'pass' && !gate.evidence_refs.length) issues.push(issueFor(CODES.QA_EVIDENCE, doc, `${name} gate passed without an evidence reference`));
-  const metrics = new Set(doc.measurable_evidence.map((entry) => entry.metric));
+  const metrics = new Map(doc.measurable_evidence.map((entry) => [entry.metric, entry]));
+  if (metrics.size !== doc.measurable_evidence.length) issues.push(issueFor(CODES.QA_EVIDENCE, doc, 'measurable evidence cannot repeat metric names'));
   if (doc.checks.technical_resolution_fps_duration.status === 'pass') {
     for (const metric of ['video.resolution', 'video.fps', 'video.duration_seconds']) if (!metrics.has(metric)) issues.push(issueFor(CODES.QA_EVIDENCE, doc, `technical QA passed without measurable ${metric} evidence`));
   }
   if (doc.checks.caption_completeness_alignment.status === 'pass' && !metrics.has('captions.alignment')) issues.push(issueFor(CODES.QA_EVIDENCE, doc, 'caption QA passed without measurable alignment evidence'));
+  const plan = context.videoPlan;
+  const resolution = metrics.get('video.resolution');
+  const resolutionMatch = typeof resolution?.value === 'string' && /^(\d+)x(\d+)$/.exec(resolution.value);
+  if (resolution && (!resolutionMatch || Number(resolutionMatch[1]) <= 0 || Number(resolutionMatch[2]) <= 0 || resolution.unit !== 'pixels')) {
+    issues.push(issueFor(CODES.QA_EVIDENCE, doc, 'video.resolution must be a positive WIDTHxHEIGHT pixel measurement'));
+  }
+  if (resolutionMatch && plan) {
+    const ratio = Number(resolutionMatch[1]) / Number(resolutionMatch[2]);
+    const expectedRatio = ({ '16:9': 16 / 9, '9:16': 9 / 16, '1:1': 1, '4:5': 4 / 5 })[plan.aspect_ratio];
+    if (Math.abs(ratio - expectedRatio) > 0.02) issues.push(issueFor(CODES.QA_EVIDENCE, doc, 'measured resolution aspect ratio conflicts with the video plan'));
+  }
+  const fps = metrics.get('video.fps');
+  if (fps && (typeof fps.value !== 'number' || !Number.isFinite(fps.value) || fps.value <= 0 || fps.unit !== 'frames/second'
+    || (plan && Math.abs(fps.value - plan.fps) > 0.01))) {
+    issues.push(issueFor(CODES.QA_EVIDENCE, doc, 'video.fps must be positive and match the planned frame rate'));
+  }
+  const duration = metrics.get('video.duration_seconds');
+  if (duration && (typeof duration.value !== 'number' || !Number.isFinite(duration.value) || duration.value <= 0 || duration.unit !== 'seconds'
+    || (plan && duration.value > plan.target_duration_seconds + 1 / plan.fps))) {
+    issues.push(issueFor(CODES.QA_EVIDENCE, doc, 'video.duration_seconds must be positive and no longer than the planned duration plus one frame'));
+  }
+  const captionAlignment = metrics.get('captions.alignment');
+  if (captionAlignment && (captionAlignment.value !== true || captionAlignment.unit !== 'boolean')) issues.push(issueFor(CODES.QA_EVIDENCE, doc, 'captions.alignment must report a passing boolean measurement'));
   const failed = statuses.includes('fail');
   const pending = statuses.includes('not_yet');
   const expected = failed ? 'FAILED' : pending ? 'PARTIAL' : 'PASS';
   if (doc.result !== expected) issues.push(issueFor(CODES.QA_RESULT, doc, `result ${doc.result} conflicts with check and gate states; expected ${expected}`));
   if (doc.result === 'PASS' && !doc.measurable_evidence.length) issues.push(issueFor(CODES.QA_EVIDENCE, doc, 'PASS requires measurable evidence'));
   if (doc.result === 'PASS' && doc.checks.source_evidence_resolution.status !== 'pass') issues.push(issueFor(CODES.QA_EVIDENCE, doc, 'PASS requires source-evidence extraction receipts to be independently resolved'));
-  if (doc.result === 'PASS' && context.videoPlan) for (const source of context.videoPlan.source_evidence.sources) for (const span of source.protected_spans ?? []) {
+  if (doc.result === 'PASS' && plan) for (const source of plan.source_evidence.sources) for (const span of source.protected_spans ?? []) {
     if (!isProtectedSpanResolved(source, span, context)) issues.push(issueFor(CODES.QA_EVIDENCE, doc, `PASS cannot treat protected source span ${span.span_id} as verified without resolved source bytes`));
   }
   if (doc.repair.scope === 'affected_scenes_only' && !doc.repair.affected_scene_ids.length) issues.push(issueFor(CODES.QA_EVIDENCE, doc, 'scene-local rerender must name affected scenes'));
   if (doc.repair.scope === 'none' && doc.repair.affected_scene_ids.length) issues.push(issueFor(CODES.QA_EVIDENCE, doc, 'repair scope none cannot list affected scenes'));
-  if (context.videoPlan) {
-    const validScenes = new Set(context.videoPlan.scenes.map((s) => s.scene_id));
+  if (plan) {
+    const validScenes = new Set(plan.scenes.map((s) => s.scene_id));
     for (const id of doc.repair.affected_scene_ids) if (!validScenes.has(id)) issues.push(issueFor(CODES.SCENE_MISMATCH, doc, `repair references unknown scene ${id}`));
-    const rightStatus = context.videoPlan.source_evidence.sources.every((s) => s.rights.status === 'verified'
+    const rightStatus = plan.source_evidence.sources.every((s) => s.rights.status === 'verified'
       && knownRightsText(s.rights.license) && knownRightsText(s.rights.rights_owner) && knownRightsText(s.rights.evidence_ref)
       && s.rights.platforms.length > 0 && s.rights.commercial_use === true && s.rights.modification_allowed === true);
     if (doc.result === 'PASS' && !rightStatus) issues.push(issueFor(CODES.RIGHTS_BLOCKED, doc, 'video QA cannot PASS while source rights are unknown, missing, denied, or unverified'));
-    if (doc.result === 'PASS' && !['approved', 'not_required'].includes(context.videoPlan.approval.status)) issues.push(issueFor(CODES.QA_GATE, doc, 'video QA cannot PASS without an approved or explicitly not-required approval state'));
-    if (doc.gates.approval.status === 'pass' && !['approved', 'not_required'].includes(context.videoPlan.approval.status)) issues.push(issueFor(CODES.QA_GATE, doc, 'approval gate cannot pass while plan approval is pending or rejected'));
-    if (context.videoPlan.audio.bgm_mode === 'off' && doc.checks.bgm_loudness_ducking_clipping.status === 'pass' && !metrics.has('bgm.mode')) issues.push(issueFor(CODES.QA_EVIDENCE, doc, 'BGM-off QA requires measurable evidence that BGM mode is off'));
-    if (context.videoPlan.audio.bgm_mode !== 'off' && doc.checks.bgm_loudness_ducking_clipping.status === 'pass') {
+    if (doc.result === 'PASS' && !['approved', 'not_required'].includes(plan.approval.status)) issues.push(issueFor(CODES.QA_GATE, doc, 'video QA cannot PASS without an approved or explicitly not-required approval state'));
+    if (plan.approval.status === 'approved' && !knownRightsText(plan.approval.evidence_ref)) issues.push(issueFor(CODES.QA_GATE, doc, 'approved video plan must include approval evidence'));
+    if (doc.gates.approval.status === 'pass' && !['approved', 'not_required'].includes(plan.approval.status)) issues.push(issueFor(CODES.QA_GATE, doc, 'approval gate cannot pass while plan approval is pending or rejected'));
+    if (plan.audio.bgm_mode === 'off' && doc.checks.bgm_loudness_ducking_clipping.status === 'pass' && !metrics.has('bgm.mode')) issues.push(issueFor(CODES.QA_EVIDENCE, doc, 'BGM-off QA requires measurable evidence that BGM mode is off'));
+    if (plan.audio.bgm_mode !== 'off' && doc.checks.bgm_loudness_ducking_clipping.status === 'pass') {
       for (const metric of ['bgm.loudness_lufs', 'bgm.ducking_db', 'bgm.clipped_samples']) if (!metrics.has(metric)) issues.push(issueFor(CODES.QA_EVIDENCE, doc, `BGM QA passed without measurable ${metric} evidence`));
     }
   }
@@ -436,6 +541,12 @@ export function validateVideoDocument(kind, doc, context = {}) {
   if (kind === 'narration-script-v2') validateNarrationV2(doc, issues, context);
   if (kind === 'audio-plan-v2') validateAudioPlanV2(doc, issues, context);
   if (kind === 'bgm-catalog-v2') validateBgmV2(doc, issues, context);
+  if (kind === 'bgm-catalog-v2') for (const track of doc.tracks) {
+    const { start_seconds: start, end_seconds: end } = track.loop_points;
+    if ((start === null) !== (end === null) || (start !== null && end <= start)) {
+      issues.push(issue(CODES.BGM_UNSAFE, doc.catalog_id, `track ${track.track_id} loop points must both be null or have end_seconds greater than start_seconds`));
+    }
+  }
   if (kind === 'video-qa') validateVideoQa(doc, issues, context);
   return issues;
 }
