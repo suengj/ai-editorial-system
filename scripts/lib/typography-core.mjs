@@ -5,6 +5,7 @@ import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
 import { createHash } from 'node:crypto';
 import { spawnSync } from 'node:child_process';
+import { isolatedEnv } from './svg-tools.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 export const FONT_DIR = resolve(HERE, '../../assets/fonts/aes-sans-kr');
@@ -29,6 +30,14 @@ export function assertFontCoverage(text, weight) {
   if (missing.length) throw typographyError('FONT_FALLBACK', `glyphs not in ${BUNDLED_FAMILY} subset would be substituted: ${missing.slice(0, 8).join(' ')}`);
 }
 
+/** Digest of manifest.json + every bundled font file; part of render-reuse fingerprints. */
+export function bundledFontDigest() {
+  const h = createHash('sha256'), m = fontManifest();
+  h.update(readFileSync(resolve(FONT_DIR, 'manifest.json')));
+  for (const f of Object.values(m.files)) h.update(readFileSync(resolve(FONT_DIR, f)));
+  return `sha256:${h.digest('hex')}`;
+}
+
 /** Environment that makes the rasterizer see ONLY the bundled fonts (no system fonts, same result on any machine). */
 export function bundledFontEnv() {
   const tag = createHash('sha256').update(FONT_DIR).digest('hex').slice(0, 12);
@@ -44,7 +53,7 @@ export function bundledFontEnv() {
 
 /** Ask fontconfig what it would actually use; FONT_FALLBACK unless it is the bundled file. Skipped (null) without fc-match. */
 export function verifyBundledResolution(weight, env = bundledFontEnv()) {
-  const r = spawnSync('fc-match', ['-f', '%{file}', `${BUNDLED_FAMILY}:weight=${fcWeight(weight)}`], { env: { ...process.env, ...env }, encoding: 'utf8', timeout: 5000 });
+  const r = spawnSync('fc-match', ['-f', '%{file}', `${BUNDLED_FAMILY}:weight=${fcWeight(weight)}`], { env: isolatedEnv(env), encoding: 'utf8', timeout: 5000 });
   if (r.error || r.status !== 0) return null;
   const want = fontManifest().files[String(weight)];
   if (!r.stdout.endsWith(want)) throw typographyError('FONT_FALLBACK', `fontconfig resolved ${BUNDLED_FAMILY} ${weight} to ${r.stdout || 'nothing'}, not ${want}`);

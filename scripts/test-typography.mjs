@@ -10,7 +10,7 @@ import * as T from './lib/typography-core.mjs';
 import { resolveChrome, verifyChromeText } from './lib/chrome-tokens.mjs';
 import { executeVisual } from './lib/visual-execution-core.mjs';
 import { encodePng } from './lib/watermark-core.mjs';
-import { findRasterizer } from './lib/svg-tools.mjs';
+import { findRasterizer, isolatedEnv } from './lib/svg-tools.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 let passed = 0, skipped = 0;
@@ -23,6 +23,22 @@ await ok('bundle ships OFL licence, 4 weights, files exist', () => {
   const m = T.fontManifest(); assert.deepEqual(m.weights, [400, 600, 800, 900]);
   for (const f of Object.values(m.files)) assert(existsSync(resolve(T.FONT_DIR, f)));
   assert(/SIL OPEN FONT LICENSE/i.test(readFileSync(resolve(T.FONT_DIR, 'LICENSE-OFL.txt'), 'utf8')));
+});
+await ok('RFN: font binaries carry no Pretendard name (credits/trademark notices excepted)', () => {
+  const m = T.fontManifest();
+  for (const f of Object.values(m.files)) {
+    const buf = readFileSync(resolve(T.FONT_DIR, f));
+    for (const [label, needle, dec] of [['ascii', Buffer.from('pretendard'), 'latin1'], ['utf16', Buffer.from('pretendard', 'utf16le').swap16(), 'utf16le']]) {
+      const hay = Buffer.from(buf.toString('latin1').toLowerCase(), 'latin1'), hayU = label === 'utf16' ? hay : hay;
+      let i = -1;
+      while ((i = hayU.indexOf(needle, i + 1)) >= 0) {
+        const ctx = label === 'ascii' ? buf.subarray(i, i + 220).toString('latin1') : buf.subarray(i, i + 440).swap16 ? Buffer.from(buf.subarray(i, i + 440)).swap16().toString('utf16le') : '';
+        assert(/Kil Hyung-jin|Rasmus|orioncactus|trademark/i.test(ctx), `${f}: Pretendard name outside a credit near byte ${i}`);
+      }
+    }
+    assert(!buf.subarray(0, 4096).toString('latin1').toLowerCase().includes('pretendard-'), `${f}: CFF font name`);
+    assert(buf.includes(Buffer.from(f.replace('.otf', ''))), `${f}: AESSansKR CFF/PostScript name missing`);
+  }
 });
 await ok('unsupported weight -> FONT_FALLBACK', () => assert.throws(() => T.assertFontCoverage('가나', 700), code('FONT_FALLBACK')));
 await ok('glyph outside subset -> FONT_FALLBACK', () => assert.throws(() => T.assertFontCoverage('뷁', 800), code('FONT_FALLBACK')));
@@ -81,6 +97,16 @@ await ok('unresolved required label -> UNRESOLVED_LABEL (no hard-coded brand)', 
 await ok('account isolation: other account literal rejected', () => {
   assert.throws(() => resolveChrome({ target: 'acctA', series: { brand_label: 'BETA WORKS' }, catalog }), code('ACCOUNT_LEAK'));
   assert.throws(() => resolveChrome({ target: 'acctB', request: { footer_source_format: 'via @alpha_syn' }, catalog, required: [] }), code('ACCOUNT_LEAK'));
+});
+await ok('ACCOUNT_LEAK is token-bounded: no false positive on longer words', () => {
+  assert.equal(resolveChrome({ target: 'acctA', series: { disclaimer_set: 'BETA WORKSHOP notes' }, catalog, required: [] }).values.disclaimer_set, 'BETA WORKSHOP notes');
+  assert.throws(() => resolveChrome({ target: 'acctA', series: { disclaimer_set: 'by BETA WORKS.' }, catalog, required: [] }), code('ACCOUNT_LEAK'));
+});
+await ok('font digest covers bytes; env isolates FONTCONFIG_*', () => {
+  assert(/^sha256:[0-9a-f]{64}$/.test(T.bundledFontDigest()));
+  process.env.FONTCONFIG_SYSROOT = '/evil'; const e = isolatedEnv(T.bundledFontEnv()); delete process.env.FONTCONFIG_SYSROOT;
+  assert(!('FONTCONFIG_SYSROOT' in e) && e.FONTCONFIG_FILE && e.FONTCONFIG_PATH);
+  assert.throws(() => isolatedEnv({ FONTCONFIG_FILE: 'x' }));
 });
 await ok('verifyChromeText compares printed vs resolved', () => {
   const r = resolveChrome({ target: 'acctA', catalog }); assert(verifyChromeText(r, { brand_label: 'ALPHA LAB' }));

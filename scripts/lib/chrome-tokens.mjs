@@ -11,6 +11,8 @@ export const CHROME_TOKENS = Object.freeze(['kicker', 'brand_label', 'handle', '
 const err = (code, message, extra = {}) => Object.assign(new Error(message), { code, ...extra });
 const isObj = (x) => x && typeof x === 'object' && !Array.isArray(x);
 const pick = (v, channel) => (isObj(v) && !Array.isArray(v) ? (channel && Object.hasOwn(v, channel) ? v[channel] : v.default) : v);
+/** Whole-token match (not inside a longer word/handle), case-insensitive; min length 3 is enforced on the foreign list. */
+const containsToken = (hay, needle) => new RegExp(`(^|[^\\p{L}\\p{N}_@])${needle.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?![\\p{L}\\p{N}_])`, 'iu').test(hay);
 const present = (v) => v !== undefined && v !== null && !(typeof v === 'string' && !v.trim());
 
 export function resolveChrome({ target, channel = null, request = {}, series = {}, catalog, defaults = {}, required = ['brand_label'], tokens = CHROME_TOKENS } = {}) {
@@ -33,7 +35,7 @@ export function resolveChrome({ target, channel = null, request = {}, series = {
     const own = new Set(Object.values(profile).flatMap((v) => (isObj(v) ? Object.values(v) : [v])).filter((v) => typeof v === 'string'));
     for (const [t, v] of Object.entries(values)) {
       if (typeof v !== 'string' || sources[t] === 'target_profile') continue;
-      const hit = foreign.find((f) => !own.has(f) && v.includes(f));
+      const hit = foreign.find((f) => !own.has(f) && containsToken(v, f));
       if (hit) throw err('ACCOUNT_LEAK', `token ${t} (from ${sources[t]}) contains ${id}'s value "${hit}" while targeting ${target}`, { token: t, other_account: id });
     }
   }

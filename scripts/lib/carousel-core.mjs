@@ -8,6 +8,7 @@ import { fileURLToPath } from 'node:url';
 import { createHash } from 'node:crypto';
 import { spawnSync } from 'node:child_process';
 
+import { bundledFontDigest } from './typography-core.mjs';
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 export const CAROUSEL_VERSION = '1.0.0';
 /** Series constraints as data (single source for planCarousel and the web catalog export). */
@@ -225,8 +226,8 @@ export async function executeCarousel(series,{baseDir=process.cwd(),outDir,raste
   }
   prepareOutput(outDir);
   const adapter=findRasterizer(rasterizer);
-  const codeFiles=['carousel-core.mjs','visual-execution-core.mjs','svg-tools.mjs','chart-renderer.mjs','watermark-core.mjs'];
-  const runtime={adapter:adapter?{name:adapter.name,version:adapter.version}:null,font_environment:fontEnvironment(),code:codeFiles.map((p)=>hash(readFileSync(resolve(ROOT,'scripts/lib',p))))};
+  const codeFiles=['carousel-core.mjs','visual-execution-core.mjs','svg-tools.mjs','chart-renderer.mjs','watermark-core.mjs','typography-core.mjs'];
+  const runtime={adapter:adapter?{name:adapter.name,version:adapter.version}:null,font_environment:fontEnvironment(),code:codeFiles.map((p)=>hash(readFileSync(resolve(ROOT,'scripts/lib',p)))),bundled_fonts:bundledFontDigest()};
   // Preflight every frame before writing any PNG. This does not prove taste.
   const packets=[];
   for (const f of compiled.frames) packets.push(await compileExecution(f.plan,{baseDir,preset:compiled.preset}));

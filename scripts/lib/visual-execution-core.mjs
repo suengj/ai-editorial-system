@@ -339,7 +339,7 @@ export async function executeVisual(plan, { baseDir = process.cwd(), preset = {}
   }
   prepareOutput(outDir);
   const packet = await compileExecution(plan, { baseDir, preset });
-  const adapter = findRasterizer(rasterizer);
+  let adapter = findRasterizer(rasterizer);
   packet.rasterizer = adapter ? { name: adapter.name, version: adapter.version } : null;
   if (!adapter || packet.status === 'RENDER_REQUIRED') {
     if (!adapter) packet.missing_capabilities = ['local_svg_rasterizer'];
@@ -348,7 +348,7 @@ export async function executeVisual(plan, { baseDir = process.cwd(), preset = {}
     return packet;
   }
   if (requestsBundledFont(packet.theme.font_family) || packet.layers.some((l) => requestsBundledFont(l.font_family))) {
-    adapter.env = bundledFontEnv(); // rasterizer sees only the bundled fonts: same result on any machine
+    adapter = { ...adapter, env: bundledFontEnv() }; // rasterizer sees only the bundled fonts: same result on any machine
     for (const w of new Set(packet.layers.filter((l) => l.kind === 'text').flatMap((l) => [l.weight, ...(l.emphasis ?? []).map((e) => e.weight ?? l.weight)]))) verifyBundledResolution(w, adapter.env);
   }
   const { width, height } = packet.canvas;
