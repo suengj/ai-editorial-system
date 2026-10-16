@@ -23,9 +23,15 @@ export function findRasterizer(preferred = 'auto') {
   return null;
 }
 
+/** Inherit the process env except any FONTCONFIG_* / FC_* the user set: the bundle must be the only font source. */
+export function isolatedEnv(extra) {
+  const env = Object.fromEntries(Object.entries(process.env).filter(([k]) => !/^(FONTCONFIG_|FC_)/.test(k)));
+  if (!extra.FONTCONFIG_FILE || !extra.FONTCONFIG_PATH) throw new Error('FONT_FALLBACK: bundled font environment must set FONTCONFIG_FILE and FONTCONFIG_PATH');
+  return { ...env, ...extra };
+}
 export function rasterize(svg, adapter) {
   if (!adapter) throw new Error('RASTERIZER_REQUIRED: rsvg-convert or ImageMagick with RSVG support');
-  const result = spawnSync(adapter.command, adapter.args, { input: svg, maxBuffer: 256 * 1024 * 1024, timeout: 30000 });
+  const result = spawnSync(adapter.command, adapter.args, { input: svg, maxBuffer: 256 * 1024 * 1024, timeout: 30000, ...(adapter.env ? { env: isolatedEnv(adapter.env) } : {}) });
   if (result.error || result.status !== 0) throw new Error(`RASTERIZER_FAILED: ${result.error?.message ?? result.stderr.toString()}`);
   // Normalize our generated build product, not the source asset. ImageMagick
   // adds wall-clock date chunks; those must not break deterministic replay.

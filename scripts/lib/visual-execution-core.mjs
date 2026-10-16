@@ -9,6 +9,7 @@ import { resolve } from 'node:path';
 import { loadAxisProfiles } from './profile-core.mjs';
 import { sha256, resolveWatermark, applyWatermark, decodePng, encodePng, WATERMARK_CHUNK_KEY, FONT_STACK } from './watermark-core.mjs';
 import { renderChartPanel, validateChartAgainstArticle } from './chart-renderer.mjs';
+import { balancedWrap, normalizeKoreanText, locateEmphasis, weightRuns, hasOrphan, requestsBundledFont, assertFontCoverage, bundledFontEnv, verifyBundledResolution, hexToRgb, contrastRatio, worstBackground, autoScrimOpacity } from './typography-core.mjs';
 import { esc, svgDocument, findRasterizer, rasterize, textMeasurer, wrapText } from './svg-tools.mjs';
 
 // SUE-1426 R2: a generated image only counts as image-generation success with real evidence
@@ -158,16 +159,16 @@ export async function compileExecution(plan, { baseDir = process.cwd(), preset =
   if (!Array.isArray(plan.layers) || !plan.layers.length || plan.layers.length > 32) fail('LAYERS', 'one to 32 layers required');
   const ids = new Set(), layers = [];
   for (const l of plan.layers) {
-    keys(l, ['id', 'kind', 'slot', 'ref', 'sha256', 'mode', 'fit', 'rights_note', 'protect', 'text', 'source_ref', 'font_size', 'weight', 'align', 'max_lines', 'line_height', 'color', 'instruction', 'generation', 'provenance'], 'layer');
+    keys(l, ['id', 'kind', 'slot', 'ref', 'sha256', 'mode', 'fit', 'rights_note', 'protect', 'text', 'source_ref', 'font_size', 'weight', 'align', 'max_lines', 'line_height', 'color', 'gradient', 'auto_scrim', 'letter_spacing', 'font_family', 'balance', 'emphasis', 'normalize', 'min_contrast', 'optical_margin', 'instruction', 'generation', 'provenance'], 'layer');
     if (!/^[a-z0-9][a-z0-9-]*$/.test(l.id ?? '') || ids.has(l.id)) fail('LAYER_ID', 'layer IDs must be unique lowercase slugs');
     ids.add(l.id);
     if (!['text', 'image', 'chart', 'generated', 'solid'].includes(l.kind)) fail('LAYER_KIND', String(l.kind));
     const permitted = {
-      text: ['text', 'source_ref', 'font_size', 'weight', 'align', 'max_lines', 'line_height', 'color'],
+      text: ['text', 'source_ref', 'font_size', 'weight', 'align', 'max_lines', 'line_height', 'color', 'letter_spacing', 'font_family', 'balance', 'emphasis', 'normalize', 'min_contrast', 'optical_margin'],
       chart: ['ref', 'sha256'],
       image: ['ref', 'sha256', 'mode', 'fit', 'rights_note', 'protect', 'provenance', 'generation'],
       generated: ['ref', 'sha256', 'mode', 'fit', 'rights_note', 'protect', 'instruction', 'generation'],
-      solid: ['color'],
+      solid: ['color', 'gradient', 'auto_scrim'],
     };
     keys(l, ['id', 'kind', 'slot', ...permitted[l.kind]], `layer ${l.id}`);
     const pixelSlot = box(l.slot, canvas);
@@ -181,11 +182,24 @@ export async function compileExecution(plan, { baseDir = process.cwd(), preset =
       next.font_size = l.font_size ?? Math.round(canvas.width * 0.05);
       next.weight = l.weight ?? 400; next.max_lines = l.max_lines ?? 3;
       next.align = l.align ?? 'start'; next.line_height = l.line_height ?? 1.25;
-      if (!Number.isFinite(next.font_size) || next.font_size < 10 || next.font_size > 256 || !Number.isInteger(next.max_lines) || next.max_lines < 1 || next.max_lines > 30 || ![400, 500, 600, 700, 800].includes(next.weight) || !['start', 'middle', 'end'].includes(next.align) || !(next.line_height >= 1.05 && next.line_height <= 2)) fail('TEXT_STYLE', l.id);
+      if (!Number.isFinite(next.font_size) || next.font_size < 10 || next.font_size > 256 || !Number.isInteger(next.max_lines) || next.max_lines < 1 || next.max_lines > 30 || ![400, 500, 600, 700, 800, 900].includes(next.weight) || !['start', 'middle', 'end'].includes(next.align) || !(next.line_height >= 1.05 && next.line_height <= 2)) fail('TEXT_STYLE', l.id);
       if (l.color && !/^#[a-f0-9]{6}$/i.test(l.color)) fail('INVALID_COLOR', l.id);
+      if (l.letter_spacing !== undefined && !(l.letter_spacing >= -0.1 && l.letter_spacing <= 0.3)) fail('TEXT_STYLE', `${l.id} letter_spacing must be -0.1..0.3 em`);
+      if (l.font_family !== undefined) str(l.font_family, 'layer font_family');
+      if (l.min_contrast !== undefined && !(l.min_contrast >= 1 && l.min_contrast <= 21)) fail('TEXT_STYLE', `${l.id} min_contrast must be 1..21`);
+      for (const k of ['balance', 'normalize', 'optical_margin']) if (l[k] !== undefined && typeof l[k] !== 'boolean') fail('TEXT_STYLE', `${l.id} ${k} must be boolean`);
+      if (l.emphasis !== undefined) {
+        if (!Array.isArray(l.emphasis) || l.emphasis.length > 6 || !l.emphasis.every((e) => e && typeof e.match === 'string' && e.match && [400, 500, 600, 700, 800, 900].includes(e.weight ?? next.weight) && (e.color === undefined || /^#[a-f0-9]{6}$/i.test(e.color)))) fail('TEXT_STYLE', `${l.id} emphasis must be up to 6 {match, weight?, color?} spans`);
+        for (const e of l.emphasis) if (!l.text.includes(e.match)) fail('EMPHASIS_NOT_FOUND', `${l.id}: "${e.match}" is not in the text`);
+      }
     } else if (l.kind === 'solid') {
       if (!/^#[a-f0-9]{6}$/i.test(l.color ?? '')) fail('INVALID_COLOR', `${l.id} solid color must be #RRGGBB`);
       next.color = l.color;
+      if (l.gradient !== undefined && !(Array.isArray(l.gradient) && l.gradient.length >= 2 && l.gradient.length <= 6 && l.gradient.every((st) => Array.isArray(st) && st.length === 2 && st.every((n) => Number.isFinite(n) && n >= 0 && n <= 1)))) fail('INVALID_GRADIENT', `${l.id} gradient must be 2-6 [offset, opacity] stops in 0..1 (top to bottom)`);
+      if (l.auto_scrim !== undefined) {
+        const a = l.auto_scrim;
+        if (!a || typeof a !== 'object' || !Array.isArray(a.for) || !a.for.length || !a.for.every((x) => typeof x === 'string') || !(a.target_contrast >= 3 && a.target_contrast <= 21) || (a.max_opacity !== undefined && !(a.max_opacity > 0 && a.max_opacity <= 1)) || (a.feather !== undefined && !(a.feather >= 0 && a.feather < 1))) fail('INVALID_AUTO_SCRIM', `${l.id} auto_scrim needs {for:[text layer ids], target_contrast:3..21, max_opacity?}`);
+      }
     } else if (l.kind === 'generated' && !l.ref) {
       str(l.instruction, 'generated layer instruction');
       next.status = 'RENDER_REQUIRED';
@@ -325,13 +339,17 @@ export async function executeVisual(plan, { baseDir = process.cwd(), preset = {}
   }
   prepareOutput(outDir);
   const packet = await compileExecution(plan, { baseDir, preset });
-  const adapter = findRasterizer(rasterizer);
+  let adapter = findRasterizer(rasterizer);
   packet.rasterizer = adapter ? { name: adapter.name, version: adapter.version } : null;
   if (!adapter || packet.status === 'RENDER_REQUIRED') {
     if (!adapter) packet.missing_capabilities = ['local_svg_rasterizer'];
     mkdirSync(outDir, { recursive: true });
     writeFileSync(resolve(outDir, 'execution.json'), `${JSON.stringify(packet, null, 2)}\n`);
     return packet;
+  }
+  if (requestsBundledFont(packet.theme.font_family) || packet.layers.some((l) => requestsBundledFont(l.font_family))) {
+    adapter = { ...adapter, env: bundledFontEnv() }; // rasterizer sees only the bundled fonts: same result on any machine
+    for (const w of new Set(packet.layers.filter((l) => l.kind === 'text').flatMap((l) => [l.weight, ...(l.emphasis ?? []).map((e) => e.weight ?? l.weight)]))) verifyBundledResolution(w, adapter.env);
   }
   const { width, height } = packet.canvas;
   const measure = textMeasurer(adapter, packet.theme.font_family);
@@ -340,16 +358,61 @@ export async function executeVisual(plan, { baseDir = process.cwd(), preset = {}
   let article = null;
   if (plan.job_ref) { try { article = JSON.parse(source.bytes); } catch { /* article check requires the actual article JSON */ } }
   const elements = [], charts = [], textEvidence = [], imageEvidence = [], generated = [];
-  const exclusions = [];
+  const exclusions = [], contrastChecks = [], scrimEvidence = [], isText = new Set();
   for (const l of packet.layers) {
     const b = l.pixel_slot;
     if (l.kind === 'text') {
-      const lines = wrapText(l.text, { width: b.width, height: b.height, size: l.font_size, weight: l.weight, maxLines: l.max_lines, lineHeight: l.line_height }, measure);
-      const x = b.x + (l.align === 'middle' ? b.width / 2 : l.align === 'end' ? b.width : 0);
-      elements.push(`<text font-family="${esc(packet.theme.font_family)}" font-size="${l.font_size}" font-weight="${l.weight}" fill="${l.color ?? packet.theme.foreground}" text-anchor="${l.align}">${lines.map((t, i) => `<tspan x="${x}" y="${b.y + l.font_size + i * l.font_size * l.line_height}">${esc(t)}</tspan>`).join('')}</text>`);
-      textEvidence.push({ id: l.id, text: l.text, source_ref: l.source_ref, lines, font_size: l.font_size, slot: b });
+      const rich = l.balance || l.emphasis || l.letter_spacing !== undefined || l.font_family || l.normalize || l.optical_margin || l.min_contrast !== undefined;
+      if (!rich) {
+        const lines = wrapText(l.text, { width: b.width, height: b.height, size: l.font_size, weight: l.weight, maxLines: l.max_lines, lineHeight: l.line_height }, measure);
+        const x = b.x + (l.align === 'middle' ? b.width / 2 : l.align === 'end' ? b.width : 0);
+        elements.push(`<text font-family="${esc(packet.theme.font_family)}" font-size="${l.font_size}" font-weight="${l.weight}" fill="${l.color ?? packet.theme.foreground}" text-anchor="${l.align}">${lines.map((t, i) => `<tspan x="${x}" y="${b.y + l.font_size + i * l.font_size * l.line_height}">${esc(t)}</tspan>`).join('')}</text>`);
+        isText.add(elements.length - 1);
+        textEvidence.push({ id: l.id, text: l.text, source_ref: l.source_ref, lines, font_size: l.font_size, slot: b });
+        continue;
+      }
+      const family = l.font_family ?? packet.theme.font_family;
+      const printed = l.normalize ? normalizeKoreanText(l.text) : l.text;
+      const emph = locateEmphasis(printed, (l.emphasis ?? []).map((e) => ({ ...e, weight: e.weight ?? l.weight })));
+      if (requestsBundledFont(family)) { assertFontCoverage(printed, l.weight); for (const e of emph) assertFontCoverage(printed.slice(e.start, e.end), e.weight); }
+      const lm = family === packet.theme.font_family ? measure : textMeasurer(adapter, family);
+      const spaced = (t, z, w) => lm(t, z, w) + (l.letter_spacing ?? 0) * z * [...t].length;
+      const lines = l.balance
+        ? balancedWrap(printed, { width: b.width, size: l.font_size, weight: l.weight, maxLines: l.max_lines, emphasis: emph }, spaced)
+        : wrapText(printed, { width: b.width, height: b.height, size: l.font_size, weight: l.weight, maxLines: l.max_lines, lineHeight: l.line_height }, spaced);
+      if (lines.length * l.font_size * l.line_height > b.height) fail('TEXT_OVERFLOW', `${l.id}: ${lines.length} lines exceed the slot height; text was not truncated`);
+      const x = b.x + (l.align === 'middle' ? b.width / 2 : l.align === 'end' ? b.width : 0) - (l.optical_margin && l.align === 'start' ? Math.round(l.font_size * 0.04) : 0);
+      let cursor = 0; const tsp = [];
+      lines.forEach((t, i) => {
+        const at = printed.indexOf(t, cursor); cursor = at + t.length;
+        const runs = weightRuns(printed, at, at + t.length, l.weight, emph).map((r) => `<tspan${r.weight !== l.weight ? ` font-weight="${r.weight}"` : ''}${r.color ? ` fill="${r.color}"` : ''}>${esc(r.text)}</tspan>`).join('');
+        tsp.push(`<tspan x="${x}" y="${b.y + l.font_size + i * l.font_size * l.line_height}">${runs}</tspan>`);
+      });
+      elements.push(`<text font-family="${esc(family)}" font-size="${l.font_size}" font-weight="${l.weight}"${l.letter_spacing ? ` letter-spacing="${(l.letter_spacing * l.font_size).toFixed(2)}"` : ''} fill="${l.color ?? packet.theme.foreground}" text-anchor="${l.align}" xml:space="preserve">${tsp.join('')}</text>`);
+      isText.add(elements.length - 1);
+      textEvidence.push({ id: l.id, text: l.text, ...(printed !== l.text ? { printed_text: printed } : {}), source_ref: l.source_ref, lines, font_size: l.font_size, slot: b, orphan: hasOrphan(lines) });
+      if (l.min_contrast !== undefined) contrastChecks.push({ layer: l, rect: { x: b.x, y: b.y, width: b.width, height: Math.ceil(lines.length * l.font_size * l.line_height) } });
     } else if (l.kind === 'solid') {
-      elements.push(`<rect x="${b.x}" y="${b.y}" width="${b.width}" height="${b.height}" fill="${l.color}"/>`);
+      let opacityStops = l.gradient;
+      if (l.auto_scrim) {
+        const a = l.auto_scrim, targets = packet.layers.filter((t) => t.kind === 'text' && a.for.includes(t.id));
+        if (targets.length !== a.for.length) fail('INVALID_AUTO_SCRIM', `${l.id}: auto_scrim.for must name text layers of this plan`);
+        const under = decodePng(rasterize(svgDocument(width, height, `<rect width="${width}" height="${height}" fill="${packet.theme.background}"/>${elements.filter((_, i) => !isText.has(i)).join('')}`), adapter));
+        let alpha = 0;
+        for (const t of targets) {
+          if (t.pixel_slot.y < b.y + (a.feather ?? 0) * b.height) fail('INVALID_AUTO_SCRIM', `${l.id}: ${t.id} starts inside the feathered edge; move the scrim up or reduce feather`);
+          const tc = hexToRgb(t.color ?? packet.theme.foreground), bg = worstBackground(under, t.pixel_slot, tc);
+          const o = autoScrimOpacity(bg, tc, hexToRgb(l.color), a.target_contrast, a.max_opacity ?? 0.92);
+          if (o === null) fail('CONTRAST_FAIL', `${l.id}: ${t.id} cannot reach contrast ${a.target_contrast} even at max scrim opacity`);
+          alpha = Math.max(alpha, o);
+        }
+        const f = a.feather ?? 0; opacityStops = f > 0 ? [[0, 0], [f, alpha], [1, alpha]] : [[0, alpha], [1, alpha]];
+        scrimEvidence.push({ id: l.id, opacity: alpha, target_contrast: a.target_contrast, for: a.for });
+      }
+      if (opacityStops) {
+        const gid = `scrim-${l.id}`;
+        elements.push(`<defs><linearGradient id="${gid}" x1="0" y1="0" x2="0" y2="1">${opacityStops.map(([o, a]) => `<stop offset="${o}" stop-color="${l.color}" stop-opacity="${a}"/>`).join('')}</linearGradient></defs><rect x="${b.x}" y="${b.y}" width="${b.width}" height="${b.height}" fill="url(#${gid})"/>`);
+      } else elements.push(`<rect x="${b.x}" y="${b.y}" width="${b.width}" height="${b.height}" fill="${l.color}"/>`);
     } else {
       const file = localInput(l.ref, baseDir, l.sha256); inputs.push(file);
       if (l.kind === 'chart') {
@@ -373,6 +436,16 @@ export async function executeVisual(plan, { baseDir = process.cwd(), preset = {}
   }
   if (packet.source.scope === 'illustrative') {
     elements.push(`<text x="${Math.round(width * 0.05)}" y="${Math.round(height * 0.985)}" font-family="${esc(packet.theme.font_family)}" font-size="${Math.max(14, Math.round(width * 0.018))}" fill="${packet.theme.foreground}">ILLUSTRATIVE / 가상 예시</text>`);
+  }
+  const contrastEvidence = [];
+  if (contrastChecks.length) {
+    const base = decodePng(rasterize(svgDocument(width, height, `<rect width="${width}" height="${height}" fill="${packet.theme.background}"/>${elements.filter((_, i) => !isText.has(i)).join('')}`), adapter));
+    for (const c of contrastChecks) {
+      const tc = hexToRgb(c.layer.color ?? packet.theme.foreground), bg = worstBackground(base, c.rect, tc), ratio = contrastRatio(tc, bg);
+      contrastEvidence.push({ id: c.layer.id, ratio: Number(ratio.toFixed(2)), min: c.layer.min_contrast, result: ratio >= c.layer.min_contrast ? 'PASS' : 'FAIL' });
+    }
+    const bad = contrastEvidence.filter((e) => e.result === 'FAIL');
+    if (bad.length) fail('CONTRAST_FAIL', bad.map((e) => `${e.id} ${e.ratio} < ${e.min}`).join('; '));
   }
   const background = `<rect width="${width}" height="${height}" fill="${packet.theme.background}"/>`;
   const cleanSvg = svgDocument(width, height, background + elements.join(''));
@@ -426,7 +499,7 @@ export async function executeVisual(plan, { baseDir = process.cwd(), preset = {}
     inputs: inputs.map((f) => ({ ref: f.ref, sha256: f.sha256 })), geometry: packet.canvas,
     outputs: (() => { const d = isRenderedOk(packet.status) ? '' : 'rejected/'; return { master: { ref: `${d}master.png`, sha256: sha256(master) }, image: { ref: `${d}image.png`, sha256: sha256(final) }, svg: { ref: `${d}master.svg`, sha256: sha256(cleanSvg) } }; })(),
     text: textEvidence, charts, images: imageEvidence, generation: generationEvidence, watermark: watermarkEvidence,
-    checks: { output_geometry: 'PASS', text_fit: 'PASS', inputs_rechecked: 'PASS', numeric_render_binding: charts.length ? 'PASS' : 'NOT_APPLICABLE', generated_image: generationEvidence.length ? packet.status : 'NOT_APPLICABLE', actual_pixel_semantic_review: 'NOT_RUN_PHASE4', source_truth: 'NOT_ESTABLISHED_BY_RENDERER' },
+    checks: { output_geometry: 'PASS', text_fit: 'PASS', inputs_rechecked: 'PASS', numeric_render_binding: charts.length ? 'PASS' : 'NOT_APPLICABLE', generated_image: generationEvidence.length ? packet.status : 'NOT_APPLICABLE', contrast: contrastEvidence.length ? 'PASS' : 'NOT_APPLICABLE', ...(scrimEvidence.length ? { auto_scrim: scrimEvidence } : {}), ...(contrastEvidence.length ? { contrast_detail: contrastEvidence } : {}), actual_pixel_semantic_review: 'NOT_RUN_PHASE4', source_truth: 'NOT_ESTABLISHED_BY_RENDERER' },
     api_calls: 0, publication_authorized: false,
   };
   // A failed/unverified result must not leave a success-looking PNG: pixels go under rejected/, never at the top level.

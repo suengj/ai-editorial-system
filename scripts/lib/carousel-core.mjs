@@ -8,6 +8,7 @@ import { fileURLToPath } from 'node:url';
 import { createHash } from 'node:crypto';
 import { spawnSync } from 'node:child_process';
 
+import { bundledFontDigest } from './typography-core.mjs';
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 export const CAROUSEL_VERSION = '1.0.0';
 /** Series constraints as data (single source for planCarousel and the web catalog export). */
@@ -15,7 +16,7 @@ export const CAROUSEL_CONSTRAINTS = Object.freeze({
   frames: Object.freeze({ min: 1, max: 20 }),
   beats: Object.freeze({ min: 1, max: 60 }),
   series_fields: Object.freeze(['schema_version','series_id','request','source','profiles','recipe','task','typography','regions','layouts','series_label','beats','frames','art_direction_sha256']),
-  frame_fields: Object.freeze(['id','function','beat_ids','takeaway','alt_text','headline','source_note','layout','blocks','caption','job_ref','art_direction']),
+  frame_fields: Object.freeze(['id','function','beat_ids','takeaway','alt_text','headline','headline_emphasis','source_note','layout','blocks','caption','job_ref','art_direction']),
   block_fields: Object.freeze(['id','region','kind','ref','sha256','mode','fit','rights_note','protect','text','source_ref','instruction','generation','provenance']),
   block_kinds: Object.freeze(['text','image','chart','generated']),
   frame_functions: Object.freeze(['orient','assert','show_evidence','explain_mechanism','compare','qualify','turn','show_consequence','decision','close']),
@@ -88,13 +89,14 @@ export function planCarousel(series, catalog=loadVisualRecipes()) {
     need(Array.isArray(backgroundRegions) && backgroundRegions.every((id) => Object.hasOwn(layout, id)), 'SERIES_LAYOUT_EFFECT', `${name}: invalid background region`);
     const solidBands = effect.solid_bands ?? [];
     const bandedBackgroundRegions = solidBands.length ? backgroundRegions : [];
-    checkRegions({...recurring,...layout},{bandedBackgroundRegions});
+    const rec = {...recurring, ...(effect.recurring_regions ?? {})};
+    checkRegions({...rec,...layout},{bandedBackgroundRegions});
     for (const band of solidBands) {
-      need(obj(band) && /^[a-z0-9][a-z0-9-]*$/.test(band.id ?? '') && ['x','y','width','height'].every(k => Number.isFinite(band[k]) && band[k] >= 0 && band[k] <= 1) && band.width > 0 && band.height > 0 && band.x + band.width <= 1 && band.y + band.height <= 1 && (band.fill === 'theme.background' || /^#[0-9a-f]{6}$/i.test(band.fill ?? '')), 'SERIES_LAYOUT_EFFECT', `${name}: invalid solid band`);
+      need(obj(band) && /^[a-z0-9][a-z0-9-]*$/.test(band.id ?? '') && ['x','y','width','height'].every(k => Number.isFinite(band[k]) && band[k] >= 0 && band[k] <= 1) && band.width > 0 && band.height > 0 && band.x + band.width <= 1 && band.y + band.height <= 1 && (band.fill === 'theme.background' || /^#[0-9a-f]{6}$/i.test(band.fill ?? '')) && (band.gradient === undefined || (Array.isArray(band.gradient) && band.gradient.length >= 2 && band.gradient.every(st => Array.isArray(st) && st.length === 2 && st.every(n => Number.isFinite(n) && n >= 0 && n <= 1)))), 'SERIES_LAYOUT_EFFECT', `${name}: invalid solid band`);
     }
     if (backgroundRegions.length) {
       const contains = (outer, inner) => inner.x >= outer.x && inner.y >= outer.y && inner.x + inner.width <= outer.x + outer.width && inner.y + inner.height <= outer.y + outer.height;
-      const textRegions = [recurring.eyebrow, recurring.headline, recurring.source, recurring.pagination];
+      const textRegions = [rec.eyebrow, rec.headline, rec.source, rec.pagination];
       need(solidBands.length > 0 && textRegions.every(region => solidBands.some(band => contains(band, region))), 'SERIES_TEXT_SAFE_BAND', `${name}: recurring text regions must fit inside a declared solid/scrim text-safe band`);
     }
   }
@@ -136,9 +138,13 @@ export function planCarousel(series, catalog=loadVisualRecipes()) {
       need(typeof f.art_direction.asset.need === 'boolean' && ['generated','authorized_original','deterministic_diagram','none'].includes(f.art_direction.asset.source), 'SERIES_ART_DIRECTION', `${f.id}: invalid asset declaration`);
     }
     const layers=[], backgroundLayers=[], occupied=new Set();
-    const addText = (id,value,slot,role,source_ref='request') => layers.push({id,kind:'text',text:value,source_ref,slot,...typography[role]});
-    addText('series-label',series.series_label,recurring.eyebrow,'eyebrow');
-    addText('headline',f.headline,recurring.headline,'headline');
+    const lfx = catalog.layout_effects?.[layoutName] ?? {};
+    const rec = {...recurring, ...(lfx.recurring_regions ?? {})};
+    const sty = (role) => ({...typography[role], ...(lfx.text_style?.[role] ?? {})});
+    const addText = (id,value,slot,role,source_ref='request') => layers.push({id,kind:'text',text:value,source_ref,slot,...sty(role)});
+    addText('series-label',series.series_label,rec.eyebrow,'eyebrow');
+    addText('headline',f.headline,rec.headline,'headline');
+    if (f.headline_emphasis!==undefined) { need(Array.isArray(f.headline_emphasis)&&f.headline_emphasis.every((e)=>obj(e)&&text(e.match)&&f.headline.includes(e.match)),'SERIES_TEXT',`${f.id}: headline_emphasis spans must be substrings of the headline`); layers.at(-1).emphasis=structuredClone(f.headline_emphasis); }
     for (const b of f.blocks) {
       keys(b,CAROUSEL_CONSTRAINTS.block_fields,'block');
       need(slug(b.id) && !['series-label','headline','source','pagination'].includes(b.id) && !layers.some((l)=>l.id===b.id),'SERIES_LAYER_ID',String(b.id));
@@ -148,7 +154,7 @@ export function planCarousel(series, catalog=loadVisualRecipes()) {
       if (b.kind==='text') {
         keys(b,['id','region','kind','text','source_ref'],'text block');
         need(text(b.text) && text(b.source_ref),'SERIES_TEXT',b.id);
-        Object.assign(layer,typography.body);
+        Object.assign(layer,sty('body'));
       } else if (b.kind==='chart') {
         keys(b,['id','region','kind','ref','sha256'],'chart block');
         need(text(b.ref),'SERIES_SOURCE',b.id);
@@ -176,12 +182,13 @@ export function planCarousel(series, catalog=loadVisualRecipes()) {
         kind: 'solid',
         color: band.fill === 'theme.background' ? (task.theme?.background ?? recipe.theme.background) : band.fill,
         slot: { x: band.x, y: band.y, width: band.width, height: band.height },
+        ...(band.gradient ? { gradient: band.gradient } : {}),
       }));
       layers.push(...backgroundLayers, ...bands, ...contentLayers);
     }
-    addText('source',f.source_note,recurring.source,'source',series.source.ref);
-    addText('pagination',`${i+1} / ${series.frames.length}`,recurring.pagination,'pagination');
-    const plan = {schema_version:'1.0.0',request:series.request,source:series.source,profiles:series.profiles,task:structuredClone(task),layers,caption:f.caption??''};
+    addText('source',f.source_note,rec.source,'source',series.source.ref);
+    addText('pagination',`${i+1} / ${series.frames.length}`,rec.pagination,'pagination');
+    const plan = {schema_version:'1.0.0',request:series.request,source:series.source,profiles:series.profiles,task:lfx.theme?{...structuredClone(task),theme:{...(task.theme??{}),...lfx.theme}}:structuredClone(task),layers,caption:f.caption??''};
     if (f.job_ref) plan.job_ref=f.job_ref;
     frames.push({id:f.id,index:i+1,function:f.function,beat_ids:f.beat_ids,takeaway:f.takeaway,alt_text:f.alt_text,layout:layoutName,...(f.art_direction?{art_direction:structuredClone(f.art_direction)}:{}),plan});
   }
@@ -219,8 +226,8 @@ export async function executeCarousel(series,{baseDir=process.cwd(),outDir,raste
   }
   prepareOutput(outDir);
   const adapter=findRasterizer(rasterizer);
-  const codeFiles=['carousel-core.mjs','visual-execution-core.mjs','svg-tools.mjs','chart-renderer.mjs','watermark-core.mjs'];
-  const runtime={adapter:adapter?{name:adapter.name,version:adapter.version}:null,font_environment:fontEnvironment(),code:codeFiles.map((p)=>hash(readFileSync(resolve(ROOT,'scripts/lib',p))))};
+  const codeFiles=['carousel-core.mjs','visual-execution-core.mjs','svg-tools.mjs','chart-renderer.mjs','watermark-core.mjs','typography-core.mjs'];
+  const runtime={adapter:adapter?{name:adapter.name,version:adapter.version}:null,font_environment:fontEnvironment(),code:codeFiles.map((p)=>hash(readFileSync(resolve(ROOT,'scripts/lib',p)))),bundled_fonts:bundledFontDigest()};
   // Preflight every frame before writing any PNG. This does not prove taste.
   const packets=[];
   for (const f of compiled.frames) packets.push(await compileExecution(f.plan,{baseDir,preset:compiled.preset}));
