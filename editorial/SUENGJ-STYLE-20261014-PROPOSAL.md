@@ -1,6 +1,6 @@
 # suengj-style — owner-selected evidence refinement (2026-10-14)
 
-**Status: PROPOSED WORDING, NOT ACTIVE.** The owner explicitly selected ten excerpts as positive **excerpt-level** references for personal LinkedIn and personal Instagram. Their approval of the original sentences is evidence; this document's proposed abstract editorial rules are an agent interpretation, not yet approved as a universal rule. Do not auto-merge this proposal into `editorial/SUENGJ-STYLE.md`.
+**Status: PROMOTED 2026-10-16 (trial) into SUENGJ-STYLE.md.** Owner approved ("일단 넣어봐, 나중에 쓰면서 피드백 줄게"); refine via usage feedback. This file is kept as rationale; the canonical rules live in `editorial/SUENGJ-STYLE.md`. Scope stays `personal-linkedin` and `personal-instagram` only.
 
 ## Scope and authority
 
@@ -40,4 +40,4 @@
 - On Signalytics and trends.moa, verify none of these excerpt locators or proposed phrasing is selected. On non-SNS blog/news/report, verify no personal overlay leak.
 - Never claim stylistic improvement from a schema PASS alone; final draft quality requires author judgment.
 
-**Decision boundary:** the owner approved **ten historical excerpt choices**. Promotion of *this interpretation* into the canonical `SUENGJ-STYLE.md` is a separate change and is intentionally not performed here.
+**Decision boundary (updated 2026-10-16):** the owner approved the ten excerpt choices on 2026-10-14 and promoted this interpretation into the canonical `SUENGJ-STYLE.md` as a trial on 2026-10-16.
