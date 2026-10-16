@@ -7,6 +7,7 @@ import { resolve, dirname, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createHash } from 'node:crypto';
 import { spawnSync } from 'node:child_process';
+import { buildNativeCardPrompt, intakeNativeCard, nativeReviewToFeedbackRecord, renderNativeChrome, resolveTargetDisplayLabel, validateNativeCardReview } from './hybrid-card-core.mjs';
 
 import { bundledFontDigest } from './typography-core.mjs';
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
@@ -132,10 +133,25 @@ export function planCarousel(series, catalog=loadVisualRecipes()) {
       for (const b of f.blocks) if (b?.kind === 'text') need(bands.some(band => contains(band, layout[b.region])), 'SERIES_TEXT_SAFE_BAND', `${layoutName}.${b.region}: text region must fit inside a declared solid/scrim text-safe band`);
     }
     if (f.art_direction !== undefined) {
-      keys(f.art_direction,['plan_id','visual_mode','focal_subject','message','reading_order','asset','asset_block_id','avoid','protected','brand_elements','reuse'],'frame.art_direction');
+      keys(f.art_direction,CAROUSEL_CONSTRAINTS.art_direction_fields,'frame.art_direction');
       need(text(f.art_direction.plan_id) && text(f.art_direction.focal_subject) && text(f.art_direction.message) && Array.isArray(f.art_direction.reading_order) && Array.isArray(f.art_direction.avoid) && obj(f.art_direction.asset), 'SERIES_ART_DIRECTION', f.id);
       need(/^sha256:[a-f0-9]{64}$/.test(series.art_direction_sha256 ?? ''), 'SERIES_ART_DIRECTION', `${f.id}: plan hash required`);
       need(typeof f.art_direction.asset.need === 'boolean' && ['generated','authorized_original','deterministic_diagram','none'].includes(f.art_direction.asset.source), 'SERIES_ART_DIRECTION', `${f.id}: invalid asset declaration`);
+      const nativeCard = f.art_direction.render_method === 'native_card';
+      if (f.art_direction.render_method !== undefined) need(['compositor','native_card'].includes(f.art_direction.render_method), 'SERIES_ART_DIRECTION', `${f.id}: invalid render_method`);
+      if (nativeCard) {
+        need(Array.isArray(f.art_direction.native_prompt_strings) && f.art_direction.native_prompt_strings.length > 0 && f.art_direction.native_prompt_strings.every(text), 'SERIES_ART_DIRECTION', `${f.id}: native_prompt_strings required`);
+        const nativeBlocks = f.blocks.filter((block) => block.kind === 'generated' && block.id === f.art_direction.asset_block_id);
+        need(nativeBlocks.length === 1 && f.blocks.length === 1 && f.art_direction.asset.source === 'generated' && f.art_direction.asset.need, 'SERIES_ART_DIRECTION', `${f.id}: native_card requires one generated whole-card block`);
+        const canvas = task.canvas ?? {};
+        let width = canvas.width ?? 1080, height = canvas.height ?? 1350;
+        if (canvas.aspect_ratio !== undefined) {
+          need(canvas.aspect_ratio === '4:5', 'NATIVE_CARD_CANVAS', 'native_card output is fixed at 4:5');
+          if (canvas.height !== undefined && canvas.width === undefined) width = Math.round(canvas.height * 4 / 5);
+          else height = Math.round(width * 5 / 4);
+        }
+        need(width === 1080 && height === 1350, 'NATIVE_CARD_CANVAS', 'native_card output is fixed at 1080x1350');
+      } else need(f.art_direction.native_prompt_strings === undefined, 'SERIES_ART_DIRECTION', `${f.id}: native_prompt_strings requires render_method native_card`);
     }
     const layers=[], backgroundLayers=[], occupied=new Set();
     const lfx = catalog.layout_effects?.[layoutName] ?? {};
@@ -162,7 +178,9 @@ export function planCarousel(series, catalog=loadVisualRecipes()) {
         keys(b,['id','region','kind','ref','sha256','mode','fit','rights_note','protect','provenance',...(b.kind==='generated'?['instruction','generation']:b.kind==='image'?['generation']:[])],'image block');
         if (b.kind==='generated') {
           need(text(b.instruction),'SERIES_GENERATION',b.id);
-          layer.instruction = `${recipe.generation_direction}\nFrame purpose: ${f.takeaway}\n${b.instruction}\nCreate only the illustration for the content slot ${JSON.stringify(layer.slot)}. The compositor clips this asset to that slot; it adds headline, source, page count and watermark separately. Do not draw exact text, data, numbers or branding. A prompt alone is not pixel reservation.`;
+          layer.instruction = f.art_direction?.render_method === 'native_card'
+            ? b.instruction
+            : `${recipe.generation_direction}\nFrame purpose: ${f.takeaway}\n${b.instruction}\nCreate only the illustration for the content slot ${JSON.stringify(layer.slot)}. The compositor clips this asset to that slot; it adds headline, source, page count and watermark separately. Do not draw exact text, data, numbers or branding. A prompt alone is not pixel reservation.`;
         } else need(text(b.ref),'SERIES_SOURCE',b.id);
       }
       if ((catalog.layout_effects?.[layoutName]?.background_regions ?? []).includes(b.region)) backgroundLayers.push(layer);
@@ -215,10 +233,25 @@ const writeJson=(p,x)=>writeFileSync(p,`${JSON.stringify(x,null,2)}\n`);
 const basenameSafe=(root,path)=>{ need(typeof path==='string' && !relative(root,resolve(root,path)).startsWith('..') && !path.startsWith('/'),'SERIES_REUSE','invalid prior output locator'); return resolve(root,path); };
 
 /** Existing executor owns typography, charts, source hashing and image bytes. */
-export async function executeCarousel(series,{baseDir=process.cwd(),outDir,rasterizer='auto',previousDir=null}={}) {
+export async function executeCarousel(series,{baseDir=process.cwd(),outDir,rasterizer='auto',previousDir=null,targetId=null,targetCatalog=null,nativeSession=null,nativeSessionBaseDir=baseDir}={}) {
   const {compileExecution,executeVisual,prepareOutput,isRenderedOk,GENERATED_OK,RENDER_OK,lineageRootOf,checkRepairLineage,enforceRepairLimit,appendLedger}=await import('./visual-execution-core.mjs');
   const {findRasterizer,rasterize,svgDocument}=await import('./svg-tools.mjs');
   const compiled=planCarousel(series);
+  const nativeFrames=compiled.frames.filter((f)=>f.art_direction?.render_method==='native_card');
+  const hybridFrames=compiled.frames.filter((f)=>['native_card','compositor'].includes(f.art_direction?.render_method));
+  const nativeIds=new Set(nativeFrames.map((f)=>f.id));
+  const sessionFrames=nativeSession?.frames??{};
+  if(nativeSession!==null) {
+    need(obj(nativeSession) && nativeSession.schema_version==='1.0.0' && nativeSession.route==='native_session' && obj(sessionFrames), 'NATIVE_SESSION_INVALID', 'native session needs schema_version 1.0.0, route native_session, and a frames object');
+    keys(nativeSession,['schema_version','route','frames'],'native session');
+    for(const id of Object.keys(sessionFrames)) need(nativeIds.has(id), 'NATIVE_SESSION_INVALID', `native session includes non-native or unknown frame ${id}`);
+    for(const [id,input] of Object.entries(sessionFrames)) {
+      keys(input,['png_path','source_dir','receipt','review','review_path'],`native session frame ${id}`);
+      need(Boolean(text(input.png_path))!==Boolean(text(input.source_dir)), 'NATIVE_SESSION_INVALID', `${id}: provide exactly one of png_path or source_dir`);
+      need(obj(input.receipt) && input.receipt.route==='native_session' && /^sha256:[a-f0-9]{64}$/.test(input.receipt.sha256??''), 'NATIVE_SESSION_INVALID', `${id}: receipt needs route native_session and sha256`);
+      need(!(input.review!==undefined && input.review_path!==undefined), 'NATIVE_SESSION_INVALID', `${id}: use review or review_path, not both`);
+    }
+  }
   if (outDir && existsSync(outDir)) for (const f of compiled.frames) {
     const staleReceipt = resolve(outDir, f.id, 'receipt.json');
     if (existsSync(staleReceipt)) unlinkSync(staleReceipt);
@@ -226,19 +259,30 @@ export async function executeCarousel(series,{baseDir=process.cwd(),outDir,raste
   }
   prepareOutput(outDir);
   const adapter=findRasterizer(rasterizer);
-  const codeFiles=['carousel-core.mjs','visual-execution-core.mjs','svg-tools.mjs','chart-renderer.mjs','watermark-core.mjs','typography-core.mjs'];
+  const codeFiles=['carousel-core.mjs','visual-execution-core.mjs','svg-tools.mjs','chart-renderer.mjs','watermark-core.mjs','typography-core.mjs',...(hybridFrames.length?['hybrid-card-core.mjs']:[])];
   const runtime={adapter:adapter?{name:adapter.name,version:adapter.version}:null,font_environment:fontEnvironment(),code:codeFiles.map((p)=>hash(readFileSync(resolve(ROOT,'scripts/lib',p)))),bundled_fonts:bundledFontDigest()};
   // Preflight every frame before writing any PNG. This does not prove taste.
   const packets=[];
   for (const f of compiled.frames) packets.push(await compileExecution(f.plan,{baseDir,preset:compiled.preset}));
+  const targetLabel=hybridFrames.length?resolveTargetDisplayLabel(targetId,targetCatalog):null;
+  const nativePrompts=new Map(nativeFrames.map((f)=>[f.id,buildNativeCardPrompt(f,{palette:packets[compiled.frames.indexOf(f)].theme,fontFamily:packets[compiled.frames.indexOf(f)].theme.font_family})]));
   const prior=previousDir?JSON.parse(readFileSync(resolve(previousDir,'series.json'),'utf8')):null;
   if (prior) need(prior.series_id===compiled.series_id && Array.isArray(prior.frames),'SERIES_REUSE','different or invalid prior series');
   // Enforced repair budget (SUE-1426). A workflow control, not tamper-proof (see lineage helpers in visual-execution-core).
   // A round is COUNTED only when the prior series was rendered-OK, the run changed some but not all frames, and the new
   // run completes OK. A repair that re-renders every frame is not a local fix: it is recorded as a NEW BASE.
   const lineage=lineageRootOf({kind:'carousel',series_id:compiled.series_id,request:series.request??null,source_ref:series.source?.ref??null});
-  const fpOf=(f,i)=>hash({packet:packets[i].execution_hash,recipe:compiled.recipe_hash,runtime});
-  const reusableOld=(f,i)=>{const o=prior?.frames.find((p)=>p.id===f.id && p.fingerprint===fpOf(f,i) && isRenderedOk(p.status)); return adapter && runtime.font_environment && o && Object.keys(o.outputs??{}).length===5 ? o : null;};
+  const outputNames=(f)=>f.art_direction?.render_method==='native_card'
+    ? ['master.png','image.png','native-intake.json','chrome.json','native-review.json','native-feedback.json','native-prompt.txt','receipt.json']
+    : f.art_direction?.render_method==='compositor'
+      ? ['master.png','image.png','master.svg','execution.json','chrome.json','receipt.json']
+    : ['master.png','image.png','master.svg','execution.json','receipt.json'];
+  const nativeFingerprint=(f)=>{
+    const input=sessionFrames[f.id];
+    return input?{receipt:input.receipt,review:input.review??(input.review_path?readFileSync(resolve(nativeSessionBaseDir,input.review_path),'utf8'):null)}:null;
+  };
+  const fpOf=(f,i)=>hash({packet:packets[i].execution_hash,recipe:compiled.recipe_hash,runtime,...(f.art_direction?.render_method==='native_card'?{native_prompt:nativePrompts.get(f.id),native_session:nativeFingerprint(f),target_label:targetLabel}:f.art_direction?.render_method==='compositor'?{target_label:targetLabel}: {})});
+  const reusableOld=(f,i)=>{const o=prior?.frames.find((p)=>p.id===f.id && p.fingerprint===fpOf(f,i) && isRenderedOk(p.status)); return adapter && runtime.font_environment && o && Object.keys(o.outputs??{}).length===outputNames(f).length ? o : null;};
   const rerender=compiled.frames.filter((f,i)=>!reusableOld(f,i)).map((f)=>f.id);
   let chk={priorOk:false,priorRound:0};
   if (prior) chk=checkRepairLineage(prior,prior.status,resolve(previousDir),lineage,{enforceLimit:false});
@@ -254,24 +298,78 @@ export async function executeCarousel(series,{baseDir=process.cwd(),outDir,raste
   const save=()=>writeJson(resolve(outDir,'series.json'),result);
   try {
     for (const [i,f] of compiled.frames.entries()) {
-      const dir=resolve(outDir,f.id), fingerprint=hash({packet:packets[i].execution_hash,recipe:compiled.recipe_hash,runtime});
+      const dir=resolve(outDir,f.id), fingerprint=fpOf(f,i);
       const old=prior?.frames.find((p)=>p.id===f.id && p.fingerprint===fingerprint && isRenderedOk(p.status));
       const entry={id:f.id,index:f.index,function:f.function,beat_ids:f.beat_ids,takeaway:f.takeaway,alt_text:f.alt_text,fingerprint,status:'NOT_RUN',reused:false,outputs:{}};
       const receiptPath = resolve(dir,'receipt.json');
       if (existsSync(receiptPath)) unlinkSync(receiptPath);
-      if (adapter && runtime.font_environment && old && Object.keys(old.outputs??{}).length===5) {
+      if (adapter && runtime.font_environment && old && Object.keys(old.outputs??{}).length===outputNames(f).length) {
         mkdirSync(dir,{recursive:true});
-        for (const name of ['master.png','image.png','master.svg','execution.json','receipt.json']) {
+        for (const name of outputNames(f)) {
           const o=old.outputs[name]; need(o && text(o.sha256),'SERIES_REUSE',`missing ${name}`);
           const input=basenameSafe(resolve(previousDir),o.ref); need(hash(readFileSync(input))===o.sha256,'SERIES_REUSE',`changed prior ${f.id}/${name}`);
           copyFileSync(input,resolve(dir,name));
         }
         entry.reused=true; entry.status=old.status;
+      } else if(f.art_direction?.render_method==='native_card') {
+        mkdirSync(dir,{recursive:true});
+        writeFileSync(resolve(dir,'native-prompt.txt'),`${nativePrompts.get(f.id)}\n`);
+        const supplied=sessionFrames[f.id];
+        if(!supplied) {
+          entry.status='RENDER_REQUIRED';
+          entry.native_review_status='REQUIRED';
+          entry.pending_image_ref=null;
+          writeJson(resolve(dir,'receipt.json'),{schema_version:'1.0.0',status:entry.status,native_prompt_ref:`${f.id}/native-prompt.txt`,native_review_status:'REQUIRED',outputs:{},publication_authorized:false});
+        } else {
+          const intake=intakeNativeCard({pngPath:supplied.png_path,sourceDir:supplied.source_dir,receipt:supplied.receipt,baseDir:nativeSessionBaseDir,rasterizer:adapter});
+          const sourceLayer=f.plan.layers.find((layer)=>layer.id==='source');
+          const composed=renderNativeChrome(intake.bytes,{label:targetLabel,sourceLine:sourceLayer?.text,pageMark:`${f.index}/${compiled.frames.length}`,tokens:packets[i].theme,rasterizer:adapter});
+          need(hash(readFileSync(intake.path))===intake.receipt.source_sha256,'NATIVE_SOURCE_CHANGED',`${f.id}: native source changed during rendering`);
+          const finalSha=hash(composed.bytes);
+          const review=supplied.review??(supplied.review_path?JSON.parse(readFileSync(resolve(nativeSessionBaseDir,supplied.review_path),'utf8')):null);
+          const reviewCheck=review?validateNativeCardReview(review,{expectedStrings:f.art_direction.native_prompt_strings,cardSha256:finalSha}):null;
+          const reviewStatus=!review?'REQUIRED':!reviewCheck.ok?'INVALID':review.status;
+          entry.native_review_status=reviewStatus;
+          entry.native_card_sha256=finalSha;
+          entry.chrome_outside_changed_pixels=composed.proof.outside_changed_pixels;
+          if(review && !reviewCheck.ok) entry.native_review_issues=reviewCheck.issues;
+          const accepted=reviewCheck?.ok && review.status==='PASS';
+          entry.status=accepted?RENDER_OK:review&&!reviewCheck.ok?'NATIVE_REVIEW_INVALID':review&&review.status!=='PASS'?review.status:'NATIVE_REVIEW_REQUIRED';
+          const pixelDir=accepted?dir:resolve(dir,review?'rejected':'pending');
+          mkdirSync(pixelDir,{recursive:true});
+          writeFileSync(resolve(pixelDir,'master.png'),intake.bytes);
+          writeFileSync(resolve(pixelDir,'image.png'),composed.bytes);
+          writeJson(resolve(dir,'native-intake.json'),intake.receipt);
+          writeJson(resolve(dir,'chrome.json'),composed.proof);
+          if(review && reviewCheck.ok) {
+            const feedback=nativeReviewToFeedbackRecord(review,{frameId:f.id,seriesId:compiled.series_id});
+            writeJson(resolve(pixelDir,'native-review.json'),review);
+            writeJson(resolve(pixelDir,'native-feedback.json'),feedback);
+          }
+          entry.pending_image_ref=accepted?null:`${f.id}/${review?'rejected':'pending'}/image.png`;
+          const outputReceipt={schema_version:'1.0.0',status:entry.status,native_prompt_ref:`${f.id}/native-prompt.txt`,native_intake:intake.receipt,chrome:composed.proof,native_review_status:reviewStatus,...(reviewCheck?.ok?{native_review:{review_id:review.review_id,status:review.status,card_sha256:review.card_sha256}}:{}),...(entry.native_review_issues?{native_review_issues:entry.native_review_issues}:{}),outputs:accepted?Object.fromEntries(outputNames(f).filter((name)=>name!=='receipt.json').map((name)=>[name,{ref:`${f.id}/${name}`,sha256:hash(readFileSync(resolve(dir,name)))}])):{image:{ref:entry.pending_image_ref,sha256:finalSha}},publication_authorized:false};
+          writeJson(resolve(dir,'receipt.json'),outputReceipt);
+        }
       } else {
         const executed=await executeVisual(f.plan,{baseDir,preset:compiled.preset,outDir:dir,rasterizer});
         entry.status=executed.status;
+        if(f.art_direction?.render_method==='compositor' && isRenderedOk(entry.status)) {
+          const sourceLayer=f.plan.layers.find((layer)=>layer.id==='source');
+          const chromeOptions={label:targetLabel,sourceLine:sourceLayer?.text,pageMark:`${f.index}/${compiled.frames.length}`,tokens:packets[i].theme,rasterizer:adapter};
+          const masterChrome=renderNativeChrome(readFileSync(resolve(dir,'master.png')),{...chromeOptions});
+          const imageChrome=renderNativeChrome(readFileSync(resolve(dir,'image.png')),{...chromeOptions});
+          writeFileSync(resolve(dir,'master.png'),masterChrome.bytes);
+          writeFileSync(resolve(dir,'image.png'),imageChrome.bytes);
+          writeJson(resolve(dir,'chrome.json'),{schema_version:'1.0.0',master:masterChrome.proof,image:imageChrome.proof});
+          const receipt=JSON.parse(readFileSync(resolve(dir,'receipt.json'),'utf8'));
+          receipt.outputs.master.sha256=hash(masterChrome.bytes);
+          receipt.outputs.image.sha256=hash(imageChrome.bytes);
+          receipt.native_chrome={ref:'chrome.json',sha256:hash(readFileSync(resolve(dir,'chrome.json'))),outside_changed_pixels:0};
+          writeJson(resolve(dir,'receipt.json'),receipt);
+          entry.chrome_outside_changed_pixels=0;
+        }
       }
-      if (f.art_direction?.asset?.source === 'generated') {
+      if (f.art_direction?.asset?.source === 'generated' && f.art_direction?.render_method !== 'native_card') {
         let consumed = false;
         if (isRenderedOk(entry.status) && existsSync(receiptPath) && existsSync(resolve(dir,'master.png'))) {
           try {
@@ -283,10 +381,12 @@ export async function executeCarousel(series,{baseDir=process.cwd(),outDir,raste
         entry.art_direction_asset_in_final_png = consumed;
         if (!consumed) entry.status = 'RENDER_REQUIRED';
       }
-      const checked=await compileExecution(f.plan,{baseDir,preset:compiled.preset});
-      need(checked.execution_hash===packets[i].execution_hash,'SERIES_SOURCE_CHANGED',`${f.id}: inputs changed during execution`);
+      if(f.art_direction?.render_method!=='native_card') {
+        const checked=await compileExecution(f.plan,{baseDir,preset:compiled.preset});
+        need(checked.execution_hash===packets[i].execution_hash,'SERIES_SOURCE_CHANGED',`${f.id}: inputs changed during execution`);
+      }
       writeJson(resolve(outDir,`${f.id}.plan.json`),f.plan);
-      if (isRenderedOk(entry.status)) for (const name of ['master.png','image.png','master.svg','execution.json','receipt.json']) entry.outputs[name]={ref:`${f.id}/${name}`,sha256:hash(readFileSync(resolve(dir,name)))};
+      if (isRenderedOk(entry.status)) for (const name of outputNames(f)) entry.outputs[name]={ref:`${f.id}/${name}`,sha256:hash(readFileSync(resolve(dir,name)))};
       result.frames.push(entry); save();
     }
     const complete=result.frames.every((f)=>isRenderedOk(f.status));

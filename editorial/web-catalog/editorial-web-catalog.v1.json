@@ -7,6 +7,21 @@
     "transformation": "editorial/profiles/transformation/{id}.json"
   },
   "carousel_series": {
+    "art_direction_fields": [
+      "plan_id",
+      "visual_mode",
+      "focal_subject",
+      "message",
+      "reading_order",
+      "asset",
+      "asset_block_id",
+      "avoid",
+      "protected",
+      "brand_elements",
+      "reuse",
+      "render_method",
+      "native_prompt_strings"
+    ],
     "beats": {
       "max": 60,
       "min": 1
@@ -87,7 +102,7 @@
     }
   },
   "catalog_version": "1.0.0",
-  "content_digest": "sha256:175ec74b65b69d58d548e964efcc5c61e95cab7b44b569ba72c446729cb4ed99",
+  "content_digest": "sha256:161146412669ff42461cc01db28ea7176d7d6ae8fe600349e6dce94c57e44660",
   "field_domains": {
     "call_to_action": {
       "max_length": 200,
@@ -195,7 +210,7 @@
           {
             "path": "editorial/STRUCTURED-VISUAL-EXECUTION.md",
             "role": "core:visual",
-            "sha256": "48a369221d6fa4163953a5a16acccf90bc98de746ee768436078ccb0e0a6e513"
+            "sha256": "d1bd609a106af501160bee0253482213c2dc6c50ce9d79cd778c06742f906218"
           },
           {
             "path": "editorial/constitution.md",
@@ -264,7 +279,7 @@
           {
             "path": "editorial/STRUCTURED-VISUAL-EXECUTION.md",
             "role": "core:visual",
-            "sha256": "48a369221d6fa4163953a5a16acccf90bc98de746ee768436078ccb0e0a6e513"
+            "sha256": "d1bd609a106af501160bee0253482213c2dc6c50ce9d79cd778c06742f906218"
           },
           {
             "path": "editorial/constitution.md",
@@ -420,6 +435,42 @@
         "$defs": {
           "frame": {
             "additionalProperties": false,
+            "allOf": [
+              {
+                "if": {
+                  "properties": {
+                    "render_method": {
+                      "const": "native_card"
+                    }
+                  },
+                  "required": [
+                    "render_method"
+                  ]
+                },
+                "then": {
+                  "required": [
+                    "native_prompt_strings"
+                  ]
+                }
+              },
+              {
+                "if": {
+                  "required": [
+                    "native_prompt_strings"
+                  ]
+                },
+                "then": {
+                  "properties": {
+                    "render_method": {
+                      "const": "native_card"
+                    }
+                  },
+                  "required": [
+                    "render_method"
+                  ]
+                }
+              }
+            ],
             "properties": {
               "asset": {
                 "additionalProperties": false,
@@ -525,6 +576,17 @@
                 "minLength": 1,
                 "type": "string"
               },
+              "native_prompt_strings": {
+                "items": {
+                  "maxLength": 2000,
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "maxItems": 20,
+                "minItems": 1,
+                "type": "array",
+                "uniqueItems": true
+              },
               "protected": {
                 "additionalProperties": false,
                 "properties": {
@@ -566,6 +628,12 @@
                 "minItems": 1,
                 "type": "array",
                 "uniqueItems": true
+              },
+              "render_method": {
+                "enum": [
+                  "compositor",
+                  "native_card"
+                ]
               },
               "reuse": {
                 "items": {
@@ -718,7 +786,7 @@
         "title": "Carousel art direction plan",
         "type": "object"
       },
-      "sha256": "7009186aac373855f6bef88338679e2449a2769fb438377c03858ecbdfc95b85"
+      "sha256": "2782f6bc65ef8cd1653a7adde88f917cbc2b7dd40cf2aa817111f0cee6ed8279"
     },
     "audio-plan": {
       "id": "https://suengj.com/schemas/audio-plan.schema.json",
@@ -2763,6 +2831,104 @@
       },
       "sha256": "ad7af83e042f0d37004d6d7ecd5d472accf8ee4238c6f3c77b0167ad59fded7a"
     },
+    "native-card-review": {
+      "id": "https://suengj.com/schemas/native-card-review.schema.json",
+      "path": "schemas/native-card-review.schema.json",
+      "schema": {
+        "$id": "https://suengj.com/schemas/native-card-review.schema.json",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "additionalProperties": false,
+        "description": "A reviewer-produced, card-hash-bound check for exact embedded strings, logos, and deterministic chrome. This is not visual approval or publication authority.",
+        "properties": {
+          "card_sha256": {
+            "pattern": "^sha256:[a-f0-9]{64}$",
+            "type": "string"
+          },
+          "chrome_match": {
+            "type": "boolean"
+          },
+          "expected_strings": {
+            "items": {
+              "maxLength": 2000,
+              "minLength": 1,
+              "type": "string"
+            },
+            "maxItems": 20,
+            "minItems": 1,
+            "type": "array"
+          },
+          "logo_detected": {
+            "type": "boolean"
+          },
+          "observed_strings": {
+            "items": {
+              "maxLength": 2000,
+              "type": "string"
+            },
+            "maxItems": 50,
+            "type": "array"
+          },
+          "review_id": {
+            "pattern": "^native-card-review:[a-z0-9]+(-[a-z0-9]+)*$",
+            "type": "string"
+          },
+          "reviewed_at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "reviewer": {
+            "additionalProperties": false,
+            "properties": {
+              "id": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "independent": {
+                "const": true
+              },
+              "type": {
+                "enum": [
+                  "human",
+                  "agent"
+                ]
+              }
+            },
+            "required": [
+              "type",
+              "id",
+              "independent"
+            ],
+            "type": "object"
+          },
+          "schema_version": {
+            "const": "1.0.0"
+          },
+          "status": {
+            "enum": [
+              "PASS",
+              "TEXT_MISMATCH",
+              "LOGO_DETECTED",
+              "CHROME_MISMATCH"
+            ]
+          }
+        },
+        "required": [
+          "schema_version",
+          "review_id",
+          "reviewed_at",
+          "card_sha256",
+          "reviewer",
+          "expected_strings",
+          "observed_strings",
+          "logo_detected",
+          "chrome_match",
+          "status"
+        ],
+        "title": "Independent native card review result",
+        "type": "object"
+      },
+      "sha256": "a77c3bd6715e7bfaedbf8153d5dc9724f68946bd60dd17b9fa4ab5d23a0265e4"
+    },
     "render-spec": {
       "id": "https://suengj.com/schemas/render-spec.schema.json",
       "path": "schemas/render-spec.schema.json",
@@ -4157,7 +4323,7 @@
           {
             "path": "editorial/STRUCTURED-VISUAL-EXECUTION.md",
             "role": "core:visual",
-            "sha256": "48a369221d6fa4163953a5a16acccf90bc98de746ee768436078ccb0e0a6e513"
+            "sha256": "d1bd609a106af501160bee0253482213c2dc6c50ce9d79cd778c06742f906218"
           },
           {
             "path": "editorial/SUENGJ-STYLE.md",
@@ -4295,7 +4461,7 @@
           {
             "path": "editorial/STRUCTURED-VISUAL-EXECUTION.md",
             "role": "core:visual",
-            "sha256": "48a369221d6fa4163953a5a16acccf90bc98de746ee768436078ccb0e0a6e513"
+            "sha256": "d1bd609a106af501160bee0253482213c2dc6c50ce9d79cd778c06742f906218"
           },
           {
             "path": "editorial/business-idea-magazine.v1.json",
@@ -4367,7 +4533,7 @@
           {
             "path": "editorial/STRUCTURED-VISUAL-EXECUTION.md",
             "role": "core:visual",
-            "sha256": "48a369221d6fa4163953a5a16acccf90bc98de746ee768436078ccb0e0a6e513"
+            "sha256": "d1bd609a106af501160bee0253482213c2dc6c50ce9d79cd778c06742f906218"
           },
           {
             "path": "editorial/TRENDS-MOA-COMMUNITY-TONE.md",

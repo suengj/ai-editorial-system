@@ -26,6 +26,7 @@ const SCHEMAS = {
   'visual-brief': 'schemas/visual-brief.schema.json',
   'render-spec': 'schemas/render-spec.schema.json',
   'feedback-record': 'schemas/feedback-record.schema.json',
+  'native-card-review': 'schemas/native-card-review.schema.json',
   'video-plan': 'schemas/video-plan.schema.json',
   'narration-script': 'schemas/narration-script.schema.json',
   'tts-contract': 'schemas/tts-contract.schema.json',

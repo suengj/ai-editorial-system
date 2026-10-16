@@ -108,6 +108,14 @@ export function compileBusinessMagazine(packet, evidence, { sourceRef, sourceSha
       }
     } else {
       const direction = artDirection.frames[i], plannedById = new Map(direction.blocks.map(b => [b.id, b]));
+      if (direction.render_method === 'native_card') {
+        requireThat(f.visual === undefined, 'BIZ_ART_DIRECTION_ASSET', `${f.role}: native whole-card bytes attach through native_session at render time`);
+        blocks = direction.reading_order.map(id => {
+          const planned = plannedById.get(id);
+          requireThat(planned?.kind === 'generated' && planned.role === 'native-card', 'BIZ_ART_DIRECTION', `${f.role}: native_card needs one native-card block`);
+          return { id: planned.id, region: planned.region, kind: 'generated', instruction: 'Native whole-card result is attached through native_session; the renderer adds deterministic chrome after intake.' };
+        });
+      } else {
       const textBlocks = direction.blocks.filter(b => b.kind === 'text');
       requireThat(textBlocks.length > 0, 'BIZ_ART_DIRECTION', `${f.role}: at least one text block must carry the packet body`);
       if (direction.layout === 'stack') requireThat(textBlocks.length === 3 && ['principle', 'constraint', 'first-test'].every(role => textBlocks.some(b => b.role === role)), 'BIZ_ART_DIRECTION', 'stack layout requires principle, constraint and first-test text blocks');
@@ -169,6 +177,7 @@ export function compileBusinessMagazine(packet, evidence, { sourceRef, sourceSha
         }
         requireThat(false, 'BIZ_ART_DIRECTION', `${f.role}: unsupported planned block kind ${planned.kind}`);
       });
+      }
       artMeta = {
         plan_id: artDirection.plan_id,
         visual_mode: direction.visual_mode,
@@ -181,6 +190,8 @@ export function compileBusinessMagazine(packet, evidence, { sourceRef, sourceSha
         protected: structuredClone(direction.protected),
         brand_elements: [...direction.brand_elements],
         reuse: [...direction.reuse],
+        ...(direction.render_method !== undefined ? { render_method: direction.render_method } : {}),
+        ...(direction.native_prompt_strings !== undefined ? { native_prompt_strings: [...direction.native_prompt_strings] } : {}),
       };
     }
     frameMap.push({ role: f.role, claim_ids: [...f.claim_ids], case_id: f.case_id ?? null, case_match: citedCase?.match ?? null, case_mode: f.case_mode ?? null, visible_qualification: labels, alt_text: f.alt_text, ...(artMeta ? { art_direction: artMeta } : {}) });
@@ -195,7 +206,9 @@ export function compileBusinessMagazine(packet, evidence, { sourceRef, sourceSha
   const frameLabel = artDirection?.frames.length === 6 ? 'Six ordered frame briefs' : 'Five ordered frame briefs';
   const briefFrames = artDirection ? packet.frames.map(({ visual, ...frame }) => frame) : packet.frames;
   const baseBrief = `${profile.positioning.join(' × ')}\n${JSON.stringify(profile.visual_direction, null, 2)}\n\nBusiness mechanism:\n${JSON.stringify(packet.money, null, 2)}\n\n${frameLabel}:\n${JSON.stringify(briefFrames, null, 2)}\n\nNo invented company photography, product screenshots, logos or numerical results. Source labels and qualifiers must survive every route. Native integrated generation is not proof of the local renderer running.`;
-  const generatedBrief = artDirection ? artDirection.frames.flatMap(direction => direction.blocks.filter(b => b.kind === 'generated').map(() => `\n- ${direction.role}: ${direction.visual_mode}; focal subject: ${direction.focal_subject}. ${direction.message} Asset rationale: ${direction.asset.rationale}. Generate illustration only; never draw copy, numbers, logos, screenshots, product UI, metrics, or citations.`)).join('') : '';
+  const generatedBrief = artDirection ? artDirection.frames.flatMap(direction => direction.blocks.filter(b => b.kind === 'generated').map(() => direction.render_method === 'native_card'
+    ? `\n- ${direction.role}: native whole-card body. Render these exact visible strings in order: ${JSON.stringify(direction.native_prompt_strings)}. Keep the deterministic chrome bands empty; do not add logos, brand marks, plates, signage, or other text.`
+    : `\n- ${direction.role}: ${direction.visual_mode}; focal subject: ${direction.focal_subject}. ${direction.message} Asset rationale: ${direction.asset.rationale}. Generate illustration only; never draw copy, numbers, logos, screenshots, product UI, metrics, or citations.`)).join('') : '';
   const generationBrief = artDirection ? `${baseBrief}\n\nArtDirectionPlan sha256: ${planHash}${generatedBrief ? `\nGenerated-block instructions:${generatedBrief}` : ''}` : baseBrief;
   const sidecar = { profile: profile.id, idea: structuredClone(packet.idea), money: structuredClone(packet.money), evidence: structuredClone(evidence), frames: frameMap, source_ref: sourceRef, source_sha256: sourceSha ?? null, planning: 'PASS', renderer_plan_count: compatibility.frames.length, semantic_review: 'NOT_REVIEWED', source_truth: 'DECLARED_SUPPORT_NOT_INDEPENDENTLY_VERIFIED', visual_review: 'NOT_REVIEWED', publication_authorized: false, ...(artDirection ? { art_direction_sha256: planHash, art_direction_warnings: artFrames.warnings } : {}) };
   return { series, caption, sidecar, generation_brief: generationBrief, ...(artDirection && Object.keys(derivedAssets).length ? { derived_assets: derivedAssets } : {}) };

@@ -111,6 +111,28 @@ await test('schema invalid version and unknown fields fail validation', () => {
   assert(result.errors.some(e => e.path === 'schema_version'));
   assert(result.errors.some(e => e.path === '$.unregistered'));
 });
+await test('native_card requires packet-exact strings and one whole-card asset', () => {
+  const native = structuredClone(plan), f = native.frames[0], source = packet.frames[0];
+  f.render_method = 'native_card';
+  f.native_prompt_strings = [source.headline, source.body];
+  f.blocks = [{ id: 'whole-card', kind: 'generated', role: 'native-card', region: 'art' }];
+  f.reading_order = ['whole-card'];
+  f.asset = { need: true, source: 'generated', rationale: 'A synthetic full-card scene for a local test.' };
+  assert.deepEqual(checked(native).errors, []);
+  const wrongCopy = structuredClone(native); wrongCopy.frames[0].native_prompt_strings[1] += ' altered';
+  assert(checked(wrongCopy).errors.some(e => e.path === 'frames[0].native_prompt_strings'));
+  const missingCopy = structuredClone(native); delete missingCopy.frames[0].native_prompt_strings;
+  assert(checked(missingCopy).errors.some(e => e.path === 'frames[0].native_prompt_strings'));
+  const generatedText = structuredClone(native); generatedText.frames[0].blocks[0].role = 'headline';
+  assert(checked(generatedText).errors.some(e => e.message.includes('generated role must be one of')));
+  const compiled = compileBusinessMagazine(packet, evidence, { sourceRef: '/stable/evidence.json', asOf: day, artDirection: native });
+  assert.equal(compiled.series.frames[0].art_direction.render_method, 'native_card');
+  assert.deepEqual(compiled.series.frames[0].art_direction.native_prompt_strings, native.frames[0].native_prompt_strings);
+  assert.equal(compiled.series.frames[0].blocks.length, 1);
+  assert.equal(compiled.series.frames[0].blocks[0].ref, undefined);
+  assert(compiled.generation_brief.includes('native whole-card body'));
+  assert(compiled.generation_brief.includes(JSON.stringify(native.frames[0].native_prompt_strings)));
+});
 await test('locked recipe invariants cannot be overridden', () => {
   const bad = structuredClone(plan); bad.brand.locked_invariants.pop();
   assert(checked(bad).errors.some(e => e.path === 'brand.locked_invariants'));
