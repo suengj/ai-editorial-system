@@ -103,7 +103,7 @@
     }
   },
   "catalog_version": "1.0.0",
-  "content_digest": "sha256:8c4a03a879b12f5270051ebdf6e2a3a2e15834243776928dede527743cda92e9",
+  "content_digest": "sha256:47ef8f9568384653390bfab91322a5edb17345f82b7f273b38351554b15016c3",
   "field_domains": {
     "call_to_action": {
       "max_length": 200,
@@ -1452,6 +1452,74 @@
       "path": "schemas/audio-plan-v2.schema.json",
       "schema": {
         "$defs": {
+          "alignment_evidence": {
+            "additionalProperties": false,
+            "properties": {
+              "audio_ref": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "audio_sha256": {
+                "pattern": "^[a-f0-9]{64}$",
+                "type": "string"
+              },
+              "evidence_ref": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "segments": {
+                "items": {
+                  "$ref": "#/$defs/alignment_segment"
+                },
+                "minItems": 1,
+                "type": "array"
+              },
+              "stage_result": {
+                "$ref": "#/$defs/engine_stage_result"
+              }
+            },
+            "required": [
+              "evidence_ref",
+              "audio_ref",
+              "audio_sha256",
+              "stage_result",
+              "segments"
+            ],
+            "type": "object"
+          },
+          "alignment_segment": {
+            "additionalProperties": false,
+            "properties": {
+              "measured_end_seconds": {
+                "minimum": 0,
+                "type": "number"
+              },
+              "measured_start_seconds": {
+                "minimum": 0,
+                "type": "number"
+              },
+              "scene_id": {
+                "pattern": "^scene-[a-z0-9]+(-[a-z0-9]+)*$",
+                "type": "string"
+              },
+              "segment_id": {
+                "pattern": "^seg-[a-z0-9]+(-[a-z0-9]+)*$",
+                "type": "string"
+              },
+              "spoken_text_sha256": {
+                "pattern": "^[a-f0-9]{64}$",
+                "type": "string"
+              }
+            },
+            "required": [
+              "segment_id",
+              "scene_id",
+              "spoken_text_sha256",
+              "measured_start_seconds",
+              "measured_end_seconds"
+            ],
+            "type": "object"
+          },
           "canonical_script_check": {
             "additionalProperties": false,
             "properties": {
@@ -1488,7 +1556,10 @@
             "properties": {
               "alignment_evidence_ref": {
                 "minLength": 1,
-                "type": "string"
+                "type": [
+                  "string",
+                  "null"
+                ]
               },
               "end_seconds": {
                 "minimum": 0,
@@ -1509,11 +1580,17 @@
               },
               "measured_end_seconds": {
                 "minimum": 0,
-                "type": "number"
+                "type": [
+                  "number",
+                  "null"
+                ]
               },
               "measured_start_seconds": {
                 "minimum": 0,
-                "type": "number"
+                "type": [
+                  "number",
+                  "null"
+                ]
               },
               "protected_exact_words": {
                 "items": {
@@ -1535,9 +1612,6 @@
               "scene_id",
               "start_seconds",
               "end_seconds",
-              "measured_start_seconds",
-              "measured_end_seconds",
-              "alignment_evidence_ref",
               "exact_text",
               "lines",
               "protected_exact_words"
@@ -1547,6 +1621,9 @@
           "captions": {
             "additionalProperties": false,
             "properties": {
+              "alignment_evidence": {
+                "$ref": "#/$defs/alignment_evidence"
+              },
               "alignment_status": {
                 "enum": [
                   "not_yet",
@@ -1622,9 +1699,179 @@
             ],
             "type": "object"
           },
+          "engine_render_receipt": {
+            "additionalProperties": false,
+            "properties": {
+              "aspect": {
+                "enum": [
+                  "16:9",
+                  "9:16"
+                ]
+              },
+              "codec": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "duration_s": {
+                "minimum": 0,
+                "type": "number"
+              },
+              "fps": {
+                "minimum": 0,
+                "type": "number"
+              },
+              "has_audio": {
+                "type": "boolean"
+              },
+              "height": {
+                "minimum": 1,
+                "type": "integer"
+              },
+              "job_id": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "pixel_format": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "schema_version": {
+                "const": "1.0.0"
+              },
+              "sha256": {
+                "pattern": "^[a-f0-9]{64}$",
+                "type": "string"
+              },
+              "thumbnail_ref": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "video_ref": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "width": {
+                "minimum": 1,
+                "type": "integer"
+              }
+            },
+            "required": [
+              "schema_version",
+              "job_id",
+              "aspect",
+              "video_ref",
+              "thumbnail_ref",
+              "sha256",
+              "duration_s",
+              "fps",
+              "width",
+              "height",
+              "codec",
+              "pixel_format"
+            ],
+            "type": "object"
+          },
+          "engine_stage_error": {
+            "additionalProperties": false,
+            "properties": {
+              "code": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "message": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "retryable": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "code",
+              "message",
+              "retryable"
+            ],
+            "type": "object"
+          },
+          "engine_stage_result": {
+            "additionalProperties": false,
+            "description": "shorts_gen StageResult schema 1.0.0, scoped to completed qa_repair alignment verification.",
+            "properties": {
+              "cache_hit": {
+                "type": "boolean"
+              },
+              "elapsed_s": {
+                "minimum": 0,
+                "type": "number"
+              },
+              "errors": {
+                "items": {
+                  "$ref": "#/$defs/engine_stage_error"
+                },
+                "type": "array"
+              },
+              "estimated_cost": {
+                "minimum": 0,
+                "type": "number"
+              },
+              "input_hash": {
+                "pattern": "^[a-f0-9]{64}$",
+                "type": "string"
+              },
+              "output_refs": {
+                "items": {
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              "receipts": {
+                "items": {
+                  "$ref": "#/$defs/engine_render_receipt"
+                },
+                "type": "array"
+              },
+              "schema_version": {
+                "const": "1.0.0"
+              },
+              "stage": {
+                "const": "qa_repair"
+              },
+              "status": {
+                "const": "done"
+              }
+            },
+            "required": [
+              "schema_version",
+              "stage",
+              "status",
+              "input_hash",
+              "output_refs",
+              "errors",
+              "receipts",
+              "cache_hit",
+              "elapsed_s",
+              "estimated_cost"
+            ],
+            "type": "object"
+          },
           "measurement": {
             "additionalProperties": false,
             "properties": {
+              "audio_ref": {
+                "minLength": 1,
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "audio_sha256": {
+                "pattern": "^[a-f0-9]{64}$",
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
               "evidence_ref": {
                 "type": [
                   "string",
@@ -1914,7 +2161,7 @@
         "title": "Video Audio Plan v2",
         "type": "object"
       },
-      "sha256": "fc0e9b2a69f93fc538ac2cb995f7e9619c2f601bb3f161908fa0047a6c9f5506"
+      "sha256": "69a8e109833fb9fd7d3f5fb2396985ea3a6a1a2c7fe6bf5e180c831c3c661eb0"
     },
     "bgm-catalog-v2": {
       "id": "https://suengj.com/schemas/bgm-catalog-v2.schema.json",
@@ -7026,15 +7273,15 @@
     "core": [
       {
         "path": "editorial/AUDIO-SCRIPT.md",
-        "sha256": "3bd6791d2cba2b554e9b9974536102f48311ae82f183ce39db622a8249dabcab"
+        "sha256": "341dfa6f4c597807fde2dc97710e6690e2e1ee8ad8b6c945b55edff942473628"
       },
       {
         "path": "editorial/VIDEO-ENGINE-MAPPING.md",
-        "sha256": "3768eaed88f33d8f0c163ba0bb8fd05b945b4cb76757a0d4084f36361df04086"
+        "sha256": "617fec42d436007c647adeea8c9c043b76ca32dde4ee2fe8626c640b184684f0"
       },
       {
         "path": "editorial/VIDEO-STORYBOARD.md",
-        "sha256": "b1a0238b39fc8305a89c2a2380f1cb5dc129d4126286485cc4aae634996b134d"
+        "sha256": "29050b71ca4a2a2057a77f24a648f44486fd7fe5000c3b841a1a42ff2013b483"
       },
       {
         "path": "editorial/VISUAL-STORY-COMPILATION.md",

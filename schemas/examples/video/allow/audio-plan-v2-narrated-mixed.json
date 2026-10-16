@@ -73,7 +73,9 @@
     "provider_status": "configured",
     "measured_audio_duration_seconds": 45,
     "measured_at": "2026-10-16T00:00:00Z",
-    "evidence_ref": "fixture://audio-measurement/mixed"
+    "evidence_ref": "fixture://audio-measurement/mixed",
+    "audio_ref": "fixture://audio/mixed",
+    "audio_sha256": "f0a45cd218271ac9864eca28455efee1fd4716433bc3a73f18581103188fa42e"
   },
   "reconciliation": {
     "phase": "post_measurement",
@@ -88,6 +90,28 @@
     "max_lines": 2,
     "safe_zone": "caption-safe",
     "alignment_status": "pass",
+    "alignment_evidence": {
+      "evidence_ref": "fixture://engine/qa/alignment/mixed.json",
+      "audio_ref": "fixture://audio/mixed",
+      "audio_sha256": "f0a45cd218271ac9864eca28455efee1fd4716433bc3a73f18581103188fa42e",
+      "stage_result": {
+        "schema_version": "1.0.0",
+        "stage": "qa_repair",
+        "status": "done",
+        "input_hash": "281c3c3fcfa30e10d9b5a3056d01e566c944f2fe377e305d16a8a47a716be75f",
+        "output_refs": ["fixture://engine/qa/alignment/mixed.json"],
+        "errors": [],
+        "receipts": [],
+        "cache_hit": false,
+        "elapsed_s": 0.25,
+        "estimated_cost": 0
+      },
+      "segments": [
+        { "segment_id": "seg-1", "scene_id": "scene-1", "spoken_text_sha256": "daab378ae03497c71b547347345e015dbdf52fa0627a68611e95bfb52fa0a7a0", "measured_start_seconds": 0, "measured_end_seconds": 15 },
+        { "segment_id": "seg-2", "scene_id": "scene-2", "spoken_text_sha256": "df56fce7b47dcdc2fddc69ccfd9b655731bf25911555a938fbb168878253bd29", "measured_start_seconds": 15, "measured_end_seconds": 30 },
+        { "segment_id": "seg-3", "scene_id": "scene-3", "spoken_text_sha256": "30b89ca88a428e69431ea8aceca022b8d39bfc8c4d53e1418cd4f8bc3ce3f6ac", "measured_start_seconds": 30, "measured_end_seconds": 45 }
+      ]
+    },
     "segments": [
       {
         "scene_id": "scene-1",
@@ -102,7 +126,7 @@
         ],
         "measured_start_seconds": 0,
         "measured_end_seconds": 15,
-        "alignment_evidence_ref": "fixture://caption-alignment/scene-1"
+        "alignment_evidence_ref": "fixture://engine/qa/alignment/mixed.json"
       },
       {
         "scene_id": "scene-2",
@@ -115,7 +139,7 @@
         "protected_exact_words": [],
         "measured_start_seconds": 15,
         "measured_end_seconds": 30,
-        "alignment_evidence_ref": "fixture://caption-alignment/scene-2"
+        "alignment_evidence_ref": "fixture://engine/qa/alignment/mixed.json"
       },
       {
         "scene_id": "scene-3",
@@ -130,7 +154,7 @@
         ],
         "measured_start_seconds": 30,
         "measured_end_seconds": 45,
-        "alignment_evidence_ref": "fixture://caption-alignment/scene-3"
+        "alignment_evidence_ref": "fixture://engine/qa/alignment/mixed.json"
       }
     ]
   },

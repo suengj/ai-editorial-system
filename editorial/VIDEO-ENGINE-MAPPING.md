@@ -1,10 +1,13 @@
 # AES video contracts to shorts_gen engine mapping
 
-AES owns the source evidence, locked facts and rights, family profile, semantic
-beat order, scene/layer meaning, narration and QA requirements. The
-`shorts_gen` engine executes production stages from its version 1.0.0 request
-and evidence contracts. This mapping is an adapter guide; it does not claim
-that every AES field is already a first-class engine field.
+AES owns source evidence, locked facts and rights, family profile, semantic
+beat order, scene/layer meaning, narration and QA requirements. AES validators
+enforce contract structure, lifecycle rules, and evidence binding. The
+`shorts_gen` engine executes production and runtime QA stages from its version
+1.0.0 request and evidence contracts. Runtime audio/alignment measurements
+belong to engine QA; AES does not reproduce them. This mapping is an adapter
+guide and does not claim that every AES field is already a first-class engine
+field.
 
 ## Versioning
 
@@ -25,13 +28,16 @@ a separate 2.0.0 video plan.
 
 ## Evidence, rights, and scenes
 
-Protected-value spans bind `source_sha256`, an extraction artifact
-`extraction_sha256`, byte offsets, the exact-text `span_sha256`, and a
-content-addressed `evidence_ref`. For repo-local text and Markdown, the
-validator reads the source bytes and verifies both hashes and the exact byte
+Protected-value and evidence spans bind `source_sha256`, an extraction
+artifact `extraction_sha256`, byte offsets, the exact-text `span_sha256`, and a
+content-addressed `evidence_ref`. Resolver receipts are keyed by the full
+source ID/ref and SHA, span ID, source SHA, extraction SHA, span SHA, byte range,
+and exact text. Duplicate source or span IDs are rejected; changing any bound
+value makes a prior receipt stale. For repo-local text and Markdown, the
+validator reads source bytes and verifies both hashes and the exact byte
 slice. External or non-text sources require a trusted extraction resolver;
-without resolved bytes, protected values stay unverified and rendered audio or
-QA `PASS` is blocked.
+without a matching receipt, protected values stay unverified and rendered
+audio or QA `PASS` is blocked.
 
 Narrated v2 turns also carry `evidence_span_ids`. Each ID must resolve to a
 separate byte-verified `source_evidence.sources[].evidence_spans[]` excerpt,
@@ -58,8 +64,8 @@ cannot be justified by a broad source reference.
 |---|---|---|
 | Narration script reference and canonical spoken turns | `script_ref`, scene text passed to `tts_captions` | Preserve AES `beat_id` and `scene_id` beside each text span. The engine's current TTS stage joins scene text; it does not yet consume the full AES narration-script structure. |
 | Pre-TTS canonical script check | `script` / `tts_captions` stage status | Do not start TTS until the AES check passes. A stage `DONE` alone is not proof of that editorial gate. |
-| Measured audio duration and post-measurement reconciliation | TTS output duration and `StageResult` evidence | Record the measured duration, chosen reconciliation action, affected scene IDs, and evidence in the AES audio plan. Extend or retime scene timing locally; never compress long narration to fit. |
-| Caption exact text, protected words, line count, safe zone, measured start/end, alignment evidence | TTS caption artifact plus AES audio-plan/QA evidence | Each caption records measured spoken-segment boundaries and an evidence reference; caption boundaries must agree within 0.1 seconds. The engine currently creates SRT from scene text and proportional scene weights. The adapter must retain AES protected-word and alignment checks and report failures. |
+| Measured audio duration and post-measurement reconciliation | TTS output duration and `StageResult` evidence | Before rendering, the audio plan may be `planned` with an unconfigured provider and null measurements. After render, engine QA measures duration; record the measurement, chosen reconciliation action, affected scene IDs, and evidence in the AES audio plan. Extend or retime affected scene timing locally, or revise the canonical script within verified evidence; never compress long narration to fit. |
+| Caption exact text, protected words, line count, safe zone, measured start/end, alignment evidence | TTS caption artifact plus `qa_repair` `StageResult` | Captions default on with narration, use one or two semantic lines, and preserve protected exact words in the declared safe zone. A planned document may omit measured boundaries. `alignment_status: pass` requires a completed shorts_gen QA `StageResult`, its output evidence ref, the rendered audio ref and SHA-256, and per-segment scene/segment IDs, spoken-text SHA-256, and measured boundaries. AES binds those fields to the plan and verifies IDs, hashes, and duration bounds; the engine QA stage performs ffprobe/ebur128/SRT runtime checks. A self-asserted status or arbitrary URI is not alignment evidence. |
 | BGM catalog track → `shorts_gen.bgm.stage.BgmTrack` | `track_id`, `title`, `artist`, `master_rights_owner`, `composition_rights_owner`, `file`, `version`, `sha256`, `license`, `attribution`, `platforms`, `monetization_allowed`, `isrc`, `content_id_status`, `self_claim`, `whitelist`, `mood`, `tempo_bpm`, `energy`, `loop_start_s`, `loop_end_s` | Construct the engine dataclass with exactly these names; its constructor rejects extra keys. Copy identity, ownership, file, hash, license, attribution, platform, monetization, ISRC, Content ID, self-claim, mood, tempo, and energy values unchanged. Convert `loop_points.start_seconds` → `loop_start_s` and `loop_points.end_seconds` → `loop_end_s`. Convert AES whitelist entries `{platform, evidence_ref}` into the engine's `tuple[str, ...]` platform strings; preserve the full original platform/evidence pairs in request provenance because the engine field cannot retain their evidence refs. AES-only `rights_status`, `rights_evidence_ref`, and `vocal` are deliberately omitted from the constructor and retained in AES provenance/QA evidence. No other AES catalog keys are passed through. Unknown owners, license, monetization, platform, Content ID, or self-claim state must not be promoted to safe. |
 | BGM modes and narration ducking | `bgm` stage and match request | Preserve `off`, `owner_library`, `licensed_library`, `selected_track`, or `auto_match`. An automatic match is eligible only after explicit platform and monetization rights pass. Ducking defaults on with narration. |
 
@@ -87,6 +93,15 @@ that check and its evidence, in addition to the factual, rights, and approval
 checks. Measured render duration must match the plan within one second; BGM
 mode evidence must match the plan and loudness, ducking, and clipping values
 must use finite values and their declared units.
+
+The pre-TTS canonical script check is a separate lifecycle gate from rendered
+audio QA. A pre-TTS pass verifies canonical script structure and source-bound
+text; it does not measure duration or caption alignment. Post-render timing
+reconciliation is a separate decision that may adjust affected scene timing
+locally. The AES validator checks the engine `StageResult` schema and binds its
+alignment evidence to the audio and canonical segment hashes; it does not run
+audio measurement or independently certify the physical media file. The
+engine's QA stage owns those runtime checks and emits the evidence receipt.
 
 The three cost, rights, and approval gates remain required even if an engine
 request omits publication intent. Engine publication/package fields are

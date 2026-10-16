@@ -31,6 +31,11 @@ or quotation. Keep every beat and visual layer linked to its declared source
 and rights record. A source-only beat may remain silent and may have no
 on-screen text; do not add narration or text merely to fill a renderer field.
 
+For `educational-summary`, use Hook → Concept → Example → Worked solution →
+Key takeaway by default. Change that order only with an explicit source-order
+exception and rationale. The engine maps this semantic plan but does not choose
+the order itself.
+
 Use the article and Visual Story Plan path below when an approved article
 package exists. Use the source-evidence envelope directly when it does not.
 Article-specific rules in this document apply to article-derived video; the

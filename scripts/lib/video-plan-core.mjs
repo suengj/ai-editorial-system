@@ -69,9 +69,10 @@ export const CODES = Object.freeze({
   SOURCE_MISSING: 'source-missing', RIGHTS_BLOCKED: 'rights-blocked', EDUCATIONAL_ORDER: 'educational-order',
   NARRATION_REF: 'narration-reference-missing', CAPTIONS_REQUIRED: 'captions-required', SCENE_MISMATCH: 'scene-mismatch',
   CONTEXT_MISSING: 'referenced-video-plan-context-required', PROTECTED_VALUE_UNVERIFIED: 'protected-value-not-source-verified', PROTECTED_TEXT_MISMATCH: 'protected-value-text-mismatch',
+  DUPLICATE_SOURCE_ID: 'duplicate-source-id', DUPLICATE_SPAN_ID: 'duplicate-span-id',
   AUDIO_SCRIPT_MISMATCH: 'audio-script-mismatch',
   LAYER_GEOMETRY: 'layer-geometry-invalid',
-  CAPTION_MISMATCH: 'caption-mismatch', PRE_TTS_GATE: 'pre-tts-script-check-required', MEASUREMENT_GATE: 'audio-measurement-not-reconciled',
+  CAPTION_MISMATCH: 'caption-mismatch', ENGINE_QA_EVIDENCE: 'engine-qa-evidence-invalid', PRE_TTS_GATE: 'pre-tts-script-check-required', MEASUREMENT_GATE: 'audio-measurement-not-reconciled',
   PROVIDER_NOT_CONFIGURED: 'provider-not-configured', BGM_UNSAFE: 'bgm-unsafe-selection', BGM_DUCKING: 'bgm-ducking-required',
   QA_RESULT: 'qa-result-inconsistent', QA_EVIDENCE: 'qa-evidence-missing', QA_GATE: 'qa-gate-disabled',
 });
@@ -104,7 +105,21 @@ function evidenceSpanReceiptIsBound(source, span) {
     && span.evidence_ref === evidenceRef;
 }
 
-const protectedSpanKey = (source, span) => `${source.sha256}:${span.span_sha256}`;
+// Resolver results are bound to the complete source extraction receipt. An ID
+// alone is not authority: duplicate IDs or a changed byte range must not reuse
+// a receipt obtained for a different span.
+const spanReceiptKey = (source, span) => JSON.stringify([
+  source.source_id,
+  source.source_ref,
+  source.sha256,
+  span.span_id,
+  span.source_sha256,
+  span.extraction_sha256,
+  span.span_sha256,
+  span.byte_start,
+  span.byte_end,
+  span.exact_text,
+]);
 
 export function resolveLocalSourceEvidence(plan) {
   const verifiedProtectedSpans = new Set();
@@ -121,12 +136,12 @@ export function resolveLocalSourceEvidence(plan) {
       for (const span of source.protected_spans ?? []) {
         if (!protectedSpanReceiptIsBound(source, span) || span.extraction_sha256 !== sourceHash) continue;
         if (bytes.subarray(span.byte_start, span.byte_end).toString('utf8') !== span.exact_text) continue;
-        verifiedProtectedSpans.add(protectedSpanKey(source, span));
+        verifiedProtectedSpans.add(spanReceiptKey(source, span));
       }
       for (const span of source.evidence_spans ?? []) {
         if (!evidenceSpanReceiptIsBound(source, span) || span.extraction_sha256 !== sourceHash) continue;
         if (bytes.subarray(span.byte_start, span.byte_end).toString('utf8') !== span.exact_text) continue;
-        verifiedEvidenceSpans.add(`${source.source_id}:${span.span_id}`);
+        verifiedEvidenceSpans.add(spanReceiptKey(source, span));
       }
     } catch {
       // Unresolvable references remain unverified; callers decide whether that blocks the requested status.
@@ -138,8 +153,8 @@ export function resolveLocalSourceEvidence(plan) {
 
 function isProtectedSpanResolved(source, span, context) {
   const verified = context.verifiedProtectedSpans;
-  return verified instanceof Set ? verified.has(protectedSpanKey(source, span))
-    : Array.isArray(verified) && verified.includes(protectedSpanKey(source, span));
+  return verified instanceof Set ? verified.has(spanReceiptKey(source, span))
+    : Array.isArray(verified) && verified.includes(spanReceiptKey(source, span));
 }
 
 function sourceBoundSpan(plan, sourceRef, exactText, context, kinds = null) {
@@ -202,7 +217,12 @@ function validateVideoPlanV2(doc, issues, context) {
   }
 
   const sourceRefs = new Set(doc.source_evidence.sources.flatMap((s) => [s.source_id, s.source_ref]));
-  if (sourceRefs.size !== doc.source_evidence.sources.length * 2) issues.push(issueFor(CODES.SOURCE_MISSING, doc, 'source identifiers and source references must be unique'));
+  if (sourceRefs.size !== doc.source_evidence.sources.length * 2) issues.push(issueFor(CODES.DUPLICATE_SOURCE_ID, doc, 'source identifiers and source references must be unique'));
+  const spanIds = new Set();
+  for (const source of doc.source_evidence.sources) for (const span of [...(source.protected_spans ?? []), ...(source.evidence_spans ?? [])]) {
+    if (spanIds.has(span.span_id)) issues.push(issueFor(CODES.DUPLICATE_SPAN_ID, doc, `source span id ${span.span_id} is repeated`));
+    spanIds.add(span.span_id);
+  }
   for (const source of doc.source_evidence.sources) for (const span of source.protected_spans ?? []) {
     if (!protectedSpanReceiptIsBound(source, span) || !isProtectedSpanResolved(source, span, context)) {
       issues.push(issueFor(CODES.PROTECTED_VALUE_UNVERIFIED, doc, `protected source span ${span.span_id} has no locally verified source/extraction byte match or trusted resolver receipt`));
@@ -210,7 +230,7 @@ function validateVideoPlanV2(doc, issues, context) {
   }
   for (const source of doc.source_evidence.sources) for (const span of source.evidence_spans ?? []) {
     const verified = context.verifiedEvidenceSpans ?? context.verifiedProtectedSpans?.verifiedEvidenceSpans;
-    if (!evidenceSpanReceiptIsBound(source, span) || !(verified instanceof Set && verified.has(`${source.source_id}:${span.span_id}`))) {
+    if (!evidenceSpanReceiptIsBound(source, span) || !(verified instanceof Set && verified.has(spanReceiptKey(source, span)))) {
       issues.push(issueFor(CODES.PROTECTED_VALUE_UNVERIFIED, doc, `source evidence span ${span.span_id} has no locally verified source/extraction byte match or trusted resolver receipt`));
     }
   }
@@ -310,7 +330,7 @@ function hasCitedEvidenceText(plan, sourceRef, spanIds, exactText, context) {
   const verified = context.verifiedEvidenceSpans ?? context.verifiedProtectedSpans?.verifiedEvidenceSpans;
   return plan.source_evidence.sources.some((source) => [source.source_id, source.source_ref].includes(sourceRef)
     && (source.evidence_spans ?? []).some((span) => spanIds.includes(span.span_id) && exactText === span.exact_text
-      && evidenceSpanReceiptIsBound(source, span) && verified instanceof Set && verified.has(`${source.source_id}:${span.span_id}`)));
+      && evidenceSpanReceiptIsBound(source, span) && verified instanceof Set && verified.has(spanReceiptKey(source, span))));
 }
 
 function validateNarrationV2(doc, issues, context) {
@@ -331,7 +351,7 @@ function validateNarrationV2(doc, issues, context) {
         && candidate.evidence_spans?.some((span) => span.span_id === spanId));
       const span = source?.evidence_spans?.find((candidate) => candidate.span_id === spanId);
       return source && span && evidenceSpanReceiptIsBound(source, span) && verifiedEvidence instanceof Set
-        && verifiedEvidence.has(`${source.source_id}:${span.span_id}`) ? span : null;
+        && verifiedEvidence.has(spanReceiptKey(source, span)) ? span : null;
     }).filter(Boolean) : [];
     const citedText = citedSpans.map((span) => span.exact_text).join(' ');
     if (!citedSpans.length || citedSpans.length !== turn.evidence_span_ids.length
@@ -440,6 +460,63 @@ function validateAudioPlanV2(doc, issues, context) {
   if (doc.status === 'complete' && (doc.measurement.measured_audio_duration_seconds === null || !knownRightsText(doc.measurement.evidence_ref) || ['pending', 'blocked'].includes(doc.reconciliation.action) || doc.captions.alignment_status !== 'pass')) {
     issues.push(issueFor(CODES.MEASUREMENT_GATE, doc, 'complete audio requires a measured duration, resolved reconciliation, and passing caption alignment'));
   }
+  const alignmentStatus = doc.captions.alignment_status;
+  const alignmentEvidence = doc.captions.alignment_evidence;
+  if (alignmentStatus !== 'not_yet' && !alignmentEvidence) {
+    issues.push(issueFor(CODES.ENGINE_QA_EVIDENCE, doc, 'completed caption alignment requires a shorts_gen qa_repair StageResult evidence record'));
+  }
+  if (alignmentStatus === 'pass' && !rendered) {
+    issues.push(issueFor(CODES.ENGINE_QA_EVIDENCE, doc, 'caption alignment cannot pass before the audio has been rendered'));
+  }
+  const alignmentBySegment = new Map();
+  if (alignmentEvidence) {
+    const stageResult = alignmentEvidence.stage_result;
+    if (!stageResult.output_refs.includes(alignmentEvidence.evidence_ref)) {
+      issues.push(issueFor(CODES.ENGINE_QA_EVIDENCE, doc, 'alignment evidence_ref must be an output of the shorts_gen QA StageResult'));
+    }
+    if (alignmentStatus === 'pass' && stageResult.errors.length) {
+      issues.push(issueFor(CODES.ENGINE_QA_EVIDENCE, doc, 'passing alignment evidence cannot include engine QA StageResult errors'));
+    }
+    if (stageResult.receipts.some((receipt) => receipt.duration_s <= 0 || receipt.fps <= 0)) {
+      issues.push(issueFor(CODES.ENGINE_QA_EVIDENCE, doc, 'engine render receipts must report positive duration and frame rate'));
+    }
+    if (doc.measurement.audio_ref !== alignmentEvidence.audio_ref || doc.measurement.audio_sha256 !== alignmentEvidence.audio_sha256) {
+      issues.push(issueFor(CODES.ENGINE_QA_EVIDENCE, doc, 'alignment evidence must bind the exact measured audio ref and SHA-256'));
+    }
+    if (doc.measurement.measured_audio_duration_seconds === null || doc.measurement.measured_audio_duration_seconds <= 0) {
+      issues.push(issueFor(CODES.ENGINE_QA_EVIDENCE, doc, 'engine alignment evidence requires a positive measured audio duration'));
+    }
+    const audioSegments = new Map();
+    for (const segment of doc.segments) {
+      if (audioSegments.has(segment.segment_id)) issues.push(issueFor(CODES.ENGINE_QA_EVIDENCE, doc, `audio segment id ${segment.segment_id} is repeated`));
+      audioSegments.set(segment.segment_id, segment);
+    }
+    for (const measured of alignmentEvidence.segments) {
+      if (alignmentBySegment.has(measured.segment_id)) issues.push(issueFor(CODES.ENGINE_QA_EVIDENCE, doc, `alignment evidence repeats segment ${measured.segment_id}`));
+      alignmentBySegment.set(measured.segment_id, measured);
+      const segment = audioSegments.get(measured.segment_id);
+      const scene = plan?.scenes.find((candidate) => candidate.scene_id === measured.scene_id);
+      if (!segment || segment.scene_id !== measured.scene_id || !scene) {
+        issues.push(issueFor(CODES.SCENE_MISMATCH, doc, `engine alignment evidence references unknown or mismatched segment/scene ${measured.segment_id}/${measured.scene_id}`));
+        continue;
+      }
+      if (measured.spoken_text_sha256 !== segment.narration_span_hash
+        || segment.narration_span_hash !== sha256(Buffer.from(segment.spoken_text, 'utf8'))) {
+        issues.push(issueFor(CODES.ENGINE_QA_EVIDENCE, doc, `engine alignment evidence for ${measured.segment_id} is not bound to the canonical spoken-text hash`));
+      }
+      const duration = doc.measurement.measured_audio_duration_seconds;
+      if (measured.measured_start_seconds >= measured.measured_end_seconds
+        || measured.measured_start_seconds < scene.timing.start_seconds
+        || measured.measured_end_seconds > scene.timing.end_seconds
+        || (duration !== null && measured.measured_end_seconds > duration)) {
+        issues.push(issueFor(CODES.ENGINE_QA_EVIDENCE, doc, `engine measured boundaries for ${measured.segment_id} fall outside its scene or measured audio duration`));
+      }
+    }
+    if (alignmentEvidence.segments.length !== doc.segments.length
+      || doc.segments.some((segment) => !alignmentBySegment.has(segment.segment_id))) {
+      issues.push(issueFor(CODES.ENGINE_QA_EVIDENCE, doc, 'engine alignment evidence must cover every canonical audio segment exactly once'));
+    }
+  }
   if (rendered) {
     const segmentScenes = doc.segments.map((segment) => segment.scene_id);
     const captionScenes = doc.captions.segments.map((caption) => caption.scene_id);
@@ -453,15 +530,36 @@ function validateAudioPlanV2(doc, issues, context) {
     const scene = plan?.scenes.find((s) => s.scene_id === caption.scene_id);
     if (segment && caption.exact_text !== segment.spoken_text) issues.push(issueFor(CODES.CAPTION_MISMATCH, doc, `caption text for ${caption.scene_id} does not match canonical spoken text`));
     if (caption.start_seconds >= caption.end_seconds) issues.push(issueFor(CODES.CAPTION_MISMATCH, doc, `caption timing for ${caption.scene_id} is invalid`));
-    const alignmentToleranceSeconds = 0.1;
-    if (caption.measured_start_seconds >= caption.measured_end_seconds || !knownRightsText(caption.alignment_evidence_ref)
-      || Math.abs(caption.start_seconds - caption.measured_start_seconds) > alignmentToleranceSeconds
-      || Math.abs(caption.end_seconds - caption.measured_end_seconds) > alignmentToleranceSeconds) {
-      issues.push(issueFor(CODES.CAPTION_MISMATCH, doc, `caption timing for ${caption.scene_id} must align with measured spoken-segment boundaries within ${alignmentToleranceSeconds} second and cite measurement evidence`));
+    const hasAlignmentMeasurement = caption.measured_start_seconds != null
+      || caption.measured_end_seconds != null || caption.alignment_evidence_ref != null;
+    if (alignmentStatus !== 'not_yet' || hasAlignmentMeasurement) {
+      const measuredStart = caption.measured_start_seconds;
+      const measuredEnd = caption.measured_end_seconds;
+      const measuredEvidence = alignmentBySegment.get(segment?.segment_id);
+      if (typeof measuredStart !== 'number' || typeof measuredEnd !== 'number' || !knownRightsText(caption.alignment_evidence_ref)) {
+        issues.push(issueFor(CODES.ENGINE_QA_EVIDENCE, doc, `caption ${caption.scene_id} must carry measured boundaries and an engine QA evidence reference once alignment is recorded`));
+      } else if (!alignmentEvidence || caption.alignment_evidence_ref !== alignmentEvidence.evidence_ref
+        || !measuredEvidence || measuredEvidence.scene_id !== caption.scene_id
+        || measuredEvidence.measured_start_seconds !== measuredStart || measuredEvidence.measured_end_seconds !== measuredEnd) {
+        issues.push(issueFor(CODES.ENGINE_QA_EVIDENCE, doc, `caption ${caption.scene_id} measurements do not match the referenced engine QA evidence for its spoken segment`));
+      }
+      const duration = doc.measurement.measured_audio_duration_seconds;
+      if (typeof measuredStart === 'number' && typeof measuredEnd === 'number'
+        && (measuredStart >= measuredEnd || (scene && (measuredStart < scene.timing.start_seconds || measuredEnd > scene.timing.end_seconds))
+          || (duration !== null && measuredEnd > duration))) {
+        issues.push(issueFor(CODES.ENGINE_QA_EVIDENCE, doc, `caption ${caption.scene_id} measured boundaries fall outside its scene or measured audio duration`));
+      }
+      if (alignmentStatus === 'pass' && typeof measuredStart === 'number' && typeof measuredEnd === 'number') {
+        const alignmentToleranceSeconds = 0.1;
+        if (Math.abs(caption.start_seconds - measuredStart) > alignmentToleranceSeconds
+          || Math.abs(caption.end_seconds - measuredEnd) > alignmentToleranceSeconds) {
+          issues.push(issueFor(CODES.CAPTION_MISMATCH, doc, `caption timing for ${caption.scene_id} must align with engine-measured spoken-segment boundaries within ${alignmentToleranceSeconds} second`));
+        }
+      }
     }
     if (scene && (caption.start_seconds < scene.timing.start_seconds || caption.end_seconds > scene.timing.end_seconds)) issues.push(issueFor(CODES.CAPTION_MISMATCH, doc, `caption timing for ${caption.scene_id} falls outside its scene bounds`));
     const measured = doc.measurement.measured_audio_duration_seconds;
-    if (measured !== null && caption.end_seconds > measured) issues.push(issueFor(CODES.CAPTION_MISMATCH, doc, `caption timing for ${caption.scene_id} exceeds measured audio duration`));
+    if (measured !== null && caption.end_seconds > measured && alignmentStatus !== 'not_yet') issues.push(issueFor(CODES.CAPTION_MISMATCH, doc, `caption timing for ${caption.scene_id} exceeds measured audio duration`));
     if (caption.lines.join(' ') !== caption.exact_text) issues.push(issueFor(CODES.CAPTION_MISMATCH, doc, `caption lines for ${caption.scene_id} do not reconstruct exact_text`));
     for (const word of caption.protected_exact_words) if (!caption.exact_text.includes(word)) issues.push(issueFor(CODES.CAPTION_MISMATCH, doc, `protected caption word ${word} is missing from exact_text`));
   }

@@ -68,6 +68,21 @@ const narratedEvidence = resolveLocalSourceEvidence(narratedPlan);
 const audioContext = { videoPlan: narratedPlan, narrationScript: script, verifiedProtectedSpans: narratedEvidence };
 check('source-only narration validates against its versioned source envelope', codes('narration-script-v2', script, audioContext).length === 0 && script.source_evidence_ref === narratedPlan.source_evidence.envelope_id && !('article_id' in script) && !('source_claims' in script));
 check('measured narration plan reconciles after the pre-TTS script check', codes('audio-plan-v2', audioPlan, audioContext).length === 0 && audioPlan.canonical_script_check.phase === 'pre_tts' && audioPlan.reconciliation.phase === 'post_measurement');
+const plannedAudio = clone(audioPlan);
+plannedAudio.status = 'planned';
+plannedAudio.measurement = { provider_status:'not_configured', measured_audio_duration_seconds:null, measured_at:null, evidence_ref:null, audio_ref:null, audio_sha256:null };
+plannedAudio.reconciliation = { phase:'post_measurement', action:'pending', affected_scene_ids:[], evidence_ref:null };
+plannedAudio.captions.alignment_status = 'not_yet';
+delete plannedAudio.captions.alignment_evidence;
+for (const caption of plannedAudio.captions.segments) {
+  delete caption.measured_start_seconds;
+  delete caption.measured_end_seconds;
+  delete caption.alignment_evidence_ref;
+}
+plannedAudio.captions.segments[0].measured_start_seconds = null;
+plannedAudio.captions.segments[0].measured_end_seconds = null;
+plannedAudio.captions.segments[0].alignment_evidence_ref = null;
+check('premeasurement planned audio may have an unconfigured provider and no alignment measurements', codes('audio-plan-v2', plannedAudio, audioContext).length === 0);
 check('BGM auto-match allows a fully rights-verified track', codes('bgm-catalog-v2', read(ALLOW, 'bgm-catalog-v2-auto-match.json'), { videoPlan: narratedPlan }).length === 0);
 const activeClaimCatalog = clone(read(ALLOW, 'bgm-catalog-v2-auto-match.json'));
 activeClaimCatalog.tracks[0].content_id_status = 'active_claim';
@@ -135,6 +150,28 @@ check('caption timing must stay inside the referenced scene and measured audio',
 const captionTimingDrift = clone(audioPlan);
 captionTimingDrift.captions.segments[0].end_seconds = 0.001;
 check('caption timing cannot claim alignment when it conflicts with measured spoken-segment boundaries', codes('audio-plan-v2', captionTimingDrift, audioContext).includes(CODES.CAPTION_MISMATCH));
+const missingEngineAlignment = clone(audioPlan);
+missingEngineAlignment.captions.segments[0].end_seconds = 0.001;
+missingEngineAlignment.captions.segments[0].measured_end_seconds = 0.001;
+missingEngineAlignment.captions.segments[0].alignment_evidence_ref = 'does-not-exist://alignment';
+delete missingEngineAlignment.captions.alignment_evidence;
+check('self-asserted alignment pass without an engine QA StageResult is rejected', codes('audio-plan-v2', missingEngineAlignment, audioContext).includes(CODES.ENGINE_QA_EVIDENCE));
+const detachedEngineAlignment = clone(audioPlan);
+detachedEngineAlignment.captions.segments[0].measured_end_seconds = 0.001;
+check('alignment measurements must match the engine QA segment evidence', codes('audio-plan-v2', detachedEngineAlignment, audioContext).includes(CODES.ENGINE_QA_EVIDENCE));
+const malformedStageResult = clone(audioPlan);
+malformedStageResult.captions.alignment_evidence.stage_result.input_hash = 'not-a-sha256';
+check('engine QA StageResult input hashes must use the required SHA-256 shape', codes('audio-plan-v2', malformedStageResult, audioContext).includes(CODES.SCHEMA));
+const detachedEngineOutput = clone(audioPlan);
+detachedEngineOutput.captions.alignment_evidence.stage_result.output_refs = ['fixture://different-output'];
+check('alignment evidence ref must be an output of the engine QA StageResult', codes('audio-plan-v2', detachedEngineOutput, audioContext).includes(CODES.ENGINE_QA_EVIDENCE));
+const unknownAlignmentSegment = clone(audioPlan);
+unknownAlignmentSegment.captions.alignment_evidence.segments[0].segment_id = 'seg-missing';
+check('engine QA evidence must reference existing scene and segment IDs', codes('audio-plan-v2', unknownAlignmentSegment, audioContext).includes(CODES.SCENE_MISMATCH));
+const outOfBoundsEngineMeasurement = clone(audioPlan);
+outOfBoundsEngineMeasurement.captions.alignment_evidence.segments[0].measured_end_seconds = 45;
+outOfBoundsEngineMeasurement.captions.segments[0].measured_end_seconds = 45;
+check('engine measured caption boundaries must remain within the scene and audio duration', codes('audio-plan-v2', outOfBoundsEngineMeasurement, audioContext).includes(CODES.ENGINE_QA_EVIDENCE));
 const inventedProtectedValue = clone(script);
 inventedProtectedValue.protected_values[0] = { kind:'quote', exact_text:'an invented quotation', source_ref:'source-1', locked:true };
 const inventedIssues = codes('narration-script-v2', inventedProtectedValue, { videoPlan: narratedPlan });
@@ -149,6 +186,39 @@ check('locked figures must match verified source spans', codes('video-plan-v2', 
 const detachedSpanReceipt = clone(narratedPlan);
 detachedSpanReceipt.source_evidence.sources[0].protected_spans[0].source_sha256 = 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb';
 check('protected source spans must bind the exact span hash and byte range to the pinned source and extraction receipt', codes('video-plan-v2', detachedSpanReceipt).includes(CODES.PROTECTED_VALUE_UNVERIFIED));
+const staleRangePlan = clone(narratedPlan);
+staleRangePlan.source_evidence.sources[0].evidence_spans[0].byte_start += 1;
+staleRangePlan.source_evidence.sources[0].evidence_spans[0].byte_end += 1;
+check('a locally verified evidence receipt cannot be reused after its byte range changes', codes('video-plan-v2', staleRangePlan, { verifiedProtectedSpans:narratedEvidence }).includes(CODES.PROTECTED_VALUE_UNVERIFIED));
+const staleExtractionPlan = clone(narratedPlan);
+const staleExtractionSpan = staleExtractionPlan.source_evidence.sources[0].evidence_spans[0];
+staleExtractionSpan.extraction_sha256 = 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb';
+staleExtractionSpan.evidence_ref = `source-extraction://sha256/${staleExtractionSpan.source_sha256}/${staleExtractionSpan.extraction_sha256}/span/${staleExtractionSpan.span_id}/${staleExtractionSpan.span_sha256}`;
+check('a locally verified evidence receipt cannot be reused after its extraction hash changes', codes('video-plan-v2', staleExtractionPlan, { verifiedProtectedSpans:narratedEvidence }).includes(CODES.PROTECTED_VALUE_UNVERIFIED));
+const duplicateSourcePlan = clone(example45);
+duplicateSourcePlan.source_evidence.sources.push({ ...clone(duplicateSourcePlan.source_evidence.sources[0]), source_ref:'schemas/examples/video/evidence/duplicate-source.txt', evidence_spans:[], protected_spans:[] });
+check('duplicate source identifiers are rejected', codes('video-plan-v2', duplicateSourcePlan).includes(CODES.DUPLICATE_SOURCE_ID));
+const duplicateEvidencePlan = clone(narratedPlan);
+const evidenceSource = duplicateEvidencePlan.source_evidence.sources[0];
+const authenticEvidenceSpan = clone(evidenceSource.evidence_spans[0]);
+const inventedPatientText = 'The source reports that 999 patients recovered after 45 seconds.';
+const inventedPatientHash = createHash('sha256').update(inventedPatientText).digest('hex');
+const forgedDuplicateSpan = {
+  ...authenticEvidenceSpan,
+  exact_text:inventedPatientText,
+  byte_start:0,
+  byte_end:Buffer.byteLength(inventedPatientText, 'utf8'),
+  span_sha256:inventedPatientHash,
+  evidence_ref:`source-extraction://sha256/${authenticEvidenceSpan.source_sha256}/${authenticEvidenceSpan.extraction_sha256}/span/${authenticEvidenceSpan.span_id}/${inventedPatientHash}`,
+};
+evidenceSource.evidence_spans.unshift(forgedDuplicateSpan);
+duplicateEvidencePlan.scenes[0].on_screen_text[0].exact_text = inventedPatientText;
+const duplicateEvidenceScript = clone(script);
+duplicateEvidenceScript.turns[0].spoken_text = inventedPatientText;
+duplicateEvidenceScript.turns[0].on_screen_text[0].exact_text = inventedPatientText;
+const duplicateEvidenceContext = { videoPlan:duplicateEvidencePlan, narrationScript:duplicateEvidenceScript, verifiedProtectedSpans:resolveLocalSourceEvidence(duplicateEvidencePlan) };
+check('duplicate evidence span IDs cannot lend authentic-byte verification to forged plan text', codes('video-plan-v2', duplicateEvidencePlan, duplicateEvidenceContext).includes(CODES.DUPLICATE_SPAN_ID) && codes('video-plan-v2', duplicateEvidencePlan, duplicateEvidenceContext).includes(CODES.PROTECTED_VALUE_UNVERIFIED));
+check('duplicate evidence span IDs cannot lend authentic-byte verification to forged narration', codes('narration-script-v2', duplicateEvidenceScript, duplicateEvidenceContext).includes(CODES.PROTECTED_VALUE_UNVERIFIED));
 const forgedPlan = clone(narratedPlan);
 const forgedSpan = forgedPlan.source_evidence.sources[0].protected_spans[0];
 forgedSpan.exact_text = '999 fabricated units';
