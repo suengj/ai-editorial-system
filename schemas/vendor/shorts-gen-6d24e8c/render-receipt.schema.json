@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://shorts-gen.local/schemas/render-receipt.schema.json",
+  "title": "RenderReceipt",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "job_id", "aspect", "video_ref", "thumbnail_ref", "sha256", "duration_s", "fps", "width", "height", "codec", "pixel_format"],
+  "properties": {
+    "schema_version": {"const": "1.0.0"},
+    "job_id": {"type": "string", "minLength": 1},
+    "aspect": {"enum": ["16:9", "9:16"]},
+    "video_ref": {"type": "string", "minLength": 1},
+    "thumbnail_ref": {"type": "string", "minLength": 1},
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "duration_s": {"type": "number", "exclusiveMinimum": 0},
+    "fps": {"type": "number", "exclusiveMinimum": 0},
+    "width": {"type": "integer", "minimum": 1},
+    "height": {"type": "integer", "minimum": 1},
+    "codec": {"type": "string", "minLength": 1},
+    "pixel_format": {"type": "string", "minLength": 1},
+    "has_audio": {"type": "boolean", "default": false}
+  }
+}

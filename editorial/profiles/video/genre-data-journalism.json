@@ -1,0 +1,17 @@
+{
+  "schema_version": "1.0.0",
+  "profile_id": "video-genre/data-journalism",
+  "revision": 1,
+  "genre": "data-journalism",
+  "base_profile_id": "video/educational-summary",
+  "overrides": {
+    "motion": {
+      "bar_grow_ms": 750,
+      "bar_stagger_ms": 80,
+      "highlighted_series_max": 1
+    },
+    "typography": {
+      "source_footer_required": true
+    }
+  }
+}

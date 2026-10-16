@@ -14,7 +14,7 @@ const renderSpecSchemaPath = resolve(ROOT, 'schemas/render-spec.schema.json');
 const renderSpecSchema = JSON.parse(readFileSync(renderSpecSchemaPath, 'utf8'));
 const watermarkPointer = '#/$defs/watermark';
 check('watermark_ref target schema and pointer exist', existsSync(renderSpecSchemaPath) && Boolean(renderSpecSchema.$defs?.watermark) && renderSpecSchema.properties?.watermark?.$ref === watermarkPointer);
-const allowFiles = readdirSync(allow).sort().filter((file) => !file.includes('-v2-') && !file.startsWith('video-qa-'));
+const allowFiles = readdirSync(allow).sort().filter((file) => !file.includes('-v2-') && !file.startsWith('video-qa-') && !file.startsWith('video-critique-'));
 check('all legacy 1.0.0 allow fixtures remain present', allowFiles.length === 8, allowFiles.join(', '));
 for (const file of allowFiles) {
   const doc = read(allow, file); const errors = validateVideoDocument(kind(file), doc);

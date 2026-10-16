@@ -1,0 +1,20 @@
+{
+  "schema_version": "1.0.0",
+  "profile_id": "video-genre/science-explainer",
+  "revision": 1,
+  "genre": "science-explainer",
+  "base_profile_id": "video/educational-summary",
+  "overrides": {
+    "visual_style": {
+      "background": "#0F1220",
+      "primary": "#4DA3FF",
+      "secondary": "#34D27B",
+      "accent": "#FFD60A",
+      "dim_opacity": 0.35
+    },
+    "motion": {
+      "build_one_concept_at_a_time": true,
+      "key_reveal_hold_seconds": 1.5
+    }
+  }
+}

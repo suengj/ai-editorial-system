@@ -1,0 +1,38 @@
+{
+  "schema_version": "1.0.0",
+  "plan_ref": "video-plan:example-45s",
+  "render_ref": "fixture://render/video.mp4",
+  "stage_result": {
+    "schema_version": "1.0.0",
+    "stage": "render",
+    "status": "done",
+    "input_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "output_refs": [
+      "fixture://critique/result"
+    ],
+    "errors": [],
+    "receipts": [],
+    "cache_hit": false,
+    "elapsed_s": 1.2,
+    "estimated_cost": 0.01
+  },
+  "frame_samples": [
+    {
+      "sample_ref": "fixture://frames/frame-001.png",
+      "timestamp_seconds": 0.5,
+      "scene_id": "scene-1",
+      "checklist": [
+        {
+          "criterion": "hook",
+          "result": "pass",
+          "evidence_ref": "fixture://frames/frame-001.png"
+        },
+        {
+          "criterion": "readability",
+          "result": "pass",
+          "evidence_ref": "fixture://frames/frame-001.png"
+        }
+      ]
+    }
+  ]
+}

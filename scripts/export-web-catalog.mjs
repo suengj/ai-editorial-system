@@ -30,6 +30,8 @@ const SCHEMAS = {
   'video-plan': 'schemas/video-plan.schema.json',
   'video-plan-v2': 'schemas/video-plan-v2.schema.json',
   'video-profile': 'schemas/video-profile.schema.json',
+  'video-genre-preset': 'schemas/video-genre-preset.schema.json',
+  'video-critique': 'schemas/video-critique.schema.json',
   'video-qa': 'schemas/video-qa.schema.json',
   'narration-script': 'schemas/narration-script.schema.json',
   'narration-script-v2': 'schemas/narration-script-v2.schema.json',
@@ -103,6 +105,12 @@ export function buildCatalog() {
       const profileSha = sha(profileBytes);
       if (profileSha !== pin.sha256) throw new Error(`video profile ${id} bytes do not match the manifest pin`);
       return [id, { path: pin.path, revision: pin.revision, sha256: pin.sha256, profile: JSON.parse(profileBytes.toString('utf8')) }];
+    })),
+    genre_presets: Object.fromEntries(Object.entries(manifest.video_genre_presets ?? {}).sort(([a], [b]) => a < b ? -1 : a > b ? 1 : 0).map(([id, pin]) => {
+      const profileBytes = readBytes(pin.path);
+      const profileSha = sha(profileBytes);
+      if (profileSha !== pin.sha256) throw new Error(`video genre preset ${id} bytes do not match the manifest pin`);
+      return [id, { path: pin.path, revision: pin.revision, sha256: pin.sha256, base_profile_id: pin.base_profile_id, profile: JSON.parse(profileBytes.toString('utf8')) }];
     })),
   };
 

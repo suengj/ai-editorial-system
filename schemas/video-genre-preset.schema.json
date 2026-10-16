@@ -1,0 +1,240 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://suengj.com/schemas/video-genre-preset.schema.json",
+  "title": "AES Video Genre Preset",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "profile_id",
+    "revision",
+    "genre",
+    "base_profile_id",
+    "overrides"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "profile_id": {
+      "type": "string",
+      "pattern": "^video-genre/(motion-design|science-explainer|shortform-native|data-journalism|learning)$"
+    },
+    "revision": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "genre": {
+      "enum": [
+        "motion-design",
+        "science-explainer",
+        "shortform-native",
+        "data-journalism",
+        "learning"
+      ]
+    },
+    "base_profile_id": {
+      "type": "string",
+      "pattern": "^video/(educational-summary|interactive-information|narrated-explainer)$"
+    },
+    "overrides": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "motion": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "scene_length_seconds": {
+              "$ref": "#/$defs/scene_length"
+            },
+            "parallax_layers": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "idle_motion": {
+              "type": "boolean"
+            },
+            "transition_preference": {
+              "type": "array",
+              "items": {
+                "enum": [
+                  "morph",
+                  "match_cut",
+                  "cut",
+                  "wipe"
+                ]
+              }
+            },
+            "build_one_concept_at_a_time": {
+              "type": "boolean"
+            },
+            "key_reveal_hold_seconds": {
+              "type": "number",
+              "minimum": 0
+            },
+            "caption_pop_ms": {
+              "type": "number",
+              "minimum": 0
+            },
+            "loop_to_hook": {
+              "type": "boolean"
+            },
+            "bar_grow_ms": {
+              "type": "number",
+              "minimum": 0
+            },
+            "bar_stagger_ms": {
+              "type": "number",
+              "minimum": 0
+            },
+            "highlighted_series_max": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "countdown_seconds": {
+              "type": "number",
+              "minimum": 0
+            },
+            "summary_card_at_end": {
+              "type": "boolean"
+            },
+            "answer_reveal": {
+              "type": "boolean"
+            }
+          },
+          "minProperties": 1
+        },
+        "typography": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "hook_words": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "min",
+                "max"
+              ],
+              "properties": {
+                "min": {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                "max": {
+                  "type": "integer",
+                  "minimum": 1
+                }
+              }
+            },
+            "caption": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "max_lines": {
+                  "enum": [
+                    1,
+                    2
+                  ]
+                },
+                "max_chars_per_line": {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                "wrap": {
+                  "const": "word_boundary"
+                }
+              },
+              "required": [
+                "max_lines",
+                "max_chars_per_line",
+                "wrap"
+              ]
+            },
+            "source_footer_required": {
+              "type": "boolean"
+            }
+          },
+          "minProperties": 1
+        },
+        "visual_style": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "idle_motion": {
+              "type": "boolean"
+            },
+            "transition_preference": {
+              "type": "array",
+              "items": {
+                "enum": [
+                  "morph",
+                  "match_cut",
+                  "cut",
+                  "wipe"
+                ]
+              }
+            },
+            "palette_limit": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "background": {
+              "type": "string",
+              "pattern": "^#[0-9A-Fa-f]{6}$"
+            },
+            "primary": {
+              "type": "string",
+              "pattern": "^#[0-9A-Fa-f]{6}$"
+            },
+            "secondary": {
+              "type": "string",
+              "pattern": "^#[0-9A-Fa-f]{6}$"
+            },
+            "accent": {
+              "type": "string",
+              "pattern": "^#[0-9A-Fa-f]{6}$"
+            },
+            "dim_opacity": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            }
+          },
+          "minProperties": 1
+        },
+        "audio": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "countdown_tick_sfx_semantic_only": {
+              "type": "boolean"
+            }
+          },
+          "minProperties": 1
+        }
+      },
+      "minProperties": 1
+    }
+  },
+  "$defs": {
+    "scene_length": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "min",
+        "max"
+      ],
+      "properties": {
+        "min": {
+          "type": "number",
+          "minimum": 0.01
+        },
+        "max": {
+          "type": "number",
+          "minimum": 0.01
+        }
+      }
+    }
+  }
+}

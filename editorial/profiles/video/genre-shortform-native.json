@@ -1,0 +1,28 @@
+{
+  "schema_version": "1.0.0",
+  "profile_id": "video-genre/shortform-native",
+  "revision": 1,
+  "genre": "shortform-native",
+  "base_profile_id": "video/interactive-information",
+  "overrides": {
+    "motion": {
+      "scene_length_seconds": {
+        "min": 0.8,
+        "max": 2.0
+      },
+      "caption_pop_ms": 100,
+      "loop_to_hook": true
+    },
+    "typography": {
+      "hook_words": {
+        "min": 4,
+        "max": 7
+      },
+      "caption": {
+        "max_lines": 2,
+        "max_chars_per_line": 14,
+        "wrap": "word_boundary"
+      }
+    }
+  }
+}

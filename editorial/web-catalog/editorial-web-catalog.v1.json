@@ -103,7 +103,7 @@
     }
   },
   "catalog_version": "1.0.0",
-  "content_digest": "sha256:6c668752bcd03e096e4a644c98aa38c5ca4aa5e879712704b8827bb8b42c3396",
+  "content_digest": "sha256:86838c7eae7e0574fb15a198ddb2c21645b97599401ee8fe1f9a75ae1003fd98",
   "field_domains": {
     "call_to_action": {
       "max_length": 200,
@@ -301,7 +301,7 @@
     "manifest": {
       "manifest_version": "2026-10-16.1",
       "path": "editorial/entry-manifest.json",
-      "sha256": "ed1a265da24f03836b5e62d789f6d1eae8e33f01cadebffebd25ac938221f543"
+      "sha256": "40118193704f24c251a9bf8513143935def4bfda1f4ba143739bc41e7f31ec08"
     },
     "note": "The AES git commit is deliberately not embedded. The consumer pins the AES commit and this file's sha256.",
     "profile_version_semantics": "<manifest_version>+<aes_commit>; the consumer supplies aes_commit from its own pin",
@@ -5049,6 +5049,357 @@
       },
       "sha256": "6cde9a2b573f30c3a2fad4edd9e328689ae388cc02371d2bd6db9badecb88aea"
     },
+    "video-critique": {
+      "id": "https://suengj.com/schemas/video-critique.schema.json",
+      "path": "schemas/video-critique.schema.json",
+      "schema": {
+        "$id": "https://suengj.com/schemas/video-critique.schema.json",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "additionalProperties": false,
+        "description": "Frame-sampled visual critique payload carried beside the shorts_gen critique StageResult.",
+        "properties": {
+          "frame_samples": {
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "checklist": {
+                  "items": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "criterion": {
+                        "enum": [
+                          "hook",
+                          "readability",
+                          "hierarchy",
+                          "motion",
+                          "information_density",
+                          "palette_consistency",
+                          "interactive_sequence",
+                          "chart_integrity",
+                          "audio_contract",
+                          "ending"
+                        ]
+                      },
+                      "evidence_ref": {
+                        "minLength": 1,
+                        "type": "string"
+                      },
+                      "finding": {
+                        "type": "string"
+                      },
+                      "result": {
+                        "enum": [
+                          "pass",
+                          "fail"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "criterion",
+                      "result",
+                      "evidence_ref"
+                    ],
+                    "type": "object"
+                  },
+                  "minItems": 1,
+                  "type": "array"
+                },
+                "sample_ref": {
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "scene_id": {
+                  "pattern": "^scene-[a-z0-9]+(-[a-z0-9]+)*$",
+                  "type": "string"
+                },
+                "timestamp_seconds": {
+                  "minimum": 0,
+                  "type": "number"
+                }
+              },
+              "required": [
+                "sample_ref",
+                "timestamp_seconds",
+                "scene_id",
+                "checklist"
+              ],
+              "type": "object"
+            },
+            "minItems": 1,
+            "type": "array"
+          },
+          "plan_ref": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "render_ref": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "schema_version": {
+            "const": "1.0.0"
+          },
+          "stage_result": {
+            "$ref": "vendor/shorts-gen-6d24e8c/stage-result.schema.json"
+          }
+        },
+        "required": [
+          "schema_version",
+          "plan_ref",
+          "render_ref",
+          "stage_result",
+          "frame_samples"
+        ],
+        "title": "AES Video Self-Critique",
+        "type": "object"
+      },
+      "sha256": "37b2487b97a0f707b4a55aefcf7b165eb50d1794d2c3fabf97eef88e5a08b53e"
+    },
+    "video-genre-preset": {
+      "id": "https://suengj.com/schemas/video-genre-preset.schema.json",
+      "path": "schemas/video-genre-preset.schema.json",
+      "schema": {
+        "$defs": {
+          "scene_length": {
+            "additionalProperties": false,
+            "properties": {
+              "max": {
+                "minimum": 0.01,
+                "type": "number"
+              },
+              "min": {
+                "minimum": 0.01,
+                "type": "number"
+              }
+            },
+            "required": [
+              "min",
+              "max"
+            ],
+            "type": "object"
+          }
+        },
+        "$id": "https://suengj.com/schemas/video-genre-preset.schema.json",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "additionalProperties": false,
+        "properties": {
+          "base_profile_id": {
+            "pattern": "^video/(educational-summary|interactive-information|narrated-explainer)$",
+            "type": "string"
+          },
+          "genre": {
+            "enum": [
+              "motion-design",
+              "science-explainer",
+              "shortform-native",
+              "data-journalism",
+              "learning"
+            ]
+          },
+          "overrides": {
+            "additionalProperties": false,
+            "minProperties": 1,
+            "properties": {
+              "audio": {
+                "additionalProperties": false,
+                "minProperties": 1,
+                "properties": {
+                  "countdown_tick_sfx_semantic_only": {
+                    "type": "boolean"
+                  }
+                },
+                "type": "object"
+              },
+              "motion": {
+                "additionalProperties": false,
+                "minProperties": 1,
+                "properties": {
+                  "answer_reveal": {
+                    "type": "boolean"
+                  },
+                  "bar_grow_ms": {
+                    "minimum": 0,
+                    "type": "number"
+                  },
+                  "bar_stagger_ms": {
+                    "minimum": 0,
+                    "type": "number"
+                  },
+                  "build_one_concept_at_a_time": {
+                    "type": "boolean"
+                  },
+                  "caption_pop_ms": {
+                    "minimum": 0,
+                    "type": "number"
+                  },
+                  "countdown_seconds": {
+                    "minimum": 0,
+                    "type": "number"
+                  },
+                  "highlighted_series_max": {
+                    "minimum": 1,
+                    "type": "integer"
+                  },
+                  "idle_motion": {
+                    "type": "boolean"
+                  },
+                  "key_reveal_hold_seconds": {
+                    "minimum": 0,
+                    "type": "number"
+                  },
+                  "loop_to_hook": {
+                    "type": "boolean"
+                  },
+                  "parallax_layers": {
+                    "minimum": 1,
+                    "type": "integer"
+                  },
+                  "scene_length_seconds": {
+                    "$ref": "#/$defs/scene_length"
+                  },
+                  "summary_card_at_end": {
+                    "type": "boolean"
+                  },
+                  "transition_preference": {
+                    "items": {
+                      "enum": [
+                        "morph",
+                        "match_cut",
+                        "cut",
+                        "wipe"
+                      ]
+                    },
+                    "type": "array"
+                  }
+                },
+                "type": "object"
+              },
+              "typography": {
+                "additionalProperties": false,
+                "minProperties": 1,
+                "properties": {
+                  "caption": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "max_chars_per_line": {
+                        "minimum": 1,
+                        "type": "integer"
+                      },
+                      "max_lines": {
+                        "enum": [
+                          1,
+                          2
+                        ]
+                      },
+                      "wrap": {
+                        "const": "word_boundary"
+                      }
+                    },
+                    "required": [
+                      "max_lines",
+                      "max_chars_per_line",
+                      "wrap"
+                    ],
+                    "type": "object"
+                  },
+                  "hook_words": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "max": {
+                        "minimum": 1,
+                        "type": "integer"
+                      },
+                      "min": {
+                        "minimum": 1,
+                        "type": "integer"
+                      }
+                    },
+                    "required": [
+                      "min",
+                      "max"
+                    ],
+                    "type": "object"
+                  },
+                  "source_footer_required": {
+                    "type": "boolean"
+                  }
+                },
+                "type": "object"
+              },
+              "visual_style": {
+                "additionalProperties": false,
+                "minProperties": 1,
+                "properties": {
+                  "accent": {
+                    "pattern": "^#[0-9A-Fa-f]{6}$",
+                    "type": "string"
+                  },
+                  "background": {
+                    "pattern": "^#[0-9A-Fa-f]{6}$",
+                    "type": "string"
+                  },
+                  "dim_opacity": {
+                    "maximum": 1,
+                    "minimum": 0,
+                    "type": "number"
+                  },
+                  "idle_motion": {
+                    "type": "boolean"
+                  },
+                  "palette_limit": {
+                    "minimum": 1,
+                    "type": "integer"
+                  },
+                  "primary": {
+                    "pattern": "^#[0-9A-Fa-f]{6}$",
+                    "type": "string"
+                  },
+                  "secondary": {
+                    "pattern": "^#[0-9A-Fa-f]{6}$",
+                    "type": "string"
+                  },
+                  "transition_preference": {
+                    "items": {
+                      "enum": [
+                        "morph",
+                        "match_cut",
+                        "cut",
+                        "wipe"
+                      ]
+                    },
+                    "type": "array"
+                  }
+                },
+                "type": "object"
+              }
+            },
+            "type": "object"
+          },
+          "profile_id": {
+            "pattern": "^video-genre/(motion-design|science-explainer|shortform-native|data-journalism|learning)$",
+            "type": "string"
+          },
+          "revision": {
+            "minimum": 1,
+            "type": "integer"
+          },
+          "schema_version": {
+            "const": "1.0.0"
+          }
+        },
+        "required": [
+          "schema_version",
+          "profile_id",
+          "revision",
+          "genre",
+          "base_profile_id",
+          "overrides"
+        ],
+        "title": "AES Video Genre Preset",
+        "type": "object"
+      },
+      "sha256": "888896ddd169fad1c09df62313a1a9e3c5a5b64643dbaf823196f647d025c7c5"
+    },
     "video-plan": {
       "id": "https://suengj.com/schemas/video-plan.schema.json",
       "path": "schemas/video-plan.schema.json",
@@ -5411,6 +5762,26 @@
                   1,
                   2
                 ]
+              },
+              "planned_segments": {
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "exact_text": {
+                      "minLength": 1,
+                      "type": "string"
+                    },
+                    "scene_id": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "scene_id",
+                    "exact_text"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
               },
               "protected_exact_text": {
                 "items": {
@@ -5810,6 +6181,144 @@
             ],
             "type": "object"
           },
+          "render_requirements": {
+            "additionalProperties": false,
+            "properties": {
+              "bgm_loudness_lufs": {
+                "maximum": 0,
+                "minimum": -70,
+                "type": "number"
+              },
+              "caption_samples": {
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "exact_text": {
+                      "type": "string"
+                    },
+                    "lines": {
+                      "items": {
+                        "minLength": 1,
+                        "type": "string"
+                      },
+                      "maxItems": 2,
+                      "minItems": 1,
+                      "type": "array"
+                    },
+                    "scene_id": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "scene_id",
+                    "exact_text",
+                    "lines"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              "ducking_db": {
+                "maximum": 0,
+                "minimum": -60,
+                "type": "number"
+              },
+              "hook_end_seconds": {
+                "description": "Hook interval ends this many seconds after scene 1 starts; the interval begins at scene 1 start and must remain within scene 1 and the selected profile hook maximum.",
+                "minimum": 0,
+                "type": "number"
+              },
+              "integrated_loudness_lufs": {
+                "maximum": 0,
+                "minimum": -70,
+                "type": "number"
+              },
+              "min_contrast_ratio": {
+                "maximum": 21,
+                "minimum": 1,
+                "type": "number"
+              },
+              "safe_margins": {
+                "additionalProperties": false,
+                "properties": {
+                  "bottom": {
+                    "maximum": 0.5,
+                    "minimum": 0,
+                    "type": "number"
+                  },
+                  "left": {
+                    "maximum": 0.5,
+                    "minimum": 0,
+                    "type": "number"
+                  },
+                  "right": {
+                    "maximum": 0.5,
+                    "minimum": 0,
+                    "type": "number"
+                  },
+                  "top": {
+                    "maximum": 0.5,
+                    "minimum": 0,
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "top",
+                  "bottom",
+                  "left",
+                  "right"
+                ],
+                "type": "object"
+              },
+              "sfx_events": {
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "scene_id": {
+                      "type": "string"
+                    },
+                    "semantic_only": {
+                      "const": true
+                    },
+                    "semantic_role": {
+                      "enum": [
+                        "transition",
+                        "emphasis",
+                        "countdown",
+                        "reveal",
+                        "alert",
+                        "none"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "scene_id",
+                    "semantic_role",
+                    "semantic_only"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              "true_peak_dbtp": {
+                "maximum": 0,
+                "minimum": -70,
+                "type": "number"
+              }
+            },
+            "required": [
+              "hook_end_seconds",
+              "caption_samples",
+              "min_contrast_ratio",
+              "safe_margins",
+              "integrated_loudness_lufs",
+              "true_peak_dbtp",
+              "sfx_events",
+              "bgm_loudness_lufs",
+              "ducking_db"
+            ],
+            "type": "object"
+          },
           "rights": {
             "additionalProperties": false,
             "properties": {
@@ -6134,6 +6643,29 @@
             "minimum": 1,
             "type": "number"
           },
+          "genre_preset_ref": {
+            "additionalProperties": false,
+            "properties": {
+              "profile_id": {
+                "pattern": "^video-genre/(motion-design|science-explainer|shortform-native|data-journalism|learning)$",
+                "type": "string"
+              },
+              "revision": {
+                "minimum": 1,
+                "type": "integer"
+              },
+              "sha256": {
+                "pattern": "^[a-f0-9]{64}$",
+                "type": "string"
+              }
+            },
+            "required": [
+              "profile_id",
+              "revision",
+              "sha256"
+            ],
+            "type": "object"
+          },
           "language": {
             "pattern": "^[a-z]{2,3}(-[A-Z]{2})?$",
             "type": "string"
@@ -6147,6 +6679,9 @@
           },
           "profile_ref": {
             "$ref": "#/$defs/profile_ref"
+          },
+          "render_requirements": {
+            "$ref": "#/$defs/render_requirements"
           },
           "scenes": {
             "items": {
@@ -6189,16 +6724,118 @@
         "title": "AES Video Plan v2",
         "type": "object"
       },
-      "sha256": "cc8f9bdc843489dde92e153b265e241ce11f4332ef70487faafcd8096d4cafb2"
+      "sha256": "e1a909e786ae5b752af4bbb1bbc979fbb753378a2540a096d1602e5fb85700d8"
     },
     "video-profile": {
       "id": "https://suengj.com/schemas/video-profile.schema.json",
       "path": "schemas/video-profile.schema.json",
       "schema": {
+        "$defs": {
+          "margins": {
+            "additionalProperties": false,
+            "properties": {
+              "all": {
+                "maximum": 0.5,
+                "minimum": 0,
+                "type": "number"
+              },
+              "bottom": {
+                "maximum": 0.5,
+                "minimum": 0,
+                "type": "number"
+              },
+              "left": {
+                "maximum": 0.5,
+                "minimum": 0,
+                "type": "number"
+              },
+              "right": {
+                "maximum": 0.5,
+                "minimum": 0,
+                "type": "number"
+              },
+              "top": {
+                "maximum": 0.5,
+                "minimum": 0,
+                "type": "number"
+              }
+            },
+            "type": "object"
+          },
+          "scene_length": {
+            "additionalProperties": false,
+            "properties": {
+              "max": {
+                "minimum": 0.01,
+                "type": "number"
+              },
+              "min": {
+                "minimum": 0.01,
+                "type": "number"
+              }
+            },
+            "required": [
+              "min",
+              "max"
+            ],
+            "type": "object"
+          }
+        },
         "$id": "https://suengj.com/schemas/video-profile.schema.json",
         "$schema": "https://json-schema.org/draft/2020-12/schema",
         "additionalProperties": false,
         "properties": {
+          "audio": {
+            "additionalProperties": false,
+            "minProperties": 1,
+            "properties": {
+              "bgm_lufs": {
+                "type": "number"
+              },
+              "duck_attack_ms": {
+                "type": "number"
+              },
+              "duck_db": {
+                "type": "number"
+              },
+              "duck_release_ms": {
+                "type": "number"
+              },
+              "sfx_gain_db": {
+                "type": "number"
+              },
+              "voice_lufs": {
+                "type": "number"
+              },
+              "voice_syllables_per_second": {
+                "additionalProperties": false,
+                "properties": {
+                  "max": {
+                    "minimum": 0,
+                    "type": "number"
+                  },
+                  "min": {
+                    "minimum": 0,
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "min",
+                  "max"
+                ],
+                "type": "object"
+              }
+            },
+            "required": [
+              "voice_lufs",
+              "bgm_lufs",
+              "duck_db",
+              "duck_attack_ms",
+              "duck_release_ms",
+              "sfx_gain_db"
+            ],
+            "type": "object"
+          },
           "constraints": {
             "additionalProperties": false,
             "properties": {
@@ -6346,6 +6983,74 @@
               "narrated-explainer"
             ]
           },
+          "motion": {
+            "additionalProperties": false,
+            "minProperties": 1,
+            "properties": {
+              "countdown_seconds": {
+                "minimum": 0,
+                "type": "number"
+              },
+              "durations_ms": {
+                "additionalProperties": false,
+                "properties": {
+                  "bar_grow": {
+                    "minimum": 0,
+                    "type": "number"
+                  },
+                  "bar_stagger": {
+                    "minimum": 0,
+                    "type": "number"
+                  },
+                  "enter": {
+                    "minimum": 0,
+                    "type": "number"
+                  },
+                  "exit": {
+                    "minimum": 0,
+                    "type": "number"
+                  },
+                  "pulse": {
+                    "minimum": 0,
+                    "type": "number"
+                  }
+                },
+                "type": "object"
+              },
+              "easing": {
+                "additionalProperties": false,
+                "properties": {
+                  "enter": {
+                    "type": "string"
+                  },
+                  "exit": {
+                    "type": "string"
+                  },
+                  "move": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "enter",
+                  "move",
+                  "exit"
+                ],
+                "type": "object"
+              },
+              "reveal_correct_scale": {
+                "minimum": 1,
+                "type": "number"
+              },
+              "scene_length_seconds": {
+                "$ref": "#/$defs/scene_length"
+              },
+              "silence_beat_before_reveal_ms": {
+                "minimum": 0,
+                "type": "number"
+              }
+            },
+            "type": "object"
+          },
           "profile_id": {
             "pattern": "^video/(educational-summary|interactive-information|narrated-explainer)$",
             "type": "string"
@@ -6354,12 +7059,227 @@
             "minLength": 1,
             "type": "string"
           },
+          "quality_gates": {
+            "additionalProperties": false,
+            "minProperties": 1,
+            "properties": {
+              "audio_loudness_lufs": {
+                "additionalProperties": false,
+                "properties": {
+                  "bgm_target": {
+                    "type": "number"
+                  },
+                  "ducking_db": {
+                    "type": "number"
+                  },
+                  "integrated_target": {
+                    "type": "number"
+                  },
+                  "tolerance": {
+                    "type": "number"
+                  },
+                  "true_peak_max_dbtp": {
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "integrated_target",
+                  "tolerance",
+                  "bgm_target",
+                  "ducking_db",
+                  "true_peak_max_dbtp"
+                ],
+                "type": "object"
+              },
+              "caption_max_chars_per_line": {
+                "minimum": 1,
+                "type": "integer"
+              },
+              "caption_max_lines": {
+                "enum": [
+                  1,
+                  2
+                ]
+              },
+              "hook_max_seconds": {
+                "minimum": 0,
+                "type": "number"
+              },
+              "min_contrast_ratio": {
+                "maximum": 21,
+                "minimum": 1,
+                "type": "number"
+              },
+              "safe_margins": {
+                "additionalProperties": false,
+                "properties": {
+                  "16:9": {
+                    "$ref": "#/$defs/margins"
+                  },
+                  "1:1": {
+                    "$ref": "#/$defs/margins"
+                  },
+                  "4:5": {
+                    "$ref": "#/$defs/margins"
+                  },
+                  "9:16": {
+                    "$ref": "#/$defs/margins"
+                  }
+                },
+                "type": "object"
+              },
+              "scene_length_seconds": {
+                "$ref": "#/$defs/scene_length"
+              },
+              "sfx_policy": {
+                "const": "semantic_only"
+              },
+              "wrap": {
+                "const": "word_boundary"
+              }
+            },
+            "required": [
+              "hook_max_seconds",
+              "scene_length_seconds",
+              "caption_max_chars_per_line",
+              "caption_max_lines",
+              "wrap",
+              "min_contrast_ratio",
+              "safe_margins",
+              "audio_loudness_lufs",
+              "sfx_policy"
+            ],
+            "type": "object"
+          },
           "revision": {
             "minimum": 1,
             "type": "integer"
           },
           "schema_version": {
             "const": "1.0.0"
+          },
+          "typography": {
+            "additionalProperties": false,
+            "minProperties": 1,
+            "properties": {
+              "body_weight": {
+                "maximum": 900,
+                "minimum": 100,
+                "type": "integer"
+              },
+              "caption": {
+                "additionalProperties": false,
+                "properties": {
+                  "max_chars_per_line": {
+                    "minimum": 1,
+                    "type": "integer"
+                  },
+                  "max_lines": {
+                    "enum": [
+                      1,
+                      2
+                    ]
+                  },
+                  "wrap": {
+                    "const": "word_boundary"
+                  }
+                },
+                "type": "object"
+              },
+              "font_family": {
+                "type": "string"
+              },
+              "hook_weight": {
+                "maximum": 900,
+                "minimum": 100,
+                "type": "integer"
+              },
+              "stroke_px": {
+                "minimum": 0,
+                "type": "number"
+              },
+              "type_scale_pct_of_frame_height": {
+                "additionalProperties": false,
+                "properties": {
+                  "caption": {
+                    "maximum": 100,
+                    "minimum": 0,
+                    "type": "number"
+                  },
+                  "hook": {
+                    "maximum": 100,
+                    "minimum": 0,
+                    "type": "number"
+                  },
+                  "label": {
+                    "maximum": 100,
+                    "minimum": 0,
+                    "type": "number"
+                  },
+                  "number": {
+                    "maximum": 100,
+                    "minimum": 0,
+                    "type": "number"
+                  }
+                },
+                "type": "object"
+              }
+            },
+            "type": "object"
+          },
+          "visual_style": {
+            "additionalProperties": false,
+            "minProperties": 1,
+            "properties": {
+              "grid_px": {
+                "minimum": 1,
+                "type": "number"
+              },
+              "palette": {
+                "additionalProperties": false,
+                "properties": {
+                  "accent": {
+                    "pattern": "^#[0-9A-Fa-f]{6}$",
+                    "type": "string"
+                  },
+                  "background": {
+                    "pattern": "^#[0-9A-Fa-f]{6}$",
+                    "type": "string"
+                  },
+                  "dim_opacity": {
+                    "maximum": 1,
+                    "minimum": 0,
+                    "type": "number"
+                  },
+                  "negative": {
+                    "pattern": "^#[0-9A-Fa-f]{6}$",
+                    "type": "string"
+                  },
+                  "positive": {
+                    "pattern": "^#[0-9A-Fa-f]{6}$",
+                    "type": "string"
+                  },
+                  "primary": {
+                    "pattern": "^#[0-9A-Fa-f]{6}$",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "background",
+                  "primary",
+                  "accent",
+                  "positive",
+                  "negative",
+                  "dim_opacity"
+                ],
+                "type": "object"
+              },
+              "parallax_layers": {
+                "minimum": 1,
+                "type": "integer"
+              }
+            },
+            "type": "object"
           }
         },
         "required": [
@@ -6374,7 +7294,7 @@
         "title": "AES Video Semantic Profile",
         "type": "object"
       },
-      "sha256": "b72e364961ba4f64aebba093c286bb0acfd283e5d098fcfc2e440ab6bbfe2f20"
+      "sha256": "6a10fbad084fa4b4321d8f7f15b4787c2735d2a8fbe18ab6efb46d310930f3ee"
     },
     "video-qa": {
       "id": "https://suengj.com/schemas/video-qa.schema.json",
@@ -7278,7 +8198,7 @@
       },
       {
         "path": "editorial/VIDEO-ENGINE-MAPPING.md",
-        "sha256": "617fec42d436007c647adeea8c9c043b76ca32dde4ee2fe8626c640b184684f0"
+        "sha256": "ee3d38f161b0cd8d73823f0da1a290bc5e6234d53d49c27451da7261f2ee5027"
       },
       {
         "path": "editorial/VIDEO-STORYBOARD.md",
@@ -7289,6 +8209,144 @@
         "sha256": "fae9c3740955db680db6646d98cad6d27515adb3887c3915f76cfb332f86a2c9"
       }
     ],
+    "genre_presets": {
+      "video-genre/data-journalism": {
+        "base_profile_id": "video/educational-summary",
+        "path": "editorial/profiles/video/genre-data-journalism.json",
+        "profile": {
+          "base_profile_id": "video/educational-summary",
+          "genre": "data-journalism",
+          "overrides": {
+            "motion": {
+              "bar_grow_ms": 750,
+              "bar_stagger_ms": 80,
+              "highlighted_series_max": 1
+            },
+            "typography": {
+              "source_footer_required": true
+            }
+          },
+          "profile_id": "video-genre/data-journalism",
+          "revision": 1,
+          "schema_version": "1.0.0"
+        },
+        "revision": 1,
+        "sha256": "0d0f739f3e6a82560956256a2a951ab5d97d82f75f172f87e9d7b290c5eb1ec4"
+      },
+      "video-genre/learning": {
+        "base_profile_id": "video/educational-summary",
+        "path": "editorial/profiles/video/genre-learning.json",
+        "profile": {
+          "base_profile_id": "video/educational-summary",
+          "genre": "learning",
+          "overrides": {
+            "audio": {
+              "countdown_tick_sfx_semantic_only": true
+            },
+            "motion": {
+              "answer_reveal": true,
+              "countdown_seconds": 3,
+              "summary_card_at_end": true
+            }
+          },
+          "profile_id": "video-genre/learning",
+          "revision": 1,
+          "schema_version": "1.0.0"
+        },
+        "revision": 1,
+        "sha256": "fef62993a7949ea8e2cb11c1c026e9900373789a1dfceef1d52a70f7a3f5c261"
+      },
+      "video-genre/motion-design": {
+        "base_profile_id": "video/educational-summary",
+        "path": "editorial/profiles/video/genre-motion-design.json",
+        "profile": {
+          "base_profile_id": "video/educational-summary",
+          "genre": "motion-design",
+          "overrides": {
+            "motion": {
+              "parallax_layers": 4,
+              "scene_length_seconds": {
+                "max": 6,
+                "min": 3
+              }
+            },
+            "visual_style": {
+              "idle_motion": true,
+              "palette_limit": 5,
+              "transition_preference": [
+                "morph",
+                "match_cut"
+              ]
+            }
+          },
+          "profile_id": "video-genre/motion-design",
+          "revision": 1,
+          "schema_version": "1.0.0"
+        },
+        "revision": 1,
+        "sha256": "e2a0ed0709d01c171c48386ecc2053283dd08704b3778447cc4466d75c74ba5d"
+      },
+      "video-genre/science-explainer": {
+        "base_profile_id": "video/educational-summary",
+        "path": "editorial/profiles/video/genre-science-explainer.json",
+        "profile": {
+          "base_profile_id": "video/educational-summary",
+          "genre": "science-explainer",
+          "overrides": {
+            "motion": {
+              "build_one_concept_at_a_time": true,
+              "key_reveal_hold_seconds": 1.5
+            },
+            "visual_style": {
+              "accent": "#FFD60A",
+              "background": "#0F1220",
+              "dim_opacity": 0.35,
+              "primary": "#4DA3FF",
+              "secondary": "#34D27B"
+            }
+          },
+          "profile_id": "video-genre/science-explainer",
+          "revision": 1,
+          "schema_version": "1.0.0"
+        },
+        "revision": 1,
+        "sha256": "3ff43070cdbed658f1b9569690674224b0e8cf5fef8118e4c48b429d7e7bf88a"
+      },
+      "video-genre/shortform-native": {
+        "base_profile_id": "video/interactive-information",
+        "path": "editorial/profiles/video/genre-shortform-native.json",
+        "profile": {
+          "base_profile_id": "video/interactive-information",
+          "genre": "shortform-native",
+          "overrides": {
+            "motion": {
+              "caption_pop_ms": 100,
+              "loop_to_hook": true,
+              "scene_length_seconds": {
+                "max": 2,
+                "min": 0.8
+              }
+            },
+            "typography": {
+              "caption": {
+                "max_chars_per_line": 14,
+                "max_lines": 2,
+                "wrap": "word_boundary"
+              },
+              "hook_words": {
+                "max": 7,
+                "min": 4
+              }
+            }
+          },
+          "profile_id": "video-genre/shortform-native",
+          "revision": 1,
+          "schema_version": "1.0.0"
+        },
+        "revision": 1,
+        "sha256": "d77ac66bb774df4218e18a3ed9c2ef4948026fbd250f340fd521b19b7ccf7c4c"
+      }
+    },
     "profile_path_template": "editorial/profiles/video/{id}.json",
     "profiles": {
       "video/educational-summary": {

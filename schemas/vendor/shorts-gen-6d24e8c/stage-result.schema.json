@@ -1,0 +1,103 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://shorts-gen.local/schemas/stage-result.schema.json",
+  "title": "StageResult",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "stage",
+    "status",
+    "input_hash",
+    "output_refs",
+    "errors",
+    "receipts",
+    "cache_hit",
+    "elapsed_s",
+    "estimated_cost"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "stage": {
+      "enum": [
+        "intake",
+        "script",
+        "assets",
+        "tts_captions",
+        "bgm",
+        "render",
+        "qa_repair",
+        "delivery",
+        "publish_prep",
+        "approval",
+        "publish_reconcile"
+      ]
+    },
+    "status": {
+      "enum": [
+        "pending",
+        "running",
+        "done",
+        "skipped",
+        "blocked",
+        "human_required",
+        "failed",
+        "not_configured"
+      ]
+    },
+    "input_hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "output_refs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "errors": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "code",
+          "message",
+          "retryable"
+        ],
+        "properties": {
+          "code": {
+            "type": "string",
+            "minLength": 1
+          },
+          "message": {
+            "type": "string",
+            "minLength": 1
+          },
+          "retryable": {
+            "type": "boolean"
+          }
+        }
+      }
+    },
+    "receipts": {
+      "type": "array",
+      "items": {
+        "$ref": "vendor/shorts-gen-6d24e8c/render-receipt.schema.json"
+      }
+    },
+    "cache_hit": {
+      "type": "boolean"
+    },
+    "elapsed_s": {
+      "type": "number",
+      "minimum": 0
+    },
+    "estimated_cost": {
+      "type": "number",
+      "minimum": 0
+    }
+  }
+}

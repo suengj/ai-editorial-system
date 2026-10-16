@@ -3,7 +3,7 @@
  * this repository actually uses.
  *
  * Supported: type, const, enum, required, properties, additionalProperties,
- * items, minItems, maxItems, pattern, minLength, maxLength, minimum, maximum, format (date, date-time), $ref into
+ * items, minItems, maxItems, minProperties, maxProperties, pattern, minLength, maxLength, minimum, maximum, format (date, date-time), $ref into
  * local $defs, and union types via array-valued `type`.
  *
  * Deliberately small. Fail-closed on constructs it does not understand: an
@@ -14,7 +14,7 @@
 const KNOWN_KEYWORDS = new Set([
   '$schema', '$id', '$ref', '$defs', 'title', 'description',
   'type', 'const', 'enum', 'required', 'properties', 'additionalProperties',
-  'items', 'minItems', 'maxItems', 'pattern', 'minLength', 'maxLength', 'minimum', 'maximum', 'format',
+  'items', 'minItems', 'maxItems', 'minProperties', 'maxProperties', 'pattern', 'minLength', 'maxLength', 'minimum', 'maximum', 'format',
 ]);
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
@@ -114,6 +114,8 @@ export function validate(value, schema, root = schema, path = '$') {
   }
 
   if (typeOf(value) === 'object') {
+    if (schema.minProperties !== undefined && Object.keys(value).length < schema.minProperties) errors.push({ path, message: `fewer than minProperties ${schema.minProperties}` });
+    if (schema.maxProperties !== undefined && Object.keys(value).length > schema.maxProperties) errors.push({ path, message: `more than maxProperties ${schema.maxProperties}` });
     for (const key of schema.required ?? []) {
       if (!(key in value)) errors.push({ path, message: `missing required property "${key}"` });
     }

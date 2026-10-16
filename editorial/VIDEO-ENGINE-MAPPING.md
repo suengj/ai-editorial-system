@@ -108,3 +108,22 @@ request omits publication intent. Engine publication/package fields are
 execution metadata only; they do not confer AES approval or publication
 authority. A local visual or audio defect is repaired at its affected scene
 or narration segment and must retain both the old and replacement evidence.
+
+## Versioned style, motion, typography, and critique contracts
+
+The manifest video route also pins each family profile and its additive genre
+presets by ID, revision, and SHA-256. Family profiles define visual style,
+motion, typography, quality gates, and audio targets; genre presets declare a
+base family and scoped overrides. VideoPlan v2 may include a matching
+`genre_preset_ref`. The validator checks pin integrity and the planned
+render-requirements contract. These plan declarations are not measured render
+proof; rendered contrast, margins, loudness, timing, and SFX still require
+renderer evidence.
+
+`schemas/video-critique.schema.json` carries frame samples and per-sample
+checklist findings (`pass` or `fail`, scene ID, evidence reference) beside a
+`shorts_gen` `critique` StageResult-shaped record. Findings cover hook,
+readability, hierarchy, motion, information density, palette, interactive
+sequence, chart integrity, audio contract, and ending. The evidence reference
+must identify the sampled frame or other supporting artifact; a critique result
+is not an approval or publication signal.
