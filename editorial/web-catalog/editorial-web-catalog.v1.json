@@ -103,7 +103,7 @@
     }
   },
   "catalog_version": "1.0.0",
-  "content_digest": "sha256:8f9b0fdc5f0a0c5454b65a8a673d0505af39fc7a9ad0ddbb24eca9ee76cfe845",
+  "content_digest": "sha256:86838c7eae7e0574fb15a198ddb2c21645b97599401ee8fe1f9a75ae1003fd98",
   "field_domains": {
     "call_to_action": {
       "max_length": 200,
@@ -6223,7 +6223,8 @@
                 "minimum": -60,
                 "type": "number"
               },
-              "hook_duration_seconds": {
+              "hook_end_seconds": {
+                "description": "Hook interval ends this many seconds after scene 1 starts; the interval begins at scene 1 start and must remain within scene 1 and the selected profile hook maximum.",
                 "minimum": 0,
                 "type": "number"
               },
@@ -6306,7 +6307,7 @@
               }
             },
             "required": [
-              "hook_duration_seconds",
+              "hook_end_seconds",
               "caption_samples",
               "min_contrast_ratio",
               "safe_margins",
@@ -6723,7 +6724,7 @@
         "title": "AES Video Plan v2",
         "type": "object"
       },
-      "sha256": "b42a6fc0e263725d3e936533f4a74398f549d27ed3c527aa173ad8a67ec6b717"
+      "sha256": "e1a909e786ae5b752af4bbb1bbc979fbb753378a2540a096d1602e5fb85700d8"
     },
     "video-profile": {
       "id": "https://suengj.com/schemas/video-profile.schema.json",

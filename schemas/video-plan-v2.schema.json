@@ -934,7 +934,7 @@
       "type": "object",
       "additionalProperties": false,
       "required": [
-        "hook_duration_seconds",
+        "hook_end_seconds",
         "caption_samples",
         "min_contrast_ratio",
         "safe_margins",
@@ -945,9 +945,10 @@
         "ducking_db"
       ],
       "properties": {
-        "hook_duration_seconds": {
+        "hook_end_seconds": {
           "type": "number",
-          "minimum": 0
+          "minimum": 0,
+          "description": "Hook interval ends this many seconds after scene 1 starts; the interval begins at scene 1 start and must remain within scene 1 and the selected profile hook maximum."
         },
         "caption_samples": {
           "type": "array",

@@ -231,6 +231,9 @@ function validateVideoPlanV2(doc, issues, context) {
     const genreRef = doc.genre_preset_ref;
     let effectiveProfile = profile;
     if (genreRef) {
+      if (doc.profile_ref.revision < 2) {
+        issues.push(issueFor(CODES.VIDEO_QUALITY_GATE, doc, 'genre presets require a revision 2 style profile'));
+      }
       const genrePin = manifest.video_genre_presets?.[genreRef.profile_id];
       if (!genrePin || genrePin.revision !== genreRef.revision || genrePin.sha256 !== genreRef.sha256 || genrePin.base_profile_id !== doc.profile_ref.profile_id) {
         issues.push(issueFor(CODES.PROFILE_PIN, doc, `genre_preset_ref does not match a manifest pin based on ${doc.profile_ref.profile_id}`));
@@ -254,10 +257,14 @@ function validateVideoPlanV2(doc, issues, context) {
     if (doc.profile_ref.revision >= 2) {
       if (!gates || !req) fail('revision 2 style profiles require quality_gates and render_requirements');
       else {
-        const hookScenes = doc.scenes.filter((scene) => scene.function === 'hook');
-        const timelineHookDuration = hookScenes.reduce((sum, scene) => sum + scene.timing.end_seconds - scene.timing.start_seconds, 0);
-        if (Math.abs(req.hook_duration_seconds - timelineHookDuration) > 0.001) fail(`declared hook duration ${req.hook_duration_seconds}s does not match hook scene timeline ${timelineHookDuration}s`);
-        if (timelineHookDuration > gates.hook_max_seconds) fail(`hook scene timeline exceeds ${gates.hook_max_seconds}s`);
+        const firstScene = doc.scenes[0];
+        const hookEnd = req.hook_end_seconds;
+        const firstSceneDuration = firstScene?.timing.end_seconds - firstScene?.timing.start_seconds;
+        if (!Number.isFinite(hookEnd) || hookEnd <= 0) fail('hook_end_seconds must declare a positive hook interval within scene 1');
+        else {
+          if (hookEnd > gates.hook_max_seconds) fail(`hook interval exceeds ${gates.hook_max_seconds}s`);
+          if (hookEnd > firstSceneDuration) fail(`hook_end_seconds ${hookEnd}s exceeds scene 1 duration ${firstSceneDuration}s`);
+        }
         const range = effectiveProfile.motion?.scene_length_seconds ?? gates.scene_length_seconds;
         const captionMaxLines = effectiveProfile.typography?.caption?.max_lines ?? gates.caption_max_lines;
         const captionMaxChars = effectiveProfile.typography?.caption?.max_chars_per_line ?? gates.caption_max_chars_per_line;

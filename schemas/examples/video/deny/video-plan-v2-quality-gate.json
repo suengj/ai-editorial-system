@@ -254,7 +254,7 @@
   },
   "change_requests": [],
   "render_requirements": {
-    "hook_duration_seconds": 2.0,
+    "hook_end_seconds": 2.0,
     "caption_samples": [],
     "min_contrast_ratio": 3.2,
     "safe_margins": {

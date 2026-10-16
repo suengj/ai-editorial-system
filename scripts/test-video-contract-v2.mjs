@@ -21,7 +21,7 @@ const codes = (type, doc, context = {}) => validateVideoDocument(type, doc, cont
 
 console.log('video plan v2 allow fixtures');
 const v2AllowFiles = readdirSync(ALLOW).filter((file) => file.includes('-v2-') || file.startsWith('video-qa-')).sort();
-check('required 2.0 video/audio/BGM/QA fixtures are present', v2AllowFiles.length === 14, v2AllowFiles.join(', '));
+check('required 2.0 video/audio/BGM/QA fixtures are present', v2AllowFiles.length === 17, v2AllowFiles.join(', '));
 const allowDocs = v2AllowFiles.map((file) => ({ file, doc: read(ALLOW, file) }));
 const planById = new Map(allowDocs.filter(({ file }) => file.startsWith('video-plan-v2-')).map(({ doc }) => [doc.plan_id, doc]));
 const scriptById = new Map(allowDocs.filter(({ file }) => file.startsWith('narration-script-v2-')).map(({ doc }) => [doc.script_id, doc]));
@@ -36,6 +36,21 @@ for (const file of v2AllowFiles) {
   };
   const issues = validateVideoDocument(kind(file), doc, context);
   check(file, issues.length === 0, issues.map((item) => `[${item.code}] ${item.message}`).join('; '));
+}
+for (const [family, file] of [
+  ['educational-summary', 'video-plan-v2-revision2-educational-summary.json'],
+  ['interactive-information', 'video-plan-v2-revision2-interactive-information.json'],
+  ['narrated-explainer', 'video-plan-v2-revision2-narrated-explainer.json'],
+]) {
+  const plan = read(ALLOW, file);
+  const firstSceneDuration = plan.scenes[0].timing.end_seconds - plan.scenes[0].timing.start_seconds;
+  check(`${family} has a passing revision 2 example with a bounded hook inside scene 1`,
+    plan.profile_ref.profile_id === `video/${family}` && plan.profile_ref.revision === 2
+      && plan.render_requirements.hook_end_seconds > 0
+      && plan.render_requirements.hook_end_seconds <= 1.5
+      && plan.render_requirements.hook_end_seconds <= firstSceneDuration
+      && firstSceneDuration >= 2.5
+      && validateVideoDocument('video-plan-v2', plan, { verifiedProtectedSpans: resolveLocalSourceEvidence(plan) }).length === 0);
 }
 
 const manifest = JSON.parse(readFileSync(resolve(ROOT, 'editorial/entry-manifest.json'), 'utf8'));
@@ -79,9 +94,11 @@ check('quality gate deny fixture fails measured plan contract checks', codes('vi
 const gateMessages = (plan) => validateVideoDocument('video-plan-v2', plan).filter((item) => item.code === CODES.VIDEO_QUALITY_GATE).map((item) => item.message);
 const qualityCase = clone(badGatePlan);
 const gateCase = (name, mutate, expected) => { const testPlan=clone(qualityCase); mutate(testPlan); check(name, gateMessages(testPlan).some((message)=>message.includes(expected))); };
-gateCase('hook duration gate is tied to hook scene timing', p => { p.render_requirements.hook_duration_seconds=1.2; }, 'does not match hook scene timeline');
-gateCase('hook maximum duration gate rejects an overlong timeline', p => { p.render_requirements.hook_duration_seconds=9; }, 'hook scene timeline exceeds');
-gateCase('zero declared hook duration cannot bypass a planned hook scene', p => { p.render_requirements.hook_duration_seconds=0; }, 'does not match hook scene timeline');
+gateCase('hook interval cannot exceed the profile hook maximum', p => { p.render_requirements.hook_end_seconds=1.6; }, 'hook interval exceeds 1.5s');
+gateCase('hook interval must end inside scene 1', p => { p.scenes[0].timing.end_seconds=1; p.render_requirements.hook_end_seconds=1.2; }, 'exceeds scene 1 duration 1s');
+gateCase('hook interval must have a positive end offset', p => { p.render_requirements.hook_end_seconds=0; }, 'positive hook interval within scene 1');
+const missingHookInterval=clone(qualityCase); delete missingHookInterval.render_requirements.hook_end_seconds;
+check('revision 2 render requirements require a bounded hook interval declaration', codes('video-plan-v2', missingHookInterval).includes(CODES.SCHEMA));
 gateCase('revision 2 quality profiles require the render requirements block', p => { delete p.render_requirements; }, 'require quality_gates and render_requirements');
 gateCase('scene maximum duration gate is checked independently', p => { p.scenes[1].timing.end_seconds=22; p.scenes[1].layers[0].timing.end_seconds=22; }, 'exceeds effective preset maximum');
 gateCase('caption coverage rejects missing planned text samples', p => { p.captions.planned_segments=[{scene_id:'scene-1',exact_text:'Caption text'}]; }, 'cover every planned caption');
@@ -104,6 +121,9 @@ const shortformValid=clone(shortformPlan); shortformValid.scenes[0].timing={star
 check('shortform 1.5s scene is judged by its genre range instead of the 2.5s family minimum', !gateMessages(shortformValid).some((message)=>message.includes('scene scene-2 is shorter than effective preset minimum')));
 const shortformTooLong=clone(shortformPlan); shortformTooLong.scenes[1].timing={start_seconds:1,end_seconds:6}; shortformTooLong.scenes[1].layers[0].timing={start_seconds:1,end_seconds:6};
 check('shortform five-second scenes fail the effective two-second genre maximum', gateMessages(shortformTooLong).some((message)=>message.includes('scene scene-2 exceeds effective preset maximum 2s')));
+const legacyGenrePlan=clone(read(ALLOW,'video-plan-v2-interactive-hybrid.json'));
+legacyGenrePlan.genre_preset_ref={profile_id:'video-genre/shortform-native',revision:manifest.video_genre_presets['video-genre/shortform-native'].revision,sha256:manifest.video_genre_presets['video-genre/shortform-native'].sha256};
+check('the unchanged three-scene, five-second revision 1 fixture explicitly rejects a correctly pinned genre preset', codes('video-plan-v2',legacyGenrePlan).some((code)=>code===CODES.VIDEO_QUALITY_GATE) && validateVideoDocument('video-plan-v2',legacyGenrePlan).some((item)=>item.message.includes('genre presets require a revision 2 style profile')));
 
 
 const landscape = read(ALLOW, 'video-plan-v2-silent-60s-16-9.json');

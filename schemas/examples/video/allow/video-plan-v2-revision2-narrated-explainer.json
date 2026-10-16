@@ -1,0 +1,304 @@
+{
+  "schema_version": "2.0.0",
+  "plan_id": "video-plan:revision2-narrated-explainer",
+  "profile_ref": {
+    "profile_id": "video/narrated-explainer",
+    "revision": 2,
+    "sha256": "48936358d2081442327b312ed82781f6f980042067b148f0be39f3897bc1fae1"
+  },
+  "source_evidence": {
+    "schema_version": "1.0.0",
+    "envelope_id": "source-evidence:narrated-mixed",
+    "sources": [
+      {
+        "source_id": "source-1",
+        "source_ref": "schemas/examples/video/evidence/narrated-source.txt",
+        "kind": "text",
+        "sha256": "5ceaa8db5f7b120e0d1323c2765443bcf650a76858b2abc0fe152ec940fad031",
+        "protected_spans": [
+          {
+            "span_id": "span-1",
+            "kind": "number",
+            "exact_text": "45 seconds",
+            "source_sha256": "5ceaa8db5f7b120e0d1323c2765443bcf650a76858b2abc0fe152ec940fad031",
+            "extraction_sha256": "5ceaa8db5f7b120e0d1323c2765443bcf650a76858b2abc0fe152ec940fad031",
+            "byte_start": 40,
+            "byte_end": 50,
+            "span_sha256": "cdcb340350abca98fb1c540fba6023e269bb5930a3af94430b15245e0d00b62a",
+            "evidence_ref": "source-extraction://sha256/5ceaa8db5f7b120e0d1323c2765443bcf650a76858b2abc0fe152ec940fad031/5ceaa8db5f7b120e0d1323c2765443bcf650a76858b2abc0fe152ec940fad031/span/span-1/cdcb340350abca98fb1c540fba6023e269bb5930a3af94430b15245e0d00b62a"
+          }
+        ],
+        "rights": {
+          "status": "verified",
+          "license": "CC BY 4.0",
+          "rights_owner": "Fixture Source",
+          "attribution": "Fixture source attribution",
+          "platforms": [
+            "youtube"
+          ],
+          "commercial_use": true,
+          "modification_allowed": true,
+          "evidence_ref": "fixture://rights/source-1"
+        },
+        "evidence_spans": [
+          {
+            "span_id": "evidence-1",
+            "exact_text": "This source describes a process lasting 45 seconds.",
+            "source_sha256": "5ceaa8db5f7b120e0d1323c2765443bcf650a76858b2abc0fe152ec940fad031",
+            "extraction_sha256": "5ceaa8db5f7b120e0d1323c2765443bcf650a76858b2abc0fe152ec940fad031",
+            "byte_start": 0,
+            "byte_end": 51,
+            "span_sha256": "daab378ae03497c71b547347345e015dbdf52fa0627a68611e95bfb52fa0a7a0",
+            "evidence_ref": "source-extraction://sha256/5ceaa8db5f7b120e0d1323c2765443bcf650a76858b2abc0fe152ec940fad031/5ceaa8db5f7b120e0d1323c2765443bcf650a76858b2abc0fe152ec940fad031/span/evidence-1/daab378ae03497c71b547347345e015dbdf52fa0627a68611e95bfb52fa0a7a0"
+          },
+          {
+            "span_id": "evidence-2",
+            "exact_text": "The supplied material explains the mechanism.",
+            "source_sha256": "5ceaa8db5f7b120e0d1323c2765443bcf650a76858b2abc0fe152ec940fad031",
+            "extraction_sha256": "5ceaa8db5f7b120e0d1323c2765443bcf650a76858b2abc0fe152ec940fad031",
+            "byte_start": 52,
+            "byte_end": 97,
+            "span_sha256": "df56fce7b47dcdc2fddc69ccfd9b655731bf25911555a938fbb168878253bd29",
+            "evidence_ref": "source-extraction://sha256/5ceaa8db5f7b120e0d1323c2765443bcf650a76858b2abc0fe152ec940fad031/5ceaa8db5f7b120e0d1323c2765443bcf650a76858b2abc0fe152ec940fad031/span/evidence-2/df56fce7b47dcdc2fddc69ccfd9b655731bf25911555a938fbb168878253bd29"
+          },
+          {
+            "span_id": "evidence-3",
+            "exact_text": "The source states the supported conclusion.",
+            "source_sha256": "5ceaa8db5f7b120e0d1323c2765443bcf650a76858b2abc0fe152ec940fad031",
+            "extraction_sha256": "5ceaa8db5f7b120e0d1323c2765443bcf650a76858b2abc0fe152ec940fad031",
+            "byte_start": 98,
+            "byte_end": 141,
+            "span_sha256": "30b89ca88a428e69431ea8aceca022b8d39bfc8c4d53e1418cd4f8bc3ce3f6ac",
+            "evidence_ref": "source-extraction://sha256/5ceaa8db5f7b120e0d1323c2765443bcf650a76858b2abc0fe152ec940fad031/5ceaa8db5f7b120e0d1323c2765443bcf650a76858b2abc0fe152ec940fad031/span/evidence-3/30b89ca88a428e69431ea8aceca022b8d39bfc8c4d53e1418cd4f8bc3ce3f6ac"
+          }
+        ]
+      }
+    ]
+  },
+  "duration_class": "short",
+  "target_duration_seconds": 45,
+  "aspect_ratio": "16:9",
+  "fps": 30,
+  "language": "en",
+  "semantic_controls": {
+    "thinking": "quiet",
+    "reveal": "step_by_step",
+    "presentation": "hybrid"
+  },
+  "scenes": [
+    {
+      "scene_id": "scene-1",
+      "beat_id": "beat-1",
+      "function": "hook",
+      "timing": {
+        "start_seconds": 0,
+        "end_seconds": 15
+      },
+      "source_only": true,
+      "source_refs": [
+        "source-1"
+      ],
+      "layers": [
+        {
+          "layer_id": "layer-1",
+          "source_ref": "source-1",
+          "rights_ref": "source-1",
+          "z": 0,
+          "timing": {
+            "start_seconds": 0,
+            "end_seconds": 15
+          },
+          "fit": "contain",
+          "crop": {
+            "mode": "none",
+            "focal_point": null
+          },
+          "safe_zone": {
+            "x": 0.1,
+            "y": 0.1,
+            "width": 0.8,
+            "height": 0.8
+          },
+          "motion_intention": "hold"
+        }
+      ],
+      "on_screen_text": [
+        {
+          "exact_text": "This source describes a process lasting 45 seconds.",
+          "source_ref": "source-1",
+          "protected": false,
+          "evidence_span_ids": [
+            "evidence-1"
+          ]
+        }
+      ]
+    },
+    {
+      "scene_id": "scene-2",
+      "beat_id": "beat-2",
+      "function": "concept",
+      "timing": {
+        "start_seconds": 15,
+        "end_seconds": 30
+      },
+      "source_only": true,
+      "source_refs": [
+        "source-1"
+      ],
+      "layers": [
+        {
+          "layer_id": "layer-2",
+          "source_ref": "source-1",
+          "rights_ref": "source-1",
+          "z": 0,
+          "timing": {
+            "start_seconds": 15,
+            "end_seconds": 30
+          },
+          "fit": "contain",
+          "crop": {
+            "mode": "none",
+            "focal_point": null
+          },
+          "safe_zone": {
+            "x": 0.1,
+            "y": 0.1,
+            "width": 0.8,
+            "height": 0.8
+          },
+          "motion_intention": "hold"
+        }
+      ],
+      "on_screen_text": [
+        {
+          "exact_text": "The supplied material explains the mechanism.",
+          "source_ref": "source-1",
+          "protected": false,
+          "evidence_span_ids": [
+            "evidence-2"
+          ]
+        }
+      ]
+    },
+    {
+      "scene_id": "scene-3",
+      "beat_id": "beat-3",
+      "function": "key_takeaway",
+      "timing": {
+        "start_seconds": 30,
+        "end_seconds": 45
+      },
+      "source_only": true,
+      "source_refs": [
+        "source-1"
+      ],
+      "layers": [
+        {
+          "layer_id": "layer-3",
+          "source_ref": "source-1",
+          "rights_ref": "source-1",
+          "z": 0,
+          "timing": {
+            "start_seconds": 30,
+            "end_seconds": 45
+          },
+          "fit": "contain",
+          "crop": {
+            "mode": "none",
+            "focal_point": null
+          },
+          "safe_zone": {
+            "x": 0.1,
+            "y": 0.1,
+            "width": 0.8,
+            "height": 0.8
+          },
+          "motion_intention": "hold"
+        }
+      ],
+      "on_screen_text": [
+        {
+          "exact_text": "The source states the supported conclusion.",
+          "source_ref": "source-1",
+          "protected": false,
+          "evidence_span_ids": [
+            "evidence-3"
+          ]
+        }
+      ]
+    }
+  ],
+  "audio": {
+    "narration_mode": "narrated",
+    "narration_script_ref": "narration-script:fixture-mixed",
+    "audio_plan_ref": "audioplan:fixture-mixed",
+    "tts_contract_ref": "tts-contract:fixture-neutral",
+    "measured_audio_duration_seconds": null,
+    "reconciliation_action": "pending",
+    "bgm_mode": "off"
+  },
+  "captions": {
+    "enabled": true,
+    "max_lines": 2,
+    "safe_zone": "caption-safe",
+    "protected_exact_text": [],
+    "alignment_status": "not_yet",
+    "planned_segments": [
+      {
+        "scene_id": "scene-1",
+        "exact_text": "Fact"
+      },
+      {
+        "scene_id": "scene-2",
+        "exact_text": "Fact"
+      },
+      {
+        "scene_id": "scene-3",
+        "exact_text": "Fact"
+      }
+    ]
+  },
+  "approval": {
+    "status": "approved",
+    "evidence_ref": "fixture://approval/narrated-mixed"
+  },
+  "change_requests": [],
+  "render_requirements": {
+    "hook_end_seconds": 1.5,
+    "caption_samples": [
+      {
+        "scene_id": "scene-1",
+        "exact_text": "Fact",
+        "lines": [
+          "Fact"
+        ]
+      },
+      {
+        "scene_id": "scene-2",
+        "exact_text": "Fact",
+        "lines": [
+          "Fact"
+        ]
+      },
+      {
+        "scene_id": "scene-3",
+        "exact_text": "Fact",
+        "lines": [
+          "Fact"
+        ]
+      }
+    ],
+    "min_contrast_ratio": 4.5,
+    "safe_margins": {
+      "top": 0.05,
+      "bottom": 0.05,
+      "left": 0.05,
+      "right": 0.05
+    },
+    "integrated_loudness_lufs": -14,
+    "true_peak_dbtp": -1,
+    "sfx_events": [],
+    "bgm_loudness_lufs": -22,
+    "ducking_db": -11
+  }
+}
