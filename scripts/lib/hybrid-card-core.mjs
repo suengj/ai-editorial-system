@@ -1,14 +1,13 @@
 /** SUE-1616: deterministic prompt, native-card intake, and post-session chrome. */
-import { readFileSync, readdirSync, statSync } from 'node:fs';
-import { basename, extname, resolve } from 'node:path';
-import { dirname, resolve as resolvePath } from 'node:path';
+import { readFileSync, readdirSync, realpathSync, statSync } from 'node:fs';
+import { basename, extname, dirname, isAbsolute, relative, resolve, sep } from 'node:path';
 import { createHash } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import { validate } from './json-schema-lite.mjs';
 import { decodePng, encodePng, FONT_STACK } from './watermark-core.mjs';
 import { esc, findRasterizer, rasterize, svgDocument, textMeasurer } from './svg-tools.mjs';
 
-const ROOT = resolvePath(dirname(fileURLToPath(import.meta.url)), '../..');
+const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const sha256 = (bytes) => `sha256:${createHash('sha256').update(bytes).digest('hex')}`;
 const object = (value) => value !== null && typeof value === 'object' && !Array.isArray(value);
 const text = (value) => typeof value === 'string' && value.trim().length > 0;
@@ -53,7 +52,7 @@ export function findNewestNativePng(directory, { listFiles = (dir) => readdirSyn
   return candidates[0].path;
 }
 
-function resizeToCard(bytes, image, rasterizer) {
+function resizeToCard(bytes, rasterizer) {
   const data = bytes.toString('base64');
   const svg = svgDocument(NATIVE_CARD_GEOMETRY.width, NATIVE_CARD_GEOMETRY.height,
     `<image width="1080" height="1350" preserveAspectRatio="none" xlink:href="data:image/png;base64,${data}"/>`);
@@ -64,17 +63,28 @@ function resizeToCard(bytes, image, rasterizer) {
 }
 
 /** Validate a native_session receipt and normalize only aspect-correct PNGs to the fixed 4:5 canvas. */
+/** Resolve a session-relative locator under baseDir: no absolute path, no `..`, realpath must stay contained. */
+export function containedNativePath(baseDir, locator, what = 'path') {
+  if (!text(locator) || locator.includes('\0') || isAbsolute(locator) || locator.split(/[\\/]+/).includes('..')) fail('NATIVE_PATH_ESCAPE', `${what} must be relative to the native session directory without ..`);
+  const root = realpathSync(resolve(baseDir)), target = resolve(root, locator);
+  let real;
+  try { real = realpathSync(target); } catch { fail('NATIVE_INPUT_MISSING', `${what} does not exist: ${locator}`); }
+  const rel = relative(root, real);
+  if (rel === '..' || rel.startsWith('..' + sep) || isAbsolute(rel)) fail('NATIVE_PATH_ESCAPE', `${what} resolves outside the native session directory`);
+  return real;
+}
+
 export function intakeNativeCard({ pngPath, sourceDir, receipt, baseDir = process.cwd(), findNewestFile = findNewestNativePng, rasterizer = null } = {}) {
-  if (!object(receipt) || Object.keys(receipt).some((key) => !['route', 'sha256'].includes(key)) || receipt.route !== 'native_session'
-    || !/^sha256:[a-f0-9]{64}$/.test(receipt.sha256 ?? '')) fail('NATIVE_RECEIPT_INVALID', 'receipt must contain route native_session and a sha256 digest');
+  if (!object(receipt) || Object.keys(receipt).some((key) => !['route', 'sha256', 'generator_id'].includes(key)) || receipt.route !== 'native_session'
+    || !/^sha256:[a-f0-9]{64}$/.test(receipt.sha256 ?? '') || !text(receipt.generator_id)) fail('NATIVE_RECEIPT_INVALID', 'receipt must contain route native_session, a sha256 digest, and the generator_id that produced the card');
   let selectedBy = 'png_path', ref = pngPath;
   if (!text(ref)) {
     if (!text(sourceDir)) fail('NATIVE_INPUT_MISSING', 'provide pngPath or sourceDir');
-    const dir = resolve(baseDir, sourceDir);
-    ref = findNewestFile(dir);
+    const dir = containedNativePath(baseDir, sourceDir, 'source_dir');
+    ref = relative(realpathSync(resolve(baseDir)), realpathSync(findNewestFile(dir)));
     selectedBy = 'source_dir_newest';
   }
-  const path = resolve(baseDir, ref);
+  const path = containedNativePath(baseDir, ref, 'png_path');
   const bytes = readFileSync(path);
   const sourceSha = sha256(bytes);
   if (sourceSha !== receipt.sha256) fail('NATIVE_RECEIPT_HASH_MISMATCH', 'native_session receipt sha256 does not match the selected PNG');
@@ -83,23 +93,16 @@ export function intakeNativeCard({ pngPath, sourceDir, receipt, baseDir = proces
   if (!Number.isInteger(image.width) || !Number.isInteger(image.height) || image.width < 64 || image.height < 64 || image.width > 8192 || image.height > 8192
     || image.width * image.height > 25000000) fail('NATIVE_CARD_SIZE', 'native PNG dimensions must be 64–8192px and at most 25MP');
   if (Math.abs(ratio - 4 / 5) > 0.001) fail('NATIVE_CARD_ASPECT', `native PNG must be 4:5 (received ${image.width}:${image.height})`);
-  const normalizedBytes = image.width === 1080 && image.height === 1350 ? bytes : resizeToCard(bytes, image, rasterizer ?? findRasterizer());
+  const normalizedBytes = image.width === 1080 && image.height === 1350 ? bytes : resizeToCard(bytes, rasterizer ?? findRasterizer());
   const normalized = decodePng(normalizedBytes);
   const record = {
-    schema_version: '1.0.0', route: 'native_session', selected_by: selectedBy,
+    schema_version: '1.0.0', route: 'native_session', generator_id: receipt.generator_id, selected_by: selectedBy,
     source_ref: ref, source_sha256: sourceSha,
     source_geometry: { width: image.width, height: image.height },
     geometry: { width: normalized.width, height: normalized.height, aspect_ratio: '4:5' },
     normalized_sha256: sha256(normalizedBytes), normalization: image.width === 1080 && image.height === 1350 ? 'identity' : 'rsvg_resize',
   };
   return { bytes: normalizedBytes, sourceBytes: bytes, path, receipt: record };
-}
-
-/** Resolve a kicker exclusively from the target entry in the supplied public catalog. */
-export function resolveTargetDisplayLabel(targetId, catalog) {
-  const target = catalog?.targets?.find((entry) => entry?.id === targetId);
-  if (!target || !text(target.label)) fail('UNRESOLVED_LABEL', `target display label is unavailable for ${targetId ?? '<no target>'}`);
-  return target.label;
 }
 
 function pixelAt(image, x, y) { return (y * image.width + x) * image.channels; }
@@ -175,9 +178,15 @@ function expectedStatus(review) {
 }
 
 /** Validate the independent reviewer record, its exact text arrays, and the post-chrome card hash. */
-export function validateNativeCardReview(review, { expectedStrings, cardSha256 } = {}) {
+const SELF_IDS = new Set(['self', 'self-check', 'generator', 'native_session', 'native-session']);
+export function validateNativeCardReview(review, { expectedStrings, cardSha256, generatorId } = {}) {
   const issues = validate(review, REVIEW_SCHEMA).map((issue) => `${issue.path}: ${issue.message}`);
   if (!object(review)) return { ok: false, issues };
+  if (!text(generatorId)) issues.push('generator_id: native receipt must name the generator');
+  else if (text(review.reviewer?.id)) {
+    const rid = review.reviewer.id.trim().toLowerCase();
+    if (rid === generatorId.trim().toLowerCase() || SELF_IDS.has(rid)) issues.push('$.reviewer.id: reviewer must be a different identity than the card generator');
+  }
   if (review.card_sha256 !== cardSha256) issues.push('$.card_sha256: does not match the final chrome-composited card');
   if (JSON.stringify(review.expected_strings) !== JSON.stringify(expectedStrings)) issues.push('$.expected_strings: does not match native_prompt_strings');
   const derived = expectedStatus(review);

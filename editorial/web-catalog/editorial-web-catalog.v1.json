@@ -55,6 +55,7 @@
       "takeaway",
       "alt_text",
       "headline",
+      "headline_emphasis",
       "source_note",
       "layout",
       "blocks",
@@ -102,7 +103,7 @@
     }
   },
   "catalog_version": "1.0.0",
-  "content_digest": "sha256:161146412669ff42461cc01db28ea7176d7d6ae8fe600349e6dce94c57e44660",
+  "content_digest": "sha256:8ba6c1b3d59cdfac2ad0f501ee14dff3e65e8bf47af7d806c1706fe153502454",
   "field_domains": {
     "call_to_action": {
       "max_length": 200,
@@ -210,7 +211,7 @@
           {
             "path": "editorial/STRUCTURED-VISUAL-EXECUTION.md",
             "role": "core:visual",
-            "sha256": "d1bd609a106af501160bee0253482213c2dc6c50ce9d79cd778c06742f906218"
+            "sha256": "0e8c4443d5aa77c2942c3eeac02d130cb207a0be62951521f80d5dcb898f01c0"
           },
           {
             "path": "editorial/constitution.md",
@@ -279,7 +280,7 @@
           {
             "path": "editorial/STRUCTURED-VISUAL-EXECUTION.md",
             "role": "core:visual",
-            "sha256": "d1bd609a106af501160bee0253482213c2dc6c50ce9d79cd778c06742f906218"
+            "sha256": "0e8c4443d5aa77c2942c3eeac02d130cb207a0be62951521f80d5dcb898f01c0"
           },
           {
             "path": "editorial/constitution.md",
@@ -4323,7 +4324,7 @@
           {
             "path": "editorial/STRUCTURED-VISUAL-EXECUTION.md",
             "role": "core:visual",
-            "sha256": "d1bd609a106af501160bee0253482213c2dc6c50ce9d79cd778c06742f906218"
+            "sha256": "0e8c4443d5aa77c2942c3eeac02d130cb207a0be62951521f80d5dcb898f01c0"
           },
           {
             "path": "editorial/SUENGJ-STYLE.md",
@@ -4461,7 +4462,7 @@
           {
             "path": "editorial/STRUCTURED-VISUAL-EXECUTION.md",
             "role": "core:visual",
-            "sha256": "d1bd609a106af501160bee0253482213c2dc6c50ce9d79cd778c06742f906218"
+            "sha256": "0e8c4443d5aa77c2942c3eeac02d130cb207a0be62951521f80d5dcb898f01c0"
           },
           {
             "path": "editorial/business-idea-magazine.v1.json",
@@ -4533,7 +4534,7 @@
           {
             "path": "editorial/STRUCTURED-VISUAL-EXECUTION.md",
             "role": "core:visual",
-            "sha256": "d1bd609a106af501160bee0253482213c2dc6c50ce9d79cd778c06742f906218"
+            "sha256": "0e8c4443d5aa77c2942c3eeac02d130cb207a0be62951521f80d5dcb898f01c0"
           },
           {
             "path": "editorial/TRENDS-MOA-COMMUNITY-TONE.md",

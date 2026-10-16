@@ -1,13 +1,13 @@
 #!/usr/bin/env node
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
-import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdtempSync, realpathSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { resolve, dirname } from 'node:path';
 import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
 import { decodePng, encodePng } from './lib/watermark-core.mjs';
 import { executeCarousel, loadVisualRecipes, planCarousel } from './lib/carousel-core.mjs';
-import { buildNativeCardPrompt, findNewestNativePng, intakeNativeCard, nativeReviewToFeedbackRecord, renderNativeChrome, resolveTargetDisplayLabel, validateNativeCardReview } from './lib/hybrid-card-core.mjs';
+import { buildNativeCardPrompt, findNewestNativePng, intakeNativeCard, nativeReviewToFeedbackRecord, renderNativeChrome, validateNativeCardReview } from './lib/hybrid-card-core.mjs';
 
 const ROOT=resolve(dirname(fileURLToPath(import.meta.url)),'..');
 const FIX=resolve(ROOT,'scripts/fixtures/carousel');
@@ -57,22 +57,22 @@ try {
 
   const smallBytes=png(), smallPath=resolve(temp,'small.png'); writeFileSync(smallPath,smallBytes);
   await test('native intake validates route and digest, then normalizes 4:5 pixels to 1080x1350',()=>{
-    const intake=intakeNativeCard({pngPath:'small.png',receipt:{route:'native_session',sha256:hash(smallBytes)},baseDir:temp});
+    const intake=intakeNativeCard({pngPath:'small.png',receipt:{route:'native_session',generator_id:'native-image-generator',sha256:hash(smallBytes)},baseDir:temp});
     const normalized=decodePng(intake.bytes);
     assert.deepEqual([normalized.width,normalized.height],[1080,1350]);
     assert.equal(intake.receipt.source_sha256,hash(smallBytes));
     assert.equal(intake.receipt.geometry.aspect_ratio,'4:5');
     assert.equal(intake.receipt.normalization,'rsvg_resize');
     assert.throws(()=>intakeNativeCard({pngPath:'small.png',receipt:{route:'api',sha256:hash(smallBytes)},baseDir:temp}),e=>e.code==='NATIVE_RECEIPT_INVALID');
-    assert.throws(()=>intakeNativeCard({pngPath:'small.png',receipt:{route:'native_session',sha256:`sha256:${'0'.repeat(64)}`},baseDir:temp}),e=>e.code==='NATIVE_RECEIPT_HASH_MISMATCH');
+    assert.throws(()=>intakeNativeCard({pngPath:'small.png',receipt:{route:'native_session',generator_id:'native-image-generator',sha256:`sha256:${'0'.repeat(64)}`},baseDir:temp}),e=>e.code==='NATIVE_RECEIPT_HASH_MISMATCH');
     const square=png(216,216); writeFileSync(resolve(temp,'square.png'),square);
-    assert.throws(()=>intakeNativeCard({pngPath:'square.png',receipt:{route:'native_session',sha256:hash(square)},baseDir:temp}),e=>e.code==='NATIVE_CARD_ASPECT');
+    assert.throws(()=>intakeNativeCard({pngPath:'square.png',receipt:{route:'native_session',generator_id:'native-image-generator',sha256:hash(square)},baseDir:temp}),e=>e.code==='NATIVE_CARD_ASPECT');
   });
 
   await test('directory fallback uses an injectable newest-PNG finder',()=>{
     const chosen=resolve(temp,'small.png'); let calledWith=null;
-    const selected=intakeNativeCard({sourceDir:'.',receipt:{route:'native_session',sha256:hash(smallBytes)},baseDir:temp,findNewestFile:(dir)=>{calledWith=dir;return chosen;}});
-    assert.equal(calledWith,temp);
+    const selected=intakeNativeCard({sourceDir:'.',receipt:{route:'native_session',generator_id:'native-image-generator',sha256:hash(smallBytes)},baseDir:temp,findNewestFile:(dir)=>{calledWith=dir;return chosen;}});
+    assert.equal(calledWith,realpathSync(temp));
     assert.equal(selected.receipt.selected_by,'source_dir_newest');
     const listed=findNewestNativePng(temp,{listFiles:()=>[
       {path:resolve(temp,'older.png'),isFile:true,mtimeMs:1},
@@ -82,7 +82,7 @@ try {
     assert.equal(listed,resolve(temp,'newer.png'));
   });
 
-  const normalized=intakeNativeCard({pngPath:'small.png',receipt:{route:'native_session',sha256:hash(smallBytes)},baseDir:temp}).bytes;
+  const normalized=intakeNativeCard({pngPath:'small.png',receipt:{route:'native_session',generator_id:'native-image-generator',sha256:hash(smallBytes)},baseDir:temp}).bytes;
   const palette=recipes.recipes['editorial-minimal'].theme;
   const chrome=renderNativeChrome(normalized,{label:targetCatalog.targets[0].label,sourceLine:'Source: synthetic fixture',pageMark:'1/3',tokens:palette});
   await test('deterministic chrome draws the target label and changes zero pixels outside reserved bands',()=>{
@@ -94,20 +94,24 @@ try {
     assert.deepEqual(sample(before,540,500),sample(after,540,500));
     assert.notDeepEqual(sample(before,0,0),sample(after,0,0));
     assert.throws(()=>renderNativeChrome(normalized,{label:'',sourceLine:'Source',pageMark:'1/3',tokens:palette}),e=>e.code==='UNRESOLVED_LABEL');
-    assert.throws(()=>resolveTargetDisplayLabel('missing-target',targetCatalog),e=>e.code==='UNRESOLVED_LABEL');
   });
 
   const cardSha=hash(chrome.bytes);
   const review={schema_version:'1.0.0',review_id:'native-card-review:synthetic-pass',reviewed_at:'2026-10-16T03:00:00Z',card_sha256:cardSha,
     reviewer:{type:'agent',id:'independent-synthetic-reviewer',independent:true},expected_strings:['Exact synthetic headline','Exact synthetic body.'],observed_strings:['Exact synthetic headline','Exact synthetic body.'],logo_detected:false,chrome_match:true,status:'PASS'};
   await test('review contract requires an independent card-hash-bound exact match',()=>{
-    assert.equal(validateNativeCardReview(review,{expectedStrings:review.expected_strings,cardSha256:cardSha}).ok,true);
+    assert.equal(validateNativeCardReview(review,{expectedStrings:review.expected_strings,cardSha256:cardSha,generatorId:'native-image-generator'}).ok,true);
     const self=structuredClone(review); self.self_check=true;
-    assert.equal(validateNativeCardReview(self,{expectedStrings:review.expected_strings,cardSha256:cardSha}).ok,false);
+    assert.equal(validateNativeCardReview(self,{expectedStrings:review.expected_strings,cardSha256:cardSha,generatorId:'native-image-generator'}).ok,false);
+    for (const id of ['native-image-generator','Native-Image-Generator','self']) {
+      const same=structuredClone(review); same.reviewer.id=id;
+      assert.equal(validateNativeCardReview(same,{expectedStrings:review.expected_strings,cardSha256:cardSha,generatorId:'native-image-generator'}).ok,false,id);
+    }
+    assert.equal(validateNativeCardReview(review,{expectedStrings:review.expected_strings,cardSha256:cardSha}).ok,false);
     const wrongHash=structuredClone(review); wrongHash.card_sha256=`sha256:${'0'.repeat(64)}`;
-    assert.equal(validateNativeCardReview(wrongHash,{expectedStrings:review.expected_strings,cardSha256:cardSha}).ok,false);
+    assert.equal(validateNativeCardReview(wrongHash,{expectedStrings:review.expected_strings,cardSha256:cardSha,generatorId:'native-image-generator'}).ok,false);
     const mismatch=structuredClone(review); mismatch.observed_strings[1]='Exact synthetic body'; mismatch.status='TEXT_MISMATCH';
-    assert.equal(validateNativeCardReview(mismatch,{expectedStrings:review.expected_strings,cardSha256:cardSha}).derived_status,'TEXT_MISMATCH');
+    assert.equal(validateNativeCardReview(mismatch,{expectedStrings:review.expected_strings,cardSha256:cardSha,generatorId:'native-image-generator'}).derived_status,'TEXT_MISMATCH');
     const feedback=nativeReviewToFeedbackRecord(review,{frameId:'opening',seriesId:'carousel-smoke'});
     assert.equal(feedback.owner_verdict,'unknown');
     assert.equal(feedback.routing.layer,'verification');
@@ -120,7 +124,7 @@ try {
     const sourceLine=series.frames[0].source_note;
     const expectedChrome=renderNativeChrome(bytes,{label:target.label,sourceLine,pageMark:'1/3',tokens:palette});
     const attachedReview={...review,card_sha256:hash(expectedChrome.bytes)};
-    const session={schema_version:'1.0.0',route:'native_session',frames:{opening:{png_path:'full.png',receipt:{route:'native_session',sha256:hash(bytes)},review:attachedReview}}};
+    const session={schema_version:'1.0.0',route:'native_session',frames:{opening:{png_path:'full.png',receipt:{route:'native_session',generator_id:'native-image-generator',sha256:hash(bytes)},review:attachedReview}}};
     const out=resolve(temp,'render-pass');
     const result=await executeCarousel(series,{baseDir:FIX,outDir:out,targetId:target.id,targetCatalog,nativeSession:session,nativeSessionBaseDir:temp});
     const opening=result.frames.find(f=>f.id==='opening');
@@ -139,11 +143,23 @@ try {
     assert(existsSync(resolve(reusedOut,receipt.native_prompt_ref)));
 
     const pendingOut=resolve(temp,'render-pending');
-    const pending=await executeCarousel(series,{baseDir:FIX,outDir:pendingOut,targetId:target.id,targetCatalog,nativeSession:{schema_version:'1.0.0',route:'native_session',frames:{opening:{png_path:'full.png',receipt:{route:'native_session',sha256:hash(bytes)}}}},nativeSessionBaseDir:temp});
+    const pending=await executeCarousel(series,{baseDir:FIX,outDir:pendingOut,targetId:target.id,targetCatalog,nativeSession:{schema_version:'1.0.0',route:'native_session',frames:{opening:{png_path:'full.png',receipt:{route:'native_session',generator_id:'native-image-generator',sha256:hash(bytes)}}}},nativeSessionBaseDir:temp});
     assert.equal(pending.status,'INCOMPLETE');
     assert.equal(pending.frames.find(f=>f.id==='opening').status,'NATIVE_REVIEW_REQUIRED');
     assert.equal(readFileSync(resolve(pendingOut,'opening/pending/image.png')).length>0,true);
     assert.equal(existsSync(resolve(pendingOut,'opening/image.png')),false);
+  });
+
+  await test('session paths are contained in the native session directory',async()=>{
+    const series=nativeFrame(), bytes=png(1080,1350); writeFileSync(resolve(temp,'full.png'),bytes);
+    const rc={route:'native_session',generator_id:'native-image-generator',sha256:hash(bytes)};
+    for (const bad of ['../outside.png','/etc/passwd','a/../../x.png']) for (const key of ['png_path','source_dir','review_path']) {
+      const frame={receipt:rc,[key]:bad}; if(key==='review_path') frame.png_path='full.png';
+      await assert.rejects(executeCarousel(series,{baseDir:FIX,outDir:resolve(temp,'trav'),targetId:'personal-instagram',targetCatalog,nativeSession:{schema_version:'1.0.0',route:'native_session',frames:{opening:frame}},nativeSessionBaseDir:temp}),e=>e.code==='NATIVE_PATH_ESCAPE',`${key}:${bad}`);
+    }
+    assert.throws(()=>intakeNativeCard({pngPath:'../x.png',receipt:rc,baseDir:temp}),e=>e.code==='NATIVE_PATH_ESCAPE');
+    const noGen={route:'native_session',sha256:hash(bytes)};
+    assert.throws(()=>intakeNativeCard({pngPath:'full.png',receipt:noGen,baseDir:temp}),e=>e.code==='NATIVE_RECEIPT_INVALID');
   });
 
   await test('explicit compositor frames also receive catalog chrome while legacy frames remain untouched',async()=>{

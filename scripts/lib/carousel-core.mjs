@@ -7,7 +7,8 @@ import { resolve, dirname, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createHash } from 'node:crypto';
 import { spawnSync } from 'node:child_process';
-import { buildNativeCardPrompt, intakeNativeCard, nativeReviewToFeedbackRecord, renderNativeChrome, resolveTargetDisplayLabel, validateNativeCardReview } from './hybrid-card-core.mjs';
+import { resolveChrome, verifyChromeText } from './chrome-tokens.mjs';
+import { buildNativeCardPrompt, intakeNativeCard, nativeReviewToFeedbackRecord, containedNativePath, renderNativeChrome, validateNativeCardReview } from './hybrid-card-core.mjs';
 
 import { bundledFontDigest } from './typography-core.mjs';
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
@@ -18,6 +19,7 @@ export const CAROUSEL_CONSTRAINTS = Object.freeze({
   beats: Object.freeze({ min: 1, max: 60 }),
   series_fields: Object.freeze(['schema_version','series_id','request','source','profiles','recipe','task','typography','regions','layouts','series_label','beats','frames','art_direction_sha256']),
   frame_fields: Object.freeze(['id','function','beat_ids','takeaway','alt_text','headline','headline_emphasis','source_note','layout','blocks','caption','job_ref','art_direction']),
+  art_direction_fields: Object.freeze(['plan_id','visual_mode','focal_subject','message','reading_order','asset','asset_block_id','avoid','protected','brand_elements','reuse','render_method','native_prompt_strings']),
   block_fields: Object.freeze(['id','region','kind','ref','sha256','mode','fit','rights_note','protect','text','source_ref','instruction','generation','provenance']),
   block_kinds: Object.freeze(['text','image','chart','generated']),
   frame_functions: Object.freeze(['orient','assert','show_evidence','explain_mechanism','compare','qualify','turn','show_consequence','decision','close']),
@@ -229,6 +231,16 @@ function fontEnvironment() {
   } catch {return null;}
 }
 
+/** Adapt the public catalog (targets[].label) to SUE-1614 chrome token resolution; failure maps to UNRESOLVED_LABEL. */
+function resolveHybridChrome(targetId,catalog) {
+  const accounts=obj(catalog?.accounts)?catalog.accounts:Object.fromEntries((Array.isArray(catalog?.targets)?catalog.targets:[]).filter((t)=>t&&text(t.id)).map((t)=>[t.id,{chrome:{...(obj(t.chrome)?t.chrome:{}),...(text(t.label)?{brand_label:t.label}:{})}}]));
+  try {
+    return resolveChrome({target:targetId,catalog:{accounts},required:['brand_label'],defaults:{page_mark_format:'{index}/{total}'}});
+  } catch(e) {
+    if(e.code==='UNKNOWN_TARGET') throw Object.assign(new Error(e.message),{code:'UNRESOLVED_LABEL'});
+    throw e;
+  }
+}
 const writeJson=(p,x)=>writeFileSync(p,`${JSON.stringify(x,null,2)}\n`);
 const basenameSafe=(root,path)=>{ need(typeof path==='string' && !relative(root,resolve(root,path)).startsWith('..') && !path.startsWith('/'),'SERIES_REUSE','invalid prior output locator'); return resolve(root,path); };
 
@@ -248,7 +260,8 @@ export async function executeCarousel(series,{baseDir=process.cwd(),outDir,raste
     for(const [id,input] of Object.entries(sessionFrames)) {
       keys(input,['png_path','source_dir','receipt','review','review_path'],`native session frame ${id}`);
       need(Boolean(text(input.png_path))!==Boolean(text(input.source_dir)), 'NATIVE_SESSION_INVALID', `${id}: provide exactly one of png_path or source_dir`);
-      need(obj(input.receipt) && input.receipt.route==='native_session' && /^sha256:[a-f0-9]{64}$/.test(input.receipt.sha256??''), 'NATIVE_SESSION_INVALID', `${id}: receipt needs route native_session and sha256`);
+      need(obj(input.receipt) && input.receipt.route==='native_session' && /^sha256:[a-f0-9]{64}$/.test(input.receipt.sha256??'') && text(input.receipt.generator_id), 'NATIVE_SESSION_INVALID', `${id}: receipt needs route native_session, sha256, and generator_id`);
+      for(const k of ['png_path','source_dir','review_path']) if(input[k]!==undefined) containedNativePath(nativeSessionBaseDir,input[k],`${id}.${k}`);
       need(!(input.review!==undefined && input.review_path!==undefined), 'NATIVE_SESSION_INVALID', `${id}: use review or review_path, not both`);
     }
   }
@@ -264,7 +277,10 @@ export async function executeCarousel(series,{baseDir=process.cwd(),outDir,raste
   // Preflight every frame before writing any PNG. This does not prove taste.
   const packets=[];
   for (const f of compiled.frames) packets.push(await compileExecution(f.plan,{baseDir,preset:compiled.preset}));
-  const targetLabel=hybridFrames.length?resolveTargetDisplayLabel(targetId,targetCatalog):null;
+  const chrome=hybridFrames.length?resolveHybridChrome(targetId,targetCatalog):null;
+  const pageMarkFor=(f)=>chrome.values.page_mark_format.replaceAll('{index}',String(f.index)).replaceAll('{total}',String(compiled.frames.length));
+  const verifyChrome=(proof,f)=>{verifyChromeText(chrome,{[chrome.values.kicker?'kicker':'brand_label']:proof.label});need(proof.page_mark===pageMarkFor(f),'UNRESOLVED_LABEL',`${f.id}: printed page mark differs from page_mark_format`);};
+  const targetLabel=chrome?(chrome.values.kicker??chrome.values.brand_label):null;
   const nativePrompts=new Map(nativeFrames.map((f)=>[f.id,buildNativeCardPrompt(f,{palette:packets[compiled.frames.indexOf(f)].theme,fontFamily:packets[compiled.frames.indexOf(f)].theme.font_family})]));
   const prior=previousDir?JSON.parse(readFileSync(resolve(previousDir,'series.json'),'utf8')):null;
   if (prior) need(prior.series_id===compiled.series_id && Array.isArray(prior.frames),'SERIES_REUSE','different or invalid prior series');
@@ -323,13 +339,14 @@ export async function executeCarousel(series,{baseDir=process.cwd(),outDir,raste
         } else {
           const intake=intakeNativeCard({pngPath:supplied.png_path,sourceDir:supplied.source_dir,receipt:supplied.receipt,baseDir:nativeSessionBaseDir,rasterizer:adapter});
           const sourceLayer=f.plan.layers.find((layer)=>layer.id==='source');
-          const composed=renderNativeChrome(intake.bytes,{label:targetLabel,sourceLine:sourceLayer?.text,pageMark:`${f.index}/${compiled.frames.length}`,tokens:packets[i].theme,rasterizer:adapter});
+          const composed=renderNativeChrome(intake.bytes,{label:targetLabel,sourceLine:sourceLayer?.text,pageMark:pageMarkFor(f),tokens:packets[i].theme,rasterizer:adapter});
           need(hash(readFileSync(intake.path))===intake.receipt.source_sha256,'NATIVE_SOURCE_CHANGED',`${f.id}: native source changed during rendering`);
           const finalSha=hash(composed.bytes);
-          const review=supplied.review??(supplied.review_path?JSON.parse(readFileSync(resolve(nativeSessionBaseDir,supplied.review_path),'utf8')):null);
-          const reviewCheck=review?validateNativeCardReview(review,{expectedStrings:f.art_direction.native_prompt_strings,cardSha256:finalSha}):null;
+          const review=supplied.review??(supplied.review_path?JSON.parse(readFileSync(containedNativePath(nativeSessionBaseDir,supplied.review_path,'review_path'),'utf8')):null);
+          const reviewCheck=review?validateNativeCardReview(review,{expectedStrings:f.art_direction.native_prompt_strings,cardSha256:finalSha,generatorId:supplied.receipt.generator_id}):null;
           const reviewStatus=!review?'REQUIRED':!reviewCheck.ok?'INVALID':review.status;
           entry.native_review_status=reviewStatus;
+          verifyChrome(composed.proof,f);
           entry.native_card_sha256=finalSha;
           entry.chrome_outside_changed_pixels=composed.proof.outside_changed_pixels;
           if(review && !reviewCheck.ok) entry.native_review_issues=reviewCheck.issues;
@@ -355,18 +372,19 @@ export async function executeCarousel(series,{baseDir=process.cwd(),outDir,raste
         entry.status=executed.status;
         if(f.art_direction?.render_method==='compositor' && isRenderedOk(entry.status)) {
           const sourceLayer=f.plan.layers.find((layer)=>layer.id==='source');
-          const chromeOptions={label:targetLabel,sourceLine:sourceLayer?.text,pageMark:`${f.index}/${compiled.frames.length}`,tokens:packets[i].theme,rasterizer:adapter};
+          const chromeOptions={label:targetLabel,sourceLine:sourceLayer?.text,pageMark:pageMarkFor(f),tokens:packets[i].theme,rasterizer:adapter};
           const masterChrome=renderNativeChrome(readFileSync(resolve(dir,'master.png')),{...chromeOptions});
           const imageChrome=renderNativeChrome(readFileSync(resolve(dir,'image.png')),{...chromeOptions});
+          verifyChrome(masterChrome.proof,f); verifyChrome(imageChrome.proof,f);
           writeFileSync(resolve(dir,'master.png'),masterChrome.bytes);
           writeFileSync(resolve(dir,'image.png'),imageChrome.bytes);
           writeJson(resolve(dir,'chrome.json'),{schema_version:'1.0.0',master:masterChrome.proof,image:imageChrome.proof});
           const receipt=JSON.parse(readFileSync(resolve(dir,'receipt.json'),'utf8'));
           receipt.outputs.master.sha256=hash(masterChrome.bytes);
           receipt.outputs.image.sha256=hash(imageChrome.bytes);
-          receipt.native_chrome={ref:'chrome.json',sha256:hash(readFileSync(resolve(dir,'chrome.json'))),outside_changed_pixels:0};
+          receipt.native_chrome={ref:'chrome.json',sha256:hash(readFileSync(resolve(dir,'chrome.json'))),outside_changed_pixels:masterChrome.proof.outside_changed_pixels};
           writeJson(resolve(dir,'receipt.json'),receipt);
-          entry.chrome_outside_changed_pixels=0;
+          entry.chrome_outside_changed_pixels=masterChrome.proof.outside_changed_pixels;
         }
       }
       if (f.art_direction?.asset?.source === 'generated' && f.art_direction?.render_method !== 'native_card') {
