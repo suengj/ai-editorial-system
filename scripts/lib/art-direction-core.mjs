@@ -55,7 +55,29 @@ export function validateArtDirectionPlan(plan, { evidence, packet, profile, cata
   for (const [i, frame] of frames.entries()) {
     const at = `frames[${i}]`;
     if (!object(frame)) { add(at, 'object required'); continue; }
-    exactKeys(frame, ['role', 'layout', 'message', 'visual_mode', 'focal_subject', 'reading_order', 'blocks', 'asset', 'protected', 'avoid', 'brand_elements', 'reuse'], at, add);
+    exactKeys(frame, ['role', 'render_method', 'native_prompt_strings', 'layout', 'message', 'visual_mode', 'focal_subject', 'reading_order', 'blocks', 'asset', 'protected', 'avoid', 'brand_elements', 'reuse'], at, add);
+    if (frame.render_method !== undefined && !['compositor', 'native_card'].includes(frame.render_method)) add(`${at}.render_method`, 'must be compositor or native_card');
+    const nativeCard = frame.render_method === 'native_card';
+    if (nativeCard) {
+      if (!Array.isArray(frame.native_prompt_strings) || frame.native_prompt_strings.length < 1 || frame.native_prompt_strings.length > 20
+        || !unique(frame.native_prompt_strings) || frame.native_prompt_strings.some(value => !nonblank(value) || value.length > 2000)) {
+        add(`${at}.native_prompt_strings`, 'native_card requires 1–20 unique, exact nonblank strings of at most 2000 characters');
+      } else {
+        const packetFrame = packet?.frames?.find(f => f?.role === frame.role);
+        if (!packetFrame || !nonblank(packetFrame.headline) || !nonblank(packetFrame.body)) {
+          add(`${at}.native_prompt_strings`, 'cannot bind exact strings without the matching packet headline and body');
+        } else {
+          let body = packetFrame.body;
+          if (frame.role === 'opportunity' && nonblank(profile?.cta) && !body.includes(profile.cta)) body += `\n\n${profile.cta}`;
+          const expected = [packetFrame.headline, ...body.split(/\n{2,}/)];
+          if (JSON.stringify(frame.native_prompt_strings) !== JSON.stringify(expected)) {
+            add(`${at}.native_prompt_strings`, 'must exactly equal the packet headline followed by its body paragraphs in order');
+          }
+        }
+      }
+    } else if (frame.native_prompt_strings !== undefined) {
+      add(`${at}.native_prompt_strings`, 'is only valid when render_method is native_card');
+    }
     if (!nonblank(frame.message) || frame.message.length > 240) add(`${at}.message`, 'required; maximum 240 characters');
     if (!VISUAL_MODES.includes(frame.visual_mode)) add(`${at}.visual_mode`, 'unsupported visual mode');
     if (!nonblank(frame.focal_subject) || frame.focal_subject.length > 160) add(`${at}.focal_subject`, 'required; maximum 160 characters');
@@ -94,7 +116,19 @@ export function validateArtDirectionPlan(plan, { evidence, packet, profile, cata
     if (asset.source === 'deterministic_diagram' && diagrams.length !== 1) add(`${at}.asset`, 'deterministic_diagram requires exactly one chart or diagram block');
     if (asset.source === 'none' && (generated.length || originals.length || diagrams.length)) add(`${at}.asset`, 'source=none cannot include image, generated, chart, or diagram blocks');
     if (new Set([...generated, ...originals, ...diagrams]).size > 1) add(`${at}.blocks`, 'one visual asset block per frame is supported');
-    for (const b of generated) if (!GENERATED_BLOCK_ROLES.has(b.role)) add(`${at}.blocks.${b.id}`, `generated role must be one of: ${[...GENERATED_BLOCK_ROLES].join(', ')}`);
+    for (const b of generated) {
+      const allowedNativeCard = nativeCard && b.role === 'native-card';
+      if (!GENERATED_BLOCK_ROLES.has(b.role) && !allowedNativeCard) add(`${at}.blocks.${b.id}`, `generated role must be one of: ${[...GENERATED_BLOCK_ROLES].join(', ')}${nativeCard ? ', native-card' : ''}`);
+      if (nativeCard && /(^|[-_])(text|copy|type|typography|headline|title|caption|lettering|word)([-_]|$)/i.test(b.role ?? '')) {
+        add(`${at}.blocks.${b.id}`, 'native_card text belongs in native_prompt_strings, not a generated text role');
+      }
+    }
+    if (nativeCard) {
+      if (generated.length !== 1 || generated[0]?.role !== 'native-card' || frame.blocks.length !== 1) {
+        add(`${at}.blocks`, 'native_card requires exactly one generated native-card block and no separate compositor layers');
+      }
+      if (asset.source !== 'generated' || asset.need !== true) add(`${at}.asset`, 'native_card requires a generated whole-card asset');
+    }
     if (generated.length) {
       const protectedTexts = [
         ...(evidence?.cases ?? []).map(c => c?.name),
@@ -105,7 +139,7 @@ export function validateArtDirectionPlan(plan, { evidence, packet, profile, cata
         add(`${at}.message`, 'generated-art prompt text cannot contain digits, company names, or protected claim text');
       }
     }
-    if (frame.role === 'money') {
+    if (frame.role === 'money' && !nativeCard) {
       if (!diagrams.length) add(`${at}.blocks`, 'money mechanics require a deterministic chart or diagram block');
     }
     const protectedData = frame.protected;

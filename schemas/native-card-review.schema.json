@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://suengj.com/schemas/native-card-review.schema.json",
+  "title": "Independent native card review result",
+  "description": "A reviewer-produced, card-hash-bound check for exact embedded strings, logos, and deterministic chrome. This is not visual approval or publication authority.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "review_id", "reviewed_at", "card_sha256", "reviewer", "expected_strings", "observed_strings", "logo_detected", "chrome_match", "status"],
+  "properties": {
+    "schema_version": { "const": "1.0.0" },
+    "review_id": { "type": "string", "pattern": "^native-card-review:[a-z0-9]+(-[a-z0-9]+)*$" },
+    "reviewed_at": { "type": "string", "format": "date-time" },
+    "card_sha256": { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$" },
+    "reviewer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "id", "independent"],
+      "properties": {
+        "type": { "enum": ["human", "agent"] },
+        "id": { "type": "string", "minLength": 1 },
+        "independent": { "const": true }
+      }
+    },
+    "expected_strings": { "type": "array", "minItems": 1, "maxItems": 20, "items": { "type": "string", "minLength": 1, "maxLength": 2000 } },
+    "observed_strings": { "type": "array", "maxItems": 50, "items": { "type": "string", "maxLength": 2000 } },
+    "logo_detected": { "type": "boolean" },
+    "chrome_match": { "type": "boolean" },
+    "status": { "enum": ["PASS", "TEXT_MISMATCH", "LOGO_DETECTED", "CHROME_MISMATCH"] }
+  }
+}

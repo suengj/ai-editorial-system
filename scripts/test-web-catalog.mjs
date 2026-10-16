@@ -39,7 +39,7 @@ test('all registered targets and flows, locked fields, schemas and gates are pre
   yes(c.targets.map((t) => t.id).join() === 'personal-instagram,personal-linkedin,signalytics-news,trends-moa', 'targets');
   yes(c.flows.map((f) => f.id).join() === 'blog,news,report', 'flows');
   yes(c.locked_fields.includes('facts') && c.precedence[0] === 'explicit_request', 'locks/precedence');
-  yes(JSON.stringify(Object.keys(c.schemas)) === JSON.stringify(['art-direction-plan', 'audio-plan', 'editorial-intent', 'editorial-package', 'feedback-record', 'narration-script', 'render-spec', 'tts-contract', 'video-plan', 'visual-brief']), 'schemas');
+  yes(JSON.stringify(Object.keys(c.schemas)) === JSON.stringify(['art-direction-plan', 'audio-plan', 'editorial-intent', 'editorial-package', 'feedback-record', 'narration-script', 'native-card-review', 'render-spec', 'tts-contract', 'video-plan', 'visual-brief']), 'schemas');
   yes(c.schemas['art-direction-plan'].schema.properties.schema_version.const === '1.0.0', 'art direction plan 1.0.0');
   yes(c.schemas['editorial-intent'].schema.properties.schema_version.const === '2.0.0', 'intent 2.0.0');
   yes(c.quality_gates.copy_gates.map((g) => g.id).join() === 'G-01,G-03,G-06', 'gates');

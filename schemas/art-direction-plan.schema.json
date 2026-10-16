@@ -43,6 +43,14 @@
       "required": ["role", "layout", "message", "visual_mode", "focal_subject", "reading_order", "blocks", "asset", "protected", "avoid", "brand_elements", "reuse"],
       "properties": {
         "role": { "enum": ["cover", "money", "case-a", "case-b", "opportunity", "trend"] },
+        "render_method": { "enum": ["compositor", "native_card"] },
+        "native_prompt_strings": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 20,
+          "uniqueItems": true,
+          "items": { "type": "string", "minLength": 1, "maxLength": 2000 }
+        },
         "layout": { "enum": ["hero", "flow", "columns", "stack", "text", "visual", "split"] },
         "message": { "type": "string", "minLength": 1, "maxLength": 240 },
         "visual_mode": { "enum": ["hero_image", "mechanism_flow", "case_pathway", "case_contrast", "synthesis_stack", "text_focus"] },
@@ -86,7 +94,17 @@
         "avoid": { "type": "array", "uniqueItems": true, "items": { "type": "string", "minLength": 1 } },
         "brand_elements": { "type": "array", "uniqueItems": true, "items": { "type": "string", "minLength": 1 } },
         "reuse": { "type": "array", "uniqueItems": true, "items": { "type": "string", "minLength": 1 } }
-      }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "render_method": { "const": "native_card" } }, "required": ["render_method"] },
+          "then": { "required": ["native_prompt_strings"] }
+        },
+        {
+          "if": { "required": ["native_prompt_strings"] },
+          "then": { "properties": { "render_method": { "const": "native_card" } }, "required": ["render_method"] }
+        }
+      ]
     }
   }
 }
