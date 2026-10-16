@@ -11,12 +11,7 @@
     "family",
     "purpose",
     "defaults",
-    "constraints",
-    "visual_style",
-    "motion",
-    "typography",
-    "quality_gates",
-    "audio"
+    "constraints"
   ],
   "properties": {
     "schema_version": {
@@ -182,19 +177,389 @@
       }
     },
     "visual_style": {
-      "type": "object"
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "palette": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "background": {
+              "type": "string",
+              "pattern": "^#[0-9A-Fa-f]{6}$"
+            },
+            "primary": {
+              "type": "string",
+              "pattern": "^#[0-9A-Fa-f]{6}$"
+            },
+            "accent": {
+              "type": "string",
+              "pattern": "^#[0-9A-Fa-f]{6}$"
+            },
+            "positive": {
+              "type": "string",
+              "pattern": "^#[0-9A-Fa-f]{6}$"
+            },
+            "negative": {
+              "type": "string",
+              "pattern": "^#[0-9A-Fa-f]{6}$"
+            },
+            "dim_opacity": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            }
+          },
+          "required": [
+            "background",
+            "primary",
+            "accent",
+            "positive",
+            "negative",
+            "dim_opacity"
+          ]
+        },
+        "grid_px": {
+          "type": "number",
+          "minimum": 1
+        },
+        "parallax_layers": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "minProperties": 1
     },
     "motion": {
-      "type": "object"
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "scene_length_seconds": {
+          "$ref": "#/$defs/scene_length"
+        },
+        "easing": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "enter": {
+              "type": "string"
+            },
+            "move": {
+              "type": "string"
+            },
+            "exit": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "enter",
+            "move",
+            "exit"
+          ]
+        },
+        "durations_ms": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "enter": {
+              "type": "number",
+              "minimum": 0
+            },
+            "exit": {
+              "type": "number",
+              "minimum": 0
+            },
+            "pulse": {
+              "type": "number",
+              "minimum": 0
+            },
+            "bar_grow": {
+              "type": "number",
+              "minimum": 0
+            },
+            "bar_stagger": {
+              "type": "number",
+              "minimum": 0
+            }
+          }
+        },
+        "countdown_seconds": {
+          "type": "number",
+          "minimum": 0
+        },
+        "reveal_correct_scale": {
+          "type": "number",
+          "minimum": 1
+        },
+        "silence_beat_before_reveal_ms": {
+          "type": "number",
+          "minimum": 0
+        }
+      },
+      "minProperties": 1
     },
     "typography": {
-      "type": "object"
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "font_family": {
+          "type": "string"
+        },
+        "hook_weight": {
+          "type": "integer",
+          "minimum": 100,
+          "maximum": 900
+        },
+        "body_weight": {
+          "type": "integer",
+          "minimum": 100,
+          "maximum": 900
+        },
+        "stroke_px": {
+          "type": "number",
+          "minimum": 0
+        },
+        "type_scale_pct_of_frame_height": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "hook": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 100
+            },
+            "caption": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 100
+            },
+            "number": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 100
+            },
+            "label": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 100
+            }
+          }
+        },
+        "caption": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "max_lines": {
+              "enum": [
+                1,
+                2
+              ]
+            },
+            "max_chars_per_line": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "wrap": {
+              "const": "word_boundary"
+            }
+          }
+        }
+      },
+      "minProperties": 1
     },
     "quality_gates": {
-      "type": "object"
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "hook_max_seconds",
+        "scene_length_seconds",
+        "caption_max_chars_per_line",
+        "caption_max_lines",
+        "wrap",
+        "min_contrast_ratio",
+        "safe_margins",
+        "audio_loudness_lufs",
+        "sfx_policy"
+      ],
+      "properties": {
+        "hook_max_seconds": {
+          "type": "number",
+          "minimum": 0
+        },
+        "scene_length_seconds": {
+          "$ref": "#/$defs/scene_length"
+        },
+        "caption_max_chars_per_line": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "caption_max_lines": {
+          "enum": [
+            1,
+            2
+          ]
+        },
+        "wrap": {
+          "const": "word_boundary"
+        },
+        "min_contrast_ratio": {
+          "type": "number",
+          "minimum": 1,
+          "maximum": 21
+        },
+        "safe_margins": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "9:16": {
+              "$ref": "#/$defs/margins"
+            },
+            "16:9": {
+              "$ref": "#/$defs/margins"
+            },
+            "1:1": {
+              "$ref": "#/$defs/margins"
+            },
+            "4:5": {
+              "$ref": "#/$defs/margins"
+            }
+          }
+        },
+        "audio_loudness_lufs": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "integrated_target",
+            "tolerance",
+            "bgm_target",
+            "ducking_db",
+            "true_peak_max_dbtp"
+          ],
+          "properties": {
+            "integrated_target": {
+              "type": "number"
+            },
+            "tolerance": {
+              "type": "number"
+            },
+            "bgm_target": {
+              "type": "number"
+            },
+            "ducking_db": {
+              "type": "number"
+            },
+            "true_peak_max_dbtp": {
+              "type": "number"
+            }
+          }
+        },
+        "sfx_policy": {
+          "const": "semantic_only"
+        }
+      },
+      "minProperties": 1
     },
     "audio": {
-      "type": "object"
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "voice_lufs": {
+          "type": "number"
+        },
+        "bgm_lufs": {
+          "type": "number"
+        },
+        "duck_db": {
+          "type": "number"
+        },
+        "duck_attack_ms": {
+          "type": "number"
+        },
+        "duck_release_ms": {
+          "type": "number"
+        },
+        "sfx_gain_db": {
+          "type": "number"
+        },
+        "voice_syllables_per_second": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "min",
+            "max"
+          ],
+          "properties": {
+            "min": {
+              "type": "number",
+              "minimum": 0
+            },
+            "max": {
+              "type": "number",
+              "minimum": 0
+            }
+          }
+        }
+      },
+      "required": [
+        "voice_lufs",
+        "bgm_lufs",
+        "duck_db",
+        "duck_attack_ms",
+        "duck_release_ms",
+        "sfx_gain_db"
+      ],
+      "minProperties": 1
+    }
+  },
+  "$defs": {
+    "scene_length": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "min",
+        "max"
+      ],
+      "properties": {
+        "min": {
+          "type": "number",
+          "minimum": 0.01
+        },
+        "max": {
+          "type": "number",
+          "minimum": 0.01
+        }
+      }
+    },
+    "margins": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "all": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 0.5
+        },
+        "top": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 0.5
+        },
+        "bottom": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 0.5
+        },
+        "left": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 0.5
+        },
+        "right": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 0.5
+        }
+      }
     }
   }
 }

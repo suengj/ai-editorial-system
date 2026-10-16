@@ -81,7 +81,6 @@ export const CODES = Object.freeze({
 const issue = (code, where, message) => ({ code, where, message });
 
 const readManifest = () => readJSON(resolve(ROOT, 'editorial/entry-manifest.json'));
-const profilePins = () => readManifest().video_profiles ?? {};
 const sha256 = (bytes) => createHash('sha256').update(bytes).digest('hex');
 const canonicalJson = (value) => {
   if (Array.isArray(value)) return `[${value.map(canonicalJson).join(',')}]`;
@@ -217,53 +216,86 @@ function validChangeRequestShape(request) {
 }
 
 function validateVideoPlanV2(doc, issues, context) {
-  const pins = profilePins();
-  const pin = pins[doc.profile_ref.profile_id];
+  const manifest = readManifest();
+  const basePin = manifest.video_profiles?.[doc.profile_ref.profile_id];
+  const stylePin = manifest.video_style_profiles?.[doc.profile_ref.profile_id];
+  const pin = doc.profile_ref.revision === stylePin?.revision ? stylePin : basePin;
   if (!pin || pin.revision !== doc.profile_ref.revision || pin.sha256 !== doc.profile_ref.sha256) {
-    issues.push(issueFor(CODES.PROFILE_PIN, doc, `profile_ref does not match the manifest pin for ${doc.profile_ref.profile_id}`));
+    issues.push(issueFor(CODES.PROFILE_PIN, doc, `profile_ref does not match a manifest pin for ${doc.profile_ref.profile_id}`));
   } else {
     const profileBytes = readFileSync(resolve(ROOT, pin.path));
     if (sha256(profileBytes) !== pin.sha256) issues.push(issueFor(CODES.PROFILE_PIN, doc, `profile bytes do not match the manifest SHA-256 for ${doc.profile_ref.profile_id}`));
     const profile = JSON.parse(profileBytes.toString('utf8'));
     if (profile.family !== doc.profile_ref.profile_id.split('/')[1]) issues.push(issueFor(CODES.PROFILE_PIN, doc, 'profile family does not match the pinned profile id'));
     if (!profile.defaults.aspect_ratios.includes(doc.aspect_ratio)) issues.push(issueFor(CODES.PROFILE_PIN, doc, `aspect_ratio ${doc.aspect_ratio} is not enabled by the selected profile`));
-    const gates = profile.quality_gates;
-    const req = doc.render_requirements;
-    const fail = (message) => issues.push(issueFor(CODES.VIDEO_QUALITY_GATE, doc, message));
-    if (gates && req) {
-      if (req.hook_duration_seconds > gates.hook_max_seconds) fail(`hook duration exceeds ${gates.hook_max_seconds}s`);
-      const range = gates.scene_length_seconds;
-      for (const scene of doc.scenes) {
-        const duration = scene.timing.end_seconds - scene.timing.start_seconds;
-        if (duration < range.min) fail(`scene ${scene.scene_id} is shorter than ${range.min}s`);
-        if (duration > range.max) fail(`scene ${scene.scene_id} exceeds ${range.max}s`);
-      }
-      for (const caption of req.caption_samples) {
-        if (!doc.scenes.some((scene) => scene.scene_id === caption.scene_id)) fail(`caption sample references unknown scene ${caption.scene_id}`);
-        if (caption.lines.length > gates.caption_max_lines || caption.lines.some((line) => [...line].length > gates.caption_max_chars_per_line)) fail(`caption sample in ${caption.scene_id} exceeds line or character limits`);
-        if (caption.lines.join(' ') !== caption.exact_text) fail(`caption sample in ${caption.scene_id} breaks a word boundary or changes exact text`);
-      }
-      if (req.min_contrast_ratio < gates.min_contrast_ratio) fail(`declared minimum contrast is below ${gates.min_contrast_ratio}:1`);
-      const margin = gates.safe_margins[doc.aspect_ratio];
-      if (margin) for (const side of ['top','bottom','left','right']) {
-        const required = margin[side] ?? margin.all;
-        if (required !== undefined && req.safe_margins[side] < required) fail(`${side} safe margin is below ${required}`);
-      }
-      const audio = gates.audio_loudness_lufs;
-      if (Math.abs(req.integrated_loudness_lufs - audio.integrated_target) > audio.tolerance) fail('integrated loudness is outside the profile target tolerance');
-      if (Math.abs(req.bgm_loudness_lufs - audio.bgm_target) > audio.tolerance) fail('BGM loudness is outside the profile target tolerance');
-      if (Math.abs(req.ducking_db - audio.ducking_db) > 1) fail('narration ducking is outside the profile target tolerance');
-      if (req.true_peak_dbtp > audio.true_peak_max_dbtp) fail(`true peak exceeds ${audio.true_peak_max_dbtp} dBTP`);
-      for (const event of req.sfx_events) if (!event.semantic_only || event.semantic_role === 'none') fail(`SFX in ${event.scene_id} must serve a declared semantic role`);
-    }
     const genreRef = doc.genre_preset_ref;
+    let effectiveProfile = profile;
     if (genreRef) {
-      const genrePin = readManifest().video_genre_presets?.[genreRef.profile_id];
+      const genrePin = manifest.video_genre_presets?.[genreRef.profile_id];
       if (!genrePin || genrePin.revision !== genreRef.revision || genrePin.sha256 !== genreRef.sha256 || genrePin.base_profile_id !== doc.profile_ref.profile_id) {
         issues.push(issueFor(CODES.PROFILE_PIN, doc, `genre_preset_ref does not match a manifest pin based on ${doc.profile_ref.profile_id}`));
       } else {
         const genreBytes = readFileSync(resolve(ROOT, genrePin.path));
         if (sha256(genreBytes) !== genrePin.sha256) issues.push(issueFor(CODES.PROFILE_PIN, doc, `genre preset bytes do not match the manifest SHA-256 for ${genreRef.profile_id}`));
+        else {
+          const preset = JSON.parse(genreBytes.toString('utf8'));
+          // Genre values take precedence over family style values for their declared subtrees.
+          effectiveProfile = { ...profile };
+          for (const [section, values] of Object.entries(preset.overrides)) {
+            effectiveProfile[section] = { ...profile[section], ...values };
+          }
+        }
+      }
+    }
+    const gates = effectiveProfile.quality_gates;
+    const req = doc.render_requirements;
+    const fail = (message) => issues.push(issueFor(CODES.VIDEO_QUALITY_GATE, doc, message));
+    // v1 family profiles keep their original contract. Quality gates are an explicit v2 profile opt-in.
+    if (doc.profile_ref.revision >= 2) {
+      if (!gates || !req) fail('revision 2 style profiles require quality_gates and render_requirements');
+      else {
+        const hookScenes = doc.scenes.filter((scene) => scene.function === 'hook');
+        const timelineHookDuration = hookScenes.reduce((sum, scene) => sum + scene.timing.end_seconds - scene.timing.start_seconds, 0);
+        if (Math.abs(req.hook_duration_seconds - timelineHookDuration) > 0.001) fail(`declared hook duration ${req.hook_duration_seconds}s does not match hook scene timeline ${timelineHookDuration}s`);
+        if (timelineHookDuration > gates.hook_max_seconds) fail(`hook scene timeline exceeds ${gates.hook_max_seconds}s`);
+        const range = effectiveProfile.motion?.scene_length_seconds ?? gates.scene_length_seconds;
+        const captionMaxLines = effectiveProfile.typography?.caption?.max_lines ?? gates.caption_max_lines;
+        const captionMaxChars = effectiveProfile.typography?.caption?.max_chars_per_line ?? gates.caption_max_chars_per_line;
+        for (const scene of doc.scenes) {
+          const duration = scene.timing.end_seconds - scene.timing.start_seconds;
+          if (duration < range.min) fail(`scene ${scene.scene_id} is shorter than effective preset minimum ${range.min}s`);
+          if (duration > range.max) fail(`scene ${scene.scene_id} exceeds effective preset maximum ${range.max}s`);
+        }
+        const samples = req.caption_samples;
+        const planned = doc.captions.planned_segments;
+        if (!Array.isArray(planned)) fail('revision 2 quality-gated plans require captions.planned_segments');
+        const plannedCaptions = Array.isArray(planned) ? planned : [];
+        if (doc.captions.enabled && plannedCaptions.length === 0) fail('enabled captions require planned caption text');
+        const captionKey = (caption) => JSON.stringify([caption.scene_id, caption.exact_text]);
+        const expectedCaptionCounts = new Map();
+        const sampleCaptionCounts = new Map();
+        for (const caption of plannedCaptions) expectedCaptionCounts.set(captionKey(caption), (expectedCaptionCounts.get(captionKey(caption)) ?? 0) + 1);
+        for (const caption of samples) sampleCaptionCounts.set(captionKey(caption), (sampleCaptionCounts.get(captionKey(caption)) ?? 0) + 1);
+        if (samples.length !== plannedCaptions.length || expectedCaptionCounts.size !== sampleCaptionCounts.size || [...expectedCaptionCounts].some(([key, count]) => sampleCaptionCounts.get(key) !== count)) {
+          fail('caption samples must cover every planned caption exactly once');
+        }
+        for (const caption of samples) {
+          if (!doc.scenes.some((scene) => scene.scene_id === caption.scene_id)) fail(`caption sample references unknown scene ${caption.scene_id}`);
+          if (caption.lines.length > captionMaxLines || caption.lines.some((line) => [...line].length > captionMaxChars)) fail(`caption sample in ${caption.scene_id} exceeds line or character limits`);
+          if (caption.lines.join(' ') !== caption.exact_text) fail(`caption sample in ${caption.scene_id} breaks a word boundary or changes exact text`);
+        }
+        if (req.min_contrast_ratio < gates.min_contrast_ratio) fail(`declared minimum contrast is below ${gates.min_contrast_ratio}:1`);
+        const margin = gates.safe_margins[doc.aspect_ratio];
+        if (margin) for (const side of ['top','bottom','left','right']) {
+          const required = margin[side] ?? margin.all;
+          if (required !== undefined && req.safe_margins[side] < required) fail(`${side} safe margin is below ${required}`);
+        }
+        const audio = gates.audio_loudness_lufs;
+        if (Math.abs(req.integrated_loudness_lufs - audio.integrated_target) > audio.tolerance) fail('integrated loudness is outside the profile target tolerance');
+        if (Math.abs(req.bgm_loudness_lufs - audio.bgm_target) > audio.tolerance) fail('BGM loudness is outside the profile target tolerance');
+        if (Math.abs(req.ducking_db - audio.ducking_db) > 1) fail('narration ducking is outside the profile target tolerance');
+        if (req.true_peak_dbtp > audio.true_peak_max_dbtp) fail(`true peak exceeds ${audio.true_peak_max_dbtp} dBTP`);
+        for (const event of req.sfx_events) if (!event.semantic_only || event.semantic_role === 'none') fail(`SFX in ${event.scene_id} must serve a declared semantic role`);
       }
     }
   }

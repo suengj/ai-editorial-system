@@ -20,8 +20,7 @@
     "audio",
     "captions",
     "approval",
-    "change_requests",
-    "render_requirements"
+    "change_requests"
   ],
   "properties": {
     "schema_version": {
@@ -824,6 +823,26 @@
             "pass",
             "fail"
           ]
+        },
+        "planned_segments": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "scene_id",
+              "exact_text"
+            ],
+            "properties": {
+              "scene_id": {
+                "type": "string"
+              },
+              "exact_text": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          }
         }
       }
     },

@@ -16,9 +16,14 @@
   },
   "video_profile_paths": "editorial/profiles/video/{id}.json",
   "video_profiles": {
-    "video/educational-summary": { "path": "editorial/profiles/video/educational-summary.json", "revision": 2, "sha256": "c6e716370a35326c83c31c8fb827fe356b995d176983f63700f707877f17a479" },
-    "video/interactive-information": { "path": "editorial/profiles/video/interactive-information.json", "revision": 2, "sha256": "557f9b1e47545cd0d60e750ecbf2d45318dc3cb2c2f0ce30d961f68ba21fdbfc" },
-    "video/narrated-explainer": { "path": "editorial/profiles/video/narrated-explainer.json", "revision": 2, "sha256": "48936358d2081442327b312ed82781f6f980042067b148f0be39f3897bc1fae1" }
+    "video/educational-summary": { "path": "editorial/profiles/video/educational-summary.json", "revision": 1, "sha256": "52958745b4033174373a99e952349de9779577d2bc0343a98bea33906ba348b3" },
+    "video/interactive-information": { "path": "editorial/profiles/video/interactive-information.json", "revision": 1, "sha256": "f53bb623c189a9d2d0de0ebc9ce26027b558d751b4561f422f875886c5667a35" },
+    "video/narrated-explainer": { "path": "editorial/profiles/video/narrated-explainer.json", "revision": 1, "sha256": "59508120c531cb4578cf119aa91ad01566317e76d1872c8ee79b5a5cfbccb099" }
+  },
+  "video_style_profiles": {
+    "video/educational-summary": {"path": "editorial/profiles/video/style-educational-summary.json", "revision": 2, "sha256": "c6e716370a35326c83c31c8fb827fe356b995d176983f63700f707877f17a479"},
+    "video/interactive-information": {"path": "editorial/profiles/video/style-interactive-information.json", "revision": 2, "sha256": "557f9b1e47545cd0d60e750ecbf2d45318dc3cb2c2f0ce30d961f68ba21fdbfc"},
+    "video/narrated-explainer": {"path": "editorial/profiles/video/style-narrated-explainer.json", "revision": 2, "sha256": "48936358d2081442327b312ed82781f6f980042067b148f0be39f3897bc1fae1"}
   },
   "video_genre_presets": {
     "video-genre/motion-design": { "path": "editorial/profiles/video/genre-motion-design.json", "revision": 1, "sha256": "e2a0ed0709d01c171c48386ecc2053283dd08704b3778447cc4466d75c74ba5d", "base_profile_id": "video/educational-summary" },

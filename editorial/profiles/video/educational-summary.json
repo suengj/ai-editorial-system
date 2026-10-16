@@ -1,134 +1,23 @@
 {
   "schema_version": "1.0.0",
   "profile_id": "video/educational-summary",
-  "revision": 2,
+  "revision": 1,
   "family": "educational-summary",
   "purpose": "Explain verified source material through a compact learning sequence.",
   "defaults": {
     "duration_class": "short",
     "target_duration_seconds": null,
-    "aspect_ratios": [
-      "16:9",
-      "9:16",
-      "1:1",
-      "4:5"
-    ],
+    "aspect_ratios": ["16:9", "9:16", "1:1", "4:5"],
     "semantic_thinking": "quiet",
     "reveal": "step_by_step",
     "presentation": "sequential",
-    "educational_order": [
-      "hook",
-      "concept",
-      "example",
-      "worked_solution",
-      "key_takeaway"
-    ],
-    "captions": {
-      "with_narration": "on",
-      "max_lines": 2,
-      "safe_zone": "caption-safe"
-    }
+    "educational_order": ["hook", "concept", "example", "worked_solution", "key_takeaway"],
+    "captions": { "with_narration": "on", "max_lines": 2, "safe_zone": "caption-safe" }
   },
   "constraints": {
     "source_evidence_envelope_required": true,
     "source_only_beats_allowed": true,
     "editorial_package_required": false,
-    "locked_fields": [
-      "source_evidence",
-      "rights",
-      "figures",
-      "approval"
-    ]
-  },
-  "visual_style": {
-    "palette": {
-      "background": "#0F1220",
-      "primary": "#4DA3FF",
-      "accent": "#FFD60A",
-      "positive": "#34D27B",
-      "negative": "#FF5A5F",
-      "dim_opacity": 0.35
-    },
-    "grid_px": 8,
-    "parallax_layers": 3
-  },
-  "motion": {
-    "scene_length_seconds": {
-      "min": 2.5,
-      "max": 12
-    },
-    "easing": {
-      "enter": "easeOutBack",
-      "move": "easeInOutCubic",
-      "exit": "easeInCubic"
-    },
-    "durations_ms": {
-      "enter": 280,
-      "exit": 180,
-      "pulse": 360,
-      "bar_grow": 750,
-      "bar_stagger": 80
-    }
-  },
-  "typography": {
-    "font_family": "Pretendard",
-    "hook_weight": 800,
-    "body_weight": 700,
-    "stroke_px": 6,
-    "type_scale_pct_of_frame_height": {
-      "hook": 7,
-      "caption": 4.2,
-      "number": 9,
-      "label": 2.8
-    },
-    "caption": {
-      "max_lines": 2,
-      "max_chars_per_line": 14,
-      "wrap": "word_boundary"
-    }
-  },
-  "quality_gates": {
-    "hook_max_seconds": 1.5,
-    "scene_length_seconds": {
-      "min": 2.5,
-      "max": 12
-    },
-    "caption_max_chars_per_line": 14,
-    "caption_max_lines": 2,
-    "wrap": "word_boundary",
-    "min_contrast_ratio": 4.5,
-    "safe_margins": {
-      "9:16": {
-        "top": 0.1146,
-        "bottom": 0.1979,
-        "left": 0.0556,
-        "right": 0.1296
-      },
-      "16:9": {
-        "all": 0.05
-      },
-      "1:1": {
-        "all": 0.05
-      },
-      "4:5": {
-        "all": 0.05
-      }
-    },
-    "audio_loudness_lufs": {
-      "integrated_target": -14,
-      "tolerance": 1,
-      "bgm_target": -22,
-      "ducking_db": -11,
-      "true_peak_max_dbtp": -1
-    },
-    "sfx_policy": "semantic_only"
-  },
-  "audio": {
-    "voice_lufs": -14,
-    "bgm_lufs": -22,
-    "duck_db": -11,
-    "duck_attack_ms": 80,
-    "duck_release_ms": 400,
-    "sfx_gain_db": 4
+    "locked_fields": ["source_evidence", "rights", "figures", "approval"]
   }
 }

@@ -3,8 +3,8 @@
   "plan_id": "video-plan:example-45s",
   "profile_ref": {
     "profile_id": "video/educational-summary",
-    "revision": 2,
-    "sha256": "c6e716370a35326c83c31c8fb827fe356b995d176983f63700f707877f17a479"
+    "revision": 1,
+    "sha256": "52958745b4033174373a99e952349de9779577d2bc0343a98bea33906ba348b3"
   },
   "source_evidence": {
     "schema_version": "1.0.0",
@@ -310,21 +310,5 @@
       "source_ref": "source-1",
       "locked": true
     }
-  ],
-  "render_requirements": {
-    "hook_duration_seconds": 1.2,
-    "caption_samples": [],
-    "min_contrast_ratio": 4.5,
-    "safe_margins": {
-      "top": 0.05,
-      "bottom": 0.05,
-      "left": 0.05,
-      "right": 0.05
-    },
-    "integrated_loudness_lufs": -14,
-    "true_peak_dbtp": -1,
-    "sfx_events": [],
-    "bgm_loudness_lufs": -22,
-    "ducking_db": -11
-  }
+  ]
 }

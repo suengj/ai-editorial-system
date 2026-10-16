@@ -4,7 +4,7 @@
   "render_ref": "fixture://render/video.mp4",
   "stage_result": {
     "schema_version": "1.0.0",
-    "stage": "critique",
+    "stage": "render",
     "status": "done",
     "input_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
     "output_refs": [

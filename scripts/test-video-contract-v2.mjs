@@ -3,7 +3,7 @@ import { readFileSync, readdirSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { CODES, resolveLocalSourceEvidence, validateVideoDocument } from './lib/video-plan-core.mjs';
+import { CODES, loadVideoSchema, resolveLocalSourceEvidence, validateVideoDocument } from './lib/video-plan-core.mjs';
 import { validate } from './lib/json-schema-lite.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
@@ -49,19 +49,62 @@ for (const [id, pin] of Object.entries(profiles)) {
   const plan = read(ALLOW, planFile);
   check(`${id} plan carries the exact manifest SHA pin`, plan.profile_ref.profile_id === id && plan.profile_ref.revision === pin.revision && plan.profile_ref.sha256 === pin.sha256);
 }
+for (const [id,pin] of Object.entries(manifest.video_style_profiles ?? {})) { const bytes=readFileSync(resolve(ROOT,pin.path)); const profile=JSON.parse(bytes); check(`${id} revision 2 style profile validates and matches its byte pin`, validate(profile,profileSchema).length===0 && profile.revision===2 && createHash('sha256').update(bytes).digest('hex')===pin.sha256); }
 const genreSchema = JSON.parse(readFileSync(resolve(ROOT, 'schemas/video-genre-preset.schema.json'), 'utf8'));
 check('manifest pins the five additive genre presets', Object.keys(manifest.video_genre_presets ?? {}).sort().join() === ['video-genre/data-journalism','video-genre/learning','video-genre/motion-design','video-genre/science-explainer','video-genre/shortform-native'].sort().join());
 for (const [id, pin] of Object.entries(manifest.video_genre_presets ?? {})) {
   const bytes = readFileSync(resolve(ROOT, pin.path)); const preset = JSON.parse(bytes);
   check(`${id} validates against its base family and byte pin`, validate(preset, genreSchema).length === 0 && preset.profile_id === id && preset.base_profile_id === pin.base_profile_id && createHash('sha256').update(bytes).digest('hex') === pin.sha256 && Boolean(profiles[pin.base_profile_id]));
 }
-const critiqueSchema = JSON.parse(readFileSync(resolve(ROOT, 'schemas/video-critique.schema.json'), 'utf8'));
+const critiqueSchema = loadVideoSchema('video-critique');
 const critique = read(ROOT, 'schemas/examples/video/allow/video-critique-pass.json');
-check('frame-sample critique matches shorts_gen critique StageResult shape', validate(critique, critiqueSchema).length === 0);
+check('frame-sample critique wrapper carries an upstream-compatible render StageResult', validate(critique, critiqueSchema).length === 0);
 const badCritique = clone(critique); badCritique.frame_samples[0].checklist[0].result = 'uncertain';
 check('critique checklist rejects non pass/fail output', validate(badCritique, critiqueSchema).length > 0);
+const critiqueBytes=readFileSync(resolve(ROOT,'schemas/examples/video/allow/video-critique-pass.json'));
+const upstreamStageSchema=JSON.parse(readFileSync(resolve(ROOT,'schemas/vendor/shorts-gen-6d24e8c/stage-result.schema.json'),'utf8'));
+check('critique StageResult validates against pinned shorts_gen upstream schema', validate(critique.stage_result,upstreamStageSchema).length===0 && createHash('sha256').update(readFileSync(resolve(ROOT,'schemas/vendor/shorts-gen-6d24e8c/stage-result.schema.json'))).digest('hex')==='1718e299953abe9ac3cc6c4d9934acb1adbf3604b729e7795ab253a3f1945631');
+const badProfile=clone(read(ROOT,manifest.video_style_profiles['video/educational-summary'].path)); badProfile.motion.scene_length_seconds.mim=0.8;
+check('profile schema rejects misspelled nested motion settings', validate(badProfile,profileSchema).length>0);
+const badPreset=clone(read(ROOT,manifest.video_genre_presets['video-genre/shortform-native'].path)); badPreset.overrides.motion.scene_length_seconds.maximum=2;
+check('genre schema rejects misspelled nested override settings', validate(badPreset,genreSchema).length>0);
+const emptyPreset=clone(badPreset); emptyPreset.overrides={};
+check('genre schema rejects empty override objects', validate(emptyPreset,genreSchema).length>0);
+const emptyMotion=clone(badPreset); emptyMotion.overrides.motion={};
+check('genre schema rejects empty nested override sections', validate(emptyMotion,genreSchema).length>0);
+const emptyProfileSection=clone(read(ROOT,manifest.video_style_profiles['video/educational-summary'].path)); emptyProfileSection.motion={};
+check('profile schema rejects empty nested profile sections', validate(emptyProfileSection,profileSchema).length>0);
 const badGatePlan = read(ROOT, 'schemas/examples/video/deny/video-plan-v2-quality-gate.json');
 check('quality gate deny fixture fails measured plan contract checks', codes('video-plan-v2', badGatePlan).includes(CODES.VIDEO_QUALITY_GATE));
+const gateMessages = (plan) => validateVideoDocument('video-plan-v2', plan).filter((item) => item.code === CODES.VIDEO_QUALITY_GATE).map((item) => item.message);
+const qualityCase = clone(badGatePlan);
+const gateCase = (name, mutate, expected) => { const testPlan=clone(qualityCase); mutate(testPlan); check(name, gateMessages(testPlan).some((message)=>message.includes(expected))); };
+gateCase('hook duration gate is tied to hook scene timing', p => { p.render_requirements.hook_duration_seconds=1.2; }, 'does not match hook scene timeline');
+gateCase('hook maximum duration gate rejects an overlong timeline', p => { p.render_requirements.hook_duration_seconds=9; }, 'hook scene timeline exceeds');
+gateCase('zero declared hook duration cannot bypass a planned hook scene', p => { p.render_requirements.hook_duration_seconds=0; }, 'does not match hook scene timeline');
+gateCase('revision 2 quality profiles require the render requirements block', p => { delete p.render_requirements; }, 'require quality_gates and render_requirements');
+gateCase('scene maximum duration gate is checked independently', p => { p.scenes[1].timing.end_seconds=22; p.scenes[1].layers[0].timing.end_seconds=22; }, 'exceeds effective preset maximum');
+gateCase('caption coverage rejects missing planned text samples', p => { p.captions.planned_segments=[{scene_id:'scene-1',exact_text:'Caption text'}]; }, 'cover every planned caption');
+gateCase('revision 2 plans cannot omit the planned caption source list', p => { p.captions.enabled=true; }, 'require captions.planned_segments');
+gateCase('caption length gate rejects excess characters', p => { p.captions.planned_segments=[{scene_id:'scene-1',exact_text:'123456789012345'}]; p.render_requirements.caption_samples=[{scene_id:'scene-1',exact_text:'123456789012345',lines:['123456789012345']}]; }, 'exceeds line or character limits');
+gateCase('caption wrapping gate rejects changed word boundaries', p => { p.captions.planned_segments=[{scene_id:'scene-1',exact_text:'Keep words intact'}]; p.render_requirements.caption_samples=[{scene_id:'scene-1',exact_text:'Keep words intact',lines:['Keep words','not intact']}]; }, 'breaks a word boundary');
+gateCase('contrast gate rejects low contrast', p => { p.render_requirements.min_contrast_ratio=3.2; }, 'declared minimum contrast');
+gateCase('safe margin gate rejects insufficient bottom margin', p => { p.render_requirements.safe_margins.bottom=0; }, 'bottom safe margin');
+gateCase('integrated loudness gate rejects out of range level', p => { p.render_requirements.integrated_loudness_lufs=-19; }, 'integrated loudness');
+gateCase('BGM loudness gate rejects out of range level', p => { p.render_requirements.bgm_loudness_lufs=-16; }, 'BGM loudness');
+gateCase('ducking gate rejects mismatched attenuation', p => { p.render_requirements.ducking_db=-2; }, 'narration ducking');
+gateCase('true peak gate rejects excessive peak', p => { p.render_requirements.true_peak_dbtp=0; }, 'true peak exceeds');
+gateCase('SFX gate rejects nonsemantic events', p => { p.render_requirements.sfx_events=[{scene_id:'scene-1',semantic_only:true,semantic_role:'none'}]; }, 'must serve a declared semantic role');
+const shortformPlan=clone(qualityCase); const shortformPin=manifest.video_style_profiles['video/interactive-information'];
+shortformPlan.profile_ref={profile_id:'video/interactive-information',revision:shortformPin.revision,sha256:shortformPin.sha256};
+shortformPlan.genre_preset_ref={profile_id:'video-genre/shortform-native',revision:manifest.video_genre_presets['video-genre/shortform-native'].revision,sha256:manifest.video_genre_presets['video-genre/shortform-native'].sha256};
+shortformPlan.scenes[0].timing={start_seconds:0,end_seconds:0.7}; shortformPlan.scenes[0].layers[0].timing={start_seconds:0,end_seconds:0.7};
+check('genre override is applied before scene validation and rejects below its 0.8s effective minimum', gateMessages(shortformPlan).some((message)=>message.includes('effective preset minimum 0.8s')));
+const shortformValid=clone(shortformPlan); shortformValid.scenes[0].timing={start_seconds:0,end_seconds:1.2}; shortformValid.scenes[0].layers[0].timing={start_seconds:0,end_seconds:1.2}; shortformValid.scenes[1].timing={start_seconds:1.2,end_seconds:2.7}; shortformValid.scenes[1].layers[0].timing={start_seconds:1.2,end_seconds:2.7}; shortformValid.render_requirements.hook_duration_seconds=1.2;
+check('shortform 1.5s scene is judged by its genre range instead of the 2.5s family minimum', !gateMessages(shortformValid).some((message)=>message.includes('scene scene-2 is shorter than effective preset minimum')));
+const shortformTooLong=clone(shortformPlan); shortformTooLong.scenes[1].timing={start_seconds:1,end_seconds:6}; shortformTooLong.scenes[1].layers[0].timing={start_seconds:1,end_seconds:6};
+check('shortform five-second scenes fail the effective two-second genre maximum', gateMessages(shortformTooLong).some((message)=>message.includes('scene scene-2 exceeds effective preset maximum 2s')));
+
 
 const landscape = read(ALLOW, 'video-plan-v2-silent-60s-16-9.json');
 const portrait = read(ALLOW, 'video-plan-v2-silent-60s-9-16.json');
@@ -69,7 +112,24 @@ check('60-second source-only landscape has no editorial package or fabricated ar
 check('60-second source-only portrait has no editorial package or fabricated article/claim', portrait.target_duration_seconds === 60 && portrait.aspect_ratio === '9:16' && portrait.scenes.every((s) => s.source_only) && !('editorial_package_ref' in portrait) && !('article_id' in portrait) && !('claim' in portrait));
 const example45 = read(ALLOW, 'video-plan-v2-example-45s.json');
 check('45-second educational example uses the profile default beat order', example45.target_duration_seconds === 45 && example45.scenes.map((s) => s.function).join() === 'hook,concept,example,worked_solution,key_takeaway');
-check('caption sample passes the line limit and exact word-boundary reconstruction gate', codes('video-plan-v2', example45).length === 0 && example45.render_requirements.caption_samples.length === 1);
+const legacyV2Hashes={
+  'schemas/examples/video/allow/video-plan-v2-example-45s.json':'0d72e21093b497ffd3999052853cf563fd6d2a9b5eaf3f3dd3d3e2b4589274ee',
+  'schemas/examples/video/allow/video-plan-v2-interactive-hybrid.json':'12f9503571cae8a90d383b7dc6ef465d477ecf5f50fe65aab2279147dcc62f7b',
+  'schemas/examples/video/allow/video-plan-v2-interactive-sequential.json':'054f9e4073e9770d6a84f082f0a93386e13118f7500bf908244bace54bf502bd',
+  'schemas/examples/video/allow/video-plan-v2-interactive-simultaneous.json':'dd3fc0c2f8d767f577be827fd0fef84a46d5cd0ff1b29e2904196cab645c31ac',
+  'schemas/examples/video/allow/video-plan-v2-narrated-mixed.json':'b2623d3e3ce2afde853b18d7f0855b6e3756b28797bcd31ffb9e815f486f1148',
+  'schemas/examples/video/allow/video-plan-v2-silent-60s-16-9.json':'07fe06b29df3757c57ffd6887e3a53650ed871de58b09c35d8d26a7b14d5a9e3',
+  'schemas/examples/video/allow/video-plan-v2-silent-60s-9-16.json':'5a6c8ec01b8936cb3d26c466071a68e82177106c87319aa2af989df4dd8a4803',
+  'schemas/examples/video/deny/video-plan-v2-locked-rights-change.json':'f9e470e4d4c7e4f83ffd806d465e9afc329984a2c93c9de054365a4d85e9b9fd',
+  'schemas/examples/video/deny/video-plan-v2-missing-source.json':'a2d0f08691600f4b93f4d62b250ebc0ac3d31b25d2571ae3dd49323f6a597e43',
+  'schemas/examples/video/deny/video-plan-v2-unsupported-field.json':'138ceb542bda7e3c0b8de8aec1cfd09709e631f88a24889b24a2a65b669c9bda',
+  'editorial/profiles/video/educational-summary.json':'52958745b4033174373a99e952349de9779577d2bc0343a98bea33906ba348b3',
+  'editorial/profiles/video/interactive-information.json':'f53bb623c189a9d2d0de0ebc9ce26027b558d751b4561f422f875886c5667a35',
+  'editorial/profiles/video/narrated-explainer.json':'59508120c531cb4578cf119aa91ad01566317e76d1872c8ee79b5a5cfbccb099'
+};
+check('all origin/main v2 plans and family profiles remain byte-identical', Object.entries(legacyV2Hashes).every(([path,hash])=>createHash('sha256').update(readFileSync(resolve(ROOT,path))).digest('hex')===hash));
+check('origin/main v2 example and family profile retain their original byte pins and validate without opt-in quality fields', createHash('sha256').update(readFileSync(resolve(ALLOW, 'video-plan-v2-example-45s.json'))).digest('hex') === '0d72e21093b497ffd3999052853cf563fd6d2a9b5eaf3f3dd3d3e2b4589274ee' && validate(example45, JSON.parse(readFileSync(resolve(ROOT, 'schemas/video-plan-v2.schema.json')))).length === 0 && !('render_requirements' in example45));
+check('legacy family profile shape remains valid unchanged', validate(read(ROOT, 'editorial/profiles/video/educational-summary.json'), profileSchema).length === 0 && createHash('sha256').update(readFileSync(resolve(ROOT, 'editorial/profiles/video/educational-summary.json'))).digest('hex') === '52958745b4033174373a99e952349de9779577d2bc0343a98bea33906ba348b3');
 const badGenrePin = clone(example45); badGenrePin.genre_preset_ref = { profile_id:'video-genre/motion-design', revision:1, sha256:'0'.repeat(64) };
 check('video plan rejects a stale or mismatched genre preset pin', codes('video-plan-v2', badGenrePin).includes(CODES.PROFILE_PIN));
 check('interactive profile fixtures cover sequential, simultaneous, and hybrid', ['sequential','simultaneous','hybrid'].every((mode) => read(ALLOW, `video-plan-v2-interactive-${mode}.json`).semantic_controls.presentation === mode));
