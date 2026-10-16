@@ -1,0 +1,24 @@
+{
+  "schema_version": "1.0.0",
+  "profile_id": "video-genre/motion-design",
+  "revision": 1,
+  "genre": "motion-design",
+  "base_profile_id": "video/educational-summary",
+  "overrides": {
+    "motion": {
+      "scene_length_seconds": {
+        "min": 3,
+        "max": 6
+      },
+      "parallax_layers": 4
+    },
+    "visual_style": {
+      "idle_motion": true,
+      "transition_preference": [
+        "morph",
+        "match_cut"
+      ],
+      "palette_limit": 5
+    }
+  }
+}

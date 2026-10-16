@@ -68,6 +68,7 @@ export const CODES = Object.freeze({
   UNSUPPORTED_FIELD: 'unsupported-field', PROFILE_PIN: 'profile-pin-mismatch', LOCKED_FIELD: 'locked-field-change',
   SOURCE_MISSING: 'source-missing', RIGHTS_BLOCKED: 'rights-blocked', EDUCATIONAL_ORDER: 'educational-order',
   NARRATION_REF: 'narration-reference-missing', CAPTIONS_REQUIRED: 'captions-required', SCENE_MISMATCH: 'scene-mismatch',
+  VIDEO_QUALITY_GATE: 'video-quality-gate-failed',
   CONTEXT_MISSING: 'referenced-video-plan-context-required', PROTECTED_VALUE_UNVERIFIED: 'protected-value-not-source-verified', PROTECTED_TEXT_MISMATCH: 'protected-value-text-mismatch',
   DUPLICATE_SOURCE_ID: 'duplicate-source-id', DUPLICATE_SPAN_ID: 'duplicate-span-id',
   AUDIO_SCRIPT_MISMATCH: 'audio-script-mismatch',
@@ -226,6 +227,45 @@ function validateVideoPlanV2(doc, issues, context) {
     const profile = JSON.parse(profileBytes.toString('utf8'));
     if (profile.family !== doc.profile_ref.profile_id.split('/')[1]) issues.push(issueFor(CODES.PROFILE_PIN, doc, 'profile family does not match the pinned profile id'));
     if (!profile.defaults.aspect_ratios.includes(doc.aspect_ratio)) issues.push(issueFor(CODES.PROFILE_PIN, doc, `aspect_ratio ${doc.aspect_ratio} is not enabled by the selected profile`));
+    const gates = profile.quality_gates;
+    const req = doc.render_requirements;
+    const fail = (message) => issues.push(issueFor(CODES.VIDEO_QUALITY_GATE, doc, message));
+    if (gates && req) {
+      if (req.hook_duration_seconds > gates.hook_max_seconds) fail(`hook duration exceeds ${gates.hook_max_seconds}s`);
+      const range = gates.scene_length_seconds;
+      for (const scene of doc.scenes) {
+        const duration = scene.timing.end_seconds - scene.timing.start_seconds;
+        if (duration < range.min) fail(`scene ${scene.scene_id} is shorter than ${range.min}s`);
+        if (duration > range.max) fail(`scene ${scene.scene_id} exceeds ${range.max}s`);
+      }
+      for (const caption of req.caption_samples) {
+        if (!doc.scenes.some((scene) => scene.scene_id === caption.scene_id)) fail(`caption sample references unknown scene ${caption.scene_id}`);
+        if (caption.lines.length > gates.caption_max_lines || caption.lines.some((line) => [...line].length > gates.caption_max_chars_per_line)) fail(`caption sample in ${caption.scene_id} exceeds line or character limits`);
+        if (caption.lines.join(' ') !== caption.exact_text) fail(`caption sample in ${caption.scene_id} breaks a word boundary or changes exact text`);
+      }
+      if (req.min_contrast_ratio < gates.min_contrast_ratio) fail(`declared minimum contrast is below ${gates.min_contrast_ratio}:1`);
+      const margin = gates.safe_margins[doc.aspect_ratio];
+      if (margin) for (const side of ['top','bottom','left','right']) {
+        const required = margin[side] ?? margin.all;
+        if (required !== undefined && req.safe_margins[side] < required) fail(`${side} safe margin is below ${required}`);
+      }
+      const audio = gates.audio_loudness_lufs;
+      if (Math.abs(req.integrated_loudness_lufs - audio.integrated_target) > audio.tolerance) fail('integrated loudness is outside the profile target tolerance');
+      if (Math.abs(req.bgm_loudness_lufs - audio.bgm_target) > audio.tolerance) fail('BGM loudness is outside the profile target tolerance');
+      if (Math.abs(req.ducking_db - audio.ducking_db) > 1) fail('narration ducking is outside the profile target tolerance');
+      if (req.true_peak_dbtp > audio.true_peak_max_dbtp) fail(`true peak exceeds ${audio.true_peak_max_dbtp} dBTP`);
+      for (const event of req.sfx_events) if (!event.semantic_only || event.semantic_role === 'none') fail(`SFX in ${event.scene_id} must serve a declared semantic role`);
+    }
+    const genreRef = doc.genre_preset_ref;
+    if (genreRef) {
+      const genrePin = readManifest().video_genre_presets?.[genreRef.profile_id];
+      if (!genrePin || genrePin.revision !== genreRef.revision || genrePin.sha256 !== genreRef.sha256 || genrePin.base_profile_id !== doc.profile_ref.profile_id) {
+        issues.push(issueFor(CODES.PROFILE_PIN, doc, `genre_preset_ref does not match a manifest pin based on ${doc.profile_ref.profile_id}`));
+      } else {
+        const genreBytes = readFileSync(resolve(ROOT, genrePin.path));
+        if (sha256(genreBytes) !== genrePin.sha256) issues.push(issueFor(CODES.PROFILE_PIN, doc, `genre preset bytes do not match the manifest SHA-256 for ${genreRef.profile_id}`));
+      }
+    }
   }
 
   const sourceRefs = new Set(doc.source_evidence.sources.flatMap((s) => [s.source_id, s.source_ref]));

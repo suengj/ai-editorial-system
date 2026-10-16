@@ -44,11 +44,24 @@ const profileSchema = JSON.parse(readFileSync(resolve(ROOT, 'schemas/video-profi
 check('manifest pins exactly the three registered video families', Object.keys(profiles).sort().join() === 'video/educational-summary,video/interactive-information,video/narrated-explainer');
 for (const [id, pin] of Object.entries(profiles)) {
   const profile = read(ROOT, pin.path);
-  check(`${id} validates and matches its exact ID/revision`, validate(profile, profileSchema).length === 0 && profile.profile_id === id && profile.revision === pin.revision);
+  check(`${id} validates and matches its exact ID/revision/hash`, validate(profile, profileSchema).length === 0 && profile.profile_id === id && profile.revision === pin.revision && createHash('sha256').update(readFileSync(resolve(ROOT, pin.path))).digest('hex') === pin.sha256);
   const planFile = id.endsWith('educational-summary') ? 'video-plan-v2-example-45s.json' : id.endsWith('interactive-information') ? 'video-plan-v2-interactive-hybrid.json' : 'video-plan-v2-narrated-mixed.json';
   const plan = read(ALLOW, planFile);
   check(`${id} plan carries the exact manifest SHA pin`, plan.profile_ref.profile_id === id && plan.profile_ref.revision === pin.revision && plan.profile_ref.sha256 === pin.sha256);
 }
+const genreSchema = JSON.parse(readFileSync(resolve(ROOT, 'schemas/video-genre-preset.schema.json'), 'utf8'));
+check('manifest pins the five additive genre presets', Object.keys(manifest.video_genre_presets ?? {}).sort().join() === ['video-genre/data-journalism','video-genre/learning','video-genre/motion-design','video-genre/science-explainer','video-genre/shortform-native'].sort().join());
+for (const [id, pin] of Object.entries(manifest.video_genre_presets ?? {})) {
+  const bytes = readFileSync(resolve(ROOT, pin.path)); const preset = JSON.parse(bytes);
+  check(`${id} validates against its base family and byte pin`, validate(preset, genreSchema).length === 0 && preset.profile_id === id && preset.base_profile_id === pin.base_profile_id && createHash('sha256').update(bytes).digest('hex') === pin.sha256 && Boolean(profiles[pin.base_profile_id]));
+}
+const critiqueSchema = JSON.parse(readFileSync(resolve(ROOT, 'schemas/video-critique.schema.json'), 'utf8'));
+const critique = read(ROOT, 'schemas/examples/video/allow/video-critique-pass.json');
+check('frame-sample critique matches shorts_gen critique StageResult shape', validate(critique, critiqueSchema).length === 0);
+const badCritique = clone(critique); badCritique.frame_samples[0].checklist[0].result = 'uncertain';
+check('critique checklist rejects non pass/fail output', validate(badCritique, critiqueSchema).length > 0);
+const badGatePlan = read(ROOT, 'schemas/examples/video/deny/video-plan-v2-quality-gate.json');
+check('quality gate deny fixture fails measured plan contract checks', codes('video-plan-v2', badGatePlan).includes(CODES.VIDEO_QUALITY_GATE));
 
 const landscape = read(ALLOW, 'video-plan-v2-silent-60s-16-9.json');
 const portrait = read(ALLOW, 'video-plan-v2-silent-60s-9-16.json');
@@ -56,6 +69,9 @@ check('60-second source-only landscape has no editorial package or fabricated ar
 check('60-second source-only portrait has no editorial package or fabricated article/claim', portrait.target_duration_seconds === 60 && portrait.aspect_ratio === '9:16' && portrait.scenes.every((s) => s.source_only) && !('editorial_package_ref' in portrait) && !('article_id' in portrait) && !('claim' in portrait));
 const example45 = read(ALLOW, 'video-plan-v2-example-45s.json');
 check('45-second educational example uses the profile default beat order', example45.target_duration_seconds === 45 && example45.scenes.map((s) => s.function).join() === 'hook,concept,example,worked_solution,key_takeaway');
+check('caption sample passes the line limit and exact word-boundary reconstruction gate', codes('video-plan-v2', example45).length === 0 && example45.render_requirements.caption_samples.length === 1);
+const badGenrePin = clone(example45); badGenrePin.genre_preset_ref = { profile_id:'video-genre/motion-design', revision:1, sha256:'0'.repeat(64) };
+check('video plan rejects a stale or mismatched genre preset pin', codes('video-plan-v2', badGenrePin).includes(CODES.PROFILE_PIN));
 check('interactive profile fixtures cover sequential, simultaneous, and hybrid', ['sequential','simultaneous','hybrid'].every((mode) => read(ALLOW, `video-plan-v2-interactive-${mode}.json`).semantic_controls.presentation === mode));
 check('square and portrait social aspects are allowed in addition to the required landscape and portrait aspects', ['1:1','4:5'].every((aspect) => {
   const plan = clone(example45); plan.aspect_ratio = aspect; return codes('video-plan-v2', plan).length === 0;

@@ -10,7 +10,7 @@ const files = process.argv.slice(2).length ? process.argv.slice(2).map((p) => re
 const records = files.map((file) => {
   const doc = JSON.parse(readFileSync(file, 'utf8'));
   const name = file.split('/').at(-1);
-  const kind = ['video-plan-v2', 'narration-script-v2', 'audio-plan-v2', 'bgm-catalog-v2', 'video-qa', 'video-plan', 'narration-script', 'tts-contract', 'bgm-catalog'].find((prefix) => name.startsWith(prefix));
+  const kind = ['video-critique', 'video-plan-v2', 'narration-script-v2', 'audio-plan-v2', 'bgm-catalog-v2', 'video-qa', 'video-plan', 'narration-script', 'tts-contract', 'bgm-catalog'].find((prefix) => name.startsWith(prefix));
   return { file, doc, name, kind };
 });
 const plans = new Map(records.filter((r) => r.kind === 'video-plan-v2').map((r) => [r.doc.plan_id, r.doc]));

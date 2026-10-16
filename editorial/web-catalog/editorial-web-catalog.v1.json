@@ -103,7 +103,7 @@
     }
   },
   "catalog_version": "1.0.0",
-  "content_digest": "sha256:6c668752bcd03e096e4a644c98aa38c5ca4aa5e879712704b8827bb8b42c3396",
+  "content_digest": "sha256:8ca8151c2a5f47f83b76d763e88d9b72ea77dfbd37835e239d85f93b72812d0f",
   "field_domains": {
     "call_to_action": {
       "max_length": 200,
@@ -301,7 +301,7 @@
     "manifest": {
       "manifest_version": "2026-10-16.1",
       "path": "editorial/entry-manifest.json",
-      "sha256": "ed1a265da24f03836b5e62d789f6d1eae8e33f01cadebffebd25ac938221f543"
+      "sha256": "551edf6bbc05bf28fb35bce386da01e00b9f9f1832071c45da43ff65703ad4d7"
     },
     "note": "The AES git commit is deliberately not embedded. The consumer pins the AES commit and this file's sha256.",
     "profile_version_semantics": "<manifest_version>+<aes_commit>; the consumer supplies aes_commit from its own pin",
@@ -5049,6 +5049,243 @@
       },
       "sha256": "6cde9a2b573f30c3a2fad4edd9e328689ae388cc02371d2bd6db9badecb88aea"
     },
+    "video-critique": {
+      "id": "https://suengj.com/schemas/video-critique.schema.json",
+      "path": "schemas/video-critique.schema.json",
+      "schema": {
+        "$id": "https://suengj.com/schemas/video-critique.schema.json",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "additionalProperties": false,
+        "description": "Frame-sampled visual critique payload carried beside the shorts_gen critique StageResult.",
+        "properties": {
+          "frame_samples": {
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "checklist": {
+                  "items": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "criterion": {
+                        "enum": [
+                          "hook",
+                          "readability",
+                          "hierarchy",
+                          "motion",
+                          "information_density",
+                          "palette_consistency",
+                          "interactive_sequence",
+                          "chart_integrity",
+                          "audio_contract",
+                          "ending"
+                        ]
+                      },
+                      "evidence_ref": {
+                        "minLength": 1,
+                        "type": "string"
+                      },
+                      "finding": {
+                        "type": "string"
+                      },
+                      "result": {
+                        "enum": [
+                          "pass",
+                          "fail"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "criterion",
+                      "result",
+                      "evidence_ref"
+                    ],
+                    "type": "object"
+                  },
+                  "minItems": 1,
+                  "type": "array"
+                },
+                "sample_ref": {
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "scene_id": {
+                  "pattern": "^scene-[a-z0-9]+(-[a-z0-9]+)*$",
+                  "type": "string"
+                },
+                "timestamp_seconds": {
+                  "minimum": 0,
+                  "type": "number"
+                }
+              },
+              "required": [
+                "sample_ref",
+                "timestamp_seconds",
+                "scene_id",
+                "checklist"
+              ],
+              "type": "object"
+            },
+            "minItems": 1,
+            "type": "array"
+          },
+          "plan_ref": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "render_ref": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "schema_version": {
+            "const": "1.0.0"
+          },
+          "stage_result": {
+            "additionalProperties": false,
+            "properties": {
+              "cache_hit": {
+                "type": "boolean"
+              },
+              "elapsed_s": {
+                "minimum": 0,
+                "type": "number"
+              },
+              "errors": {
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "code": {
+                      "minLength": 1,
+                      "type": "string"
+                    },
+                    "message": {
+                      "minLength": 1,
+                      "type": "string"
+                    },
+                    "retryable": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message",
+                    "retryable"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              "estimated_cost": {
+                "minimum": 0,
+                "type": "number"
+              },
+              "input_hash": {
+                "pattern": "^[a-f0-9]{64}$",
+                "type": "string"
+              },
+              "output_refs": {
+                "items": {
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              "receipts": {
+                "items": {
+                  "additionalProperties": true,
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              "schema_version": {
+                "const": "1.0.0"
+              },
+              "stage": {
+                "const": "critique"
+              },
+              "status": {
+                "enum": [
+                  "done",
+                  "failed",
+                  "partial"
+                ]
+              }
+            },
+            "required": [
+              "schema_version",
+              "stage",
+              "status",
+              "input_hash",
+              "output_refs",
+              "errors",
+              "receipts",
+              "cache_hit",
+              "elapsed_s",
+              "estimated_cost"
+            ],
+            "type": "object"
+          }
+        },
+        "required": [
+          "schema_version",
+          "plan_ref",
+          "render_ref",
+          "stage_result",
+          "frame_samples"
+        ],
+        "title": "AES Video Self-Critique",
+        "type": "object"
+      },
+      "sha256": "80b1786e7510224ceed74d591207e7cf53e2d8b3d37aeb80c93382f0ed81c06d"
+    },
+    "video-genre-preset": {
+      "id": "https://suengj.com/schemas/video-genre-preset.schema.json",
+      "path": "schemas/video-genre-preset.schema.json",
+      "schema": {
+        "$id": "https://suengj.com/schemas/video-genre-preset.schema.json",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "additionalProperties": false,
+        "properties": {
+          "base_profile_id": {
+            "pattern": "^video/(educational-summary|interactive-information|narrated-explainer)$",
+            "type": "string"
+          },
+          "genre": {
+            "enum": [
+              "motion-design",
+              "science-explainer",
+              "shortform-native",
+              "data-journalism",
+              "learning"
+            ]
+          },
+          "overrides": {
+            "type": "object"
+          },
+          "profile_id": {
+            "pattern": "^video-genre/(motion-design|science-explainer|shortform-native|data-journalism|learning)$",
+            "type": "string"
+          },
+          "revision": {
+            "minimum": 1,
+            "type": "integer"
+          },
+          "schema_version": {
+            "const": "1.0.0"
+          }
+        },
+        "required": [
+          "schema_version",
+          "profile_id",
+          "revision",
+          "genre",
+          "base_profile_id",
+          "overrides"
+        ],
+        "title": "AES Video Genre Preset",
+        "type": "object"
+      },
+      "sha256": "5e287badf53e8a36c0629d93328b0c83b195212b88070182d9fcdc17c4047f06"
+    },
     "video-plan": {
       "id": "https://suengj.com/schemas/video-plan.schema.json",
       "path": "schemas/video-plan.schema.json",
@@ -5810,6 +6047,143 @@
             ],
             "type": "object"
           },
+          "render_requirements": {
+            "additionalProperties": false,
+            "properties": {
+              "bgm_loudness_lufs": {
+                "maximum": 0,
+                "minimum": -70,
+                "type": "number"
+              },
+              "caption_samples": {
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "exact_text": {
+                      "type": "string"
+                    },
+                    "lines": {
+                      "items": {
+                        "minLength": 1,
+                        "type": "string"
+                      },
+                      "maxItems": 2,
+                      "minItems": 1,
+                      "type": "array"
+                    },
+                    "scene_id": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "scene_id",
+                    "exact_text",
+                    "lines"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              "ducking_db": {
+                "maximum": 0,
+                "minimum": -60,
+                "type": "number"
+              },
+              "hook_duration_seconds": {
+                "minimum": 0,
+                "type": "number"
+              },
+              "integrated_loudness_lufs": {
+                "maximum": 0,
+                "minimum": -70,
+                "type": "number"
+              },
+              "min_contrast_ratio": {
+                "maximum": 21,
+                "minimum": 1,
+                "type": "number"
+              },
+              "safe_margins": {
+                "additionalProperties": false,
+                "properties": {
+                  "bottom": {
+                    "maximum": 0.5,
+                    "minimum": 0,
+                    "type": "number"
+                  },
+                  "left": {
+                    "maximum": 0.5,
+                    "minimum": 0,
+                    "type": "number"
+                  },
+                  "right": {
+                    "maximum": 0.5,
+                    "minimum": 0,
+                    "type": "number"
+                  },
+                  "top": {
+                    "maximum": 0.5,
+                    "minimum": 0,
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "top",
+                  "bottom",
+                  "left",
+                  "right"
+                ],
+                "type": "object"
+              },
+              "sfx_events": {
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "scene_id": {
+                      "type": "string"
+                    },
+                    "semantic_only": {
+                      "const": true
+                    },
+                    "semantic_role": {
+                      "enum": [
+                        "transition",
+                        "emphasis",
+                        "countdown",
+                        "reveal",
+                        "alert",
+                        "none"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "scene_id",
+                    "semantic_role",
+                    "semantic_only"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              "true_peak_dbtp": {
+                "maximum": 0,
+                "minimum": -70,
+                "type": "number"
+              }
+            },
+            "required": [
+              "hook_duration_seconds",
+              "caption_samples",
+              "min_contrast_ratio",
+              "safe_margins",
+              "integrated_loudness_lufs",
+              "true_peak_dbtp",
+              "sfx_events",
+              "bgm_loudness_lufs",
+              "ducking_db"
+            ],
+            "type": "object"
+          },
           "rights": {
             "additionalProperties": false,
             "properties": {
@@ -6134,6 +6508,29 @@
             "minimum": 1,
             "type": "number"
           },
+          "genre_preset_ref": {
+            "additionalProperties": false,
+            "properties": {
+              "profile_id": {
+                "pattern": "^video-genre/(motion-design|science-explainer|shortform-native|data-journalism|learning)$",
+                "type": "string"
+              },
+              "revision": {
+                "minimum": 1,
+                "type": "integer"
+              },
+              "sha256": {
+                "pattern": "^[a-f0-9]{64}$",
+                "type": "string"
+              }
+            },
+            "required": [
+              "profile_id",
+              "revision",
+              "sha256"
+            ],
+            "type": "object"
+          },
           "language": {
             "pattern": "^[a-z]{2,3}(-[A-Z]{2})?$",
             "type": "string"
@@ -6147,6 +6544,9 @@
           },
           "profile_ref": {
             "$ref": "#/$defs/profile_ref"
+          },
+          "render_requirements": {
+            "$ref": "#/$defs/render_requirements"
           },
           "scenes": {
             "items": {
@@ -6184,12 +6584,13 @@
           "audio",
           "captions",
           "approval",
-          "change_requests"
+          "change_requests",
+          "render_requirements"
         ],
         "title": "AES Video Plan v2",
         "type": "object"
       },
-      "sha256": "cc8f9bdc843489dde92e153b265e241ce11f4332ef70487faafcd8096d4cafb2"
+      "sha256": "5551bfd2ab431d90db47e90e15a68ff9724977cdfbf79650934f9fd64b9cfadb"
     },
     "video-profile": {
       "id": "https://suengj.com/schemas/video-profile.schema.json",
@@ -6199,6 +6600,9 @@
         "$schema": "https://json-schema.org/draft/2020-12/schema",
         "additionalProperties": false,
         "properties": {
+          "audio": {
+            "type": "object"
+          },
           "constraints": {
             "additionalProperties": false,
             "properties": {
@@ -6346,6 +6750,9 @@
               "narrated-explainer"
             ]
           },
+          "motion": {
+            "type": "object"
+          },
           "profile_id": {
             "pattern": "^video/(educational-summary|interactive-information|narrated-explainer)$",
             "type": "string"
@@ -6354,12 +6761,21 @@
             "minLength": 1,
             "type": "string"
           },
+          "quality_gates": {
+            "type": "object"
+          },
           "revision": {
             "minimum": 1,
             "type": "integer"
           },
           "schema_version": {
             "const": "1.0.0"
+          },
+          "typography": {
+            "type": "object"
+          },
+          "visual_style": {
+            "type": "object"
           }
         },
         "required": [
@@ -6369,12 +6785,17 @@
           "family",
           "purpose",
           "defaults",
-          "constraints"
+          "constraints",
+          "visual_style",
+          "motion",
+          "typography",
+          "quality_gates",
+          "audio"
         ],
         "title": "AES Video Semantic Profile",
         "type": "object"
       },
-      "sha256": "b72e364961ba4f64aebba093c286bb0acfd283e5d098fcfc2e440ab6bbfe2f20"
+      "sha256": "51b02a6585917f971d4b285a4112d9e7ee0fa198c6e2457477a93b2750fc05db"
     },
     "video-qa": {
       "id": "https://suengj.com/schemas/video-qa.schema.json",
@@ -7278,7 +7699,7 @@
       },
       {
         "path": "editorial/VIDEO-ENGINE-MAPPING.md",
-        "sha256": "617fec42d436007c647adeea8c9c043b76ca32dde4ee2fe8626c640b184684f0"
+        "sha256": "ee3d38f161b0cd8d73823f0da1a290bc5e6234d53d49c27451da7261f2ee5027"
       },
       {
         "path": "editorial/VIDEO-STORYBOARD.md",
@@ -7289,11 +7710,157 @@
         "sha256": "fae9c3740955db680db6646d98cad6d27515adb3887c3915f76cfb332f86a2c9"
       }
     ],
+    "genre_presets": {
+      "video-genre/data-journalism": {
+        "base_profile_id": "video/educational-summary",
+        "path": "editorial/profiles/video/genre-data-journalism.json",
+        "profile": {
+          "base_profile_id": "video/educational-summary",
+          "genre": "data-journalism",
+          "overrides": {
+            "motion": {
+              "bar_grow_ms": 750,
+              "bar_stagger_ms": 80,
+              "highlighted_series_max": 1
+            },
+            "typography": {
+              "source_footer_required": true
+            }
+          },
+          "profile_id": "video-genre/data-journalism",
+          "revision": 1,
+          "schema_version": "1.0.0"
+        },
+        "revision": 1,
+        "sha256": "0d0f739f3e6a82560956256a2a951ab5d97d82f75f172f87e9d7b290c5eb1ec4"
+      },
+      "video-genre/learning": {
+        "base_profile_id": "video/educational-summary",
+        "path": "editorial/profiles/video/genre-learning.json",
+        "profile": {
+          "base_profile_id": "video/educational-summary",
+          "genre": "learning",
+          "overrides": {
+            "audio": {
+              "countdown_tick_sfx_semantic_only": true
+            },
+            "motion": {
+              "answer_reveal": true,
+              "countdown_seconds": 3,
+              "summary_card_at_end": true
+            }
+          },
+          "profile_id": "video-genre/learning",
+          "revision": 1,
+          "schema_version": "1.0.0"
+        },
+        "revision": 1,
+        "sha256": "fef62993a7949ea8e2cb11c1c026e9900373789a1dfceef1d52a70f7a3f5c261"
+      },
+      "video-genre/motion-design": {
+        "base_profile_id": "video/educational-summary",
+        "path": "editorial/profiles/video/genre-motion-design.json",
+        "profile": {
+          "base_profile_id": "video/educational-summary",
+          "genre": "motion-design",
+          "overrides": {
+            "motion": {
+              "parallax_layers": 4,
+              "scene_length_seconds": {
+                "max": 6,
+                "min": 3
+              }
+            },
+            "visual_style": {
+              "idle_motion": true,
+              "palette_limit": 5,
+              "transition_preference": [
+                "morph",
+                "match_cut"
+              ]
+            }
+          },
+          "profile_id": "video-genre/motion-design",
+          "revision": 1,
+          "schema_version": "1.0.0"
+        },
+        "revision": 1,
+        "sha256": "e2a0ed0709d01c171c48386ecc2053283dd08704b3778447cc4466d75c74ba5d"
+      },
+      "video-genre/science-explainer": {
+        "base_profile_id": "video/educational-summary",
+        "path": "editorial/profiles/video/genre-science-explainer.json",
+        "profile": {
+          "base_profile_id": "video/educational-summary",
+          "genre": "science-explainer",
+          "overrides": {
+            "motion": {
+              "build_one_concept_at_a_time": true,
+              "key_reveal_hold_seconds": 1.5
+            },
+            "visual_style": {
+              "accent": "#FFD60A",
+              "background": "#0F1220",
+              "dim_opacity": 0.35,
+              "primary": "#4DA3FF",
+              "secondary": "#34D27B"
+            }
+          },
+          "profile_id": "video-genre/science-explainer",
+          "revision": 1,
+          "schema_version": "1.0.0"
+        },
+        "revision": 1,
+        "sha256": "3ff43070cdbed658f1b9569690674224b0e8cf5fef8118e4c48b429d7e7bf88a"
+      },
+      "video-genre/shortform-native": {
+        "base_profile_id": "video/interactive-information",
+        "path": "editorial/profiles/video/genre-shortform-native.json",
+        "profile": {
+          "base_profile_id": "video/interactive-information",
+          "genre": "shortform-native",
+          "overrides": {
+            "motion": {
+              "caption_pop_ms": 100,
+              "loop_to_hook": true,
+              "scene_length_seconds": {
+                "max": 2,
+                "min": 0.8
+              }
+            },
+            "typography": {
+              "caption": {
+                "max_chars_per_line": 14,
+                "max_lines": 2,
+                "wrap": "word_boundary"
+              },
+              "hook_words": {
+                "max": 7,
+                "min": 4
+              }
+            }
+          },
+          "profile_id": "video-genre/shortform-native",
+          "revision": 1,
+          "schema_version": "1.0.0"
+        },
+        "revision": 1,
+        "sha256": "d77ac66bb774df4218e18a3ed9c2ef4948026fbd250f340fd521b19b7ccf7c4c"
+      }
+    },
     "profile_path_template": "editorial/profiles/video/{id}.json",
     "profiles": {
       "video/educational-summary": {
         "path": "editorial/profiles/video/educational-summary.json",
         "profile": {
+          "audio": {
+            "bgm_lufs": -22,
+            "duck_attack_ms": 80,
+            "duck_db": -11,
+            "duck_release_ms": 400,
+            "sfx_gain_db": 4,
+            "voice_lufs": -14
+          },
           "constraints": {
             "editorial_package_required": false,
             "locked_fields": [
@@ -7331,17 +7898,108 @@
             "target_duration_seconds": null
           },
           "family": "educational-summary",
+          "motion": {
+            "durations_ms": {
+              "bar_grow": 750,
+              "bar_stagger": 80,
+              "enter": 280,
+              "exit": 180,
+              "pulse": 360
+            },
+            "easing": {
+              "enter": "easeOutBack",
+              "exit": "easeInCubic",
+              "move": "easeInOutCubic"
+            },
+            "scene_length_seconds": {
+              "max": 12,
+              "min": 2.5
+            }
+          },
           "profile_id": "video/educational-summary",
           "purpose": "Explain verified source material through a compact learning sequence.",
-          "revision": 1,
-          "schema_version": "1.0.0"
+          "quality_gates": {
+            "audio_loudness_lufs": {
+              "bgm_target": -22,
+              "ducking_db": -11,
+              "integrated_target": -14,
+              "tolerance": 1,
+              "true_peak_max_dbtp": -1
+            },
+            "caption_max_chars_per_line": 14,
+            "caption_max_lines": 2,
+            "hook_max_seconds": 1.5,
+            "min_contrast_ratio": 4.5,
+            "safe_margins": {
+              "16:9": {
+                "all": 0.05
+              },
+              "1:1": {
+                "all": 0.05
+              },
+              "4:5": {
+                "all": 0.05
+              },
+              "9:16": {
+                "bottom": 0.1979,
+                "left": 0.0556,
+                "right": 0.1296,
+                "top": 0.1146
+              }
+            },
+            "scene_length_seconds": {
+              "max": 12,
+              "min": 2.5
+            },
+            "sfx_policy": "semantic_only",
+            "wrap": "word_boundary"
+          },
+          "revision": 2,
+          "schema_version": "1.0.0",
+          "typography": {
+            "body_weight": 700,
+            "caption": {
+              "max_chars_per_line": 14,
+              "max_lines": 2,
+              "wrap": "word_boundary"
+            },
+            "font_family": "Pretendard",
+            "hook_weight": 800,
+            "stroke_px": 6,
+            "type_scale_pct_of_frame_height": {
+              "caption": 4.2,
+              "hook": 7,
+              "label": 2.8,
+              "number": 9
+            }
+          },
+          "visual_style": {
+            "grid_px": 8,
+            "palette": {
+              "accent": "#FFD60A",
+              "background": "#0F1220",
+              "dim_opacity": 0.35,
+              "negative": "#FF5A5F",
+              "positive": "#34D27B",
+              "primary": "#4DA3FF"
+            },
+            "parallax_layers": 3
+          }
         },
-        "revision": 1,
-        "sha256": "52958745b4033174373a99e952349de9779577d2bc0343a98bea33906ba348b3"
+        "revision": 2,
+        "sha256": "c6e716370a35326c83c31c8fb827fe356b995d176983f63700f707877f17a479"
       },
       "video/interactive-information": {
         "path": "editorial/profiles/video/interactive-information.json",
         "profile": {
+          "audio": {
+            "bgm_lufs": -22,
+            "duck_attack_ms": 80,
+            "duck_db": -11,
+            "duck_release_ms": 400,
+            "sfx_gain_db": 4,
+            "voice_lufs": -14
+          },
           "constraints": {
             "editorial_package_required": false,
             "locked_fields": [
@@ -7373,17 +8031,114 @@
             "target_duration_seconds": null
           },
           "family": "interactive-information",
+          "motion": {
+            "countdown_seconds": 3,
+            "durations_ms": {
+              "bar_grow": 750,
+              "bar_stagger": 80,
+              "enter": 280,
+              "exit": 180,
+              "pulse": 360
+            },
+            "easing": {
+              "enter": "easeOutBack",
+              "exit": "easeInCubic",
+              "move": "easeInOutCubic"
+            },
+            "reveal_correct_scale": 1.12,
+            "scene_length_seconds": {
+              "max": 12,
+              "min": 2.5
+            }
+          },
           "profile_id": "video/interactive-information",
           "purpose": "Present source-grounded choices or states in a declared sequence, side by side, or combined hybrid.",
-          "revision": 1,
-          "schema_version": "1.0.0"
+          "quality_gates": {
+            "audio_loudness_lufs": {
+              "bgm_target": -22,
+              "ducking_db": -11,
+              "integrated_target": -14,
+              "tolerance": 1,
+              "true_peak_max_dbtp": -1
+            },
+            "caption_max_chars_per_line": 14,
+            "caption_max_lines": 2,
+            "hook_max_seconds": 1.5,
+            "min_contrast_ratio": 4.5,
+            "safe_margins": {
+              "16:9": {
+                "all": 0.05
+              },
+              "1:1": {
+                "all": 0.05
+              },
+              "4:5": {
+                "all": 0.05
+              },
+              "9:16": {
+                "bottom": 0.1979,
+                "left": 0.0556,
+                "right": 0.1296,
+                "top": 0.1146
+              }
+            },
+            "scene_length_seconds": {
+              "max": 12,
+              "min": 2.5
+            },
+            "sfx_policy": "semantic_only",
+            "wrap": "word_boundary"
+          },
+          "revision": 2,
+          "schema_version": "1.0.0",
+          "typography": {
+            "body_weight": 700,
+            "caption": {
+              "max_chars_per_line": 14,
+              "max_lines": 2,
+              "wrap": "word_boundary"
+            },
+            "font_family": "Pretendard",
+            "hook_weight": 800,
+            "stroke_px": 6,
+            "type_scale_pct_of_frame_height": {
+              "caption": 4.2,
+              "hook": 7,
+              "label": 2.8,
+              "number": 9
+            }
+          },
+          "visual_style": {
+            "grid_px": 8,
+            "palette": {
+              "accent": "#FFD60A",
+              "background": "#0F1220",
+              "dim_opacity": 0.35,
+              "negative": "#FF5A5F",
+              "positive": "#34D27B",
+              "primary": "#4DA3FF"
+            },
+            "parallax_layers": 3
+          }
         },
-        "revision": 1,
-        "sha256": "f53bb623c189a9d2d0de0ebc9ce26027b558d751b4561f422f875886c5667a35"
+        "revision": 2,
+        "sha256": "557f9b1e47545cd0d60e750ecbf2d45318dc3cb2c2f0ce30d961f68ba21fdbfc"
       },
       "video/narrated-explainer": {
         "path": "editorial/profiles/video/narrated-explainer.json",
         "profile": {
+          "audio": {
+            "bgm_lufs": -22,
+            "duck_attack_ms": 80,
+            "duck_db": -11,
+            "duck_release_ms": 400,
+            "sfx_gain_db": 4,
+            "voice_lufs": -14,
+            "voice_syllables_per_second": {
+              "max": 6.2,
+              "min": 5
+            }
+          },
           "constraints": {
             "editorial_package_required": false,
             "locked_fields": [
@@ -7421,13 +8176,99 @@
             "target_duration_seconds": null
           },
           "family": "narrated-explainer",
+          "motion": {
+            "countdown_seconds": 3,
+            "durations_ms": {
+              "bar_grow": 750,
+              "bar_stagger": 80,
+              "enter": 280,
+              "exit": 180,
+              "pulse": 360
+            },
+            "easing": {
+              "enter": "easeOutBack",
+              "exit": "easeInCubic",
+              "move": "easeInOutCubic"
+            },
+            "reveal_correct_scale": 1.12,
+            "scene_length_seconds": {
+              "max": 20,
+              "min": 2.5
+            },
+            "silence_beat_before_reveal_ms": 400
+          },
           "profile_id": "video/narrated-explainer",
           "purpose": "Explain source-grounded material with canonical narration synchronized to scene and beat identities.",
-          "revision": 1,
-          "schema_version": "1.0.0"
+          "quality_gates": {
+            "audio_loudness_lufs": {
+              "bgm_target": -22,
+              "ducking_db": -11,
+              "integrated_target": -14,
+              "tolerance": 1,
+              "true_peak_max_dbtp": -1
+            },
+            "caption_max_chars_per_line": 14,
+            "caption_max_lines": 2,
+            "hook_max_seconds": 1.5,
+            "min_contrast_ratio": 4.5,
+            "safe_margins": {
+              "16:9": {
+                "all": 0.05
+              },
+              "1:1": {
+                "all": 0.05
+              },
+              "4:5": {
+                "all": 0.05
+              },
+              "9:16": {
+                "bottom": 0.1979,
+                "left": 0.0556,
+                "right": 0.1296,
+                "top": 0.1146
+              }
+            },
+            "scene_length_seconds": {
+              "max": 20,
+              "min": 2.5
+            },
+            "sfx_policy": "semantic_only",
+            "wrap": "word_boundary"
+          },
+          "revision": 2,
+          "schema_version": "1.0.0",
+          "typography": {
+            "body_weight": 700,
+            "caption": {
+              "max_chars_per_line": 14,
+              "max_lines": 2,
+              "wrap": "word_boundary"
+            },
+            "font_family": "Pretendard",
+            "hook_weight": 800,
+            "stroke_px": 6,
+            "type_scale_pct_of_frame_height": {
+              "caption": 4.2,
+              "hook": 7,
+              "label": 2.8,
+              "number": 9
+            }
+          },
+          "visual_style": {
+            "grid_px": 8,
+            "palette": {
+              "accent": "#FFD60A",
+              "background": "#0F1220",
+              "dim_opacity": 0.35,
+              "negative": "#FF5A5F",
+              "positive": "#34D27B",
+              "primary": "#4DA3FF"
+            },
+            "parallax_layers": 3
+          }
         },
-        "revision": 1,
-        "sha256": "59508120c531cb4578cf119aa91ad01566317e76d1872c8ee79b5a5cfbccb099"
+        "revision": 2,
+        "sha256": "48936358d2081442327b312ed82781f6f980042067b148f0be39f3897bc1fae1"
       }
     },
     "task_kind": "video"

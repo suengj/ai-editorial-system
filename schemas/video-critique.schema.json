@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://suengj.com/schemas/video-critique.schema.json",
+  "title": "AES Video Self-Critique",
+  "description": "Frame-sampled visual critique payload carried beside the shorts_gen critique StageResult.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "plan_ref", "render_ref", "stage_result", "frame_samples"],
+  "properties": {
+    "schema_version": { "const": "1.0.0" },
+    "plan_ref": { "type": "string", "minLength": 1 },
+    "render_ref": { "type": "string", "minLength": 1 },
+    "stage_result": {
+      "type": "object", "additionalProperties": false,
+      "required": ["schema_version", "stage", "status", "input_hash", "output_refs", "errors", "receipts", "cache_hit", "elapsed_s", "estimated_cost"],
+      "properties": {
+        "schema_version": { "const": "1.0.0" },
+        "stage": { "const": "critique" },
+        "status": { "enum": ["done", "failed", "partial"] },
+        "input_hash": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "output_refs": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+        "errors": { "type": "array", "items": { "type": "object", "additionalProperties": false, "required": ["code", "message", "retryable"], "properties": { "code": { "type": "string", "minLength": 1 }, "message": { "type": "string", "minLength": 1 }, "retryable": { "type": "boolean" } } } },
+        "receipts": { "type": "array", "items": { "type": "object", "additionalProperties": true } },
+        "cache_hit": { "type": "boolean" },
+        "elapsed_s": { "type": "number", "minimum": 0 },
+        "estimated_cost": { "type": "number", "minimum": 0 }
+      }
+    },
+    "frame_samples": {
+      "type": "array", "minItems": 1,
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["sample_ref", "timestamp_seconds", "scene_id", "checklist"],
+        "properties": {
+          "sample_ref": { "type": "string", "minLength": 1 },
+          "timestamp_seconds": { "type": "number", "minimum": 0 },
+          "scene_id": { "type": "string", "pattern": "^scene-[a-z0-9]+(-[a-z0-9]+)*$" },
+          "checklist": {
+            "type": "array", "minItems": 1,
+            "items": {
+              "type": "object", "additionalProperties": false,
+              "required": ["criterion", "result", "evidence_ref"],
+              "properties": {
+                "criterion": { "enum": ["hook", "readability", "hierarchy", "motion", "information_density", "palette_consistency", "interactive_sequence", "chart_integrity", "audio_contract", "ending"] },
+                "result": { "enum": ["pass", "fail"] },
+                "evidence_ref": { "type": "string", "minLength": 1 },
+                "finding": { "type": "string" }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

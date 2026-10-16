@@ -3,8 +3,8 @@
   "plan_id": "video-plan:interactive-simultaneous",
   "profile_ref": {
     "profile_id": "video/interactive-information",
-    "revision": 1,
-    "sha256": "f53bb623c189a9d2d0de0ebc9ce26027b558d751b4561f422f875886c5667a35"
+    "revision": 2,
+    "sha256": "557f9b1e47545cd0d60e750ecbf2d45318dc3cb2c2f0ce30d961f68ba21fdbfc"
   },
   "source_evidence": {
     "schema_version": "1.0.0",
@@ -176,5 +176,21 @@
     "status": "approved",
     "evidence_ref": "fixture://approval/interactive-simultaneous"
   },
-  "change_requests": []
+  "change_requests": [],
+  "render_requirements": {
+    "hook_duration_seconds": 1.2,
+    "caption_samples": [],
+    "min_contrast_ratio": 4.5,
+    "safe_margins": {
+      "top": 0.05,
+      "bottom": 0.05,
+      "left": 0.05,
+      "right": 0.05
+    },
+    "integrated_loudness_lufs": -14,
+    "true_peak_dbtp": -1,
+    "sfx_events": [],
+    "bgm_loudness_lufs": -22,
+    "ducking_db": -11
+  }
 }

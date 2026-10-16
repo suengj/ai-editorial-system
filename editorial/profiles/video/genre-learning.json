@@ -1,0 +1,17 @@
+{
+  "schema_version": "1.0.0",
+  "profile_id": "video-genre/learning",
+  "revision": 1,
+  "genre": "learning",
+  "base_profile_id": "video/educational-summary",
+  "overrides": {
+    "motion": {
+      "countdown_seconds": 3,
+      "summary_card_at_end": true,
+      "answer_reveal": true
+    },
+    "audio": {
+      "countdown_tick_sfx_semantic_only": true
+    }
+  }
+}

@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://suengj.com/schemas/video-genre-preset.schema.json",
+  "title": "AES Video Genre Preset",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "profile_id",
+    "revision",
+    "genre",
+    "base_profile_id",
+    "overrides"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "profile_id": {
+      "type": "string",
+      "pattern": "^video-genre/(motion-design|science-explainer|shortform-native|data-journalism|learning)$"
+    },
+    "revision": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "genre": {
+      "enum": [
+        "motion-design",
+        "science-explainer",
+        "shortform-native",
+        "data-journalism",
+        "learning"
+      ]
+    },
+    "base_profile_id": {
+      "type": "string",
+      "pattern": "^video/(educational-summary|interactive-information|narrated-explainer)$"
+    },
+    "overrides": {
+      "type": "object"
+    }
+  }
+}
