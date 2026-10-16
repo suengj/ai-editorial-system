@@ -103,7 +103,7 @@
     }
   },
   "catalog_version": "1.0.0",
-  "content_digest": "sha256:8ba6c1b3d59cdfac2ad0f501ee14dff3e65e8bf47af7d806c1706fe153502454",
+  "content_digest": "sha256:7ec1411cfe015f73b48b9b817512399a6a323e2bf1ea44b189f2cc517a2fe577",
   "field_domains": {
     "call_to_action": {
       "max_length": 200,
@@ -211,7 +211,7 @@
           {
             "path": "editorial/STRUCTURED-VISUAL-EXECUTION.md",
             "role": "core:visual",
-            "sha256": "0e8c4443d5aa77c2942c3eeac02d130cb207a0be62951521f80d5dcb898f01c0"
+            "sha256": "1d7bf1c5bb7d15b066b952ae518dcc95e9fd6f92a941cdfb33c07a8188e541f2"
           },
           {
             "path": "editorial/constitution.md",
@@ -280,7 +280,7 @@
           {
             "path": "editorial/STRUCTURED-VISUAL-EXECUTION.md",
             "role": "core:visual",
-            "sha256": "0e8c4443d5aa77c2942c3eeac02d130cb207a0be62951521f80d5dcb898f01c0"
+            "sha256": "1d7bf1c5bb7d15b066b952ae518dcc95e9fd6f92a941cdfb33c07a8188e541f2"
           },
           {
             "path": "editorial/constitution.md",
@@ -4324,7 +4324,7 @@
           {
             "path": "editorial/STRUCTURED-VISUAL-EXECUTION.md",
             "role": "core:visual",
-            "sha256": "0e8c4443d5aa77c2942c3eeac02d130cb207a0be62951521f80d5dcb898f01c0"
+            "sha256": "1d7bf1c5bb7d15b066b952ae518dcc95e9fd6f92a941cdfb33c07a8188e541f2"
           },
           {
             "path": "editorial/SUENGJ-STYLE.md",
@@ -4462,7 +4462,7 @@
           {
             "path": "editorial/STRUCTURED-VISUAL-EXECUTION.md",
             "role": "core:visual",
-            "sha256": "0e8c4443d5aa77c2942c3eeac02d130cb207a0be62951521f80d5dcb898f01c0"
+            "sha256": "1d7bf1c5bb7d15b066b952ae518dcc95e9fd6f92a941cdfb33c07a8188e541f2"
           },
           {
             "path": "editorial/business-idea-magazine.v1.json",
@@ -4534,7 +4534,7 @@
           {
             "path": "editorial/STRUCTURED-VISUAL-EXECUTION.md",
             "role": "core:visual",
-            "sha256": "0e8c4443d5aa77c2942c3eeac02d130cb207a0be62951521f80d5dcb898f01c0"
+            "sha256": "1d7bf1c5bb7d15b066b952ae518dcc95e9fd6f92a941cdfb33c07a8188e541f2"
           },
           {
             "path": "editorial/TRENDS-MOA-COMMUNITY-TONE.md",
