@@ -1,0 +1,15 @@
+{
+  "schema_version": "2.0.0",
+  "catalog_id": "bgm-catalog:fixture-off",
+  "video_plan_ref": "video-plan:narrated-mixed",
+  "mode": "off",
+  "selected_track_id": null,
+  "auto_match": null,
+  "tracks": [],
+  "narration_ducking": {
+    "enabled": true,
+    "target_db": -18,
+    "attack_ms": 120,
+    "release_ms": 500
+  }
+}

@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://suengj.com/schemas/bgm-catalog-v2.schema.json",
+  "title": "Video BGM Catalog v2",
+  "description": "Rights-first background music selection contract; null metadata remains unknown until verified.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "catalog_id", "video_plan_ref", "mode", "selected_track_id", "auto_match", "tracks", "narration_ducking"],
+  "properties": {
+    "schema_version": { "const": "2.0.0" },
+    "catalog_id": { "type": "string", "minLength": 1 },
+    "video_plan_ref": { "type": "string", "minLength": 1 },
+    "mode": { "enum": ["off", "owner_library", "licensed_library", "selected_track", "auto_match"] },
+    "selected_track_id": { "type": ["string", "null"], "minLength": 1 },
+    "auto_match": { "type": ["object", "null"], "additionalProperties": false, "required": ["mood", "tempo_bpm", "energy", "platform"], "properties": { "mood": { "type": "array", "items": { "type": "string", "minLength": 1 } }, "tempo_bpm": { "type": ["number", "null"], "minimum": 0 }, "energy": { "type": ["number", "null"], "minimum": 0, "maximum": 1 }, "platform": { "type": "string", "minLength": 1 } } },
+    "tracks": { "type": "array", "items": { "$ref": "#/$defs/track" } },
+    "narration_ducking": { "$ref": "#/$defs/narration_ducking" }
+  },
+  "$defs": {
+    "track": {
+      "type": "object", "additionalProperties": false,
+      "required": ["track_id", "title", "artist", "master_rights_owner", "composition_rights_owner", "file", "version", "sha256", "license", "attribution", "platforms", "monetization_allowed", "isrc", "content_id_status", "self_claim", "whitelist", "mood", "tempo_bpm", "energy", "vocal", "loop_points", "rights_status", "rights_evidence_ref"],
+      "properties": {
+        "track_id": { "type": "string", "minLength": 1 },
+        "title": { "type": "string", "minLength": 1 },
+        "artist": { "type": "string", "minLength": 1 },
+        "master_rights_owner": { "type": ["string", "null"] },
+        "composition_rights_owner": { "type": ["string", "null"] },
+        "file": { "type": "string", "minLength": 1 },
+        "version": { "type": "string", "minLength": 1 },
+        "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "license": { "type": ["string", "null"] },
+        "attribution": { "type": ["string", "null"] },
+        "platforms": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+        "monetization_allowed": { "type": ["boolean", "null"] },
+        "isrc": { "type": ["string", "null"] },
+        "content_id_status": { "type": ["string", "null"] },
+        "self_claim": { "type": ["boolean", "null"] },
+        "whitelist": { "type": "array", "items": { "type": "object", "additionalProperties": false, "required": ["platform", "evidence_ref"], "properties": { "platform": { "type": "string", "minLength": 1 }, "evidence_ref": { "type": "string", "minLength": 1 } } } },
+        "mood": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+        "tempo_bpm": { "type": ["number", "null"], "minimum": 0 },
+        "energy": { "type": ["number", "null"], "minimum": 0, "maximum": 1 },
+        "vocal": { "type": ["boolean", "null"] },
+        "loop_points": { "type": "object", "additionalProperties": false, "required": ["start_seconds", "end_seconds"], "properties": { "start_seconds": { "type": ["number", "null"], "minimum": 0 }, "end_seconds": { "type": ["number", "null"], "minimum": 0 } } },
+        "rights_status": { "enum": ["verified", "unknown", "denied", "missing"] },
+        "rights_evidence_ref": { "type": ["string", "null"] }
+      }
+    },
+    "narration_ducking": {
+      "type": "object", "additionalProperties": false,
+      "required": ["enabled", "target_db", "attack_ms", "release_ms"],
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "target_db": { "type": "number" },
+        "attack_ms": { "type": "integer", "minimum": 0 },
+        "release_ms": { "type": "integer", "minimum": 0 }
+      }
+    }
+  }
+}

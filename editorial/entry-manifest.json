@@ -1,10 +1,11 @@
 {
   "schema_version": "1.0.0",
-  "manifest_version": "2026-10-13.1",
+  "manifest_version": "2026-10-16.1",
   "description": "Routing/entry manifest (SUE-1426 R1/R2). It stores IDs, scopes and file REFERENCES only; rule text stays in the canonical MD/JSON files it points to. scripts/lib/resolve-core.mjs reads this to build the selective load plan, resolve per-field precedence and map each registered SNS target to its copy and visual profile. Nothing here grants publication, account or approval authority.",
   "task_kinds": {
     "text": { "core": ["editorial/constitution.md", "editorial/voice.md"] },
-    "visual": { "core": ["editorial/constitution.md", "editorial/STRUCTURED-VISUAL-EXECUTION.md"] }
+    "visual": { "core": ["editorial/constitution.md", "editorial/STRUCTURED-VISUAL-EXECUTION.md"] },
+    "video": { "core": ["editorial/VIDEO-STORYBOARD.md", "editorial/VISUAL-STORY-COMPILATION.md", "editorial/AUDIO-SCRIPT.md", "editorial/VIDEO-ENGINE-MAPPING.md"] }
   },
   "axis_profile_paths": {
     "transformation": "editorial/profiles/transformation/{id}.json",
@@ -13,9 +14,15 @@
     "surface": "editorial/profiles/surface/{id}.json",
     "artifact": "editorial/profiles/artifact/{id_dashed}.json"
   },
+  "video_profile_paths": "editorial/profiles/video/{id}.json",
+  "video_profiles": {
+    "video/educational-summary": { "path": "editorial/profiles/video/educational-summary.json", "revision": 1, "sha256": "52958745b4033174373a99e952349de9779577d2bc0343a98bea33906ba348b3" },
+    "video/interactive-information": { "path": "editorial/profiles/video/interactive-information.json", "revision": 1, "sha256": "f53bb623c189a9d2d0de0ebc9ce26027b558d751b4561f422f875886c5667a35" },
+    "video/narrated-explainer": { "path": "editorial/profiles/video/narrated-explainer.json", "revision": 1, "sha256": "59508120c531cb4578cf119aa91ad01566317e76d1872c8ee79b5a5cfbccb099" }
+  },
   "language_packs": { "ko": "editorial/profiles/language/ko-KR.json", "ko-KR": "editorial/profiles/language/ko-KR.json" },
-  "locked_fields": ["facts", "figures", "numbers", "quotations", "sources", "citations", "rights", "approval", "publication_authority", "account_identity", "freshness"],
-  "locked_field_terms": {"facts": ["사실", "fact"], "figures": ["수치", "숫자", "통계", "figure", "number", "percent"], "numbers": ["숫자", "수치"], "quotations": ["인용", "quote", "quotation"], "sources": ["출처", "source", "reference"], "citations": ["인용", "citation"], "rights": ["권리", "저작권", "라이선스", "copyright", "license", "licence"], "approval": ["승인", "허가", "approve", "approved", "approval"], "publication_authority": ["발행", "게시 권한", "publish"], "account_identity": ["계정", "account", "identity"], "freshness": ["최신", "기준일", "freshness", "as of"]},
+  "locked_fields": ["facts", "figures", "numbers", "quotations", "sources", "source_evidence", "citations", "rights", "approval", "publication_authority", "account_identity", "freshness"],
+  "locked_field_terms": {"facts": ["사실", "fact"], "figures": ["수치", "숫자", "통계", "figure", "number", "percent"], "numbers": ["숫자", "수치"], "quotations": ["인용", "quote", "quotation"], "sources": ["출처", "source", "reference"], "source_evidence": ["근거 봉투", "source evidence", "source envelope"], "citations": ["인용", "citation"], "rights": ["권리", "저작권", "라이선스", "copyright", "license", "licence"], "approval": ["승인", "허가", "approve", "approved", "approval"], "publication_authority": ["발행", "게시 권한", "publish"], "account_identity": ["계정", "account", "identity"], "freshness": ["최신", "기준일", "freshness", "as of"]},
   "precedence": ["explicit_request", "task_row", "sheet_override", "account_series", "surface_brand_default"],
   "overridable_fields": {
     "tone_intensity": ["explicit_request", "task_row", "sheet_override", "account_series", "surface_brand_default"],

@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://suengj.com/schemas/video-profile.schema.json",
+  "title": "AES Video Semantic Profile",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "profile_id", "revision", "family", "purpose", "defaults", "constraints"],
+  "properties": {
+    "schema_version": { "const": "1.0.0" },
+    "profile_id": { "type": "string", "pattern": "^video/(educational-summary|interactive-information|narrated-explainer)$" },
+    "revision": { "type": "integer", "minimum": 1 },
+    "family": { "enum": ["educational-summary", "interactive-information", "narrated-explainer"] },
+    "purpose": { "type": "string", "minLength": 1 },
+    "defaults": {
+      "type": "object", "additionalProperties": false,
+      "required": ["duration_class", "target_duration_seconds", "aspect_ratios", "semantic_thinking", "reveal", "presentation", "educational_order", "captions"],
+      "properties": {
+        "duration_class": { "enum": ["micro", "short", "medium", "long"] },
+        "target_duration_seconds": { "type": ["number", "null"], "minimum": 1 },
+        "aspect_ratios": { "type": "array", "minItems": 2, "items": { "enum": ["16:9", "9:16", "1:1", "4:5"] } },
+        "semantic_thinking": { "enum": ["off", "quiet", "countdown", "progress_ring", "progress_bar", "auto"] },
+        "reveal": { "enum": ["instant", "step_by_step", "delayed", "auto"] },
+        "presentation": { "enum": ["sequential", "simultaneous", "hybrid", "auto"] },
+        "educational_order": { "type": "array", "items": { "enum": ["hook", "concept", "example", "worked_solution", "key_takeaway"] } },
+        "captions": {
+          "type": "object", "additionalProperties": false, "required": ["with_narration", "max_lines", "safe_zone"],
+          "properties": {
+            "with_narration": { "const": "on" },
+            "max_lines": { "enum": [1, 2] },
+            "safe_zone": { "enum": ["caption-safe", "all-safe"] }
+          }
+        }
+      }
+    },
+    "constraints": {
+      "type": "object", "additionalProperties": false,
+      "required": ["source_evidence_envelope_required", "source_only_beats_allowed", "editorial_package_required", "locked_fields"],
+      "properties": {
+        "source_evidence_envelope_required": { "const": true },
+        "source_only_beats_allowed": { "const": true },
+        "editorial_package_required": { "const": false },
+        "locked_fields": {
+          "type": "array", "minItems": 4,
+          "items": { "enum": ["source_evidence", "rights", "figures", "approval"] }
+        }
+      }
+    }
+  }
+}

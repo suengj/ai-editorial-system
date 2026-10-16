@@ -1,0 +1,160 @@
+{
+  "schema_version": "2.0.0",
+  "plan_id": "audioplan:fixture-mixed",
+  "video_plan_ref": "video-plan:narrated-mixed",
+  "script_ref": "narration-script:fixture-mixed",
+  "source_evidence_ref": "source-evidence:narrated-mixed",
+  "goal": "Explain the supplied source material clearly.",
+  "audience": "general-reader",
+  "canonical_script_check": {
+    "phase": "pre_tts",
+    "performed": true,
+    "outcome": "pass",
+    "evidence_ref": "fixture://script-check/mixed"
+  },
+  "segments": [
+    {
+      "segment_id": "seg-1",
+      "beat_id": "beat-1",
+      "scene_id": "scene-1",
+      "spoken_text": "This source describes a process lasting 45 seconds.",
+      "narration_span_hash": "daab378ae03497c71b547347345e015dbdf52fa0627a68611e95bfb52fa0a7a0",
+      "target_duration_seconds": 15,
+      "pause_after_ms": 250,
+      "emphasis": []
+    },
+    {
+      "segment_id": "seg-2",
+      "beat_id": "beat-2",
+      "scene_id": "scene-2",
+      "spoken_text": "The supplied material explains the mechanism.",
+      "narration_span_hash": "df56fce7b47dcdc2fddc69ccfd9b655731bf25911555a938fbb168878253bd29",
+      "target_duration_seconds": 15,
+      "pause_after_ms": 0,
+      "emphasis": []
+    },
+    {
+      "segment_id": "seg-3",
+      "beat_id": "beat-3",
+      "scene_id": "scene-3",
+      "spoken_text": "The source states the supported conclusion.",
+      "narration_span_hash": "30b89ca88a428e69431ea8aceca022b8d39bfc8c4d53e1418cd4f8bc3ce3f6ac",
+      "target_duration_seconds": 15,
+      "pause_after_ms": 0,
+      "emphasis": []
+    }
+  ],
+  "pronunciation_glossary": [
+    {
+      "term": "AES",
+      "surface_text": "AES",
+      "spoken_form": "A E S",
+      "source_ref": "source-1"
+    }
+  ],
+  "protected_values": [
+    {
+      "kind": "number",
+      "exact_text": "45 seconds",
+      "source_ref": "source-1",
+      "locked": true
+    }
+  ],
+  "delivery_intent": {
+    "voice": "single narrator",
+    "tone": "measured and clear",
+    "pace": "unhurried",
+    "pause_policy": "pause at completed semantic beats",
+    "emphasis": [
+      "supported conclusion"
+    ]
+  },
+  "measurement": {
+    "provider_status": "not_configured",
+    "measured_audio_duration_seconds": 45,
+    "measured_at": "2026-10-16T00:00:00Z",
+    "evidence_ref": "fixture://audio-measurement/mixed",
+    "audio_ref": "fixture://audio/mixed",
+    "audio_sha256": "f0a45cd218271ac9864eca28455efee1fd4716433bc3a73f18581103188fa42e"
+  },
+  "reconciliation": {
+    "phase": "post_measurement",
+    "action": "adjust_scene_timing",
+    "affected_scene_ids": [
+      "scene-3"
+    ],
+    "evidence_ref": "fixture://timing-reconcile/mixed"
+  },
+  "captions": {
+    "enabled": true,
+    "max_lines": 2,
+    "safe_zone": "caption-safe",
+    "alignment_status": "pass",
+    "alignment_evidence": {
+      "evidence_ref": "alignment-evidence://sha256/7f15021a5a5ebac59c818bbe5c4a6f68e19f5cdc8e3e432698e7ff610cd353ef",
+      "audio_ref": "fixture://audio/mixed",
+      "audio_sha256": "f0a45cd218271ac9864eca28455efee1fd4716433bc3a73f18581103188fa42e",
+      "stage_result": {
+        "schema_version": "1.0.0",
+        "stage": "qa_repair",
+        "status": "done",
+        "input_hash": "281c3c3fcfa30e10d9b5a3056d01e566c944f2fe377e305d16a8a47a716be75f",
+        "output_refs": ["alignment-evidence://sha256/7f15021a5a5ebac59c818bbe5c4a6f68e19f5cdc8e3e432698e7ff610cd353ef"],
+        "errors": [],
+        "receipts": [],
+        "cache_hit": false,
+        "elapsed_s": 0.25,
+        "estimated_cost": 0
+      },
+      "segments": [
+        { "segment_id": "seg-1", "scene_id": "scene-1", "spoken_text_sha256": "daab378ae03497c71b547347345e015dbdf52fa0627a68611e95bfb52fa0a7a0", "measured_start_seconds": 0, "measured_end_seconds": 15 },
+        { "segment_id": "seg-2", "scene_id": "scene-2", "spoken_text_sha256": "df56fce7b47dcdc2fddc69ccfd9b655731bf25911555a938fbb168878253bd29", "measured_start_seconds": 15, "measured_end_seconds": 30 },
+        { "segment_id": "seg-3", "scene_id": "scene-3", "spoken_text_sha256": "30b89ca88a428e69431ea8aceca022b8d39bfc8c4d53e1418cd4f8bc3ce3f6ac", "measured_start_seconds": 30, "measured_end_seconds": 45 }
+      ]
+    },
+    "segments": [
+      {
+        "scene_id": "scene-1",
+        "start_seconds": 0,
+        "end_seconds": 15,
+        "exact_text": "This source describes a process lasting 45 seconds.",
+        "lines": [
+          "This source describes a process lasting 45 seconds."
+        ],
+        "protected_exact_words": ["45 seconds"],
+        "measured_start_seconds": 0,
+        "measured_end_seconds": 15,
+        "alignment_evidence_ref": "alignment-evidence://sha256/7f15021a5a5ebac59c818bbe5c4a6f68e19f5cdc8e3e432698e7ff610cd353ef"
+      },
+      {
+        "scene_id": "scene-2",
+        "start_seconds": 15,
+        "end_seconds": 30,
+        "exact_text": "The supplied material explains the mechanism.",
+        "lines": [
+          "The supplied material explains the mechanism."
+        ],
+        "protected_exact_words": [],
+        "measured_start_seconds": 15,
+        "measured_end_seconds": 30,
+        "alignment_evidence_ref": "alignment-evidence://sha256/7f15021a5a5ebac59c818bbe5c4a6f68e19f5cdc8e3e432698e7ff610cd353ef"
+      },
+      {
+        "scene_id": "scene-3",
+        "start_seconds": 30,
+        "end_seconds": 45,
+        "exact_text": "The source states the supported conclusion.",
+        "lines": [
+          "The source states the supported conclusion."
+        ],
+        "protected_exact_words": [
+          "conclusion"
+        ],
+        "measured_start_seconds": 30,
+        "measured_end_seconds": 45,
+        "alignment_evidence_ref": "alignment-evidence://sha256/7f15021a5a5ebac59c818bbe5c4a6f68e19f5cdc8e3e432698e7ff610cd353ef"
+      }
+    ]
+  },
+  "status": "rendered"
+}

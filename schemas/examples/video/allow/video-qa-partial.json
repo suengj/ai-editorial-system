@@ -1,0 +1,136 @@
+{
+  "schema_version": "1.0.0",
+  "qa_id": "video-qa:fixture-partial",
+  "plan_ref": "video-plan:narrated-mixed",
+  "result": "PARTIAL",
+  "checks": {
+    "source_evidence_resolution": {
+      "status": "pass",
+      "evidence_refs": [
+        "fixture://qa/source-extraction"
+      ]
+    },
+    "factual": {
+      "status": "pass",
+      "evidence_refs": [
+        "fixture://qa/evidence"
+      ]
+    },
+    "figures_quotes": {
+      "status": "pass",
+      "evidence_refs": [
+        "fixture://qa/evidence"
+      ]
+    },
+    "license_provenance": {
+      "status": "pass",
+      "evidence_refs": [
+        "fixture://qa/evidence"
+      ]
+    },
+    "visible_text_crop_contrast_safe_area": {
+      "status": "pass",
+      "evidence_refs": [
+        "fixture://qa/evidence"
+      ]
+    },
+    "audio_script_pronunciation": {
+      "status": "pass",
+      "evidence_refs": [
+        "fixture://qa/evidence"
+      ]
+    },
+    "caption_completeness_alignment": {
+      "status": "not_yet",
+      "evidence_refs": []
+    },
+    "bgm_loudness_ducking_clipping": {
+      "status": "pass",
+      "evidence_refs": [
+        "fixture://qa/evidence"
+      ]
+    },
+    "technical_resolution_fps_duration": {
+      "status": "pass",
+      "evidence_refs": [
+        "fixture://qa/evidence"
+      ]
+    },
+    "provider_configured": {
+      "status": "pass",
+      "evidence_refs": [
+        "fixture://qa/evidence"
+      ]
+    }
+  },
+  "gates": {
+    "cost": {
+      "required": true,
+      "status": "pass",
+      "evidence_refs": [
+        "fixture://qa/cost"
+      ]
+    },
+    "rights": {
+      "required": true,
+      "status": "pass",
+      "evidence_refs": [
+        "fixture://qa/rights"
+      ]
+    },
+    "approval": {
+      "required": true,
+      "status": "pass",
+      "evidence_refs": [
+        "fixture://qa/approval"
+      ]
+    }
+  },
+  "measurable_evidence": [
+    {
+      "metric": "video.resolution",
+      "value": "1920x1080",
+      "unit": "pixels",
+      "evidence_ref": "fixture://qa/resolution",
+      "scene_id": null,
+      "source_ref": null
+    },
+    {
+      "metric": "video.fps",
+      "value": 30,
+      "unit": "frames/second",
+      "evidence_ref": "fixture://qa/fps",
+      "scene_id": null,
+      "source_ref": null
+    },
+    {
+      "metric": "video.duration_seconds",
+      "value": 45,
+      "unit": "seconds",
+      "evidence_ref": "fixture://qa/duration",
+      "scene_id": null,
+      "source_ref": null
+    },
+    {
+      "metric": "captions.alignment",
+      "value": true,
+      "unit": "boolean",
+      "evidence_ref": "fixture://qa/captions",
+      "scene_id": "scene-1",
+      "source_ref": "fixture://source/source-1"
+    },
+    {
+      "metric": "bgm.mode",
+      "value": "off",
+      "unit": "mode",
+      "evidence_ref": "fixture://qa/bgm-off",
+      "scene_id": null,
+      "source_ref": null
+    }
+  ],
+  "repair": {
+    "scope": "none",
+    "affected_scene_ids": [],
+    "whole_video_rerender": false
+  }
+}

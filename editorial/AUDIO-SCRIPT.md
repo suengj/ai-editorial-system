@@ -591,6 +591,38 @@ clean narration text
 Do not embed shot directions or visual-production notes into text that a TTS
 backend is expected to speak.
 
+## 24. Video-bound narration from a source-evidence envelope
+
+VideoPlan v2 may compile narration directly from its versioned source-evidence
+envelope when no finalized article package exists. In that route, turns link to
+`beat_id`, `scene_id`, source refs, and byte-verified evidence-span IDs. Spoken
+text must exactly preserve its ordered cited excerpts; exact on-screen text is
+a separate field. Do not invent an article ID, claim ID, author, person, or
+quotation to satisfy the older article-derived audio route.
+
+Keep the lifecycle gates distinct:
+
+```text
+canonical script check (pre-TTS)
+→ render audio
+→ engine QA measures duration and caption alignment
+→ reconcile locally affected scene timing or revise the script within evidence
+```
+
+A planned audio document may have an unconfigured provider, null duration, and
+no measured caption boundaries. Caption alignment is not complete until a
+shorts_gen QA `StageResult` binds the rendered audio SHA-256 to each canonical
+segment hash and its measured scene boundaries. AES validates the receipt
+shape, IDs, hashes, and time bounds; the engine QA stage performs runtime
+audio/SRT measurement. A document cannot self-assert `alignment_status: pass`
+with an arbitrary evidence URI.
+
+Captions default on with narration. Use one or two semantic lines, keep
+protected exact words unchanged, and place them in the declared safe zone.
+Background music defaults to ducking under narration. Unknown rights or Content
+ID state remains unknown; automatic matching does not make a track safe. Do
+not add decorative sound effects.
+
 ## One-line rule
 
 > **Compile the verified article into clean listener-first narration plus separate pronunciation, delivery, and segment/timing state before choosing a TTS backend; preserve claims and uncertainty, then translate those intents through a versioned adapter and certify the actual rendered audio by listening.**

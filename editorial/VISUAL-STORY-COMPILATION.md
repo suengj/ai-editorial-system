@@ -4,6 +4,14 @@ This document defines the **semantic intermediate layer** between a verified
 canonical article and visual/spoken distribution surfaces such as slides,
 carousels, infographics, posters, scrollytelling, and assembled video.
 
+This article-and-claim graph remains the shared route for article-derived
+surfaces. AES VideoPlan v2 also supports a separate source-evidence route for
+video: a versioned envelope of PDF, Markdown, text, image, footage, chart, or
+instruction sources may feed a source-grounded video plan without an article,
+editorial package, article ID, claim ID, author, or quotation. That route uses
+the video-specific source references and rights records; it does not fabricate
+the Visual Story Plan's article lineage.
+
 It sits below the Editorial Constitution and `MEDIA-STRATEGY.md`, and above the
 surface-specific contracts:
 

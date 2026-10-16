@@ -165,7 +165,7 @@ export function loadManifest(reader) {
 
 /** Ids that become file paths or manifest keys: lowercase kebab, optional one-level "modality/name". No dots, slashes beyond that, or case variants. */
 export const ID_RE = /^[a-z][a-z0-9-]*(\/[a-z][a-z0-9-]*)?$/;
-const TASK_KINDS = ['text', 'visual', 'both'];
+const TASK_KINDS = ['text', 'visual', 'video', 'both'];
 /** Every id the request would turn into a path or key; returns the first offender or null. */
 export function firstInvalidId(intent, { targetId, flowId, taskKind }) {
   const a = intent?.axes ?? {};
@@ -178,6 +178,7 @@ export function firstInvalidId(intent, { targetId, flowId, taskKind }) {
 function taskKindOf(intent, override) {
   if (override) return override;
   const mods = new Set((intent?.axes?.artifacts ?? []).map((a) => String(a.value ?? '').split('/')[0]).filter(Boolean));
+  if (mods.has('video')) return 'video';
   if (mods.has('visual') && mods.has('text')) return 'both';
   if (mods.has('visual')) return 'visual';
   return 'text';
@@ -188,7 +189,7 @@ export function buildLoadPlan(intent, manifest, { targetId = null, taskKind = nu
   const kind = taskKindOf(intent, taskKind);
   const kinds = kind === 'both' ? ['text', 'visual'] : [kind];
   const files = new Map(); // path -> { role, required }
-  const add = (path, role, required = true) => { if (path && !files.has(path)) files.set(path, { path, role, required }); };
+  const add = (path, role, required = true, expected_sha256 = null) => { if (path && !files.has(path)) files.set(path, { path, role, required, ...(expected_sha256 ? { expected_sha256 } : {}) }); };
   const notes = [];
 
   for (const k of kinds) for (const p of manifest.task_kinds[k].core) add(p, `core:${k}`);
@@ -202,7 +203,16 @@ export function buildLoadPlan(intent, manifest, { targetId = null, taskKind = nu
   pick('content_type', axes.content_type?.value);
   pick('audience', axes.audience?.value);
   pick('surface', axes.surface?.value);
-  for (const a of axes.artifacts ?? []) if (String(a.value ?? '').startsWith('visual/') || String(a.value ?? '').startsWith('audio/')) pick('artifact', a.value);
+  for (const a of axes.artifacts ?? []) {
+    const artifact = String(a.value ?? '');
+    if (artifact.startsWith('visual/') || artifact.startsWith('audio/')) pick('artifact', artifact);
+    if (artifact.startsWith('video/')) {
+      const pin = manifest.video_profiles?.[artifact];
+      const profileId = artifact.slice('video/'.length);
+      const path = pin?.path ?? manifest.video_profile_paths?.replace('{id}', profileId);
+      add(path, 'video:profile', true, pin?.sha256 ?? null);
+    }
+  }
   const lang = intent?.constraints?.output_language ?? intent?.request?.language;
   if (typeof lang === 'string' && Object.hasOwn(manifest.language_packs, lang)) add(manifest.language_packs[lang], 'language');
 
@@ -404,8 +414,9 @@ export function resolveEditorial(intent, { targetId = null, flowId = null, overr
 
   for (const f of plan.files) {
     const r = reader.read(f.path);
-    receipt.loads.push({ path: f.path, role: f.role, status: r.status, verification: r.verification ?? null, sha256: r.sha256, bytes: r.bytes, expected_bytes: r.expected_bytes, cached: Boolean(r.cached), ...(r.error ? { error: r.error } : {}), ...(r.reason ? { reason: r.reason } : {}) });
-    if (f.required && r.status !== READ.READ) receipt.unread_required.push({ path: f.path, status: r.status });
+    const pinMismatch = f.expected_sha256 && r.status === READ.READ && r.sha256 !== `sha256:${f.expected_sha256}`;
+    receipt.loads.push({ path: f.path, role: f.role, status: pinMismatch ? READ.MODIFIED : r.status, verification: r.verification ?? null, sha256: r.sha256, bytes: r.bytes, expected_bytes: r.expected_bytes, cached: Boolean(r.cached), ...(f.expected_sha256 ? { expected_sha256: f.expected_sha256 } : {}), ...(pinMismatch ? { reason: 'video profile does not match the manifest SHA-256 pin' } : {}), ...(r.error ? { error: r.error } : {}), ...(!pinMismatch && r.reason ? { reason: r.reason } : {}) });
+    if (f.required && (r.status !== READ.READ || pinMismatch)) receipt.unread_required.push({ path: f.path, status: pinMismatch ? READ.MODIFIED : r.status });
     // Sanity floor for a required .md rule file: a stub (<120 bytes or no heading) cannot be a rule document.
     else if (f.required && /\.md$/i.test(f.path) && (r.bytes < MD_MIN_BYTES || !/^#{1,6}\s+\S/m.test(r.text ?? ''))) {
       receipt.loads[receipt.loads.length - 1].status = READ.INVALID; receipt.loads[receipt.loads.length - 1].reason = `required .md rule file below sanity floor (>=${MD_MIN_BYTES} bytes and a heading)`;

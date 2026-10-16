@@ -103,7 +103,7 @@
     }
   },
   "catalog_version": "1.0.0",
-  "content_digest": "sha256:8f719204f82595dc199f0a2323e37fea0524ce6df872885c5a014b4668109dd6",
+  "content_digest": "sha256:6c668752bcd03e096e4a644c98aa38c5ca4aa5e879712704b8827bb8b42c3396",
   "field_domains": {
     "call_to_action": {
       "max_length": 200,
@@ -299,9 +299,9 @@
   ],
   "generated_from": {
     "manifest": {
-      "manifest_version": "2026-10-13.1",
+      "manifest_version": "2026-10-16.1",
       "path": "editorial/entry-manifest.json",
-      "sha256": "ed8806431fc64c2534229b5fbe32116d3f57b5645b91b8f6761306bbd37cc247"
+      "sha256": "ed1a265da24f03836b5e62d789f6d1eae8e33f01cadebffebd25ac938221f543"
     },
     "note": "The AES git commit is deliberately not embedded. The consumer pins the AES commit and this file's sha256.",
     "profile_version_semantics": "<manifest_version>+<aes_commit>; the consumer supplies aes_commit from its own pin",
@@ -322,6 +322,7 @@
     "publication_authority",
     "quotations",
     "rights",
+    "source_evidence",
     "sources"
   ],
   "overridable_fields": {
@@ -1445,6 +1446,1050 @@
         "type": "object"
       },
       "sha256": "2fbc4adf35170c4c0a35dc16b626296e9639f93f4d6d338a718540286064c44d"
+    },
+    "audio-plan-v2": {
+      "id": "https://suengj.com/schemas/audio-plan-v2.schema.json",
+      "path": "schemas/audio-plan-v2.schema.json",
+      "schema": {
+        "$defs": {
+          "alignment_evidence": {
+            "additionalProperties": false,
+            "description": "The evidence_ref is an alignment-evidence://sha256 content address computed from audio_ref, audio_sha256, and segments; the StageResult must list that exact output ref.",
+            "properties": {
+              "audio_ref": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "audio_sha256": {
+                "pattern": "^[a-f0-9]{64}$",
+                "type": "string"
+              },
+              "evidence_ref": {
+                "pattern": "^alignment-evidence://sha256/[a-f0-9]{64}$",
+                "type": "string"
+              },
+              "segments": {
+                "items": {
+                  "$ref": "#/$defs/alignment_segment"
+                },
+                "minItems": 1,
+                "type": "array"
+              },
+              "stage_result": {
+                "$ref": "#/$defs/engine_stage_result"
+              }
+            },
+            "required": [
+              "evidence_ref",
+              "audio_ref",
+              "audio_sha256",
+              "stage_result",
+              "segments"
+            ],
+            "type": "object"
+          },
+          "alignment_segment": {
+            "additionalProperties": false,
+            "properties": {
+              "measured_end_seconds": {
+                "minimum": 0,
+                "type": "number"
+              },
+              "measured_start_seconds": {
+                "minimum": 0,
+                "type": "number"
+              },
+              "scene_id": {
+                "pattern": "^scene-[a-z0-9]+(-[a-z0-9]+)*$",
+                "type": "string"
+              },
+              "segment_id": {
+                "pattern": "^seg-[a-z0-9]+(-[a-z0-9]+)*$",
+                "type": "string"
+              },
+              "spoken_text_sha256": {
+                "pattern": "^[a-f0-9]{64}$",
+                "type": "string"
+              }
+            },
+            "required": [
+              "segment_id",
+              "scene_id",
+              "spoken_text_sha256",
+              "measured_start_seconds",
+              "measured_end_seconds"
+            ],
+            "type": "object"
+          },
+          "canonical_script_check": {
+            "additionalProperties": false,
+            "properties": {
+              "evidence_ref": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "outcome": {
+                "enum": [
+                  "pass",
+                  "fail",
+                  "not_yet"
+                ]
+              },
+              "performed": {
+                "type": "boolean"
+              },
+              "phase": {
+                "const": "pre_tts"
+              }
+            },
+            "required": [
+              "phase",
+              "performed",
+              "outcome",
+              "evidence_ref"
+            ],
+            "type": "object"
+          },
+          "caption_segment": {
+            "additionalProperties": false,
+            "properties": {
+              "alignment_evidence_ref": {
+                "minLength": 1,
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "end_seconds": {
+                "minimum": 0,
+                "type": "number"
+              },
+              "exact_text": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "lines": {
+                "items": {
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "maxItems": 2,
+                "minItems": 1,
+                "type": "array"
+              },
+              "measured_end_seconds": {
+                "minimum": 0,
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "measured_start_seconds": {
+                "minimum": 0,
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "protected_exact_words": {
+                "items": {
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              "scene_id": {
+                "pattern": "^scene-[a-z0-9]+(-[a-z0-9]+)*$",
+                "type": "string"
+              },
+              "start_seconds": {
+                "minimum": 0,
+                "type": "number"
+              }
+            },
+            "required": [
+              "scene_id",
+              "start_seconds",
+              "end_seconds",
+              "exact_text",
+              "lines",
+              "protected_exact_words"
+            ],
+            "type": "object"
+          },
+          "captions": {
+            "additionalProperties": false,
+            "properties": {
+              "alignment_evidence": {
+                "$ref": "#/$defs/alignment_evidence"
+              },
+              "alignment_status": {
+                "enum": [
+                  "not_yet",
+                  "pass",
+                  "fail"
+                ]
+              },
+              "enabled": {
+                "const": true
+              },
+              "max_lines": {
+                "enum": [
+                  1,
+                  2
+                ]
+              },
+              "safe_zone": {
+                "enum": [
+                  "caption-safe",
+                  "all-safe"
+                ]
+              },
+              "segments": {
+                "items": {
+                  "$ref": "#/$defs/caption_segment"
+                },
+                "minItems": 1,
+                "type": "array"
+              }
+            },
+            "required": [
+              "enabled",
+              "max_lines",
+              "safe_zone",
+              "alignment_status",
+              "segments"
+            ],
+            "type": "object"
+          },
+          "delivery_intent": {
+            "additionalProperties": false,
+            "properties": {
+              "emphasis": {
+                "items": {
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              "pace": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "pause_policy": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "tone": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "voice": {
+                "minLength": 1,
+                "type": "string"
+              }
+            },
+            "required": [
+              "voice",
+              "tone",
+              "pace",
+              "pause_policy",
+              "emphasis"
+            ],
+            "type": "object"
+          },
+          "engine_render_receipt": {
+            "additionalProperties": false,
+            "properties": {
+              "aspect": {
+                "enum": [
+                  "16:9",
+                  "9:16"
+                ]
+              },
+              "codec": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "duration_s": {
+                "minimum": 0,
+                "type": "number"
+              },
+              "fps": {
+                "minimum": 0,
+                "type": "number"
+              },
+              "has_audio": {
+                "type": "boolean"
+              },
+              "height": {
+                "minimum": 1,
+                "type": "integer"
+              },
+              "job_id": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "pixel_format": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "schema_version": {
+                "const": "1.0.0"
+              },
+              "sha256": {
+                "pattern": "^[a-f0-9]{64}$",
+                "type": "string"
+              },
+              "thumbnail_ref": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "video_ref": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "width": {
+                "minimum": 1,
+                "type": "integer"
+              }
+            },
+            "required": [
+              "schema_version",
+              "job_id",
+              "aspect",
+              "video_ref",
+              "thumbnail_ref",
+              "sha256",
+              "duration_s",
+              "fps",
+              "width",
+              "height",
+              "codec",
+              "pixel_format"
+            ],
+            "type": "object"
+          },
+          "engine_stage_error": {
+            "additionalProperties": false,
+            "properties": {
+              "code": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "message": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "retryable": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "code",
+              "message",
+              "retryable"
+            ],
+            "type": "object"
+          },
+          "engine_stage_result": {
+            "additionalProperties": false,
+            "description": "shorts_gen StageResult schema 1.0.0, scoped to completed qa_repair alignment verification.",
+            "properties": {
+              "cache_hit": {
+                "type": "boolean"
+              },
+              "elapsed_s": {
+                "minimum": 0,
+                "type": "number"
+              },
+              "errors": {
+                "items": {
+                  "$ref": "#/$defs/engine_stage_error"
+                },
+                "type": "array"
+              },
+              "estimated_cost": {
+                "minimum": 0,
+                "type": "number"
+              },
+              "input_hash": {
+                "pattern": "^[a-f0-9]{64}$",
+                "type": "string"
+              },
+              "output_refs": {
+                "items": {
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              "receipts": {
+                "items": {
+                  "$ref": "#/$defs/engine_render_receipt"
+                },
+                "type": "array"
+              },
+              "schema_version": {
+                "const": "1.0.0"
+              },
+              "stage": {
+                "const": "qa_repair"
+              },
+              "status": {
+                "const": "done"
+              }
+            },
+            "required": [
+              "schema_version",
+              "stage",
+              "status",
+              "input_hash",
+              "output_refs",
+              "errors",
+              "receipts",
+              "cache_hit",
+              "elapsed_s",
+              "estimated_cost"
+            ],
+            "type": "object"
+          },
+          "measurement": {
+            "additionalProperties": false,
+            "properties": {
+              "audio_ref": {
+                "minLength": 1,
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "audio_sha256": {
+                "pattern": "^[a-f0-9]{64}$",
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "evidence_ref": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "measured_at": {
+                "format": "date-time",
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "measured_audio_duration_seconds": {
+                "minimum": 0,
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "provider_status": {
+                "enum": [
+                  "configured",
+                  "not_configured",
+                  "unknown"
+                ]
+              }
+            },
+            "required": [
+              "provider_status",
+              "measured_audio_duration_seconds",
+              "measured_at",
+              "evidence_ref"
+            ],
+            "type": "object"
+          },
+          "pronunciation_entry": {
+            "additionalProperties": false,
+            "properties": {
+              "source_ref": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "spoken_form": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "surface_text": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "term": {
+                "minLength": 1,
+                "type": "string"
+              }
+            },
+            "required": [
+              "term",
+              "spoken_form",
+              "source_ref"
+            ],
+            "type": "object"
+          },
+          "protected_value": {
+            "additionalProperties": false,
+            "properties": {
+              "exact_text": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "kind": {
+                "enum": [
+                  "number",
+                  "date",
+                  "unit",
+                  "name",
+                  "quote"
+                ]
+              },
+              "locked": {
+                "const": true
+              },
+              "source_ref": {
+                "minLength": 1,
+                "type": "string"
+              }
+            },
+            "required": [
+              "kind",
+              "exact_text",
+              "source_ref",
+              "locked"
+            ],
+            "type": "object"
+          },
+          "reconciliation": {
+            "additionalProperties": false,
+            "properties": {
+              "action": {
+                "enum": [
+                  "pending",
+                  "adjust_scene_timing",
+                  "revise_script",
+                  "blocked"
+                ]
+              },
+              "affected_scene_ids": {
+                "items": {
+                  "pattern": "^scene-[a-z0-9]+(-[a-z0-9]+)*$",
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              "evidence_ref": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "phase": {
+                "const": "post_measurement"
+              }
+            },
+            "required": [
+              "phase",
+              "action",
+              "affected_scene_ids",
+              "evidence_ref"
+            ],
+            "type": "object"
+          },
+          "segment": {
+            "additionalProperties": false,
+            "properties": {
+              "beat_id": {
+                "pattern": "^beat-[a-z0-9]+(-[a-z0-9]+)*$",
+                "type": "string"
+              },
+              "emphasis": {
+                "items": {
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              "narration_span_hash": {
+                "pattern": "^[a-f0-9]{64}$",
+                "type": "string"
+              },
+              "pause_after_ms": {
+                "minimum": 0,
+                "type": "integer"
+              },
+              "scene_id": {
+                "pattern": "^scene-[a-z0-9]+(-[a-z0-9]+)*$",
+                "type": "string"
+              },
+              "segment_id": {
+                "pattern": "^seg-[a-z0-9]+(-[a-z0-9]+)*$",
+                "type": "string"
+              },
+              "spoken_text": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "target_duration_seconds": {
+                "minimum": 0,
+                "type": [
+                  "number",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "segment_id",
+              "beat_id",
+              "scene_id",
+              "spoken_text",
+              "narration_span_hash"
+            ],
+            "type": "object"
+          }
+        },
+        "$id": "https://suengj.com/schemas/audio-plan-v2.schema.json",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "additionalProperties": false,
+        "description": "Provider-neutral video narration timing, post-measurement reconciliation, and caption alignment record.",
+        "properties": {
+          "audience": {
+            "enum": [
+              "general-reader",
+              "professional-generalist",
+              "domain-practitioner",
+              "domain-expert",
+              "beginner-learner",
+              "child-upper-elementary"
+            ]
+          },
+          "canonical_script_check": {
+            "$ref": "#/$defs/canonical_script_check"
+          },
+          "captions": {
+            "$ref": "#/$defs/captions"
+          },
+          "delivery_intent": {
+            "$ref": "#/$defs/delivery_intent"
+          },
+          "goal": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "measurement": {
+            "$ref": "#/$defs/measurement"
+          },
+          "plan_id": {
+            "pattern": "^audioplan:[a-z0-9]+(-[a-z0-9]+)*$",
+            "type": "string"
+          },
+          "pronunciation_glossary": {
+            "items": {
+              "$ref": "#/$defs/pronunciation_entry"
+            },
+            "type": "array"
+          },
+          "protected_values": {
+            "items": {
+              "$ref": "#/$defs/protected_value"
+            },
+            "type": "array"
+          },
+          "reconciliation": {
+            "$ref": "#/$defs/reconciliation"
+          },
+          "schema_version": {
+            "const": "2.0.0"
+          },
+          "script_ref": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "segments": {
+            "items": {
+              "$ref": "#/$defs/segment"
+            },
+            "minItems": 1,
+            "type": "array"
+          },
+          "source_evidence_ref": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "planned",
+              "script_checked",
+              "provider_not_configured",
+              "rendered",
+              "reconciliation_pending",
+              "complete",
+              "blocked",
+              "failed"
+            ]
+          },
+          "video_plan_ref": {
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "schema_version",
+          "plan_id",
+          "video_plan_ref",
+          "script_ref",
+          "source_evidence_ref",
+          "goal",
+          "audience",
+          "canonical_script_check",
+          "segments",
+          "pronunciation_glossary",
+          "protected_values",
+          "delivery_intent",
+          "measurement",
+          "reconciliation",
+          "captions",
+          "status"
+        ],
+        "title": "Video Audio Plan v2",
+        "type": "object"
+      },
+      "sha256": "dfe882e96a07fc1296644bb285dcefe69d0483662102d80940b94b38c74ebd1f"
+    },
+    "bgm-catalog-v2": {
+      "id": "https://suengj.com/schemas/bgm-catalog-v2.schema.json",
+      "path": "schemas/bgm-catalog-v2.schema.json",
+      "schema": {
+        "$defs": {
+          "narration_ducking": {
+            "additionalProperties": false,
+            "properties": {
+              "attack_ms": {
+                "minimum": 0,
+                "type": "integer"
+              },
+              "enabled": {
+                "type": "boolean"
+              },
+              "release_ms": {
+                "minimum": 0,
+                "type": "integer"
+              },
+              "target_db": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "enabled",
+              "target_db",
+              "attack_ms",
+              "release_ms"
+            ],
+            "type": "object"
+          },
+          "track": {
+            "additionalProperties": false,
+            "properties": {
+              "artist": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "attribution": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "composition_rights_owner": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "content_id_status": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "energy": {
+                "maximum": 1,
+                "minimum": 0,
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "file": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "isrc": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "license": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "loop_points": {
+                "additionalProperties": false,
+                "properties": {
+                  "end_seconds": {
+                    "minimum": 0,
+                    "type": [
+                      "number",
+                      "null"
+                    ]
+                  },
+                  "start_seconds": {
+                    "minimum": 0,
+                    "type": [
+                      "number",
+                      "null"
+                    ]
+                  }
+                },
+                "required": [
+                  "start_seconds",
+                  "end_seconds"
+                ],
+                "type": "object"
+              },
+              "master_rights_owner": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "monetization_allowed": {
+                "type": [
+                  "boolean",
+                  "null"
+                ]
+              },
+              "mood": {
+                "items": {
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              "platforms": {
+                "items": {
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              "rights_evidence_ref": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "rights_status": {
+                "enum": [
+                  "verified",
+                  "unknown",
+                  "denied",
+                  "missing"
+                ]
+              },
+              "self_claim": {
+                "type": [
+                  "boolean",
+                  "null"
+                ]
+              },
+              "sha256": {
+                "pattern": "^[a-f0-9]{64}$",
+                "type": "string"
+              },
+              "tempo_bpm": {
+                "minimum": 0,
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "title": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "track_id": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "version": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "vocal": {
+                "type": [
+                  "boolean",
+                  "null"
+                ]
+              },
+              "whitelist": {
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "evidence_ref": {
+                      "minLength": 1,
+                      "type": "string"
+                    },
+                    "platform": {
+                      "minLength": 1,
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "platform",
+                    "evidence_ref"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
+              }
+            },
+            "required": [
+              "track_id",
+              "title",
+              "artist",
+              "master_rights_owner",
+              "composition_rights_owner",
+              "file",
+              "version",
+              "sha256",
+              "license",
+              "attribution",
+              "platforms",
+              "monetization_allowed",
+              "isrc",
+              "content_id_status",
+              "self_claim",
+              "whitelist",
+              "mood",
+              "tempo_bpm",
+              "energy",
+              "vocal",
+              "loop_points",
+              "rights_status",
+              "rights_evidence_ref"
+            ],
+            "type": "object"
+          }
+        },
+        "$id": "https://suengj.com/schemas/bgm-catalog-v2.schema.json",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "additionalProperties": false,
+        "description": "Rights-first background music selection contract; null metadata remains unknown until verified.",
+        "properties": {
+          "auto_match": {
+            "additionalProperties": false,
+            "properties": {
+              "energy": {
+                "maximum": 1,
+                "minimum": 0,
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "mood": {
+                "items": {
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              "platform": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "tempo_bpm": {
+                "minimum": 0,
+                "type": [
+                  "number",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "mood",
+              "tempo_bpm",
+              "energy",
+              "platform"
+            ],
+            "type": [
+              "object",
+              "null"
+            ]
+          },
+          "catalog_id": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "mode": {
+            "enum": [
+              "off",
+              "owner_library",
+              "licensed_library",
+              "selected_track",
+              "auto_match"
+            ]
+          },
+          "narration_ducking": {
+            "$ref": "#/$defs/narration_ducking"
+          },
+          "schema_version": {
+            "const": "2.0.0"
+          },
+          "selected_track_id": {
+            "minLength": 1,
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "tracks": {
+            "items": {
+              "$ref": "#/$defs/track"
+            },
+            "type": "array"
+          },
+          "video_plan_ref": {
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "schema_version",
+          "catalog_id",
+          "video_plan_ref",
+          "mode",
+          "selected_track_id",
+          "auto_match",
+          "tracks",
+          "narration_ducking"
+        ],
+        "title": "Video BGM Catalog v2",
+        "type": "object"
+      },
+      "sha256": "a2728ed1be91b02b1ac3a173bdf2af5dec94ccdae5651a750fa5d8a3814d5079"
     },
     "editorial-intent": {
       "id": "https://suengj.com/schemas/editorial-intent.schema.json",
@@ -2832,6 +3877,333 @@
       },
       "sha256": "ad7af83e042f0d37004d6d7ecd5d472accf8ee4238c6f3c77b0167ad59fded7a"
     },
+    "narration-script-v2": {
+      "id": "https://suengj.com/schemas/narration-script-v2.schema.json",
+      "path": "schemas/narration-script-v2.schema.json",
+      "schema": {
+        "$defs": {
+          "canonical_script_check": {
+            "additionalProperties": false,
+            "properties": {
+              "evidence_ref": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "outcome": {
+                "enum": [
+                  "pass",
+                  "fail",
+                  "not_yet"
+                ]
+              },
+              "performed": {
+                "type": "boolean"
+              },
+              "phase": {
+                "const": "pre_tts"
+              }
+            },
+            "required": [
+              "phase",
+              "performed",
+              "outcome",
+              "evidence_ref"
+            ],
+            "type": "object"
+          },
+          "caption_policy": {
+            "additionalProperties": false,
+            "properties": {
+              "max_lines": {
+                "enum": [
+                  1,
+                  2
+                ]
+              },
+              "safe_zone": {
+                "enum": [
+                  "caption-safe",
+                  "all-safe"
+                ]
+              },
+              "with_narration": {
+                "const": "on"
+              }
+            },
+            "required": [
+              "with_narration",
+              "max_lines",
+              "safe_zone"
+            ],
+            "type": "object"
+          },
+          "delivery": {
+            "additionalProperties": false,
+            "properties": {
+              "emphasis": {
+                "items": {
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              "pace": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "pause_after_ms": {
+                "items": {
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "type": "array"
+              },
+              "tone": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "voice": {
+                "minLength": 1,
+                "type": "string"
+              }
+            },
+            "required": [
+              "voice",
+              "tone",
+              "pace",
+              "pause_after_ms",
+              "emphasis"
+            ],
+            "type": "object"
+          },
+          "on_screen_text": {
+            "additionalProperties": false,
+            "properties": {
+              "evidence_span_ids": {
+                "items": {
+                  "pattern": "^evidence-[a-z0-9]+(-[a-z0-9]+)*$",
+                  "type": "string"
+                },
+                "minItems": 1,
+                "type": "array"
+              },
+              "exact_text": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "protected": {
+                "type": "boolean"
+              },
+              "source_ref": {
+                "minLength": 1,
+                "type": "string"
+              }
+            },
+            "required": [
+              "exact_text",
+              "source_ref",
+              "protected",
+              "evidence_span_ids"
+            ],
+            "type": "object"
+          },
+          "pronunciation_entry": {
+            "additionalProperties": false,
+            "properties": {
+              "source_ref": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "spoken_form": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "surface_text": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "term": {
+                "minLength": 1,
+                "type": "string"
+              }
+            },
+            "required": [
+              "term",
+              "spoken_form",
+              "source_ref"
+            ],
+            "type": "object"
+          },
+          "protected_value": {
+            "additionalProperties": false,
+            "properties": {
+              "exact_text": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "kind": {
+                "enum": [
+                  "number",
+                  "date",
+                  "unit",
+                  "name",
+                  "quote"
+                ]
+              },
+              "locked": {
+                "const": true
+              },
+              "source_ref": {
+                "minLength": 1,
+                "type": "string"
+              }
+            },
+            "required": [
+              "kind",
+              "exact_text",
+              "source_ref",
+              "locked"
+            ],
+            "type": "object"
+          },
+          "turn": {
+            "additionalProperties": false,
+            "properties": {
+              "beat_id": {
+                "pattern": "^beat-[a-z0-9]+(-[a-z0-9]+)*$",
+                "type": "string"
+              },
+              "evidence_span_ids": {
+                "items": {
+                  "pattern": "^evidence-[a-z0-9]+(-[a-z0-9]+)*$",
+                  "type": "string"
+                },
+                "minItems": 1,
+                "type": "array"
+              },
+              "on_screen_text": {
+                "items": {
+                  "$ref": "#/$defs/on_screen_text"
+                },
+                "type": "array"
+              },
+              "scene_id": {
+                "pattern": "^scene-[a-z0-9]+(-[a-z0-9]+)*$",
+                "type": "string"
+              },
+              "source_refs": {
+                "items": {
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "minItems": 1,
+                "type": "array"
+              },
+              "spoken_text": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "turn_id": {
+                "pattern": "^turn-[a-z0-9]+(-[a-z0-9]+)*$",
+                "type": "string"
+              }
+            },
+            "required": [
+              "turn_id",
+              "beat_id",
+              "scene_id",
+              "spoken_text",
+              "on_screen_text",
+              "source_refs",
+              "evidence_span_ids"
+            ],
+            "type": "object"
+          }
+        },
+        "$id": "https://suengj.com/schemas/narration-script-v2.schema.json",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "additionalProperties": false,
+        "description": "Canonical source-grounded spoken text and its separate visual, pronunciation, and delivery metadata.",
+        "properties": {
+          "audience": {
+            "enum": [
+              "general-reader",
+              "professional-generalist",
+              "domain-practitioner",
+              "domain-expert",
+              "beginner-learner",
+              "child-upper-elementary"
+            ]
+          },
+          "canonical_script_check": {
+            "$ref": "#/$defs/canonical_script_check"
+          },
+          "caption_policy": {
+            "$ref": "#/$defs/caption_policy"
+          },
+          "delivery": {
+            "$ref": "#/$defs/delivery"
+          },
+          "goal": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "pronunciation_glossary": {
+            "items": {
+              "$ref": "#/$defs/pronunciation_entry"
+            },
+            "type": "array"
+          },
+          "protected_values": {
+            "items": {
+              "$ref": "#/$defs/protected_value"
+            },
+            "type": "array"
+          },
+          "schema_version": {
+            "const": "2.0.0"
+          },
+          "script_id": {
+            "pattern": "^narration-script:[a-z0-9]+(-[a-z0-9]+)*$",
+            "type": "string"
+          },
+          "source_evidence_ref": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "turns": {
+            "items": {
+              "$ref": "#/$defs/turn"
+            },
+            "minItems": 1,
+            "type": "array"
+          },
+          "video_plan_ref": {
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "schema_version",
+          "script_id",
+          "video_plan_ref",
+          "source_evidence_ref",
+          "goal",
+          "audience",
+          "turns",
+          "pronunciation_glossary",
+          "protected_values",
+          "delivery",
+          "canonical_script_check",
+          "caption_policy"
+        ],
+        "title": "Video Narration Script v2",
+        "type": "object"
+      },
+      "sha256": "0b05e0030966d3597c65dd92115299117a8079124949826311c6b26dcc7fd100"
+    },
     "native-card-review": {
       "id": "https://suengj.com/schemas/native-card-review.schema.json",
       "path": "schemas/native-card-review.schema.json",
@@ -3926,6 +5298,1331 @@
       },
       "sha256": "3bb266ca95e5c8976d9c965ca7b089fb27e8dfa9d066a5cb4afe0bd317eb6a91"
     },
+    "video-plan-v2": {
+      "id": "https://suengj.com/schemas/video-plan-v2.schema.json",
+      "path": "schemas/video-plan-v2.schema.json",
+      "schema": {
+        "$defs": {
+          "approval": {
+            "additionalProperties": false,
+            "properties": {
+              "evidence_ref": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "status": {
+                "enum": [
+                  "pending",
+                  "approved",
+                  "rejected",
+                  "not_required"
+                ]
+              }
+            },
+            "required": [
+              "status",
+              "evidence_ref"
+            ],
+            "type": "object"
+          },
+          "audio": {
+            "additionalProperties": false,
+            "properties": {
+              "audio_plan_ref": {
+                "minLength": 1,
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "bgm_mode": {
+                "enum": [
+                  "off",
+                  "owner_library",
+                  "licensed_library",
+                  "selected_track",
+                  "auto_match"
+                ]
+              },
+              "measured_audio_duration_seconds": {
+                "minimum": 0,
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "narration_mode": {
+                "enum": [
+                  "silent",
+                  "narrated"
+                ]
+              },
+              "narration_script_ref": {
+                "minLength": 1,
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "reconciliation_action": {
+                "enum": [
+                  "pending",
+                  "adjust_scene_timing",
+                  "revise_script",
+                  "blocked"
+                ]
+              },
+              "tts_contract_ref": {
+                "minLength": 1,
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "narration_mode",
+              "narration_script_ref",
+              "audio_plan_ref",
+              "tts_contract_ref",
+              "measured_audio_duration_seconds",
+              "reconciliation_action",
+              "bgm_mode"
+            ],
+            "type": "object"
+          },
+          "captions": {
+            "additionalProperties": false,
+            "properties": {
+              "alignment_status": {
+                "enum": [
+                  "not_yet",
+                  "pass",
+                  "fail"
+                ]
+              },
+              "enabled": {
+                "type": "boolean"
+              },
+              "max_lines": {
+                "enum": [
+                  1,
+                  2
+                ]
+              },
+              "protected_exact_text": {
+                "items": {
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              "safe_zone": {
+                "enum": [
+                  "caption-safe",
+                  "all-safe"
+                ]
+              }
+            },
+            "required": [
+              "enabled",
+              "max_lines",
+              "safe_zone",
+              "protected_exact_text",
+              "alignment_status"
+            ],
+            "type": "object"
+          },
+          "change_request": {
+            "additionalProperties": false,
+            "properties": {
+              "field": {
+                "enum": [
+                  "source_evidence",
+                  "rights",
+                  "figures",
+                  "approval",
+                  "target_duration_seconds",
+                  "aspect_ratio",
+                  "semantic_controls",
+                  "captions",
+                  "narration"
+                ]
+              },
+              "requested_value": {
+                "type": [
+                  "string",
+                  "number",
+                  "boolean",
+                  "object",
+                  "array",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "field",
+              "requested_value"
+            ],
+            "type": "object"
+          },
+          "evidence_span": {
+            "additionalProperties": false,
+            "properties": {
+              "byte_end": {
+                "minimum": 1,
+                "type": "integer"
+              },
+              "byte_start": {
+                "minimum": 0,
+                "type": "integer"
+              },
+              "evidence_ref": {
+                "pattern": "^source-extraction://sha256/[a-f0-9]{64}/[a-f0-9]{64}/span/[a-z0-9]+(-[a-z0-9]+)*/[a-f0-9]{64}$",
+                "type": "string"
+              },
+              "exact_text": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "extraction_sha256": {
+                "pattern": "^[a-f0-9]{64}$",
+                "type": "string"
+              },
+              "source_sha256": {
+                "pattern": "^[a-f0-9]{64}$",
+                "type": "string"
+              },
+              "span_id": {
+                "pattern": "^evidence-[a-z0-9]+(-[a-z0-9]+)*$",
+                "type": "string"
+              },
+              "span_sha256": {
+                "pattern": "^[a-f0-9]{64}$",
+                "type": "string"
+              }
+            },
+            "required": [
+              "span_id",
+              "exact_text",
+              "source_sha256",
+              "extraction_sha256",
+              "byte_start",
+              "byte_end",
+              "span_sha256",
+              "evidence_ref"
+            ],
+            "type": "object"
+          },
+          "figure": {
+            "additionalProperties": false,
+            "properties": {
+              "exact_value": {
+                "type": [
+                  "string",
+                  "number"
+                ]
+              },
+              "locked": {
+                "const": true
+              },
+              "source_ref": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "unit": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "exact_value",
+              "source_ref",
+              "locked"
+            ],
+            "type": "object"
+          },
+          "layer": {
+            "additionalProperties": false,
+            "properties": {
+              "crop": {
+                "additionalProperties": false,
+                "properties": {
+                  "focal_point": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "x": {
+                        "maximum": 1,
+                        "minimum": 0,
+                        "type": "number"
+                      },
+                      "y": {
+                        "maximum": 1,
+                        "minimum": 0,
+                        "type": "number"
+                      }
+                    },
+                    "required": [
+                      "x",
+                      "y"
+                    ],
+                    "type": [
+                      "object",
+                      "null"
+                    ]
+                  },
+                  "mode": {
+                    "enum": [
+                      "none",
+                      "center",
+                      "focal"
+                    ]
+                  }
+                },
+                "required": [
+                  "mode",
+                  "focal_point"
+                ],
+                "type": "object"
+              },
+              "fit": {
+                "enum": [
+                  "contain",
+                  "cover",
+                  "fill"
+                ]
+              },
+              "layer_id": {
+                "pattern": "^layer-[a-z0-9]+(-[a-z0-9]+)*$",
+                "type": "string"
+              },
+              "motion_intention": {
+                "enum": [
+                  "none",
+                  "hold",
+                  "reveal",
+                  "step_by_step",
+                  "transition",
+                  "pan",
+                  "zoom",
+                  "highlight"
+                ]
+              },
+              "rights_ref": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "safe_zone": {
+                "$ref": "#/$defs/normalized_rect"
+              },
+              "source_ref": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "timing": {
+                "$ref": "#/$defs/timing"
+              },
+              "z": {
+                "type": "integer"
+              }
+            },
+            "required": [
+              "layer_id",
+              "source_ref",
+              "rights_ref",
+              "z",
+              "timing",
+              "fit",
+              "crop",
+              "safe_zone",
+              "motion_intention"
+            ],
+            "type": "object"
+          },
+          "normalized_rect": {
+            "additionalProperties": false,
+            "properties": {
+              "height": {
+                "maximum": 1,
+                "minimum": 0,
+                "type": "number"
+              },
+              "width": {
+                "maximum": 1,
+                "minimum": 0,
+                "type": "number"
+              },
+              "x": {
+                "maximum": 1,
+                "minimum": 0,
+                "type": "number"
+              },
+              "y": {
+                "maximum": 1,
+                "minimum": 0,
+                "type": "number"
+              }
+            },
+            "required": [
+              "x",
+              "y",
+              "width",
+              "height"
+            ],
+            "type": "object"
+          },
+          "on_screen_text": {
+            "additionalProperties": false,
+            "properties": {
+              "evidence_span_ids": {
+                "items": {
+                  "pattern": "^evidence-[a-z0-9]+(-[a-z0-9]+)*$",
+                  "type": "string"
+                },
+                "minItems": 1,
+                "type": "array"
+              },
+              "exact_text": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "protected": {
+                "type": "boolean"
+              },
+              "source_ref": {
+                "minLength": 1,
+                "type": "string"
+              }
+            },
+            "required": [
+              "exact_text",
+              "source_ref",
+              "protected",
+              "evidence_span_ids"
+            ],
+            "type": "object"
+          },
+          "ordering_exception": {
+            "additionalProperties": false,
+            "properties": {
+              "kind": {
+                "const": "source_order"
+              },
+              "rationale": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "source_refs": {
+                "items": {
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "minItems": 1,
+                "type": "array"
+              }
+            },
+            "required": [
+              "kind",
+              "source_refs",
+              "rationale"
+            ],
+            "type": "object"
+          },
+          "profile_ref": {
+            "additionalProperties": false,
+            "properties": {
+              "profile_id": {
+                "pattern": "^video/(educational-summary|interactive-information|narrated-explainer)$",
+                "type": "string"
+              },
+              "revision": {
+                "minimum": 1,
+                "type": "integer"
+              },
+              "sha256": {
+                "pattern": "^[a-f0-9]{64}$",
+                "type": "string"
+              }
+            },
+            "required": [
+              "profile_id",
+              "revision",
+              "sha256"
+            ],
+            "type": "object"
+          },
+          "protected_span": {
+            "additionalProperties": false,
+            "properties": {
+              "byte_end": {
+                "minimum": 1,
+                "type": "integer"
+              },
+              "byte_start": {
+                "minimum": 0,
+                "type": "integer"
+              },
+              "evidence_ref": {
+                "pattern": "^source-extraction://sha256/[a-f0-9]{64}/[a-f0-9]{64}/span/[a-z0-9]+(-[a-z0-9]+)*/[a-f0-9]{64}$",
+                "type": "string"
+              },
+              "exact_text": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "extraction_sha256": {
+                "pattern": "^[a-f0-9]{64}$",
+                "type": "string"
+              },
+              "kind": {
+                "enum": [
+                  "number",
+                  "date",
+                  "unit",
+                  "name",
+                  "quote"
+                ]
+              },
+              "source_sha256": {
+                "pattern": "^[a-f0-9]{64}$",
+                "type": "string"
+              },
+              "span_id": {
+                "pattern": "^span-[a-z0-9]+(-[a-z0-9]+)*$",
+                "type": "string"
+              },
+              "span_sha256": {
+                "pattern": "^[a-f0-9]{64}$",
+                "type": "string"
+              }
+            },
+            "required": [
+              "span_id",
+              "kind",
+              "exact_text",
+              "source_sha256",
+              "extraction_sha256",
+              "byte_start",
+              "byte_end",
+              "span_sha256",
+              "evidence_ref"
+            ],
+            "type": "object"
+          },
+          "rights": {
+            "additionalProperties": false,
+            "properties": {
+              "attribution": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "commercial_use": {
+                "type": [
+                  "boolean",
+                  "null"
+                ]
+              },
+              "evidence_ref": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "license": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "modification_allowed": {
+                "type": [
+                  "boolean",
+                  "null"
+                ]
+              },
+              "platforms": {
+                "items": {
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              "rights_owner": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "status": {
+                "enum": [
+                  "verified",
+                  "unknown",
+                  "denied",
+                  "not_applicable"
+                ]
+              }
+            },
+            "required": [
+              "status",
+              "license",
+              "rights_owner",
+              "attribution",
+              "platforms",
+              "commercial_use",
+              "modification_allowed",
+              "evidence_ref"
+            ],
+            "type": "object"
+          },
+          "scene": {
+            "additionalProperties": false,
+            "properties": {
+              "beat_id": {
+                "pattern": "^beat-[a-z0-9]+(-[a-z0-9]+)*$",
+                "type": "string"
+              },
+              "function": {
+                "enum": [
+                  "hook",
+                  "concept",
+                  "example",
+                  "worked_solution",
+                  "key_takeaway",
+                  "source_observation",
+                  "choice",
+                  "comparison",
+                  "reveal",
+                  "consequence"
+                ]
+              },
+              "layers": {
+                "items": {
+                  "$ref": "#/$defs/layer"
+                },
+                "minItems": 1,
+                "type": "array"
+              },
+              "on_screen_text": {
+                "items": {
+                  "$ref": "#/$defs/on_screen_text"
+                },
+                "type": "array"
+              },
+              "scene_id": {
+                "pattern": "^scene-[a-z0-9]+(-[a-z0-9]+)*$",
+                "type": "string"
+              },
+              "source_only": {
+                "type": "boolean"
+              },
+              "source_refs": {
+                "items": {
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "minItems": 1,
+                "type": "array"
+              },
+              "timing": {
+                "$ref": "#/$defs/timing"
+              }
+            },
+            "required": [
+              "scene_id",
+              "beat_id",
+              "function",
+              "timing",
+              "source_only",
+              "source_refs",
+              "layers",
+              "on_screen_text"
+            ],
+            "type": "object"
+          },
+          "semantic_controls": {
+            "additionalProperties": false,
+            "properties": {
+              "presentation": {
+                "enum": [
+                  "sequential",
+                  "simultaneous",
+                  "hybrid",
+                  "auto"
+                ]
+              },
+              "reveal": {
+                "enum": [
+                  "instant",
+                  "step_by_step",
+                  "delayed",
+                  "auto"
+                ]
+              },
+              "thinking": {
+                "enum": [
+                  "off",
+                  "quiet",
+                  "countdown",
+                  "progress_ring",
+                  "progress_bar",
+                  "auto"
+                ]
+              }
+            },
+            "required": [
+              "thinking",
+              "reveal",
+              "presentation"
+            ],
+            "type": "object"
+          },
+          "source": {
+            "additionalProperties": false,
+            "properties": {
+              "evidence_spans": {
+                "items": {
+                  "$ref": "#/$defs/evidence_span"
+                },
+                "type": "array"
+              },
+              "kind": {
+                "enum": [
+                  "pdf",
+                  "markdown",
+                  "text",
+                  "image",
+                  "footage",
+                  "chart",
+                  "instructions"
+                ]
+              },
+              "protected_spans": {
+                "items": {
+                  "$ref": "#/$defs/protected_span"
+                },
+                "type": "array"
+              },
+              "rights": {
+                "$ref": "#/$defs/rights"
+              },
+              "sha256": {
+                "pattern": "^[a-f0-9]{64}$",
+                "type": "string"
+              },
+              "source_id": {
+                "pattern": "^source-[a-z0-9]+(-[a-z0-9]+)*$",
+                "type": "string"
+              },
+              "source_ref": {
+                "minLength": 1,
+                "type": "string"
+              }
+            },
+            "required": [
+              "source_id",
+              "source_ref",
+              "kind",
+              "sha256",
+              "rights"
+            ],
+            "type": "object"
+          },
+          "source_evidence": {
+            "additionalProperties": false,
+            "properties": {
+              "envelope_id": {
+                "pattern": "^source-evidence:[a-z0-9]+(-[a-z0-9]+)*$",
+                "type": "string"
+              },
+              "schema_version": {
+                "const": "1.0.0"
+              },
+              "sources": {
+                "items": {
+                  "$ref": "#/$defs/source"
+                },
+                "minItems": 1,
+                "type": "array"
+              }
+            },
+            "required": [
+              "schema_version",
+              "envelope_id",
+              "sources"
+            ],
+            "type": "object"
+          },
+          "timing": {
+            "additionalProperties": false,
+            "properties": {
+              "end_seconds": {
+                "minimum": 0,
+                "type": "number"
+              },
+              "start_seconds": {
+                "minimum": 0,
+                "type": "number"
+              }
+            },
+            "required": [
+              "start_seconds",
+              "end_seconds"
+            ],
+            "type": "object"
+          }
+        },
+        "$id": "https://suengj.com/schemas/video-plan-v2.schema.json",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "additionalProperties": false,
+        "description": "Provider-neutral semantic plan for source-grounded video. Renderer execution is delegated to an engine adapter.",
+        "properties": {
+          "approval": {
+            "$ref": "#/$defs/approval"
+          },
+          "aspect_ratio": {
+            "enum": [
+              "16:9",
+              "9:16",
+              "1:1",
+              "4:5"
+            ]
+          },
+          "audio": {
+            "$ref": "#/$defs/audio"
+          },
+          "bgm_catalog_ref": {
+            "minLength": 1,
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "captions": {
+            "$ref": "#/$defs/captions"
+          },
+          "change_requests": {
+            "items": {
+              "$ref": "#/$defs/change_request"
+            },
+            "type": "array"
+          },
+          "duration_class": {
+            "enum": [
+              "micro",
+              "short",
+              "medium",
+              "long"
+            ]
+          },
+          "editorial_package_ref": {
+            "minLength": 1,
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "figures": {
+            "items": {
+              "$ref": "#/$defs/figure"
+            },
+            "type": "array"
+          },
+          "fps": {
+            "minimum": 1,
+            "type": "number"
+          },
+          "language": {
+            "pattern": "^[a-z]{2,3}(-[A-Z]{2})?$",
+            "type": "string"
+          },
+          "ordering_exception": {
+            "$ref": "#/$defs/ordering_exception"
+          },
+          "plan_id": {
+            "pattern": "^video-plan:[a-z0-9]+(-[a-z0-9]+)*$",
+            "type": "string"
+          },
+          "profile_ref": {
+            "$ref": "#/$defs/profile_ref"
+          },
+          "scenes": {
+            "items": {
+              "$ref": "#/$defs/scene"
+            },
+            "minItems": 1,
+            "type": "array"
+          },
+          "schema_version": {
+            "const": "2.0.0"
+          },
+          "semantic_controls": {
+            "$ref": "#/$defs/semantic_controls"
+          },
+          "source_evidence": {
+            "$ref": "#/$defs/source_evidence"
+          },
+          "target_duration_seconds": {
+            "minimum": 1,
+            "type": "number"
+          }
+        },
+        "required": [
+          "schema_version",
+          "plan_id",
+          "profile_ref",
+          "source_evidence",
+          "duration_class",
+          "target_duration_seconds",
+          "aspect_ratio",
+          "fps",
+          "language",
+          "semantic_controls",
+          "scenes",
+          "audio",
+          "captions",
+          "approval",
+          "change_requests"
+        ],
+        "title": "AES Video Plan v2",
+        "type": "object"
+      },
+      "sha256": "cc8f9bdc843489dde92e153b265e241ce11f4332ef70487faafcd8096d4cafb2"
+    },
+    "video-profile": {
+      "id": "https://suengj.com/schemas/video-profile.schema.json",
+      "path": "schemas/video-profile.schema.json",
+      "schema": {
+        "$id": "https://suengj.com/schemas/video-profile.schema.json",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "additionalProperties": false,
+        "properties": {
+          "constraints": {
+            "additionalProperties": false,
+            "properties": {
+              "editorial_package_required": {
+                "const": false
+              },
+              "locked_fields": {
+                "items": {
+                  "enum": [
+                    "source_evidence",
+                    "rights",
+                    "figures",
+                    "approval"
+                  ]
+                },
+                "minItems": 4,
+                "type": "array"
+              },
+              "source_evidence_envelope_required": {
+                "const": true
+              },
+              "source_only_beats_allowed": {
+                "const": true
+              }
+            },
+            "required": [
+              "source_evidence_envelope_required",
+              "source_only_beats_allowed",
+              "editorial_package_required",
+              "locked_fields"
+            ],
+            "type": "object"
+          },
+          "defaults": {
+            "additionalProperties": false,
+            "properties": {
+              "aspect_ratios": {
+                "items": {
+                  "enum": [
+                    "16:9",
+                    "9:16",
+                    "1:1",
+                    "4:5"
+                  ]
+                },
+                "minItems": 2,
+                "type": "array"
+              },
+              "captions": {
+                "additionalProperties": false,
+                "properties": {
+                  "max_lines": {
+                    "enum": [
+                      1,
+                      2
+                    ]
+                  },
+                  "safe_zone": {
+                    "enum": [
+                      "caption-safe",
+                      "all-safe"
+                    ]
+                  },
+                  "with_narration": {
+                    "const": "on"
+                  }
+                },
+                "required": [
+                  "with_narration",
+                  "max_lines",
+                  "safe_zone"
+                ],
+                "type": "object"
+              },
+              "duration_class": {
+                "enum": [
+                  "micro",
+                  "short",
+                  "medium",
+                  "long"
+                ]
+              },
+              "educational_order": {
+                "items": {
+                  "enum": [
+                    "hook",
+                    "concept",
+                    "example",
+                    "worked_solution",
+                    "key_takeaway"
+                  ]
+                },
+                "type": "array"
+              },
+              "presentation": {
+                "enum": [
+                  "sequential",
+                  "simultaneous",
+                  "hybrid",
+                  "auto"
+                ]
+              },
+              "reveal": {
+                "enum": [
+                  "instant",
+                  "step_by_step",
+                  "delayed",
+                  "auto"
+                ]
+              },
+              "semantic_thinking": {
+                "enum": [
+                  "off",
+                  "quiet",
+                  "countdown",
+                  "progress_ring",
+                  "progress_bar",
+                  "auto"
+                ]
+              },
+              "target_duration_seconds": {
+                "minimum": 1,
+                "type": [
+                  "number",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "duration_class",
+              "target_duration_seconds",
+              "aspect_ratios",
+              "semantic_thinking",
+              "reveal",
+              "presentation",
+              "educational_order",
+              "captions"
+            ],
+            "type": "object"
+          },
+          "family": {
+            "enum": [
+              "educational-summary",
+              "interactive-information",
+              "narrated-explainer"
+            ]
+          },
+          "profile_id": {
+            "pattern": "^video/(educational-summary|interactive-information|narrated-explainer)$",
+            "type": "string"
+          },
+          "purpose": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "revision": {
+            "minimum": 1,
+            "type": "integer"
+          },
+          "schema_version": {
+            "const": "1.0.0"
+          }
+        },
+        "required": [
+          "schema_version",
+          "profile_id",
+          "revision",
+          "family",
+          "purpose",
+          "defaults",
+          "constraints"
+        ],
+        "title": "AES Video Semantic Profile",
+        "type": "object"
+      },
+      "sha256": "b72e364961ba4f64aebba093c286bb0acfd283e5d098fcfc2e440ab6bbfe2f20"
+    },
+    "video-qa": {
+      "id": "https://suengj.com/schemas/video-qa.schema.json",
+      "path": "schemas/video-qa.schema.json",
+      "schema": {
+        "$defs": {
+          "check": {
+            "additionalProperties": false,
+            "properties": {
+              "evidence_refs": {
+                "items": {
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              "status": {
+                "enum": [
+                  "pass",
+                  "fail",
+                  "not_yet"
+                ]
+              }
+            },
+            "required": [
+              "status",
+              "evidence_refs"
+            ],
+            "type": "object"
+          },
+          "measurement": {
+            "additionalProperties": false,
+            "properties": {
+              "evidence_ref": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "metric": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "scene_id": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "source_ref": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "unit": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "value": {
+                "type": [
+                  "number",
+                  "string",
+                  "boolean"
+                ]
+              }
+            },
+            "required": [
+              "metric",
+              "value",
+              "unit",
+              "evidence_ref",
+              "scene_id",
+              "source_ref"
+            ],
+            "type": "object"
+          },
+          "repair": {
+            "additionalProperties": false,
+            "properties": {
+              "affected_scene_ids": {
+                "items": {
+                  "pattern": "^scene-[a-z0-9]+(-[a-z0-9]+)*$",
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              "scope": {
+                "enum": [
+                  "none",
+                  "affected_scenes_only"
+                ]
+              },
+              "whole_video_rerender": {
+                "const": false
+              }
+            },
+            "required": [
+              "scope",
+              "affected_scene_ids",
+              "whole_video_rerender"
+            ],
+            "type": "object"
+          },
+          "required_gate": {
+            "additionalProperties": false,
+            "properties": {
+              "evidence_refs": {
+                "items": {
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              "required": {
+                "const": true
+              },
+              "status": {
+                "enum": [
+                  "pass",
+                  "fail",
+                  "not_yet"
+                ]
+              }
+            },
+            "required": [
+              "required",
+              "status",
+              "evidence_refs"
+            ],
+            "type": "object"
+          }
+        },
+        "$id": "https://suengj.com/schemas/video-qa.schema.json",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "additionalProperties": false,
+        "description": "Evidence-bearing video review outcome with non-disableable cost, rights, and approval gates.",
+        "properties": {
+          "checks": {
+            "additionalProperties": false,
+            "properties": {
+              "audio_script_pronunciation": {
+                "$ref": "#/$defs/check"
+              },
+              "bgm_loudness_ducking_clipping": {
+                "$ref": "#/$defs/check"
+              },
+              "caption_completeness_alignment": {
+                "$ref": "#/$defs/check"
+              },
+              "factual": {
+                "$ref": "#/$defs/check"
+              },
+              "figures_quotes": {
+                "$ref": "#/$defs/check"
+              },
+              "license_provenance": {
+                "$ref": "#/$defs/check"
+              },
+              "provider_configured": {
+                "$ref": "#/$defs/check"
+              },
+              "source_evidence_resolution": {
+                "$ref": "#/$defs/check"
+              },
+              "technical_resolution_fps_duration": {
+                "$ref": "#/$defs/check"
+              },
+              "visible_text_crop_contrast_safe_area": {
+                "$ref": "#/$defs/check"
+              }
+            },
+            "required": [
+              "source_evidence_resolution",
+              "factual",
+              "figures_quotes",
+              "license_provenance",
+              "visible_text_crop_contrast_safe_area",
+              "audio_script_pronunciation",
+              "caption_completeness_alignment",
+              "bgm_loudness_ducking_clipping",
+              "technical_resolution_fps_duration",
+              "provider_configured"
+            ],
+            "type": "object"
+          },
+          "gates": {
+            "additionalProperties": false,
+            "properties": {
+              "approval": {
+                "$ref": "#/$defs/required_gate"
+              },
+              "cost": {
+                "$ref": "#/$defs/required_gate"
+              },
+              "rights": {
+                "$ref": "#/$defs/required_gate"
+              }
+            },
+            "required": [
+              "cost",
+              "rights",
+              "approval"
+            ],
+            "type": "object"
+          },
+          "measurable_evidence": {
+            "items": {
+              "$ref": "#/$defs/measurement"
+            },
+            "minItems": 1,
+            "type": "array"
+          },
+          "plan_ref": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "qa_id": {
+            "pattern": "^video-qa:[a-z0-9]+(-[a-z0-9]+)*$",
+            "type": "string"
+          },
+          "repair": {
+            "$ref": "#/$defs/repair"
+          },
+          "result": {
+            "enum": [
+              "PASS",
+              "FAILED",
+              "PARTIAL"
+            ]
+          },
+          "schema_version": {
+            "const": "1.0.0"
+          }
+        },
+        "required": [
+          "schema_version",
+          "qa_id",
+          "plan_ref",
+          "result",
+          "checks",
+          "gates",
+          "measurable_evidence",
+          "repair"
+        ],
+        "title": "Video QA Contract",
+        "type": "object"
+      },
+      "sha256": "1b07c8b260603329767ef9052447468b2f9adb1230348d156562178eae5d8700"
+    },
     "visual-brief": {
       "id": "https://suengj.com/schemas/visual-brief.schema.json",
       "path": "schemas/visual-brief.schema.json",
@@ -4573,6 +7270,168 @@
       "voice_family": "community"
     }
   ],
+  "video_route": {
+    "core": [
+      {
+        "path": "editorial/AUDIO-SCRIPT.md",
+        "sha256": "341dfa6f4c597807fde2dc97710e6690e2e1ee8ad8b6c945b55edff942473628"
+      },
+      {
+        "path": "editorial/VIDEO-ENGINE-MAPPING.md",
+        "sha256": "617fec42d436007c647adeea8c9c043b76ca32dde4ee2fe8626c640b184684f0"
+      },
+      {
+        "path": "editorial/VIDEO-STORYBOARD.md",
+        "sha256": "29050b71ca4a2a2057a77f24a648f44486fd7fe5000c3b841a1a42ff2013b483"
+      },
+      {
+        "path": "editorial/VISUAL-STORY-COMPILATION.md",
+        "sha256": "fae9c3740955db680db6646d98cad6d27515adb3887c3915f76cfb332f86a2c9"
+      }
+    ],
+    "profile_path_template": "editorial/profiles/video/{id}.json",
+    "profiles": {
+      "video/educational-summary": {
+        "path": "editorial/profiles/video/educational-summary.json",
+        "profile": {
+          "constraints": {
+            "editorial_package_required": false,
+            "locked_fields": [
+              "source_evidence",
+              "rights",
+              "figures",
+              "approval"
+            ],
+            "source_evidence_envelope_required": true,
+            "source_only_beats_allowed": true
+          },
+          "defaults": {
+            "aspect_ratios": [
+              "16:9",
+              "9:16",
+              "1:1",
+              "4:5"
+            ],
+            "captions": {
+              "max_lines": 2,
+              "safe_zone": "caption-safe",
+              "with_narration": "on"
+            },
+            "duration_class": "short",
+            "educational_order": [
+              "hook",
+              "concept",
+              "example",
+              "worked_solution",
+              "key_takeaway"
+            ],
+            "presentation": "sequential",
+            "reveal": "step_by_step",
+            "semantic_thinking": "quiet",
+            "target_duration_seconds": null
+          },
+          "family": "educational-summary",
+          "profile_id": "video/educational-summary",
+          "purpose": "Explain verified source material through a compact learning sequence.",
+          "revision": 1,
+          "schema_version": "1.0.0"
+        },
+        "revision": 1,
+        "sha256": "52958745b4033174373a99e952349de9779577d2bc0343a98bea33906ba348b3"
+      },
+      "video/interactive-information": {
+        "path": "editorial/profiles/video/interactive-information.json",
+        "profile": {
+          "constraints": {
+            "editorial_package_required": false,
+            "locked_fields": [
+              "source_evidence",
+              "rights",
+              "figures",
+              "approval"
+            ],
+            "source_evidence_envelope_required": true,
+            "source_only_beats_allowed": true
+          },
+          "defaults": {
+            "aspect_ratios": [
+              "16:9",
+              "9:16",
+              "1:1",
+              "4:5"
+            ],
+            "captions": {
+              "max_lines": 2,
+              "safe_zone": "caption-safe",
+              "with_narration": "on"
+            },
+            "duration_class": "short",
+            "educational_order": [],
+            "presentation": "hybrid",
+            "reveal": "auto",
+            "semantic_thinking": "off",
+            "target_duration_seconds": null
+          },
+          "family": "interactive-information",
+          "profile_id": "video/interactive-information",
+          "purpose": "Present source-grounded choices or states in a declared sequence, side by side, or combined hybrid.",
+          "revision": 1,
+          "schema_version": "1.0.0"
+        },
+        "revision": 1,
+        "sha256": "f53bb623c189a9d2d0de0ebc9ce26027b558d751b4561f422f875886c5667a35"
+      },
+      "video/narrated-explainer": {
+        "path": "editorial/profiles/video/narrated-explainer.json",
+        "profile": {
+          "constraints": {
+            "editorial_package_required": false,
+            "locked_fields": [
+              "source_evidence",
+              "rights",
+              "figures",
+              "approval"
+            ],
+            "source_evidence_envelope_required": true,
+            "source_only_beats_allowed": true
+          },
+          "defaults": {
+            "aspect_ratios": [
+              "16:9",
+              "9:16",
+              "1:1",
+              "4:5"
+            ],
+            "captions": {
+              "max_lines": 2,
+              "safe_zone": "caption-safe",
+              "with_narration": "on"
+            },
+            "duration_class": "medium",
+            "educational_order": [
+              "hook",
+              "concept",
+              "example",
+              "worked_solution",
+              "key_takeaway"
+            ],
+            "presentation": "hybrid",
+            "reveal": "auto",
+            "semantic_thinking": "quiet",
+            "target_duration_seconds": null
+          },
+          "family": "narrated-explainer",
+          "profile_id": "video/narrated-explainer",
+          "purpose": "Explain source-grounded material with canonical narration synchronized to scene and beat identities.",
+          "revision": 1,
+          "schema_version": "1.0.0"
+        },
+        "revision": 1,
+        "sha256": "59508120c531cb4578cf119aa91ad01566317e76d1872c8ee79b5a5cfbccb099"
+      }
+    },
+    "task_kind": "video"
+  },
   "visual_recipes": {
     "path": "editorial/visual-recipes.v1.json",
     "recipes": {

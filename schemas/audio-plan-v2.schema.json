@@ -1,0 +1,201 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://suengj.com/schemas/audio-plan-v2.schema.json",
+  "title": "Video Audio Plan v2",
+  "description": "Provider-neutral video narration timing, post-measurement reconciliation, and caption alignment record.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "plan_id", "video_plan_ref", "script_ref", "source_evidence_ref", "goal", "audience", "canonical_script_check", "segments", "pronunciation_glossary", "protected_values", "delivery_intent", "measurement", "reconciliation", "captions", "status"],
+  "properties": {
+    "schema_version": { "const": "2.0.0" },
+    "plan_id": { "type": "string", "pattern": "^audioplan:[a-z0-9]+(-[a-z0-9]+)*$" },
+    "video_plan_ref": { "type": "string", "minLength": 1 },
+    "script_ref": { "type": "string", "minLength": 1 },
+    "source_evidence_ref": { "type": "string", "minLength": 1 },
+    "goal": { "type": "string", "minLength": 1 },
+    "audience": { "enum": ["general-reader", "professional-generalist", "domain-practitioner", "domain-expert", "beginner-learner", "child-upper-elementary"] },
+    "canonical_script_check": { "$ref": "#/$defs/canonical_script_check" },
+    "segments": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/segment" } },
+    "pronunciation_glossary": { "type": "array", "items": { "$ref": "#/$defs/pronunciation_entry" } },
+    "protected_values": { "type": "array", "items": { "$ref": "#/$defs/protected_value" } },
+    "delivery_intent": { "$ref": "#/$defs/delivery_intent" },
+    "measurement": { "$ref": "#/$defs/measurement" },
+    "reconciliation": { "$ref": "#/$defs/reconciliation" },
+    "captions": { "$ref": "#/$defs/captions" },
+    "status": { "enum": ["planned", "script_checked", "provider_not_configured", "rendered", "reconciliation_pending", "complete", "blocked", "failed"] }
+  },
+  "$defs": {
+    "canonical_script_check": {
+      "type": "object", "additionalProperties": false,
+      "required": ["phase", "performed", "outcome", "evidence_ref"],
+      "properties": {
+        "phase": { "const": "pre_tts" },
+        "performed": { "type": "boolean" },
+        "outcome": { "enum": ["pass", "fail", "not_yet"] },
+        "evidence_ref": { "type": ["string", "null"] }
+      }
+    },
+    "segment": {
+      "type": "object", "additionalProperties": false,
+      "required": ["segment_id", "beat_id", "scene_id", "spoken_text", "narration_span_hash"],
+      "properties": {
+        "segment_id": { "type": "string", "pattern": "^seg-[a-z0-9]+(-[a-z0-9]+)*$" },
+        "beat_id": { "type": "string", "pattern": "^beat-[a-z0-9]+(-[a-z0-9]+)*$" },
+        "scene_id": { "type": "string", "pattern": "^scene-[a-z0-9]+(-[a-z0-9]+)*$" },
+        "spoken_text": { "type": "string", "minLength": 1 },
+        "narration_span_hash": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "target_duration_seconds": { "type": ["number", "null"], "minimum": 0 },
+        "pause_after_ms": { "type": "integer", "minimum": 0 },
+        "emphasis": { "type": "array", "items": { "type": "string", "minLength": 1 } }
+      }
+    },
+    "pronunciation_entry": {
+      "type": "object", "additionalProperties": false,
+      "required": ["term", "spoken_form", "source_ref"],
+      "properties": {
+        "term": { "type": "string", "minLength": 1 },
+        "surface_text": { "type": "string", "minLength": 1 },
+        "spoken_form": { "type": "string", "minLength": 1 },
+        "source_ref": { "type": "string", "minLength": 1 }
+      }
+    },
+    "protected_value": {
+      "type": "object", "additionalProperties": false,
+      "required": ["kind", "exact_text", "source_ref", "locked"],
+      "properties": {
+        "kind": { "enum": ["number", "date", "unit", "name", "quote"] },
+        "exact_text": { "type": "string", "minLength": 1 },
+        "source_ref": { "type": "string", "minLength": 1 },
+        "locked": { "const": true }
+      }
+    },
+    "delivery_intent": {
+      "type": "object", "additionalProperties": false,
+      "required": ["voice", "tone", "pace", "pause_policy", "emphasis"],
+      "properties": {
+        "voice": { "type": "string", "minLength": 1 },
+        "tone": { "type": "string", "minLength": 1 },
+        "pace": { "type": "string", "minLength": 1 },
+        "pause_policy": { "type": "string", "minLength": 1 },
+        "emphasis": { "type": "array", "items": { "type": "string", "minLength": 1 } }
+      }
+    },
+    "measurement": {
+      "type": "object", "additionalProperties": false,
+      "required": ["provider_status", "measured_audio_duration_seconds", "measured_at", "evidence_ref"],
+      "properties": {
+        "provider_status": { "enum": ["configured", "not_configured", "unknown"] },
+        "measured_audio_duration_seconds": { "type": ["number", "null"], "minimum": 0 },
+        "measured_at": { "type": ["string", "null"], "format": "date-time" },
+        "evidence_ref": { "type": ["string", "null"] },
+        "audio_ref": { "type": ["string", "null"], "minLength": 1 },
+        "audio_sha256": { "type": ["string", "null"], "pattern": "^[a-f0-9]{64}$" }
+      }
+    },
+    "reconciliation": {
+      "type": "object", "additionalProperties": false,
+      "required": ["phase", "action", "affected_scene_ids", "evidence_ref"],
+      "properties": {
+        "phase": { "const": "post_measurement" },
+        "action": { "enum": ["pending", "adjust_scene_timing", "revise_script", "blocked"] },
+        "affected_scene_ids": { "type": "array", "items": { "type": "string", "pattern": "^scene-[a-z0-9]+(-[a-z0-9]+)*$" } },
+        "evidence_ref": { "type": ["string", "null"] }
+      }
+    },
+    "captions": {
+      "type": "object", "additionalProperties": false,
+      "required": ["enabled", "max_lines", "safe_zone", "alignment_status", "segments"],
+      "properties": {
+        "enabled": { "const": true },
+        "max_lines": { "enum": [1, 2] },
+        "safe_zone": { "enum": ["caption-safe", "all-safe"] },
+        "alignment_status": { "enum": ["not_yet", "pass", "fail"] },
+        "alignment_evidence": { "$ref": "#/$defs/alignment_evidence" },
+        "segments": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/caption_segment" } }
+      }
+    },
+    "caption_segment": {
+      "type": "object", "additionalProperties": false,
+      "required": ["scene_id", "start_seconds", "end_seconds", "exact_text", "lines", "protected_exact_words"],
+      "properties": {
+        "scene_id": { "type": "string", "pattern": "^scene-[a-z0-9]+(-[a-z0-9]+)*$" },
+        "start_seconds": { "type": "number", "minimum": 0 },
+        "end_seconds": { "type": "number", "minimum": 0 },
+        "measured_start_seconds": { "type": ["number", "null"], "minimum": 0 },
+        "measured_end_seconds": { "type": ["number", "null"], "minimum": 0 },
+        "alignment_evidence_ref": { "type": ["string", "null"], "minLength": 1 },
+        "exact_text": { "type": "string", "minLength": 1 },
+        "lines": { "type": "array", "minItems": 1, "maxItems": 2, "items": { "type": "string", "minLength": 1 } },
+        "protected_exact_words": { "type": "array", "items": { "type": "string", "minLength": 1 } }
+      }
+    },
+    "alignment_evidence": {
+      "type": "object", "additionalProperties": false,
+      "description": "The evidence_ref is an alignment-evidence://sha256 content address computed from audio_ref, audio_sha256, and segments; the StageResult must list that exact output ref.",
+      "required": ["evidence_ref", "audio_ref", "audio_sha256", "stage_result", "segments"],
+      "properties": {
+        "evidence_ref": { "type": "string", "pattern": "^alignment-evidence://sha256/[a-f0-9]{64}$" },
+        "audio_ref": { "type": "string", "minLength": 1 },
+        "audio_sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "stage_result": { "$ref": "#/$defs/engine_stage_result" },
+        "segments": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/alignment_segment" } }
+      }
+    },
+    "alignment_segment": {
+      "type": "object", "additionalProperties": false,
+      "required": ["segment_id", "scene_id", "spoken_text_sha256", "measured_start_seconds", "measured_end_seconds"],
+      "properties": {
+        "segment_id": { "type": "string", "pattern": "^seg-[a-z0-9]+(-[a-z0-9]+)*$" },
+        "scene_id": { "type": "string", "pattern": "^scene-[a-z0-9]+(-[a-z0-9]+)*$" },
+        "spoken_text_sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "measured_start_seconds": { "type": "number", "minimum": 0 },
+        "measured_end_seconds": { "type": "number", "minimum": 0 }
+      }
+    },
+    "engine_stage_result": {
+      "description": "shorts_gen StageResult schema 1.0.0, scoped to completed qa_repair alignment verification.",
+      "type": "object", "additionalProperties": false,
+      "required": ["schema_version", "stage", "status", "input_hash", "output_refs", "errors", "receipts", "cache_hit", "elapsed_s", "estimated_cost"],
+      "properties": {
+        "schema_version": { "const": "1.0.0" },
+        "stage": { "const": "qa_repair" },
+        "status": { "const": "done" },
+        "input_hash": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "output_refs": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+        "errors": { "type": "array", "items": { "$ref": "#/$defs/engine_stage_error" } },
+        "receipts": { "type": "array", "items": { "$ref": "#/$defs/engine_render_receipt" } },
+        "cache_hit": { "type": "boolean" },
+        "elapsed_s": { "type": "number", "minimum": 0 },
+        "estimated_cost": { "type": "number", "minimum": 0 }
+      }
+    },
+    "engine_stage_error": {
+      "type": "object", "additionalProperties": false,
+      "required": ["code", "message", "retryable"],
+      "properties": {
+        "code": { "type": "string", "minLength": 1 },
+        "message": { "type": "string", "minLength": 1 },
+        "retryable": { "type": "boolean" }
+      }
+    },
+    "engine_render_receipt": {
+      "type": "object", "additionalProperties": false,
+      "required": ["schema_version", "job_id", "aspect", "video_ref", "thumbnail_ref", "sha256", "duration_s", "fps", "width", "height", "codec", "pixel_format"],
+      "properties": {
+        "schema_version": { "const": "1.0.0" },
+        "job_id": { "type": "string", "minLength": 1 },
+        "aspect": { "enum": ["16:9", "9:16"] },
+        "video_ref": { "type": "string", "minLength": 1 },
+        "thumbnail_ref": { "type": "string", "minLength": 1 },
+        "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "duration_s": { "type": "number", "minimum": 0 },
+        "fps": { "type": "number", "minimum": 0 },
+        "width": { "type": "integer", "minimum": 1 },
+        "height": { "type": "integer", "minimum": 1 },
+        "codec": { "type": "string", "minLength": 1 },
+        "pixel_format": { "type": "string", "minLength": 1 },
+        "has_audio": { "type": "boolean" }
+      }
+    }
+  }
+}

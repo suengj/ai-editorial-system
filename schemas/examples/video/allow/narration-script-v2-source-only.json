@@ -1,0 +1,114 @@
+{
+  "schema_version": "2.0.0",
+  "script_id": "narration-script:fixture-mixed",
+  "video_plan_ref": "video-plan:narrated-mixed",
+  "source_evidence_ref": "source-evidence:narrated-mixed",
+  "goal": "Explain the supplied source material clearly.",
+  "audience": "general-reader",
+  "turns": [
+    {
+      "turn_id": "turn-1",
+      "beat_id": "beat-1",
+      "scene_id": "scene-1",
+      "spoken_text": "This source describes a process lasting 45 seconds.",
+      "on_screen_text": [
+        {
+          "exact_text": "This source describes a process lasting 45 seconds.",
+          "source_ref": "source-1",
+          "protected": false,
+          "evidence_span_ids": [
+            "evidence-1"
+          ]
+        }
+      ],
+      "source_refs": [
+        "source-1"
+      ],
+      "evidence_span_ids": [
+        "evidence-1"
+      ]
+    },
+    {
+      "turn_id": "turn-2",
+      "beat_id": "beat-2",
+      "scene_id": "scene-2",
+      "spoken_text": "The supplied material explains the mechanism.",
+      "on_screen_text": [
+        {
+          "exact_text": "The supplied material explains the mechanism.",
+          "source_ref": "source-1",
+          "protected": false,
+          "evidence_span_ids": [
+            "evidence-2"
+          ]
+        }
+      ],
+      "source_refs": [
+        "source-1"
+      ],
+      "evidence_span_ids": [
+        "evidence-2"
+      ]
+    },
+    {
+      "turn_id": "turn-3",
+      "beat_id": "beat-3",
+      "scene_id": "scene-3",
+      "spoken_text": "The source states the supported conclusion.",
+      "on_screen_text": [
+        {
+          "exact_text": "The source states the supported conclusion.",
+          "source_ref": "source-1",
+          "protected": false,
+          "evidence_span_ids": [
+            "evidence-3"
+          ]
+        }
+      ],
+      "source_refs": [
+        "source-1"
+      ],
+      "evidence_span_ids": [
+        "evidence-3"
+      ]
+    }
+  ],
+  "pronunciation_glossary": [
+    {
+      "term": "AES",
+      "surface_text": "AES",
+      "spoken_form": "A E S",
+      "source_ref": "source-1"
+    }
+  ],
+  "protected_values": [
+    {
+      "kind": "number",
+      "exact_text": "45 seconds",
+      "source_ref": "source-1",
+      "locked": true
+    }
+  ],
+  "delivery": {
+    "voice": "single narrator",
+    "tone": "measured and clear",
+    "pace": "unhurried",
+    "pause_after_ms": [
+      250
+    ],
+    "emphasis": [
+      "supported conclusion"
+    ]
+  },
+  "canonical_script_check": {
+    "phase": "pre_tts",
+    "performed": true,
+    "outcome": "pass",
+    "evidence_ref": "fixture://script-check/mixed"
+  },
+  "caption_policy": {
+    "with_narration": "on",
+    "max_lines": 2,
+    "safe_zone": "caption-safe"
+  }
+}

@@ -1,0 +1,56 @@
+{
+  "schema_version": "2.0.0",
+  "catalog_id": "bgm-catalog:fixture-auto",
+  "video_plan_ref": "video-plan:narrated-mixed",
+  "mode": "auto_match",
+  "selected_track_id": null,
+  "auto_match": {
+    "mood": [
+      "calm"
+    ],
+    "tempo_bpm": 90,
+    "energy": 0.2,
+    "platform": "youtube"
+  },
+  "tracks": [
+    {
+      "track_id": "fixture-track-1",
+      "title": "Quiet Study",
+      "artist": "Fixture Artist",
+      "master_rights_owner": "Fixture Master Owner",
+      "composition_rights_owner": "Fixture Composition Owner",
+      "file": "fixture://bgm/quiet-study",
+      "version": "1",
+      "sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "license": "CC BY 4.0",
+      "attribution": "Fixture Artist",
+      "platforms": [
+        "youtube"
+      ],
+      "monetization_allowed": true,
+      "isrc": null,
+      "content_id_status": "cleared",
+      "self_claim": false,
+      "whitelist": [],
+      "mood": [
+        "calm",
+        "focused"
+      ],
+      "tempo_bpm": 90,
+      "energy": 0.2,
+      "vocal": false,
+      "loop_points": {
+        "start_seconds": 0,
+        "end_seconds": 30
+      },
+      "rights_status": "verified",
+      "rights_evidence_ref": "fixture://rights/bgm-1"
+    }
+  ],
+  "narration_ducking": {
+    "enabled": true,
+    "target_db": -18,
+    "attack_ms": 120,
+    "release_ms": 500
+  }
+}

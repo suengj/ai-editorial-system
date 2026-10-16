@@ -42,6 +42,16 @@ test('visual task for trends.moa loads the community doc, visual rules, and not 
   yes(paths(r).includes('editorial/STRUCTURED-VISUAL-EXECUTION.md') && paths(r).includes('editorial/visual-recipes.v1.json'), 'visual docs');
   yes(!paths(r).includes('editorial/SUENGJ-STYLE.md') && !paths(r).includes('editorial/SIGNALYTICS-BENCHMARK-CARDS.md'), 'no other voice');
 });
+test('video task route loads only its registered video semantic core and SHA-pinned profile', () => {
+  const r = resolveEditorial(intent('newsletter', ['video/educational-summary']), { reader: reader() });
+  eq(r.status, STATUS.READY);
+  eq(r.load_plan.task_kind, 'video');
+  for (const p of ['editorial/VIDEO-STORYBOARD.md', 'editorial/VISUAL-STORY-COMPILATION.md', 'editorial/AUDIO-SCRIPT.md', 'editorial/VIDEO-ENGINE-MAPPING.md', 'editorial/profiles/video/educational-summary.json']) yes(paths(r).includes(p), `missing ${p}`);
+  for (const p of Object.values(manifest.voice_docs).flat()) yes(!paths(r).includes(p), `video route must not load a voice document`);
+  const profileLoad = r.loads.find((l) => l.path === 'editorial/profiles/video/educational-summary.json');
+  yes(profileLoad.sha256 === `sha256:${manifest.video_profiles['video/educational-summary'].sha256}`, 'video profile bytes match manifest pin');
+  yes(profileLoad.expected_sha256 === manifest.video_profiles['video/educational-summary'].sha256, 'expected pin is recorded on the load');
+});
 test('trends.moa default intensity is owner-approved HIGH and retains community voice isolation', () => {
   const r = resolveEditorial(intent('instagram', ['visual/social-card']), { targetId: 'trends-moa', taskKind: 'both', reader: reader() });
   eq(r.status, STATUS.READY);

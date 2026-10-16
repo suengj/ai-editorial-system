@@ -1,0 +1,82 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://suengj.com/schemas/video-qa.schema.json",
+  "title": "Video QA Contract",
+  "description": "Evidence-bearing video review outcome with non-disableable cost, rights, and approval gates.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "qa_id", "plan_ref", "result", "checks", "gates", "measurable_evidence", "repair"],
+  "properties": {
+    "schema_version": { "const": "1.0.0" },
+    "qa_id": { "type": "string", "pattern": "^video-qa:[a-z0-9]+(-[a-z0-9]+)*$" },
+    "plan_ref": { "type": "string", "minLength": 1 },
+    "result": { "enum": ["PASS", "FAILED", "PARTIAL"] },
+    "checks": {
+      "type": "object", "additionalProperties": false,
+      "required": ["source_evidence_resolution", "factual", "figures_quotes", "license_provenance", "visible_text_crop_contrast_safe_area", "audio_script_pronunciation", "caption_completeness_alignment", "bgm_loudness_ducking_clipping", "technical_resolution_fps_duration", "provider_configured"],
+      "properties": {
+        "source_evidence_resolution": { "$ref": "#/$defs/check" },
+        "factual": { "$ref": "#/$defs/check" },
+        "figures_quotes": { "$ref": "#/$defs/check" },
+        "license_provenance": { "$ref": "#/$defs/check" },
+        "visible_text_crop_contrast_safe_area": { "$ref": "#/$defs/check" },
+        "audio_script_pronunciation": { "$ref": "#/$defs/check" },
+        "caption_completeness_alignment": { "$ref": "#/$defs/check" },
+        "bgm_loudness_ducking_clipping": { "$ref": "#/$defs/check" },
+        "technical_resolution_fps_duration": { "$ref": "#/$defs/check" },
+        "provider_configured": { "$ref": "#/$defs/check" }
+      }
+    },
+    "gates": {
+      "type": "object", "additionalProperties": false,
+      "required": ["cost", "rights", "approval"],
+      "properties": {
+        "cost": { "$ref": "#/$defs/required_gate" },
+        "rights": { "$ref": "#/$defs/required_gate" },
+        "approval": { "$ref": "#/$defs/required_gate" }
+      }
+    },
+    "measurable_evidence": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/measurement" } },
+    "repair": { "$ref": "#/$defs/repair" }
+  },
+  "$defs": {
+    "check": {
+      "type": "object", "additionalProperties": false,
+      "required": ["status", "evidence_refs"],
+      "properties": {
+        "status": { "enum": ["pass", "fail", "not_yet"] },
+        "evidence_refs": { "type": "array", "items": { "type": "string", "minLength": 1 } }
+      }
+    },
+    "required_gate": {
+      "type": "object", "additionalProperties": false,
+      "required": ["required", "status", "evidence_refs"],
+      "properties": {
+        "required": { "const": true },
+        "status": { "enum": ["pass", "fail", "not_yet"] },
+        "evidence_refs": { "type": "array", "items": { "type": "string", "minLength": 1 } }
+      }
+    },
+    "measurement": {
+      "type": "object", "additionalProperties": false,
+      "required": ["metric", "value", "unit", "evidence_ref", "scene_id", "source_ref"],
+      "properties": {
+        "metric": { "type": "string", "minLength": 1 },
+        "value": { "type": ["number", "string", "boolean"] },
+        "unit": { "type": "string", "minLength": 1 },
+        "evidence_ref": { "type": "string", "minLength": 1 },
+        "scene_id": { "type": ["string", "null"] },
+        "source_ref": { "type": ["string", "null"] }
+      }
+    },
+    "repair": {
+      "type": "object", "additionalProperties": false,
+      "required": ["scope", "affected_scene_ids", "whole_video_rerender"],
+      "properties": {
+        "scope": { "enum": ["none", "affected_scenes_only"] },
+        "affected_scene_ids": { "type": "array", "items": { "type": "string", "pattern": "^scene-[a-z0-9]+(-[a-z0-9]+)*$" } },
+        "whole_video_rerender": { "const": false }
+      }
+    }
+  }
+}
