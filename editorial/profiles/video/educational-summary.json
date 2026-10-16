@@ -1,0 +1,23 @@
+{
+  "schema_version": "1.0.0",
+  "profile_id": "video/educational-summary",
+  "revision": 1,
+  "family": "educational-summary",
+  "purpose": "Explain verified source material through a compact learning sequence.",
+  "defaults": {
+    "duration_class": "short",
+    "target_duration_seconds": null,
+    "aspect_ratios": ["16:9", "9:16", "1:1", "4:5"],
+    "semantic_thinking": "quiet",
+    "reveal": "step_by_step",
+    "presentation": "sequential",
+    "educational_order": ["hook", "concept", "example", "worked_solution", "key_takeaway"],
+    "captions": { "with_narration": "on", "max_lines": 2, "safe_zone": "caption-safe" }
+  },
+  "constraints": {
+    "source_evidence_envelope_required": true,
+    "source_only_beats_allowed": true,
+    "editorial_package_required": false,
+    "locked_fields": ["source_evidence", "rights", "figures", "approval"]
+  }
+}

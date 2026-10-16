@@ -1,0 +1,295 @@
+{
+  "schema_version": "2.0.0",
+  "plan_id": "video-plan:example-45s",
+  "profile_ref": {
+    "profile_id": "video/educational-summary",
+    "revision": 1,
+    "sha256": "52958745b4033174373a99e952349de9779577d2bc0343a98bea33906ba348b3"
+  },
+  "source_evidence": {
+    "schema_version": "1.0.0",
+    "envelope_id": "source-evidence:example-45s",
+    "sources": [
+      {
+        "source_id": "source-1",
+        "source_ref": "fixture://source/source-1",
+        "kind": "text",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "rights": {
+          "status": "verified",
+          "license": "CC BY 4.0",
+          "rights_owner": "Fixture Source",
+          "attribution": "Fixture source attribution",
+          "platforms": [
+            "youtube"
+          ],
+          "commercial_use": true,
+          "modification_allowed": true,
+          "evidence_ref": "fixture://rights/source-1"
+        }
+      }
+    ]
+  },
+  "duration_class": "short",
+  "target_duration_seconds": 45,
+  "aspect_ratio": "16:9",
+  "fps": 30,
+  "language": "en",
+  "semantic_controls": {
+    "thinking": "quiet",
+    "reveal": "step_by_step",
+    "presentation": "sequential"
+  },
+  "scenes": [
+    {
+      "scene_id": "scene-1",
+      "beat_id": "beat-1",
+      "function": "hook",
+      "timing": {
+        "start_seconds": 0,
+        "end_seconds": 9
+      },
+      "source_only": true,
+      "source_refs": [
+        "source-1"
+      ],
+      "layers": [
+        {
+          "layer_id": "layer-1",
+          "source_ref": "source-1",
+          "rights_ref": "source-1",
+          "z": 0,
+          "timing": {
+            "start_seconds": 0,
+            "end_seconds": 9
+          },
+          "fit": "contain",
+          "crop": {
+            "mode": "none",
+            "focal_point": null
+          },
+          "safe_zone": {
+            "x": 0.1,
+            "y": 0.1,
+            "width": 0.8,
+            "height": 0.8
+          },
+          "motion_intention": "hold"
+        }
+      ],
+      "on_screen_text": [
+        {
+          "exact_text": "Source beat 1",
+          "source_ref": "source-1",
+          "protected": false
+        }
+      ]
+    },
+    {
+      "scene_id": "scene-2",
+      "beat_id": "beat-2",
+      "function": "concept",
+      "timing": {
+        "start_seconds": 9,
+        "end_seconds": 18
+      },
+      "source_only": true,
+      "source_refs": [
+        "source-1"
+      ],
+      "layers": [
+        {
+          "layer_id": "layer-2",
+          "source_ref": "source-1",
+          "rights_ref": "source-1",
+          "z": 0,
+          "timing": {
+            "start_seconds": 9,
+            "end_seconds": 18
+          },
+          "fit": "contain",
+          "crop": {
+            "mode": "none",
+            "focal_point": null
+          },
+          "safe_zone": {
+            "x": 0.1,
+            "y": 0.1,
+            "width": 0.8,
+            "height": 0.8
+          },
+          "motion_intention": "hold"
+        }
+      ],
+      "on_screen_text": [
+        {
+          "exact_text": "Source beat 2",
+          "source_ref": "source-1",
+          "protected": false
+        }
+      ]
+    },
+    {
+      "scene_id": "scene-3",
+      "beat_id": "beat-3",
+      "function": "example",
+      "timing": {
+        "start_seconds": 18,
+        "end_seconds": 27
+      },
+      "source_only": true,
+      "source_refs": [
+        "source-1"
+      ],
+      "layers": [
+        {
+          "layer_id": "layer-3",
+          "source_ref": "source-1",
+          "rights_ref": "source-1",
+          "z": 0,
+          "timing": {
+            "start_seconds": 18,
+            "end_seconds": 27
+          },
+          "fit": "contain",
+          "crop": {
+            "mode": "none",
+            "focal_point": null
+          },
+          "safe_zone": {
+            "x": 0.1,
+            "y": 0.1,
+            "width": 0.8,
+            "height": 0.8
+          },
+          "motion_intention": "hold"
+        }
+      ],
+      "on_screen_text": [
+        {
+          "exact_text": "Source beat 3",
+          "source_ref": "source-1",
+          "protected": false
+        }
+      ]
+    },
+    {
+      "scene_id": "scene-4",
+      "beat_id": "beat-4",
+      "function": "worked_solution",
+      "timing": {
+        "start_seconds": 27,
+        "end_seconds": 36
+      },
+      "source_only": true,
+      "source_refs": [
+        "source-1"
+      ],
+      "layers": [
+        {
+          "layer_id": "layer-4",
+          "source_ref": "source-1",
+          "rights_ref": "source-1",
+          "z": 0,
+          "timing": {
+            "start_seconds": 27,
+            "end_seconds": 36
+          },
+          "fit": "contain",
+          "crop": {
+            "mode": "none",
+            "focal_point": null
+          },
+          "safe_zone": {
+            "x": 0.1,
+            "y": 0.1,
+            "width": 0.8,
+            "height": 0.8
+          },
+          "motion_intention": "hold"
+        }
+      ],
+      "on_screen_text": [
+        {
+          "exact_text": "Source beat 4",
+          "source_ref": "source-1",
+          "protected": false
+        }
+      ]
+    },
+    {
+      "scene_id": "scene-5",
+      "beat_id": "beat-5",
+      "function": "key_takeaway",
+      "timing": {
+        "start_seconds": 36,
+        "end_seconds": 45
+      },
+      "source_only": true,
+      "source_refs": [
+        "source-1"
+      ],
+      "layers": [
+        {
+          "layer_id": "layer-5",
+          "source_ref": "source-1",
+          "rights_ref": "source-1",
+          "z": 0,
+          "timing": {
+            "start_seconds": 36,
+            "end_seconds": 45
+          },
+          "fit": "contain",
+          "crop": {
+            "mode": "none",
+            "focal_point": null
+          },
+          "safe_zone": {
+            "x": 0.1,
+            "y": 0.1,
+            "width": 0.8,
+            "height": 0.8
+          },
+          "motion_intention": "hold"
+        }
+      ],
+      "on_screen_text": [
+        {
+          "exact_text": "Source beat 5",
+          "source_ref": "source-1",
+          "protected": false
+        }
+      ]
+    }
+  ],
+  "audio": {
+    "narration_mode": "silent",
+    "narration_script_ref": null,
+    "audio_plan_ref": null,
+    "tts_contract_ref": null,
+    "measured_audio_duration_seconds": null,
+    "reconciliation_action": "pending",
+    "bgm_mode": "off"
+  },
+  "captions": {
+    "enabled": false,
+    "max_lines": 2,
+    "safe_zone": "caption-safe",
+    "protected_exact_text": [],
+    "alignment_status": "not_yet"
+  },
+  "approval": {
+    "status": "approved",
+    "evidence_ref": "fixture://approval/example-45s"
+  },
+  "change_requests": [],
+  "figures": [
+    {
+      "exact_value": "45",
+      "unit": "seconds",
+      "source_ref": "source-1",
+      "locked": true
+    }
+  ],
+  "unregistered_option": "value"
+}

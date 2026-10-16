@@ -1,0 +1,198 @@
+{
+  "schema_version": "2.0.0",
+  "plan_id": "video-plan:interactive-hybrid",
+  "profile_ref": {
+    "profile_id": "video/interactive-information",
+    "revision": 1,
+    "sha256": "f53bb623c189a9d2d0de0ebc9ce26027b558d751b4561f422f875886c5667a35"
+  },
+  "source_evidence": {
+    "schema_version": "1.0.0",
+    "envelope_id": "source-evidence:interactive-hybrid",
+    "sources": [
+      {
+        "source_id": "source-1",
+        "source_ref": "fixture://source/source-1",
+        "kind": "text",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "rights": {
+          "status": "verified",
+          "license": "CC BY 4.0",
+          "rights_owner": "Fixture Source",
+          "attribution": "Fixture source attribution",
+          "platforms": [
+            "youtube"
+          ],
+          "commercial_use": true,
+          "modification_allowed": true,
+          "evidence_ref": "fixture://rights/source-1"
+        }
+      }
+    ]
+  },
+  "duration_class": "short",
+  "target_duration_seconds": 15,
+  "aspect_ratio": "16:9",
+  "fps": 30,
+  "language": "en",
+  "semantic_controls": {
+    "thinking": "quiet",
+    "reveal": "step_by_step",
+    "presentation": "hybrid"
+  },
+  "scenes": [
+    {
+      "scene_id": "scene-1",
+      "beat_id": "beat-1",
+      "function": "choice",
+      "timing": {
+        "start_seconds": 0,
+        "end_seconds": 5
+      },
+      "source_only": true,
+      "source_refs": [
+        "source-1"
+      ],
+      "layers": [
+        {
+          "layer_id": "layer-1",
+          "source_ref": "source-1",
+          "rights_ref": "source-1",
+          "z": 0,
+          "timing": {
+            "start_seconds": 0,
+            "end_seconds": 5
+          },
+          "fit": "contain",
+          "crop": {
+            "mode": "none",
+            "focal_point": null
+          },
+          "safe_zone": {
+            "x": 0.1,
+            "y": 0.1,
+            "width": 0.8,
+            "height": 0.8
+          },
+          "motion_intention": "hold"
+        }
+      ],
+      "on_screen_text": [
+        {
+          "exact_text": "Source beat 1",
+          "source_ref": "source-1",
+          "protected": false
+        }
+      ]
+    },
+    {
+      "scene_id": "scene-2",
+      "beat_id": "beat-2",
+      "function": "comparison",
+      "timing": {
+        "start_seconds": 5,
+        "end_seconds": 10
+      },
+      "source_only": true,
+      "source_refs": [
+        "source-1"
+      ],
+      "layers": [
+        {
+          "layer_id": "layer-2",
+          "source_ref": "source-1",
+          "rights_ref": "source-1",
+          "z": 0,
+          "timing": {
+            "start_seconds": 5,
+            "end_seconds": 10
+          },
+          "fit": "contain",
+          "crop": {
+            "mode": "none",
+            "focal_point": null
+          },
+          "safe_zone": {
+            "x": 0.1,
+            "y": 0.1,
+            "width": 0.8,
+            "height": 0.8
+          },
+          "motion_intention": "hold"
+        }
+      ],
+      "on_screen_text": [
+        {
+          "exact_text": "Source beat 2",
+          "source_ref": "source-1",
+          "protected": false
+        }
+      ]
+    },
+    {
+      "scene_id": "scene-3",
+      "beat_id": "beat-3",
+      "function": "consequence",
+      "timing": {
+        "start_seconds": 10,
+        "end_seconds": 15
+      },
+      "source_only": true,
+      "source_refs": [
+        "source-1"
+      ],
+      "layers": [
+        {
+          "layer_id": "layer-3",
+          "source_ref": "source-1",
+          "rights_ref": "source-1",
+          "z": 0,
+          "timing": {
+            "start_seconds": 10,
+            "end_seconds": 15
+          },
+          "fit": "contain",
+          "crop": {
+            "mode": "none",
+            "focal_point": null
+          },
+          "safe_zone": {
+            "x": 0.1,
+            "y": 0.1,
+            "width": 0.8,
+            "height": 0.8
+          },
+          "motion_intention": "hold"
+        }
+      ],
+      "on_screen_text": [
+        {
+          "exact_text": "Source beat 3",
+          "source_ref": "source-1",
+          "protected": false
+        }
+      ]
+    }
+  ],
+  "audio": {
+    "narration_mode": "silent",
+    "narration_script_ref": null,
+    "audio_plan_ref": null,
+    "tts_contract_ref": null,
+    "measured_audio_duration_seconds": null,
+    "reconciliation_action": "pending",
+    "bgm_mode": "off"
+  },
+  "captions": {
+    "enabled": false,
+    "max_lines": 2,
+    "safe_zone": "caption-safe",
+    "protected_exact_text": [],
+    "alignment_status": "not_yet"
+  },
+  "approval": {
+    "status": "approved",
+    "evidence_ref": "fixture://approval/interactive-hybrid"
+  },
+  "change_requests": []
+}

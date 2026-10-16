@@ -1,10 +1,11 @@
 # Video Storyboard — assembled visual essay, narration sync, and temporal QA
 
-This document governs **video compiled from an already-verified article and its
-visual/spoken derivatives**.
+This document governs video compiled from an already-verified article and its
+visual/spoken derivatives, plus the additive AES VideoPlan v2 route compiled
+directly from a versioned source-evidence envelope.
 
-The initial editorial model is deliberately not `prompt → generative video`.
-It is an **assembled visual essay**:
+The article-derived editorial model is deliberately not `prompt → generative
+video`. It is an **assembled visual essay**:
 
 ```text
 Canonical Article
@@ -21,6 +22,21 @@ Canonical Article
 Generative motion/video can later become one replaceable renderer for selected
 shots. It does not replace this semantic contract.
 
+## 0.1 Source-evidence route for VideoPlan v2
+
+VideoPlan v2 may begin with a versioned source-evidence envelope containing
+PDF, Markdown, text, image, footage, chart, or instruction sources. This route
+does not require an article, editorial package, article ID, claim ID, author,
+or quotation. Keep every beat and visual layer linked to its declared source
+and rights record. A source-only beat may remain silent and may have no
+on-screen text; do not add narration or text merely to fill a renderer field.
+
+Use the article and Visual Story Plan path below when an approved article
+package exists. Use the source-evidence envelope directly when it does not.
+Article-specific rules in this document apply to article-derived video; the
+source-only route preserves the same provenance, locked facts, rights, and
+approval boundaries without manufacturing article structure.
+
 Related contracts:
 
 - `VISUAL-STORY-COMPILATION.md`
@@ -31,7 +47,7 @@ Related contracts:
 
 ## 1. Video is temporal assembly, not another summary pass
 
-The video does not independently decide what the article means.
+The video does not independently decide what its source evidence means.
 
 Its semantic inputs are:
 

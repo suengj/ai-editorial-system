@@ -1,0 +1,175 @@
+#!/usr/bin/env node
+import { readFileSync, readdirSync } from 'node:fs';
+import { createHash } from 'node:crypto';
+import { dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { CODES, resolveLocalSourceEvidence, validateVideoDocument } from './lib/video-plan-core.mjs';
+import { validate } from './lib/json-schema-lite.mjs';
+
+const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
+const ALLOW = resolve(ROOT, 'schemas/examples/video/allow');
+const DENY = resolve(ROOT, 'schemas/examples/video/deny');
+const read = (dir, file) => JSON.parse(readFileSync(resolve(dir, file), 'utf8'));
+const kind = (file) => ['video-plan-v2', 'narration-script-v2', 'audio-plan-v2', 'bgm-catalog-v2', 'video-qa'].find((prefix) => file.startsWith(prefix));
+const clone = (value) => JSON.parse(JSON.stringify(value));
+let failures = 0;
+const check = (name, ok, detail = '') => {
+  if (ok) console.log(`  PASS ${name}`);
+  else { failures++; console.error(`  FAIL ${name}${detail ? ` — ${detail}` : ''}`); }
+};
+const codes = (type, doc, context = {}) => validateVideoDocument(type, doc, context).map((item) => item.code);
+
+console.log('video plan v2 allow fixtures');
+const v2AllowFiles = readdirSync(ALLOW).filter((file) => file.includes('-v2-') || file.startsWith('video-qa-')).sort();
+check('required 2.0 video/audio/BGM/QA fixtures are present', v2AllowFiles.length === 14, v2AllowFiles.join(', '));
+const allowDocs = v2AllowFiles.map((file) => ({ file, doc: read(ALLOW, file) }));
+const planById = new Map(allowDocs.filter(({ file }) => file.startsWith('video-plan-v2-')).map(({ doc }) => [doc.plan_id, doc]));
+const scriptById = new Map(allowDocs.filter(({ file }) => file.startsWith('narration-script-v2-')).map(({ doc }) => [doc.script_id, doc]));
+const evidenceByPlan = new Map([...planById].map(([id, plan]) => [id, resolveLocalSourceEvidence(plan)]));
+for (const file of v2AllowFiles) {
+  const doc = read(ALLOW, file);
+  const planRef = doc.video_plan_ref ?? doc.plan_ref;
+  const videoPlan = file.startsWith('video-plan-v2-') ? doc : planRef && planById.has(planRef) ? planById.get(planRef) : null;
+  const context = {
+    ...(videoPlan ? { videoPlan, verifiedProtectedSpans: evidenceByPlan.get(videoPlan.plan_id) } : {}),
+    ...(doc.script_ref && scriptById.has(doc.script_ref) ? { narrationScript: scriptById.get(doc.script_ref) } : {}),
+  };
+  const issues = validateVideoDocument(kind(file), doc, context);
+  check(file, issues.length === 0, issues.map((item) => `[${item.code}] ${item.message}`).join('; '));
+}
+
+const manifest = JSON.parse(readFileSync(resolve(ROOT, 'editorial/entry-manifest.json'), 'utf8'));
+const profiles = manifest.video_profiles;
+const profileSchema = JSON.parse(readFileSync(resolve(ROOT, 'schemas/video-profile.schema.json'), 'utf8'));
+check('manifest pins exactly the three registered video families', Object.keys(profiles).sort().join() === 'video/educational-summary,video/interactive-information,video/narrated-explainer');
+for (const [id, pin] of Object.entries(profiles)) {
+  const profile = read(ROOT, pin.path);
+  check(`${id} validates and matches its exact ID/revision`, validate(profile, profileSchema).length === 0 && profile.profile_id === id && profile.revision === pin.revision);
+  const planFile = id.endsWith('educational-summary') ? 'video-plan-v2-example-45s.json' : id.endsWith('interactive-information') ? 'video-plan-v2-interactive-hybrid.json' : 'video-plan-v2-narrated-mixed.json';
+  const plan = read(ALLOW, planFile);
+  check(`${id} plan carries the exact manifest SHA pin`, plan.profile_ref.profile_id === id && plan.profile_ref.revision === pin.revision && plan.profile_ref.sha256 === pin.sha256);
+}
+
+const landscape = read(ALLOW, 'video-plan-v2-silent-60s-16-9.json');
+const portrait = read(ALLOW, 'video-plan-v2-silent-60s-9-16.json');
+check('60-second source-only landscape has no editorial package or fabricated article/claim', landscape.target_duration_seconds === 60 && landscape.aspect_ratio === '16:9' && landscape.scenes.every((s) => s.source_only) && !('editorial_package_ref' in landscape) && !('article_id' in landscape) && !('claim' in landscape));
+check('60-second source-only portrait has no editorial package or fabricated article/claim', portrait.target_duration_seconds === 60 && portrait.aspect_ratio === '9:16' && portrait.scenes.every((s) => s.source_only) && !('editorial_package_ref' in portrait) && !('article_id' in portrait) && !('claim' in portrait));
+const example45 = read(ALLOW, 'video-plan-v2-example-45s.json');
+check('45-second educational example uses the profile default beat order', example45.target_duration_seconds === 45 && example45.scenes.map((s) => s.function).join() === 'hook,concept,example,worked_solution,key_takeaway');
+check('interactive profile fixtures cover sequential, simultaneous, and hybrid', ['sequential','simultaneous','hybrid'].every((mode) => read(ALLOW, `video-plan-v2-interactive-${mode}.json`).semantic_controls.presentation === mode));
+check('square and portrait social aspects are allowed in addition to the required landscape and portrait aspects', ['1:1','4:5'].every((aspect) => {
+  const plan = clone(example45); plan.aspect_ratio = aspect; return codes('video-plan-v2', plan).length === 0;
+}));
+
+const narratedPlan = read(ALLOW, 'video-plan-v2-narrated-mixed.json');
+const script = read(ALLOW, 'narration-script-v2-source-only.json');
+const audioPlan = read(ALLOW, 'audio-plan-v2-narrated-mixed.json');
+const narratedEvidence = resolveLocalSourceEvidence(narratedPlan);
+const audioContext = { videoPlan: narratedPlan, narrationScript: script, verifiedProtectedSpans: narratedEvidence };
+check('source-only narration validates against its versioned source envelope', codes('narration-script-v2', script, audioContext).length === 0 && script.source_evidence_ref === narratedPlan.source_evidence.envelope_id && !('article_id' in script) && !('source_claims' in script));
+check('measured narration plan reconciles after the pre-TTS script check', codes('audio-plan-v2', audioPlan, audioContext).length === 0 && audioPlan.canonical_script_check.phase === 'pre_tts' && audioPlan.reconciliation.phase === 'post_measurement');
+check('BGM auto-match allows a fully rights-verified track', codes('bgm-catalog-v2', read(ALLOW, 'bgm-catalog-v2-auto-match.json'), { videoPlan: narratedPlan }).length === 0);
+const activeClaimCatalog = clone(read(ALLOW, 'bgm-catalog-v2-auto-match.json'));
+activeClaimCatalog.tracks[0].content_id_status = 'active_claim';
+activeClaimCatalog.tracks[0].whitelist = [{ platform:'youtube', evidence_ref:'fixture://bgm/whitelist' }];
+check('BGM auto-match blocks an active Content ID claim even when whitelist metadata exists', codes('bgm-catalog-v2', activeClaimCatalog, { videoPlan: narratedPlan }).includes(CODES.BGM_UNSAFE));
+const selfClaimCatalog = clone(read(ALLOW, 'bgm-catalog-v2-auto-match.json'));
+selfClaimCatalog.tracks[0].self_claim = true;
+check('BGM auto-match does not infer safety from a self claim', codes('bgm-catalog-v2', selfClaimCatalog, { videoPlan: narratedPlan }).includes(CODES.BGM_UNSAFE));
+check('QA accepts evidence-backed PASS, FAILED, and PARTIAL outcomes', ['video-qa-pass.json','video-qa-failed.json','video-qa-partial.json'].every((file) => codes('video-qa', read(ALLOW, file), audioContext).length === 0));
+const unresolvedSourceQa = clone(read(ALLOW, 'video-qa-pass.json'));
+unresolvedSourceQa.checks.source_evidence_resolution = { status:'not_yet', evidence_refs:[] };
+check('video QA cannot PASS until source extraction evidence is independently resolved', codes('video-qa', unresolvedSourceQa, { videoPlan: narratedPlan }).includes(CODES.QA_EVIDENCE));
+check('standalone narration, audio, QA, and BGM validation fail closed without the referenced plan context', [
+  codes('narration-script-v2', script), codes('audio-plan-v2', audioPlan), codes('video-qa', read(ALLOW, 'video-qa-pass.json')),
+  codes('bgm-catalog-v2', read(ALLOW, 'bgm-catalog-v2-auto-match.json')),
+].every((found) => found.includes(CODES.CONTEXT_MISSING)));
+check('audio-plan validation also requires the referenced narration script when the video plan is present', codes('audio-plan-v2', audioPlan, { videoPlan: narratedPlan }).includes(CODES.CONTEXT_MISSING));
+const skippedScriptCheck = clone(audioPlan);
+skippedScriptCheck.canonical_script_check = { phase:'pre_tts', performed:false, outcome:'pass', evidence_ref:null };
+check('rendered audio cannot claim a passing pre-TTS check that was not performed', codes('audio-plan-v2', skippedScriptCheck, audioContext).includes(CODES.PRE_TTS_GATE));
+const audioDrift = clone(audioPlan);
+audioDrift.segments[1].spoken_text = 'An invented unsupported statement.';
+audioDrift.captions.segments[1].exact_text = audioDrift.segments[1].spoken_text;
+audioDrift.captions.segments[1].lines = [audioDrift.segments[1].spoken_text];
+check('audio segments and captions cannot drift from canonical narration text', codes('audio-plan-v2', audioDrift, audioContext).includes(CODES.AUDIO_SCRIPT_MISMATCH));
+const incompleteCaptions = clone(audioPlan);
+incompleteCaptions.captions.segments.splice(1, 2);
+check('rendered audio requires one caption segment for every spoken scene', codes('audio-plan-v2', incompleteCaptions, audioContext).includes(CODES.CAPTION_MISMATCH));
+const inventedProtectedValue = clone(script);
+inventedProtectedValue.protected_values[0] = { kind:'quote', exact_text:'an invented quotation', source_ref:'source-1', locked:true };
+const inventedIssues = codes('narration-script-v2', inventedProtectedValue, { videoPlan: narratedPlan });
+check('protected narration text must match an extracted source span and appear in spoken text', inventedIssues.includes(CODES.PROTECTED_VALUE_UNVERIFIED) && inventedIssues.includes(CODES.PROTECTED_TEXT_MISMATCH));
+const detachedSpanReceipt = clone(narratedPlan);
+detachedSpanReceipt.source_evidence.sources[0].protected_spans[0].source_sha256 = 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb';
+check('protected source spans must bind the exact span hash and byte range to the pinned source and extraction receipt', codes('video-plan-v2', detachedSpanReceipt).includes(CODES.PROTECTED_VALUE_UNVERIFIED));
+const forgedPlan = clone(narratedPlan);
+const forgedSpan = forgedPlan.source_evidence.sources[0].protected_spans[0];
+forgedSpan.exact_text = '999 fabricated units';
+forgedSpan.byte_start = 0;
+forgedSpan.byte_end = Buffer.byteLength(forgedSpan.exact_text, 'utf8');
+forgedSpan.span_sha256 = createHash('sha256').update(forgedSpan.exact_text).digest('hex');
+forgedSpan.evidence_ref = `source-extraction://sha256/${forgedSpan.source_sha256}/${forgedSpan.extraction_sha256}/span/${forgedSpan.span_id}/${forgedSpan.span_sha256}`;
+const forgedEvidence = resolveLocalSourceEvidence(forgedPlan);
+const forgedScript = clone(script);
+forgedScript.protected_values[0].exact_text = forgedSpan.exact_text;
+forgedScript.turns[0].spoken_text = 'The supplied source includes 999 fabricated units.';
+const forgedAudio = clone(audioPlan);
+forgedAudio.protected_values[0].exact_text = forgedSpan.exact_text;
+forgedAudio.segments[0].spoken_text = forgedScript.turns[0].spoken_text;
+forgedAudio.segments[0].narration_span_hash = createHash('sha256').update(forgedAudio.segments[0].spoken_text).digest('hex');
+forgedAudio.captions.segments[0].exact_text = forgedAudio.segments[0].spoken_text;
+forgedAudio.captions.segments[0].lines = [forgedAudio.segments[0].spoken_text];
+forgedAudio.captions.segments[0].protected_exact_words = [forgedSpan.exact_text];
+const forgedContext = { videoPlan:forgedPlan, narrationScript:forgedScript, verifiedProtectedSpans:forgedEvidence };
+check('self-consistent fabricated text, hashes, offsets, script, and captions remain unverified against source bytes', [
+  codes('video-plan-v2', forgedPlan, forgedContext),
+  codes('narration-script-v2', forgedScript, forgedContext),
+  codes('audio-plan-v2', forgedAudio, forgedContext),
+].every((found) => found.includes(CODES.PROTECTED_VALUE_UNVERIFIED)));
+check('a fabricated extraction receipt cannot support video QA PASS', codes('video-qa', read(ALLOW, 'video-qa-pass.json'), forgedContext).includes(CODES.QA_EVIDENCE));
+
+console.log('\nvideo plan v2 deny fixtures');
+const denied = [
+  ['video-plan-v2-locked-rights-change.json', 'video-plan-v2', CODES.LOCKED_FIELD],
+  ['video-plan-v2-unsupported-field.json', 'video-plan-v2', CODES.UNSUPPORTED_FIELD],
+  ['video-plan-v2-missing-source.json', 'video-plan-v2', CODES.SOURCE_MISSING],
+  ['audio-plan-v2-scene-mismatch.json', 'audio-plan-v2', CODES.SCENE_MISMATCH],
+  ['audio-plan-v2-caption-mismatch.json', 'audio-plan-v2', CODES.CAPTION_MISMATCH],
+  ['audio-plan-v2-provider-not-configured.json', 'audio-plan-v2', CODES.PROVIDER_NOT_CONFIGURED],
+  ['bgm-catalog-v2-unknown-rights.json', 'bgm-catalog-v2', CODES.BGM_UNSAFE],
+  ['bgm-catalog-v2-missing-rights.json', 'bgm-catalog-v2', CODES.SCHEMA],
+  ['bgm-catalog-v2-malicious-rights.json', 'bgm-catalog-v2', CODES.BGM_UNSAFE],
+  ['bgm-catalog-v2-no-ducking.json', 'bgm-catalog-v2', CODES.BGM_DUCKING],
+  ['video-qa-cost-gate-disabled.json', 'video-qa', CODES.SCHEMA],
+  ['video-qa-inconsistent-pass.json', 'video-qa', CODES.QA_RESULT],
+  ['video-qa-scene-mismatch.json', 'video-qa', CODES.SCENE_MISMATCH],
+];
+for (const [file, type, expected] of denied) {
+  const doc = read(DENY, file);
+  const context = type === 'video-qa' ? audioContext : type === 'bgm-catalog-v2' ? { videoPlan: narratedPlan } : type === 'audio-plan-v2' ? audioContext : {};
+  const found = codes(type, doc, context);
+  check(`${file} rejected by ${expected}`, found.includes(expected), found.join(', '));
+}
+const unknownRightsPlan = clone(narratedPlan);
+unknownRightsPlan.source_evidence.sources[0].rights = { status:'unknown', license:null, rights_owner:null, attribution:null, platforms:[], commercial_use:null, modification_allowed:null, evidence_ref:null };
+check('QA cannot PASS while source rights remain UNKNOWN', codes('video-qa', read(DENY, 'video-qa-unknown-rights.json'), { ...audioContext, videoPlan: unknownRightsPlan }).includes(CODES.RIGHTS_BLOCKED));
+for (const field of ['source_evidence','rights','figures','approval']) {
+  const changed = clone(example45); changed.change_requests = [{ field, requested_value: 'user-requested-change' }];
+  check(`${field} cannot be changed by a user request`, codes('video-plan-v2', changed).includes(CODES.LOCKED_FIELD));
+}
+const captionsOff = clone(narratedPlan); captionsOff.captions.enabled = false;
+check('narrated video requires default-on captions', codes('video-plan-v2', captionsOff).includes(CODES.CAPTIONS_REQUIRED));
+
+const invalidOrder = clone(example45);
+invalidOrder.scenes.reverse();
+invalidOrder.scenes.forEach((scene, index) => {
+  scene.timing = { start_seconds:index*9, end_seconds:(index+1)*9 };
+  scene.layers = scene.layers.map((layer) => ({ ...layer, timing: { ...scene.timing } }));
+});
+check('educational order exception requires an explicit source rationale', codes('video-plan-v2', invalidOrder).includes(CODES.EDUCATIONAL_ORDER));
+invalidOrder.ordering_exception = { kind:'source_order', source_refs:['source-1'], rationale:'The supplied source is intentionally presented in its original sequence.' };
+check('explicit source-order exception is allowed', !codes('video-plan-v2', invalidOrder).includes(CODES.EDUCATIONAL_ORDER));
+
+console.log(failures === 0 ? '\nvideo-contract-v2: ALL PASS' : `\nvideo-contract-v2: ${failures} FAILURE(S)`);
+process.exit(failures ? 1 : 0);

@@ -28,10 +28,16 @@ const SCHEMAS = {
   'feedback-record': 'schemas/feedback-record.schema.json',
   'native-card-review': 'schemas/native-card-review.schema.json',
   'video-plan': 'schemas/video-plan.schema.json',
+  'video-plan-v2': 'schemas/video-plan-v2.schema.json',
+  'video-profile': 'schemas/video-profile.schema.json',
+  'video-qa': 'schemas/video-qa.schema.json',
   'narration-script': 'schemas/narration-script.schema.json',
+  'narration-script-v2': 'schemas/narration-script-v2.schema.json',
   'tts-contract': 'schemas/tts-contract.schema.json',
   // Referenced by video-plan / narration-script ($ref schemas/...): included so the web can validate standalone.
   'audio-plan': 'schemas/audio-plan.schema.json',
+  'audio-plan-v2': 'schemas/audio-plan-v2.schema.json',
+  'bgm-catalog-v2': 'schemas/bgm-catalog-v2.schema.json',
   'editorial-package': 'schemas/editorial-package.schema.json',
 };
 // Only gates that govern unwanted copy. Ids/names/severity only: no patterns, no rationale prose.
@@ -88,6 +94,18 @@ export function buildCatalog() {
     return [name, { id: body.$id, path: rel, sha256: sha(readBytes(rel)), schema: body }];
   }));
 
+  const videoRoute = {
+    task_kind: 'video',
+    core: manifest.task_kinds.video.core.map((path) => ({ path, sha256: sha(readBytes(path)) })).sort((a, b) => a.path < b.path ? -1 : a.path > b.path ? 1 : 0),
+    profile_path_template: manifest.video_profile_paths,
+    profiles: Object.fromEntries(Object.entries(manifest.video_profiles).sort(([a], [b]) => a < b ? -1 : a > b ? 1 : 0).map(([id, pin]) => {
+      const profileBytes = readBytes(pin.path);
+      const profileSha = sha(profileBytes);
+      if (profileSha !== pin.sha256) throw new Error(`video profile ${id} bytes do not match the manifest pin`);
+      return [id, { path: pin.path, revision: pin.revision, sha256: pin.sha256, profile: JSON.parse(profileBytes.toString('utf8')) }];
+    })),
+  };
+
   // Any "schemas/..." $ref not shipped in the catalog is listed, never silently dropped.
   const shipped = new Set(Object.values(SCHEMAS));
   const missing_refs = [...new Set(JSON.stringify(Object.values(schemas).map((x) => x.schema)).match(/"\$ref":"(schemas\/[^"#]+)/g)?.map((m) => m.split('"').pop()) ?? [])].filter((r) => !shipped.has(r)).sort();
@@ -107,6 +125,7 @@ export function buildCatalog() {
       profile_version_semantics: '<manifest_version>+<aes_commit>; the consumer supplies aes_commit from its own pin',
     },
     axis_profile_paths: stable(manifest.axis_profile_paths),
+    video_route: videoRoute,
     language_packs: stable(manifest.language_packs),
     carousel_series: { schema_version: CAROUSEL_VERSION, ...stable(CAROUSEL_CONSTRAINTS), signalytics_png: manifest.sns_targets['signalytics-news']?.output_contract?.png ?? null },
     flows,

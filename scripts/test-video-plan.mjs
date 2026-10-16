@@ -8,14 +8,14 @@ const deny = resolve(ROOT, 'schemas/examples/video/deny');
 let failures = 0;
 function check(label, ok, detail = '') { if (ok) console.log(`  PASS ${label}`); else { failures++; console.error(`  FAIL ${label}${detail ? ` — ${detail}` : ''}`); } }
 function read(dir, file) { return JSON.parse(readFileSync(resolve(dir, file), 'utf8')); }
-function kind(file) { return ['video-plan', 'narration-script', 'tts-contract', 'bgm-catalog'].find((prefix) => file.startsWith(prefix)); }
+function kind(file) { return ['video-plan-v2', 'narration-script-v2', 'audio-plan-v2', 'bgm-catalog-v2', 'video-qa', 'video-plan', 'narration-script', 'tts-contract', 'bgm-catalog'].find((prefix) => file.startsWith(prefix)); }
 console.log('video contract allow fixtures');
 const renderSpecSchemaPath = resolve(ROOT, 'schemas/render-spec.schema.json');
 const renderSpecSchema = JSON.parse(readFileSync(renderSpecSchemaPath, 'utf8'));
 const watermarkPointer = '#/$defs/watermark';
 check('watermark_ref target schema and pointer exist', existsSync(renderSpecSchemaPath) && Boolean(renderSpecSchema.$defs?.watermark) && renderSpecSchema.properties?.watermark?.$ref === watermarkPointer);
-const allowFiles = readdirSync(allow).sort();
-check('expected allow fixtures are present', allowFiles.length === 8, allowFiles.join(', '));
+const allowFiles = readdirSync(allow).sort().filter((file) => !file.includes('-v2-') && !file.startsWith('video-qa-'));
+check('all legacy 1.0.0 allow fixtures remain present', allowFiles.length === 8, allowFiles.join(', '));
 for (const file of allowFiles) {
   const doc = read(allow, file); const errors = validateVideoDocument(kind(file), doc);
   check(file, errors.length === 0, errors.map((e) => `[${e.code}] ${e.message}`).join('; '));
