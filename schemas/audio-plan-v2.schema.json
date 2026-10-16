@@ -131,9 +131,10 @@
     },
     "alignment_evidence": {
       "type": "object", "additionalProperties": false,
+      "description": "The evidence_ref is an alignment-evidence://sha256 content address computed from audio_ref, audio_sha256, and segments; the StageResult must list that exact output ref.",
       "required": ["evidence_ref", "audio_ref", "audio_sha256", "stage_result", "segments"],
       "properties": {
-        "evidence_ref": { "type": "string", "minLength": 1 },
+        "evidence_ref": { "type": "string", "pattern": "^alignment-evidence://sha256/[a-f0-9]{64}$" },
         "audio_ref": { "type": "string", "minLength": 1 },
         "audio_sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
         "stage_result": { "$ref": "#/$defs/engine_stage_result" },

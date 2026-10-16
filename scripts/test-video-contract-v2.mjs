@@ -165,6 +165,18 @@ check('engine QA StageResult input hashes must use the required SHA-256 shape', 
 const detachedEngineOutput = clone(audioPlan);
 detachedEngineOutput.captions.alignment_evidence.stage_result.output_refs = ['fixture://different-output'];
 check('alignment evidence ref must be an output of the engine QA StageResult', codes('audio-plan-v2', detachedEngineOutput, audioContext).includes(CODES.ENGINE_QA_EVIDENCE));
+const reusedAlignmentReceipt = clone(audioPlan);
+const reusedAlignmentEvidence = reusedAlignmentReceipt.captions.alignment_evidence;
+reusedAlignmentEvidence.audio_ref = 'fixture://audio/replaced';
+reusedAlignmentEvidence.audio_sha256 = 'a'.repeat(64);
+reusedAlignmentEvidence.segments[0].measured_end_seconds = 0.001;
+reusedAlignmentReceipt.measurement.audio_ref = reusedAlignmentEvidence.audio_ref;
+reusedAlignmentReceipt.measurement.audio_sha256 = reusedAlignmentEvidence.audio_sha256;
+reusedAlignmentReceipt.captions.segments[0].end_seconds = 0.001;
+reusedAlignmentReceipt.captions.segments[0].measured_end_seconds = 0.001;
+reusedAlignmentReceipt.captions.segments[0].alignment_evidence_ref = reusedAlignmentEvidence.evidence_ref;
+reusedAlignmentReceipt.status = 'complete';
+check('an unchanged engine receipt cannot authorize replaced audio and caption boundaries', codes('audio-plan-v2', reusedAlignmentReceipt, audioContext).includes(CODES.ENGINE_QA_EVIDENCE));
 const unknownAlignmentSegment = clone(audioPlan);
 unknownAlignmentSegment.captions.alignment_evidence.segments[0].segment_id = 'seg-missing';
 check('engine QA evidence must reference existing scene and segment IDs', codes('audio-plan-v2', unknownAlignmentSegment, audioContext).includes(CODES.SCENE_MISMATCH));

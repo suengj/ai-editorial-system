@@ -82,6 +82,18 @@ const issue = (code, where, message) => ({ code, where, message });
 const readManifest = () => readJSON(resolve(ROOT, 'editorial/entry-manifest.json'));
 const profilePins = () => readManifest().video_profiles ?? {};
 const sha256 = (bytes) => createHash('sha256').update(bytes).digest('hex');
+const canonicalJson = (value) => {
+  if (Array.isArray(value)) return `[${value.map(canonicalJson).join(',')}]`;
+  if (value && typeof value === 'object') {
+    return `{${Object.keys(value).sort().map((key) => `${JSON.stringify(key)}:${canonicalJson(value[key])}`).join(',')}}`;
+  }
+  return JSON.stringify(value);
+};
+const alignmentPayloadRef = (evidence) => `alignment-evidence://sha256/${sha256(Buffer.from(canonicalJson({
+  audio_ref: evidence.audio_ref,
+  audio_sha256: evidence.audio_sha256,
+  segments: evidence.segments,
+}), 'utf8'))}`;
 const LOCKED_CHANGE_FIELDS = new Set(['source_evidence', 'rights', 'figures', 'approval']);
 const EDUCATIONAL_ORDER = ['hook', 'concept', 'example', 'worked_solution', 'key_takeaway'];
 const laterAudioStatuses = new Set(['rendered', 'reconciliation_pending', 'complete']);
@@ -471,8 +483,11 @@ function validateAudioPlanV2(doc, issues, context) {
   const alignmentBySegment = new Map();
   if (alignmentEvidence) {
     const stageResult = alignmentEvidence.stage_result;
+    if (alignmentEvidence.evidence_ref !== alignmentPayloadRef(alignmentEvidence)) {
+      issues.push(issueFor(CODES.ENGINE_QA_EVIDENCE, doc, 'alignment evidence_ref must be the SHA-256 content address of its audio identity and measured segment payload'));
+    }
     if (!stageResult.output_refs.includes(alignmentEvidence.evidence_ref)) {
-      issues.push(issueFor(CODES.ENGINE_QA_EVIDENCE, doc, 'alignment evidence_ref must be an output of the shorts_gen QA StageResult'));
+      issues.push(issueFor(CODES.ENGINE_QA_EVIDENCE, doc, 'content-addressed alignment evidence_ref must be an output of the shorts_gen QA StageResult'));
     }
     if (alignmentStatus === 'pass' && stageResult.errors.length) {
       issues.push(issueFor(CODES.ENGINE_QA_EVIDENCE, doc, 'passing alignment evidence cannot include engine QA StageResult errors'));

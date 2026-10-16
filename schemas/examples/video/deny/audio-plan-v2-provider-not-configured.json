@@ -91,7 +91,7 @@
     "safe_zone": "caption-safe",
     "alignment_status": "pass",
     "alignment_evidence": {
-      "evidence_ref": "fixture://engine/qa/alignment/provider-not-configured.json",
+      "evidence_ref": "alignment-evidence://sha256/7f15021a5a5ebac59c818bbe5c4a6f68e19f5cdc8e3e432698e7ff610cd353ef",
       "audio_ref": "fixture://audio/mixed",
       "audio_sha256": "f0a45cd218271ac9864eca28455efee1fd4716433bc3a73f18581103188fa42e",
       "stage_result": {
@@ -99,7 +99,7 @@
         "stage": "qa_repair",
         "status": "done",
         "input_hash": "281c3c3fcfa30e10d9b5a3056d01e566c944f2fe377e305d16a8a47a716be75f",
-        "output_refs": ["fixture://engine/qa/alignment/provider-not-configured.json"],
+        "output_refs": ["alignment-evidence://sha256/7f15021a5a5ebac59c818bbe5c4a6f68e19f5cdc8e3e432698e7ff610cd353ef"],
         "errors": [],
         "receipts": [],
         "cache_hit": false,
@@ -124,7 +124,7 @@
         "protected_exact_words": ["45 seconds"],
         "measured_start_seconds": 0,
         "measured_end_seconds": 15,
-        "alignment_evidence_ref": "fixture://engine/qa/alignment/provider-not-configured.json"
+        "alignment_evidence_ref": "alignment-evidence://sha256/7f15021a5a5ebac59c818bbe5c4a6f68e19f5cdc8e3e432698e7ff610cd353ef"
       },
       {
         "scene_id": "scene-2",
@@ -137,7 +137,7 @@
         "protected_exact_words": [],
         "measured_start_seconds": 15,
         "measured_end_seconds": 30,
-        "alignment_evidence_ref": "fixture://engine/qa/alignment/provider-not-configured.json"
+        "alignment_evidence_ref": "alignment-evidence://sha256/7f15021a5a5ebac59c818bbe5c4a6f68e19f5cdc8e3e432698e7ff610cd353ef"
       },
       {
         "scene_id": "scene-3",
@@ -152,7 +152,7 @@
         ],
         "measured_start_seconds": 30,
         "measured_end_seconds": 45,
-        "alignment_evidence_ref": "fixture://engine/qa/alignment/provider-not-configured.json"
+        "alignment_evidence_ref": "alignment-evidence://sha256/7f15021a5a5ebac59c818bbe5c4a6f68e19f5cdc8e3e432698e7ff610cd353ef"
       }
     ]
   },

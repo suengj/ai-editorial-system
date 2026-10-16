@@ -103,7 +103,7 @@
     }
   },
   "catalog_version": "1.0.0",
-  "content_digest": "sha256:47ef8f9568384653390bfab91322a5edb17345f82b7f273b38351554b15016c3",
+  "content_digest": "sha256:6c668752bcd03e096e4a644c98aa38c5ca4aa5e879712704b8827bb8b42c3396",
   "field_domains": {
     "call_to_action": {
       "max_length": 200,
@@ -1454,6 +1454,7 @@
         "$defs": {
           "alignment_evidence": {
             "additionalProperties": false,
+            "description": "The evidence_ref is an alignment-evidence://sha256 content address computed from audio_ref, audio_sha256, and segments; the StageResult must list that exact output ref.",
             "properties": {
               "audio_ref": {
                 "minLength": 1,
@@ -1464,7 +1465,7 @@
                 "type": "string"
               },
               "evidence_ref": {
-                "minLength": 1,
+                "pattern": "^alignment-evidence://sha256/[a-f0-9]{64}$",
                 "type": "string"
               },
               "segments": {
@@ -2161,7 +2162,7 @@
         "title": "Video Audio Plan v2",
         "type": "object"
       },
-      "sha256": "69a8e109833fb9fd7d3f5fb2396985ea3a6a1a2c7fe6bf5e180c831c3c661eb0"
+      "sha256": "dfe882e96a07fc1296644bb285dcefe69d0483662102d80940b94b38c74ebd1f"
     },
     "bgm-catalog-v2": {
       "id": "https://suengj.com/schemas/bgm-catalog-v2.schema.json",
