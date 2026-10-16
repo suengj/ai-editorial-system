@@ -1,0 +1,210 @@
+/** SUE-1614. Pure typography helpers: bundled font resolution, Korean balanced wrap, type-scale tokens, WCAG contrast. */
+import { readFileSync, mkdirSync, writeFileSync, existsSync } from 'node:fs';
+import { resolve, dirname } from 'node:path';
+import { tmpdir } from 'node:os';
+import { fileURLToPath } from 'node:url';
+import { createHash } from 'node:crypto';
+import { spawnSync } from 'node:child_process';
+
+const HERE = dirname(fileURLToPath(import.meta.url));
+export const FONT_DIR = resolve(HERE, '../../assets/fonts/aes-sans-kr');
+export const BUNDLED_FAMILY = 'AES Sans KR';
+export const typographyError = (code, message) => Object.assign(new Error(message), { code });
+
+let manifestCache = null;
+export const fontManifest = () => (manifestCache ??= JSON.parse(readFileSync(resolve(FONT_DIR, 'manifest.json'), 'utf8')));
+
+/** The bundled font is "requested" only when it is the FIRST family of a stack, so existing stacks are never re-interpreted. */
+export const requestsBundledFont = (stack) => typeof stack === 'string' && stack.split(',')[0].trim().replace(/^['"]|['"]$/g, '') === BUNDLED_FAMILY;
+
+export function coversCodePoint(cp) {
+  return fontManifest().ranges.some(([a, b]) => cp >= a && cp <= b);
+}
+
+/** FONT_FALLBACK when a requested weight or glyph is not in the bundle: never a silent substitution. */
+export function assertFontCoverage(text, weight) {
+  const m = fontManifest();
+  if (!m.weights.includes(weight)) throw typographyError('FONT_FALLBACK', `${BUNDLED_FAMILY} has weights ${m.weights.join('/')}; requested ${weight} would be substituted`);
+  const missing = [...new Set([...text].filter((ch) => !/\s/.test(ch) && !coversCodePoint(ch.codePointAt(0))))];
+  if (missing.length) throw typographyError('FONT_FALLBACK', `glyphs not in ${BUNDLED_FAMILY} subset would be substituted: ${missing.slice(0, 8).join(' ')}`);
+}
+
+/** Environment that makes the rasterizer see ONLY the bundled fonts (no system fonts, same result on any machine). */
+export function bundledFontEnv() {
+  const tag = createHash('sha256').update(FONT_DIR).digest('hex').slice(0, 12);
+  const dir = resolve(tmpdir(), `aes-fontconfig-${tag}`);
+  const conf = resolve(dir, 'fonts.conf');
+  if (!existsSync(conf)) {
+    mkdirSync(resolve(dir, 'cache'), { recursive: true });
+    writeFileSync(conf, `<?xml version="1.0"?><!DOCTYPE fontconfig SYSTEM "fonts.dtd"><fontconfig><dir>${FONT_DIR}</dir><cachedir>${resolve(dir, 'cache')}</cachedir></fontconfig>\n`);
+  }
+  // PANGOCAIRO_BACKEND=fc: on macOS pango defaults to CoreText, which ignores FONTCONFIG_FILE and would silently use system fonts.
+  return { FONTCONFIG_FILE: conf, FONTCONFIG_PATH: dir, PANGOCAIRO_BACKEND: 'fc' };
+}
+
+/** Ask fontconfig what it would actually use; FONT_FALLBACK unless it is the bundled file. Skipped (null) without fc-match. */
+export function verifyBundledResolution(weight, env = bundledFontEnv()) {
+  const r = spawnSync('fc-match', ['-f', '%{file}', `${BUNDLED_FAMILY}:weight=${fcWeight(weight)}`], { env: { ...process.env, ...env }, encoding: 'utf8', timeout: 5000 });
+  if (r.error || r.status !== 0) return null;
+  const want = fontManifest().files[String(weight)];
+  if (!r.stdout.endsWith(want)) throw typographyError('FONT_FALLBACK', `fontconfig resolved ${BUNDLED_FAMILY} ${weight} to ${r.stdout || 'nothing'}, not ${want}`);
+  return r.stdout;
+}
+const fcWeight = (w) => ({ 400: 80, 600: 180, 800: 205, 900: 210 }[w] ?? w);
+
+/** Type-scale tokens per role. Opt-in: nothing reads these unless a layer/text_style asks via `scale`. */
+export const TYPE_SCALE = Object.freeze({
+  display:  { font_size: 132, weight: 900, letter_spacing: -0.03, line_height: 1.08, max_lines: 3 },
+  headline: { font_size: 96,  weight: 800, letter_spacing: -0.025, line_height: 1.14, max_lines: 3 },
+  dek:      { font_size: 44,  weight: 600, letter_spacing: -0.01, line_height: 1.35, max_lines: 3 },
+  body:     { font_size: 36,  weight: 400, letter_spacing: 0, line_height: 1.5, max_lines: 6 },
+  caption:  { font_size: 28,  weight: 400, letter_spacing: 0, line_height: 1.4, max_lines: 3 },
+  source:   { font_size: 24,  weight: 400, letter_spacing: 0.005, line_height: 1.3, max_lines: 2 },
+});
+export function resolveScale(role, overrides = {}, scale = TYPE_SCALE) {
+  if (!Object.hasOwn(scale, role)) throw typographyError('TYPE_SCALE_ROLE', `unknown type-scale role: ${role}`);
+  return { ...scale[role], ...overrides };
+}
+
+/** Punctuation/number normalisation (opt-in per layer). Curly quotes, ellipsis, space after , . before a letter. */
+export function normalizeKoreanText(text) {
+  let t = String(text).replace(/\s+/g, ' ').trim();
+  t = t.replace(/\.\.\./g, '…');
+  let dq = 0; t = t.replace(/"/g, () => (dq++ % 2 === 0 ? '“' : '”'));
+  t = t.replace(/(^|[\s(\[])'/g, '$1‘').replace(/'/g, '’');
+  t = t.replace(/([가-힣A-Za-z]),(?=[가-힣A-Za-z])/g, '$1, ').replace(/([가-힣])\.(?=[가-힣A-Z])/g, '$1. ');
+  return t;
+}
+
+const UNIT = /^(%|원|명|개|억|조|만|천|배|년|월|일|위|곳|건|회|kg|km|GB|MB|x)[,.)]?$/;
+const NUM = /^[(“‘]?[+\-−]?[\d][\d,.]*$/;
+
+/** Space-separated eojeol atoms with absolute offsets; "12 %"-style number+unit pairs stay together. */
+export function atomize(text) {
+  const atoms = []; const re = /\S+/g; let m;
+  while ((m = re.exec(text))) atoms.push({ start: m.index, end: m.index + m[0].length, w: m[0] });
+  const out = [];
+  for (const a of atoms) {
+    const prev = out.at(-1);
+    if (prev && NUM.test(prev.w) && UNIT.test(a.w)) { prev.end = a.end; prev.w += ` ${a.w}`; } else out.push({ ...a });
+  }
+  return out;
+}
+
+/** Character runs with per-run weight so emphasised (heavier) spans are measured at their real width. */
+export function weightRuns(text, start, end, baseWeight, emphasis = []) {
+  const cuts = new Set([start, end]);
+  for (const e of emphasis) for (const p of [e.start, e.end]) if (p > start && p < end) cuts.add(p);
+  const pts = [...cuts].sort((a, b) => a - b), runs = [];
+  for (let i = 0; i < pts.length - 1; i++) {
+    const em = emphasis.find((e) => e.start <= pts[i] && e.end >= pts[i + 1]);
+    runs.push({ text: text.slice(pts[i], pts[i + 1]), start: pts[i], end: pts[i + 1], weight: em?.weight ?? baseWeight, color: em?.color ?? null });
+  }
+  return runs;
+}
+
+export function locateEmphasis(text, spans = []) {
+  return spans.map((s) => {
+    const start = text.indexOf(s.match);
+    if (!s.match || start < 0) throw typographyError('EMPHASIS_NOT_FOUND', `emphasis "${s.match}" is not in the text; the code prints text exactly, it never rewrites it`);
+    return { start, end: start + s.match.length, weight: s.weight, color: s.color };
+  });
+}
+
+/**
+ * Balanced Korean wrap. Break only at spaces (eojeol); an over-wide eojeol is split by grapheme as a last resort.
+ * Same line count as greedy, minimal raggedness, and a last line of 1-2 characters (orphan) is avoided
+ * (by rebalancing, else by one extra line when maxLines allows).
+ * `measure(text, size, weight)` is the real glyph measurer; `emphasis` is pre-located ({start,end,weight}).
+ */
+export function balancedWrap(text, { width, size, weight = 400, maxLines, emphasis = [] }, measure) {
+  if (typeof text !== 'string' || text.length > 2000) throw typographyError('TEXT_OVERFLOW', 'expected text up to 2000 characters');
+  const lines = [];
+  let offset = 0;
+  for (const para of text.split('\n')) {
+    const paraEm = emphasis.map((e) => ({ ...e, start: e.start - offset, end: e.end - offset })).filter((e) => e.end > 0 && e.start < para.length);
+    lines.push(...wrapParagraph(para, { width, size, weight, maxLines, emphasis: paraEm }, measure));
+    offset += para.length + 1;
+  }
+  if (lines.length > maxLines) throw typographyError('TEXT_OVERFLOW', `${lines.length} lines do not fit in ${maxLines}; text was not truncated`);
+  return lines;
+}
+
+function wrapParagraph(para, { width, size, weight, maxLines, emphasis }, measure) {
+  let atoms = atomize(para);
+  if (!atoms.length) return [''];
+  const lineW = (i, j) => weightRuns(para, atoms[i].start, atoms[j].end, weight, emphasis).reduce((s, r) => s + measure(r.text, size, r.weight), 0);
+  // split atoms that cannot fit alone
+  const split = [];
+  for (const a of atoms) {
+    if (lineW0(a) <= width) { split.push(a); continue; }
+    let s = a.start;
+    for (const { segment, index } of new Intl.Segmenter('ko', { granularity: 'grapheme' }).segment(a.w)) {
+      const e = a.start + index + segment.length;
+      if (e > s && weightRuns(para, s, e, weight, emphasis).reduce((t, r) => t + measure(r.text, size, r.weight), 0) > width && e - 1 > s) { split.push({ start: s, end: e - 1, w: para.slice(s, e - 1), joined: true }); s = e - 1; }
+    }
+    split.push({ start: s, end: a.end, w: para.slice(s, a.end), joined: false });
+  }
+  function lineW0(a) { return weightRuns(para, a.start, a.end, weight, emphasis).reduce((t, r) => t + measure(r.text, size, r.weight), 0); }
+  atoms = split;
+  const N = atoms.length;
+  const cache = new Map();
+  const W = (i, j) => { const k = i * 1000 + j; if (!cache.has(k)) cache.set(k, lineW(i, j)); return cache.get(k); };
+  // greedy line count
+  let greedy = 0;
+  for (let i = 0; i < N;) { let j = i; while (j + 1 < N && W(i, j + 1) <= width) j++; i = j + 1; greedy++; }
+  const solve = (k) => {
+    const INF = 1e9, dp = Array.from({ length: k + 1 }, () => Array(N + 1).fill(INF)), from = Array.from({ length: k + 1 }, () => Array(N + 1).fill(-1));
+    dp[0][0] = 0;
+    for (let l = 1; l <= k; l++) for (let j = l; j <= N; j++) for (let i = j - 1; i >= l - 1; i--) {
+      const w = W(i, j - 1); if (w > width) break;
+      if (dp[l - 1][i] >= INF) continue;
+      const slack = (width - w) / width; let cost;
+      if (j === N) { // last line
+        const chars = [...para.slice(atoms[i].start, atoms[N - 1].end).replace(/\s/g, '')].length;
+        cost = (chars <= 2 ? 1000 : 0) + (j - i === 1 && w < width * 0.25 ? 4 : 0) + slack * slack * 0.3;
+      } else cost = slack * slack;
+      if (dp[l - 1][i] + cost < dp[l][j]) { dp[l][j] = dp[l - 1][i] + cost; from[l][j] = i; }
+    }
+    if (dp[k][N] >= INF) return null;
+    const out = []; let j = N;
+    for (let l = k; l >= 1; l--) { const i = from[l][j]; out.unshift([i, j - 1]); j = i; }
+    return { cost: dp[k][N], ranges: out };
+  };
+  let best = solve(greedy);
+  if ((!best || best.cost >= 1000) && greedy + 1 <= maxLines && N > greedy) { const b2 = solve(greedy + 1); if (b2 && (!best || b2.cost < best.cost)) best = b2; }
+  if (!best) throw typographyError('TEXT_OVERFLOW', 'balanced wrap found no layout');
+  return best.ranges.map(([i, j]) => para.slice(atoms[i].start, atoms[j].end));
+}
+
+/** Last-line orphan test used by tests and evidence: true when the last line is 1-2 chars. */
+export const hasOrphan = (lines) => lines.length > 1 && [...lines.at(-1).replace(/\s/g, '')].length <= 2;
+
+// ---- WCAG contrast -------------------------------------------------------------------------------------------------
+const lin = (c) => { const s = c / 255; return s <= 0.03928 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4; };
+export const hexToRgb = (h) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16));
+export const luminance = ([r, g, b]) => 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b);
+export const contrastRatio = (a, b) => { const [hi, lo] = [luminance(a), luminance(b)].sort((x, y) => y - x); return (hi + 0.05) / (lo + 0.05); };
+export const blend = (bg, fg, a) => bg.map((c, i) => c * (1 - a) + fg[i] * a);
+
+/** Worst-case background pixel under text of a given luminance: p95 for light text, p5 for dark text. Returns [r,g,b]. */
+export function worstBackground(img, rect, textRgb) {
+  const ch = img.channels ?? 4, px = [];
+  const x0 = Math.max(0, Math.floor(rect.x)), x1 = Math.min(img.width, Math.ceil(rect.x + rect.width));
+  const y0 = Math.max(0, Math.floor(rect.y)), y1 = Math.min(img.height, Math.ceil(rect.y + rect.height));
+  for (let y = y0; y < y1; y++) for (let x = x0; x < x1; x++) { const o = (y * img.width + x) * ch; px.push([img.pixels[o], img.pixels[o + 1], img.pixels[o + 2]]); }
+  if (!px.length) throw typographyError('CONTRAST_REGION', 'empty text region');
+  px.sort((a, b) => luminance(a) - luminance(b));
+  const light = luminance(textRgb) >= 0.18;
+  return px[Math.min(px.length - 1, Math.max(0, Math.floor(px.length * (light ? 0.95 : 0.05))))];
+}
+
+/** Smallest scrim opacity (0..max) so text keeps `target` contrast over the worst background pixel; null if unreachable. */
+export function autoScrimOpacity(bgRgb, textRgb, scrimRgb, target, max = 0.92) {
+  const ok = (a) => contrastRatio(textRgb, blend(bgRgb, scrimRgb, a)) >= target + 0.05;
+  if (ok(0)) return 0;
+  if (!ok(max)) return null;
+  let lo = 0, hi = max;
+  for (let i = 0; i < 24; i++) { const mid = (lo + hi) / 2; if (ok(mid)) hi = mid; else lo = mid; }
+  return Math.ceil(hi * 100) / 100;
+}

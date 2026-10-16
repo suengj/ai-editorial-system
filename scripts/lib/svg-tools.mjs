@@ -25,7 +25,7 @@ export function findRasterizer(preferred = 'auto') {
 
 export function rasterize(svg, adapter) {
   if (!adapter) throw new Error('RASTERIZER_REQUIRED: rsvg-convert or ImageMagick with RSVG support');
-  const result = spawnSync(adapter.command, adapter.args, { input: svg, maxBuffer: 256 * 1024 * 1024, timeout: 30000 });
+  const result = spawnSync(adapter.command, adapter.args, { input: svg, maxBuffer: 256 * 1024 * 1024, timeout: 30000, ...(adapter.env ? { env: { ...process.env, ...adapter.env } } : {}) });
   if (result.error || result.status !== 0) throw new Error(`RASTERIZER_FAILED: ${result.error?.message ?? result.stderr.toString()}`);
   // Normalize our generated build product, not the source asset. ImageMagick
   // adds wall-clock date chunks; those must not break deterministic replay.

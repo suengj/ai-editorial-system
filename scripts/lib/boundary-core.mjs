@@ -30,6 +30,7 @@ const BINARY_EXT = new Set([
   '.mp4', '.mov', '.webm', '.mkv', '.avi',
   '.mp3', '.wav', '.m4a', '.flac', '.aac',
   '.pptx', '.key', '.pdf', '.zip', '.tar', '.gz', '.7z',
+  '.otf', '.ttf', '.woff', '.woff2', // bundled OFL fonts (assets/fonts), size-capped like other binaries
   ...IMAGE_EXT,
 ]);
 
