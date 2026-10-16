@@ -1,1 +1,3 @@
-Fixture source: the process takes 45 seconds.
+This source describes a process lasting 45 seconds.
+The supplied material explains the mechanism.
+The source states the supported conclusion.

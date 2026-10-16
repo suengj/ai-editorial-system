@@ -33,6 +33,14 @@ slice. External or non-text sources require a trusted extraction resolver;
 without resolved bytes, protected values stay unverified and rendered audio or
 QA `PASS` is blocked.
 
+Narrated v2 turns also carry `evidence_span_ids`. Each ID must resolve to a
+separate byte-verified `source_evidence.sources[].evidence_spans[]` excerpt,
+and the canonical spoken turn must exactly equal its ordered cited excerpts.
+Scene overlays and narration overlays carry the same evidence citations and
+must exactly equal a cited excerpt. This factual coverage is independent of
+the optional protected number/date/name/quote list. Unsupported additions
+cannot be justified by a broad source reference.
+
 | AES contract | shorts_gen field | Mapping rule |
 |---|---|---|
 | `source_evidence.sources[]` | `request.source_refs[]` | Map `source_ref`, `kind`, and `sha256` to `SourceReference`. Retain the source ID and envelope version in provenance. |
@@ -51,7 +59,7 @@ QA `PASS` is blocked.
 | Narration script reference and canonical spoken turns | `script_ref`, scene text passed to `tts_captions` | Preserve AES `beat_id` and `scene_id` beside each text span. The engine's current TTS stage joins scene text; it does not yet consume the full AES narration-script structure. |
 | Pre-TTS canonical script check | `script` / `tts_captions` stage status | Do not start TTS until the AES check passes. A stage `DONE` alone is not proof of that editorial gate. |
 | Measured audio duration and post-measurement reconciliation | TTS output duration and `StageResult` evidence | Record the measured duration, chosen reconciliation action, affected scene IDs, and evidence in the AES audio plan. Extend or retime scene timing locally; never compress long narration to fit. |
-| Caption exact text, protected words, line count, safe zone, alignment | TTS caption artifact plus AES audio-plan/QA evidence | The engine currently creates SRT from scene text and proportional scene weights. The adapter must retain AES protected-word and alignment checks and report failures. |
+| Caption exact text, protected words, line count, safe zone, measured start/end, alignment evidence | TTS caption artifact plus AES audio-plan/QA evidence | Each caption records measured spoken-segment boundaries and an evidence reference; caption boundaries must agree within 0.1 seconds. The engine currently creates SRT from scene text and proportional scene weights. The adapter must retain AES protected-word and alignment checks and report failures. |
 | BGM catalog track → `shorts_gen.bgm.stage.BgmTrack` | `track_id`, `title`, `artist`, `master_rights_owner`, `composition_rights_owner`, `file`, `version`, `sha256`, `license`, `attribution`, `platforms`, `monetization_allowed`, `isrc`, `content_id_status`, `self_claim`, `whitelist`, `mood`, `tempo_bpm`, `energy`, `loop_start_s`, `loop_end_s` | Construct the engine dataclass with exactly these names; its constructor rejects extra keys. Copy identity, ownership, file, hash, license, attribution, platform, monetization, ISRC, Content ID, self-claim, mood, tempo, and energy values unchanged. Convert `loop_points.start_seconds` → `loop_start_s` and `loop_points.end_seconds` → `loop_end_s`. Convert AES whitelist entries `{platform, evidence_ref}` into the engine's `tuple[str, ...]` platform strings; preserve the full original platform/evidence pairs in request provenance because the engine field cannot retain their evidence refs. AES-only `rights_status`, `rights_evidence_ref`, and `vocal` are deliberately omitted from the constructor and retained in AES provenance/QA evidence. No other AES catalog keys are passed through. Unknown owners, license, monetization, platform, Content ID, or self-claim state must not be promoted to safe. |
 | BGM modes and narration ducking | `bgm` stage and match request | Preserve `off`, `owner_library`, `licensed_library`, `selected_track`, or `auto_match`. An automatic match is eligible only after explicit platform and monetization rights pass. Ducking defaults on with narration. |
 
@@ -76,7 +84,9 @@ checked against the exact canonical narration text. A catalog carries its
 requirement even when the catalog is validated by itself.
 Video QA also records `checks.source_evidence_resolution`; a `PASS` requires
 that check and its evidence, in addition to the factual, rights, and approval
-checks.
+checks. Measured render duration must match the plan within one second; BGM
+mode evidence must match the plan and loudness, ducking, and clipping values
+must use finite values and their declared units.
 
 The three cost, rights, and approval gates remain required even if an engine
 request omits publication intent. Engine publication/package fields are

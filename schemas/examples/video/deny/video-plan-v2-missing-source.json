@@ -81,7 +81,10 @@
         {
           "exact_text": "Source beat 1",
           "source_ref": "source-1",
-          "protected": false
+          "protected": false,
+          "evidence_span_ids": [
+            "evidence-1"
+          ]
         }
       ]
     },
@@ -125,7 +128,10 @@
         {
           "exact_text": "Source beat 2",
           "source_ref": "source-1",
-          "protected": false
+          "protected": false,
+          "evidence_span_ids": [
+            "evidence-1"
+          ]
         }
       ]
     },
@@ -169,7 +175,10 @@
         {
           "exact_text": "Source beat 3",
           "source_ref": "source-1",
-          "protected": false
+          "protected": false,
+          "evidence_span_ids": [
+            "evidence-1"
+          ]
         }
       ]
     },
@@ -213,7 +222,10 @@
         {
           "exact_text": "Source beat 4",
           "source_ref": "source-1",
-          "protected": false
+          "protected": false,
+          "evidence_span_ids": [
+            "evidence-1"
+          ]
         }
       ]
     },
@@ -257,7 +269,10 @@
         {
           "exact_text": "Source beat 5",
           "source_ref": "source-1",
-          "protected": false
+          "protected": false,
+          "evidence_span_ids": [
+            "evidence-1"
+          ]
         }
       ]
     }

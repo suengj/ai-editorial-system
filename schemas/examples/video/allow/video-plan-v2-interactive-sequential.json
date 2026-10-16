@@ -77,13 +77,7 @@
           "motion_intention": "hold"
         }
       ],
-      "on_screen_text": [
-        {
-          "exact_text": "Source beat 1",
-          "source_ref": "source-1",
-          "protected": false
-        }
-      ]
+      "on_screen_text": []
     },
     {
       "scene_id": "scene-2",
@@ -121,13 +115,7 @@
           "motion_intention": "hold"
         }
       ],
-      "on_screen_text": [
-        {
-          "exact_text": "Source beat 2",
-          "source_ref": "source-1",
-          "protected": false
-        }
-      ]
+      "on_screen_text": []
     },
     {
       "scene_id": "scene-3",
@@ -165,13 +153,7 @@
           "motion_intention": "hold"
         }
       ],
-      "on_screen_text": [
-        {
-          "exact_text": "Source beat 3",
-          "source_ref": "source-1",
-          "protected": false
-        }
-      ]
+      "on_screen_text": []
     }
   ],
   "audio": {

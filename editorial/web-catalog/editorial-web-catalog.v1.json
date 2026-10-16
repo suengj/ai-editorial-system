@@ -103,7 +103,7 @@
     }
   },
   "catalog_version": "1.0.0",
-  "content_digest": "sha256:0c013676f2515e7c5fb789f80ef119bc27d98a24fa8ec69cf526c0b8ff9762c7",
+  "content_digest": "sha256:8c4a03a879b12f5270051ebdf6e2a3a2e15834243776928dede527743cda92e9",
   "field_domains": {
     "call_to_action": {
       "max_length": 200,
@@ -1486,6 +1486,10 @@
           "caption_segment": {
             "additionalProperties": false,
             "properties": {
+              "alignment_evidence_ref": {
+                "minLength": 1,
+                "type": "string"
+              },
               "end_seconds": {
                 "minimum": 0,
                 "type": "number"
@@ -1502,6 +1506,14 @@
                 "maxItems": 2,
                 "minItems": 1,
                 "type": "array"
+              },
+              "measured_end_seconds": {
+                "minimum": 0,
+                "type": "number"
+              },
+              "measured_start_seconds": {
+                "minimum": 0,
+                "type": "number"
               },
               "protected_exact_words": {
                 "items": {
@@ -1523,6 +1535,9 @@
               "scene_id",
               "start_seconds",
               "end_seconds",
+              "measured_start_seconds",
+              "measured_end_seconds",
+              "alignment_evidence_ref",
               "exact_text",
               "lines",
               "protected_exact_words"
@@ -1899,7 +1914,7 @@
         "title": "Video Audio Plan v2",
         "type": "object"
       },
-      "sha256": "11bdac4c09150e332c8bed6e4029745e465f631084ff7ba5c8a243b8f01d4d8b"
+      "sha256": "fc0e9b2a69f93fc538ac2cb995f7e9619c2f601bb3f161908fa0047a6c9f5506"
     },
     "bgm-catalog-v2": {
       "id": "https://suengj.com/schemas/bgm-catalog-v2.schema.json",
@@ -3718,6 +3733,14 @@
           "on_screen_text": {
             "additionalProperties": false,
             "properties": {
+              "evidence_span_ids": {
+                "items": {
+                  "pattern": "^evidence-[a-z0-9]+(-[a-z0-9]+)*$",
+                  "type": "string"
+                },
+                "minItems": 1,
+                "type": "array"
+              },
               "exact_text": {
                 "minLength": 1,
                 "type": "string"
@@ -3733,7 +3756,8 @@
             "required": [
               "exact_text",
               "source_ref",
-              "protected"
+              "protected",
+              "evidence_span_ids"
             ],
             "type": "object"
           },
@@ -3803,6 +3827,14 @@
                 "pattern": "^beat-[a-z0-9]+(-[a-z0-9]+)*$",
                 "type": "string"
               },
+              "evidence_span_ids": {
+                "items": {
+                  "pattern": "^evidence-[a-z0-9]+(-[a-z0-9]+)*$",
+                  "type": "string"
+                },
+                "minItems": 1,
+                "type": "array"
+              },
               "on_screen_text": {
                 "items": {
                   "$ref": "#/$defs/on_screen_text"
@@ -3836,7 +3868,8 @@
               "scene_id",
               "spoken_text",
               "on_screen_text",
-              "source_refs"
+              "source_refs",
+              "evidence_span_ids"
             ],
             "type": "object"
           }
@@ -3921,7 +3954,7 @@
         "title": "Video Narration Script v2",
         "type": "object"
       },
-      "sha256": "e953ea1e8fbf122e6222a74ed7542a2229c24d80185c43403c26c8063e0fdecd"
+      "sha256": "0b05e0030966d3597c65dd92115299117a8079124949826311c6b26dcc7fd100"
     },
     "native-card-review": {
       "id": "https://suengj.com/schemas/native-card-review.schema.json",
@@ -5187,6 +5220,54 @@
             ],
             "type": "object"
           },
+          "evidence_span": {
+            "additionalProperties": false,
+            "properties": {
+              "byte_end": {
+                "minimum": 1,
+                "type": "integer"
+              },
+              "byte_start": {
+                "minimum": 0,
+                "type": "integer"
+              },
+              "evidence_ref": {
+                "pattern": "^source-extraction://sha256/[a-f0-9]{64}/[a-f0-9]{64}/span/[a-z0-9]+(-[a-z0-9]+)*/[a-f0-9]{64}$",
+                "type": "string"
+              },
+              "exact_text": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "extraction_sha256": {
+                "pattern": "^[a-f0-9]{64}$",
+                "type": "string"
+              },
+              "source_sha256": {
+                "pattern": "^[a-f0-9]{64}$",
+                "type": "string"
+              },
+              "span_id": {
+                "pattern": "^evidence-[a-z0-9]+(-[a-z0-9]+)*$",
+                "type": "string"
+              },
+              "span_sha256": {
+                "pattern": "^[a-f0-9]{64}$",
+                "type": "string"
+              }
+            },
+            "required": [
+              "span_id",
+              "exact_text",
+              "source_sha256",
+              "extraction_sha256",
+              "byte_start",
+              "byte_end",
+              "span_sha256",
+              "evidence_ref"
+            ],
+            "type": "object"
+          },
           "figure": {
             "additionalProperties": false,
             "properties": {
@@ -5346,6 +5427,14 @@
           "on_screen_text": {
             "additionalProperties": false,
             "properties": {
+              "evidence_span_ids": {
+                "items": {
+                  "pattern": "^evidence-[a-z0-9]+(-[a-z0-9]+)*$",
+                  "type": "string"
+                },
+                "minItems": 1,
+                "type": "array"
+              },
               "exact_text": {
                 "minLength": 1,
                 "type": "string"
@@ -5361,7 +5450,8 @@
             "required": [
               "exact_text",
               "source_ref",
-              "protected"
+              "protected",
+              "evidence_span_ids"
             ],
             "type": "object"
           },
@@ -5644,6 +5734,12 @@
           "source": {
             "additionalProperties": false,
             "properties": {
+              "evidence_spans": {
+                "items": {
+                  "$ref": "#/$defs/evidence_span"
+                },
+                "type": "array"
+              },
               "kind": {
                 "enum": [
                   "pdf",
@@ -5845,7 +5941,7 @@
         "title": "AES Video Plan v2",
         "type": "object"
       },
-      "sha256": "1d5314b27f12a0d456ac58a3e80e088554d7f73551a9af478e22bd8a89e1d50d"
+      "sha256": "cc8f9bdc843489dde92e153b265e241ce11f4332ef70487faafcd8096d4cafb2"
     },
     "video-profile": {
       "id": "https://suengj.com/schemas/video-profile.schema.json",
@@ -6934,7 +7030,7 @@
       },
       {
         "path": "editorial/VIDEO-ENGINE-MAPPING.md",
-        "sha256": "8c995fb7312f62e8e5f32e98a7fbca086be7af1fd70eae1b3142bb324c24bb64"
+        "sha256": "3768eaed88f33d8f0c163ba0bb8fd05b945b4cb76757a0d4084f36361df04086"
       },
       {
         "path": "editorial/VIDEO-STORYBOARD.md",

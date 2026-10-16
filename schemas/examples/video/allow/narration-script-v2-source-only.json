@@ -13,13 +13,19 @@
       "spoken_text": "This source describes a process lasting 45 seconds.",
       "on_screen_text": [
         {
-          "exact_text": "Source beat 1",
+          "exact_text": "This source describes a process lasting 45 seconds.",
           "source_ref": "source-1",
-          "protected": false
+          "protected": false,
+          "evidence_span_ids": [
+            "evidence-1"
+          ]
         }
       ],
       "source_refs": [
         "source-1"
+      ],
+      "evidence_span_ids": [
+        "evidence-1"
       ]
     },
     {
@@ -29,13 +35,19 @@
       "spoken_text": "The supplied material explains the mechanism.",
       "on_screen_text": [
         {
-          "exact_text": "Source beat 2",
+          "exact_text": "The supplied material explains the mechanism.",
           "source_ref": "source-1",
-          "protected": false
+          "protected": false,
+          "evidence_span_ids": [
+            "evidence-2"
+          ]
         }
       ],
       "source_refs": [
         "source-1"
+      ],
+      "evidence_span_ids": [
+        "evidence-2"
       ]
     },
     {
@@ -45,13 +57,19 @@
       "spoken_text": "The source states the supported conclusion.",
       "on_screen_text": [
         {
-          "exact_text": "Source beat 3",
+          "exact_text": "The source states the supported conclusion.",
           "source_ref": "source-1",
-          "protected": false
+          "protected": false,
+          "evidence_span_ids": [
+            "evidence-3"
+          ]
         }
       ],
       "source_refs": [
         "source-1"
+      ],
+      "evidence_span_ids": [
+        "evidence-3"
       ]
     }
   ],

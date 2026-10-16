@@ -14,18 +14,18 @@
         "source_id": "source-1",
         "source_ref": "schemas/examples/video/evidence/narrated-source.txt",
         "kind": "text",
-        "sha256": "f0925e250885b2f299a4cd992f35bd3632677e1b052a1ee26fb5f1849439010b",
+        "sha256": "5ceaa8db5f7b120e0d1323c2765443bcf650a76858b2abc0fe152ec940fad031",
         "protected_spans": [
           {
             "span_id": "span-1",
             "kind": "number",
             "exact_text": "45 seconds",
-            "source_sha256": "f0925e250885b2f299a4cd992f35bd3632677e1b052a1ee26fb5f1849439010b",
-            "extraction_sha256": "f0925e250885b2f299a4cd992f35bd3632677e1b052a1ee26fb5f1849439010b",
-            "byte_start": 34,
-            "byte_end": 44,
+            "source_sha256": "5ceaa8db5f7b120e0d1323c2765443bcf650a76858b2abc0fe152ec940fad031",
+            "extraction_sha256": "5ceaa8db5f7b120e0d1323c2765443bcf650a76858b2abc0fe152ec940fad031",
+            "byte_start": 40,
+            "byte_end": 50,
             "span_sha256": "cdcb340350abca98fb1c540fba6023e269bb5930a3af94430b15245e0d00b62a",
-            "evidence_ref": "source-extraction://sha256/f0925e250885b2f299a4cd992f35bd3632677e1b052a1ee26fb5f1849439010b/f0925e250885b2f299a4cd992f35bd3632677e1b052a1ee26fb5f1849439010b/span/span-1/cdcb340350abca98fb1c540fba6023e269bb5930a3af94430b15245e0d00b62a"
+            "evidence_ref": "source-extraction://sha256/5ceaa8db5f7b120e0d1323c2765443bcf650a76858b2abc0fe152ec940fad031/5ceaa8db5f7b120e0d1323c2765443bcf650a76858b2abc0fe152ec940fad031/span/span-1/cdcb340350abca98fb1c540fba6023e269bb5930a3af94430b15245e0d00b62a"
           }
         ],
         "rights": {
@@ -39,7 +39,39 @@
           "commercial_use": true,
           "modification_allowed": true,
           "evidence_ref": "fixture://rights/source-1"
-        }
+        },
+        "evidence_spans": [
+          {
+            "span_id": "evidence-1",
+            "exact_text": "This source describes a process lasting 45 seconds.",
+            "source_sha256": "5ceaa8db5f7b120e0d1323c2765443bcf650a76858b2abc0fe152ec940fad031",
+            "extraction_sha256": "5ceaa8db5f7b120e0d1323c2765443bcf650a76858b2abc0fe152ec940fad031",
+            "byte_start": 0,
+            "byte_end": 51,
+            "span_sha256": "daab378ae03497c71b547347345e015dbdf52fa0627a68611e95bfb52fa0a7a0",
+            "evidence_ref": "source-extraction://sha256/5ceaa8db5f7b120e0d1323c2765443bcf650a76858b2abc0fe152ec940fad031/5ceaa8db5f7b120e0d1323c2765443bcf650a76858b2abc0fe152ec940fad031/span/evidence-1/daab378ae03497c71b547347345e015dbdf52fa0627a68611e95bfb52fa0a7a0"
+          },
+          {
+            "span_id": "evidence-2",
+            "exact_text": "The supplied material explains the mechanism.",
+            "source_sha256": "5ceaa8db5f7b120e0d1323c2765443bcf650a76858b2abc0fe152ec940fad031",
+            "extraction_sha256": "5ceaa8db5f7b120e0d1323c2765443bcf650a76858b2abc0fe152ec940fad031",
+            "byte_start": 52,
+            "byte_end": 97,
+            "span_sha256": "df56fce7b47dcdc2fddc69ccfd9b655731bf25911555a938fbb168878253bd29",
+            "evidence_ref": "source-extraction://sha256/5ceaa8db5f7b120e0d1323c2765443bcf650a76858b2abc0fe152ec940fad031/5ceaa8db5f7b120e0d1323c2765443bcf650a76858b2abc0fe152ec940fad031/span/evidence-2/df56fce7b47dcdc2fddc69ccfd9b655731bf25911555a938fbb168878253bd29"
+          },
+          {
+            "span_id": "evidence-3",
+            "exact_text": "The source states the supported conclusion.",
+            "source_sha256": "5ceaa8db5f7b120e0d1323c2765443bcf650a76858b2abc0fe152ec940fad031",
+            "extraction_sha256": "5ceaa8db5f7b120e0d1323c2765443bcf650a76858b2abc0fe152ec940fad031",
+            "byte_start": 98,
+            "byte_end": 141,
+            "span_sha256": "30b89ca88a428e69431ea8aceca022b8d39bfc8c4d53e1418cd4f8bc3ce3f6ac",
+            "evidence_ref": "source-extraction://sha256/5ceaa8db5f7b120e0d1323c2765443bcf650a76858b2abc0fe152ec940fad031/5ceaa8db5f7b120e0d1323c2765443bcf650a76858b2abc0fe152ec940fad031/span/evidence-3/30b89ca88a428e69431ea8aceca022b8d39bfc8c4d53e1418cd4f8bc3ce3f6ac"
+          }
+        ]
       }
     ]
   },
@@ -92,9 +124,12 @@
       ],
       "on_screen_text": [
         {
-          "exact_text": "Source beat 1",
+          "exact_text": "This source describes a process lasting 45 seconds.",
           "source_ref": "source-1",
-          "protected": false
+          "protected": false,
+          "evidence_span_ids": [
+            "evidence-1"
+          ]
         }
       ]
     },
@@ -136,9 +171,12 @@
       ],
       "on_screen_text": [
         {
-          "exact_text": "Source beat 2",
+          "exact_text": "The supplied material explains the mechanism.",
           "source_ref": "source-1",
-          "protected": false
+          "protected": false,
+          "evidence_span_ids": [
+            "evidence-2"
+          ]
         }
       ]
     },
@@ -180,9 +218,12 @@
       ],
       "on_screen_text": [
         {
-          "exact_text": "Source beat 3",
+          "exact_text": "The source states the supported conclusion.",
           "source_ref": "source-1",
-          "protected": false
+          "protected": false,
+          "evidence_span_ids": [
+            "evidence-3"
+          ]
         }
       ]
     }

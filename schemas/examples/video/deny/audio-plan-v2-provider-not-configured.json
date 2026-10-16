@@ -97,7 +97,10 @@
         "lines": [
           "This source describes the starting point."
         ],
-        "protected_exact_words": []
+        "protected_exact_words": [],
+        "measured_start_seconds": 0,
+        "measured_end_seconds": 15,
+        "alignment_evidence_ref": "fixture://caption-alignment/deny-1"
       },
       {
         "scene_id": "scene-2",
@@ -107,7 +110,10 @@
         "lines": [
           "The supplied material explains the mechanism."
         ],
-        "protected_exact_words": []
+        "protected_exact_words": [],
+        "measured_start_seconds": 15,
+        "measured_end_seconds": 30,
+        "alignment_evidence_ref": "fixture://caption-alignment/deny-2"
       },
       {
         "scene_id": "scene-3",
@@ -119,7 +125,10 @@
         ],
         "protected_exact_words": [
           "conclusion"
-        ]
+        ],
+        "measured_start_seconds": 30,
+        "measured_end_seconds": 45,
+        "alignment_evidence_ref": "fixture://caption-alignment/deny-3"
       }
     ]
   },
