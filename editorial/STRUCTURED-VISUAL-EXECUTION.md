@@ -130,7 +130,7 @@ receipt는 **무결성 확인(integrity-checked)** 용이지 **암호학적 인�
 
 **차트**: `renderChartPanel`은 기존 모듈 안의 line/단일-series bar 확장이다. 원래 `renderChart`·Mermaid 경로는 바꾸지 않았다. 숫자 finite, 시간/x 순서, unit/period/source, 데이터가 축 밖으로 잘리지 않는지 확인한다. null은 선을 끊고 임의 보간/이동평균/forward-fill하지 않는다. 일반 건수/가격 차트에 확률 0–100/%p 규칙을 강제하지 않는다. 더 복잡한 차트는 기존 producer가 만든 PNG를 원본 증거 레이어로 사용한다.
 
-예측시장은 `INSTAGRAM-NUMERIC-VISUAL-POLICY.md`와 PMC producer가 데이터·단위·quote/history·보간·비교 의미를 소유한다. 이 일반 line/bar helper로 PMC 정책이나 검증된 producer 렌더를 대체하지 않는다. 기존 PMC PNG를 합성하고 bundle/source hash를 유지하는 것이 먼저다. 실제 PMC bundle 결합은 Phase 4의 UAT 항목이다.
+예측시장은 `INSTAGRAM-NUMERIC-VISUAL-POLICY.md`와 PMC producer가 데이터·단위·quote/history·보간·비교 의미를 소유한다. 이 일반 line/bar helper로 PMC 정책이나 검증된 producer 렌더를 대체하지 않는다. 기존 PMC PNG를 합성하고 bundle/source hash를 유지하는 것이 먼저다. PMC plot bundle(`*.plot.json`)을 hash 검증 후 이 패널에 결합하는 결정론적 경로는 `PMC-BUNDLE-BINDING.md`(`scripts/bind-pmc-bundle.mjs`)이며, 최종 시각 검토는 여전히 owner 몫이다.
 
 **워터마크**: OFF는 master와 byte-identical. ON은 기존 watermark 엔진의 glyph/제외 영역 검사와 합성을 사용한다. background 모드는 분리된 배경에만 적용하므로 실제 그림 아래에 놓을 수 있다. 이미 납작해진 PNG 내부의 차트 뒤로 넣을 수 있다고 주장하지 않는다. source credit, 페이지 수, 계정 브랜드 문구는 다른 역할이다. 워터마크는 복제 방지를 보장하지 않는다.
 
@@ -144,7 +144,7 @@ receipt는 **무결성 확인(integrity-checked)** 용이지 **암호학적 인�
 
 ## 8. Phase 4에 넘길 확인 항목
 
-새 대화에서 이 가이드만 진입점으로 삼아 실제 native 생성→bytes 확보→합성이 가능한지 확인한다. AI-tech 카드, 사진 카드, 실데이터 카드, 블로그 인포그래픽, 보고서와 3-frame 시리즈를 검토한다. 워터마크/제목/색상/비율만 바꾸는 후속 요청에서 원본과 사실이 보존되는지 확인한다. 실제 계정 preset·Drive 전달·기사 job 통합은 검증한 범위만 기록한다. headless 성공을 native 성공으로 대신하지 않는다.
+새 대화에서 이 가이드만 진입점으로 삼아 실제 native 생성→bytes 확보→합성이 가능한지 확인한다. AI-tech 카드, 사진 카드, 실데이터 카드(PMC bundle은 `PMC-BUNDLE-BINDING.md` §5 체크리스트), 블로그 인포그래픽, 보고서와 3-frame 시리즈를 검토한다. 워터마크/제목/색상/비율만 바꾸는 후속 요청에서 원본과 사실이 보존되는지 확인한다. 실제 계정 preset·Drive 전달·기사 job 통합은 검증한 범위만 기록한다. headless 성공을 native 성공으로 대신하지 않는다.
 
 전체 owner playbook(SUE-571)은 이 **같은 진입점**을 참조한다. 이 문서를 복사한 채널별 프롬프트 매뉴얼을 만들지 않는다.
 

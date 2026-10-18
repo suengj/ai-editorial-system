@@ -1,0 +1,88 @@
+{
+  "as_of": "2026-10-12T00:00:00Z",
+  "canvas_px": [
+    1200,
+    675
+  ],
+  "chart_sha256": "8f6710bdf679d346b19b9203356b28cb7b93757621e1dd80113995ea400ecc06",
+  "coverage": {
+    "count": 18,
+    "end": "2026-10-10T06:00:00Z",
+    "start": "2026-10-01T00:00:00Z",
+    "status": "unknown_window",
+    "unavailable_gaps": 1
+  },
+  "currency": null,
+  "current_quote": {
+    "differs_from_history_endpoint": false,
+    "probability": 0.485,
+    "retrieved_at": "2026-10-12T00:00:00Z",
+    "source_timestamp": null,
+    "source_timestamp_status": "unknown"
+  },
+  "delta": {
+    "baseline_at": "2026-10-01T00:00:00Z",
+    "baseline_value": 0.312,
+    "basis": "observed_period",
+    "last_at": "2026-10-10T06:00:00Z",
+    "last_value": 0.485,
+    "source": "raw_points",
+    "text": "+17.3%p",
+    "value_pp": 17.299999999999997
+  },
+  "display_mode": "pchip",
+  "duplicate_policy": "kept_last",
+  "end_time": "2026-12-31T00:00:00Z",
+  "event_id": null,
+  "font": "Apple SD Gothic Neo",
+  "forecast_type": "bet_prob_after",
+  "hero": {
+    "basis": "last_valid_history_observation",
+    "decimals": 1,
+    "observed_at": "2026-10-10T06:00:00Z",
+    "text": "48.5%",
+    "value": 0.485
+  },
+  "history_type": "sampled",
+  "input_sha256": "3a6b1df5f367b8827a3b8c7feebc6973e5948b8f77a9ed5a13e8741beed89d09",
+  "interpolation": {
+    "clipping": false,
+    "extrapolation": false,
+    "fallback": true,
+    "implementation": "builtin-fritsch-carlson",
+    "method": "pchip",
+    "note": "scipy unavailable: builtin PCHIP (same Fritsch-Carlson slopes as scipy)"
+  },
+  "market_id": "illustrative-gap",
+  "market_status": "open",
+  "model_calls": 0,
+  "outcome": "YES",
+  "outcome_label": "YES",
+  "period": {
+    "end": "2026-10-10T06:00:00Z",
+    "start": "2026-10-01T00:00:00Z"
+  },
+  "plot_data_sha256": "5c830bb0793fc0408f11917bfd0c198623563cc3fd0c186ede210ac23af9be16",
+  "pmc_chart_renderer": "pmc-chart/2",
+  "png_sha256": "8f6710bdf679d346b19b9203356b28cb7b93757621e1dd80113995ea400ecc06",
+  "price_basis": "bet_prob_after (0..1 market signal, plotted as %)",
+  "profile": "analysis",
+  "provider": "manifold",
+  "query_id": "q-illustrative-0001",
+  "renderer": "matplotlib",
+  "renderer_version": "3.11.2",
+  "resolution_rules_sha256": "7a0bcde800a09e6a152be7c399392570b3db599a370cfc14b0411c988956099f",
+  "run_id": "run-illustrative-0001",
+  "source_url": "https://example.invalid/illustrative/illustrative-gap",
+  "status": "ok",
+  "title": "(가상 예시) 가상의 정책 결정이 연말까지 발표될까요?",
+  "warnings": [],
+  "window": null,
+  "y_axis": {
+    "label": null,
+    "max": 100,
+    "min": 0,
+    "mode": "full",
+    "unit": "%"
+  }
+}
