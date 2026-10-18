@@ -4,7 +4,8 @@
  * This module validates and reads a reference envelope. It deliberately has
  * no writer, renderer, materializer, publisher, deployment, or approval-grant
  * operation. Owner decisions and downstream outcomes are recorded only by
- * immutable references and digests.
+ * immutable references and digests. Persisting transitions is a separate,
+ * validator-gated layer: `journey-envelope-writer.mjs` (SUE-1659).
  */
 
 import { createHash } from 'node:crypto';

@@ -12,8 +12,9 @@ editorial journey across `suengj/intelligence-library`,
 
 It stores references and digests only. It contains no article, dossier,
 evidence, source, capture, image, prompt, or publication-payload body. It
-creates no database, vector store, queue, Writer path, image materializer,
-deployment path, or publication engine.
+creates no database, vector store, queue, publication Writer path, image
+materializer, deployment path, or publication engine. Its only persistence is
+the reference-only file writer described under "Writing the envelope".
 
 The envelope never grants approval or sets publication status.
 `approved_revision` and each `visual_approval` only record an owner decision
@@ -229,11 +230,78 @@ non-null JSON object. A primitive, array, or missing parsed record returns
 also runs that path before reporting any state, and a CLI invocation using
 `--records` must include an envelope input.
 
+## Writing the envelope (SUE-1659)
+
+The core module only validates and reads. A small, separate layer persists
+transitions between steps: `scripts/lib/journey-envelope-writer.mjs`, driven by
+`scripts/journey-envelope.mjs` (`npm run journey -- <command>`). It adds no
+database, queue, or service and keeps the reference-and-digest-only boundary: it
+records refs to decisions made elsewhere and never grants approval, publishes,
+or deploys.
+
+There is **no second state machine**. The core already derives the progress
+state from the records present and rejects any `state` / `last_good_state` label
+that disagrees. A transition therefore means: merge the supplied evidence refs
+into a copy, relabel it, and run the core validator on the result. Whatever the
+validator refuses is never written; the validator's named code is returned.
+
+| Command | Effect |
+|---|---|
+| `init --file F --slug S --ledger-ref ref.json` | Create a `RECEIVED` envelope (unselected candidate). |
+| `transition --file F --to STATE [--evidence e.json]` | Record evidence refs and advance, or resume from a pause. |
+| `interrupt --file F --code CODE [--reason-ref ref.json]` | Record a typed pause through the core `recordInterrupt`. |
+| `show --file F [--json]` | Recover the state with the core reader; exit 1 on any invalid file. |
+
+`--evidence` is a JSON object keyed by envelope field (`dossier`,
+`article_ref`, `review_ref`, `approved_revision`, `handoff_receipt_ref`,
+`asset_bindings`, `publish_run`, `source_commit`, `deployed_artifact`,
+`live_verification_ref`, `live_verification`) plus `selection`, which fills
+`candidate.selection`. Because the selection is recorded in a later ledger
+commit, `ledger_ref` may be re-pointed to that commit, but only in the same
+transition as `selection` while the candidate is still unselected; afterwards it
+is immutable like every other field. `journey_binding_sha256` is derived when `dossier` and
+`article_ref` first arrive. `state`, `last_good_state`, `updated_at`,
+`interruption`, and unknown fields are writer-controlled or refused. External
+refs need a resolver, exactly as for validation: `--records bundle.json` and/or
+`--repo owner/name=<local clone>` (read with `git show`); with neither, they
+fail closed with `BLOCKED_TRANSPORT`. Pass `--at <ISO time>` for a
+deterministic `updated_at`.
+
+Guarantees:
+
+- **Append-only, forward-only.** An evidence field that is already recorded may
+  be re-supplied only with identical content; a different value is refused.
+  Progress never moves backwards. A jump over several stages is accepted only
+  when every intermediate record is supplied and verifies.
+- **Idempotent.** An identical duplicate `transition`, `interrupt`, or `init`
+  exits 0 with `"result": "unchanged"` and does not touch the file (so
+  `updated_at` is not bumped).
+- **Pause and resume.** `transition` from a resumable pause (not `NO_ARTICLE`,
+  which stays terminal) removes the `interruption` record; `--to` the pause's
+  last good state clears it, a later state advances. A `STALE_REVISION` pause is
+  accepted only with observable drift, as for the core, and replacing a
+  recorded `article_ref` is not supported by this writer.
+- **Atomic.** Writes use an exclusive `<file>.lock`, a same-directory temp file
+  (fsync), a read-back through the validator, then `rename`. A rejected result
+  never replaces the target and leaves no temp file.
+- **Fail closed.** A missing, empty, truncated, duplicate-keyed, symlinked,
+  relabelled, or digest-tampered file is refused before any write, and the file
+  is left byte-for-byte as found.
+
+### Vocabulary alias (SUE-787 F14)
+
+The downstream publication-state reader calls the stage `SOURCE_MERGED`. The
+writer CLI accepts `--to SOURCE_MERGED` as an alias of `SOURCE_COMMITTED` and
+always persists and reports `SOURCE_COMMITTED`. The schema, the state list, and
+the validator are unchanged — no existing state is renamed. `DISCOVERY_NOTIFIED`
+is still not an envelope state.
+
 ## Validation
 
 ```bash
 npm run validate:journey
 npm run test:journey
+npm run test:journey-writer
 
 # A custom envelope also requires its resolved-record bundle.
 node scripts/validate-journey-envelope.mjs path/to/envelope.json \

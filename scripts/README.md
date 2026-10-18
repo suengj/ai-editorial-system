@@ -19,6 +19,8 @@ Validation and evaluation tooling. Node ESM, no build step, no dependencies.
 | `run-matrix.mjs` | Cross-source acceptance matrix (AES-P5.2) |
 | `generate-handoff.mjs` | Build and validate the suengj-com handoff receipt (AES-P6.1) |
 | `export-web-catalog.mjs` | Public-safe web catalog (`editorial/web-catalog/editorial-web-catalog.v1.json`); `--check` fails when stale |
+| `journey-envelope.mjs` | Journey envelope writer CLI: `init` / `transition` / `interrupt` / `show`, validator-gated atomic writes (SUE-1659) |
+| `test-journey-envelope-writer.mjs` | Writer refusals, idempotency, append-only, fail-closed reads, atomic write, CLI |
 | `test-web-catalog.mjs` | Catalog determinism, drift detection, no rule prose / private content |
 | `test-repo-boundary.mjs` | Allow/deny regression for the charter |
 | `test-source-contract.mjs` | Mutation regression over the source example |
@@ -36,6 +38,7 @@ Validation and evaluation tooling. Node ESM, no build step, no dependencies.
 | `test-hitl.mjs` | Approval boundary, re-verification, Final ≠ Published |
 | `test-matrix.mjs` | Three source classes, one control plane |
 | `test-handoff.mjs` | Sidecar anchoring, safe degradation, version compatibility |
+| `lib/journey-envelope-writer.mjs` | Append-only persistence over the journey-envelope core validator |
 | `lib/boundary-core.mjs` | Charter rule engine |
 | `lib/source-contract-core.mjs` | Source schema + cross-field invariants |
 | `lib/article-contract-core.mjs` | Article/Artifact invariants + staleness classifier |
