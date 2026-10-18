@@ -3,14 +3,15 @@
  * Bind a finished PMC plot bundle to the existing deterministic chart panel
  * (SUE-1336). See editorial/PMC-BUNDLE-BINDING.md. No network, model or paid calls.
  *
- *   bind   --plot <slug>.plot.json --out <new-dir> [--title T] [--title-origin source_rewrite|request_summary|source_verbatim]
+ *   bind   --plot <slug>.plot.json --out <new-dir> [--title T [--title-origin source_rewrite|request_summary|source_verbatim]]
+ *          (--title defaults to request_summary; without --title the headline is PMC's own, source_verbatim)
  *   verify --inputs <bind-dir> --render <render-visual --out dir>
  */
 import { readFileSync, writeFileSync, copyFileSync, mkdirSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { createHash } from 'node:crypto';
 import { prepareOutput } from './lib/visual-execution-core.mjs';
-import { PMC_BINDING_VERSION, loadPmcPlotBundle, pmcPlotToChartSpec, buildCardPlan, verifyRenderAgainstBundle } from './lib/pmc-bundle-binding.mjs';
+import { PMC_BINDING_VERSION, loadPmcPlotBundle, pmcPlotToChartSpec, buildCardPlan, verifyRenderAgainstBundle, resolveTitleOrigin } from './lib/pmc-bundle-binding.mjs';
 
 const [cmd, ...rest] = process.argv.slice(2);
 const opts = {};
@@ -30,7 +31,8 @@ try {
     const bundle = loadPmcPlotBundle(opts['--plot']);
     const spec = pmcPlotToChartSpec(bundle);
     const specText = `${JSON.stringify(spec, null, 2)}\n`;
-    const plan = buildCardPlan(bundle, { title: opts['--title'], titleOrigin: opts['--title-origin'], specRef: 'chart.spec.json', specSha256: sha(Buffer.from(specText)), plotRef: 'pmc.plot.json' });
+    const titleOrigin = resolveTitleOrigin({ title: opts['--title'], titleOrigin: opts['--title-origin'] });
+    const plan = buildCardPlan(bundle, { title: opts['--title'], titleOrigin, specRef: 'chart.spec.json', specSha256: sha(Buffer.from(specText)), plotRef: 'pmc.plot.json' });
     prepareOutput(out);
     mkdirSync(out, { recursive: true });
     copyFileSync(bundle.path, resolve(out, 'pmc.plot.json'));
@@ -40,7 +42,7 @@ try {
       binding_version: PMC_BINDING_VERSION, source: 'prediction-market-crawler plot bundle', schema: bundle.plot.schema,
       provider: bundle.plot.meta.provider, market_id: bundle.plot.meta.market_id, run_id: bundle.plot.meta.run_id, as_of: bundle.plot.meta.as_of,
       plot_file_sha256: bundle.file_sha256, plot_data_sha256: bundle.plot_data_sha256, meta_file: bundle.meta_file, pmc_png: bundle.pmc_png,
-      chart_spec_sha256: sha(Buffer.from(specText)), title_origin: opts['--title-origin'] ?? 'source_verbatim', checks: bundle.checks,
+      chart_spec_sha256: sha(Buffer.from(specText)), title_origin: titleOrigin, checks: bundle.checks,
       curve: { panel: 'straight segments between raw observations; no smoothing, step or fill is added', pmc_history_type: bundle.plot.meta.history_type ?? null, note: 'PMC draws event history as a step curve and owns smoothing; this panel does not, so the curve shape differs from the PMC PNG — owner reviews the final look' },
       numeric_policy_scope: 'title %-numbers only; checkNumericCard (title dates/period claims, footer as_of/coverage, dual mode) is NOT applied by this binding',
       api_calls: 0, publication: 'NOT_AUTHORIZED', visual_review: 'OWNER_REQUIRED',

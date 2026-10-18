@@ -132,6 +132,13 @@ export function providerAccent(provider, profile = loadNumericProfile()) {
   return profile.palette.provider_colors[provider] ?? '#2A7F7A';
 }
 
+/** PMC's y-axis. A bundle without y_axis is drawn and checked on the same 0..100 default. */
+const plotAxis = (plot) => plot.y_axis ?? { min: 0, max: 100 };
+
+/** Any change of PMC segment id is one break (A,B,A has two). The spec inserts a null per break; verify counts with the same rule. */
+const segmentChanged = (prev, cur) => cur.segment !== prev.segment;
+const segmentBreakCount = (points) => points.slice(1).filter((p, i) => segmentChanged(points[i], p)).length;
+
 /**
  * Map a verified plot to a chart-renderer source spec. Values are copied
  * (x = observation epoch ms, y = percent); a segment break becomes one `null`
@@ -148,13 +155,13 @@ export function pmcPlotToChartSpec(bundle) {
     const x = Date.parse(p.observed_at);
     if (!Number.isFinite(x)) fail('PLOT_INVALID', `bad observed_at: ${p.observed_at}`);
     if (!Number.isFinite(p.value) || p.value < 0 || p.value > 1) fail('PLOT_INVALID', `probability outside 0..1: ${p.value}`);
-    if (prev && p.segment !== prev.segment) pts.push([Math.round((prev.x + x) / 2), null]);
+    if (prev && segmentChanged(prev, p)) pts.push([Math.round((prev.x + x) / 2), null]);
     if (prev && x <= prev.x) fail('PLOT_INVALID', 'observations must be strictly increasing');
     pts.push([x, clean(p.value * 100)]);
     prev = { x, segment: p.segment };
   }
   const first = plot.points[0].observed_at, last = plot.points.at(-1).observed_at;
-  const axis = plot.y_axis ?? { min: 0, max: 100 };
+  const axis = plotAxis(plot);
   const label = plot.meta.outcome_label ?? plot.meta.outcome ?? '';
   return {
     type: 'line',
@@ -167,11 +174,37 @@ export function pmcPlotToChartSpec(bundle) {
   };
 }
 
-/** Numbers in an AI-lane title must be values the deterministic lane displays. */
+const TITLE_ORIGINS = ['source_rewrite', 'request_summary', 'source_verbatim'];
+
+/**
+ * Provenance of the display title. A typed title is the user's text, so it is
+ * request_summary unless the caller states otherwise. Without one the headline is
+ * PMC's own meta.title (source_verbatim); an origin that claims a different source
+ * is refused rather than recorded.
+ */
+export function resolveTitleOrigin({ title, titleOrigin } = {}) {
+  if (titleOrigin !== undefined && !TITLE_ORIGINS.includes(titleOrigin)) fail('TITLE_ORIGIN', String(titleOrigin));
+  if (title == null) {
+    if (titleOrigin !== undefined && titleOrigin !== 'source_verbatim') fail('TITLE_ORIGIN', `${titleOrigin} needs a title; without one the headline is PMC's meta.title`);
+    return 'source_verbatim';
+  }
+  return titleOrigin ?? 'request_summary';
+}
+
+const signedKey = (sign, num) => `${sign === '-' || sign === '−' ? '-' : '+'}${num}`;
+
+/**
+ * Percent numbers in an AI-lane title must be values the deterministic lane displays.
+ * A signed title number must match the displayed sign: "-17.3%" is not "+17.3%p".
+ * An unsigned one is a magnitude and matches either sign.
+ */
 export function checkTitleNumbers(title, displayed) {
-  const shown = new Set(displayed.map((s) => s.replace(/[^\d.]/g, '')));
+  const signed = new Set(), magnitude = new Set();
+  for (const s of displayed) for (const [, sign, num] of s.matchAll(/([+\-−]?)(\d+(?:\.\d+)?)/g)) { signed.add(signedKey(sign, num)); magnitude.add(num); }
   const bad = [];
-  for (const m of title.matchAll(/(\d+(?:\.\d+)?)\s*%/g)) if (!shown.has(m[1])) bad.push(m[0]);
+  for (const [text, sign, num] of title.matchAll(/(?<![\d.%])([+\-−]?)(\d+(?:\.\d+)?)\s*%/g)) {
+    if (sign ? !signed.has(signedKey(sign, num)) : !magnitude.has(num)) bad.push(text);
+  }
   if (bad.length) fail('TITLE_NUMBER_UNGROUNDED', `title shows ${bad.join(', ')} which the card does not display`);
 }
 
@@ -180,16 +213,17 @@ export function checkTitleNumbers(title, displayed) {
  * title, deterministic hero/delta text from the bundle, and the chart panel.
  * File names are relative to the inputs directory that `writeBinding` creates.
  */
-export function buildCardPlan(bundle, { title, titleOrigin = 'source_verbatim', specRef, specSha256, plotRef, theme = {} } = {}) {
+export function buildCardPlan(bundle, { title, titleOrigin, specRef, specSha256, plotRef, theme = {} } = {}) {
   const { plot } = bundle, profile = loadNumericProfile();
-  if (!['source_rewrite', 'request_summary', 'source_verbatim'].includes(titleOrigin)) fail('TITLE_ORIGIN', String(titleOrigin));
+  const origin = resolveTitleOrigin({ title, titleOrigin });
   const text = title ?? plot.meta.title;
   if (typeof text !== 'string' || !text.trim()) fail('TITLE_MISSING', 'a display title is required');
+  if (origin === 'source_verbatim' && text !== plot.meta.title) fail('TITLE_ORIGIN', 'source_verbatim is only PMC meta.title; a typed title is request_summary');
   const hero = plot.hero?.text, delta = plot.delta?.text;
   if (!hero) fail('PLOT_INVALID', 'hero.text is required');
   checkTitleNumbers(text, [hero, ...(delta ? [delta] : [])]);
   const layers = [
-    { id: 'headline', kind: 'text', text, source_ref: titleOrigin === 'source_verbatim' ? plotRef : 'request', font_size: 48, weight: 700, max_lines: 3, slot: { x: 0.07, y: 0.05, width: 0.86, height: 0.17 } },
+    { id: 'headline', kind: 'text', text, source_ref: origin === 'source_verbatim' ? plotRef : 'request', font_size: 48, weight: 700, max_lines: 3, slot: { x: 0.07, y: 0.05, width: 0.86, height: 0.17 } },
     { id: 'hero', kind: 'text', text: hero, source_ref: plotRef, font_size: 150, weight: 700, max_lines: 1, slot: { x: 0.07, y: 0.23, width: 0.6, height: 0.15 } },
     ...(delta ? [{ id: 'delta', kind: 'text', text: `관측 기간 변화 ${delta}`, source_ref: plotRef, font_size: 34, weight: 600, max_lines: 1, slot: { x: 0.07, y: 0.39, width: 0.86, height: 0.045 } }] : []),
     { id: 'chart', kind: 'chart', ref: specRef, sha256: specSha256, slot: { x: 0.05, y: 0.45, width: 0.9, height: 0.5 } },
@@ -225,8 +259,10 @@ export function verifyRenderAgainstBundle(bundle, execution) {
   pass('hero_text_layer', execution.text.some((t) => t.id === 'hero' && t.text === plot.hero.text), 'hero text layer differs from PMC hero.text');
   if (plot.delta?.text) pass('delta_text_layer', execution.text.some((t) => t.id === 'delta' && t.text.endsWith(plot.delta.text)), 'delta text layer differs from PMC delta.text');
   pass('unit_percent', chart.axis.unit === '%', `unit ${chart.axis.unit}`);
-  pass('axis_matches_pmc', chart.axis.ymin === plot.y_axis.min && chart.axis.ymax === plot.y_axis.max, `${chart.axis.ymin}..${chart.axis.ymax} vs ${plot.y_axis.min}..${plot.y_axis.max}`);
-  pass('observation_count', chart.raw_observation_count === plot.points.length + (new Set(plot.points.map((p) => p.segment)).size - 1), `${chart.raw_observation_count} vs ${plot.points.length}`);
+  const axis = plotAxis(plot);
+  pass('axis_matches_pmc', chart.axis.ymin === axis.min && chart.axis.ymax === axis.max, `${chart.axis.ymin}..${chart.axis.ymax} vs ${axis.min}..${axis.max}`);
+  const expectedObservations = plot.points.length + segmentBreakCount(plot.points);
+  pass('observation_count', chart.raw_observation_count === expectedObservations, `${chart.raw_observation_count} vs ${expectedObservations}`);
   pass('observed_period', chart.axis.xmin === Date.parse(first.observed_at) && chart.axis.xmax === Date.parse(last.observed_at), 'x-range differs from the observed period');
   return { checks, notes, ok: Object.values(checks).every((v) => v === 'PASS'), displayed_hero: fmtPct(last.value * 100, plot.hero.decimals ?? 1) };
 }

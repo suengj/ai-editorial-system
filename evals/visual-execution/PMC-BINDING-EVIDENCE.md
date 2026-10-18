@@ -51,11 +51,13 @@ Phase 4 / native-generation UAT and owner visual review remain open.
 ## SUE-1336 — real PMC bundle through the deterministic chart binding
 
 Added `scripts/lib/pmc-bundle-binding.mjs`, `scripts/bind-pmc-bundle.mjs`,
-`scripts/test-pmc-binding.mjs` (`npm run test:pmc-binding`, 18 assertions),
+`scripts/test-pmc-binding.mjs` (`npm run test:pmc-binding`: 24 assertions with a
+rasterizer; without one, the 6 render assertions print NOT_RUN and the other 18
+still run),
 `editorial/PMC-BUNDLE-BINDING.md`, fixtures under `scripts/fixtures/pmc-bundle/`
 (explicitly fictional run through PMC's real `pmc chart`; no real market data
-or PNG committed). PMC checkout `~/Developer/PJT/prediction-market-crawler` was
-used read-only; its outputs went to a temp dir, since removed.
+or PNG committed). A local PMC checkout (read-only) was used; its outputs went to a
+temp dir, since removed.
 
 Test coverage (real SVG→PNG render, no fakes): PMC `plot_data_sha256` reproduced
 (Python float spelling preserved); edited value rejected; snapshot and multi-outcome

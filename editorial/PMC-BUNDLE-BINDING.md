@@ -17,7 +17,7 @@ Prediction-Market-Crawler(PMC)가 만든 **plot bundle**을 `renderChartPanel`·
 ```bash
 # 1) PMC bundle(.plot.json)을 검증하고 새 빈 디렉터리에 입력을 구성한다. 네트워크/모델 호출 없음.
 node scripts/bind-pmc-bundle.mjs bind --plot <slug>.plot.json --out out/<name>/inputs \
-  [--title "표시 제목" --title-origin source_rewrite|request_summary]
+  [--title "표시 제목" [--title-origin source_rewrite|request_summary|source_verbatim]]
 
 # 2) 기존 SNS 렌더 게이트: plan에서 profile receipt를 만든다 (계정은 추측하지 않으므로 --target 필수)
 node scripts/resolve-editorial.mjs --plan out/<name>/inputs/plan.json --target personal-instagram \
@@ -43,11 +43,12 @@ node scripts/bind-pmc-bundle.mjs verify --inputs out/<name>/inputs --render out/
 - `plot_data_sha256`을 파일에서 다시 계산해 일치해야 한다(`PLOT_HASH_MISMATCH`). PMC는 Python canonical JSON(`float` repr 유지)으로 해시하므로 JS의 `34.0 → 34` 정규화를 그대로 쓰지 않고 숫자 표기를 보존하는 해셔를 쓴다.
 - `status`가 `ok`이고 관측이 2개 이상이어야 한다. snapshot/단일 관측/`no-chart`는 추세로 그리지 않는다(`PLOT_NOT_CHARTABLE`).
 - sibling `.meta.json`이 있으면 같은 `plot_data_sha256`인지, PMC PNG가 있으면 `chart_sha256`이 맞는지 `binding.json`에 기록한다. 없으면 `NOT_FOUND`/`ABSENT`로 정직하게 남기고 통과로 위장하지 않는다. 해시를 다시 써서 편집한 파일은 자체 정합성은 있어도 PMC meta가 더 이상 보증하지 않는다.
-- 카드 제목의 `N%` 숫자는 카드가 실제로 보여주는 값이어야 한다(`TITLE_NUMBER_UNGROUNDED`). 제목에 원천을 기록(`source_verbatim`/`source_rewrite`/`request_summary`)한다.
+- 카드 제목의 `N%` 숫자는 카드가 실제로 보여주는 값이어야 한다(`TITLE_NUMBER_UNGROUNDED`). 부호가 붙은 숫자는 부호까지 맞아야 한다(`-17.3%`는 `+17.3%p`와 다르다). 부호 없는 숫자는 크기로 본다.
+- 제목 원천(`title_origin`)을 `binding.json`과 카드 `layers[0].source_ref`에 기록한다. 기본값: `--title`을 주면 `request_summary`(사용자가 쓴 글), 주지 않으면 PMC `meta.title`이므로 `source_verbatim`. `--title` 없이 `--title-origin`을 주면 거절하고(`TITLE_ORIGIN`), `source_verbatim`은 제목이 PMC `meta.title`과 같을 때만 쓴다.
 - 제목이 맞지 않으면 `TEXT_OVERFLOW`로 실패한다. 줄이거나 자르지 않는다.
 - **범위 한계:** 제목 검사는 `N%` 숫자만 본다. `checkNumericCard`가 보는 제목의 날짜/기간 주장("2주 만에" 등)·footer의 `as_of`/coverage·dual 모드는 이 결합이 적용하지 않는다(`binding.json.numeric_policy_scope`에 기록). 그래서 제목의 날짜·기간 문구와 footer 요건은 owner 검토(§5) 항목이며, 이 결합의 PASS를 numeric-visual 정책 전체 통과로 읽지 않는다.
 
-`verify` 단계(`numeric_lineage_qa`): 차트가 렌더되었는지, 끝점 라벨이 PMC `hero.text`와 같은지, 끝점이 마지막 관측인지, hero/delta 텍스트 레이어가 PMC 문자열과 같은지, 단위 `%`, y축 범위, 관측 개수(PMC segment 경계마다 null 1개 포함), 관측 기간, 렌더된 spec digest가 bind한 spec과 같은지.
+`verify` 단계(`numeric_lineage_qa`): 차트가 렌더되었는지, 끝점 라벨이 PMC `hero.text`와 같은지, 끝점이 마지막 관측인지, hero/delta 텍스트 레이어가 PMC 문자열과 같은지, 단위 `%`, y축 범위, 관측 개수(segment id가 바뀔 때마다 null 1개 포함, A→B→A는 2개), 관측 기간, 렌더된 spec digest가 bind한 spec과 같은지.
 
 ## 4. 그리는 방식과 PMC PNG의 차이 (owner가 알아야 할 것)
 

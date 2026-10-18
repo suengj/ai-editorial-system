@@ -26,7 +26,7 @@ Original profile/renderer/README snapshots used locally were verified against
 Git blob SHA values. This was a targeted local source subset obtained through
 the connector, **not a full repository checkout**. Full `npm test`, the full
 repository boundary suite, and existing article/claim compiler E2E were **not
-run**. Do not substitute this targeted result for them.
+run**. Do not substitute this targeted result for them. Later: those checks were run on a full checkout; see the SUE-1334 section of [PMC-BINDING-EVIDENCE.md](PMC-BINDING-EVIDENCE.md).
 
 ## Corrections found during the local run
 
