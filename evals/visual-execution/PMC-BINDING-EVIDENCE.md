@@ -12,7 +12,7 @@ article/claim compiler E2E as not run. They now ran against a full checkout:
 
 | Command | Result |
 |---|---|
-| `ALLOW_LIBRARY_SKIP=1 npm test` (whole chain, incl. `test:boundary`, `test:article`, `test:gates`, `test:skills`, `test:visual*`, `test:schema-parity`, `test:numeric-visual`, `test:web-catalog`, `test:pmc-binding`) | **EXIT 0** on commit `277ffda` |
+| `ALLOW_LIBRARY_SKIP=1 npm test` (whole chain, incl. `test:boundary`, `test:article`, `test:gates`, `test:skills`, `test:visual*`, `test:schema-parity`, `test:numeric-visual`, `test:web-catalog`, `test:pmc-binding`) | **EXIT 0** on fix commit `5952433` (run on that tree; `test:pmc-binding` 24 passed, 0 not_run; `test:library-input` 1 skipped, its real-command smoke NOT_RUN under `ALLOW_LIBRARY_SKIP=1`) |
 | `ALLOW_LIBRARY_SKIP=1 npm run validate` (incl. `web-catalog:check`, `validate:boundary`, `validate:article`, `validate:visual*`, `registry:check`) | **EXIT 0** |
 | `npm run check:gates` (article bundle + golden fixture E2E) | `gates: PASS` |
 | `npm run test:visual-execution` (**not** in the `npm test` chain; run separately) | 45 assertions PASS after fix 4 below (it failed before) |
@@ -20,7 +20,7 @@ article/claim compiler E2E as not run. They now ran against a full checkout:
 
 `npm test` is an `&&` chain, so the first run stopped at each failure below. Four
 pre-existing defects were found, none caused by SUE-1334's own code; each was fixed
-at the source with the existing test as the regression check (items 1–3 in commit `ba6aa41`, item 4 in the evidence commit):
+at the source with the existing test as the regression check (items 1–3 in commit `ba6aa41`, item 4 in commit `9d4d049`):
 
 1. `test:skills` — `skills/compile-slide-deck` listed "approved beats" under
    `authority.may`; the linter's forbidden-authority rule rejects "approved".
