@@ -918,6 +918,7 @@ function projectReviewRecord(record) {
   const finalization = record?.finalization;
   if (!finalization || typeof record.article_id !== 'string') return undefined;
   return {
+    producer_projection: true,
     ...(finalization.dossier_ref ? { dossier_ref: finalization.dossier_ref } : {}),
     article_ref: {
       article_id: record.article_id,
@@ -944,13 +945,15 @@ function projectHandoffReceipt(record) {
   }
   const provenance = record?.front_matter?.provenance;
   if (!provenance || typeof record.article_id !== 'string') return undefined;
-  const assetDigests = (record.artifacts ?? []).map((entry) =>
-    entry?.asset_sha256 ?? entry?.sha256);
+  const hasArtifacts = Array.isArray(record.artifacts);
+  const assetDigests = hasArtifacts ? record.artifacts.map((entry) =>
+    entry?.asset_sha256 ?? entry?.sha256) : [];
   // The handoff producer catalogs artifacts by id/location; it does not claim
   // byte digests for those artifacts. Do not infer digests from either field.
   const hasAnyDigest = assetDigests.some((digest) => digest !== undefined);
   const allHaveDigests = assetDigests.every((digest) => typeof digest === 'string');
   return {
+    producer_projection: true,
     article_ref: {
       article_id: record.article_id,
       version_number: provenance.article_version,
@@ -960,16 +963,17 @@ function projectHandoffReceipt(record) {
     },
     ...(hasAnyDigest && allHaveDigests ? { asset_digests: assetDigests } : {}),
     ...(hasAnyDigest && !allHaveDigests ? { malformed_asset_digests: true } : {}),
+    ...(!hasArtifacts ? { malformed_asset_digests: true } : {}),
   };
 }
 
-function sameArticleIdentity(actual, expected) {
+function sameArticleIdentity(actual, expected, { allowMissingCommit = false } = {}) {
   if (!actual || !expected) return false;
   const allowed = new Set(['article_id', 'version_number', 'content_hash', 'claims_hash', 'commit']);
   if (Object.keys(actual).some((key) => !allowed.has(key))) return false;
   const keys = ['article_id', 'version_number', 'content_hash', 'claims_hash'];
   if (keys.some((key) => actual[key] === undefined || actual[key] !== expected[key])) return false;
-  return actual.commit === undefined || actual.commit === expected.commit;
+  return (allowMissingCommit && actual.commit === undefined) || actual.commit === expected.commit;
 }
 
 function verifyResolvedJourneyBindings(envelope, resolutions, issues) {
@@ -987,12 +991,18 @@ function verifyResolvedJourneyBindings(envelope, resolutions, issues) {
   const review = resolvedObjectRecord(resolutions, envelope.review_ref, issues, '$.review_ref');
   if (review !== undefined) {
     const projected = projectReviewRecord(review);
-    if (projected?.dossier_ref !== undefined) {
+    if (projected?.producer_projection && projected.dossier_ref !== undefined) {
       expectSame(issues, projected.dossier_ref, envelope.dossier,
         CODES.STALE_REVISION, '$.review_ref',
         'resolved editorial review does not bind the exact dossier revision');
+    } else if (!projected?.producer_projection) {
+      expectSame(issues, projected?.dossier_ref, envelope.dossier,
+        CODES.STALE_REVISION, '$.review_ref',
+        'resolved editorial review does not bind the exact dossier revision');
     }
-    if (!sameArticleIdentity(projected?.article_ref, recordedArticle)) {
+    if (!sameArticleIdentity(projected?.article_ref, recordedArticle, {
+      allowMissingCommit: projected?.producer_projection === true,
+    })) {
       issues.push(issue(CODES.STALE_REVISION, '$.review_ref',
         'resolved editorial review does not bind the reviewed article revision'));
     }
@@ -1003,7 +1013,9 @@ function verifyResolvedJourneyBindings(envelope, resolutions, issues) {
   );
   if (handoffReceipt !== undefined) {
     const projected = projectHandoffReceipt(handoffReceipt);
-    if (!sameArticleIdentity(projected?.article_ref, recordedArticle)) {
+    if (!sameArticleIdentity(projected?.article_ref, recordedArticle, {
+      allowMissingCommit: projected?.producer_projection === true,
+    })) {
       issues.push(issue(CODES.STALE_REVISION, '$.handoff_receipt_ref',
         'resolved handoff receipt does not bind the approved article revision'));
     }
@@ -1134,15 +1146,22 @@ export function validateJourneyReferences(envelope, records, options = {}) {
   expectSame(issues, dossierSource?.used_by_article, envelope.article_ref,
     CODES.STALE_REVISION, '$.records.dossier_source.used_by_article', 'dossier-to-article binding disagrees');
   const projectedReview = projectReviewRecord(review);
-  if (projectedReview?.dossier_ref !== undefined) {
+  if (projectedReview?.producer_projection && projectedReview.dossier_ref !== undefined) {
     expectSame(issues, projectedReview.dossier_ref, envelope.dossier,
       CODES.STALE_REVISION, '$.records.review.dossier_ref', 'reviewed dossier revision disagrees');
+  } else if (!projectedReview?.producer_projection) {
+    expectSame(issues, projectedReview?.dossier_ref, envelope.dossier,
+      CODES.STALE_REVISION, '$.records.review.dossier_ref', 'reviewed dossier revision disagrees');
   }
-  if (!sameArticleIdentity(projectedReview?.article_ref, envelope.article_ref)) {
+  if (!sameArticleIdentity(projectedReview?.article_ref, envelope.article_ref, {
+    allowMissingCommit: projectedReview?.producer_projection === true,
+  })) {
     issues.push(issue(CODES.STALE_REVISION, '$.records.review.article_ref', 'reviewed article revision disagrees'));
   }
   const projectedHandoff = projectHandoffReceipt(handoffReceipt);
-  if (!sameArticleIdentity(projectedHandoff?.article_ref, envelope.article_ref)) {
+  if (!sameArticleIdentity(projectedHandoff?.article_ref, envelope.article_ref, {
+    allowMissingCommit: projectedHandoff?.producer_projection === true,
+  })) {
     issues.push(issue(CODES.STALE_REVISION, '$.records.handoff_receipt.article_ref', 'handoff article revision disagrees'));
   }
   if (projectedHandoff?.malformed_asset_digests) {

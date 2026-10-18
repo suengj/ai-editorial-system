@@ -1250,6 +1250,47 @@ console.log('producer projections — real producer field shapes');
       producerEnvelope(producerRecords), producerRecords, producerOptions,
     ).length === 0);
 
+  const normalizedRecordProbe = (recordType, record, predicate) => {
+    const bundle = producerBundle({ [recordType]: record });
+    const envelope = producerEnvelope(bundle);
+    const options = {
+      localRoot,
+      resolveExternalRecord: createRecordBundleResolver(bundle),
+    };
+    const envelopeIssues = validateJourneyEnvelope(envelope, options);
+    const referenceIssues = validateJourneyReferences(envelope, bundle, options);
+    return predicate(envelopeIssues, referenceIssues);
+  };
+
+  const reviewWithoutDossier = clone(records.review.record);
+  delete reviewWithoutDossier.dossier_ref;
+  check('normalized review cannot omit its required dossier binding in either validator',
+    normalizedRecordProbe('review', reviewWithoutDossier, (envelopeIssues, referenceIssues) =>
+      envelopeIssues.some((entry) => entry.code === CODES.STALE_REVISION) &&
+      referenceIssues.some((entry) => entry.code === CODES.STALE_REVISION)));
+
+  const reviewWithoutCommit = clone(records.review.record);
+  delete reviewWithoutCommit.article_ref.commit;
+  check('normalized review cannot omit the envelope article commit in either validator',
+    normalizedRecordProbe('review', reviewWithoutCommit, (envelopeIssues, referenceIssues) =>
+      envelopeIssues.some((entry) => entry.code === CODES.STALE_REVISION) &&
+      referenceIssues.some((entry) => entry.code === CODES.STALE_REVISION)));
+
+  const handoffWithoutCommit = clone(records.handoff_receipt.record);
+  delete handoffWithoutCommit.article_ref.commit;
+  check('normalized handoff cannot omit the envelope article commit in either validator',
+    normalizedRecordProbe('handoff_receipt', handoffWithoutCommit, (envelopeIssues, referenceIssues) =>
+      envelopeIssues.some((entry) => entry.code === CODES.STALE_REVISION) &&
+      referenceIssues.some((entry) => entry.code === CODES.STALE_REVISION)));
+
+  const malformedProducerReceipt = clone(handoffRecord);
+  malformedProducerReceipt.artifacts = {};
+  check('non-array producer receipt artifacts return a named digest refusal in both validators',
+    normalizedRecordProbe('handoff_receipt', malformedProducerReceipt,
+      (envelopeIssues, referenceIssues) =>
+        envelopeIssues.some((entry) => entry.code === CODES.MEDIA_DIGEST_MISMATCH) &&
+        referenceIssues.some((entry) => entry.code === CODES.MEDIA_DIGEST_MISMATCH)));
+
   const wrongSelection = clone(candidateRecord);
   wrongSelection.candidates['agent-cost-curve'].selection.selected_by = 'unbound';
   const wrongSelectionBundle = producerBundle({ candidate_ledger: wrongSelection });

@@ -261,10 +261,15 @@ projects these producer shapes into the envelope's existing identity checks:
   `finalization.article_version`, `content_hash`, and `claims_hash`. Those
   values must match the envelope's exact article revision. A dossier pointer is
   compared when the record supplies one; this producer shape does not claim a
-  dossier identity, so the resolver never fills one from the envelope.
+  dossier identity, so the resolver never fills one from the envelope. This
+  omission allowance applies only to the producer projection; normalized review
+  records must retain and match the exact `dossier_ref`.
 - A handoff receipt may bind its article through `article_id` and
   `front_matter.provenance`. These version and digest fields must match the
-  envelope's exact article revision. The handoff artifact catalog identifies
+  envelope's exact article revision. Producer projections may omit the commit
+  field when that producer shape does not supply it. Normalized review and
+  handoff records must match the complete article tuple, including commit. The
+  handoff artifact catalog identifies
   artifacts by reference and location but does not attest their byte digests.
   The resolver does not derive asset digests from IDs or locations. If the
   receipt supplies an ordered `asset_sha256` or `sha256` for every artifact,
