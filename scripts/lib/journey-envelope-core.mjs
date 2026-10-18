@@ -901,13 +901,84 @@ function visualDecisionRecord(binding, resolvedDecision) {
   };
 }
 
+// Producer records are projected into the small identity view consumed by the
+// envelope. Never synthesize identity fields from the envelope itself.
+function projectCandidateLedger(record, slug) {
+  if (record?.candidate && typeof record.candidate === 'object') return record.candidate;
+  const candidate = record?.candidates?.[slug];
+  return candidate && typeof candidate === 'object'
+    ? { slug, selection: candidate.selection }
+    : undefined;
+}
+
+function projectReviewRecord(record) {
+  if (record?.article_ref || record?.dossier_ref) {
+    return { dossier_ref: record.dossier_ref, article_ref: record.article_ref };
+  }
+  const finalization = record?.finalization;
+  if (!finalization || typeof record.article_id !== 'string') return undefined;
+  return {
+    ...(finalization.dossier_ref ? { dossier_ref: finalization.dossier_ref } : {}),
+    article_ref: {
+      article_id: record.article_id,
+      version_number: finalization.article_version,
+      content_hash: finalization.content_hash,
+      claims_hash: finalization.claims_hash,
+      ...(finalization.commit ? { commit: finalization.commit } : {}),
+    },
+  };
+}
+
+function projectHandoffReceipt(record) {
+  if (record?.article_ref) {
+    const hasArtifacts = Array.isArray(record.artifacts);
+    const assetDigests = hasArtifacts
+      ? record.artifacts.map((entry) => entry?.asset_sha256)
+      : undefined;
+    return {
+      article_ref: record.article_ref,
+      ...(assetDigests ? { asset_digests: assetDigests } : {}),
+      ...(!hasArtifacts || assetDigests.some((digest) => typeof digest !== 'string')
+        ? { malformed_asset_digests: true } : {}),
+    };
+  }
+  const provenance = record?.front_matter?.provenance;
+  if (!provenance || typeof record.article_id !== 'string') return undefined;
+  const assetDigests = (record.artifacts ?? []).map((entry) =>
+    entry?.asset_sha256 ?? entry?.sha256);
+  // The handoff producer catalogs artifacts by id/location; it does not claim
+  // byte digests for those artifacts. Do not infer digests from either field.
+  const hasAnyDigest = assetDigests.some((digest) => digest !== undefined);
+  const allHaveDigests = assetDigests.every((digest) => typeof digest === 'string');
+  return {
+    article_ref: {
+      article_id: record.article_id,
+      version_number: provenance.article_version,
+      content_hash: provenance.content_hash,
+      claims_hash: provenance.claims_hash,
+      ...(provenance.commit ? { commit: provenance.commit } : {}),
+    },
+    ...(hasAnyDigest && allHaveDigests ? { asset_digests: assetDigests } : {}),
+    ...(hasAnyDigest && !allHaveDigests ? { malformed_asset_digests: true } : {}),
+  };
+}
+
+function sameArticleIdentity(actual, expected) {
+  if (!actual || !expected) return false;
+  const allowed = new Set(['article_id', 'version_number', 'content_hash', 'claims_hash', 'commit']);
+  if (Object.keys(actual).some((key) => !allowed.has(key))) return false;
+  const keys = ['article_id', 'version_number', 'content_hash', 'claims_hash'];
+  if (keys.some((key) => actual[key] === undefined || actual[key] !== expected[key])) return false;
+  return actual.commit === undefined || actual.commit === expected.commit;
+}
+
 function verifyResolvedJourneyBindings(envelope, resolutions, issues) {
   const recordedArticle = envelope.approved_revision?.article_ref ?? envelope.article_ref;
   const candidateLedger = resolvedObjectRecord(
     resolutions, envelope.candidate?.ledger_ref, issues, '$.candidate.ledger_ref',
   );
   if (candidateLedger !== undefined && envelope.candidate?.selection !== null) {
-    expectSame(issues, candidateLedger.candidate,
+    expectSame(issues, projectCandidateLedger(candidateLedger, envelope.candidate.slug),
       { slug: envelope.candidate.slug, selection: envelope.candidate.selection },
       CODES.HANDOFF_INVALID, '$.candidate.ledger_ref',
       'resolved candidate selection does not bind the envelope candidate');
@@ -915,25 +986,36 @@ function verifyResolvedJourneyBindings(envelope, resolutions, issues) {
 
   const review = resolvedObjectRecord(resolutions, envelope.review_ref, issues, '$.review_ref');
   if (review !== undefined) {
-    expectSame(issues, review.dossier_ref, envelope.dossier,
-      CODES.STALE_REVISION, '$.review_ref',
-      'resolved editorial review does not bind the exact dossier revision');
-    expectSame(issues, review.article_ref, recordedArticle,
-      CODES.STALE_REVISION, '$.review_ref',
-      'resolved editorial review does not bind the reviewed article revision');
+    const projected = projectReviewRecord(review);
+    if (projected?.dossier_ref !== undefined) {
+      expectSame(issues, projected.dossier_ref, envelope.dossier,
+        CODES.STALE_REVISION, '$.review_ref',
+        'resolved editorial review does not bind the exact dossier revision');
+    }
+    if (!sameArticleIdentity(projected?.article_ref, recordedArticle)) {
+      issues.push(issue(CODES.STALE_REVISION, '$.review_ref',
+        'resolved editorial review does not bind the reviewed article revision'));
+    }
   }
 
   const handoffReceipt = resolvedObjectRecord(
     resolutions, envelope.handoff_receipt_ref, issues, '$.handoff_receipt_ref',
   );
   if (handoffReceipt !== undefined) {
-    expectSame(issues, handoffReceipt.article_ref, recordedArticle,
-      CODES.STALE_REVISION, '$.handoff_receipt_ref',
-      'resolved handoff receipt does not bind the approved article revision');
-    expectSame(issues, handoffReceipt.artifacts?.map((entry) => entry.asset_sha256),
-      envelope.asset_bindings?.map((entry) => entry.asset_sha256),
-      CODES.MEDIA_DIGEST_MISMATCH, '$.handoff_receipt_ref',
-      'resolved handoff receipt does not bind the ordered envelope asset digests');
+    const projected = projectHandoffReceipt(handoffReceipt);
+    if (!sameArticleIdentity(projected?.article_ref, recordedArticle)) {
+      issues.push(issue(CODES.STALE_REVISION, '$.handoff_receipt_ref',
+        'resolved handoff receipt does not bind the approved article revision'));
+    }
+    if (projected?.malformed_asset_digests) {
+      issues.push(issue(CODES.MEDIA_DIGEST_MISMATCH, '$.handoff_receipt_ref',
+        'resolved handoff receipt has an incomplete artifact digest list'));
+    } else if (projected?.asset_digests !== undefined) {
+      expectSame(issues, projected.asset_digests,
+        envelope.asset_bindings?.map((entry) => entry.asset_sha256),
+        CODES.MEDIA_DIGEST_MISMATCH, '$.handoff_receipt_ref',
+        'resolved handoff receipt does not bind the ordered envelope asset digests');
+    }
   }
 
   const publishApproval = resolvedObjectRecord(
@@ -1044,20 +1126,33 @@ export function validateJourneyReferences(envelope, records, options = {}) {
   const liveVerification = resolvedWrapper(issues, records.live_verification,
     envelope.live_verification_ref, resolutions, CODES.HANDOFF_INVALID, '$.records.live_verification');
 
-  expectSame(issues, candidateLedger?.candidate,
+  expectSame(issues, candidateLedger && projectCandidateLedger(candidateLedger, envelope.candidate.slug),
     { slug: envelope.candidate.slug, selection: envelope.candidate.selection },
     CODES.HANDOFF_INVALID, '$.records.candidate_ledger.candidate', 'candidate selection disagrees');
   expectSame(issues, dossierSource?.identity, envelope.dossier,
     CODES.STALE_REVISION, '$.records.dossier_source.identity', 'exact dossier revision disagrees');
   expectSame(issues, dossierSource?.used_by_article, envelope.article_ref,
     CODES.STALE_REVISION, '$.records.dossier_source.used_by_article', 'dossier-to-article binding disagrees');
-  expectSame(issues, review?.article_ref, envelope.article_ref,
-    CODES.STALE_REVISION, '$.records.review.article_ref', 'reviewed article revision disagrees');
-  expectSame(issues, handoffReceipt?.article_ref, envelope.article_ref,
-    CODES.STALE_REVISION, '$.records.handoff_receipt.article_ref', 'handoff article revision disagrees');
-  expectSame(issues, handoffReceipt?.artifacts?.map((entry) => entry.asset_sha256),
-    envelope.asset_bindings.map((entry) => entry.asset_sha256),
-    CODES.MEDIA_DIGEST_MISMATCH, '$.records.handoff_receipt.artifacts', 'handoff asset order or digest disagrees');
+  const projectedReview = projectReviewRecord(review);
+  if (projectedReview?.dossier_ref !== undefined) {
+    expectSame(issues, projectedReview.dossier_ref, envelope.dossier,
+      CODES.STALE_REVISION, '$.records.review.dossier_ref', 'reviewed dossier revision disagrees');
+  }
+  if (!sameArticleIdentity(projectedReview?.article_ref, envelope.article_ref)) {
+    issues.push(issue(CODES.STALE_REVISION, '$.records.review.article_ref', 'reviewed article revision disagrees'));
+  }
+  const projectedHandoff = projectHandoffReceipt(handoffReceipt);
+  if (!sameArticleIdentity(projectedHandoff?.article_ref, envelope.article_ref)) {
+    issues.push(issue(CODES.STALE_REVISION, '$.records.handoff_receipt.article_ref', 'handoff article revision disagrees'));
+  }
+  if (projectedHandoff?.malformed_asset_digests) {
+    issues.push(issue(CODES.MEDIA_DIGEST_MISMATCH, '$.records.handoff_receipt.artifacts',
+      'handoff artifact digest list is incomplete'));
+  } else if (projectedHandoff?.asset_digests !== undefined) {
+    expectSame(issues, projectedHandoff.asset_digests,
+      envelope.asset_bindings.map((entry) => entry.asset_sha256),
+      CODES.MEDIA_DIGEST_MISMATCH, '$.records.handoff_receipt.artifacts', 'handoff asset order or digest disagrees');
+  }
   expectSame(issues, publishApproval, publishDecisionRecord(envelope.approved_revision),
     CODES.STALE_REVISION, '$.records.publish_approval', 'resolved publish decision disagrees');
   expectSame(issues, visualApprovals, envelope.asset_bindings.map((binding, index) =>

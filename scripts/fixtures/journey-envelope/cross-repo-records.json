@@ -49,7 +49,7 @@
   "review": {
     "record_ref": {
       "repository": "suengj/ai-editorial-system",
-      "commit": "3bc181edea0d8fc870e918b6789b3cd2d2d96c06",
+      "commit": "1238384",
       "path": "scripts/fixtures/journey-envelope/records/editorial-review.json",
       "content_sha256": "cd8b2ff5656912c44ae736e6caef3308da90d5c15d64201828e5fb1c80f98f35"
     },
@@ -75,7 +75,7 @@
   "handoff_receipt": {
     "record_ref": {
       "repository": "suengj/ai-editorial-system",
-      "commit": "4f3fc2ce086f65a8536189eec09990771fea7292",
+      "commit": "1238384",
       "path": "scripts/fixtures/journey-envelope/records/handoff-receipt.json",
       "content_sha256": "efa67d4a30ec72b67658f5f786a6091d4a4f9277669674161731fe6b3acdd7e0"
     },
@@ -126,7 +126,7 @@
     {
       "record_ref": {
         "repository": "suengj/ai-editorial-system",
-        "commit": "d677144e526edb4501051eb69b2e8311f9a1f15e",
+        "commit": "1238384",
         "path": "scripts/fixtures/journey-envelope/records/visual-approval-main.json",
         "content_sha256": "709d48bd2617ef256ce1d615400791d5bd928bc6b68ebebe0cda3c280d0050fc"
       },
@@ -152,7 +152,7 @@
     {
       "record_ref": {
         "repository": "suengj/ai-editorial-system",
-        "commit": "d677144e526edb4501051eb69b2e8311f9a1f15e",
+        "commit": "1238384",
         "path": "scripts/fixtures/journey-envelope/records/visual-approval-detail.json",
         "content_sha256": "b510ff844b06def76ed0e2232e7537fa5e28eff5336ca5f7ea63a1f5cea636d9"
       },

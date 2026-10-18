@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /** SUE-790 journey-envelope acceptance and anti-vacuity regression tests. */
 
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
@@ -36,6 +36,7 @@ const ROOT = resolve(HERE, '..');
 const EXAMPLE = resolve(ROOT, 'schemas/examples/journey-envelope.example.json');
 const DENY = resolve(ROOT, 'scripts/fixtures/journey-envelope/deny-primary-dossier.json');
 const RECORDS = resolve(ROOT, 'scripts/fixtures/journey-envelope/cross-repo-records.json');
+const PRODUCERS = resolve(ROOT, 'scripts/fixtures/journey-envelope/producer-shapes');
 const base = parseJourneyJson(readFileSync(EXAMPLE), EXAMPLE);
 const records = parseJourneyJson(readFileSync(RECORDS), RECORDS);
 const referenceOptions = Object.freeze({
@@ -1151,6 +1152,160 @@ console.log('contract boundaries — refs and digests only');
   legacy.asset_bindings.forEach((binding) => { delete binding.claim_ids; });
   check('pre-extension envelopes without claim or media bindings remain valid before live media read-back',
     codes(legacy).length === 0);
+}
+
+console.log('producer projections — real producer field shapes');
+{
+  const readProducer = (name) => parseJourneyJson(
+    readFileSync(resolve(PRODUCERS, name)), name,
+  );
+  const candidateRecord = readProducer('il-candidate-ledger.json');
+  const reviewRecord = readProducer('hitl-review-record.json');
+  const handoffRecord = readProducer('handoff-receipt.json');
+  const localRoot = mkdtempSync(join(tmpdir(), 'journey-producer-shapes-'));
+  const git = (...args) => {
+    const result = spawnSync('git', args, { cwd: localRoot, encoding: 'utf8' });
+    if (result.status !== 0) throw new Error(`${result.stdout}${result.stderr}`);
+    return result.stdout.trim();
+  };
+  const writeFixture = (relative, value) => {
+    const path = join(localRoot, relative);
+    mkdirSync(dirname(path), { recursive: true });
+    writeFileSync(path, `${JSON.stringify(value, null, 2)}\n`);
+  };
+  writeFixture('scripts/fixtures/journey-envelope/records/visual-approval-main.json',
+    records.visual_approvals[0].record);
+  writeFixture('scripts/fixtures/journey-envelope/records/visual-approval-detail.json',
+    records.visual_approvals[1].record);
+  writeFixture('scripts/fixtures/journey-envelope/producer-shapes/hitl-review-record.json', reviewRecord);
+  writeFixture('scripts/fixtures/journey-envelope/producer-shapes/handoff-receipt.json', handoffRecord);
+  git('init', '-q');
+  git('config', 'user.name', 'journey-test');
+  git('config', 'user.email', 'journey-test@example.invalid');
+  git('add', '.');
+  git('commit', '-q', '-m', 'producer-shape fixtures');
+  const producerCommit = git('rev-parse', 'HEAD');
+  const producerBundle = (overrides = {}) => {
+    const bundle = clone(records);
+    const producerRecords = {
+      candidate_ledger: candidateRecord,
+      review: reviewRecord,
+      handoff_receipt: handoffRecord,
+      ...overrides,
+    };
+    for (const [key, record] of Object.entries(producerRecords)) {
+      bundle[key].record = record;
+      bundle[key].record_ref.content_sha256 = canonicalRecordSha256(record);
+      if (key === 'review') {
+        const path = 'scripts/fixtures/journey-envelope/producer-shapes/hitl-review-record.json';
+        writeFixture(path, record);
+        git('add', path);
+        git('commit', '-q', '--allow-empty', '-m', 'review producer record');
+        bundle[key].record_ref.commit = git('rev-parse', 'HEAD');
+        bundle[key].record_ref.path = path;
+      } else if (key === 'handoff_receipt') {
+        const path = 'scripts/fixtures/journey-envelope/producer-shapes/handoff-receipt.json';
+        writeFixture(path, record);
+        git('add', path);
+        git('commit', '-q', '--allow-empty', '-m', 'handoff producer record');
+        bundle[key].record_ref.commit = git('rev-parse', 'HEAD');
+        bundle[key].record_ref.path = path;
+      }
+    }
+    bundle.visual_approvals.forEach((entry, index) => {
+      entry.record_ref.commit = producerCommit;
+      entry.record_ref.path =
+        `scripts/fixtures/journey-envelope/records/visual-approval-${index === 0 ? 'main' : 'detail'}.json`;
+    });
+    return bundle;
+  };
+  const producerRecords = producerBundle({
+    candidate_ledger: candidateRecord,
+    review: reviewRecord,
+    handoff_receipt: handoffRecord,
+  });
+  const producerOptions = {
+    localRoot,
+    resolveExternalRecord: createRecordBundleResolver(producerRecords),
+  };
+  const producerEnvelope = (bundle) => {
+    const envelope = clone(base);
+    envelope.candidate.ledger_ref = bundle.candidate_ledger.record_ref;
+    envelope.review_ref = bundle.review.record_ref;
+    envelope.handoff_receipt_ref = bundle.handoff_receipt.record_ref;
+    envelope.asset_bindings.forEach((binding, index) => {
+      binding.visual_approval.record_ref.commit = producerCommit;
+      binding.visual_approval.record_ref.path =
+        `scripts/fixtures/journey-envelope/records/visual-approval-${index === 0 ? 'main' : 'detail'}.json`;
+    });
+    envelope.journey_binding_sha256 = journeyBindingSha256(
+      envelope.candidate, envelope.dossier, envelope.article_ref,
+    );
+    return envelope;
+  };
+  check('IL ledger, HITL finalization, and handoff provenance producer shapes resolve',
+    validateJourneyEnvelope(producerEnvelope(producerRecords), producerOptions).length === 0);
+  check('cross-record metadata validation accepts the same producer projections',
+    validateJourneyReferences(
+      producerEnvelope(producerRecords), producerRecords, producerOptions,
+    ).length === 0);
+
+  const wrongSelection = clone(candidateRecord);
+  wrongSelection.candidates['agent-cost-curve'].selection.selected_by = 'unbound';
+  const wrongSelectionBundle = producerBundle({ candidate_ledger: wrongSelection });
+  const wrongSelectionOptions = {
+    resolveExternalRecord: createRecordBundleResolver(wrongSelectionBundle),
+  };
+  check('IL candidate projection rejects a changed selection after its record digest is refreshed',
+    validateJourneyEnvelope(producerEnvelope(wrongSelectionBundle), {
+      ...wrongSelectionOptions, localRoot,
+    }).some((entry) =>
+      entry.code === CODES.HANDOFF_INVALID));
+
+  const wrongReview = clone(reviewRecord);
+  wrongReview.finalization.claims_hash = '0'.repeat(64);
+  const wrongReviewBundle = producerBundle({ review: wrongReview });
+  const wrongReviewOptions = {
+    resolveExternalRecord: createRecordBundleResolver(wrongReviewBundle),
+  };
+  const wrongReviewEnvelope = producerEnvelope(wrongReviewBundle);
+  check('HITL finalization projection rejects a different reviewed claims revision',
+    validateJourneyEnvelope(wrongReviewEnvelope, { ...wrongReviewOptions, localRoot })
+      .some((entry) => entry.code === CODES.STALE_REVISION));
+
+  const wrongReceipt = clone(handoffRecord);
+  wrongReceipt.front_matter.provenance.content_hash = '0'.repeat(64);
+  const wrongReceiptBundle = producerBundle({ handoff_receipt: wrongReceipt });
+  const wrongReceiptOptions = {
+    resolveExternalRecord: createRecordBundleResolver(wrongReceiptBundle),
+  };
+  const wrongReceiptEnvelope = producerEnvelope(wrongReceiptBundle);
+  check('handoff provenance projection rejects a different article content digest',
+    validateJourneyEnvelope(wrongReceiptEnvelope, { ...wrongReceiptOptions, localRoot })
+      .some((entry) => entry.code === CODES.STALE_REVISION));
+
+  const receiptWithDigests = clone(handoffRecord);
+  receiptWithDigests.artifacts = base.asset_bindings.map((binding, index) => ({
+    artifact_id: `asset-ref-${index + 1}`,
+    asset_sha256: binding.asset_sha256,
+  }));
+  const digestBundle = producerBundle({ handoff_receipt: receiptWithDigests });
+  const digestOptions = { resolveExternalRecord: createRecordBundleResolver(digestBundle) };
+  const digestIssues = validateJourneyEnvelope(producerEnvelope(digestBundle), { ...digestOptions, localRoot });
+  check('handoff digests supplied by a producer bind the ordered approved asset digests',
+    digestIssues.length === 0, JSON.stringify(digestIssues));
+  const changedDigestReceipt = clone(receiptWithDigests);
+  changedDigestReceipt.artifacts[0].asset_sha256 = '0'.repeat(64);
+  const changedDigestBundle = producerBundle({ handoff_receipt: changedDigestReceipt });
+  const changedDigestOptions = {
+    resolveExternalRecord: createRecordBundleResolver(changedDigestBundle),
+  };
+  check('handoff producer digest substitution is rejected after its record digest is refreshed',
+    validateJourneyEnvelope(producerEnvelope(changedDigestBundle), {
+      ...changedDigestOptions, localRoot,
+    }).some((entry) =>
+      entry.code === CODES.MEDIA_DIGEST_MISMATCH));
+  rmSync(localRoot, { recursive: true, force: true });
 }
 
 console.log(failures === 0
