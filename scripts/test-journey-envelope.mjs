@@ -224,6 +224,27 @@ console.log('acceptance 4 — material claim change stales the dependent visual'
   check(`claims_hash change is material and fails named ${CODES.STALE_REVISION} from a validator-clean stale baseline`,
     codes(stale).length === 0 && result.lineage?.level === 'material' && !result.presentable &&
       !result.approval_valid && result.code === CODES.STALE_REVISION, JSON.stringify(result));
+  const scoped = staleTextEnvelope({ material: true });
+  scoped.changed_claim_ids = ['c1'];
+  const affected = assessAssetApproval(scoped, 0, {
+    articleRef: scoped.article_ref, assetDigest: scoped.asset_bindings[0].asset_sha256,
+    referenceOptions,
+  });
+  const unrelated = assessAssetApproval(scoped, 1, {
+    articleRef: scoped.article_ref, assetDigest: scoped.asset_bindings[1].asset_sha256,
+    referenceOptions,
+  });
+  check('claim_ids scopes a changed-claim set to only the intersecting visual',
+    codes(scoped).length === 0 && !affected.presentable && affected.code === CODES.STALE_REVISION &&
+      unrelated.presentable && unrelated.approval_valid,
+    JSON.stringify({ affected: affected.code, unrelated: unrelated.code }));
+  const noIds = clone(scoped); delete noIds.asset_bindings[1].claim_ids;
+  const conservative = assessAssetApproval(noIds, 1, {
+    articleRef: noIds.article_ref, assetDigest: noIds.asset_bindings[1].asset_sha256,
+    referenceOptions,
+  });
+  check('visuals without claim_ids retain whole-article invalidation as the safe default',
+    !conservative.presentable && conservative.code === CODES.STALE_REVISION);
 }
 
 console.log('acceptance 5 — exact ordered asset set and self-binding approvals');
@@ -465,6 +486,8 @@ console.log('acceptance 9 — exact downstream interop, authority, and command w
     manifest: records.publish_run.record.manifest,
     receipt: records.publish_run.record.receipt,
     result: literalResult,
+    approvedAssetDigests: base.asset_bindings.map((binding) => binding.asset_sha256),
+    mediaBinding: base.media_binding,
   });
   check('literal suengj-com LIVE_VERIFIED result with prefixed digests is accepted unchanged',
     interopBaseline.length === 0 && JSON.stringify(literalResult) === JSON.stringify(base.live_verification),
@@ -475,6 +498,8 @@ console.log('acceptance 9 — exact downstream interop, authority, and command w
     manifest: records.publish_run.record.manifest,
     receipt: records.publish_run.record.receipt,
     result: bareResult,
+    approvedAssetDigests: base.asset_bindings.map((binding) => binding.asset_sha256),
+    mediaBinding: base.media_binding,
   }).map((entry) => entry.code);
   check(`bare live digest fails named ${CODES.HANDOFF_INVALID} from a clean literal interop baseline`,
     interopBaseline.length === 0 && bareCodes.includes(CODES.HANDOFF_INVALID));
@@ -485,6 +510,8 @@ console.log('acceptance 9 — exact downstream interop, authority, and command w
     manifest: records.publish_run.record.manifest,
     receipt: records.publish_run.record.receipt,
     result: mismatchedMedia,
+    approvedAssetDigests: base.asset_bindings.map((binding) => binding.asset_sha256),
+    mediaBinding: base.media_binding,
   }).map((entry) => entry.code);
   check(`live/receipt media drift fails named ${CODES.MEDIA_DIGEST_MISMATCH} from a clean interop baseline`,
     interopBaseline.length === 0 && mismatchedMediaCodes.includes(CODES.MEDIA_DIGEST_MISMATCH));
@@ -495,6 +522,8 @@ console.log('acceptance 9 — exact downstream interop, authority, and command w
     manifest: sha64Manifest,
     receipt: records.publish_run.record.receipt,
     result: literalResult,
+    approvedAssetDigests: base.asset_bindings.map((binding) => binding.asset_sha256),
+    mediaBinding: base.media_binding,
   });
   check('a downstream-valid 64-character expected_source_sha is accepted',
     interopBaseline.length === 0 && sha64Issues.length === 0, JSON.stringify(sha64Issues));
@@ -505,6 +534,8 @@ console.log('acceptance 9 — exact downstream interop, authority, and command w
     manifest: shortManifest,
     receipt: records.publish_run.record.receipt,
     result: literalResult,
+    approvedAssetDigests: base.asset_bindings.map((binding) => binding.asset_sha256),
+    mediaBinding: base.media_binding,
   }).map((entry) => entry.code);
   check(`a short expected_source_sha fails named ${CODES.HANDOFF_INVALID} from a clean interop baseline`,
     interopBaseline.length === 0 && shortShaCodes.includes(CODES.HANDOFF_INVALID));
@@ -957,6 +988,17 @@ console.log('contract boundaries — refs and digests only');
   check('publish decision binding recomputes from the exact article tuple and ordered asset set',
     approvalBindingSha256(base.approved_revision.article_ref, base.approved_revision.asset_digests) ===
       base.approved_revision.binding_sha256);
+  assertNamedMutation('live media master digest maps to no approved asset', CODES.MEDIA_DIGEST_MISMATCH,
+    (envelope) => { envelope.media_binding.master_sha256 = `sha256:${'0'.repeat(64)}`; });
+  assertNamedMutation('duplicate per-visual claim ids are rejected', CODES.HANDOFF_INVALID,
+    (envelope) => { envelope.asset_bindings[0].claim_ids = ['c1', 'c1']; });
+  check('strict schema accepts optional claim_ids on an asset binding',
+    codes(base).length === 0 && Array.isArray(base.asset_bindings[0].claim_ids));
+  const legacy = atProgress('ARTIFACT_DEPLOYED');
+  delete legacy.changed_claim_ids;
+  legacy.asset_bindings.forEach((binding) => { delete binding.claim_ids; });
+  check('pre-extension envelopes without claim or media bindings remain valid before live media read-back',
+    codes(legacy).length === 0);
 }
 
 console.log(failures === 0

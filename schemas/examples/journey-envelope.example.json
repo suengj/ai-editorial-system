@@ -90,7 +90,10 @@
           "content_sha256": "9ac95a5d357d8c7f42aa06332adcadfd9edb8425405243ef792f536b295a970d"
         },
         "binding_sha256": "a5460924a3ea80f2f547f318d4a5da51ccdb87067217587ab1c38a7b4bc56e0c"
-      }
+      },
+      "claim_ids": [
+        "c1"
+      ]
     },
     {
       "receipt_artifact_index": 1,
@@ -112,7 +115,10 @@
           "content_sha256": "9ff60baf2c6425925b23a4e43114eec73c8d0bb2f2da7cc283d90cee3ab67c72"
         },
         "binding_sha256": "eec56526d76008050aea28106cc9ae8a308d4d9a7c0ffacc1e151ef110f1717b"
-      }
+      },
+      "claim_ids": [
+        "c2"
+      ]
     }
   ],
   "publish_run": {
@@ -122,7 +128,7 @@
       "repository": "suengj/suengj-com",
       "commit": "a4e9022",
       "path": "handoffs/agent-cost-curve/publish-run.json",
-      "content_sha256": "891b25171e398dbaa8fa8375920aaa1edf3d09f99d4c4bf681261609f9f9e06e"
+      "content_sha256": "38fb093aac919cc306c214601a5d12fec08c7f19b1045a3fe7e28aa032d30b50"
     }
   },
   "source_commit": {
@@ -150,5 +156,9 @@
     "article_body_sha256": "sha256:7890abcdef1234567890abcdef1234567890abcdef1234567890abcdef123456",
     "media_url": "https://suengj.com/media/agent-cost-curve.png",
     "media_sha256": "sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+  },
+  "media_binding": {
+    "master_sha256": "sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+    "production_sha256": "sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
   }
 }

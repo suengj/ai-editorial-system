@@ -167,7 +167,7 @@
       "repository": "suengj/suengj-com",
       "commit": "a4e9022",
       "path": "handoffs/agent-cost-curve/publish-run.json",
-      "content_sha256": "891b25171e398dbaa8fa8375920aaa1edf3d09f99d4c4bf681261609f9f9e06e"
+      "content_sha256": "38fb093aac919cc306c214601a5d12fec08c7f19b1045a3fe7e28aa032d30b50"
     },
     "record": {
       "run_id": "publish-run:agent-cost-curve:20260911t061500z",
@@ -180,7 +180,8 @@
       "receipt": {
         "article_ref": "src/content/agent-cost-curve.md",
         "production_ref": "/media/agent-cost-curve.png",
-        "production_sha256": "sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+        "production_sha256": "sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+        "master_sha256": "sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
       }
     }
   },

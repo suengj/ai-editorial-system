@@ -180,6 +180,27 @@ digest that disagrees with the receipt returns `MEDIA_DIGEST_MISMATCH`.
 `expected_source_sha` is exactly 40–64 lowercase hex, matching the merged
 SUE-789 downstream contract.
 
+When live media is present, the materialization receipt must also carry its
+`master_sha256`. The envelope's optional `media_binding` copies the
+`master_sha256` → `production_sha256` pair from that receipt. Validation
+requires the master (after removing only its `sha256:` prefix) to equal one of
+the ordered, owner-approved `asset_bindings[].asset_sha256` values, and requires
+the production digest to equal both the receipt and live read-back. A read-back
+whose derivative has no approved master mapping fails with
+`MEDIA_DIGEST_MISMATCH`. Old records without media read-back remain valid; a
+media read-back without this lineage proof does not.
+
+### Per-visual claim dependencies (SUE-787 F13)
+
+An `asset_bindings[]` entry may carry `claim_ids` for the claims asserted by
+that visual. On a revision with a verified `changed_claim_ids` set, only a
+visual whose `claim_ids` intersects that set is stale. A visual with no
+`claim_ids`, or a revision without `changed_claim_ids`, keeps the existing
+whole-article invalidation behavior. The change set must come from an upstream
+comparison of the exact old and new claims; this envelope records the supplied
+set but cannot independently prove the claim diff from its digest alone.
+Existing envelopes remain schema-valid because both fields are optional.
+
 ## Authority and refusal rules
 
 `REFERENCE_AUTHORITIES` is the single declarative registry for every durable
@@ -302,7 +323,9 @@ The downstream publication-state reader calls the stage `SOURCE_MERGED`. The
 writer CLI accepts `--to SOURCE_MERGED` as an alias of `SOURCE_COMMITTED` and
 always persists and reports `SOURCE_COMMITTED`. The schema, the state list, and
 the validator are unchanged — no existing state is renamed. `DISCOVERY_NOTIFIED`
-is still not an envelope state.
+is not an envelope state: discovery notification has no record in this journey
+contract and would precede `RECEIVED`, so it does not fit the ordered evidence
+model. No existing states are renamed.
 
 ## Validation
 

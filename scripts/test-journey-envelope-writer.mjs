@@ -60,7 +60,7 @@ const STAGE_EVIDENCE = {
     handoff_receipt_ref: clone(base.handoff_receipt_ref),
     asset_bindings: clone(base.asset_bindings),
   }),
-  PUBLISH_ACCEPTED: () => ({ publish_run: clone(base.publish_run) }),
+  PUBLISH_ACCEPTED: () => ({ publish_run: clone(base.publish_run), media_binding: clone(base.media_binding) }),
   SOURCE_COMMITTED: () => ({ source_commit: clone(base.source_commit) }),
   ARTIFACT_DEPLOYED: () => ({ deployed_artifact: clone(base.deployed_artifact) }),
   LIVE_VERIFIED: () => ({
@@ -123,7 +123,7 @@ try {
     check('writer evidence keys are exactly the schema evidence fields plus the candidate keys',
       JSON.stringify(evidenceKeys().sort()) === JSON.stringify(
         [...Object.keys(STAGE_EVIDENCE).flatMap((stage) => Object.keys(STAGE_EVIDENCE[stage]())),
-          'ledger_ref'].sort()));
+          'ledger_ref', 'changed_claim_ids'].sort()));
     check('a caller-supplied journey_binding_sha256 is refused as writer-controlled',
       !applyTransition(advanceTo('SELECTED'), {
         to: 'DRAFT_READY',
@@ -191,6 +191,9 @@ try {
     check('an interrupt code is not accepted as a transition target',
       !applyTransition(draft, { to: 'BLOCKED_AUTH', observedAt: AT }, referenceOptions).ok);
     check('an unknown state name is refused', !applyTransition(draft, { to: 'PUBLISHED', observedAt: AT }, referenceOptions).ok);
+    check('DISCOVERY_NOTIFIED is refused because it has no ordered evidence stage',
+      !applyTransition(draft, { to: 'DISCOVERY_NOTIFIED', observedAt: AT }, referenceOptions).ok &&
+        !PROGRESS_STATES.includes('DISCOVERY_NOTIFIED'));
     check('a writer-controlled field cannot be injected as evidence',
       !applyTransition(draft, { to: 'IN_REVIEW', evidence: { ...STAGE_EVIDENCE.IN_REVIEW(), state: 'LIVE_VERIFIED' }, observedAt: AT },
         referenceOptions).ok);

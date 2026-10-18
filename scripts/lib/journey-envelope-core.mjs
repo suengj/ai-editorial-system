@@ -119,6 +119,12 @@ const sha256Json = (value) => createHash('sha256')
   .digest('hex');
 const present = (value) => value !== undefined;
 const meaningful = (value) => typeof value === 'string' && value.trim().length > 0;
+const claimScopedLineagePresentable = (binding, envelope, lineage) => {
+  if (lineage.level !== 'material' || !Array.isArray(envelope?.changed_claim_ids) ||
+      envelope.changed_claim_ids.length === 0 || !Array.isArray(binding?.claim_ids) ||
+      binding.claim_ids.length === 0) return lineage.presentable;
+  return !binding.claim_ids.some((id) => envelope.changed_claim_ids.includes(id));
+};
 
 function duplicateKeyPath(serialized) {
   let cursor = 0;
@@ -688,6 +694,11 @@ function verifyJourneyEnvelope(envelope, {
         'asset bindings must equal the complete ordered publish-gate digest set'));
     }
     envelope.asset_bindings.forEach((binding, index) => {
+      if (Array.isArray(binding?.claim_ids) &&
+          new Set(binding.claim_ids).size !== binding.claim_ids.length) {
+        issues.push(issue(CODES.HANDOFF_INVALID, `$.asset_bindings[${index}].claim_ids`,
+          'claim_ids must not contain duplicates'));
+      }
       if (binding?.receipt_artifact_index !== index) {
         issues.push(issue(CODES.HANDOFF_INVALID, `$.asset_bindings[${index}].receipt_artifact_index`,
           'asset bindings must be contiguous and ordered exactly like the handoff receipt artifacts'));
@@ -711,7 +722,7 @@ function verifyJourneyEnvelope(envelope, {
       }
       if (envelope.article_ref && (derivedIndex ?? -1) >= PROGRESS_INDEX.get('ASSETS_LOCKED')) {
         const lineage = classifyArtifact({ article_ref: binding?.article_ref }, articleForLineage(envelope.article_ref));
-        if (!lineage.presentable) {
+        if (!claimScopedLineagePresentable(binding, envelope, lineage)) {
           actualStale = true;
           if (envelope.state !== 'STALE_REVISION') {
             issues.push(issue(CODES.STALE_REVISION, `$.asset_bindings[${index}].article_ref`,
@@ -722,9 +733,21 @@ function verifyJourneyEnvelope(envelope, {
     });
   }
 
+  if (Array.isArray(envelope.changed_claim_ids) &&
+      new Set(envelope.changed_claim_ids).size !== envelope.changed_claim_ids.length) {
+    issues.push(issue(CODES.HANDOFF_INVALID, '$.changed_claim_ids',
+      'changed_claim_ids must not contain duplicates'));
+  }
+
   if (envelope.state === 'STALE_REVISION' && !actualStale) {
     issues.push(issue(CODES.HANDOFF_INVALID, '$.state',
       'STALE_REVISION requires observable drift from a self-bound approval'));
+  }
+
+  if (envelope.changed_claim_ids && envelope.article_ref &&
+      envelope.asset_bindings?.every((binding) => binding.article_ref?.claims_hash === envelope.article_ref.claims_hash)) {
+    issues.push(issue(CODES.HANDOFF_INVALID, '$.changed_claim_ids',
+      'changed_claim_ids is only valid while at least one visual still records the prior claims_hash'));
   }
 
   if (envelope.live_verification &&
@@ -753,7 +776,7 @@ export function validateJourneyEnvelopeFile(path, options = {}) {
 }
 
 /** Validate the literal SUE-789 manifest/receipt/LIVE_VERIFIED boundary. */
-export function validateSUE789Interop({ manifest, receipt, result } = {}) {
+export function validateSUE789Interop({ manifest, receipt, result, approvedAssetDigests, mediaBinding } = {}) {
   const issues = [];
   const bare = /^[a-f0-9]{64}$/;
   const prefixed = /^sha256:[a-f0-9]{64}$/;
@@ -773,6 +796,10 @@ export function validateSUE789Interop({ manifest, receipt, result } = {}) {
     issues.push(issue(CODES.HANDOFF_INVALID, '$.receipt',
       'receipt must carry article_ref, root-relative production_ref, and prefixed production_sha256'));
   }
+  if (receipt?.master_sha256 !== undefined && !prefixed.test(receipt.master_sha256)) {
+    issues.push(issue(CODES.HANDOFF_INVALID, '$.receipt.master_sha256',
+      'receipt master_sha256 must be sha256-prefixed lowercase hex'));
+  }
   const allowedResultKeys = new Set(['state', 'article_url', 'article_body_sha256', 'media_url', 'media_sha256']);
   if (!result || result.state !== 'LIVE_VERIFIED' || !meaningful(result.article_url) ||
       !prefixed.test(result.article_body_sha256 ?? '') ||
@@ -789,6 +816,21 @@ export function validateSUE789Interop({ manifest, receipt, result } = {}) {
   if (hasMediaDigest && result.media_sha256 !== receipt?.production_sha256) {
     issues.push(issue(CODES.MEDIA_DIGEST_MISMATCH, '$.result.media_sha256',
       'live media digest must exactly equal the publication receipt digest'));
+  }
+  if (hasMediaDigest) {
+    if (!mediaBinding || !prefixed.test(mediaBinding.master_sha256 ?? '') ||
+        !prefixed.test(mediaBinding.production_sha256 ?? '') ||
+        mediaBinding.master_sha256 !== receipt?.master_sha256 ||
+        mediaBinding.production_sha256 !== receipt?.production_sha256 ||
+        mediaBinding.production_sha256 !== result.media_sha256) {
+      issues.push(issue(CODES.MEDIA_DIGEST_MISMATCH, '$.media_binding',
+        'live media must be linked through the materialization receipt from its approved master digest'));
+    }
+    const approved = Array.isArray(approvedAssetDigests) ? approvedAssetDigests : [];
+    if (!receipt?.master_sha256 || !approved.includes(receipt.master_sha256.slice('sha256:'.length))) {
+      issues.push(issue(CODES.MEDIA_DIGEST_MISMATCH, '$.receipt.master_sha256',
+        'materialized master digest does not map to an approved asset digest'));
+    }
   }
   if (hasMediaUrl && receipt?.production_ref) {
     try {
@@ -919,6 +961,8 @@ function verifyResolvedJourneyBindings(envelope, resolutions, issues) {
         manifest: publishRun.manifest,
         receipt: publishRun.receipt,
         result: liveVerification.result,
+        approvedAssetDigests: envelope.asset_bindings?.map((binding) => binding.asset_sha256),
+        mediaBinding: envelope.media_binding,
       }));
     }
   }
@@ -993,6 +1037,8 @@ export function validateJourneyReferences(envelope, records, options = {}) {
     manifest: publishRun?.manifest,
     receipt: publishRun?.receipt,
     result: liveVerification?.result,
+    approvedAssetDigests: envelope.asset_bindings.map((binding) => binding.asset_sha256),
+    mediaBinding: envelope.media_binding,
   }));
   expectSame(issues, deployment?.deployment_id, envelope.deployed_artifact.deployment_id,
     CODES.HANDOFF_INVALID, '$.records.deployment.deployment_id', 'deployment identity disagrees');
@@ -1172,7 +1218,8 @@ export function assessAssetApproval(envelope, receiptArtifactIndex, {
   const externallyBound = same(decision.record, visualDecisionRecord(binding));
   const selfBound = binding.visual_approval.binding_sha256 ===
     approvalBindingSha256(binding.article_ref, [binding.asset_sha256]);
-  if (assetDigest !== binding.asset_sha256 || !lineage.presentable || !selfBound || !externallyBound) {
+  const presentable = claimScopedLineagePresentable(binding, envelope, lineage);
+  if (assetDigest !== binding.asset_sha256 || !presentable || !selfBound || !externallyBound) {
     return { approval_valid: false, presentable: false, code: CODES.STALE_REVISION, lineage };
   }
   return { approval_valid: true, presentable: true, code: null, lineage };
