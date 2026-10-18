@@ -259,19 +259,24 @@ validator refuses is never written; the validator's named code is returned.
 `candidate.selection`. Because the selection is recorded in a later ledger
 commit, `ledger_ref` may be re-pointed to that commit, but only in the same
 transition as `selection` while the candidate is still unselected; afterwards it
-is immutable like every other field. `journey_binding_sha256` is derived when `dossier` and
-`article_ref` first arrive. `state`, `last_good_state`, `updated_at`,
+is immutable like every other field. `journey_binding_sha256` is always derived
+by the writer when `dossier` and `article_ref` first arrive; supplying it as
+evidence is refused. `state`, `last_good_state`, `updated_at`,
 `interruption`, and unknown fields are writer-controlled or refused. External
 refs need a resolver, exactly as for validation: `--records bundle.json` and/or
 `--repo owner/name=<local clone>` (read with `git show`); with neither, they
 fail closed with `BLOCKED_TRANSPORT`. Pass `--at <ISO time>` for a
-deterministic `updated_at`.
+deterministic `updated_at`; a value earlier than the recorded `updated_at` (or
+one that does not parse) is refused, because `updated_at` never moves backwards.
 
 Guarantees:
 
 - **Append-only, forward-only.** An evidence field that is already recorded may
   be re-supplied only with identical content; a different value is refused.
-  Progress never moves backwards. A jump over several stages is accepted only
+  Progress never moves backwards: any request for an
+  earlier state (for example `--to RECEIVED` on a `LIVE_VERIFIED` envelope) is
+  refused, whether or not it carries evidence; only an identical replay of the
+  current state is a no-op. A jump over several stages is accepted only
   when every intermediate record is supplied and verifies.
 - **Idempotent.** An identical duplicate `transition`, `interrupt`, or `init`
   exits 0 with `"result": "unchanged"` and does not touch the file (so
@@ -282,7 +287,10 @@ Guarantees:
   accepted only with observable drift, as for the core, and replacing a
   recorded `article_ref` is not supported by this writer.
 - **Atomic.** Writes use an exclusive `<file>.lock`, a same-directory temp file
-  (fsync), a read-back through the validator, then `rename`. A rejected result
+  (fsync), a read-back through the validator, `rename`, then a best-effort
+  fsync of the directory so the rename survives power loss. A lock that cannot
+  be created for any reason other than an existing lock (for example a missing
+  directory) is reported as such, not as another writer. A rejected result
   never replaces the target and leaves no temp file.
 - **Fail closed.** A missing, empty, truncated, duplicate-keyed, symlinked,
   relabelled, or digest-tampered file is refused before any write, and the file

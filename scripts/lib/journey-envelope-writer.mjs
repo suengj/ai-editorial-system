@@ -61,8 +61,24 @@ const same = (a, b) => JSON.stringify(canonical(a)) === JSON.stringify(canonical
 const isPlainObject = (value) => value !== null && typeof value === 'object' && !Array.isArray(value);
 const nowIso = () => new Date().toISOString().replace(/\.\d{3}Z$/, 'Z');
 
+/** `updated_at` is a monotonic record clock: a new observation may not predate the stored one. */
+function refuseOlderTimestamp(envelope, observedAt) {
+  const next = Date.parse(observedAt);
+  const stored = Date.parse(envelope.updated_at);
+  if (Number.isNaN(next)) {
+    return refuse(CODES.HANDOFF_INVALID, '$.at', `${observedAt} is not a parseable timestamp`);
+  }
+  return !Number.isNaN(stored) && next < stored
+    ? refuse(CODES.HANDOFF_INVALID, '$.at',
+      `${observedAt} is earlier than the recorded updated_at ${envelope.updated_at}; updated_at never moves backwards`)
+    : null;
+}
+
+// `journey_binding_sha256` is derived by the writer from candidate + dossier + article_ref,
+// so a caller can never supply it as evidence.
 export const evidenceKeys = () => [
-  ...Object.keys(loadSchema().properties).filter((key) => !CONTROL_FIELDS.includes(key)),
+  ...Object.keys(loadSchema().properties)
+    .filter((key) => !CONTROL_FIELDS.includes(key) && key !== 'journey_binding_sha256'),
   SELECTION_KEY,
   LEDGER_KEY,
 ];
@@ -143,8 +159,12 @@ export function applyTransition(envelope, { to, evidence = {}, observedAt = nowI
   if (!interrupted) {
     const targetIndex = PROGRESS_INDEX.get(target);
     const currentIndex = PROGRESS_INDEX.get(envelope.state);
-    if (targetIndex <= currentIndex) {
-      // Replaying an already-applied transition is a no-op; anything else is a regression.
+    if (targetIndex < currentIndex) {
+      return refuse(CODES.HANDOFF_INVALID, '$.to',
+        `transitions are forward-only: ${envelope.state} -> ${target} is refused`);
+    }
+    if (targetIndex === currentIndex) {
+      // Only an identical replay of the current state is a no-op; new evidence at the same state is refused.
       return !merged.changed
         ? { ok: true, result: 'unchanged', envelope: clone(envelope) }
         : refuse(CODES.HANDOFF_INVALID, '$.to',
@@ -153,6 +173,9 @@ export function applyTransition(envelope, { to, evidence = {}, observedAt = nowI
   } else {
     delete next.interruption;
   }
+
+  const stale = refuseOlderTimestamp(envelope, observedAt);
+  if (stale) return stale;
 
   if (next.dossier !== undefined && next.article_ref !== undefined && next.journey_binding_sha256 === undefined) {
     next.journey_binding_sha256 = journeyBindingSha256(next.candidate, next.dossier, next.article_ref);
@@ -173,6 +196,8 @@ export function applyInterrupt(envelope, code, { reasonRef, observedAt = nowIso(
       same(envelope.interruption.reason_ref, reasonRef)) {
     return { ok: true, result: 'unchanged', envelope: clone(envelope) };
   }
+  const stale = refuseOlderTimestamp(envelope, observedAt);
+  if (stale) return stale;
   const recorded = recordInterrupt(envelope, code, { observedAt, reasonRef, referenceOptions });
   return recorded.ok ? { ok: true, result: 'written', envelope: recorded.envelope } : fail(recorded.issues);
 }
@@ -200,6 +225,19 @@ export function readJourneyFile(path, referenceOptions = {}) {
 
 export const serializeJourney = (envelope) => `${JSON.stringify(envelope, null, 2)}\n`;
 
+/** Persist a completed rename; a power loss after rename() but before this could drop the new name. */
+function fsyncDirectory(directory) {
+  let fd;
+  try {
+    fd = openSync(directory, 'r');
+    fsyncSync(fd);
+  } catch {
+    // The rename already happened; some platforms cannot fsync a directory, so this is best-effort.
+  } finally {
+    if (fd !== undefined) closeSync(fd);
+  }
+}
+
 /**
  * Replace `path` atomically: write a sibling temp file, fsync, read the temp
  * bytes back through the validator, then rename. Nothing is renamed unless the
@@ -220,6 +258,7 @@ export function writeJourneyFileAtomic(path, envelope, referenceOptions = {}) {
       return fail(issues);
     }
     renameSync(tmp, path);
+    fsyncDirectory(dirname(path));
     return { ok: true };
   } catch (error) {
     try { if (fd !== undefined) closeSync(fd); } catch { /* already closed */ }
@@ -236,8 +275,10 @@ export function withJourneyLock(path, step) {
     fd = openSync(lock, 'wx', 0o600);
     writeSync(fd, `${process.pid}\n`);
   } catch (error) {
-    return refuse(CODES.HANDOFF_INVALID, lock,
-      `journey envelope is locked by another writer (${error.code ?? error.message}); remove the lock only after confirming no writer is running`);
+    return error.code === 'EEXIST'
+      ? refuse(CODES.HANDOFF_INVALID, lock,
+        'journey envelope is locked by another writer (EEXIST); remove the lock only after confirming no writer is running')
+      : refuse(CODES.HANDOFF_INVALID, lock, `cannot create the journey lock file: ${error.message}`);
   }
   try {
     return step();

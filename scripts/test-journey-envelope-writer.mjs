@@ -118,11 +118,18 @@ try {
         recovered.ok && recovered.state === stage && at.last_good_state === stage);
     }
 
-    // journey_binding_sha256 is derived by the writer; candidate.ledger_ref is the post-selection ledger pointer.
+    // journey_binding_sha256 is derived by the writer and never accepted as evidence;
+    // candidate.ledger_ref is the post-selection ledger pointer.
     check('writer evidence keys are exactly the schema evidence fields plus the candidate keys',
       JSON.stringify(evidenceKeys().sort()) === JSON.stringify(
         [...Object.keys(STAGE_EVIDENCE).flatMap((stage) => Object.keys(STAGE_EVIDENCE[stage]())),
-          'journey_binding_sha256', 'ledger_ref'].sort()));
+          'ledger_ref'].sort()));
+    check('a caller-supplied journey_binding_sha256 is refused as writer-controlled',
+      !applyTransition(advanceTo('SELECTED'), {
+        to: 'DRAFT_READY',
+        evidence: { ...STAGE_EVIDENCE.DRAFT_READY(), journey_binding_sha256: base.journey_binding_sha256 },
+        observedAt: AT,
+      }, referenceOptions).ok);
   }
 
   console.log('invalid transitions are refused by the existing validator');
@@ -202,11 +209,31 @@ try {
     check('re-filing a different article_ref over a recorded one is refused', !rewritten.ok);
 
     const backwards = applyTransition(approved, { to: 'DRAFT_READY', evidence: {}, observedAt: AT }, referenceOptions);
-    check('a backwards transition with no new evidence is a replay no-op, never a regression',
-      backwards.ok && backwards.result === 'unchanged' && backwards.envelope.state === 'APPROVED_REVISION');
+    check('a backwards transition with no new evidence is refused as forward-only, not reported unchanged',
+      !backwards.ok && backwards.code === CODES.HANDOFF_INVALID);
+    const live = advanceTo('LIVE_VERIFIED');
+    check('transition --to RECEIVED on a LIVE_VERIFIED envelope is refused',
+      !applyTransition(live, { to: 'RECEIVED', evidence: {}, observedAt: AT }, referenceOptions).ok);
+    const sameState = applyTransition(approved, { to: 'APPROVED_REVISION', evidence: {}, observedAt: AT }, referenceOptions);
+    check('an identical replay of the current state is still unchanged', sameState.ok && sameState.result === 'unchanged');
     const backwardsNew = applyTransition(approved, { to: 'DRAFT_READY', evidence: STAGE_EVIDENCE.ASSETS_LOCKED(), observedAt: AT },
       referenceOptions);
     check('a backwards transition carrying new evidence is refused', !backwardsNew.ok);
+  }
+
+  console.log('updated_at never moves backwards');
+  {
+    const selected = advanceTo('SELECTED');
+    const older = '2026-09-10T00:00:00Z';
+    const t = applyTransition(selected, { to: 'DRAFT_READY', evidence: STAGE_EVIDENCE.DRAFT_READY(), observedAt: older }, referenceOptions);
+    check('a transition with an --at earlier than the stored updated_at is refused', !t.ok && t.code === CODES.HANDOFF_INVALID);
+    check('an interrupt with an --at earlier than the stored updated_at is refused',
+      !applyInterrupt(selected, 'BLOCKED_AUTH', { observedAt: older }, referenceOptions).ok);
+    check('an unparseable --at is refused',
+      !applyTransition(selected, { to: 'DRAFT_READY', evidence: STAGE_EVIDENCE.DRAFT_READY(), observedAt: 'not-a-time' }, referenceOptions).ok);
+    check('an --at equal to or later than the stored updated_at is accepted',
+      applyTransition(selected, { to: 'DRAFT_READY', evidence: STAGE_EVIDENCE.DRAFT_READY(), observedAt: AT }, referenceOptions).ok &&
+      applyTransition(selected, { to: 'DRAFT_READY', evidence: STAGE_EVIDENCE.DRAFT_READY(), observedAt: '2026-09-12T00:00:00Z' }, referenceOptions).ok);
   }
 
   console.log('idempotency');
@@ -367,6 +394,15 @@ try {
       referenceOptions));
     check('a second writer is refused while the lock is held, and the lock is then released',
       !contested.ok && !existsSync(`${path}.lock`) && leftovers().length === 0, JSON.stringify(contested));
+    const innerLocked = withJourneyLock(path, () => withJourneyLock(path, () => ({ ok: true })));
+    check('contention reports "locked by another writer"', /locked by another writer/.test(innerLocked.issues?.[0]?.message ?? ''));
+
+    const missingDir = initJourneyFile(join(dir, 'no-such-dir', 'e.json'),
+      { slug: base.candidate.slug, ledgerRef: base.candidate.ledger_ref, observedAt: AT }, referenceOptions);
+    const missingMessage = missingDir.issues?.[0]?.message ?? '';
+    check('init into a missing directory fails closed without claiming another writer holds a lock',
+      !missingDir.ok && /cannot create the journey lock file/.test(missingMessage) && !/locked by another writer/.test(missingMessage),
+      missingMessage);
   }
 
   console.log('CLI');
