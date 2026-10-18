@@ -73,6 +73,7 @@ export const REFERENCE_AUTHORITIES = Object.freeze([
   Object.freeze({ name: 'handoff receipt', path: Object.freeze(['handoff_receipt_ref']), repository: 'suengj/ai-editorial-system' }),
   Object.freeze({ name: 'publish approval', path: Object.freeze(['approved_revision', 'record_ref']), repository: 'suengj/suengj-com' }),
   Object.freeze({ name: 'visual approval', path: Object.freeze(['asset_bindings', '*', 'visual_approval', 'record_ref']), repository: 'suengj/ai-editorial-system' }),
+  Object.freeze({ name: 'claim change evidence', path: Object.freeze(['asset_bindings', '*', 'claim_change', 'record_ref']), repository: 'suengj/intelligence-library' }),
   Object.freeze({ name: 'publish run', path: Object.freeze(['publish_run', 'record_ref']), repository: 'suengj/suengj-com' }),
   Object.freeze({ name: 'source commit', path: Object.freeze(['source_commit']), repository: 'suengj/suengj-com' }),
   Object.freeze({ name: 'deployment', path: Object.freeze(['deployed_artifact', 'record_ref']), repository: 'suengj/suengj-com' }),
@@ -119,21 +120,34 @@ const sha256Json = (value) => createHash('sha256')
   .digest('hex');
 const present = (value) => value !== undefined;
 const meaningful = (value) => typeof value === 'string' && value.trim().length > 0;
-const claimScopedLineagePresentable = (binding, envelope, lineage) => {
+const claimChangeMatchesVerifiedEvidence = (binding, resolutions) => {
+  const comparison = binding?.claim_change;
+  const evidence = resolutions.get(resolutionKey(comparison?.record_ref));
+  return evidence?.ok && same(evidence.record, {
+    asset_sha256: binding?.asset_sha256,
+    from_claims_hash: comparison?.from_claims_hash,
+    to_claims_hash: comparison?.to_claims_hash,
+    changed_claim_ids: comparison?.changed_claim_ids,
+  });
+};
+
+const claimScopedLineagePresentable = (binding, envelope, lineage, resolutions) => {
   if (lineage.level !== 'material') return lineage.presentable;
   if (!Array.isArray(binding?.claim_ids) || binding.claim_ids.length === 0) return false;
   const comparison = binding.claim_change;
   if (!comparison || comparison.from_claims_hash !== binding.article_ref?.claims_hash ||
       comparison.to_claims_hash !== envelope?.article_ref?.claims_hash ||
-      !Array.isArray(comparison.changed_claim_ids)) return false;
+      !Array.isArray(comparison.changed_claim_ids) ||
+      !claimChangeMatchesVerifiedEvidence(binding, resolutions)) return false;
   return !binding.claim_ids.some((id) => comparison.changed_claim_ids.includes(id));
 };
-const hasVerifiedClaimComparison = (binding, envelope, lineage) => {
+const hasVerifiedClaimComparison = (binding, envelope, lineage, resolutions) => {
   const comparison = binding?.claim_change;
   return lineage.level === 'material' && Array.isArray(binding?.claim_ids) &&
     binding.claim_ids.length > 0 && comparison?.from_claims_hash === binding.article_ref?.claims_hash &&
     comparison?.to_claims_hash === envelope?.article_ref?.claims_hash &&
-    Array.isArray(comparison?.changed_claim_ids);
+    Array.isArray(comparison?.changed_claim_ids) &&
+    claimChangeMatchesVerifiedEvidence(binding, resolutions);
 };
 
 function duplicateKeyPath(serialized) {
@@ -711,13 +725,16 @@ function verifyJourneyEnvelope(envelope, {
       }
       if (binding?.claim_change) {
         const comparison = binding.claim_change;
-        const idsValid = Array.isArray(comparison.changed_claim_ids) &&
+        const idsValid = Array.isArray(comparison.changed_claim_ids) && comparison.changed_claim_ids.length > 0 &&
           new Set(comparison.changed_claim_ids).size === comparison.changed_claim_ids.length;
         if (!idsValid || comparison.from_claims_hash !== binding.article_ref?.claims_hash ||
             comparison.to_claims_hash !== envelope.article_ref?.claims_hash ||
-            comparison.from_claims_hash === comparison.to_claims_hash) {
+            comparison.from_claims_hash === comparison.to_claims_hash || !comparison.record_ref) {
           issues.push(issue(CODES.HANDOFF_INVALID, `$.asset_bindings[${index}].claim_change`,
             'claim comparison must uniquely bind the visual approval baseline to the current claims revision'));
+        } else if (!claimChangeMatchesVerifiedEvidence(binding, resolutions)) {
+          issues.push(issue(CODES.HANDOFF_INVALID, `$.asset_bindings[${index}].claim_change.record_ref`,
+            'claim comparison must match the independently hash-verified claim change record'));
         }
       }
       if (binding?.receipt_artifact_index !== index) {
@@ -743,9 +760,10 @@ function verifyJourneyEnvelope(envelope, {
       }
       if (envelope.article_ref && (derivedIndex ?? -1) >= PROGRESS_INDEX.get('ASSETS_LOCKED')) {
         const lineage = classifyArtifact({ article_ref: binding?.article_ref }, articleForLineage(envelope.article_ref));
-        if (!claimScopedLineagePresentable(binding, envelope, lineage)) {
+        if (!claimScopedLineagePresentable(binding, envelope, lineage, resolutions)) {
           actualStale = true;
-          if (envelope.state !== 'STALE_REVISION' && !hasVerifiedClaimComparison(binding, envelope, lineage)) {
+          if (envelope.state !== 'STALE_REVISION' &&
+              !hasVerifiedClaimComparison(binding, envelope, lineage, resolutions)) {
             issues.push(issue(CODES.STALE_REVISION, `$.asset_bindings[${index}].article_ref`,
               `the recorded visual approval is ${lineage.level} against the current article revision`));
           }
@@ -1242,7 +1260,7 @@ export function assessAssetApproval(envelope, receiptArtifactIndex, {
   const externallyBound = same(decision.record, visualDecisionRecord(binding, decision.record));
   const selfBound = binding.visual_approval.binding_sha256 ===
     approvalBindingSha256(binding.article_ref, [binding.asset_sha256]);
-  const presentable = claimScopedLineagePresentable(binding, envelope, lineage);
+  const presentable = claimScopedLineagePresentable(binding, envelope, lineage, verification.resolutions);
   if (assetDigest !== binding.asset_sha256 || !presentable || !selfBound || !externallyBound) {
     return { approval_valid: false, presentable: false, code: CODES.STALE_REVISION, lineage };
   }

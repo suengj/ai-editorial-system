@@ -201,10 +201,13 @@ article claims revision. The comparison start must equal the approved
 visual's claims hash and the end must equal the current article's claims hash.
 The producer must retain the cumulative set across revisions until that visual
 is reapproved. A visual whose approved `claim_ids` intersect that set is stale;
-an unaffected visual remains presentable. Missing dependencies or comparison
-evidence keeps whole-article invalidation as the safe default. The envelope
-checks endpoints and bindings but cannot independently prove the upstream
-claim diff from hashes alone. The legacy envelope-level `changed_claim_ids`
+an unaffected visual remains presentable. Each comparison also carries a
+`record_ref` to an independently hash-verified upstream claim-change record in
+`suengj/intelligence-library`. That record must exactly bind the visual asset
+digest, baseline and current claims hashes, and cumulative changed IDs.
+Envelope-only IDs or mismatched evidence are rejected; missing dependencies or
+comparison evidence keeps whole-article invalidation as the safe default. The
+verifier cannot derive a claim diff from hashes alone. The legacy envelope-level `changed_claim_ids`
 field remains accepted for compatibility but cannot scope presentation by
 itself. Existing envelopes remain schema-valid because the extension fields
 are optional.
