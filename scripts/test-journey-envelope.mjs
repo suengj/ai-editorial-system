@@ -109,6 +109,36 @@ function staleTextEnvelope({ material = false } = {}) {
   return envelope;
 }
 
+function bindClaimChangeEvidence(binding, changedClaimIds, suffix) {
+  const record = {
+    asset_sha256: binding.asset_sha256,
+    from_claims_hash: binding.claim_change.from_claims_hash,
+    to_claims_hash: binding.claim_change.to_claims_hash,
+    changed_claim_ids: changedClaimIds,
+  };
+  const ref = {
+    repository: 'suengj/intelligence-library',
+    commit: '7'.repeat(40),
+    path: `reviews/claim-changes/${suffix}.json`,
+    content_sha256: canonicalRecordSha256(record),
+  };
+  binding.claim_change.changed_claim_ids = changedClaimIds;
+  binding.claim_change.record_ref = ref;
+  return { ref, record };
+}
+
+function optionsWithClaimChangeEvidence(evidence) {
+  const fallback = referenceOptions.resolveExternalRecord;
+  return {
+    resolveExternalRecord(ref) {
+      const found = evidence.find(({ ref: candidate }) =>
+        candidate.repository === ref.repository && candidate.commit === ref.commit &&
+        candidate.path === ref.path && candidate.content_sha256 === ref.content_sha256);
+      return found ? JSON.stringify(found.record) : fallback(ref);
+    },
+  };
+}
+
 console.log('acceptance 1 — cross-record round-trip identity agreement');
 {
   const envelopeIssues = codes(base);
@@ -224,6 +254,102 @@ console.log('acceptance 4 — material claim change stales the dependent visual'
   check(`claims_hash change is material and fails named ${CODES.STALE_REVISION} from a validator-clean stale baseline`,
     codes(stale).length === 0 && result.lineage?.level === 'material' && !result.presentable &&
       !result.approval_valid && result.code === CODES.STALE_REVISION, JSON.stringify(result));
+  const scoped = staleTextEnvelope({ material: true });
+  const firstRevisionEvidence = scoped.asset_bindings.map((binding, index) => {
+    binding.claim_change = {
+      from_claims_hash: binding.article_ref.claims_hash,
+      to_claims_hash: scoped.article_ref.claims_hash,
+    };
+    return bindClaimChangeEvidence(binding, ['c1'], `revision-5-${index}`);
+  });
+  scoped.state = CODES.STALE_REVISION;
+  scoped.last_good_state = 'LIVE_VERIFIED';
+  scoped.interruption = {
+    code: CODES.STALE_REVISION,
+    observed_at: '2026-09-11T06:31:00Z',
+  };
+  const scopedOptions = optionsWithClaimChangeEvidence(firstRevisionEvidence);
+  const affected = assessAssetApproval(scoped, 0, {
+    articleRef: scoped.article_ref, assetDigest: scoped.asset_bindings[0].asset_sha256,
+    referenceOptions: scopedOptions,
+  });
+  const unrelated = assessAssetApproval(scoped, 1, {
+    articleRef: scoped.article_ref, assetDigest: scoped.asset_bindings[1].asset_sha256,
+    referenceOptions: scopedOptions,
+  });
+  check('claim_ids scopes a changed-claim set to only the intersecting visual',
+    codes(scoped, scopedOptions).length === 0 && !affected.presentable && affected.code === CODES.STALE_REVISION &&
+      unrelated.presentable && unrelated.approval_valid,
+    JSON.stringify({ codes: codes(scoped, scopedOptions), affected, unrelated }));
+  const revision3 = clone(scoped);
+  revision3.article_ref.version_number += 1;
+  revision3.article_ref.content_hash = '2'.repeat(64);
+  revision3.article_ref.claims_hash = '2'.repeat(64);
+  revision3.journey_binding_sha256 = journeyBindingSha256(
+    revision3.candidate, revision3.dossier, revision3.article_ref,
+  );
+  for (const binding of revision3.asset_bindings) {
+    binding.claim_change.to_claims_hash = revision3.article_ref.claims_hash;
+  }
+  const cumulativeEvidence = revision3.asset_bindings.map((binding, index) =>
+    bindClaimChangeEvidence(binding, ['c1', 'c2'], `revision-6-${index}`));
+  const revision3Options = optionsWithClaimChangeEvidence(cumulativeEvidence);
+  const onceAffectedAgain = assessAssetApproval(revision3, 1, {
+    articleRef: revision3.article_ref, assetDigest: revision3.asset_bindings[1].asset_sha256,
+    referenceOptions: revision3Options,
+  });
+  check('later revisions require cumulative changes from the same visual approval baseline',
+    codes(revision3, revision3Options).length === 0 && !onceAffectedAgain.presentable &&
+      !onceAffectedAgain.approval_valid && onceAffectedAgain.code === CODES.STALE_REVISION,
+    JSON.stringify(onceAffectedAgain));
+  const latestDeltaOnly = clone(revision3);
+  latestDeltaOnly.changed_claim_ids = ['c2'];
+  for (const binding of latestDeltaOnly.asset_bindings) {
+    binding.claim_change.to_claims_hash = latestDeltaOnly.article_ref.claims_hash;
+    binding.claim_change.changed_claim_ids = ['c2'];
+  }
+  const latestDeltaAssessment = assessAssetApproval(latestDeltaOnly, 0, {
+    articleRef: latestDeltaOnly.article_ref,
+    assetDigest: latestDeltaOnly.asset_bindings[0].asset_sha256,
+    referenceOptions: revision3Options,
+  });
+  check('revision 6 reporting only c2 cannot revive a visual when verified cumulative evidence includes c1',
+    codes(latestDeltaOnly, revision3Options).includes(CODES.HANDOFF_INVALID) &&
+      !latestDeltaAssessment.presentable && !latestDeltaAssessment.approval_valid,
+    JSON.stringify(latestDeltaAssessment));
+  const emptyDelta = clone(scoped);
+  const emptyDeltaEvidence = emptyDelta.asset_bindings.map((binding, index) =>
+    bindClaimChangeEvidence(binding, [], `revision-5-empty-${index}`));
+  const emptyDeltaOptions = optionsWithClaimChangeEvidence(emptyDeltaEvidence);
+  check('an empty delta cannot scope a material claims-hash change',
+    codes(emptyDelta, emptyDeltaOptions).includes(CODES.HANDOFF_INVALID));
+  const wrongBaseline = clone(revision3);
+  wrongBaseline.asset_bindings[1].claim_change.from_claims_hash = '1'.repeat(64);
+  check('claim comparison endpoints must match the visual approval baseline and current claims hash',
+    codes(wrongBaseline, revision3Options).includes(CODES.HANDOFF_INVALID));
+  const noIds = clone(scoped); delete noIds.asset_bindings[1].claim_ids;
+  const conservative = assessAssetApproval(noIds, 1, {
+    articleRef: noIds.article_ref, assetDigest: noIds.asset_bindings[1].asset_sha256,
+    referenceOptions: scopedOptions,
+  });
+  check('visuals without claim_ids retain whole-article invalidation as the safe default',
+    !conservative.presentable && conservative.code === CODES.STALE_REVISION);
+
+  const affectedPublish = clone(scoped);
+  affectedPublish.state = 'LIVE_VERIFIED';
+  affectedPublish.last_good_state = 'LIVE_VERIFIED';
+  delete affectedPublish.interruption;
+  const affectedIssues = validateJourneyEnvelope(affectedPublish, scopedOptions);
+  const affectedVisualIssue = affectedIssues.some((entry) =>
+    entry.code === CODES.STALE_REVISION && entry.where === '$.asset_bindings[0].article_ref');
+  const affectedGate = assessPublishGate(affectedPublish, {
+    articleRef: affectedPublish.article_ref,
+    assetDigests: affectedPublish.approved_revision.asset_digests,
+    referenceOptions: scopedOptions,
+  });
+  check('verified changed claim c1 remains a named stale visual and blocks the publish gate',
+    affectedVisualIssue && !affectedGate.accepted && affectedGate.code === CODES.STALE_REVISION,
+    JSON.stringify({ affectedIssues, affectedGate }));
 }
 
 console.log('acceptance 5 — exact ordered asset set and self-binding approvals');
@@ -465,16 +591,52 @@ console.log('acceptance 9 — exact downstream interop, authority, and command w
     manifest: records.publish_run.record.manifest,
     receipt: records.publish_run.record.receipt,
     result: literalResult,
+    approvedAssetDigests: base.asset_bindings.map((binding) => binding.asset_sha256),
+    mediaBinding: base.media_binding,
   });
   check('literal suengj-com LIVE_VERIFIED result with prefixed digests is accepted unchanged',
     interopBaseline.length === 0 && JSON.stringify(literalResult) === JSON.stringify(base.live_verification),
     JSON.stringify(interopBaseline));
+  const distinctReceipt = clone(records.publish_run.record.receipt);
+  distinctReceipt.production_sha256 = `sha256:${'a'.repeat(64)}`;
+  const distinctResult = clone(literalResult);
+  distinctResult.media_sha256 = distinctReceipt.production_sha256;
+  const distinctMediaBinding = {
+    master_sha256: distinctReceipt.master_sha256,
+    production_sha256: distinctReceipt.production_sha256,
+  };
+  const distinctIssues = validateSUE789Interop({
+    manifest: records.publish_run.record.manifest,
+    receipt: distinctReceipt,
+    result: distinctResult,
+    approvedAssetDigests: base.asset_bindings.map((binding) => binding.asset_sha256),
+    mediaBinding: distinctMediaBinding,
+  });
+  check('a distinct production derivative remains linked to its approved master digest',
+    distinctIssues.length === 0 && distinctReceipt.master_sha256 !== distinctReceipt.production_sha256 &&
+      distinctResult.media_sha256 === distinctReceipt.production_sha256,
+    JSON.stringify(distinctIssues));
+  const coordinatedUnapprovedMaster = `sha256:${'0'.repeat(64)}`;
+  distinctReceipt.master_sha256 = coordinatedUnapprovedMaster;
+  distinctMediaBinding.master_sha256 = coordinatedUnapprovedMaster;
+  const coordinatedSubstitutionCodes = validateSUE789Interop({
+    manifest: records.publish_run.record.manifest,
+    receipt: distinctReceipt,
+    result: distinctResult,
+    approvedAssetDigests: base.asset_bindings.map((binding) => binding.asset_sha256),
+    mediaBinding: distinctMediaBinding,
+  }).map((entry) => entry.code);
+  check(`coordinated receipt and envelope substitution to an unapproved master fails ${CODES.MEDIA_DIGEST_MISMATCH}`,
+    coordinatedSubstitutionCodes.includes(CODES.MEDIA_DIGEST_MISMATCH),
+    `got=[${[...new Set(coordinatedSubstitutionCodes)].join(', ')}]`);
   const bareResult = clone(literalResult);
   bareResult.article_body_sha256 = bareResult.article_body_sha256.slice('sha256:'.length);
   const bareCodes = validateSUE789Interop({
     manifest: records.publish_run.record.manifest,
     receipt: records.publish_run.record.receipt,
     result: bareResult,
+    approvedAssetDigests: base.asset_bindings.map((binding) => binding.asset_sha256),
+    mediaBinding: base.media_binding,
   }).map((entry) => entry.code);
   check(`bare live digest fails named ${CODES.HANDOFF_INVALID} from a clean literal interop baseline`,
     interopBaseline.length === 0 && bareCodes.includes(CODES.HANDOFF_INVALID));
@@ -485,6 +647,8 @@ console.log('acceptance 9 — exact downstream interop, authority, and command w
     manifest: records.publish_run.record.manifest,
     receipt: records.publish_run.record.receipt,
     result: mismatchedMedia,
+    approvedAssetDigests: base.asset_bindings.map((binding) => binding.asset_sha256),
+    mediaBinding: base.media_binding,
   }).map((entry) => entry.code);
   check(`live/receipt media drift fails named ${CODES.MEDIA_DIGEST_MISMATCH} from a clean interop baseline`,
     interopBaseline.length === 0 && mismatchedMediaCodes.includes(CODES.MEDIA_DIGEST_MISMATCH));
@@ -495,6 +659,8 @@ console.log('acceptance 9 — exact downstream interop, authority, and command w
     manifest: sha64Manifest,
     receipt: records.publish_run.record.receipt,
     result: literalResult,
+    approvedAssetDigests: base.asset_bindings.map((binding) => binding.asset_sha256),
+    mediaBinding: base.media_binding,
   });
   check('a downstream-valid 64-character expected_source_sha is accepted',
     interopBaseline.length === 0 && sha64Issues.length === 0, JSON.stringify(sha64Issues));
@@ -505,6 +671,8 @@ console.log('acceptance 9 — exact downstream interop, authority, and command w
     manifest: shortManifest,
     receipt: records.publish_run.record.receipt,
     result: literalResult,
+    approvedAssetDigests: base.asset_bindings.map((binding) => binding.asset_sha256),
+    mediaBinding: base.media_binding,
   }).map((entry) => entry.code);
   check(`a short expected_source_sha fails named ${CODES.HANDOFF_INVALID} from a clean interop baseline`,
     interopBaseline.length === 0 && shortShaCodes.includes(CODES.HANDOFF_INVALID));
@@ -518,6 +686,17 @@ console.log('acceptance 9 — exact downstream interop, authority, and command w
     ['handoff receipt', (e) => { e.handoff_receipt_ref.repository = 'attacker/fake'; }],
     ['publish approval', (e) => { e.approved_revision.record_ref.repository = 'attacker/fake'; }],
     ['visual review', (e) => { e.asset_bindings[0].visual_approval.record_ref.repository = 'attacker/fake'; }],
+    ['claim change evidence', (e) => {
+      e.asset_bindings[0].claim_change = {
+        from_claims_hash: e.asset_bindings[0].article_ref.claims_hash,
+        to_claims_hash: e.article_ref.claims_hash,
+        changed_claim_ids: ['c1'],
+        record_ref: {
+          repository: 'attacker/fake', commit: '7'.repeat(40), path: 'claim-change.json',
+          content_sha256: '8'.repeat(64),
+        },
+      };
+    }],
     ['publish run', (e) => { e.publish_run.record_ref.repository = 'attacker/fake'; }],
     ['source commit', (e) => { e.source_commit.repository = 'attacker/fake'; }],
     ['deployment', (e) => { e.deployed_artifact.record_ref.repository = 'attacker/fake'; }],
@@ -526,8 +705,8 @@ console.log('acceptance 9 — exact downstream interop, authority, and command w
   for (const [name, mutate] of authorityMutations) {
     assertNamedMutation(`${name} pointer to a non-authoritative repository`, CODES.HANDOFF_INVALID, mutate);
   }
-  check('one declarative authority registry covers all ten durable pointer families',
-    REFERENCE_AUTHORITIES.length === 11 &&
+  check('one declarative authority registry covers all twelve durable pointer families',
+    REFERENCE_AUTHORITIES.length === 12 &&
       new Set(REFERENCE_AUTHORITIES.map((entry) => entry.repository)).size === 3);
 
   const pkg = JSON.parse(readFileSync(resolve(ROOT, 'package.json'), 'utf8'));
@@ -957,6 +1136,21 @@ console.log('contract boundaries — refs and digests only');
   check('publish decision binding recomputes from the exact article tuple and ordered asset set',
     approvalBindingSha256(base.approved_revision.article_ref, base.approved_revision.asset_digests) ===
       base.approved_revision.binding_sha256);
+  assertNamedMutation('live media master digest maps to no approved asset', CODES.MEDIA_DIGEST_MISMATCH,
+    (envelope) => { envelope.media_binding.master_sha256 = `sha256:${'0'.repeat(64)}`; });
+  assertNamedMutation('duplicate per-visual claim ids are rejected', CODES.HANDOFF_INVALID,
+    (envelope) => { envelope.asset_bindings[0].claim_ids = ['c1', 'c1']; });
+  check('strict schema accepts optional claim_ids on an asset binding',
+    codes(base).length === 0 && Array.isArray(base.asset_bindings[0].claim_ids));
+  const substitutedClaims = clone(base);
+  substitutedClaims.asset_bindings[0].claim_ids = ['c2'];
+  check('metadata-only claim dependency substitution fails against the verified visual approval record',
+    codes(substitutedClaims).includes(CODES.STALE_REVISION));
+  const legacy = atProgress('ARTIFACT_DEPLOYED');
+  delete legacy.changed_claim_ids;
+  legacy.asset_bindings.forEach((binding) => { delete binding.claim_ids; });
+  check('pre-extension envelopes without claim or media bindings remain valid before live media read-back',
+    codes(legacy).length === 0);
 }
 
 console.log(failures === 0

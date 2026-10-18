@@ -180,6 +180,41 @@ digest that disagrees with the receipt returns `MEDIA_DIGEST_MISMATCH`.
 `expected_source_sha` is exactly 40–64 lowercase hex, matching the merged
 SUE-789 downstream contract.
 
+When live media is present, the materialization receipt must also carry its
+`master_sha256`. The envelope's optional `media_binding` copies the
+`master_sha256` → `production_sha256` pair from that receipt. Validation
+requires the master (after removing only its `sha256:` prefix) to equal one of
+the ordered, owner-approved `asset_bindings[].asset_sha256` values, and requires
+the production digest to equal both the receipt and live read-back. A read-back
+whose derivative has no approved master mapping fails with
+`MEDIA_DIGEST_MISMATCH`. Old records without media read-back remain valid; a
+media read-back without this lineage proof does not.
+
+### Per-visual claim dependencies (SUE-787 F13)
+
+An `asset_bindings[]` entry may carry `claim_ids` for the claims asserted by
+that visual. The IDs are repeated in the independently hash-verified visual
+approval record, so changing only envelope metadata fails validation. When
+claims change, `claim_change` records `from_claims_hash`, `to_claims_hash`, and
+the cumulative changed IDs from that visual's approval baseline to the current
+article claims revision. The comparison start must equal the approved
+visual's claims hash and the end must equal the current article's claims hash.
+The producer must retain the cumulative set across revisions until that visual
+is reapproved. A visual whose approved `claim_ids` intersect that set is stale;
+an unaffected visual remains presentable. While an affected visual is recorded
+under an active journey state, validation emits `STALE_REVISION` and the
+publish gate refuses the envelope. Reapproving the affected visual is required
+before publishing can resume. Each comparison also carries a
+`record_ref` to an independently hash-verified upstream claim-change record in
+`suengj/intelligence-library`. That record must exactly bind the visual asset
+digest, baseline and current claims hashes, and cumulative changed IDs.
+Envelope-only IDs or mismatched evidence are rejected; missing dependencies or
+comparison evidence keeps whole-article invalidation as the safe default. The
+verifier cannot derive a claim diff from hashes alone. The legacy envelope-level `changed_claim_ids`
+field remains accepted for compatibility but cannot scope presentation by
+itself. Existing envelopes remain schema-valid because the extension fields
+are optional.
+
 ## Authority and refusal rules
 
 `REFERENCE_AUTHORITIES` is the single declarative registry for every durable
@@ -302,7 +337,9 @@ The downstream publication-state reader calls the stage `SOURCE_MERGED`. The
 writer CLI accepts `--to SOURCE_MERGED` as an alias of `SOURCE_COMMITTED` and
 always persists and reports `SOURCE_COMMITTED`. The schema, the state list, and
 the validator are unchanged — no existing state is renamed. `DISCOVERY_NOTIFIED`
-is still not an envelope state.
+is not an envelope state: discovery notification has no record in this journey
+contract and would precede `RECEIVED`, so it does not fit the ordered evidence
+model. No existing states are renamed.
 
 ## Validation
 

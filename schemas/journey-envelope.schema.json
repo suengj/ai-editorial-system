@@ -20,6 +20,8 @@
     "handoff_receipt_ref": { "$ref": "#/$defs/file_ref" },
     "approved_revision": { "$ref": "#/$defs/approved_revision" },
     "asset_bindings": { "type": "array", "items": { "$ref": "#/$defs/asset_binding" } },
+    "media_binding": { "$ref": "#/$defs/media_binding" },
+    "changed_claim_ids": { "type": "array", "minItems": 1, "items": { "type": "string", "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$" } },
     "publish_run": { "$ref": "#/$defs/publish_run" },
     "source_commit": { "$ref": "#/$defs/source_commit" },
     "deployed_artifact": { "$ref": "#/$defs/deployed_artifact" },
@@ -122,8 +124,31 @@
       "properties": {
         "receipt_artifact_index": { "type": "integer", "minimum": 0 },
         "asset_sha256": { "$ref": "#/$defs/digest" },
+        "claim_ids": { "type": "array", "minItems": 1, "items": { "type": "string", "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$" } },
+        "claim_change": {
+          "description": "Cumulative claim comparison from this visual approval baseline to the current article claims revision.",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["from_claims_hash", "to_claims_hash", "changed_claim_ids", "record_ref"],
+          "properties": {
+            "from_claims_hash": { "$ref": "#/$defs/digest" },
+            "to_claims_hash": { "$ref": "#/$defs/digest" },
+            "changed_claim_ids": { "type": "array", "minItems": 1, "items": { "type": "string", "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$" } },
+            "record_ref": { "$ref": "#/$defs/file_ref" }
+          }
+        },
         "article_ref": { "$ref": "#/$defs/article_ref" },
         "visual_approval": { "$ref": "#/$defs/decision_ref" }
+      }
+    },
+    "media_binding": {
+      "description": "Materialized media lineage from the approved master asset to the production derivative.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["master_sha256", "production_sha256"],
+      "properties": {
+        "master_sha256": { "$ref": "#/$defs/prefixed_digest" },
+        "production_sha256": { "$ref": "#/$defs/prefixed_digest" }
       }
     },
     "publish_run": {

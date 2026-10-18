@@ -88,8 +88,12 @@
         "commit": "a996889"
       },
       "artifacts": [
-        { "asset_sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee" },
-        { "asset_sha256": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff" }
+        {
+          "asset_sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+        },
+        {
+          "asset_sha256": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+        }
       ]
     }
   },
@@ -122,9 +126,9 @@
     {
       "record_ref": {
         "repository": "suengj/ai-editorial-system",
-        "commit": "4f3fc2ce086f65a8536189eec09990771fea7292",
+        "commit": "d677144e526edb4501051eb69b2e8311f9a1f15e",
         "path": "scripts/fixtures/journey-envelope/records/visual-approval-main.json",
-        "content_sha256": "9ac95a5d357d8c7f42aa06332adcadfd9edb8425405243ef792f536b295a970d"
+        "content_sha256": "709d48bd2617ef256ce1d615400791d5bd928bc6b68ebebe0cda3c280d0050fc"
       },
       "record": {
         "approved_by": "owner",
@@ -136,16 +140,21 @@
           "claims_hash": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
           "commit": "9876543"
         },
-        "asset_digests": ["eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"],
-        "binding_sha256": "a5460924a3ea80f2f547f318d4a5da51ccdb87067217587ab1c38a7b4bc56e0c"
+        "asset_digests": [
+          "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+        ],
+        "binding_sha256": "a5460924a3ea80f2f547f318d4a5da51ccdb87067217587ab1c38a7b4bc56e0c",
+        "claim_ids": [
+          "c1"
+        ]
       }
     },
     {
       "record_ref": {
         "repository": "suengj/ai-editorial-system",
-        "commit": "4f3fc2ce086f65a8536189eec09990771fea7292",
+        "commit": "d677144e526edb4501051eb69b2e8311f9a1f15e",
         "path": "scripts/fixtures/journey-envelope/records/visual-approval-detail.json",
-        "content_sha256": "9ff60baf2c6425925b23a4e43114eec73c8d0bb2f2da7cc283d90cee3ab67c72"
+        "content_sha256": "b510ff844b06def76ed0e2232e7537fa5e28eff5336ca5f7ea63a1f5cea636d9"
       },
       "record": {
         "approved_by": "owner",
@@ -157,8 +166,13 @@
           "claims_hash": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
           "commit": "a996889"
         },
-        "asset_digests": ["ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"],
-        "binding_sha256": "eec56526d76008050aea28106cc9ae8a308d4d9a7c0ffacc1e151ef110f1717b"
+        "asset_digests": [
+          "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+        ],
+        "binding_sha256": "eec56526d76008050aea28106cc9ae8a308d4d9a7c0ffacc1e151ef110f1717b",
+        "claim_ids": [
+          "c2"
+        ]
       }
     }
   ],
@@ -167,7 +181,7 @@
       "repository": "suengj/suengj-com",
       "commit": "a4e9022",
       "path": "handoffs/agent-cost-curve/publish-run.json",
-      "content_sha256": "891b25171e398dbaa8fa8375920aaa1edf3d09f99d4c4bf681261609f9f9e06e"
+      "content_sha256": "38fb093aac919cc306c214601a5d12fec08c7f19b1045a3fe7e28aa032d30b50"
     },
     "record": {
       "run_id": "publish-run:agent-cost-curve:20260911t061500z",
@@ -180,7 +194,8 @@
       "receipt": {
         "article_ref": "src/content/agent-cost-curve.md",
         "production_ref": "/media/agent-cost-curve.png",
-        "production_sha256": "sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+        "production_sha256": "sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+        "master_sha256": "sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
       }
     }
   },
