@@ -124,7 +124,18 @@
       "properties": {
         "receipt_artifact_index": { "type": "integer", "minimum": 0 },
         "asset_sha256": { "$ref": "#/$defs/digest" },
-        "claim_ids": { "type": "array", "items": { "type": "string", "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$" } },
+        "claim_ids": { "type": "array", "minItems": 1, "items": { "type": "string", "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$" } },
+        "claim_change": {
+          "description": "Cumulative claim comparison from this visual approval baseline to the current article claims revision.",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["from_claims_hash", "to_claims_hash", "changed_claim_ids"],
+          "properties": {
+            "from_claims_hash": { "$ref": "#/$defs/digest" },
+            "to_claims_hash": { "$ref": "#/$defs/digest" },
+            "changed_claim_ids": { "type": "array", "items": { "type": "string", "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$" } }
+          }
+        },
         "article_ref": { "$ref": "#/$defs/article_ref" },
         "visual_approval": { "$ref": "#/$defs/decision_ref" }
       }

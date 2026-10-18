@@ -225,7 +225,13 @@ console.log('acceptance 4 — material claim change stales the dependent visual'
     codes(stale).length === 0 && result.lineage?.level === 'material' && !result.presentable &&
       !result.approval_valid && result.code === CODES.STALE_REVISION, JSON.stringify(result));
   const scoped = staleTextEnvelope({ material: true });
-  scoped.changed_claim_ids = ['c1'];
+  for (const binding of scoped.asset_bindings) {
+    binding.claim_change = {
+      from_claims_hash: binding.article_ref.claims_hash,
+      to_claims_hash: scoped.article_ref.claims_hash,
+      changed_claim_ids: ['c1'],
+    };
+  }
   const affected = assessAssetApproval(scoped, 0, {
     articleRef: scoped.article_ref, assetDigest: scoped.asset_bindings[0].asset_sha256,
     referenceOptions,
@@ -238,6 +244,44 @@ console.log('acceptance 4 — material claim change stales the dependent visual'
     codes(scoped).length === 0 && !affected.presentable && affected.code === CODES.STALE_REVISION &&
       unrelated.presentable && unrelated.approval_valid,
     JSON.stringify({ affected: affected.code, unrelated: unrelated.code }));
+  const revision3 = clone(scoped);
+  revision3.article_ref.version_number += 1;
+  revision3.article_ref.content_hash = '2'.repeat(64);
+  revision3.article_ref.claims_hash = '2'.repeat(64);
+  revision3.journey_binding_sha256 = journeyBindingSha256(
+    revision3.candidate, revision3.dossier, revision3.article_ref,
+  );
+  for (const binding of revision3.asset_bindings) {
+    binding.claim_change.to_claims_hash = revision3.article_ref.claims_hash;
+    binding.claim_change.changed_claim_ids = ['c1', 'c2'];
+  }
+  const onceAffectedAgain = assessAssetApproval(revision3, 1, {
+    articleRef: revision3.article_ref, assetDigest: revision3.asset_bindings[1].asset_sha256,
+    referenceOptions,
+  });
+  check('later revisions require cumulative changes from the same visual approval baseline',
+    codes(revision3).length === 0 && !onceAffectedAgain.presentable &&
+      !onceAffectedAgain.approval_valid && onceAffectedAgain.code === CODES.STALE_REVISION,
+    JSON.stringify(onceAffectedAgain));
+  const latestDeltaOnly = clone(revision3);
+  latestDeltaOnly.changed_claim_ids = ['c2'];
+  for (const binding of latestDeltaOnly.asset_bindings) {
+    binding.claim_change.to_claims_hash = scoped.article_ref.claims_hash;
+    binding.claim_change.changed_claim_ids = ['c1'];
+  }
+  const latestDeltaAssessment = assessAssetApproval(latestDeltaOnly, 1, {
+    articleRef: latestDeltaOnly.article_ref,
+    assetDigest: latestDeltaOnly.asset_bindings[1].asset_sha256,
+    referenceOptions,
+  });
+  check('a later revision carrying only its latest changed_claim_ids cannot revive a visual',
+    codes(latestDeltaOnly).includes(CODES.HANDOFF_INVALID) &&
+      !latestDeltaAssessment.presentable && !latestDeltaAssessment.approval_valid,
+    JSON.stringify(latestDeltaAssessment));
+  const wrongBaseline = clone(revision3);
+  wrongBaseline.asset_bindings[1].claim_change.from_claims_hash = '1'.repeat(64);
+  check('claim comparison endpoints must match the visual approval baseline and current claims hash',
+    codes(wrongBaseline).includes(CODES.HANDOFF_INVALID));
   const noIds = clone(scoped); delete noIds.asset_bindings[1].claim_ids;
   const conservative = assessAssetApproval(noIds, 1, {
     articleRef: noIds.article_ref, assetDigest: noIds.asset_bindings[1].asset_sha256,
@@ -492,6 +536,38 @@ console.log('acceptance 9 — exact downstream interop, authority, and command w
   check('literal suengj-com LIVE_VERIFIED result with prefixed digests is accepted unchanged',
     interopBaseline.length === 0 && JSON.stringify(literalResult) === JSON.stringify(base.live_verification),
     JSON.stringify(interopBaseline));
+  const distinctReceipt = clone(records.publish_run.record.receipt);
+  distinctReceipt.production_sha256 = `sha256:${'a'.repeat(64)}`;
+  const distinctResult = clone(literalResult);
+  distinctResult.media_sha256 = distinctReceipt.production_sha256;
+  const distinctMediaBinding = {
+    master_sha256: distinctReceipt.master_sha256,
+    production_sha256: distinctReceipt.production_sha256,
+  };
+  const distinctIssues = validateSUE789Interop({
+    manifest: records.publish_run.record.manifest,
+    receipt: distinctReceipt,
+    result: distinctResult,
+    approvedAssetDigests: base.asset_bindings.map((binding) => binding.asset_sha256),
+    mediaBinding: distinctMediaBinding,
+  });
+  check('a distinct production derivative remains linked to its approved master digest',
+    distinctIssues.length === 0 && distinctReceipt.master_sha256 !== distinctReceipt.production_sha256 &&
+      distinctResult.media_sha256 === distinctReceipt.production_sha256,
+    JSON.stringify(distinctIssues));
+  const coordinatedUnapprovedMaster = `sha256:${'0'.repeat(64)}`;
+  distinctReceipt.master_sha256 = coordinatedUnapprovedMaster;
+  distinctMediaBinding.master_sha256 = coordinatedUnapprovedMaster;
+  const coordinatedSubstitutionCodes = validateSUE789Interop({
+    manifest: records.publish_run.record.manifest,
+    receipt: distinctReceipt,
+    result: distinctResult,
+    approvedAssetDigests: base.asset_bindings.map((binding) => binding.asset_sha256),
+    mediaBinding: distinctMediaBinding,
+  }).map((entry) => entry.code);
+  check(`coordinated receipt and envelope substitution to an unapproved master fails ${CODES.MEDIA_DIGEST_MISMATCH}`,
+    coordinatedSubstitutionCodes.includes(CODES.MEDIA_DIGEST_MISMATCH),
+    `got=[${[...new Set(coordinatedSubstitutionCodes)].join(', ')}]`);
   const bareResult = clone(literalResult);
   bareResult.article_body_sha256 = bareResult.article_body_sha256.slice('sha256:'.length);
   const bareCodes = validateSUE789Interop({
@@ -994,6 +1070,10 @@ console.log('contract boundaries — refs and digests only');
     (envelope) => { envelope.asset_bindings[0].claim_ids = ['c1', 'c1']; });
   check('strict schema accepts optional claim_ids on an asset binding',
     codes(base).length === 0 && Array.isArray(base.asset_bindings[0].claim_ids));
+  const substitutedClaims = clone(base);
+  substitutedClaims.asset_bindings[0].claim_ids = ['c2'];
+  check('metadata-only claim dependency substitution fails against the verified visual approval record',
+    codes(substitutedClaims).includes(CODES.STALE_REVISION));
   const legacy = atProgress('ARTIFACT_DEPLOYED');
   delete legacy.changed_claim_ids;
   legacy.asset_bindings.forEach((binding) => { delete binding.claim_ids; });

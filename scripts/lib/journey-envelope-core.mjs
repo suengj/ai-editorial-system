@@ -120,10 +120,20 @@ const sha256Json = (value) => createHash('sha256')
 const present = (value) => value !== undefined;
 const meaningful = (value) => typeof value === 'string' && value.trim().length > 0;
 const claimScopedLineagePresentable = (binding, envelope, lineage) => {
-  if (lineage.level !== 'material' || !Array.isArray(envelope?.changed_claim_ids) ||
-      envelope.changed_claim_ids.length === 0 || !Array.isArray(binding?.claim_ids) ||
-      binding.claim_ids.length === 0) return lineage.presentable;
-  return !binding.claim_ids.some((id) => envelope.changed_claim_ids.includes(id));
+  if (lineage.level !== 'material') return lineage.presentable;
+  if (!Array.isArray(binding?.claim_ids) || binding.claim_ids.length === 0) return false;
+  const comparison = binding.claim_change;
+  if (!comparison || comparison.from_claims_hash !== binding.article_ref?.claims_hash ||
+      comparison.to_claims_hash !== envelope?.article_ref?.claims_hash ||
+      !Array.isArray(comparison.changed_claim_ids)) return false;
+  return !binding.claim_ids.some((id) => comparison.changed_claim_ids.includes(id));
+};
+const hasVerifiedClaimComparison = (binding, envelope, lineage) => {
+  const comparison = binding?.claim_change;
+  return lineage.level === 'material' && Array.isArray(binding?.claim_ids) &&
+    binding.claim_ids.length > 0 && comparison?.from_claims_hash === binding.article_ref?.claims_hash &&
+    comparison?.to_claims_hash === envelope?.article_ref?.claims_hash &&
+    Array.isArray(comparison?.changed_claim_ids);
 };
 
 function duplicateKeyPath(serialized) {
@@ -699,6 +709,17 @@ function verifyJourneyEnvelope(envelope, {
         issues.push(issue(CODES.HANDOFF_INVALID, `$.asset_bindings[${index}].claim_ids`,
           'claim_ids must not contain duplicates'));
       }
+      if (binding?.claim_change) {
+        const comparison = binding.claim_change;
+        const idsValid = Array.isArray(comparison.changed_claim_ids) &&
+          new Set(comparison.changed_claim_ids).size === comparison.changed_claim_ids.length;
+        if (!idsValid || comparison.from_claims_hash !== binding.article_ref?.claims_hash ||
+            comparison.to_claims_hash !== envelope.article_ref?.claims_hash ||
+            comparison.from_claims_hash === comparison.to_claims_hash) {
+          issues.push(issue(CODES.HANDOFF_INVALID, `$.asset_bindings[${index}].claim_change`,
+            'claim comparison must uniquely bind the visual approval baseline to the current claims revision'));
+        }
+      }
       if (binding?.receipt_artifact_index !== index) {
         issues.push(issue(CODES.HANDOFF_INVALID, `$.asset_bindings[${index}].receipt_artifact_index`,
           'asset bindings must be contiguous and ordered exactly like the handoff receipt artifacts'));
@@ -724,7 +745,7 @@ function verifyJourneyEnvelope(envelope, {
         const lineage = classifyArtifact({ article_ref: binding?.article_ref }, articleForLineage(envelope.article_ref));
         if (!claimScopedLineagePresentable(binding, envelope, lineage)) {
           actualStale = true;
-          if (envelope.state !== 'STALE_REVISION') {
+          if (envelope.state !== 'STALE_REVISION' && !hasVerifiedClaimComparison(binding, envelope, lineage)) {
             issues.push(issue(CODES.STALE_REVISION, `$.asset_bindings[${index}].article_ref`,
               `the recorded visual approval is ${lineage.level} against the current article revision`));
           }
@@ -860,12 +881,14 @@ function publishDecisionRecord(approval) {
   };
 }
 
-function visualDecisionRecord(binding) {
+function visualDecisionRecord(binding, resolvedDecision) {
   return {
     approved_by: binding?.visual_approval?.approved_by,
     approved_at: binding?.visual_approval?.approved_at,
     article_ref: binding?.article_ref,
     asset_digests: [binding?.asset_sha256],
+    ...((binding?.claim_ids ?? resolvedDecision?.claim_ids) !== undefined
+      ? { claim_ids: binding?.claim_ids ?? resolvedDecision.claim_ids } : {}),
     binding_sha256: binding?.visual_approval?.binding_sha256,
   };
 }
@@ -921,7 +944,7 @@ function verifyResolvedJourneyBindings(envelope, resolutions, issues) {
       `$.asset_bindings[${index}].visual_approval.record_ref`,
     );
     if (visualApproval !== undefined) {
-      expectSame(issues, visualApproval, visualDecisionRecord(binding),
+      expectSame(issues, visualApproval, visualDecisionRecord(binding, visualApproval),
         CODES.STALE_REVISION, `$.asset_bindings[${index}].visual_approval.record_ref`,
         'resolved visual decision does not bind this exact asset lineage and digest');
     }
@@ -1029,7 +1052,8 @@ export function validateJourneyReferences(envelope, records, options = {}) {
     CODES.MEDIA_DIGEST_MISMATCH, '$.records.handoff_receipt.artifacts', 'handoff asset order or digest disagrees');
   expectSame(issues, publishApproval, publishDecisionRecord(envelope.approved_revision),
     CODES.STALE_REVISION, '$.records.publish_approval', 'resolved publish decision disagrees');
-  expectSame(issues, visualApprovals, envelope.asset_bindings.map(visualDecisionRecord),
+  expectSame(issues, visualApprovals, envelope.asset_bindings.map((binding, index) =>
+    visualDecisionRecord(binding, visualApprovals[index])),
     CODES.STALE_REVISION, '$.records.visual_approvals', 'resolved visual decision binding disagrees');
   expectSame(issues, publishRun?.run_id, envelope.publish_run.run_id,
     CODES.HANDOFF_INVALID, '$.records.publish_run.run_id', 'publish run identity disagrees');
@@ -1215,7 +1239,7 @@ export function assessAssetApproval(envelope, receiptArtifactIndex, {
     };
     return { approval_valid: false, presentable: false, code: failure.code, lineage, issues: [failure.issue] };
   }
-  const externallyBound = same(decision.record, visualDecisionRecord(binding));
+  const externallyBound = same(decision.record, visualDecisionRecord(binding, decision.record));
   const selfBound = binding.visual_approval.binding_sha256 ===
     approvalBindingSha256(binding.article_ref, [binding.asset_sha256]);
   const presentable = claimScopedLineagePresentable(binding, envelope, lineage);

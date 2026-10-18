@@ -193,13 +193,21 @@ media read-back without this lineage proof does not.
 ### Per-visual claim dependencies (SUE-787 F13)
 
 An `asset_bindings[]` entry may carry `claim_ids` for the claims asserted by
-that visual. On a revision with a verified `changed_claim_ids` set, only a
-visual whose `claim_ids` intersects that set is stale. A visual with no
-`claim_ids`, or a revision without `changed_claim_ids`, keeps the existing
-whole-article invalidation behavior. The change set must come from an upstream
-comparison of the exact old and new claims; this envelope records the supplied
-set but cannot independently prove the claim diff from its digest alone.
-Existing envelopes remain schema-valid because both fields are optional.
+that visual. The IDs are repeated in the independently hash-verified visual
+approval record, so changing only envelope metadata fails validation. When
+claims change, `claim_change` records `from_claims_hash`, `to_claims_hash`, and
+the cumulative changed IDs from that visual's approval baseline to the current
+article claims revision. The comparison start must equal the approved
+visual's claims hash and the end must equal the current article's claims hash.
+The producer must retain the cumulative set across revisions until that visual
+is reapproved. A visual whose approved `claim_ids` intersect that set is stale;
+an unaffected visual remains presentable. Missing dependencies or comparison
+evidence keeps whole-article invalidation as the safe default. The envelope
+checks endpoints and bindings but cannot independently prove the upstream
+claim diff from hashes alone. The legacy envelope-level `changed_claim_ids`
+field remains accepted for compatibility but cannot scope presentation by
+itself. Existing envelopes remain schema-valid because the extension fields
+are optional.
 
 ## Authority and refusal rules
 
