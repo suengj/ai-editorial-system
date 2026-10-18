@@ -6,7 +6,7 @@
  * plot_data_sha256 is PMC's real hash. Real market data is never committed.
  */
 import assert from 'node:assert/strict';
-import { mkdtempSync, readFileSync, writeFileSync, mkdirSync, copyFileSync } from 'node:fs';
+import { mkdtempSync, readFileSync, writeFileSync, mkdirSync, copyFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -149,4 +149,6 @@ await test('CLI: bind refuses a non-empty --out and a snapshot; verify passes on
   const qa = JSON.parse(readFileSync(resolve(dir, 'cli-out/pmc-binding-qa.json'), 'utf8'));
   assert.equal(qa.numeric_lineage_qa, 'PASS'); assert.equal(qa.visual_qa, 'NOT_RUN_OWNER_REVIEW_REQUIRED'); assert.equal(qa.publication, 'NOT_AUTHORIZED');
 });
-console.log(JSON.stringify({ passed, output_dir: dir, renderer: adapter.version, live_PMC_data: 'NOT_RUN_IN_TESTS', visual_review: 'OWNER_REQUIRED', ci: 'NOT_RUN' }));
+const keep = Boolean(process.env.AES_PMC_TEST_OUT); // an explicit output dir is kept for owner review; the default temp dir is removed
+if (!keep) rmSync(dir, { recursive: true, force: true });
+console.log(JSON.stringify({ passed, output_dir: keep ? dir : 'removed',  renderer: adapter.version, live_PMC_data: 'NOT_RUN_IN_TESTS', visual_review: 'OWNER_REQUIRED', ci: 'NOT_RUN' }));
