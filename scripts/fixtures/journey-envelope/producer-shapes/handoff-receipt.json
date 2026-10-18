@@ -1,0 +1,19 @@
+{
+  "schema_version": "1.0.0",
+  "article_id": "art:agent-cost-curve",
+  "front_matter": {
+    "provenance": {
+      "article_version": 4,
+      "content_hash": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+      "claims_hash": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+      "commit": "a996889"
+    }
+  },
+  "artifacts": [
+    {
+      "artifact_id": "art:agent-cost-curve#visual.primary",
+      "kind": "visual",
+      "location": "artifact-ref-1"
+    }
+  ]
+}

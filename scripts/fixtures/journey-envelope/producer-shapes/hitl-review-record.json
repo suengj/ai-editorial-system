@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0.0",
+  "article_id": "art:agent-cost-curve",
+  "reviews": [
+    {
+      "stage": "final",
+      "decision": "accept",
+      "against_version": 4,
+      "against_claims_hash": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+    }
+  ],
+  "finalization": {
+    "article_version": 4,
+    "content_hash": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+    "claims_hash": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+    "target_status": "draft"
+  }
+}

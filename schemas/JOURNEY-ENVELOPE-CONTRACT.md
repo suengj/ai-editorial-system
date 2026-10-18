@@ -276,6 +276,39 @@ authoritative. That is precisely why unresolved references fail closed here
 and why authentic cross-repository byte resolution is deferred to the SUE-787
 system-integration tests rather than certified by this envelope implementation.
 
+### Producer record projections (SUE-1659 F7)
+
+After a record's exact ref and content digest have been verified, the resolver
+projects these producer shapes into the envelope's existing identity checks:
+
+- An Intelligence Library ledger may store entries under
+  `candidates[slug].selection`; the requested slug and its complete selection
+  must equal the envelope candidate. A missing slug or selection is refused.
+- A HITL review record may bind its article through `article_id` and
+  `finalization.article_version`, `content_hash`, and `claims_hash`. Those
+  values must match the envelope's exact article revision. A dossier pointer is
+  compared when the record supplies one; this producer shape does not claim a
+  dossier identity, so the resolver never fills one from the envelope. This
+  omission allowance applies only to the producer projection; normalized review
+  records must retain and match the exact `dossier_ref`.
+- A handoff receipt may bind its article through `article_id` and
+  `front_matter.provenance`. These version and digest fields must match the
+  envelope's exact article revision. Producer projections may omit the commit
+  field when that producer shape does not supply it. Normalized review and
+  handoff records must match the complete article tuple, including commit. The
+  handoff artifact catalog identifies
+  artifacts by reference and location but does not attest their byte digests.
+  The resolver does not derive asset digests from IDs or locations. If the
+  receipt supplies an ordered `asset_sha256` or `sha256` for every artifact,
+  those digests must exactly match the envelope's ordered asset bindings; a
+  partial digest list is refused. The separate approval records continue to
+  bind every envelope asset digest.
+
+The earlier normalized record shapes remain accepted. All producer records are
+still checked against their immutable, content-hash-verified bytes, and a
+projection cannot supply absent identity or digest evidence on the producer's
+behalf.
+
 All entry points use one shared verification path: it resolves and digest-checks
 references, then checks the resolved decision, review, receipt, publication,
 deployment, and live records against the envelope bindings. Validation,
