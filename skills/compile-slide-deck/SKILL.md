@@ -19,7 +19,7 @@ authority:
   may:
     - decide whether candidate material remains one slide, splits, merges with an adjacent slide, or belongs in an appendix
     - assign slide function and information topology
-    - compile slide-level primary messages and content roles from approved beats without changing their meaning
+    - compile slide-level primary messages and content roles from the Visual Story Plan beats without changing their meaning
     - run a renderer-neutral semantic fit and density preflight
     - classify evidence authority as metric, fact, interpretation, hypothesis, or concept
     - declare what dimensions a downstream craft reference may and may not control

@@ -39,7 +39,7 @@ test('all registered targets and flows, locked fields, schemas and gates are pre
   yes(c.targets.map((t) => t.id).join() === 'personal-instagram,personal-linkedin,signalytics-news,trends-moa', 'targets');
   yes(c.flows.map((f) => f.id).join() === 'blog,news,report', 'flows');
   yes(c.locked_fields.includes('facts') && c.precedence[0] === 'explicit_request', 'locks/precedence');
-  yes(JSON.stringify(Object.keys(c.schemas)) === JSON.stringify(['art-direction-plan', 'audio-plan', 'audio-plan-v2', 'bgm-catalog-v2', 'editorial-intent', 'editorial-package', 'feedback-record', 'narration-script', 'narration-script-v2', 'native-card-review', 'render-spec', 'tts-contract', 'video-plan', 'video-plan-v2', 'video-profile', 'video-qa', 'visual-brief']), 'schemas');
+  yes(JSON.stringify(Object.keys(c.schemas)) === JSON.stringify(['art-direction-plan', 'audio-plan', 'audio-plan-v2', 'bgm-catalog-v2', 'editorial-intent', 'editorial-package', 'feedback-record', 'narration-script', 'narration-script-v2', 'native-card-review', 'render-spec', 'tts-contract', 'video-critique', 'video-genre-preset', 'video-plan', 'video-plan-v2', 'video-profile', 'video-qa', 'visual-brief']), 'schemas');
   const videoManifest = JSON.parse(readFileSync(resolve(REPO_ROOT, 'editorial/entry-manifest.json'), 'utf8'));
   yes(c.video_route.task_kind === 'video' && c.video_route.profiles['video/educational-summary'].sha256 === videoManifest.video_profiles['video/educational-summary'].sha256, 'video route and profile pin');
   yes(c.schemas['art-direction-plan'].schema.properties.schema_version.const === '1.0.0', 'art direction plan 1.0.0');

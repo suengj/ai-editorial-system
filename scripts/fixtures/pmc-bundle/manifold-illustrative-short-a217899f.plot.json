@@ -1,0 +1,109 @@
+{
+  "current_quote": {
+    "differs_from_history_endpoint": false,
+    "probability": 0.5,
+    "retrieved_at": "2026-10-12T00:00:00Z",
+    "source_timestamp": null,
+    "source_timestamp_status": "unknown"
+  },
+  "delta": null,
+  "display": {
+    "history_type": "sampled",
+    "interpolation": {
+      "clipping": false,
+      "extrapolation": false,
+      "fallback": false,
+      "implementation": null,
+      "method": "snapshot",
+      "note": null
+    },
+    "mode": "snapshot",
+    "schema": "pmc.display-curve/1",
+    "segments": [
+      {
+        "mode": "snapshot",
+        "n_points": 1,
+        "points": [
+          [
+            1790812800000.0,
+            50.0
+          ]
+        ],
+        "segment": 0
+      }
+    ],
+    "unit": "%",
+    "x": "epoch_ms"
+  },
+  "gap_threshold_seconds": null,
+  "gaps": [],
+  "hero": {
+    "basis": "last_valid_history_observation",
+    "decimals": 0,
+    "observed_at": "2026-10-01T00:00:00Z",
+    "text": "50%",
+    "value": 0.5
+  },
+  "inactivity": [],
+  "issues": [],
+  "meta": {
+    "as_of": "2026-10-12T00:00:00Z",
+    "coverage": {
+      "count": 1,
+      "end": "2026-10-01T00:00:00Z",
+      "start": "2026-10-01T00:00:00Z",
+      "status": "snapshot",
+      "unavailable_gaps": 0
+    },
+    "currency": null,
+    "duplicate_policy": "kept_last",
+    "end_time": "2026-12-31T00:00:00Z",
+    "event_id": null,
+    "forecast_type": "bet_prob_after",
+    "history_type": "sampled",
+    "input_sha256": "bcdbbaf783cae115aede87c990a377a6c5b759c9efe5b3ef8971d1aecab892bc",
+    "market_id": "illustrative-short",
+    "market_status": "open",
+    "outcome": "YES",
+    "outcome_label": "YES",
+    "period": {
+      "end": "2026-10-01T00:00:00Z",
+      "start": "2026-10-01T00:00:00Z"
+    },
+    "price_basis": "bet_prob_after (0..1 market signal, plotted as %)",
+    "provider": "manifold",
+    "query_id": "q-illustrative-0001",
+    "resolution_rules_sha256": "7a0bcde800a09e6a152be7c399392570b3db599a370cfc14b0411c988956099f",
+    "run_id": "run-illustrative-0001",
+    "source_url": "https://example.invalid/illustrative/illustrative-short",
+    "title": "(가상 예시) 가상의 제품이 분기 안에 출시될까요?",
+    "warnings": [],
+    "window": null
+  },
+  "n_points": 1,
+  "plot_data_sha256": "6cb84abe27f303d454aba296aded296f42444ae5619b0831dfd83e023c890d64",
+  "points": [
+    {
+      "observed_at": "2026-10-01T00:00:00Z",
+      "segment": 0,
+      "value": 0.5
+    }
+  ],
+  "raw_records": [
+    {
+      "observed_at": "2026-10-01T00:00:00Z",
+      "source": "illustrative",
+      "value": 0.5
+    }
+  ],
+  "schema": "pmc.plotdata/1",
+  "slug": "manifold-illustrative-short-a217899f",
+  "status": "snapshot/no-chart",
+  "y_axis": {
+    "label": null,
+    "max": 100,
+    "min": 0,
+    "mode": "full",
+    "unit": "%"
+  }
+}
