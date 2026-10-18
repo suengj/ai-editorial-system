@@ -262,6 +262,12 @@ console.log('acceptance 4 — material claim change stales the dependent visual'
     };
     return bindClaimChangeEvidence(binding, ['c1'], `revision-5-${index}`);
   });
+  scoped.state = CODES.STALE_REVISION;
+  scoped.last_good_state = 'LIVE_VERIFIED';
+  scoped.interruption = {
+    code: CODES.STALE_REVISION,
+    observed_at: '2026-09-11T06:31:00Z',
+  };
   const scopedOptions = optionsWithClaimChangeEvidence(firstRevisionEvidence);
   const affected = assessAssetApproval(scoped, 0, {
     articleRef: scoped.article_ref, assetDigest: scoped.asset_bindings[0].asset_sha256,
@@ -328,6 +334,22 @@ console.log('acceptance 4 — material claim change stales the dependent visual'
   });
   check('visuals without claim_ids retain whole-article invalidation as the safe default',
     !conservative.presentable && conservative.code === CODES.STALE_REVISION);
+
+  const affectedPublish = clone(scoped);
+  affectedPublish.state = 'LIVE_VERIFIED';
+  affectedPublish.last_good_state = 'LIVE_VERIFIED';
+  delete affectedPublish.interruption;
+  const affectedIssues = validateJourneyEnvelope(affectedPublish, scopedOptions);
+  const affectedVisualIssue = affectedIssues.some((entry) =>
+    entry.code === CODES.STALE_REVISION && entry.where === '$.asset_bindings[0].article_ref');
+  const affectedGate = assessPublishGate(affectedPublish, {
+    articleRef: affectedPublish.article_ref,
+    assetDigests: affectedPublish.approved_revision.asset_digests,
+    referenceOptions: scopedOptions,
+  });
+  check('verified changed claim c1 remains a named stale visual and blocks the publish gate',
+    affectedVisualIssue && !affectedGate.accepted && affectedGate.code === CODES.STALE_REVISION,
+    JSON.stringify({ affectedIssues, affectedGate }));
 }
 
 console.log('acceptance 5 — exact ordered asset set and self-binding approvals');

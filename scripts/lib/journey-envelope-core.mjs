@@ -141,15 +141,6 @@ const claimScopedLineagePresentable = (binding, envelope, lineage, resolutions) 
       !claimChangeMatchesVerifiedEvidence(binding, resolutions)) return false;
   return !binding.claim_ids.some((id) => comparison.changed_claim_ids.includes(id));
 };
-const hasVerifiedClaimComparison = (binding, envelope, lineage, resolutions) => {
-  const comparison = binding?.claim_change;
-  return lineage.level === 'material' && Array.isArray(binding?.claim_ids) &&
-    binding.claim_ids.length > 0 && comparison?.from_claims_hash === binding.article_ref?.claims_hash &&
-    comparison?.to_claims_hash === envelope?.article_ref?.claims_hash &&
-    Array.isArray(comparison?.changed_claim_ids) &&
-    claimChangeMatchesVerifiedEvidence(binding, resolutions);
-};
-
 function duplicateKeyPath(serialized) {
   let cursor = 0;
   const whitespace = () => {
@@ -762,8 +753,7 @@ function verifyJourneyEnvelope(envelope, {
         const lineage = classifyArtifact({ article_ref: binding?.article_ref }, articleForLineage(envelope.article_ref));
         if (!claimScopedLineagePresentable(binding, envelope, lineage, resolutions)) {
           actualStale = true;
-          if (envelope.state !== 'STALE_REVISION' &&
-              !hasVerifiedClaimComparison(binding, envelope, lineage, resolutions)) {
+          if (envelope.state !== 'STALE_REVISION') {
             issues.push(issue(CODES.STALE_REVISION, `$.asset_bindings[${index}].article_ref`,
               `the recorded visual approval is ${lineage.level} against the current article revision`));
           }

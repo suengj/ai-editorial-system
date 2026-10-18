@@ -201,7 +201,10 @@ article claims revision. The comparison start must equal the approved
 visual's claims hash and the end must equal the current article's claims hash.
 The producer must retain the cumulative set across revisions until that visual
 is reapproved. A visual whose approved `claim_ids` intersect that set is stale;
-an unaffected visual remains presentable. Each comparison also carries a
+an unaffected visual remains presentable. While an affected visual is recorded
+under an active journey state, validation emits `STALE_REVISION` and the
+publish gate refuses the envelope. Reapproving the affected visual is required
+before publishing can resume. Each comparison also carries a
 `record_ref` to an independently hash-verified upstream claim-change record in
 `suengj/intelligence-library`. That record must exactly bind the visual asset
 digest, baseline and current claims hashes, and cumulative changed IDs.
