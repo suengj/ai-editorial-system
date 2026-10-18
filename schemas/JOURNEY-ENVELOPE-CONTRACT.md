@@ -233,7 +233,7 @@ unchanged: `STALE_REVISION`, `MEDIA_DIGEST_MISMATCH`,
 ### Approver identity (trust boundary, SUE-787 F12)
 
 `selected_by` and `approved_by` are free-text attributions, not authenticated
-identities. The validator checks that an approval is present, non-blank, bound
+identities. The validator checks that an approval attribution is present (non-empty), bound
 to the exact revision and digests, and consistent with the pinned record. It
 does not check *who* wrote the record.
 
