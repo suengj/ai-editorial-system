@@ -11,5 +11,6 @@
   "asset_digests": [
     "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
   ],
+  "claim_ids": ["c1"],
   "binding_sha256": "a5460924a3ea80f2f547f318d4a5da51ccdb87067217587ab1c38a7b4bc56e0c"
 }
