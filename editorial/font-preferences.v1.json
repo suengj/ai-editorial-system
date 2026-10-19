@@ -1,0 +1,297 @@
+{
+  "schema_version": "aes-font-preferences/1",
+  "preference_authority": "AES",
+  "status": "candidate-contract; no global default or publication approval",
+  "selection_policy": {
+    "final_default": "UNDECIDED",
+    "excluded_pairs": [
+      "suit-suit",
+      "ibm-plex-sans-kr-ibm-plex-sans-kr"
+    ],
+    "silent_fallback": "FORBIDDEN",
+    "mixed_families": "PRESERVED; intentional title/body pairs are valid"
+  },
+  "font_files": {
+    "pretendard": {
+      "source": "https://github.com/orioncactus/pretendard",
+      "package_or_commit": "npm pretendard 1.3.9",
+      "file": "PretendardVariable.ttf",
+      "sha256": "3090ccde0442bb347aa7685d9ba8b17436a60682df6e8f92a9a670de14056e22",
+      "license": "SIL OFL 1.1; package/LICENSE.txt",
+      "family": "Pretendard Variable",
+      "face": "Pretendard Variable",
+      "font_version": "Version 1.309;Glyphs 3.2 (3225)",
+      "os2_weight_class": 400,
+      "axes": {
+        "wght": {
+          "min": 45.0,
+          "default": 400.0,
+          "max": 930.0
+        }
+      },
+      "unicode_codepoints": 14336,
+      "required_sample_coverage": true,
+      "license_sha256": "b04538c9abec39a3db75108cf0af0fd9c77032fe8aa2cf38345b4d250e98e38e",
+      "inventory_sample": "한글 타이포 2026 ₩→뷁",
+      "missing_codepoints": [],
+      "coverage_codepoints": 14336,
+      "official_source": "https://github.com/orioncactus/pretendard"
+    },
+    "noto-sans-kr": {
+      "source": "https://github.com/google/fonts/tree/main/ofl/notosanskr",
+      "package_or_commit": "google/fonts commit 47d54ca1ebb14fd864695f1d39dc734f39017c33",
+      "file": "NotoSansKR.ttf",
+      "sha256": "194018e6b2b293a7964f037b25c0249ce1418bc9ab3c971060a03aa57861e252",
+      "license": "SIL OFL 1.1; google/fonts/ofl/notosanskr/OFL.txt",
+      "family": "Noto Sans KR",
+      "face": "Noto Sans KR Thin",
+      "font_version": "Version 2.004-H2;hotconv 1.0.118;makeotfexe 2.5.65603",
+      "os2_weight_class": 100,
+      "axes": {
+        "wght": {
+          "min": 100.0,
+          "default": 100.0,
+          "max": 900.0
+        }
+      },
+      "unicode_codepoints": 23174,
+      "required_sample_coverage": true,
+      "license_sha256": "1c05c68c34f9708415aada51f17e1b0092d2cea709bf4a94cd38114f9e73d7d9",
+      "inventory_sample": "한글 타이포 2026 ₩→뷁",
+      "missing_codepoints": [],
+      "coverage_codepoints": 23174,
+      "official_source": "https://github.com/google/fonts/tree/main/ofl/notosanskr"
+    },
+    "noto-serif-kr": {
+      "source": "https://github.com/google/fonts/tree/main/ofl/notoserifkr",
+      "package_or_commit": "google/fonts commit 47d54ca1ebb14fd864695f1d39dc734f39017c33",
+      "file": "NotoSerifKR.ttf",
+      "sha256": "11f8d5de6f1b79195efba3828aaa2ec95c1178f5ae976fb23c8d53250a9938f3",
+      "license": "SIL OFL 1.1; google/fonts/ofl/notoserifkr/OFL.txt",
+      "family": "Noto Serif KR",
+      "face": "Noto Serif KR ExtraLight",
+      "font_version": "Version 2.003-H1;hotconv 1.1.1;makeotfexe 2.6.0",
+      "os2_weight_class": 200,
+      "axes": {
+        "wght": {
+          "min": 200.0,
+          "default": 200.0,
+          "max": 900.0
+        }
+      },
+      "unicode_codepoints": 23124,
+      "required_sample_coverage": true,
+      "license_sha256": "5e0da210fb04058a8c0087985d2d456b931c2579811a49655721d3cf0c36b6d6",
+      "inventory_sample": "한글 타이포 2026 ₩→뷁",
+      "missing_codepoints": [],
+      "coverage_codepoints": 23124,
+      "official_source": "https://github.com/google/fonts/tree/main/ofl/notoserifkr"
+    },
+    "suit": {
+      "source": "https://github.com/sun-typeface/SUIT",
+      "package_or_commit": "npm @sun-typeface/suit 2.0.5",
+      "file": "SUIT-Variable.ttf",
+      "sha256": "12e1fea375d27869a686d7432c1e6a38154d394994f5d82ace24f36a7db68333",
+      "license": "SIL OFL 1.1; package/LICENSE",
+      "family": "SUIT Variable",
+      "face": "SUIT Variable Thin",
+      "font_version": "Version 2.040;Glyphs 3.2.3 (3260)",
+      "os2_weight_class": 100,
+      "axes": {
+        "wght": {
+          "min": 100.0,
+          "default": 100.0,
+          "max": 900.0
+        }
+      },
+      "unicode_codepoints": 11437,
+      "required_sample_coverage": true,
+      "license_sha256": "30d101ee3c35ef629d622d933d261a27b2f60223e0a3b0f36791e569c2b9daa9",
+      "inventory_sample": "한글 타이포 2026 ₩→뷁",
+      "missing_codepoints": [],
+      "coverage_codepoints": 11437,
+      "official_source": "https://github.com/sun-typeface/SUIT"
+    },
+    "gowun-batang": {
+      "source": "https://github.com/google/fonts/tree/main/ofl/gowunbatang",
+      "package_or_commit": "google/fonts commit 47d54ca1ebb14fd864695f1d39dc734f39017c33",
+      "file": "GowunBatang-Bold.ttf",
+      "sha256": "dbfcaa646e5831e7478524924f02906f550285a5050699b4e38c9950b3ec4b94",
+      "license": "SIL OFL 1.1; google/fonts/ofl/gowunbatang/OFL.txt",
+      "family": "Gowun Batang",
+      "face": "Gowun Batang Bold",
+      "font_version": "Version 2.000",
+      "os2_weight_class": 700,
+      "axes": {},
+      "unicode_codepoints": 12494,
+      "required_sample_coverage": true,
+      "license_sha256": "49a57cc769fa9affd6eefb9070a61e3d3f6b757c97cafb15848bc6d1c81acc78",
+      "inventory_sample": "한글 타이포 2026 ₩→뷁",
+      "missing_codepoints": [],
+      "coverage_codepoints": 12494,
+      "official_source": "https://github.com/google/fonts/tree/main/ofl/gowunbatang"
+    }
+  },
+  "candidate_pairs": [
+    {
+      "pair_id": "pretendard-pretendard",
+      "status": "CANDIDATE_ACCEPTED",
+      "title": {
+        "font_id": "pretendard",
+        "family": "Pretendard Variable",
+        "face": "Pretendard Variable",
+        "weight": 800,
+        "variable_axes": {
+          "wght": 800
+        },
+        "font_version": "Version 1.309;Glyphs 3.2 (3225)",
+        "sha256": "3090ccde0442bb347aa7685d9ba8b17436a60682df6e8f92a9a670de14056e22",
+        "license": "SIL OFL 1.1; package/LICENSE.txt",
+        "official_source": "https://github.com/orioncactus/pretendard",
+        "coverage_codepoints": 14336
+      },
+      "body": {
+        "font_id": "pretendard",
+        "family": "Pretendard Variable",
+        "face": "Pretendard Variable",
+        "weight": 500,
+        "variable_axes": {
+          "wght": 500
+        },
+        "font_version": "Version 1.309;Glyphs 3.2 (3225)",
+        "sha256": "3090ccde0442bb347aa7685d9ba8b17436a60682df6e8f92a9a670de14056e22",
+        "license": "SIL OFL 1.1; package/LICENSE.txt",
+        "official_source": "https://github.com/orioncactus/pretendard",
+        "coverage_codepoints": 14336
+      }
+    },
+    {
+      "pair_id": "noto-sans-kr-noto-sans-kr",
+      "status": "CANDIDATE_ACCEPTED",
+      "title": {
+        "font_id": "noto-sans-kr",
+        "family": "Noto Sans KR",
+        "face": "Noto Sans KR Thin",
+        "weight": 700,
+        "variable_axes": {
+          "wght": 700
+        },
+        "font_version": "Version 2.004-H2;hotconv 1.0.118;makeotfexe 2.5.65603",
+        "sha256": "194018e6b2b293a7964f037b25c0249ce1418bc9ab3c971060a03aa57861e252",
+        "license": "SIL OFL 1.1; google/fonts/ofl/notosanskr/OFL.txt",
+        "official_source": "https://github.com/google/fonts/tree/main/ofl/notosanskr",
+        "coverage_codepoints": 23174
+      },
+      "body": {
+        "font_id": "noto-sans-kr",
+        "family": "Noto Sans KR",
+        "face": "Noto Sans KR Thin",
+        "weight": 500,
+        "variable_axes": {
+          "wght": 500
+        },
+        "font_version": "Version 2.004-H2;hotconv 1.0.118;makeotfexe 2.5.65603",
+        "sha256": "194018e6b2b293a7964f037b25c0249ce1418bc9ab3c971060a03aa57861e252",
+        "license": "SIL OFL 1.1; google/fonts/ofl/notosanskr/OFL.txt",
+        "official_source": "https://github.com/google/fonts/tree/main/ofl/notosanskr",
+        "coverage_codepoints": 23174
+      }
+    },
+    {
+      "pair_id": "noto-serif-kr-pretendard",
+      "status": "CANDIDATE_ACCEPTED",
+      "title": {
+        "font_id": "noto-serif-kr",
+        "family": "Noto Serif KR",
+        "face": "Noto Serif KR ExtraLight",
+        "weight": 800,
+        "variable_axes": {
+          "wght": 800
+        },
+        "font_version": "Version 2.003-H1;hotconv 1.1.1;makeotfexe 2.6.0",
+        "sha256": "11f8d5de6f1b79195efba3828aaa2ec95c1178f5ae976fb23c8d53250a9938f3",
+        "license": "SIL OFL 1.1; google/fonts/ofl/notoserifkr/OFL.txt",
+        "official_source": "https://github.com/google/fonts/tree/main/ofl/notoserifkr",
+        "coverage_codepoints": 23124
+      },
+      "body": {
+        "font_id": "pretendard",
+        "family": "Pretendard Variable",
+        "face": "Pretendard Variable",
+        "weight": 500,
+        "variable_axes": {
+          "wght": 500
+        },
+        "font_version": "Version 1.309;Glyphs 3.2 (3225)",
+        "sha256": "3090ccde0442bb347aa7685d9ba8b17436a60682df6e8f92a9a670de14056e22",
+        "license": "SIL OFL 1.1; package/LICENSE.txt",
+        "official_source": "https://github.com/orioncactus/pretendard",
+        "coverage_codepoints": 14336
+      }
+    },
+    {
+      "pair_id": "noto-serif-kr-suit",
+      "status": "CANDIDATE_ACCEPTED",
+      "title": {
+        "font_id": "noto-serif-kr",
+        "family": "Noto Serif KR",
+        "face": "Noto Serif KR ExtraLight",
+        "weight": 800,
+        "variable_axes": {
+          "wght": 800
+        },
+        "font_version": "Version 2.003-H1;hotconv 1.1.1;makeotfexe 2.6.0",
+        "sha256": "11f8d5de6f1b79195efba3828aaa2ec95c1178f5ae976fb23c8d53250a9938f3",
+        "license": "SIL OFL 1.1; google/fonts/ofl/notoserifkr/OFL.txt",
+        "official_source": "https://github.com/google/fonts/tree/main/ofl/notoserifkr",
+        "coverage_codepoints": 23124
+      },
+      "body": {
+        "font_id": "suit",
+        "family": "SUIT Variable",
+        "face": "SUIT Variable Thin",
+        "weight": 500,
+        "variable_axes": {
+          "wght": 500
+        },
+        "font_version": "Version 2.040;Glyphs 3.2.3 (3260)",
+        "sha256": "12e1fea375d27869a686d7432c1e6a38154d394994f5d82ace24f36a7db68333",
+        "license": "SIL OFL 1.1; package/LICENSE",
+        "official_source": "https://github.com/sun-typeface/SUIT",
+        "coverage_codepoints": 11437
+      }
+    },
+    {
+      "pair_id": "gowun-batang-suit",
+      "status": "CANDIDATE_ACCEPTED",
+      "title": {
+        "font_id": "gowun-batang",
+        "family": "Gowun Batang",
+        "face": "Gowun Batang Bold",
+        "weight": 700,
+        "variable_axes": {},
+        "font_version": "Version 2.000",
+        "sha256": "dbfcaa646e5831e7478524924f02906f550285a5050699b4e38c9950b3ec4b94",
+        "license": "SIL OFL 1.1; google/fonts/ofl/gowunbatang/OFL.txt",
+        "official_source": "https://github.com/google/fonts/tree/main/ofl/gowunbatang",
+        "coverage_codepoints": 12494
+      },
+      "body": {
+        "font_id": "suit",
+        "family": "SUIT Variable",
+        "face": "SUIT Variable Thin",
+        "weight": 500,
+        "variable_axes": {
+          "wght": 500
+        },
+        "font_version": "Version 2.040;Glyphs 3.2.3 (3260)",
+        "sha256": "12e1fea375d27869a686d7432c1e6a38154d394994f5d82ace24f36a7db68333",
+        "license": "SIL OFL 1.1; package/LICENSE",
+        "official_source": "https://github.com/sun-typeface/SUIT",
+        "coverage_codepoints": 11437
+      }
+    }
+  ],
+  "inventory_path": "editorial/font-inventory.v1.json",
+  "inventory_sha256": "8e796c670f96ac2a9c59875aaccc033acd2155d629fc79de2e8f0e20f3e64f66"
+}

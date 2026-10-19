@@ -5,7 +5,7 @@
   "task_kinds": {
     "text": { "core": ["editorial/constitution.md", "editorial/voice.md"] },
     "visual": { "core": ["editorial/constitution.md", "editorial/STRUCTURED-VISUAL-EXECUTION.md"] },
-    "video": { "core": ["editorial/VIDEO-STORYBOARD.md", "editorial/VISUAL-STORY-COMPILATION.md", "editorial/AUDIO-SCRIPT.md", "editorial/VIDEO-ENGINE-MAPPING.md"] }
+    "video": { "core": ["editorial/VIDEO-STORYBOARD.md", "editorial/VISUAL-STORY-COMPILATION.md", "editorial/AUDIO-SCRIPT.md", "editorial/VIDEO-ENGINE-MAPPING.md", "editorial/font-preferences.v1.json", "editorial/font-inventory.v1.json"] }
   },
   "axis_profile_paths": {
     "transformation": "editorial/profiles/transformation/{id}.json",
@@ -14,6 +14,8 @@
     "surface": "editorial/profiles/surface/{id}.json",
     "artifact": "editorial/profiles/artifact/{id_dashed}.json"
   },
+  "font_preferences": { "path": "editorial/font-preferences.v1.json", "revision": 1, "sha256": "6ca471500565f76938c38de349b0fd79ff051838d5d4e03ee28d52243cc4cc22" },
+  "font_inventory": { "path": "editorial/font-inventory.v1.json", "revision": 1, "sha256": "8e796c670f96ac2a9c59875aaccc033acd2155d629fc79de2e8f0e20f3e64f66" },
   "video_profile_paths": "editorial/profiles/video/{id}.json",
   "video_profiles": {
     "video/educational-summary": { "path": "editorial/profiles/video/educational-summary.json", "revision": 1, "sha256": "52958745b4033174373a99e952349de9779577d2bc0343a98bea33906ba348b3" },
