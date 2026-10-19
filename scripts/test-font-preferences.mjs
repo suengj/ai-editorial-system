@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
-import { fontInventory, fontPreferences, resolveFontPair, validateFontPreferences } from './lib/typography-core.mjs';
+import { assertRegisteredDigest, fontInventory, fontPreferences, resolveFontPair, validateFontInventory, validateFontPreferences } from './lib/typography-core.mjs';
 
 const data = fontPreferences();
 assert.equal(data.schema_version, 'aes-font-preferences/1');
@@ -34,6 +34,12 @@ assert.equal(fontInventory().coverage_sample, '한글 타이포 2026 ₩→뷁')
 const exposedInventory = fontInventory();
 exposedInventory.source_records[0].missing_codepoints.push('한');
 assert.deepEqual(fontInventory().source_records[0].missing_codepoints, []);
+const badInventoryAxes = fontInventory();
+badInventoryAxes.source_records[0].axes.wght.max = 5000;
+assert.throws(() => assertRegisteredDigest(Buffer.from(JSON.stringify(badInventoryAxes)), JSON.parse(readFileSync(new URL('../editorial/entry-manifest.json', import.meta.url), 'utf8')).font_inventory), (e) => e.code === 'FONT_CONTRACT_INVALID');
+const badInventoryLicense = fontInventory();
+badInventoryLicense.source_records[0].license_contains_ofl_1_1 = false;
+assert.throws(() => validateFontInventory(badInventoryLicense), (e) => e.code === 'FONT_CONTRACT_INVALID');
 const corruptWeight = fontPreferences();
 corruptWeight.candidate_pairs.find((p) => p.pair_id === 'gowun-batang-suit').title.weight = 100;
 assert.throws(() => validateFontPreferences(corruptWeight), (e) => e.code === 'FONT_WEIGHT_UNAVAILABLE');
@@ -47,6 +53,12 @@ const selfConsistentTamper = fontPreferences();
 selfConsistentTamper.font_files.pretendard.family = 'Fake Family';
 for (const pair of selfConsistentTamper.candidate_pairs) for (const role of ['title', 'body']) if (pair[role].font_id === 'pretendard') pair[role].family = 'Fake Family';
 assert.throws(() => validateFontPreferences(selfConsistentTamper), (e) => e.code === 'FONT_CONTRACT_INVALID');
+const renamedFile = fontPreferences();
+renamedFile.font_files.pretendard.file = 'wrong.ttf';
+assert.throws(() => validateFontPreferences(renamedFile), (e) => e.code === 'FONT_CONTRACT_INVALID');
+const corruptedCoverage = fontPreferences();
+corruptedCoverage.font_files.pretendard.coverage_codepoints = 0;
+assert.throws(() => validateFontPreferences(corruptedCoverage), (e) => e.code === 'FONT_CONTRACT_INVALID');
 const expandedAxisTamper = fontPreferences();
 expandedAxisTamper.font_files.pretendard.axes.wght.max = 5000;
 expandedAxisTamper.candidate_pairs[0].title.weight = 4000;

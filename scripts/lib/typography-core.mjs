@@ -11,6 +11,7 @@ const HERE = dirname(fileURLToPath(import.meta.url));
 export const FONT_DIR = resolve(HERE, '../../assets/fonts/aes-sans-kr');
 export const FONT_PREFERENCES_PATH = resolve(HERE, '../../editorial/font-preferences.v1.json');
 export const FONT_INVENTORY_PATH = resolve(HERE, '../../editorial/font-inventory.v1.json');
+export const ENTRY_MANIFEST_PATH = resolve(HERE, '../../editorial/entry-manifest.json');
 export const BUNDLED_FAMILY = 'AES Sans KR';
 export const typographyError = (code, message) => Object.assign(new Error(message), { code });
 
@@ -19,10 +20,37 @@ let preferencesCache = null;
 let inventoryCache = null;
 export const fontManifest = () => (manifestCache ??= JSON.parse(readFileSync(resolve(FONT_DIR, 'manifest.json'), 'utf8')));
 /** AES-owned accepted candidates. The contract does not select a production default. */
-const loadFontPreferences = () => (preferencesCache ??= JSON.parse(readFileSync(FONT_PREFERENCES_PATH, 'utf8')));
+const entryManifest = () => JSON.parse(readFileSync(ENTRY_MANIFEST_PATH, 'utf8'));
+const sha256 = (bytes) => createHash('sha256').update(bytes).digest('hex');
+export function assertRegisteredDigest(bytes, registration, label = 'font data') {
+  if (!/^[0-9a-f]{64}$/.test(registration?.sha256 ?? '') || sha256(bytes) !== registration.sha256) {
+    throw typographyError('FONT_CONTRACT_INVALID', label + ' digest differs from the entry manifest');
+  }
+  return true;
+}
+function readRegisteredJson(path, registration, label) {
+  const bytes = readFileSync(path);
+  const relativePath = path.slice(resolve(HERE, '../../').length + 1);
+  if (registration?.path !== relativePath) throw typographyError('FONT_CONTRACT_INVALID', label + ' path differs from the entry manifest');
+  assertRegisteredDigest(bytes, registration, label);
+  return JSON.parse(bytes.toString('utf8'));
+}
+const loadFontPreferences = () => (preferencesCache ??= readRegisteredJson(FONT_PREFERENCES_PATH, entryManifest().font_preferences, 'font preferences'));
 export const fontPreferences = () => structuredClone(loadFontPreferences());
-const loadFontInventory = () => (inventoryCache ??= JSON.parse(readFileSync(FONT_INVENTORY_PATH, 'utf8')));
+const loadFontInventory = () => (inventoryCache ??= readRegisteredJson(FONT_INVENTORY_PATH, entryManifest().font_inventory, 'font inventory'));
 export const fontInventory = () => structuredClone(loadFontInventory());
+
+/** Validate inspected metadata independently of the preference document's duplicated claims. */
+export function validateFontInventory(inventory) {
+  if (inventory?.inventory_schema !== 'aes-font-inventory/1' || inventory.coverage_sample !== '한글 타이포 2026 ₩→뷁') throw typographyError('FONT_CONTRACT_INVALID', 'font inventory or coverage sample is invalid');
+  if (!Array.isArray(inventory.source_records) || inventory.source_records.length !== 5) throw typographyError('FONT_CONTRACT_INVALID', 'font inventory must contain five inspected source records');
+  for (const record of inventory.source_records) {
+    if (!record.license_contains_ofl_1_1 || record.license_spdx !== 'OFL-1.1' || !record.license_sha256 || record.inspection_sample !== inventory.coverage_sample || record.inspection_fonttools_version !== inventory.fonttools_version || !record.required_sample_coverage || record.missing_codepoints?.length !== 0) {
+      throw typographyError('FONT_CONTRACT_INVALID', 'font inventory inspection or license failed for ' + record.font_id);
+    }
+  }
+  return true;
+}
 
 /** Validate duplicated role metadata against the AES-owned canonical font inventory. */
 export function validateFontPreferences(data) {
@@ -37,10 +65,15 @@ export function validateFontPreferences(data) {
   };
   if (!Array.isArray(data.candidate_pairs) || data.candidate_pairs.length !== Object.keys(expected).length) throw typographyError('FONT_CONTRACT_INVALID', 'candidate pair set differs from AES owner contract');
   const inventory = loadFontInventory();
-  if (inventory.inventory_schema !== 'aes-font-inventory/1' || inventory.coverage_sample !== '한글 타이포 2026 ₩→뷁') throw typographyError('FONT_CONTRACT_INVALID', 'font inventory or coverage sample is invalid');
+  validateFontInventory(inventory);
+  const inventoryDigest = sha256(readFileSync(FONT_INVENTORY_PATH));
+  if (data.inventory_sha256 !== inventoryDigest || entryManifest().font_inventory.sha256 !== inventoryDigest) throw typographyError('FONT_CONTRACT_INVALID', 'preference inventory digest differs from the registered inventory');
   for (const [id, font] of Object.entries(data.font_files ?? {})) {
     const record = inventory.source_records.find((item) => item.font_id === id);
-    if (!record || record.binary_sha256 !== font.sha256 || record.license_sha256 !== font.license_sha256 || record.unicode_codepoints !== font.coverage_codepoints || record.missing_codepoints.length !== 0 || font.inventory_sample !== inventory.coverage_sample) {
+    if (!record || record.binary_sha256 !== font.sha256 || record.license_sha256 !== font.license_sha256 || record.unicode_codepoints !== font.coverage_codepoints || record.missing_codepoints.length !== 0 || font.inventory_sample !== inventory.coverage_sample
+      || record.binary_file_name !== font.file || record.family !== font.family || record.face !== font.face || record.font_version !== font.font_version
+      || record.os2_weight_class !== font.os2_weight_class || JSON.stringify(record.axes) !== JSON.stringify(font.axes)
+      || record.required_sample_coverage !== font.required_sample_coverage) {
       throw typographyError('FONT_CONTRACT_INVALID', `inventory provenance or glyph coverage mismatch for ${id}`);
     }
   }

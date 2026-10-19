@@ -14,8 +14,8 @@
     "surface": "editorial/profiles/surface/{id}.json",
     "artifact": "editorial/profiles/artifact/{id_dashed}.json"
   },
-  "font_preferences": { "path": "editorial/font-preferences.v1.json", "revision": 1, "sha256": "654211bf02e89cb5f378ce8f182a13d540cf638b6f527af728ba5ccb36591c5c" },
-  "font_inventory": { "path": "editorial/font-inventory.v1.json", "revision": 1, "sha256": "c0b0d64fd061e17d7a36674be719943d48282b9718a9c6d3493464dcad8b057d" },
+  "font_preferences": { "path": "editorial/font-preferences.v1.json", "revision": 1, "sha256": "6ca471500565f76938c38de349b0fd79ff051838d5d4e03ee28d52243cc4cc22" },
+  "font_inventory": { "path": "editorial/font-inventory.v1.json", "revision": 1, "sha256": "8e796c670f96ac2a9c59875aaccc033acd2155d629fc79de2e8f0e20f3e64f66" },
   "video_profile_paths": "editorial/profiles/video/{id}.json",
   "video_profiles": {
     "video/educational-summary": { "path": "editorial/profiles/video/educational-summary.json", "revision": 1, "sha256": "52958745b4033174373a99e952349de9779577d2bc0343a98bea33906ba348b3" },
