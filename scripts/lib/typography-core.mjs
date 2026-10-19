@@ -9,11 +9,77 @@ import { isolatedEnv } from './svg-tools.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 export const FONT_DIR = resolve(HERE, '../../assets/fonts/aes-sans-kr');
+export const FONT_PREFERENCES_PATH = resolve(HERE, '../../editorial/font-preferences.v1.json');
+export const FONT_INVENTORY_PATH = resolve(HERE, '../../editorial/font-inventory.v1.json');
 export const BUNDLED_FAMILY = 'AES Sans KR';
 export const typographyError = (code, message) => Object.assign(new Error(message), { code });
 
 let manifestCache = null;
+let preferencesCache = null;
+let inventoryCache = null;
 export const fontManifest = () => (manifestCache ??= JSON.parse(readFileSync(resolve(FONT_DIR, 'manifest.json'), 'utf8')));
+/** AES-owned accepted candidates. The contract does not select a production default. */
+const loadFontPreferences = () => (preferencesCache ??= JSON.parse(readFileSync(FONT_PREFERENCES_PATH, 'utf8')));
+export const fontPreferences = () => structuredClone(loadFontPreferences());
+const loadFontInventory = () => (inventoryCache ??= JSON.parse(readFileSync(FONT_INVENTORY_PATH, 'utf8')));
+export const fontInventory = () => structuredClone(loadFontInventory());
+
+/** Validate duplicated role metadata against the AES-owned canonical font inventory. */
+export function validateFontPreferences(data) {
+  if (data?.schema_version !== 'aes-font-preferences/1' || data?.preference_authority !== 'AES') throw typographyError('FONT_CONTRACT_INVALID', 'unsupported AES font preference contract');
+  if (data?.selection_policy?.final_default !== 'UNDECIDED' || data?.selection_policy?.silent_fallback !== 'FORBIDDEN') throw typographyError('FONT_CONTRACT_INVALID', 'font contract must preserve undecided defaults and reject silent fallback');
+  const expected = {
+    'pretendard-pretendard': ['pretendard', 'pretendard'],
+    'noto-sans-kr-noto-sans-kr': ['noto-sans-kr', 'noto-sans-kr'],
+    'noto-serif-kr-pretendard': ['noto-serif-kr', 'pretendard'],
+    'noto-serif-kr-suit': ['noto-serif-kr', 'suit'],
+    'gowun-batang-suit': ['gowun-batang', 'suit'],
+  };
+  if (!Array.isArray(data.candidate_pairs) || data.candidate_pairs.length !== Object.keys(expected).length) throw typographyError('FONT_CONTRACT_INVALID', 'candidate pair set differs from AES owner contract');
+  const inventory = loadFontInventory();
+  if (inventory.inventory_schema !== 'aes-font-inventory/1' || inventory.coverage_sample !== '한글 타이포 2026 ₩→뷁') throw typographyError('FONT_CONTRACT_INVALID', 'font inventory or coverage sample is invalid');
+  for (const [id, font] of Object.entries(data.font_files ?? {})) {
+    const record = inventory.source_records.find((item) => item.font_id === id);
+    if (!record || record.binary_sha256 !== font.sha256 || record.license_sha256 !== font.license_sha256 || record.unicode_codepoints !== font.coverage_codepoints || record.missing_codepoints.length !== 0 || font.inventory_sample !== inventory.coverage_sample) {
+      throw typographyError('FONT_CONTRACT_INVALID', `inventory provenance or glyph coverage mismatch for ${id}`);
+    }
+  }
+  for (const [pairId, roles] of Object.entries(expected)) {
+    const pair = data.candidate_pairs.find((item) => item.pair_id === pairId);
+    if (!pair || pair.status !== 'CANDIDATE_ACCEPTED') throw typographyError('FONT_CONTRACT_INVALID', `missing accepted pair ${pairId}`);
+    for (const [i, role] of ['title', 'body'].entries()) {
+      const ref = pair[role], id = roles[i], file = data.font_files?.[id];
+      if (!file || ref?.font_id !== id) throw typographyError('FONT_CONTRACT_INVALID', `unexpected ${pairId}/${role} font id`);
+      for (const field of ['family', 'face', 'font_version', 'sha256', 'license', 'official_source', 'coverage_codepoints']) {
+        if (ref[field] !== file[field]) throw typographyError('FONT_CONTRACT_INVALID', `${pairId}/${role} ${field} does not match canonical font inventory`);
+      }
+      if (!Number.isFinite(ref.weight) || !Number.isInteger(ref.weight) || !Number.isFinite(file.os2_weight_class) || !/^[0-9a-f]{64}$/.test(file.sha256 ?? '') || !/^[0-9a-f]{64}$/.test(file.license_sha256 ?? '') || !file.license?.includes('OFL 1.1') || !file.official_source || !file.font_version) {
+        throw typographyError('FONT_CONTRACT_INVALID', `incomplete or invalid metadata for ${pairId}/${role}`);
+      }
+      const axis = file.axes?.wght;
+      if (axis) {
+        const axes = ref.variable_axes;
+        if (!axes || Object.keys(axes).length !== 1 || axes.wght !== ref.weight || !Number.isFinite(axis.min) || !Number.isFinite(axis.max) || ref.weight < axis.min || ref.weight > axis.max) {
+          throw typographyError('FONT_WEIGHT_UNAVAILABLE', `${pairId}/${role} requests unsupported wght ${ref.weight}`);
+        }
+      } else if ((ref.variable_axes && Object.keys(ref.variable_axes).length) || ref.weight !== file.os2_weight_class) {
+        throw typographyError('FONT_WEIGHT_UNAVAILABLE', `${pairId}/${role} does not match its static font face weight`);
+      }
+    }
+  }
+  if (data.selection_policy.excluded_pairs?.includes('suit-suit') !== true || data.selection_policy.excluded_pairs?.includes('ibm-plex-sans-kr-ibm-plex-sans-kr') !== true) throw typographyError('FONT_CONTRACT_INVALID', 'excluded candidate pairs must remain excluded');
+  if (JSON.stringify(data) !== JSON.stringify(loadFontPreferences())) throw typographyError('FONT_CONTRACT_INVALID', 'font preference data differs from the immutable AES contract');
+  return true;
+}
+
+/** Resolve a pair and its semantic text roles; mixed families are intentional and preserved. */
+export function resolveFontPair(pairId) {
+  const data = loadFontPreferences();
+  validateFontPreferences(data);
+  const pair = data.candidate_pairs.find((item) => item.pair_id === pairId);
+  if (!pair || pair.status !== 'CANDIDATE_ACCEPTED') throw typographyError('FONT_PAIR_UNRESOLVED', `unknown or unaccepted AES font pair: ${pairId}`);
+  return structuredClone(pair);
+}
 
 /** The bundled font is "requested" only when it is the FIRST family of a stack, so existing stacks are never re-interpreted. */
 export const requestsBundledFont = (stack) => typeof stack === 'string' && stack.split(',')[0].trim().replace(/^['"]|['"]$/g, '') === BUNDLED_FAMILY;
