@@ -44,11 +44,22 @@ export const fontInventory = () => structuredClone(loadFontInventory());
 export function validateFontInventory(inventory) {
   if (inventory?.inventory_schema !== 'aes-font-inventory/1' || inventory.coverage_sample !== '한글 타이포 2026 ₩→뷁') throw typographyError('FONT_CONTRACT_INVALID', 'font inventory or coverage sample is invalid');
   if (!Array.isArray(inventory.source_records) || inventory.source_records.length !== 5) throw typographyError('FONT_CONTRACT_INVALID', 'font inventory must contain five inspected source records');
+  const expectedIds = new Set(['pretendard', 'suit', 'noto-sans-kr', 'noto-serif-kr', 'gowun-batang']);
+  const seenIds = new Set();
   for (const record of inventory.source_records) {
-    if (!record.license_contains_ofl_1_1 || record.license_spdx !== 'OFL-1.1' || !record.license_sha256 || record.inspection_sample !== inventory.coverage_sample || record.inspection_fonttools_version !== inventory.fonttools_version || !record.required_sample_coverage || record.missing_codepoints?.length !== 0) {
+    if (!expectedIds.has(record.font_id) || seenIds.has(record.font_id)
+      || typeof record.license_contains_ofl_1_1 !== 'boolean' || record.license_contains_ofl_1_1 !== true || record.license_spdx !== 'OFL-1.1'
+      || !/^[0-9a-f]{64}$/.test(record.binary_sha256 ?? '') || !/^[0-9a-f]{64}$/.test(record.license_sha256 ?? '')
+      || !Number.isInteger(record.unicode_codepoints) || record.unicode_codepoints <= 0
+      || typeof record.binary_file_name !== 'string' || typeof record.family !== 'string' || typeof record.face !== 'string' || typeof record.font_version !== 'string'
+      || !Number.isInteger(record.os2_weight_class) || typeof record.axes !== 'object' || record.axes === null
+      || record.inspection_sample !== inventory.coverage_sample || record.inspection_fonttools_version !== inventory.fonttools_version
+      || record.required_sample_coverage !== true || record.missing_codepoints?.length !== 0) {
       throw typographyError('FONT_CONTRACT_INVALID', 'font inventory inspection or license failed for ' + record.font_id);
     }
+    seenIds.add(record.font_id);
   }
+  if (seenIds.size !== expectedIds.size || JSON.stringify(inventory) !== JSON.stringify(loadFontInventory())) throw typographyError('FONT_CONTRACT_INVALID', 'font inventory differs from its pinned canonical records');
   return true;
 }
 

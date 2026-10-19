@@ -40,6 +40,21 @@ assert.throws(() => assertRegisteredDigest(Buffer.from(JSON.stringify(badInvento
 const badInventoryLicense = fontInventory();
 badInventoryLicense.source_records[0].license_contains_ofl_1_1 = false;
 assert.throws(() => validateFontInventory(badInventoryLicense), (e) => e.code === 'FONT_CONTRACT_INVALID');
+for (const mutate of [
+  (record) => { record.family = 'Fake Family'; },
+  (record) => { record.binary_file_name = 'wrong.ttf'; },
+  (record) => { record.unicode_codepoints = 0; },
+  (record) => { record.binary_sha256 = 'invalid'; },
+  (record) => { record.license_sha256 = 'invalid'; },
+  (record) => { record.license_contains_ofl_1_1 = 'false'; },
+]) {
+  const corrupted = fontInventory();
+  mutate(corrupted.source_records[0]);
+  assert.throws(() => validateFontInventory(corrupted), (e) => e.code === 'FONT_CONTRACT_INVALID');
+}
+const duplicateInventoryRecords = fontInventory();
+duplicateInventoryRecords.source_records = Array(5).fill(duplicateInventoryRecords.source_records[0]);
+assert.throws(() => validateFontInventory(duplicateInventoryRecords), (e) => e.code === 'FONT_CONTRACT_INVALID');
 const corruptWeight = fontPreferences();
 corruptWeight.candidate_pairs.find((p) => p.pair_id === 'gowun-batang-suit').title.weight = 100;
 assert.throws(() => validateFontPreferences(corruptWeight), (e) => e.code === 'FONT_WEIGHT_UNAVAILABLE');
