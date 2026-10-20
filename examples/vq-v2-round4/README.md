@@ -24,6 +24,12 @@ python3 examples/vq-v2-round4/render_round4.py --out /Volumes/OricoSSD/MacArchiv
 
 The receipt binds outputs to the exact clean Git commit, renderer SHA-256, and stylesheet SHA-256. It records actual rendered-copy hashes and verifies source-string occurrence counts. The video renderer checks every frame for visible text bounds/clipping, the 42px caption and 44px support-label floors, and the seven fact strings in their dedicated elements.
 
+## Round 6 owner-selected reference variants
+
+`render_round4.py --cards-only --owner-reference-variants --out <empty-dir>` opts into three additional card grammars in the same R4 example: a claim-led, whitespace-forward cover; an image-led fact explainer; and a paced editorial close. R4 remains the default, the video path is unchanged, and no registered profile or compositor is changed. The exact owner selection quote, five metadata-only pointers, local archive hashes, observed traits, and variant mapping are in `owner-selected-references.json`; the linked AES catalog/evaluations are under `references/`. The original reference images are copyright-held assets in the external MacArchive and are never copied into Git.
+
+The variants adapt hierarchy and information roles only. They do not copy reference text, people, logos, characters, exact palette, or signature composition. The owner selected five reference candidates for exploration; this is not final aesthetic approval and does not establish `OWNER_ACCEPTED`.
+
 The card baseline sheet uses direct Round 1 B browser renders for cover, money, and JustPark. Round 1 B did not render YourParkingSpace or opportunity, so their comparison cells use the archived AES source outputs and state that limit in the receipt and sheet labels.
 
 ## Evidence boundaries

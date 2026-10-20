@@ -1,0 +1,56 @@
+{
+  "schema_version": "1.0.0",
+  "evaluation_id": "eval:vq-m1-r3-02-2026-10-20-01",
+  "ref_id": "ref:vq-m1-ktv-finance-2026-10-20",
+  "modality": "visual",
+  "evaluator": {
+    "type": "agent",
+    "agent": {
+      "runtime": "Codex",
+      "model": "GPT-6",
+      "version": "2026-10-20"
+    }
+  },
+  "evaluated_at": "2026-10-20T17:30:00+09:00",
+  "profile_ref": "editorial/profiles/reference/visual.json",
+  "basis": "model_inference",
+  "dimensions": [
+    {
+      "dimension": "hierarchy",
+      "verdict": "adopt",
+      "note": "Title, illustration, and body form a legible sequence."
+    },
+    {
+      "dimension": "semantic-density",
+      "verdict": "adopt",
+      "note": "Several information units are organized for a dense explainer."
+    },
+    {
+      "dimension": "composition",
+      "verdict": "do_not_copy",
+      "note": "Institutional card layout and exact module composition are source expression."
+    },
+    {
+      "dimension": "palette-colour-role",
+      "verdict": "do_not_copy",
+      "note": "Exact violet and yellow are part of the source identity."
+    }
+  ],
+  "strengths": [
+    "큰 제목, 일러스트, 본문으로 읽기 순서를 만든다. 정책 변화와 설명 항목을 여러 단위로 압축하며, 보라·노랑의 강한 대비와 인물·동전 삽화를 쓴다."
+  ],
+  "weaknesses": [],
+  "applicable_to": {
+    "content_types": [],
+    "audiences": [],
+    "artifacts": [
+      "visual/slide-image"
+    ],
+    "surfaces": [
+      "instagram"
+    ]
+  },
+  "authority_boundary": "craft_evidence_only",
+  "provenance_class": "external",
+  "notes": "Observed directly from candidate image R3-02. Source page https://www.ktv.go.kr/online/cardnews/view?card_id=91; direct image https://www.ktv.go.kr/media/cardnews/2024/07/15/QJtUL1U2fv.png; archive file /Volumes/OricoSSD/MacArchive/vq-v2-round3/reference-candidates/candidate-02-ktv-finance.png; SHA-256 sha256:32e984ae087f0784450a3f76a69ad859721a9f57b01d1b14873f0c513ecf87f4; dimensions 1000x1250. Owner statement selected candidate among others: \"2,3,4,8,10 괜찮아 - 나머지도 괜찮지만 패턴이 유사해보임\". This is candidate selection, not final aesthetic acceptance. Used only as evidence for the opt-in dense-explainer grammar; identities and expression are not transferable."
+}

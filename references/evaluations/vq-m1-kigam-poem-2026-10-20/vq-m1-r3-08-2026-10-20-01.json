@@ -1,0 +1,56 @@
+{
+  "schema_version": "1.0.0",
+  "evaluation_id": "eval:vq-m1-r3-08-2026-10-20-01",
+  "ref_id": "ref:vq-m1-kigam-poem-2026-10-20",
+  "modality": "visual",
+  "evaluator": {
+    "type": "agent",
+    "agent": {
+      "runtime": "Codex",
+      "model": "GPT-6",
+      "version": "2026-10-20"
+    }
+  },
+  "evaluated_at": "2026-10-20T17:30:00+09:00",
+  "profile_ref": "editorial/profiles/reference/visual.json",
+  "basis": "model_inference",
+  "dimensions": [
+    {
+      "dimension": "hierarchy",
+      "verdict": "adopt",
+      "note": "Two distinct voice areas establish a simple sequence."
+    },
+    {
+      "dimension": "tone-manner",
+      "verdict": "adopt",
+      "note": "Friendly, conversational tone can inform a narrative close."
+    },
+    {
+      "dimension": "composition",
+      "verdict": "do_not_copy",
+      "note": "Characters and paired rounded speech panels are source expression."
+    },
+    {
+      "dimension": "palette-colour-role",
+      "verdict": "do_not_copy",
+      "note": "Exact navy, pink, and mascot colors are source identity."
+    }
+  ],
+  "strengths": [
+    "짙은 남색과 연분홍의 두 큰 발화 영역이 대화 순서를 나눈다. 중앙 캐릭터 삽화와 큰 여백으로 친근한 정서를 만든다."
+  ],
+  "weaknesses": [],
+  "applicable_to": {
+    "content_types": [],
+    "audiences": [],
+    "artifacts": [
+      "visual/slide-image"
+    ],
+    "surfaces": [
+      "instagram"
+    ]
+  },
+  "authority_boundary": "craft_evidence_only",
+  "provenance_class": "external",
+  "notes": "Observed directly from candidate image R3-08. Source page https://www.kigam.re.kr/gallery.es?act=view&bid=0006&list_no=5198&mid=a10206090000; direct image https://www.kigam.re.kr/upload/editor/168733714861400.jpg; archive file /Volumes/OricoSSD/MacArchive/vq-v2-round3/reference-candidates/candidate-08-kigam-poem.jpg; SHA-256 sha256:0a6ee5a80037f06899f4ecdad45c8d5ede5795b4407c82f4d2fb6e83d77dc3e4; dimensions 1080x1080. Owner statement selected candidate among others: \"2,3,4,8,10 괜찮아 - 나머지도 괜찮지만 패턴이 유사해보임\". This is candidate selection, not final aesthetic acceptance. Used only as evidence for the opt-in editorial-narrative grammar; identities and expression are not transferable."
+}

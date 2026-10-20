@@ -1,0 +1,137 @@
+{
+  "schema": "vq-v2-owner-selected-references/1",
+  "recorded_at": "2026-10-20",
+  "issue": "SUE-1691",
+  "owner_selection": {
+    "status": "OWNER_SELECTED_REFERENCES",
+    "OWNER_SELECTED_REFERENCES": [
+      "02",
+      "03",
+      "04",
+      "08",
+      "10"
+    ],
+    "quote_verbatim": "2,3,4,8,10 괜찮아 - 나머지도 괜찮지만 패턴이 유사해보임",
+    "selected_ids": [
+      "R3-02",
+      "R3-03",
+      "R3-04",
+      "R3-08",
+      "R3-10"
+    ],
+    "meaning": "Candidate selection for craft exploration only; not final aesthetic approval and does not establish OWNER_ACCEPTED."
+  },
+  "reference_registry": "references/catalog.json + references/evaluations/ (SUE-643 contract)",
+  "approved_examples_json": "Not applicable: editorial/approved-examples.json is scoped to selected personal voice excerpts, not visual reference candidates.",
+  "images_committed": false,
+  "grammars": [
+    {
+      "id": "claim-led-notice",
+      "references": [
+        "R3-03"
+      ],
+      "traits": "One dominant statement; generous negative space; role-based headline scale.",
+      "m1_application": "cover"
+    },
+    {
+      "id": "dense-explainer",
+      "references": [
+        "R3-02",
+        "R3-04"
+      ],
+      "traits": "Title first, supporting image separate from exact fact rows, selective keyword emphasis; denser information stays grouped.",
+      "m1_application": "case-a"
+    },
+    {
+      "id": "editorial-narrative",
+      "references": [
+        "R3-08",
+        "R3-10"
+      ],
+      "traits": "Paced lead/support sequence and a prominent ending; voice areas remain distinct without copying speech panels or quote artwork.",
+      "m1_application": "opportunity"
+    }
+  ],
+  "candidates": [
+    {
+      "candidate_id": "R3-02",
+      "ref_id": "ref:vq-m1-ktv-finance-2026-10-20",
+      "title": "KTV 하반기 금융 변화",
+      "page_url": "https://www.ktv.go.kr/online/cardnews/view?card_id=91",
+      "image_url": "https://www.ktv.go.kr/media/cardnews/2024/07/15/QJtUL1U2fv.png",
+      "local_archive_path": "/Volumes/OricoSSD/MacArchive/vq-v2-round3/reference-candidates/candidate-02-ktv-finance.png",
+      "sha256": "32e984ae087f0784450a3f76a69ad859721a9f57b01d1b14873f0c513ecf87f4",
+      "dimensions_px": [
+        1000,
+        1250
+      ],
+      "traits_observed": "큰 제목, 일러스트, 본문으로 읽기 순서를 만든다. 정책 변화와 설명 항목을 여러 단위로 압축하며, 보라·노랑의 강한 대비와 인물·동전 삽화를 쓴다.",
+      "grammar": "dense-explainer",
+      "rights": "unclear; URL and metadata only in repository"
+    },
+    {
+      "candidate_id": "R3-03",
+      "ref_id": "ref:vq-m1-fsc-correction-2026-10-20",
+      "title": "FSC 금융위 설명 카드",
+      "page_url": "https://www.fsc.go.kr/no040101?cnId=3110",
+      "image_url": "https://www.fsc.go.kr/comm/getImage?fileNo=1&fileTy=ATTACH&srvcId=CARDNEWS&upperNo=3110",
+      "local_archive_path": "/Volumes/OricoSSD/MacArchive/vq-v2-round3/reference-candidates/candidate-03-fsc-correction.jpg",
+      "sha256": "e867a84701e59da74497339b494ba5f16ed9a271b1d6a05df1b1ca81d4e9a216",
+      "dimensions_px": [
+        1250,
+        1250
+      ],
+      "traits_observed": "짙은 파랑 상단 안내 일러스트 아래에 정정의 핵심 문장을 큰 글자로 두고 넓은 흰 여백으로 분리한다. 사진·데이터보다 문장 위계가 우선한다.",
+      "grammar": "claim-led-notice",
+      "rights": "unclear; URL and metadata only in repository"
+    },
+    {
+      "candidate_id": "R3-04",
+      "ref_id": "ref:vq-m1-kird-gene-edit-2026-10-20",
+      "title": "K-클럽 유전자 교정 연구",
+      "page_url": "https://k-club.kird.re.kr/prog/careerLibrary/career/sub02_02_03/view.do?libraryNo=395",
+      "image_url": "https://k-club.kird.re.kr/thumbnail/careerLibrary/CL_20240925102019879Ax23.png",
+      "local_archive_path": "/Volumes/OricoSSD/MacArchive/vq-v2-round3/reference-candidates/candidate-04-kird-gene-edit.png",
+      "sha256": "dfeff35a018cb19f65800a3c018d3dfb1d4cb8118e8334175368d7c140f26069",
+      "dimensions_px": [
+        1081,
+        1081
+      ],
+      "traits_observed": "왼쪽에 질문과 설명을 단계적으로 놓고 오른쪽에 큰 연구자 사진을 분리한다. 핵심 용어는 노란 밑줄형 하이라이트, 작은 과학 삽화는 보조 증거 역할이다.",
+      "grammar": "dense-explainer",
+      "rights": "unclear; URL and metadata only in repository"
+    },
+    {
+      "candidate_id": "R3-08",
+      "ref_id": "ref:vq-m1-kigam-poem-2026-10-20",
+      "title": "KIGAM 연구원 소개 카드",
+      "page_url": "https://www.kigam.re.kr/gallery.es?act=view&bid=0006&list_no=5198&mid=a10206090000",
+      "image_url": "https://www.kigam.re.kr/upload/editor/168733714861400.jpg",
+      "local_archive_path": "/Volumes/OricoSSD/MacArchive/vq-v2-round3/reference-candidates/candidate-08-kigam-poem.jpg",
+      "sha256": "0a6ee5a80037f06899f4ecdad45c8d5ede5795b4407c82f4d2fb6e83d77dc3e4",
+      "dimensions_px": [
+        1080,
+        1080
+      ],
+      "traits_observed": "짙은 남색과 연분홍의 두 큰 발화 영역이 대화 순서를 나눈다. 중앙 캐릭터 삽화와 큰 여백으로 친근한 정서를 만든다.",
+      "grammar": "editorial-narrative",
+      "rights": "unclear; URL and metadata only in repository"
+    },
+    {
+      "candidate_id": "R3-10",
+      "ref_id": "ref:vq-m1-koreascientists-2026-10-20",
+      "title": "대한민국 과학기술유공자 인용 카드",
+      "page_url": "https://www.koreascientists.kr/scientists/story/news/?boardId=bbs_0000000000000015&category=&cntId=119&mode=view&pageIdx=",
+      "image_url": "https://www.koreascientists.kr/upload/editUpload/20250513/202505131013070736.jpg",
+      "local_archive_path": "/Volumes/OricoSSD/MacArchive/vq-v2-round3/reference-candidates/candidate-10-koreascientists.jpg",
+      "sha256": "f444170ecd656144fee11658ccda6671c0a7e9b00b4c66a1c860921f57ad878d",
+      "dimensions_px": [
+        900,
+        900
+      ],
+      "traits_observed": "짙은 녹색 사진 질감 위에 큰 인용문을 먼저 읽히게 하고, 손글씨 도구 삽화가 인용부와 겹친다. 아래에는 작은 본문과 얇은 선·쪽수 표식이 이어진다.",
+      "grammar": "editorial-narrative",
+      "rights": "unclear; URL and metadata only in repository"
+    }
+  ]
+}

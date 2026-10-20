@@ -1,0 +1,61 @@
+{
+  "schema_version": "1.0.0",
+  "evaluation_id": "eval:vq-m1-r3-10-2026-10-20-01",
+  "ref_id": "ref:vq-m1-koreascientists-2026-10-20",
+  "modality": "visual",
+  "evaluator": {
+    "type": "agent",
+    "agent": {
+      "runtime": "Codex",
+      "model": "GPT-6",
+      "version": "2026-10-20"
+    }
+  },
+  "evaluated_at": "2026-10-20T17:30:00+09:00",
+  "profile_ref": "editorial/profiles/reference/visual.json",
+  "basis": "model_inference",
+  "dimensions": [
+    {
+      "dimension": "hierarchy",
+      "verdict": "adopt",
+      "note": "The quotation leads; a lower prose block follows."
+    },
+    {
+      "dimension": "spacing",
+      "verdict": "adopt",
+      "note": "The lower narrative has room separate from the lead quotation."
+    },
+    {
+      "dimension": "typography-character",
+      "verdict": "adopt",
+      "note": "Literary quotation typography distinguishes the leading voice."
+    },
+    {
+      "dimension": "composition",
+      "verdict": "do_not_copy",
+      "note": "The quill, quotation silhouette, and exact overlap are source expression."
+    },
+    {
+      "dimension": "palette-colour-role",
+      "verdict": "do_not_copy",
+      "note": "Exact forest-green treatment is not transferable."
+    }
+  ],
+  "strengths": [
+    "짙은 녹색 사진 질감 위에 큰 인용문을 먼저 읽히게 하고, 손글씨 도구 삽화가 인용부와 겹친다. 아래에는 작은 본문과 얇은 선·쪽수 표식이 이어진다."
+  ],
+  "weaknesses": [],
+  "applicable_to": {
+    "content_types": [],
+    "audiences": [],
+    "artifacts": [
+      "visual/slide-image"
+    ],
+    "surfaces": [
+      "instagram"
+    ]
+  },
+  "authority_boundary": "craft_evidence_only",
+  "provenance_class": "external",
+  "notes": "Observed directly from candidate image R3-10. Source page https://www.koreascientists.kr/scientists/story/news/?boardId=bbs_0000000000000015&category=&cntId=119&mode=view&pageIdx=; direct image https://www.koreascientists.kr/upload/editUpload/20250513/202505131013070736.jpg; archive file /Volumes/OricoSSD/MacArchive/vq-v2-round3/reference-candidates/candidate-10-koreascientists.jpg; SHA-256 sha256:f444170ecd656144fee11658ccda6671c0a7e9b00b4c66a1c860921f57ad878d; dimensions 900x900. Owner statement selected candidate among others: \"2,3,4,8,10 괜찮아 - 나머지도 괜찮지만 패턴이 유사해보임\". This is candidate selection, not final aesthetic acceptance. Used only as evidence for the opt-in editorial-narrative grammar; identities and expression are not transferable."
+}
