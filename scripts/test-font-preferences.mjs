@@ -8,8 +8,8 @@ assert.equal(data.schema_version, 'aes-font-preferences/1');
 assert.equal(data.preference_authority, 'AES');
 assert.equal(data.selection_policy.final_default, 'UNDECIDED');
 assert.equal(data.selection_policy.silent_fallback, 'FORBIDDEN');
-assert.equal(data.style_candidate_groups.selection_status, 'OWNER_PENDING');
-assert.equal(data.style_candidate_groups.provisional_defaults_are_not_final_choices, true);
+assert.equal(data.style_candidate_groups.selection_status, 'OWNER_SELECTED');
+assert.equal(data.style_candidate_groups.defaults_are_owner_selected, true);
 for (const [group, numbers, pairIds] of [
   ['video', [1, 2], ['pretendard-pretendard', 'noto-sans-kr-noto-sans-kr']],
   ['R4_photo', [3, 4, 5], ['noto-serif-kr-pretendard', 'noto-serif-kr-suit', 'gowun-batang-suit']],
@@ -18,8 +18,8 @@ for (const [group, numbers, pairIds] of [
   const entry = data.style_candidate_groups.groups[group];
   assert.deepEqual(entry.candidate_numbers, numbers, `${group} candidate numbers`);
   assert.deepEqual(entry.candidate_pair_ids, pairIds, `${group} candidate pairs`);
-  assert.equal(entry.provisional_default_number, numbers[0], `${group} provisional number`);
-  assert.equal(entry.provisional_default_pair_id, pairIds[0], `${group} provisional pair`);
+  assert(pairIds.includes(entry.default_pair_id), `${group} selected pair`);
+  assert.equal(entry.default_number, numbers[pairIds.indexOf(entry.default_pair_id)], `${group} selected number`);
   assert(entry.candidate_pair_ids.every((id) => data.candidate_pairs.some((pair) => pair.pair_id === id)));
 }
 assert.deepEqual(data.candidate_pairs.map((p) => p.pair_id), [
@@ -104,12 +104,12 @@ const inventoryBytes = readFileSync(new URL('../editorial/font-inventory.v1.json
 assert.equal(entry.font_inventory.sha256, createHash('sha256').update(inventoryBytes).digest('hex'));
 assert.equal(JSON.parse(inventoryBytes).source_records.every((r) => r.license_contains_ofl_1_1 && r.missing_codepoints.length === 0), true);
 for (const mutate of [
-  (value) => { value.groups.video.provisional_default_pair_id = 'noto-sans-kr-noto-sans-kr'; },
+  (value) => { value.groups.video.default_pair_id = 'unknown'; },
   (value) => { value.groups.R4_photo.candidate_pair_ids.pop(); },
-  (value) => { value.selection_status = 'OWNER_ACCEPTED'; },
+  (value) => { value.selection_status = 'OWNER_PENDING'; },
 ]) {
   const invalid = fontPreferences();
   mutate(invalid.style_candidate_groups);
   assert.throws(() => validateFontPreferences(invalid), (e) => e.code === 'FONT_CONTRACT_INVALID');
 }
-console.log('PASS font preference contract: five candidates, two mixed SUIT pairs, no default, hashes/weights/license/coverage and negative fixtures');
+console.log('PASS font preference contract: owner-selected style defaults, five candidates, hashes/weights/license/coverage and negative fixtures');

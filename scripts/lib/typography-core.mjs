@@ -73,17 +73,17 @@ export function validateFontPreferences(data) {
     R7_illustrated: { numbers: [1, 2], pairs: ['pretendard-pretendard', 'noto-sans-kr-noto-sans-kr'] },
   };
   const groups = data.style_candidate_groups;
-  if (groups?.selection_status !== 'OWNER_PENDING' || groups?.provisional_defaults_are_not_final_choices !== true
+  if (groups?.selection_status !== 'OWNER_SELECTED' || groups?.defaults_are_owner_selected !== true
     || Object.keys(groups?.groups ?? {}).sort().join(',') !== Object.keys(groupDefinitions).sort().join(',')) {
-    throw typographyError('FONT_CONTRACT_INVALID', 'style candidate groups must preserve OWNER_PENDING and the canonical group set');
+    throw typographyError('FONT_CONTRACT_INVALID', 'style candidate groups must preserve OWNER_SELECTED and the canonical group set');
   }
   for (const [name, expectedGroup] of Object.entries(groupDefinitions)) {
     const group = groups.groups[name];
     if (JSON.stringify(group?.candidate_numbers) !== JSON.stringify(expectedGroup.numbers)
       || JSON.stringify(group?.candidate_pair_ids) !== JSON.stringify(expectedGroup.pairs)
-      || group?.provisional_default_number !== expectedGroup.numbers[0]
-      || group?.provisional_default_pair_id !== expectedGroup.pairs[0]) {
-      throw typographyError('FONT_CONTRACT_INVALID', `invalid ${name} font candidate group or provisional default`);
+      || !expectedGroup.pairs.includes(group?.default_pair_id)
+      || group?.default_number !== expectedGroup.numbers[expectedGroup.pairs.indexOf(group?.default_pair_id)]) {
+      throw typographyError('FONT_CONTRACT_INVALID', `invalid ${name} font candidate group or selected default`);
     }
   }
   const expected = {
