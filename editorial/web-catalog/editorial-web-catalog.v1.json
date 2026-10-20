@@ -104,7 +104,7 @@
     }
   },
   "catalog_version": "1.0.0",
-  "content_digest": "sha256:b3c4e884db49cb011b252b961b88f16290d6f1350b35d84eb5a1db16d54db377",
+  "content_digest": "sha256:200fb1839572c043869eef4fcd3941a40766be850b7a62bb2d65b544a7978e8a",
   "field_domains": {
     "call_to_action": {
       "max_length": 200,
@@ -302,7 +302,7 @@
     "manifest": {
       "manifest_version": "2026-10-16.1",
       "path": "editorial/entry-manifest.json",
-      "sha256": "c126cb849f017eccfdcb2d73341e8e8d7ee6d1628f2836b9d601bfaf6819bea4"
+      "sha256": "711613466f71f6cc08a4a7bbfbb7ee716665be693e6f544dc52283b1ea4d0ac3"
     },
     "note": "The AES git commit is deliberately not embedded. The consumer pins the AES commit and this file's sha256.",
     "profile_version_semantics": "<manifest_version>+<aes_commit>; the consumer supplies aes_commit from its own pin",
