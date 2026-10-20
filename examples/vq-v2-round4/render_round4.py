@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import argparse
 import base64
+from collections import deque
 import hashlib
 import html
 import json
@@ -55,6 +56,45 @@ OWNER_QUOTE = '두번째꺼가 \'훨씬\' 낫네'
 
 def sha(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def large_neutral_panel_regions(image: Image.Image) -> list[dict]:
+    """Find large, connected, near-uniform light panels in a source image."""
+    sample=image.convert("RGB")
+    sample.thumbnail((320,320),Image.Resampling.BILINEAR)
+    width,height=sample.size; pixels=sample.load(); seen=bytearray(width*height); regions=[]
+    def panel_pixel(x: int,y: int) -> bool:
+        r,g,b=pixels[x,y]
+        return min(r,g,b)>=220 and max(r,g,b)-min(r,g,b)<=32
+    for y in range(height):
+        for x in range(width):
+            start=y*width+x
+            if seen[start] or not panel_pixel(x,y): continue
+            seen[start]=1; todo=deque([(x,y)]); area=0
+            left=right=x; top=bottom=y
+            while todo:
+                px,py=todo.popleft(); area+=1
+                left=min(left,px);right=max(right,px);top=min(top,py);bottom=max(bottom,py)
+                for nx,ny in ((px-1,py),(px+1,py),(px,py-1),(px,py+1)):
+                    if 0<=nx<width and 0<=ny<height:
+                        idx=ny*width+nx
+                        if not seen[idx] and panel_pixel(nx,ny):
+                            seen[idx]=1;todo.append((nx,ny))
+            fraction=area/(width*height)
+            if fraction>=.15 and (right-left+1)/width>=.18 and (bottom-top+1)/height>=.12:
+                regions.append({"area_fraction":round(fraction,4),"bounds_normalized":[left/width,top/height,(right+1)/width,(bottom+1)/height]})
+    return sorted(regions,key=lambda region:region["area_fraction"],reverse=True)
+
+
+def panel_guard_self_test() -> dict:
+    """Prove a flat panel is rejected while its photo-only crop passes."""
+    fixture=Image.new("RGB",(320,480),(70,120,150))
+    draw=ImageDraw.Draw(fixture);draw.rectangle((0,315,319,479),fill=(247,245,237))
+    detected=large_neutral_panel_regions(fixture)
+    photo_only=fixture.crop((0,0,320,314))
+    if not detected or large_neutral_panel_regions(photo_only):
+        raise RuntimeError("panel guard synthetic negative fixture did not behave as expected")
+    return {"synthetic_panel_rejected":True,"synthetic_photo_crop_passed":True,"detected_area_fraction":detected[0]["area_fraction"]}
 
 
 def implementation_identity() -> dict:
@@ -318,15 +358,19 @@ def copy_video_inputs(out: Path) -> list[Path]:
     return [inp / f"scene-{i:02d}.png" for i in range(1,7)] + [scene4_crop,scene1_crop]
 
 
+def video_scene_assets(images: list[Path]) -> list[tuple[int,int,Path]]:
+    # output scene id, originating asset scene id, panel-free image used
+    return [(1,1,images[7]),(2,2,images[1]),(3,2,images[1]),(4,4,images[6]),(5,5,images[4]),(6,6,images[5])]
+
+
 def video_page_html(images: list[Path], render_plan: dict) -> str:
     pages = render_plan["caption_pages"]["9:16"]
     payload = json.dumps(pages, ensure_ascii=False).replace("</", "<\\/")
     # The water reference scene stays photographic. Reuse the preceding water
     # photo behind the chart facts, then crop the food image from the source
     # scene 4 card so the original cream panel is not part of the new design.
-    visual_images=[images[7],images[1],images[1],images[6],images[4],images[5]]
-    source_scene=[1,2,2,4,5,6]
-    sections = ''.join(f'<img class="vq-r3-photo scene-bg" data-scene="{i}" data-source-scene="{source_scene[i-1]}" src="{data_uri(image)}" alt="">' for i, image in enumerate(visual_images,1))
+    scene_assets=video_scene_assets(images)
+    sections = ''.join(f'<img class="vq-r3-photo scene-bg" data-scene="{scene}" data-source-scene="{source_scene}" src="{data_uri(image)}" alt="">' for scene,source_scene,image in scene_assets)
     facts='<div id="data-facts" class="vq-r3-video-facts"><div class="vq-r3-video-fact"><strong class="vq-r3-video-value">2.7L</strong><span>여성</span></div><div class="vq-r3-video-fact"><strong class="vq-r3-video-value">3.7L</strong><span>남성</span></div></div>'
     opening_title='<h1 id="opening-title" class="vq-r3-video-opening-title">하루에 물은<span>얼마나 마실까?</span></h1>'
     return f'''{head_html()}<main id="stage" class="vq-r3-card vq-r3-video vq-r3-cover">{sections}<div class="vq-r3-scrim"></div>{opening_title}<div id="data-top" class="vq-r3-video-label">총수분 참고값 · 19–30세</div>{facts}<div id="caption" class="vq-r3-video-copy"><div class="vq-r3-caption"></div><div id="data-bottom" class="vq-r3-video-label">개인별 목표가 아닌 참고값</div></div></main><script>window.CAPTION_PAGES={payload};</script></body></html>'''
@@ -381,6 +425,30 @@ def video_layout_check(page, t: float) -> dict:
 
 def render_water(out: Path) -> dict:
     images = copy_video_inputs(out)
+    panel_fixture_result=panel_guard_self_test()
+    source_controls={}
+    for source_scene,path in ((1,images[0]),(3,images[2]),(4,images[3])):
+        with Image.open(path) as source_image:
+            detected=large_neutral_panel_regions(source_image)
+        source_controls[str(source_scene)]={"source":path.name,"panel_detected":bool(detected),"regions":detected}
+        if not detected:
+            raise RuntimeError(f"panel detector failed the known source control for scene {source_scene}")
+    with Image.open(images[0]) as opening_source:
+        detected_top=source_controls["1"]["regions"][0]["bounds_normalized"][1]*opening_source.height
+    with Image.open(images[7]) as opening_crop:
+        scene1_crop_box=[0,0,opening_crop.width,opening_crop.height]
+    if scene1_crop_box[3]>detected_top+2:
+        raise RuntimeError(f"scene-01 crop overlaps its detected panel region: crop={scene1_crop_box}, panel_y={detected_top}")
+    scene_photo_checks=[]
+    for output_scene,source_scene,path in video_scene_assets(images):
+        with Image.open(path) as visible_asset:
+            panel_regions=large_neutral_panel_regions(visible_asset)
+        check={"output_scene":output_scene,"source_scene":source_scene,"source":path.name,"asset_sha256":sha(path),"embedded_panel_excluded":not bool(panel_regions),"detected_panel_regions":panel_regions}
+        if output_scene==1: check["crop_box_px"]=scene1_crop_box
+        if output_scene==4: check["crop_box_px"]=[230,635,845,1256]
+        if panel_regions:
+            raise RuntimeError(f"photo-only source check found a panel in output scene {output_scene}: {check}")
+        scene_photo_checks.append(check)
     plan = json.loads(V56_PLAN.read_text(encoding="utf-8"))
     pages = plan["caption_pages"]["9:16"]
     for cap in pages:
@@ -465,12 +533,10 @@ def render_water(out: Path) -> dict:
     ebur = run(["ffmpeg","-hide_banner","-nostats","-i",str(final),"-filter_complex","ebur128=peak=true","-f","null","-"],capture=True)
     (out/"water/ebur128.txt").write_text(ebur,encoding="utf-8")
     qa={"ffprobe":json.loads(run(["ffprobe","-v","error","-show_streams","-show_format","-of","json",str(final)],capture=True)),"ebur128_summary":next((line.strip() for line in reversed(ebur.splitlines()) if "I:" in line and "LUFS" in line),None),"source_audio_sha256":sha(source_audio),"final_audio_sha256":sha(final_audio),"audio_bitstream_identical":sha(source_audio)==sha(final_audio),"caption_pages":len(pages),"caption_source_srt_sha256":sha(V56_SRT),"caption_timing_plan_sha256":sha(V56_PLAN),"video_frame_layout_checks":round(duration*FPS),"video_layout_issues":0,"minimum_caption_font_px":None if layout_min_caption==999.0 else layout_min_caption,"minimum_support_font_px":None if layout_min_support==999.0 else layout_min_support,"support_label_visible_frames":layout_support_samples,"frames":round(duration*FPS),"samples":[str(a) for _,a,_ in before_after]}
-    with Image.open(images[7]) as opening_crop:
-        scene1_crop_box=[0,0,opening_crop.width,opening_crop.height]
-    scene_photo_checks=[{"output_scene":1,"source_scene":1,"source":"scene-01.png","photo_only_derivative":"scene-01-photo-only-crop.png","embedded_panel_excluded":True,"crop_box_px":scene1_crop_box,"rendered_frames":frame_scene_counts[1]},{"output_scene":2,"source_scene":2,"source":"scene-02.png","embedded_panel_excluded":True,"check":"photo-only source asset","rendered_frames":frame_scene_counts[2]},{"output_scene":3,"source_scene":2,"source":"scene-02.png","embedded_panel_excluded":True,"check":"data scene uses photo-only scene-02 source","rendered_frames":frame_scene_counts[3]},{"output_scene":4,"source_scene":4,"source":"scene-04.png","photo_only_derivative":"scene-04-photo-only-crop.png","embedded_panel_excluded":True,"crop_box_px":[230,635,845,1256],"rendered_frames":frame_scene_counts[4]},{"output_scene":5,"source_scene":5,"source":"scene-05.png","embedded_panel_excluded":True,"check":"photo-only source asset","rendered_frames":frame_scene_counts[5]},{"output_scene":6,"source_scene":6,"source":"scene-06.png","embedded_panel_excluded":True,"check":"full-bleed photo source asset","rendered_frames":frame_scene_counts[6]}]
+    for item in scene_photo_checks: item["rendered_frames"]=frame_scene_counts[item["output_scene"]]
     if [item["output_scene"] for item in scene_photo_checks]!=list(range(1,7)) or not all(item["embedded_panel_excluded"] and item["rendered_frames"]>0 for item in scene_photo_checks):
         raise RuntimeError("photo-only check is missing a rendered scene")
-    result={"implementation":implementation_identity(),"source_video":str(V56_VIDEO),"source_video_sha256":sha(V56_VIDEO),"assets":[{"path":str(x),"sha256":sha(x)} for x in images],"scene_01_panel_exclusion":"uniform cream lower panel detected from source pixels and cropped before rendering","scene_01_photo_crop_box_px":scene1_crop_box,"scene_04_photo_crop_box_px":[230,635,845,1256],"photo_only_scene_checks":scene_photo_checks,"photo_only_scene_frame_counts":frame_scene_counts,"opening_title":"하루에 물은 / 얼마나 마실까?","opening_title_visible_until_seconds":2.566667,"opening_duplicate_caption_hidden":True,"opening_review_sheets":opening_sheets,"water_fact_strings_displayed":["총수분 참고값","19–30세","2.7L","여성","3.7L","남성","개인별 목표가 아닌 참고값"],"duration_seconds":duration,"fps":FPS,"output":str(final),"output_sha256":sha(final),"before_after_contact_sheet":str(video_sheet),"keyframes_contact_sheet":str(after_sheet),"ebur128_path":str(out/"water/ebur128.txt"),"technical_qa":qa,"runtime":{"playwright_wall_seconds":round(render_wall,2),"process_user_cpu_seconds":round(cpu_end.ru_utime-cpu_start.ru_utime,2),"process_system_cpu_seconds":round(cpu_end.ru_stime-cpu_start.ru_stime,2),"process_max_rss_mb":round(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss/(1024*1024),1),"browser":"Chromium"}}
+    result={"implementation":implementation_identity(),"source_video":str(V56_VIDEO),"source_video_sha256":sha(V56_VIDEO),"assets":[{"path":str(x),"sha256":sha(x)} for x in images],"scene_01_panel_exclusion":"uniform cream lower panel detected from source pixels and crop boundary checked against the detected component","scene_01_source_panel_detection":source_controls["1"],"scene_01_photo_crop_box_px":scene1_crop_box,"scene_03_source_panel_detection":source_controls["3"],"scene_03_render_policy":"embedded data card source omitted; output scene uses the photo-only scene-02 asset behind deterministic fact typography","scene_04_source_panel_detection":source_controls["4"],"scene_04_photo_crop_box_px":[230,635,845,1256],"panel_guard_algorithm":{"color":"near-neutral bright pixels: min RGB >=220 and channel spread <=32","minimum_component_fraction":0.15,"minimum_component_width_fraction":0.18,"minimum_component_height_fraction":0.12,"synthetic_negative_fixture":panel_fixture_result},"photo_only_scene_checks":scene_photo_checks,"photo_only_scene_frame_counts":frame_scene_counts,"opening_title":"하루에 물은 / 얼마나 마실까?","opening_title_visible_until_seconds":2.566667,"opening_duplicate_caption_hidden":True,"opening_review_sheets":opening_sheets,"water_fact_strings_displayed":["총수분 참고값","19–30세","2.7L","여성","3.7L","남성","개인별 목표가 아닌 참고값"],"duration_seconds":duration,"fps":FPS,"output":str(final),"output_sha256":sha(final),"before_after_contact_sheet":str(video_sheet),"keyframes_contact_sheet":str(after_sheet),"ebur128_path":str(out/"water/ebur128.txt"),"technical_qa":qa,"runtime":{"playwright_wall_seconds":round(render_wall,2),"process_user_cpu_seconds":round(cpu_end.ru_utime-cpu_start.ru_utime,2),"process_system_cpu_seconds":round(cpu_end.ru_stime-cpu_start.ru_stime,2),"process_max_rss_mb":round(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss/(1024*1024),1),"browser":"Chromium"}}
     (out/"water/receipt.json").write_text(json.dumps(result,ensure_ascii=False,indent=2)+"\n",encoding="utf-8")
     return result
 
