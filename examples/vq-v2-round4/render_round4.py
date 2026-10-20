@@ -189,11 +189,13 @@ def fit_check(page, expected_strings: list[str], viewport: str) -> dict:
     text_content = page.locator(".vq-r3-card").inner_text().replace("\n", " ")
     normalized = re.sub(r"\s+", " ", text_content)
     missing = [s for s in expected_strings if re.sub(r"\s+", " ", s) not in normalized]
+    source_text = re.sub(r"\s+", " ", " ".join(expected_strings))
     counts = {value: normalized.count(re.sub(r"\s+", " ", value)) for value in expected_strings}
-    duplicates = [value for value, count in counts.items() if count != 1]
+    expected_counts = {value: source_text.count(re.sub(r"\s+", " ", value)) for value in expected_strings}
+    duplicates = [value for value, count in counts.items() if count != expected_counts[value]]
     actual_copy = "\n".join(page.locator(".copy-check").all_inner_texts())
     actual_copy = re.sub(r"\s+", " ", actual_copy).strip()
-    report.update({"viewport_label": viewport, "missing_source_strings": missing, "source_string_occurrences": counts, "non_single_source_strings": duplicates, "rendered_copy_sha256": hashlib.sha256(actual_copy.encode()).hexdigest()})
+    report.update({"viewport_label": viewport, "missing_source_strings": missing, "source_string_occurrences": counts, "expected_source_string_occurrences": expected_counts, "copy_multiplicity_mismatches": duplicates, "rendered_copy_sha256": hashlib.sha256(actual_copy.encode()).hexdigest()})
     if report["overflow"] or missing or duplicates:
         raise RuntimeError(f"{viewport} card QA failed: {report}")
     if viewport == "390x488" and report["minFont"] < 16:
