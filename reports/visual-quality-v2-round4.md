@@ -39,12 +39,12 @@ Round 1 B comparison images exist for cover, money, and JustPark and are used di
 - Repeatable offline renderer and focused browser checks: `examples/vq-v2-round4/render_round4.py`.
 - Usage, limits, and comparison provenance: `examples/vq-v2-round4/README.md`.
 - Design and rollback boundary: `docs/architecture/VQ-V2-R4.md`.
-- Render receipt, original/derived inputs, five card pairs and mobile captures, 825 frames, video, and before/after contact sheets: `/Volumes/OricoSSD/MacArchive/vq-v2-round4-final3/`.
+- Render receipt, original/derived inputs, five card pairs and mobile captures, 825 frames, video, and before/after contact sheets: `/Volumes/OricoSSD/MacArchive/vq-v2-round4-final4/`.
 - The two Round 1 B gaps are explicit; no unsupported comparison is claimed.
 
 ## 7. Decision
 
-**KEEP** the R3 grammar as an isolated, opt-in AES example. Do not promote it to a registered style or compositor default. PR #58 remains open pending a second Codex Sol low review of the corrected head.
+**KEEP** the R3 grammar as an isolated, opt-in AES example. Do not promote it to a registered style or compositor default. PR #58 remains open pending the third and final Codex Sol low review of the corrected head.
 
 ## 8. HUMAN_REQUIRED
 
