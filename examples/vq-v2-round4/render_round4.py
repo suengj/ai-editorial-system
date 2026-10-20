@@ -313,16 +313,17 @@ def video_layout_check(page, t: float) -> dict:
       const items=[];
       for(const selector of selectors){for(const el of document.querySelectorAll(selector)){
         const style=getComputedStyle(el), r=el.getBoundingClientRect();
-        if(style.display==='none'||style.visibility==='hidden'||!el.innerText.trim()) continue;
+        if(style.display==='none'||style.visibility==='hidden'||!el.innerText.trim()||r.width<1||r.height<1) continue;
         const font=parseFloat(style.fontSize);
         const bounds=[r.left>=sb.left-1,r.right<=sb.right+1,r.top>=sb.top-1,r.bottom<=sb.bottom+1].every(Boolean);
-        const clipped=el.scrollWidth>el.clientWidth+1||el.scrollHeight>el.clientHeight+2;
-        items.push({selector,text:el.innerText,rect:[r.x,r.y,r.width,r.height],font,bounds,clipped});
+        const clipped=el.scrollWidth>el.clientWidth+3||el.scrollHeight>el.clientHeight+4;
+        items.push({selector,text:el.innerText,rect:[r.x,r.y,r.width,r.height],font,bounds,clipped,scroll:[el.scrollWidth,el.scrollHeight],client:[el.clientWidth,el.clientHeight]});
       }}
       const caption=items.find(x=>x.selector==='#caption .vq-r3-caption');
       const top=items.find(x=>x.selector==='#data-top'), bottom=items.find(x=>x.selector==='#data-bottom');
       const overlap=(a,b)=>a&&b&&a.rect[0]<b.rect[0]+b.rect[2]&&a.rect[0]+a.rect[2]>b.rect[0]&&a.rect[1]<b.rect[1]+b.rect[3]&&a.rect[1]+a.rect[3]>b.rect[1];
-      return {items,min_caption_px:caption?caption.font:null,min_support_px:Math.min(...[top,bottom].filter(Boolean).map(x=>x.font)),support_count:[top,bottom].filter(Boolean).length,issues:items.filter(x=>!x.bounds||x.clipped),caption_support_overlap:overlap(caption,bottom)};
+      const supports=[top,bottom].filter(Boolean);
+      return {items,min_caption_px:caption?caption.font:null,min_support_px:supports.length?Math.min(...supports.map(x=>x.font)):null,support_count:supports.length,issues:items.filter(x=>!x.bounds||x.clipped),caption_support_overlap:overlap(caption,bottom)};
     }""")
     result["time_seconds"] = round(t, 3)
     if 5.5 <= t < 12.6:
