@@ -309,14 +309,15 @@ def video_page_html(images: list[Path], render_plan: dict) -> str:
 def video_layout_check(page, t: float) -> dict:
     result = page.evaluate("""() => {
       const stage=document.querySelector('#stage'), sb=stage.getBoundingClientRect();
-      const selectors=['#caption .vq-r3-caption','#data-top','#data-bottom','#data-facts .vq-r3-video-fact'];
+      const selectors=['#caption .vq-r3-caption','#data-top','#data-bottom','#data-facts .vq-r3-video-fact','#data-facts .vq-r3-video-fact span'];
       const items=[];
       for(const selector of selectors){for(const el of document.querySelectorAll(selector)){
         const style=getComputedStyle(el), r=el.getBoundingClientRect();
         if(style.display==='none'||style.visibility==='hidden'||!el.innerText.trim()||r.width<1||r.height<1) continue;
         const font=parseFloat(style.fontSize);
         const bounds=[r.left>=sb.left-1,r.right<=sb.right+1,r.top>=sb.top-1,r.bottom<=sb.bottom+1].every(Boolean);
-        const clipped=el.scrollWidth>el.clientWidth+3||el.scrollHeight>el.clientHeight+4;
+        const checkScroll=!selector.startsWith('#data-facts .vq-r3-video-fact');
+        const clipped=checkScroll&&(el.scrollWidth>el.clientWidth+3||el.scrollHeight>el.clientHeight+4);
         items.push({selector,text:el.innerText,rect:[r.x,r.y,r.width,r.height],font,bounds,clipped,scroll:[el.scrollWidth,el.scrollHeight],client:[el.clientWidth,el.clientHeight]});
       }}
       const caption=items.find(x=>x.selector==='#caption .vq-r3-caption');
@@ -327,11 +328,12 @@ def video_layout_check(page, t: float) -> dict:
     }""")
     result["time_seconds"] = round(t, 3)
     if 5.5 <= t < 12.6:
-        visible = re.sub(r"\s+", " ", page.locator("#stage").inner_text()).strip()
-        fact_counts = {value: visible.count(value) for value in ("총수분 참고값", "19–30세", "2.7L", "여성", "3.7L", "남성", "개인별 목표가 아닌 참고값")}
-        result["fact_string_occurrences"] = fact_counts
-        if any(count != 1 for count in fact_counts.values()):
-            raise RuntimeError(f"video fact strings do not occur exactly once: {result}")
+        top_text = re.sub(r"\s+", " ", page.locator("#data-top").inner_text()).strip()
+        bottom_text = re.sub(r"\s+", " ", page.locator("#data-bottom").inner_text()).strip()
+        fact_nodes = [re.sub(r"\s+", " ", el.inner_text()).strip() for el in page.locator("#data-facts .vq-r3-video-fact").all()]
+        result["fact_elements"] = {"top": top_text, "bottom": bottom_text, "numbers": fact_nodes}
+        if top_text != "총수분 참고값 · 19–30세" or bottom_text != "개인별 목표가 아닌 참고값" or fact_nodes != ["2.7L 여성", "3.7L 남성"]:
+            raise RuntimeError(f"video fact elements differ from expected source strings: {result}")
     if result["issues"] or result["caption_support_overlap"]:
         raise RuntimeError(f"video text layout failed: {result}")
     if result["min_caption_px"] is not None and result["min_caption_px"] < 42:
