@@ -1,0 +1,9 @@
+# VQ-V2 Round 14 — font defaults and infographic scenes
+
+Round 14 completed 2026-10-20. Full render artifacts and evidence are archived at [`/Volumes/OricoSSD/MacArchive/vq-v2-round14/round14-report.md`](</Volumes/OricoSSD/MacArchive/vq-v2-round14/round14-report.md>).
+
+AES is the font-policy source of truth. Video and R7 illustrated styles default to candidate 1 Pretendard/Pretendard; R4 photo defaults to candidate 3 Noto Serif KR/Pretendard. Each selection is marked `OWNER_SELECTED`; the global default remains undecided. Changing one style's `default_pair_id` and matching `default_number` in `editorial/font-preferences.v1.json` changes the font Shorts Gen resolves. The edit procedure is documented in three lines in `editorial/FONT-DEFAULTS.md`.
+
+The two scene concepts and selection rationale, Round 13 versus Round 14 comparison sheets, final videos, hashes, caption-safety calculations, and local source asset references are in the archive report and [visual check receipt](</Volumes/OricoSSD/MacArchive/vq-v2-round14/evidence/round14-visual-checks.json>). The selected photo-overlay concept enlarges the 2.7L / 3.7L figures, fills the prior visual gap, and retains the source line and water-plus-food explanation. Both aspect ratios were rendered using the unchanged narration WAV and captions SRT; AAC round-trip payload hashes match Round 13 exactly. Caption/content overlap count is zero for the checked scenes.
+
+Implementation PRs: AES [#70](https://github.com/suengj/ai-editorial-system/pull/70), AES provenance [#71](https://github.com/suengj/ai-editorial-system/pull/71), and Shorts Gen [#31](https://github.com/suengj/shorts_gen/pull/31). Relevant font tests, catalog checks, lint, and whitespace validation passed. Renderer concurrency stayed at one; MacGuard returned OK. No deployment or service restart was performed.
