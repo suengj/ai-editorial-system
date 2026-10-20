@@ -163,7 +163,10 @@ export function planCarousel(series, catalog=loadVisualRecipes()) {
         ];
       } else if (style.style === 'R7' && images.length === 1 && texts.length <= 1 && frameBlocks.length === images.length + texts.length) {
         layoutName = 'r7-illustration';
-        frameBlocks = frameBlocks.map((b) => ({ ...b, region: b.kind === 'image' ? 'art' : 'copy' }));
+        frameBlocks = [
+          { id: 'vq-r7-artwork', region: 'art', kind: 'generated', instruction: 'Replace the unsuitable source photo with one clear, nonverbal illustration that supports this card’s stated takeaway.' },
+          ...texts.map((b) => ({ ...b, region: 'copy' })),
+        ];
       }
     }
     const layout = layouts[layoutName];
