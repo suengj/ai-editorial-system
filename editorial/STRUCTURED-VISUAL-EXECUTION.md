@@ -37,6 +37,17 @@
 
 ## 3. 같은 규칙, 두 실행 경로
 
+### 실행 전·후 필수 보고 (native / ChatGPT 등)
+
+실제 실행을 시작하기 전에 세션은 두 처리 영역을 구분해 먼저 선언한다.
+
+| 영역 | 허용 작업 | 금지/주의 |
+| --- | --- | --- |
+| 이미지 모델 생성 | 배경·장식 일러스트만 생성 | 수치·문자·출처·제공 사진을 모델이 카드에 직접 그리지 않는다. 카드 전체를 한 번에 생성하지 않는다. |
+| 결정론적 합성 | 정확한 텍스트·숫자·출처 렌더, 제공 사진 배치·허용 크롭·리사이즈, 최종 카드 출력 | 실제 수행하지 않은 단계는 실행했다고 기록하지 않는다. |
+
+세션 시작 시 `image model: <배경/일러스트만 또는 미사용>`과 `deterministic: <텍스트·수치·출처·제공 사진 합성 도구>`를 선언한다. 각 산출물마다 실제 사진 입력/재생성 여부, 크롭·리사이즈와 crop box, 텍스트·숫자를 렌더한 주체, 최종 픽셀 크기, 원본/결과 hash를 표로 보고한다. 처리 과정을 확인할 수 없거나 보고를 빠뜨린 이미지는 `GENERATED_UNVERIFIED`; 문자·수치·출처/제공 사진을 이미지 모델이 렌더했으면 `MODEL_TEXT_OR_SOURCE_VIOLATION`으로 기록하고 정확성 PASS를 부여하지 않는다. `RENDERED_NEEDS_REVIEW`는 결정론 합성·출력 receipt가 확인된 뒤에만 쓴다.
+
 **기사/기존 visual-job**: 실제 job을 `job_ref`로 연결한다. 기존 validator와 prompt compiler를 호출하며 VisualBrief/RenderSpec를 execution packet에 참조한다. 승인 잠긴 job은 기존 approved-media 경로로 보내고 새 생성 packet으로 열지 않는다. 작업별 합성 옵션은 원래 compiled prompt를 손으로 고치는 근거가 아니다. 기사/claim 승인 경로의 통합 실증은 Phase 4에서 별도로 확인한다.
 
 **글 없는 source-only 요청**: 원자료 파일과 요청에서 시작한다. 실행 sidecar를 사용하고 가짜 `article_id`/claims를 만들지 않는다. source-only 로컬 문자/사진/차트 합성과 준비된 생성 master를 지원한다. 이것은 기사 기반 VisualBrief의 대체 스키마도, 자동 사실 검증기도 아니다. `source_bound`는 파일 연결 상태이지 사실 검증 통과가 아니다. 가상 자료는 `illustrative`로 표시하며 실제 수치의 근거로 쓰지 않는다.
@@ -98,6 +109,32 @@ receipt는 **무결성 확인(integrity-checked)** 용이지 **암호학적 인�
 `resolve-editorial --plan`의 기본 task kind는 `visual`이다(렌더 대상이므로).
 
 원본 그림/글꼴 파일을 저장소에 넣지 않는다. 실제 사용자 파일은 기존 Drive/local locator, 생성물은 기존 전달 계층에 두며 이 저장소에는 작은 가상 테스트 자료만 둔다.
+
+### Native Python/Pillow 카드 레시피
+
+`examples/native-card-recipe.py`는 저장소 1:1·4:5 card grid를 Pillow에서 재현하는 짧은 참조 구현이다. 사진·글자·수치는 모두 합성 단계에서 처리하며 이미지 모델을 호출하지 않는다. `--font-regular`, `--font-semibold`, `--font-extrabold`는 native Python 실행 환경에서 접근 가능한 실제 폰트 파일을 지정한다. 기본값·OS 서체 대체는 허용하지 않으며, 선택한 폰트 파일 경로와 SHA-256을 실행 기록에 남긴다.
+
+결정론 테스트는 Pillow가 필수다. `python3 -m pip install -r examples/requirements-native-card.txt`로 고정 버전을 설치하고 `npm run test:native-card-recipe`를 실행한다. Pillow를 찾지 못하면 테스트는 skip하지 않고 실패한다.
+
+| Canvas | 외곽 여백 | 제목(semibold) | 본문/수치(extrabold) | 사진 슬롯 |
+| --- | --- | --- | --- | --- |
+| 1:1, 1080×1080 | 좌우 72px, 상단 64px, 하단 52px | x=72, y=120/210, w=936, size 72px | x=72/558, label 28px, value y=828, 68px | x=196, y=352, w=688, h=380 |
+| 4:5, 1080×1350 | 좌우 72px, 상단 64px, 하단 52px | x=72, y=130/220, w=936, size 76px | x=72/558, label 28px, value y=968, 72px | x=196, y=390, w=688, h=480 |
+
+두 수치 열은 각각 450px 폭이다. 출처는 y=canvas−154의 23px regular, 주의 문구는 y=canvas−104의 27px semibold다. 제목/사진 및 사진/수치 슬롯 사이는 최소 48px다. 사진 슬롯은 기본 `cover` center crop을 쓰고 `--fit contain`으로 맞추면 남는 공간을 카드 배경색으로 채운다. Cover는 원본을 덮어쓰지 않고 별도 canvas에만 적용하며, `(left, top, right, bottom)` 원본 픽셀 crop box를 receipt에 기록한다. Receipt에는 레시피 파일 SHA-256, Python/Pillow 버전, 글꼴 파일 hash, 레이아웃 좌표, 원본·출력 hash가 포함된다. source/font/recipe 입력 경로를 출력/receipt 경로와 충돌시키면 저장 전에 실패한다.
+
+소스 가로/세로 해상도가 슬롯 표시 크기보다 하나라도 작으면 `UPSCALE_WARNING`과 필요한 확대 배율을 기록한다. 예를 들어 496px 이미지를 688px 이상으로 표시할 때 경고한다. warning은 자동 확대를 막지는 않지만 가독/품질 리뷰에서 숨겨서는 안 된다. 저장소 renderer receipt의 `images[].resolution`도 동일 상태를 남긴다.
+
+```bash
+python3 examples/native-card-recipe.py --source /path/to/water-01.png \
+  --out /tmp/water-card.png --aspect 1:1 \
+  --font-regular assets/fonts/aes-sans-kr/AESSansKR-Regular.otf \
+  --font-semibold assets/fonts/aes-sans-kr/AESSansKR-SemiBold.otf \
+  --font-extrabold assets/fonts/aes-sans-kr/AESSansKR-ExtraBold.otf \
+  --receipt /tmp/water-card.json
+```
+
+이 스크립트는 레이아웃 참조이며 본 과제의 카드 증거는 아래 저장소 `render-visual` 실행 및 receipt로 따로 생성한다.
 
 ## 5. 내부 실행 sidecar의 최소 구조
 

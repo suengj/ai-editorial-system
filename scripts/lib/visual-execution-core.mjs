@@ -428,7 +428,19 @@ export async function executeVisual(plan, { baseDir = process.cwd(), preset = {}
         const el = imageElement(file, l);
         elements.push(el);
         if (isGeneratedLayer(l)) generated.push({ layer: l, el });
-        imageEvidence.push({ id: l.id, ref: l.ref, source_sha256: file.sha256, mode: l.mode, fit: l.fit, source_geometry: l.native_geometry, slot: b, rights_note: l.rights_note, protect: l.protect ?? [] });
+        const requiredScale = l.fit === 'cover'
+          ? Math.max(b.width / l.native_geometry.width, b.height / l.native_geometry.height)
+          : Math.min(b.width / l.native_geometry.width, b.height / l.native_geometry.height);
+        imageEvidence.push({
+          id: l.id, ref: l.ref, source_sha256: file.sha256, mode: l.mode, fit: l.fit,
+          source_geometry: l.native_geometry, slot: b,
+          resolution: {
+            required_scale: Number(requiredScale.toFixed(4)),
+            upsampled: requiredScale > 1,
+            status: requiredScale > 1 ? 'UPSCALE_WARNING' : 'NATIVE_OR_DOWNSCALE',
+          },
+          rights_note: l.rights_note, protect: l.protect ?? [],
+        });
       }
     }
     // Background watermarks may sit below evidence marks, but not below copy.
