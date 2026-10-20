@@ -1,0 +1,111 @@
+/*
+ * VQ-V2 R3 direction grammar for AES-owned experiments.
+ * Link this file explicitly on an opted-in render. It is not registered as an
+ * AES default and does not alter the existing compositor.
+ */
+:root {
+  --vq-r3-ink: #101820;
+  --vq-r3-paper: #f7f5ed;
+  --vq-r3-yellow: #f5d547;
+  --vq-r3-blue: #74d6f4;
+  --vq-r3-scrim-top: linear-gradient(180deg, rgb(5 10 16 / .58), transparent 29%);
+  --vq-r3-scrim-bottom: linear-gradient(0deg, rgb(5 10 16 / .88), rgb(5 10 16 / .42) 44%, transparent 79%);
+  --vq-r3-title: clamp(36px, 8.8vw, 104px);
+  --vq-r3-title-secondary: clamp(30px, 7vw, 82px);
+  --vq-r3-body: clamp(20px, 4.4vw, 48px);
+  --vq-r3-fact: clamp(17px, 3.6vw, 40px);
+  --vq-r3-label: clamp(16px, 3.2vw, 36px);
+  --vq-r3-number: clamp(58px, 13vw, 150px);
+  --vq-r3-min-readable: 16px;
+  --vq-r3-gutter: clamp(24px, 6vw, 72px);
+  --vq-r3-radius: 0px;
+}
+
+* { box-sizing: border-box; }
+
+.vq-r3-card {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  flex-direction: column;
+  width: min(100vw, 1080px);
+  aspect-ratio: 4 / 5;
+  overflow: hidden;
+  color: var(--vq-r3-paper);
+  background: var(--vq-r3-ink);
+  font-family: "AES Sans KR", sans-serif;
+}
+
+.vq-r3-photo, .vq-r3-scrim { position: absolute; inset: 0; width: 100%; height: 100%; }
+.vq-r3-photo { z-index: -2; object-fit: cover; }
+.vq-r3-scrim { z-index: -1; background: var(--vq-r3-scrim-top), var(--vq-r3-scrim-bottom); }
+.vq-r3-header, .vq-r3-footer { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding-inline: var(--vq-r3-gutter); }
+.vq-r3-header { min-height: 12%; padding-top: 2%; color: white; font-size: var(--vq-r3-label); font-weight: 800; letter-spacing: .04em; text-shadow: 0 2px 12px rgb(0 0 0 / .8), 0 1px 3px #000; }
+.vq-r3-footer { min-height: 8%; margin-top: auto; padding-bottom: 2.5%; font-size: var(--vq-r3-label); font-weight: 700; text-shadow: 0 2px 10px #000; }
+.vq-r3-title { max-width: 100%; margin: 0; font-size: var(--vq-r3-title); line-height: 1.12; letter-spacing: -.045em; font-weight: 900; text-wrap: pretty; word-break: keep-all; text-shadow: 0 3px 20px rgb(0 0 0 / .58); }
+.vq-r3-title-secondary { font-size: var(--vq-r3-title-secondary); line-height: 1.17; }
+.vq-r3-accent { color: var(--vq-r3-yellow); }
+.vq-r3-accent[data-tone="blue"] { color: var(--vq-r3-blue); }
+.vq-r3-body { max-width: 920px; margin: 0; font-size: var(--vq-r3-body); line-height: 1.3; font-weight: 600; word-break: keep-all; text-shadow: 0 2px 12px rgb(0 0 0 / .82); }
+
+/* cover: full photo, protected brand label, oversized question/title */
+.vq-r3-cover .vq-r3-copy { display: grid; gap: 28px; margin-top: auto; padding: 0 var(--vq-r3-gutter) 7%; }
+.vq-r3-cover .vq-r3-series { display: inline-flex; width: fit-content; padding: 5px 0; color: white; font-size: var(--vq-r3-label); font-weight: 800; text-shadow: 0 2px 14px #000, 0 0 5px #000; }
+
+/* fact: one large numeric focal point and a clean support line */
+.vq-r3-fact .vq-r3-copy { display: grid; gap: 22px; margin-block: auto; padding: 6% var(--vq-r3-gutter); }
+.vq-r3-numbers { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6%; align-items: end; }
+.vq-r3-number { font-size: var(--vq-r3-number); line-height: .94; letter-spacing: -.06em; font-weight: 900; }
+.vq-r3-number-label { display: block; margin-top: 10px; font-size: var(--vq-r3-label); line-height: 1.15; font-weight: 800; }
+
+/* flow: unboxed deterministic diagram; line/arrows carry the relation */
+.vq-r3-flow .vq-r3-copy { display: grid; gap: 28px; margin-block: auto; padding: 6% var(--vq-r3-gutter); }
+.vq-r3-flowline { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 14px; }
+.vq-r3-flow-support { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6%; padding-top: 12px; border-top: 1px solid rgb(255 255 255 / .36); }
+.vq-r3-flow-node { min-width: 0; font-size: var(--vq-r3-fact); line-height: 1.18; font-weight: 800; word-break: keep-all; }
+.vq-r3-flow-arrow { color: var(--vq-r3-yellow); font-size: clamp(25px, 6vw, 64px); font-weight: 800; }
+.vq-r3-flow-note { border-left: 5px solid var(--vq-r3-yellow); padding-left: 18px; font-size: var(--vq-r3-body); line-height: 1.27; font-weight: 700; }
+
+/* list: open rows with typographic markers, no cards or cream panels */
+.vq-r3-list .vq-r3-copy { display: grid; gap: 24px; margin-block: auto; padding: 5% var(--vq-r3-gutter); }
+.vq-r3-list-items { display: grid; gap: 14px; }
+.vq-r3-list-item { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 18px; align-items: start; padding-block: 10px; border-bottom: 1px solid rgb(255 255 255 / .36); font-size: var(--vq-r3-fact); line-height: 1.25; font-weight: 700; word-break: keep-all; }
+.vq-r3-list-index { color: var(--vq-r3-yellow); font-size: var(--vq-r3-label); font-weight: 900; }
+.parking-graphic { position: relative; display: flex; align-items: stretch; justify-content: space-around; height: clamp(72px, 13vw, 144px); margin-block: 4px 8px; border-bottom: 3px solid rgb(255 255 255 / .8); border-top: 1px dashed rgb(255 255 255 / .55); }
+.parking-graphic i { display: block; width: 12%; border-inline: 2px solid rgb(245 213 71 / .86); transform: skewY(-9deg); }
+.parking-graphic b { position: absolute; right: 12%; bottom: 12%; width: 12%; height: 34%; border: 3px solid var(--vq-r3-blue); border-radius: 35% 35% 8% 8%; box-shadow: inset 0 -8px 0 rgb(116 214 244 / .24); }
+
+/* video captions use an open text field over a full-frame image. */
+.vq-r3-video { width: 100vw; max-width: 1080px; aspect-ratio: 9 / 16; }
+.vq-r3-video .vq-r3-title { font-size: clamp(52px, 9vw, 96px); }
+.vq-r3-video-copy { position: absolute; inset-inline: var(--vq-r3-gutter); bottom: 14%; display: grid; gap: 22px; }
+.vq-r3-video #data-top { position: absolute; top: 14%; inset-inline: var(--vq-r3-gutter); }
+.vq-r3-caption { font-size: clamp(42px, 7.8vw, 84px); line-height: 1.09; font-weight: 900; letter-spacing: -.035em; word-break: keep-all; text-shadow: 0 3px 22px #000, 0 1px 5px #000; }
+.vq-r3-caption .revealed { color: white; }
+.vq-r3-caption .current { color: var(--vq-r3-yellow); }
+.vq-r3-video-label { width: fit-content; max-width: 100%; padding: 0; font-size: clamp(44px, 5.2vw, 56px); line-height: 1.14; font-weight: 800; word-break: keep-all; text-shadow: 0 2px 14px #000, 0 1px 4px #000; }
+.vq-r3-video-label + .vq-r3-video-label { margin-top: 4px; }
+.vq-r3-video-facts { position: absolute; top: 39%; inset-inline: var(--vq-r3-gutter); display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 8%; align-items: end; text-shadow: 0 3px 24px #000; }
+.vq-r3-video-fact { font-size: clamp(128px, 23vw, 240px); line-height: .9; letter-spacing: -.06em; font-weight: 900; color: var(--vq-r3-yellow); }
+.vq-r3-video-value { display: block; font-size: inherit; line-height: .9; }
+.vq-r3-video-fact span { display: block; margin-top: 14px; color: white; font-size: clamp(48px, 7.5vw, 76px); line-height: 1; letter-spacing: 0; }
+.vq-r3-video-fact:last-child { color: var(--vq-r3-blue); }
+
+@media (max-width: 600px) {
+  .vq-r3-header, .vq-r3-footer, .vq-r3-series, .vq-r3-list-index, .vq-r3-number-label { font-size: max(16px, var(--vq-r3-label)); }
+  .vq-r3-footer { position: absolute; inset-inline: 0; bottom: 0; min-height: 32px; margin-top: 0; padding: 0 var(--vq-r3-gutter) 2px; }
+  .vq-r3-cover .vq-r3-copy, .vq-r3-fact .vq-r3-copy, .vq-r3-flow .vq-r3-copy, .vq-r3-list .vq-r3-copy { gap: 16px; }
+  .vq-r3-cover .vq-r3-copy { position: absolute; inset-inline: var(--vq-r3-gutter); bottom: 48px; margin: 0; padding: 0; gap: 8px; }
+  .vq-r3-flow .vq-r3-copy { margin: 0; padding: 8px var(--vq-r3-gutter) 20px; }
+  .vq-r3-flowline { gap: 7px; }
+  .vq-r3-flow-support { gap: 10px; }
+  .vq-r3-flow-arrow { font-size: 28px; }
+  .vq-r3-flow-node, .vq-r3-list-item { font-size: max(var(--vq-r3-fact), 16px); }
+  .vq-r3-list-items { gap: 6px; }
+  .vq-r3-list .vq-r3-copy { gap: 10px; margin-top: 0; padding: 8px var(--vq-r3-gutter) 44px; }
+  .vq-r3-list-items { gap: 2px; }
+  .vq-r3-list-item { padding-block: 3px; line-height: 1.17; }
+  .parking-graphic { height: 56px; margin-block: 0 2px; }
+  .parking-graphic i { border-width: 1px; }
+  .parking-graphic b { border-width: 2px; }
+}
