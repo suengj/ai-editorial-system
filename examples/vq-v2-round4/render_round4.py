@@ -316,15 +316,16 @@ def video_layout_check(page, t: float) -> dict:
         if(style.display==='none'||style.visibility==='hidden'||!el.innerText.trim()||r.width<1||r.height<1) continue;
         const font=parseFloat(style.fontSize);
         const bounds=[r.left>=sb.left-1,r.right<=sb.right+1,r.top>=sb.top-1,r.bottom<=sb.bottom+1].every(Boolean);
-        const checkScroll=selector!=='#data-facts .vq-r3-video-fact';
-        const clipped=checkScroll&&(el.scrollWidth>el.clientWidth+3||el.scrollHeight>el.clientHeight+4);
-        items.push({selector,text:el.innerText,rect:[r.x,r.y,r.width,r.height],font,bounds,clipped,scroll:[el.scrollWidth,el.scrollHeight],client:[el.clientWidth,el.clientHeight]});
+        const range=document.createRange(); range.selectNodeContents(el); const tr=range.getBoundingClientRect();
+        const textBounds=[tr.left>=sb.left-1,tr.right<=sb.right+1,tr.top>=sb.top-1,tr.bottom<=sb.bottom+1].every(Boolean);
+        const clipped=el.scrollWidth>el.clientWidth+3;
+        items.push({selector,text:el.innerText,rect:[r.x,r.y,r.width,r.height],text_rect:[tr.x,tr.y,tr.width,tr.height],font,bounds,text_bounds:textBounds,clipped,scroll:[el.scrollWidth,el.scrollHeight],client:[el.clientWidth,el.clientHeight]});
       }}
       const caption=items.find(x=>x.selector==='#caption .vq-r3-caption');
       const top=items.find(x=>x.selector==='#data-top'), bottom=items.find(x=>x.selector==='#data-bottom');
       const overlap=(a,b)=>a&&b&&a.rect[0]<b.rect[0]+b.rect[2]&&a.rect[0]+a.rect[2]>b.rect[0]&&a.rect[1]<b.rect[1]+b.rect[3]&&a.rect[1]+a.rect[3]>b.rect[1];
       const supports=[top,bottom].filter(Boolean);
-      return {items,min_caption_px:caption?caption.font:null,min_support_px:supports.length?Math.min(...supports.map(x=>x.font)):null,support_count:supports.length,issues:items.filter(x=>!x.bounds||x.clipped),caption_support_overlap:overlap(caption,bottom)};
+      return {items,min_caption_px:caption?caption.font:null,min_support_px:supports.length?Math.min(...supports.map(x=>x.font)):null,support_count:supports.length,issues:items.filter(x=>!x.bounds||!x.text_bounds||x.clipped),caption_support_overlap:overlap(caption,bottom)};
     }""")
     result["time_seconds"] = round(t, 3)
     if 5.5 <= t < 12.6:
