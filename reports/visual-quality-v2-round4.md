@@ -23,7 +23,7 @@ Round 1 B comparison images exist for cover, money, and JustPark and are used di
 
 ## 4. Quality Assessment (Technical vs Aesthetic)
 
-**Technical:** All five cards rendered at 1080×1350 and 390×488. Exact source strings were checked. Browser overflow/clipping is false for every card; minimum visible mobile type is 16 CSS px. The video is H.264 1080×1920, 30fps, 27.500s, 825 frames, with eight v56 caption pages. Every caption line is reconstructed from the v56 plan's source word strings. The AAC audio track is bitstream-identical to v56. FFprobe and ebur128 passed: integrated loudness −14.3 LUFS, LRA 1.8 LU, true peak −1.7 dBFS. Final video SHA-256: `91e251d2200e4b175cadcd5ace52052315e513eb5a463e3b45a7a057af5d87ee`.
+**Technical:** All five cards rendered at 1080×1350 and 390×488. Exact source strings were checked. Browser overflow/clipping is false for every card. Every source string's actual occurrence count matches the frozen source count, including the single opportunity CTA; minimum visible mobile type is 16 CSS px. The video is H.264 1080×1920, 30fps, 27.500s, 825 frames, with eight v56 caption pages. Every caption line is reconstructed from the v56 plan's source word strings. All 825 frame states ran computed bounds, clipping, caption/support overlap, and font-floor checks: caption minimum 84 CSS px and visible support-label minimum 56 CSS px (44px floor), across 213 fact-scene frames. The exact source fact strings were checked in their respective DOM elements. The AAC audio track is bitstream-identical to v56. FFprobe and ebur128 passed: integrated loudness −14.3 LUFS, LRA 1.8 LU, true peak −1.7 dBFS. Final video SHA-256: `20ef0fe8dcf4800dd37e3223098c39b0af92df9e91a5208a89b9e7c19e89bc40`.
 
 **Aesthetic:** Direct inspection of the five-card comparison, the actual 390px cards, the eight-frame before/after sheet, and individual data/food frames finds the Round 3 direction carried through consistently. This is an implementation review, not Owner's final aesthetic acceptance. `OWNER_ACCEPTED` remains false/unestablished.
 
@@ -31,7 +31,7 @@ Round 1 B comparison images exist for cover, money, and JustPark and are used di
 
 - Round 4 provider calls: 0; paid spend: **USD 0.00**.
 - Cumulative Round 2–4 estimate remains **USD 0.012790 / USD 2.00**.
-- Playwright rendered 825 video frames in 71.5s; Python process CPU was 3.93s user + 1.03s system, peak RSS 159.0 MB. FFmpeg assembled the video and reused v56 AAC without re-encoding.
+- Final Playwright run rendered and checked 825 video frames in 74.08s; Python process CPU was 4.69s user + 1.08s system, peak RSS 175 MB. FFmpeg assembled the video and reused v56 AAC without re-encoding.
 
 ## 6. Implementation
 
@@ -39,12 +39,12 @@ Round 1 B comparison images exist for cover, money, and JustPark and are used di
 - Repeatable offline renderer and focused browser checks: `examples/vq-v2-round4/render_round4.py`.
 - Usage, limits, and comparison provenance: `examples/vq-v2-round4/README.md`.
 - Design and rollback boundary: `docs/architecture/VQ-V2-R4.md`.
-- Render receipt, original/derived inputs, five card pairs and mobile captures, 825 frames, video, and before/after contact sheets: `/Volumes/OricoSSD/MacArchive/vq-v2-round4-final2/`.
+- Render receipt, original/derived inputs, five card pairs and mobile captures, 825 frames, video, and before/after contact sheets: `/Volumes/OricoSSD/MacArchive/vq-v2-round4-final3/`.
 - The two Round 1 B gaps are explicit; no unsupported comparison is claimed.
 
 ## 7. Decision
 
-**KEEP** the R3 grammar as an isolated, opt-in AES example. Do not promote it to a registered style or compositor default. Review and merge of the Round 4 implementation remain subject to the requested Codex Sol low review.
+**KEEP** the R3 grammar as an isolated, opt-in AES example. Do not promote it to a registered style or compositor default. PR #58 remains open pending a second Codex Sol low review of the corrected head.
 
 ## 8. HUMAN_REQUIRED
 

@@ -22,6 +22,8 @@ python3 examples/vq-v2-round4/render_round4.py --out /Volumes/OricoSSD/MacArchiv
 
 `--cards-only` and `--video-only` can be used for focused reruns with a new, empty `--out` directory. The script refuses to overwrite an occupied output directory. It blocks remote browser requests; source images and fonts are embedded for offline HTML rendering.
 
+The receipt binds outputs to the exact clean Git commit, renderer SHA-256, and stylesheet SHA-256. It records actual rendered-copy hashes and verifies source-string occurrence counts. The video renderer checks every frame for visible text bounds/clipping, the 42px caption and 44px support-label floors, and the seven fact strings in their dedicated elements.
+
 The card baseline sheet uses direct Round 1 B browser renders for cover, money, and JustPark. Round 1 B did not render YourParkingSpace or opportunity, so their comparison cells use the archived AES source outputs and state that limit in the receipt and sheet labels.
 
 ## Evidence boundaries
