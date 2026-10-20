@@ -302,21 +302,21 @@ def video_page_html(images: list[Path], render_plan: dict) -> str:
     # scene 4 card so the original cream panel is not part of the new design.
     visual_images=[images[0],images[1],images[1],images[6],images[4],images[5]]
     sections = ''.join(f'<img class="vq-r3-photo scene-bg" data-scene="{i}" src="{data_uri(image)}" alt="">' for i, image in enumerate(visual_images,1))
-    facts='<div id="data-facts" class="vq-r3-video-facts"><div class="vq-r3-video-fact">2.7L<span>여성</span></div><div class="vq-r3-video-fact">3.7L<span>남성</span></div></div>'
+    facts='<div id="data-facts" class="vq-r3-video-facts"><div class="vq-r3-video-fact"><strong class="vq-r3-video-value">2.7L</strong><span>여성</span></div><div class="vq-r3-video-fact"><strong class="vq-r3-video-value">3.7L</strong><span>남성</span></div></div>'
     return f'''{head_html()}<main id="stage" class="vq-r3-card vq-r3-video vq-r3-cover">{sections}<div class="vq-r3-scrim"></div><div id="data-top" class="vq-r3-video-label">총수분 참고값 · 19–30세</div>{facts}<div id="caption" class="vq-r3-video-copy"><div class="vq-r3-caption"></div><div id="data-bottom" class="vq-r3-video-label">개인별 목표가 아닌 참고값</div></div></main><script>window.CAPTION_PAGES={payload};</script></body></html>'''
 
 
 def video_layout_check(page, t: float) -> dict:
     result = page.evaluate("""() => {
       const stage=document.querySelector('#stage'), sb=stage.getBoundingClientRect();
-      const selectors=['#caption .vq-r3-caption','#data-top','#data-bottom','#data-facts .vq-r3-video-fact','#data-facts .vq-r3-video-fact span'];
+      const selectors=['#caption .vq-r3-caption','#data-top','#data-bottom','#data-facts .vq-r3-video-fact','#data-facts .vq-r3-video-value','#data-facts .vq-r3-video-fact span'];
       const items=[];
       for(const selector of selectors){for(const el of document.querySelectorAll(selector)){
         const style=getComputedStyle(el), r=el.getBoundingClientRect();
         if(style.display==='none'||style.visibility==='hidden'||!el.innerText.trim()||r.width<1||r.height<1) continue;
         const font=parseFloat(style.fontSize);
         const bounds=[r.left>=sb.left-1,r.right<=sb.right+1,r.top>=sb.top-1,r.bottom<=sb.bottom+1].every(Boolean);
-        const checkScroll=!selector.startsWith('#data-facts .vq-r3-video-fact');
+        const checkScroll=selector!=='#data-facts .vq-r3-video-fact';
         const clipped=checkScroll&&(el.scrollWidth>el.clientWidth+3||el.scrollHeight>el.clientHeight+4);
         items.push({selector,text:el.innerText,rect:[r.x,r.y,r.width,r.height],font,bounds,clipped,scroll:[el.scrollWidth,el.scrollHeight],client:[el.clientWidth,el.clientHeight]});
       }}

@@ -87,6 +87,7 @@
 .vq-r3-video-label + .vq-r3-video-label { margin-top: 4px; }
 .vq-r3-video-facts { position: absolute; top: 39%; inset-inline: var(--vq-r3-gutter); display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 8%; align-items: end; text-shadow: 0 3px 24px #000; }
 .vq-r3-video-fact { font-size: clamp(128px, 23vw, 240px); line-height: .9; letter-spacing: -.06em; font-weight: 900; color: var(--vq-r3-yellow); }
+.vq-r3-video-value { display: block; font-size: inherit; line-height: .9; }
 .vq-r3-video-fact span { display: block; margin-top: 14px; color: white; font-size: clamp(48px, 7.5vw, 76px); line-height: 1; letter-spacing: 0; }
 .vq-r3-video-fact:last-child { color: var(--vq-r3-blue); }
 
