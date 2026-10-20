@@ -78,6 +78,8 @@
 /* video captions use an open text field over a full-frame image. */
 .vq-r3-video { width: 100vw; max-width: 1080px; aspect-ratio: 9 / 16; }
 .vq-r3-video .vq-r3-title { font-size: clamp(52px, 9vw, 96px); }
+.vq-r3-video-opening-title { position: absolute; z-index: 1; top: 10.5%; inset-inline: var(--vq-r3-gutter); max-width: 920px; margin: 0; color: var(--vq-r3-ink); font-size: clamp(88px, 10vw, 108px); line-height: 1.08; letter-spacing: -.05em; font-weight: 900; word-break: keep-all; text-shadow: 0 1px 14px rgb(255 255 255 / .8), 0 0 3px rgb(255 255 255 / .7); }
+.vq-r3-video-opening-title span { display: block; color: #0878dd; }
 .vq-r3-video-copy { position: absolute; inset-inline: var(--vq-r3-gutter); bottom: 14%; display: grid; gap: 22px; }
 .vq-r3-video #data-top { position: absolute; top: 14%; inset-inline: var(--vq-r3-gutter); }
 .vq-r3-caption { font-size: clamp(42px, 7.8vw, 84px); line-height: 1.09; font-weight: 900; letter-spacing: -.035em; word-break: keep-all; text-shadow: 0 3px 22px #000, 0 1px 5px #000; }

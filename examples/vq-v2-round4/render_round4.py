@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import argparse
 import base64
+from collections import deque
 import hashlib
 import html
 import json
@@ -55,6 +56,45 @@ OWNER_QUOTE = '두번째꺼가 \'훨씬\' 낫네'
 
 def sha(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def large_neutral_panel_regions(image: Image.Image) -> list[dict]:
+    """Find large, connected, near-uniform light panels in a source image."""
+    sample=image.convert("RGB")
+    sample.thumbnail((320,320),Image.Resampling.BILINEAR)
+    width,height=sample.size; pixels=sample.load(); seen=bytearray(width*height); regions=[]
+    def panel_pixel(x: int,y: int) -> bool:
+        r,g,b=pixels[x,y]
+        return min(r,g,b)>=220 and max(r,g,b)-min(r,g,b)<=32
+    for y in range(height):
+        for x in range(width):
+            start=y*width+x
+            if seen[start] or not panel_pixel(x,y): continue
+            seen[start]=1; todo=deque([(x,y)]); area=0
+            left=right=x; top=bottom=y
+            while todo:
+                px,py=todo.popleft(); area+=1
+                left=min(left,px);right=max(right,px);top=min(top,py);bottom=max(bottom,py)
+                for nx,ny in ((px-1,py),(px+1,py),(px,py-1),(px,py+1)):
+                    if 0<=nx<width and 0<=ny<height:
+                        idx=ny*width+nx
+                        if not seen[idx] and panel_pixel(nx,ny):
+                            seen[idx]=1;todo.append((nx,ny))
+            fraction=area/(width*height)
+            if fraction>=.15 and (right-left+1)/width>=.18 and (bottom-top+1)/height>=.12:
+                regions.append({"area_fraction":round(fraction,4),"bounds_normalized":[left/width,top/height,(right+1)/width,(bottom+1)/height]})
+    return sorted(regions,key=lambda region:region["area_fraction"],reverse=True)
+
+
+def panel_guard_self_test() -> dict:
+    """Prove a flat panel is rejected while its photo-only crop passes."""
+    fixture=Image.new("RGB",(320,480),(70,120,150))
+    draw=ImageDraw.Draw(fixture);draw.rectangle((0,315,319,479),fill=(247,245,237))
+    detected=large_neutral_panel_regions(fixture)
+    photo_only=fixture.crop((0,0,320,314))
+    if not detected or large_neutral_panel_regions(photo_only):
+        raise RuntimeError("panel guard synthetic negative fixture did not behave as expected")
+    return {"synthetic_panel_rejected":True,"synthetic_photo_crop_passed":True,"detected_area_fraction":detected[0]["area_fraction"]}
 
 
 def implementation_identity() -> dict:
@@ -289,9 +329,38 @@ def copy_video_inputs(out: Path) -> list[Path]:
     scene4_crop=inp/"scene-04-photo-only-crop.png"
     with Image.open(inp/"scene-04.png") as source_image:
         source_image.crop((230,635,845,1256)).save(scene4_crop)
+    # Scene 1 has a full-width cream panel below its photo. Locate its first
+    # uniform cream rows and crop those pixels before using the photo as a
+    # full-bleed 9:16 background, matching the Round 3 opening treatment.
+    scene1_crop=inp/"scene-01-photo-only-crop.png"
+    with Image.open(inp/"scene-01.png") as source_image:
+        rgb=source_image.convert("RGB")
+        sample=rgb.resize((min(160,rgb.width),rgb.height),Image.Resampling.BILINEAR)
+        panel_start=None
+        for y in range(round(rgb.height*.45),round(rgb.height*.9)):
+            row=[sample.getpixel((x,y)) for x in range(sample.width)]
+            cream=sum(1 for r,g,b in row if r>=240 and g>=234 and b>=214)
+            if cream/len(row)>=.96:
+                if panel_start is None: panel_start=y
+            else:
+                panel_start=None
+            if panel_start is not None and y-panel_start>=4:
+                break
+        if panel_start is None:
+            raise RuntimeError("scene-01 embedded cream panel boundary not found")
+        crop_bottom=max(1,panel_start-1)
+        rgb.crop((0,0,rgb.width,crop_bottom)).save(scene1_crop)
+        with Image.open(scene1_crop) as cropped:
+            if cropped.height!=crop_bottom or cropped.width!=rgb.width or crop_bottom>=panel_start:
+                raise RuntimeError("scene-01 panel exclusion crop geometry invalid")
     for source, name in [(V56_VIDEO,"v56-video-original.mp4"),(V56_PLAN,"v56-render-plan.json"),(V56_SRT,"v56-captions.srt"),(V56_MANIFEST,"v56-manifest.json")]:
         shutil.copy2(source, inp / name)
-    return [inp / f"scene-{i:02d}.png" for i in range(1,7)] + [scene4_crop]
+    return [inp / f"scene-{i:02d}.png" for i in range(1,7)] + [scene4_crop,scene1_crop]
+
+
+def video_scene_assets(images: list[Path]) -> list[tuple[int,int,Path]]:
+    # output scene id, originating asset scene id, panel-free image used
+    return [(1,1,images[7]),(2,2,images[1]),(3,2,images[1]),(4,4,images[6]),(5,5,images[4]),(6,6,images[5])]
 
 
 def video_page_html(images: list[Path], render_plan: dict) -> str:
@@ -300,16 +369,17 @@ def video_page_html(images: list[Path], render_plan: dict) -> str:
     # The water reference scene stays photographic. Reuse the preceding water
     # photo behind the chart facts, then crop the food image from the source
     # scene 4 card so the original cream panel is not part of the new design.
-    visual_images=[images[0],images[1],images[1],images[6],images[4],images[5]]
-    sections = ''.join(f'<img class="vq-r3-photo scene-bg" data-scene="{i}" src="{data_uri(image)}" alt="">' for i, image in enumerate(visual_images,1))
+    scene_assets=video_scene_assets(images)
+    sections = ''.join(f'<img class="vq-r3-photo scene-bg" data-scene="{scene}" data-source-scene="{source_scene}" src="{data_uri(image)}" alt="">' for scene,source_scene,image in scene_assets)
     facts='<div id="data-facts" class="vq-r3-video-facts"><div class="vq-r3-video-fact"><strong class="vq-r3-video-value">2.7L</strong><span>여성</span></div><div class="vq-r3-video-fact"><strong class="vq-r3-video-value">3.7L</strong><span>남성</span></div></div>'
-    return f'''{head_html()}<main id="stage" class="vq-r3-card vq-r3-video vq-r3-cover">{sections}<div class="vq-r3-scrim"></div><div id="data-top" class="vq-r3-video-label">총수분 참고값 · 19–30세</div>{facts}<div id="caption" class="vq-r3-video-copy"><div class="vq-r3-caption"></div><div id="data-bottom" class="vq-r3-video-label">개인별 목표가 아닌 참고값</div></div></main><script>window.CAPTION_PAGES={payload};</script></body></html>'''
+    opening_title='<h1 id="opening-title" class="vq-r3-video-opening-title">하루에 물은<span>얼마나 마실까?</span></h1>'
+    return f'''{head_html()}<main id="stage" class="vq-r3-card vq-r3-video vq-r3-cover">{sections}<div class="vq-r3-scrim"></div>{opening_title}<div id="data-top" class="vq-r3-video-label">총수분 참고값 · 19–30세</div>{facts}<div id="caption" class="vq-r3-video-copy"><div class="vq-r3-caption"></div><div id="data-bottom" class="vq-r3-video-label">개인별 목표가 아닌 참고값</div></div></main><script>window.CAPTION_PAGES={payload};</script></body></html>'''
 
 
 def video_layout_check(page, t: float) -> dict:
     result = page.evaluate("""() => {
       const stage=document.querySelector('#stage'), sb=stage.getBoundingClientRect();
-      const selectors=['#caption .vq-r3-caption','#data-top','#data-bottom','#data-facts .vq-r3-video-fact','#data-facts .vq-r3-video-value','#data-facts .vq-r3-video-fact span'];
+      const selectors=['#opening-title','#caption .vq-r3-caption','#data-top','#data-bottom','#data-facts .vq-r3-video-fact','#data-facts .vq-r3-video-value','#data-facts .vq-r3-video-fact span'];
       const items=[];
       for(const selector of selectors){for(const el of document.querySelectorAll(selector)){
         const style=getComputedStyle(el), r=el.getBoundingClientRect();
@@ -328,6 +398,15 @@ def video_layout_check(page, t: float) -> dict:
       return {items,min_caption_px:caption?caption.font:null,min_support_px:supports.length?Math.min(...supports.map(x=>x.font)):null,support_count:supports.length,issues:items.filter(x=>!x.bounds||!x.text_bounds||x.clipped),caption_support_overlap:overlap(caption,bottom)};
     }""")
     result["time_seconds"] = round(t, 3)
+    title=page.locator("#opening-title")
+    if t<2.566667:
+        title_text=re.sub(r"\s+"," ",title.inner_text()).strip() if title.is_visible() else ""
+        if title_text!="하루에 물은 얼마나 마실까?":
+            raise RuntimeError(f"opening title missing or changed at {t:.3f}s: {title_text!r}")
+        if page.locator("#caption .vq-r3-caption").inner_text().strip():
+            raise RuntimeError(f"opening karaoke caption duplicates the title at {t:.3f}s")
+    elif title.is_visible():
+        raise RuntimeError(f"opening title persists beyond scene 1 at {t:.3f}s")
     if 5.5 <= t < 12.6:
         top_text = re.sub(r"\s+", " ", page.locator("#data-top").inner_text()).strip()
         bottom_text = re.sub(r"\s+", " ", page.locator("#data-bottom").inner_text()).strip()
@@ -346,6 +425,30 @@ def video_layout_check(page, t: float) -> dict:
 
 def render_water(out: Path) -> dict:
     images = copy_video_inputs(out)
+    panel_fixture_result=panel_guard_self_test()
+    source_controls={}
+    for source_scene,path in ((1,images[0]),(3,images[2]),(4,images[3])):
+        with Image.open(path) as source_image:
+            detected=large_neutral_panel_regions(source_image)
+        source_controls[str(source_scene)]={"source":path.name,"panel_detected":bool(detected),"regions":detected}
+        if not detected:
+            raise RuntimeError(f"panel detector failed the known source control for scene {source_scene}")
+    with Image.open(images[0]) as opening_source:
+        detected_top=source_controls["1"]["regions"][0]["bounds_normalized"][1]*opening_source.height
+    with Image.open(images[7]) as opening_crop:
+        scene1_crop_box=[0,0,opening_crop.width,opening_crop.height]
+    if scene1_crop_box[3]>detected_top+2:
+        raise RuntimeError(f"scene-01 crop overlaps its detected panel region: crop={scene1_crop_box}, panel_y={detected_top}")
+    scene_photo_checks=[]
+    for output_scene,source_scene,path in video_scene_assets(images):
+        with Image.open(path) as visible_asset:
+            panel_regions=large_neutral_panel_regions(visible_asset)
+        check={"output_scene":output_scene,"source_scene":source_scene,"source":path.name,"asset_sha256":sha(path),"embedded_panel_excluded":not bool(panel_regions),"detected_panel_regions":panel_regions}
+        if output_scene==1: check["crop_box_px"]=scene1_crop_box
+        if output_scene==4: check["crop_box_px"]=[230,635,845,1256]
+        if panel_regions:
+            raise RuntimeError(f"photo-only source check found a panel in output scene {output_scene}: {check}")
+        scene_photo_checks.append(check)
     plan = json.loads(V56_PLAN.read_text(encoding="utf-8"))
     pages = plan["caption_pages"]["9:16"]
     for cap in pages:
@@ -355,12 +458,13 @@ def render_water(out: Path) -> dict:
             if re.sub(r"\s+"," ",source_line.strip()) != re.sub(r"\s+"," ",words.strip()):
                 raise RuntimeError(f"caption words differ from v56 source string: {source_line!r} != {words!r}")
     duration = float(plan["duration_s"])
-    frame_dir = out / "water/round4-frames"
+    frame_dir = out / "water/round5-frames"
     frame_dir.mkdir(parents=True, exist_ok=True)
     page_path = out / "water/render.html"
     page_path.write_text(video_page_html(images, plan), encoding="utf-8")
     start=time.perf_counter(); cpu_start=resource.getrusage(resource.RUSAGE_SELF)
     layout_min_caption=999.0; layout_min_support=999.0; layout_support_samples=0
+    frame_scene_counts={i:0 for i in range(1,7)}
     with sync_playwright() as p:
         chromium = os.environ.get("VQ_CHROMIUM", "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome")
         browser=p.chromium.launch(headless=True,executable_path=chromium)
@@ -374,12 +478,14 @@ def render_water(out: Path) -> dict:
             scene_index=next((i for i,s in enumerate(plan["segments"]) if s["start_s"]<=t<s["end_s"]),len(plan["segments"])-1)
             scene_id=plan["segments"][scene_index]["scene_id"]
             image_scene=int(scene_id[-3:])
+            frame_scene_counts[image_scene]+=1
             page.evaluate("""([t,scene,pages]) => {
               const imgs=[...document.querySelectorAll('.scene-bg')];
               imgs.forEach((im,i)=>{ const active=(i+1)===scene; im.style.opacity=active?'1':'0'; if(active){const progress=t/27.5; im.style.transform=`scale(${1.015+progress*.025}) translate(${(progress-.5)*-1.2}%, ${(progress-.5)*.7}%)`;}});
               const active=pages.find(p=>t>=p.start_s&&t<p.end_s);
+              document.querySelector('#opening-title').style.display=scene===1?'block':'none';
               const caption=document.querySelector('.vq-r3-caption'); caption.replaceChildren();
-              if(active){
+              if(active && !(t<2.566667)){
                 const lines=active.lines.map(()=>[]);
                 for(const w of active.words){ if(t>=w.start_s) lines[w.line_index].push({text:w.text,end:w.end_s}); }
                 for(const words of lines){if(!words.length)continue; const row=document.createElement('div'); for(let i=0;i<words.length;i++){const span=document.createElement('span');span.textContent=words[i].text+(i<words.length-1?' ':'');span.className='revealed'+(i===words.length-1&&t<words[i].end?' current':'');row.append(span);}caption.append(row);}
@@ -395,14 +501,16 @@ def render_water(out: Path) -> dict:
                 layout_min_support=min(layout_min_support,layout["min_support_px"]); layout_support_samples+=1
             page.locator("#stage").screenshot(path=str(frame_dir/f"frame-{n:04d}.jpg"),type="jpeg",quality=90,animations="disabled")
         browser.close()
+    if sum(frame_scene_counts.values())!=round(duration*FPS) or any(count==0 for count in frame_scene_counts.values()):
+        raise RuntimeError(f"photo-only scene checks did not cover every rendered frame: {frame_scene_counts}")
     render_wall=time.perf_counter()-start; cpu_end=resource.getrusage(resource.RUSAGE_SELF)
-    out_video=out/"water/water-round4-27s-9x16.mp4"
+    out_video=out/"water/water-round5-27s-9x16.mp4"
     run(["ffmpeg","-hide_banner","-loglevel","error","-y","-framerate",str(FPS),"-i",str(frame_dir/"frame-%04d.jpg"),"-frames:v",str(round(duration*FPS)),"-an","-c:v","libx264","-preset","medium","-crf","18","-pix_fmt","yuv420p","-movflags","+faststart",str(out_video)])
     # Reuse the exact local TTS/BGM mix as encoded in the v56 MP4 audio stream.
-    muxed=out/"water/water-round4-27s-9x16-muxed.mp4"
+    muxed=out/"water/water-round5-27s-9x16-muxed.mp4"
     run(["ffmpeg","-hide_banner","-loglevel","error","-y","-i",str(out_video),"-i",str(V56_VIDEO),"-map","0:v:0","-map","1:a:0","-c:v","copy","-c:a","copy","-shortest","-movflags","+faststart",str(muxed)])
     # Retain the clean no-audio encode for audit, then promote muxed to final artifact filename.
-    final=out/"water/water-round4-27s-9x16.mp4"
+    final=out/"water/water-round5-27s-9x16.mp4"
     muxed.replace(final)
     source_audio=out/"water/v56-audio-original.aac"
     final_audio=out/"water/round4-audio-reused.aac"
@@ -412,19 +520,23 @@ def render_water(out: Path) -> dict:
     sample_ts=[0.5,2.7,5.7,8.8,12.8,16.9,22.4,27.1]
     before_after=[]
     for i,t in enumerate(sample_ts,1):
-        b=out/f"water/v56-t{i:02d}.jpg"; a=out/f"water/round4-t{i:02d}.jpg"
+        b=out/f"water/v56-t{i:02d}.jpg"; a=out/f"water/round5-t{i:02d}.jpg"
         run(["ffmpeg","-hide_banner","-loglevel","error","-y","-ss",str(t),"-i",str(V56_VIDEO),"-frames:v","1","-q:v","2",str(b)])
         shutil.copy2(frame_dir/f"frame-{round(t*FPS):04d}.jpg",a)
-        before_after.append((b,a,f"{t:.1f}s | v56 → Round 4"))
-    video_sheet=out/"water/v56-before-after-contact-sheet.png"
+        before_after.append((b,a,f"{t:.1f}s | v56 → Round 5"))
+    video_sheet=out/"water/v56-before-after-round5-contact-sheet.png"
     video_contact_sheet(before_after,video_sheet)
     # Per-sample direct inspection sheet from Round 4 frames, with timestamp labels.
-    after_sheet=out/"water/round4-keyframes-contact-sheet.png"
-    video_contact_sheet([(a,a,label.split(" | ")[0]+" | Round 4") for _,a,label in before_after],after_sheet)
+    after_sheet=out/"water/round5-keyframes-contact-sheet.png"
+    video_contact_sheet([(a,a,label.split(" | ")[0]+" | Round 5") for _,a,label in before_after],after_sheet)
+    opening_sheets=water_opening_review_sheets(out,frame_dir)
     ebur = run(["ffmpeg","-hide_banner","-nostats","-i",str(final),"-filter_complex","ebur128=peak=true","-f","null","-"],capture=True)
     (out/"water/ebur128.txt").write_text(ebur,encoding="utf-8")
     qa={"ffprobe":json.loads(run(["ffprobe","-v","error","-show_streams","-show_format","-of","json",str(final)],capture=True)),"ebur128_summary":next((line.strip() for line in reversed(ebur.splitlines()) if "I:" in line and "LUFS" in line),None),"source_audio_sha256":sha(source_audio),"final_audio_sha256":sha(final_audio),"audio_bitstream_identical":sha(source_audio)==sha(final_audio),"caption_pages":len(pages),"caption_source_srt_sha256":sha(V56_SRT),"caption_timing_plan_sha256":sha(V56_PLAN),"video_frame_layout_checks":round(duration*FPS),"video_layout_issues":0,"minimum_caption_font_px":None if layout_min_caption==999.0 else layout_min_caption,"minimum_support_font_px":None if layout_min_support==999.0 else layout_min_support,"support_label_visible_frames":layout_support_samples,"frames":round(duration*FPS),"samples":[str(a) for _,a,_ in before_after]}
-    result={"implementation":implementation_identity(),"source_video":str(V56_VIDEO),"source_video_sha256":sha(V56_VIDEO),"assets":[{"path":str(x),"sha256":sha(x)} for x in images],"scene_04_photo_crop_box_px":[230,635,845,1256],"water_fact_strings_displayed":["총수분 참고값","19–30세","2.7L","여성","3.7L","남성","개인별 목표가 아닌 참고값"],"duration_seconds":duration,"fps":FPS,"output":str(final),"output_sha256":sha(final),"before_after_contact_sheet":str(video_sheet),"keyframes_contact_sheet":str(after_sheet),"ebur128_path":str(out/"water/ebur128.txt"),"technical_qa":qa,"runtime":{"playwright_wall_seconds":round(render_wall,2),"process_user_cpu_seconds":round(cpu_end.ru_utime-cpu_start.ru_utime,2),"process_system_cpu_seconds":round(cpu_end.ru_stime-cpu_start.ru_stime,2),"process_max_rss_mb":round(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss/(1024*1024),1),"browser":"Chromium"}}
+    for item in scene_photo_checks: item["rendered_frames"]=frame_scene_counts[item["output_scene"]]
+    if [item["output_scene"] for item in scene_photo_checks]!=list(range(1,7)) or not all(item["embedded_panel_excluded"] and item["rendered_frames"]>0 for item in scene_photo_checks):
+        raise RuntimeError("photo-only check is missing a rendered scene")
+    result={"implementation":implementation_identity(),"source_video":str(V56_VIDEO),"source_video_sha256":sha(V56_VIDEO),"assets":[{"path":str(x),"sha256":sha(x)} for x in images],"scene_01_panel_exclusion":"uniform cream lower panel detected from source pixels and crop boundary checked against the detected component","scene_01_source_panel_detection":source_controls["1"],"scene_01_photo_crop_box_px":scene1_crop_box,"scene_03_source_panel_detection":source_controls["3"],"scene_03_render_policy":"embedded data card source omitted; output scene uses the photo-only scene-02 asset behind deterministic fact typography","scene_04_source_panel_detection":source_controls["4"],"scene_04_photo_crop_box_px":[230,635,845,1256],"panel_guard_algorithm":{"color":"near-neutral bright pixels: min RGB >=220 and channel spread <=32","minimum_component_fraction":0.15,"minimum_component_width_fraction":0.18,"minimum_component_height_fraction":0.12,"synthetic_negative_fixture":panel_fixture_result},"photo_only_scene_checks":scene_photo_checks,"photo_only_scene_frame_counts":frame_scene_counts,"opening_title":"하루에 물은 / 얼마나 마실까?","opening_title_visible_until_seconds":2.566667,"opening_duplicate_caption_hidden":True,"opening_review_sheets":opening_sheets,"water_fact_strings_displayed":["총수분 참고값","19–30세","2.7L","여성","3.7L","남성","개인별 목표가 아닌 참고값"],"duration_seconds":duration,"fps":FPS,"output":str(final),"output_sha256":sha(final),"before_after_contact_sheet":str(video_sheet),"keyframes_contact_sheet":str(after_sheet),"ebur128_path":str(out/"water/ebur128.txt"),"technical_qa":qa,"runtime":{"playwright_wall_seconds":round(render_wall,2),"process_user_cpu_seconds":round(cpu_end.ru_utime-cpu_start.ru_utime,2),"process_system_cpu_seconds":round(cpu_end.ru_stime-cpu_start.ru_stime,2),"process_max_rss_mb":round(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss/(1024*1024),1),"browser":"Chromium"}}
     (out/"water/receipt.json").write_text(json.dumps(result,ensure_ascii=False,indent=2)+"\n",encoding="utf-8")
     return result
 
@@ -439,6 +551,41 @@ def video_contact_sheet(items: list[tuple[Path,Path,str]], out: Path, width: int
             im=Image.open(path).convert("RGB").resize((width,h),Image.Resampling.LANCZOS)
             canvas.paste(im,(j*width,y+label_h))
     canvas.save(out,format="PNG",optimize=False,compress_level=7)
+
+
+def water_opening_review_sheets(out: Path, frame_dir: Path) -> dict:
+    review_times=[i/2 for i in range(9)]
+    samples=[frame_dir/f"frame-{round(t*FPS):04d}.jpg" for t in review_times]
+    if any(not p.is_file() for p in samples):
+        raise RuntimeError("water opening review sample frame missing")
+    width=360; height=round(width*16/9); label_h=32; cols=3; rows=3
+    grid=Image.new("RGB",(cols*width,rows*(height+label_h)),"#17212b")
+    draw=ImageDraw.Draw(grid); font=ImageFont.load_default(size=18)
+    for i,(t,path) in enumerate(zip(review_times,samples)):
+        x=(i%cols)*width; y=(i//cols)*(height+label_h)
+        draw.text((x+10,y+8),f"Round 5 | {t:.1f}s",fill="white",font=font)
+        im=Image.open(path).convert("RGB").resize((width,height),Image.Resampling.LANCZOS)
+        grid.paste(im,(x,y+label_h))
+    opening_sheet=out/"water/round5-opening-0-to-4s-half-second-contact-sheet.png"
+    grid.save(opening_sheet,format="PNG",optimize=False,compress_level=7)
+
+    r3=Path("/Volumes/OricoSSD/MacArchive/vq-v2-round3/art-direction-poc")
+    r4=Path("/Volumes/OricoSSD/MacArchive/vq-v2-round4-final4/water/round4-frames")
+    trio=[
+      (r3/"opening-r3-t000.jpg",r4/"frame-0015.jpg",frame_dir/"frame-0015.jpg","0.5s: R3 0.0s | R4 0.5s | R5 0.5s"),
+      (r3/"opening-r3-t125.jpg",r4/"frame-0045.jpg",frame_dir/"frame-0045.jpg","1.5s: R3 1.25s | R4 1.5s | R5 1.5s"),
+    ]
+    trio_sheet=Image.new("RGB",(width*3,len(trio)*(height+label_h)),"#17212b")
+    draw=ImageDraw.Draw(trio_sheet)
+    for row,items in enumerate(trio):
+        y=row*(height+label_h); draw.text((10,y+8),items[3],fill="white",font=font)
+        for col,path in enumerate(items[:3]):
+            if not path.is_file(): raise RuntimeError(f"comparison evidence missing: {path}")
+            im=Image.open(path).convert("RGB").resize((width,height),Image.Resampling.LANCZOS)
+            trio_sheet.paste(im,(col*width,y+label_h))
+    comparison=out/"water/round3-vs-round4-vs-round5-opening-contact-sheet.png"
+    trio_sheet.save(comparison,format="PNG",optimize=False,compress_level=7)
+    return {"opening_0_to_4s_half_second_contact_sheet":str(opening_sheet),"round3_round4_round5_comparison_sheet":str(comparison),"sample_times_seconds":review_times}
 
 
 def mobile_contact_sheet(items: list[tuple[Path,str]], out: Path) -> None:
