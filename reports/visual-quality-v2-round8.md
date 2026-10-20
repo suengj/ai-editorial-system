@@ -7,7 +7,7 @@ Status: IMPLEMENTATION_COMPLETE; LOCAL_RENDER_PASS; OWNER_AESTHETIC_REVIEW_PENDI
 
 Verbatim owner statement (2026-10-20): “둘다 좋긴 한데.. 4차 >= 7차 로 해 - 근데 진짜 둘 다 괜찮아”. Recorded as `OWNER_STYLE_PREFERENCE = R4 >= R7` in the existing `examples/vq-v2-round4/owner-selected-references.json` structure. R4 (photo full-bleed editorial) is primary; R7 (illustration, color blocks, highlighter) remains usable as a secondary direction. R7 is allowed when photo assets are absent/weak or the content is lifestyle/practical information.
 
-This is a preference, not aesthetic acceptance. `OWNER_ACCEPTED` is false. The compositor, Studio, deployment, and other operational defaults were not changed; changing them requires separate owner approval.
+At Round 8 close this was preference guidance, not aesthetic acceptance. `OWNER_ACCEPTED` is false. The compositor, Studio, deployment, and other operational defaults were not changed in that round. The Owner separately approved default conversion on 2026-10-20; Round 9 tracks that follow-up.
 
 ## Opportunity card update
 

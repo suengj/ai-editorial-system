@@ -212,6 +212,32 @@
       },
       "generation_direction": "Expressive paper collage with pink/orange/blue accents, torn edges, playful brush texture and one dominant silhouette. Restrict collage to its supplied content slot; no factual copy, faux numbers, logos, robot cliches or unrelated slogans unless specifically requested.",
       "default_layout": "visual"
+    },
+    "r4-photo-fullbleed": {
+      "theme": {
+        "background": "#F7F4EC",
+        "foreground": "#14213D",
+        "accent": "#536756",
+        "font_family": "'Noto Sans KR', 'Noto Sans CJK KR', sans-serif"
+      },
+      "typography": {
+        "headline": { "weight": 700 }
+      },
+      "generation_direction": "R4 owner-preferred photo-led editorial direction. Use the supplied strong source photo as the full-bleed visual whenever present, preserving the original pixels and recording crop/focal-point decisions. Keep factual text in the existing deterministic compositor regions. Do not replace a suitable photo with generated illustration. If a usable photo is absent or weak, resolve to R7 before rendering.",
+      "default_layout": "hero"
+    },
+    "r7-illustration-fallback": {
+      "theme": {
+        "background": "#103DCA",
+        "foreground": "#102452",
+        "accent": "#FFD72E",
+        "font_family": "'Noto Sans KR', 'Noto Sans CJK KR', sans-serif"
+      },
+      "typography": {
+        "headline": { "weight": 800 }
+      },
+      "generation_direction": "R7 owner-preferred illustration fallback for weak or absent photo assets, and for lifestyle/practical-information content. Use one centered, large subject with clean color blocks and restrained highlighter accents. Keep all exact text, numbers, citations and labels in the deterministic compositor; never render them into the illustration.",
+      "default_layout": "visual"
     }
   }
 }

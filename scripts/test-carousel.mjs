@@ -6,6 +6,7 @@ import { dirname, resolve } from 'node:path';
 import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
 import { planCarousel, executeCarousel, loadVisualRecipes } from './lib/carousel-core.mjs';
+import { resolveDefaultVisualStyle } from './lib/visual-style-policy.mjs';
 
 const ROOT=resolve(dirname(fileURLToPath(import.meta.url)),'..');
 const FIX=resolve(ROOT,'scripts/fixtures/carousel');
@@ -20,7 +21,12 @@ ok('one semantic type role across frames',()=>assert.equal(new Set(first.frames.
 ok('page numbering is deterministic',()=>assert.deepEqual(first.frames.map((f)=>f.plan.layers.at(-1).text),['1 / 3','2 / 3','3 / 3']));
 ok('role hierarchy and independent layouts',()=>{assert(first.typography.headline.font_size>first.typography.body.font_size);assert.equal(new Set(first.frames.map((f)=>f.layout)).size,3);});
 ok('silent profile and no narration dependency',()=>{assert.equal(first.density_profile,'silent_carousel');assert.equal(first.narration_dependency,'none');});
-ok('recipe catalogue has three distinct palettes',()=>assert.equal(new Set(Object.values(loadVisualRecipes().recipes).map((r)=>r.theme.background)).size,3));
+ok('original recipe catalogue remains available beside R4/R7',()=>{const recipes=loadVisualRecipes().recipes;assert.equal(new Set(['editorial-minimal','dark-data','pop-collage'].map((id)=>recipes[id].theme.background)).size,3);assert(recipes['r4-photo-fullbleed']);assert(recipes['r7-illustration-fallback']);});
+ok('R4 is the default and records its basis',()=>{const s=clone();s.visual_style={requested_style:'AUTO',content_kind:'other',photo_asset_quality:'strong'};const p=planCarousel(s);assert.equal(p.recipe,'r4-photo-fullbleed');assert.equal(p.visual_style.reason,'strong_photo_asset');});
+ok('R7 fallback applies only to documented triggers',()=>{for(const input of [{content_kind:'other',photo_asset_quality:'absent'},{content_kind:'other',photo_asset_quality:'weak'},{content_kind:'lifestyle_practical',photo_asset_quality:'strong'}])assert.equal(resolveDefaultVisualStyle(input).recipe,'r7-illustration-fallback');assert.equal(resolveDefaultVisualStyle({content_kind:'other',photo_asset_quality:'unknown'}).recipe,'r4-photo-fullbleed');});
+ok('AUTO selection preserves a producer-specific recipe',()=>{const s=clone();s.recipe='dark-data';s.visual_style={requested_style:'AUTO',content_kind:'other',photo_asset_quality:'strong'};const p=planCarousel(s);assert.equal(p.recipe,'dark-data');assert.equal(p.visual_style.reason,'explicit_recipe_preserved');});
+ok('explicit R4/R7 and legacy rollback resolve deterministically',()=>{assert.equal(resolveDefaultVisualStyle({requested_style:'R7'}).style,'R7');assert.deepEqual(resolveDefaultVisualStyle({}, {rollback:true}),{style:'legacy',recipe:'editorial-minimal',reason:'rollback_flag'});});
+ok('runtime rollback flag restores the previous recipe selector',()=>{const prior=process.env.VQ_V2_CARD_STYLE_DEFAULT;try{const s=clone();s.visual_style={requested_style:'AUTO',content_kind:'other',photo_asset_quality:'strong'};process.env.VQ_V2_CARD_STYLE_DEFAULT='legacy';assert.equal(planCarousel(s).recipe,'editorial-minimal');}finally{if(prior===undefined)delete process.env.VQ_V2_CARD_STYLE_DEFAULT;else process.env.VQ_V2_CARD_STYLE_DEFAULT=prior;}});
 ok('no automatic approval or multi-candidate quota',()=>{assert.equal(first.publication_authorized,false);assert.equal(first.candidate_policy.initial_candidates,1);});
 ok('style selection preserves declared structure and source',()=>{const s=clone();s.recipe='dark-data';const p=planCarousel(s);const structure=(frames)=>frames.map((f)=>({id:f.id,beats:f.beat_ids,layout:f.layout,source:f.plan.source,layers:f.plan.layers.map((l)=>({id:l.id,slot:l.slot,text:l.text,ref:l.ref}))}));assert.deepEqual(structure(p.frames),structure(first.frames));assert.notDeepEqual(p.preset.theme,first.preset.theme);});
 ok('per-series typography override applies everywhere',()=>{const s=clone();s.typography={headline:{font_size:60}};assert(planCarousel(s).frames.every((f)=>f.plan.layers.find((l)=>l.id==='headline').font_size===60));});
@@ -32,6 +38,7 @@ ok('generation instructions explicitly stay in content slot',()=>{const l=planCa
 ok('unused recipe edits do not invalidate selected recipe',()=>{const c=loadVisualRecipes();c.recipes['pop-collage'].theme.background='#123456';assert.equal(planCarousel(base,c).recipe_hash,first.recipe_hash);});
 const mutations=[
  ['unknown root field',s=>s.style_axis='new','SERIES_UNKNOWN_FIELD'],
+ ['unknown visual style value',s=>s.visual_style={requested_style:'R8'},'SERIES_STYLE'],
  ['unknown frame style override',s=>s.frames[0].theme={},'SERIES_UNKNOWN_FIELD'],
  ['unknown typography role',s=>s.typography={foo:{}},'SERIES_UNKNOWN_FIELD'],
  ['invalid typography',s=>s.typography={body:{font_size:2}},'SERIES_TYPE'],

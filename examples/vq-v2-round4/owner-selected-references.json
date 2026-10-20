@@ -34,9 +34,11 @@
         "photo_asset_absent_or_weak",
         "lifestyle_or_practical_information_content"
       ],
-      "scope": "preference guidance only",
-      "operational_default_changed": false,
-      "operational_default_change_requires_separate_owner_approval": true,
+      "scope": "operational default approved for card/news and recurring static visuals",
+      "operational_default_changed": true,
+      "operational_default_change_requires_separate_owner_approval": false,
+      "operational_default_approved_at": "2026-10-20",
+      "operational_default_approval_quote": "운영 기본값으로 전환 승인할게",
       "aesthetic_approval": "OWNER_REVIEW_PENDING",
       "OWNER_ACCEPTED": false
     }
