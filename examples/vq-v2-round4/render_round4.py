@@ -181,6 +181,7 @@ def card_html(frame: dict, index: int, art: Path | None, flow: dict, round6: boo
         variant = "explainer"
         card_class = "vq-r6-explainer"
     elif round6 and cid == "opportunity":
+        picture = ""
         items = []
         labels = ["원칙", "장애물", "첫 실험"]
         for label, text in zip(labels, body_blocks):

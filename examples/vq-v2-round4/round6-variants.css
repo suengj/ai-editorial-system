@@ -51,8 +51,8 @@
 
 /* R3-08/R3-10: a paced editorial close, with the exact CTA as the final read. */
 .vq-r6-story { background: #f3e9ee; }
-.vq-r6-story .vq-r6-header { color: #fff; text-shadow: 0 1px 8px #000; }
-.vq-r6-story .vq-r6-copy { position: absolute; inset: 7% 6% 9%; display: grid; grid-template-rows: auto 1fr auto; gap: 22px; }
+.vq-r6-story .vq-r6-header { color: #17212b; text-shadow: none; }
+.vq-r6-story .vq-r6-copy { position: absolute; inset: 10% 6% 9%; display: grid; grid-template-rows: auto 1fr auto; gap: 22px; }
 .vq-r6-story .vq-r6-title { font-size: clamp(36px, 5.6vw, 62px); }
 .vq-r6-story-rows { display: grid; align-content: center; }
 .vq-r6-story-row { display: grid; grid-template-columns: minmax(104px, 22%) minmax(0, 1fr); align-items: start; gap: 14px; padding: 16px 0; border-top: 1px solid rgb(23 33 43 / .24); font-size: clamp(19px, 3vw, 32px); line-height: 1.27; font-weight: 600; word-break: keep-all; }
@@ -72,7 +72,7 @@
   .vq-r6-explainer .vq-r6-explainer { inset: 28% 6% 9%; gap: 6px; }
   .vq-r6-explainer .vq-r6-title { max-width: 100%; font-size: clamp(28px, 7.3vw, 34px); }
   .vq-r6-row { grid-template-columns: minmax(91px, 27%) minmax(0, 1fr); gap: 8px; padding: 6px 0; font-size: clamp(16px, 4vw, 17px); line-height: 1.12; }
-  .vq-r6-story .vq-r6-copy { inset: 7% 6% 9%; gap: 12px; }
+  .vq-r6-story .vq-r6-copy { inset: 12% 6% 9%; gap: 10px; }
   .vq-r6-story .vq-r6-title { font-size: clamp(29px, 7.5vw, 36px); }
   .vq-r6-story-row { grid-template-columns: 90px minmax(0, 1fr); gap: 8px; padding: 12px 0; font-size: clamp(16px, 4vw, 18px); line-height: 1.22; }
   .vq-r6-story-label { font-size: 16px; }
