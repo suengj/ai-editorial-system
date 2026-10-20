@@ -89,6 +89,7 @@ export function planCarousel(series, catalog=loadVisualRecipes()) {
     ? { style: series.recipe, recipe: series.recipe, reason: 'explicit_recipe_preserved' }
     : resolvedStyle;
   const resolvedRecipeId = style?.recipe ?? series.recipe;
+  const applyDefaultTreatment = Boolean(style && !preserveExplicitRecipe && style.reason !== 'rollback_flag' && ['R4','R7'].includes(style.style));
   const recipe = catalog.recipes[resolvedRecipeId];
   need(recipe, 'SERIES_RECIPE', `unknown recipe: ${resolvedRecipeId}`);
   const task = series.task ?? {};
@@ -146,14 +147,33 @@ export function planCarousel(series, catalog=loadVisualRecipes()) {
       for (const dep of beats.get(id).depends_on) need(used.has(dep), 'SERIES_ORDER', `${id} precedes prerequisite ${dep}`);
       used.add(id);
     }
-    const layoutName = f.layout ?? recipe.default_layout, layout = layouts[layoutName];
+    let frameBlocks = f.blocks;
+    let layoutName = f.layout ?? recipe.default_layout;
+    if (applyDefaultTreatment && (!f.layout || layouts[f.layout]) && (!f.layout || frameBlocks.every((b) => layouts[f.layout]?.[b.region])) && !f.art_direction && !frameBlocks.some((b) => b.kind === 'chart')) {
+      const images = frameBlocks.filter((b) => b.kind === 'image');
+      const texts = frameBlocks.filter((b) => b.kind === 'text');
+      if (style.style === 'R4' && images.length === 1 && texts.length <= 1 && frameBlocks.length === images.length + texts.length) {
+        layoutName = 'hero';
+        frameBlocks = frameBlocks.map((b) => ({ ...b, region: b.kind === 'image' ? 'art' : 'copy' }));
+      } else if (style.style === 'R7' && images.length === 0 && texts.length <= 1 && frameBlocks.length === texts.length) {
+        layoutName = 'r7-illustration';
+        frameBlocks = [
+          { id: 'vq-r7-artwork', region: 'art', kind: 'generated', instruction: 'Create one clear, nonverbal illustration that supports this card’s stated takeaway.' },
+          ...frameBlocks.map((b) => ({ ...b, region: 'copy' })),
+        ];
+      } else if (style.style === 'R7' && images.length === 1 && texts.length <= 1 && frameBlocks.length === images.length + texts.length) {
+        layoutName = 'r7-illustration';
+        frameBlocks = frameBlocks.map((b) => ({ ...b, region: b.kind === 'image' ? 'art' : 'copy' }));
+      }
+    }
+    const layout = layouts[layoutName];
     need(layout, 'SERIES_LAYOUT', String(layoutName));
-    need(Array.isArray(f.blocks) && f.blocks.length > 0 && f.blocks.length <= Object.keys(layout).length, 'SERIES_BLOCKS', `${f.id}: one block per region; split independent messages`);
+    need(Array.isArray(frameBlocks) && frameBlocks.length > 0 && frameBlocks.length <= Object.keys(layout).length, 'SERIES_BLOCKS', `${f.id}: one block per region; split independent messages`);
     const textSafeEffect = catalog.layout_effects?.[layoutName] ?? {};
     if ((textSafeEffect.background_regions ?? []).length) {
       const bands = textSafeEffect.solid_bands ?? [];
       const contains = (outer, inner) => inner && inner.x >= outer.x && inner.y >= outer.y && inner.x + inner.width <= outer.x + outer.width && inner.y + inner.height <= outer.y + outer.height;
-      for (const b of f.blocks) if (b?.kind === 'text') need(bands.some(band => contains(band, layout[b.region])), 'SERIES_TEXT_SAFE_BAND', `${layoutName}.${b.region}: text region must fit inside a declared solid/scrim text-safe band`);
+      for (const b of frameBlocks) if (b?.kind === 'text') need(bands.some(band => contains(band, layout[b.region])), 'SERIES_TEXT_SAFE_BAND', `${layoutName}.${b.region}: text region must fit inside a declared solid/scrim text-safe band`);
     }
     if (f.art_direction !== undefined) {
       keys(f.art_direction,CAROUSEL_CONSTRAINTS.art_direction_fields,'frame.art_direction');
@@ -164,7 +184,7 @@ export function planCarousel(series, catalog=loadVisualRecipes()) {
       if (f.art_direction.render_method !== undefined) need(['compositor','native_card'].includes(f.art_direction.render_method), 'SERIES_ART_DIRECTION', `${f.id}: invalid render_method`);
       if (nativeCard) {
         need(Array.isArray(f.art_direction.native_prompt_strings) && f.art_direction.native_prompt_strings.length > 0 && f.art_direction.native_prompt_strings.every(text), 'SERIES_ART_DIRECTION', `${f.id}: native_prompt_strings required`);
-        const nativeBlocks = f.blocks.filter((block) => block.kind === 'generated' && block.id === f.art_direction.asset_block_id);
+        const nativeBlocks = frameBlocks.filter((block) => block.kind === 'generated' && block.id === f.art_direction.asset_block_id);
         need(nativeBlocks.length === 1 && f.blocks.length === 1 && f.art_direction.asset.source === 'generated' && f.art_direction.asset.need, 'SERIES_ART_DIRECTION', `${f.id}: native_card requires one generated whole-card block`);
         const canvas = task.canvas ?? {};
         let width = canvas.width ?? 1080, height = canvas.height ?? 1350;
@@ -184,7 +204,7 @@ export function planCarousel(series, catalog=loadVisualRecipes()) {
     addText('series-label',series.series_label,rec.eyebrow,'eyebrow');
     addText('headline',f.headline,rec.headline,'headline');
     if (f.headline_emphasis!==undefined) { need(Array.isArray(f.headline_emphasis)&&f.headline_emphasis.every((e)=>obj(e)&&text(e.match)&&f.headline.includes(e.match)),'SERIES_TEXT',`${f.id}: headline_emphasis spans must be substrings of the headline`); layers.at(-1).emphasis=structuredClone(f.headline_emphasis); }
-    for (const b of f.blocks) {
+    for (const b of frameBlocks) {
       keys(b,CAROUSEL_CONSTRAINTS.block_fields,'block');
       need(slug(b.id) && !['series-label','headline','source','pagination'].includes(b.id) && !layers.some((l)=>l.id===b.id),'SERIES_LAYER_ID',String(b.id));
       need(layout[b.region] && !occupied.has(b.region),'SERIES_REGION',`unknown or duplicate region ${b.region}`); occupied.add(b.region);
@@ -210,7 +230,7 @@ export function planCarousel(series, catalog=loadVisualRecipes()) {
       else layers.push(layer);
     }
     if (f.art_direction) {
-      const generatedBlocks = f.blocks.filter((b) => b.kind === 'generated');
+      const generatedBlocks = frameBlocks.filter((b) => b.kind === 'generated');
       if (f.art_direction.asset.source === 'generated') {
         need(f.art_direction.asset.need === true && generatedBlocks.length === 1 && f.art_direction.asset_block_id === generatedBlocks[0].id, 'SERIES_ART_DIRECTION', `${f.id}: generated asset declaration must bind to exactly one generated block`);
       } else need(generatedBlocks.length === 0, 'SERIES_ART_DIRECTION', `${f.id}: generated block conflicts with the declared asset source`);

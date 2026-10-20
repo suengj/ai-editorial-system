@@ -104,7 +104,7 @@
     }
   },
   "catalog_version": "1.0.0",
-  "content_digest": "sha256:8f8e5f2bd214f12c9d2b3cd064f669a473dd56c6afd595fdad86287775b021e0",
+  "content_digest": "sha256:b3c4e884db49cb011b252b961b88f16290d6f1350b35d84eb5a1db16d54db377",
   "field_domains": {
     "call_to_action": {
       "max_length": 200,
@@ -7957,7 +7957,7 @@
           {
             "path": "editorial/visual-recipes.v1.json",
             "role": "visual:values",
-            "sha256": "d29ecb0d5e97a8a193ea3148fc22d108ec8dd78ca76c4accc95ea57d653860f5"
+            "sha256": "0b3f9290fa4ef9cad4f606f22f9ef25f66cf8e7d6f33730ab5a16658820ae703"
           }
         ]
       },
@@ -8095,7 +8095,7 @@
           {
             "path": "editorial/visual-recipes.v1.json",
             "role": "visual:values",
-            "sha256": "d29ecb0d5e97a8a193ea3148fc22d108ec8dd78ca76c4accc95ea57d653860f5"
+            "sha256": "0b3f9290fa4ef9cad4f606f22f9ef25f66cf8e7d6f33730ab5a16658820ae703"
           }
         ]
       },
@@ -8167,7 +8167,7 @@
           {
             "path": "editorial/visual-recipes.v1.json",
             "role": "visual:values",
-            "sha256": "d29ecb0d5e97a8a193ea3148fc22d108ec8dd78ca76c4accc95ea57d653860f5"
+            "sha256": "0b3f9290fa4ef9cad4f606f22f9ef25f66cf8e7d6f33730ab5a16658820ae703"
           }
         ]
       },
@@ -8576,6 +8576,20 @@
             "y": 0.36
           }
         },
+        "r7-illustration": {
+          "art": {
+            "height": 0.4,
+            "width": 0.84,
+            "x": 0.08,
+            "y": 0.34
+          },
+          "copy": {
+            "height": 0.11,
+            "width": 0.88,
+            "x": 0.06,
+            "y": 0.74
+          }
+        },
         "split": {
           "left": {
             "height": 0.45,
@@ -8687,7 +8701,7 @@
           }
         },
         "r7-illustration-fallback": {
-          "default_layout": "visual",
+          "default_layout": "r7-illustration",
           "generation_direction": "R7 owner-preferred illustration fallback for weak or absent photo assets, and for lifestyle/practical-information content. Use one centered, large subject with clean color blocks and restrained highlighter accents. Keep all exact text, numbers, citations and labels in the deterministic compositor; never render them into the illustration.",
           "theme": {
             "accent": "#FFD72E",
@@ -8764,6 +8778,6 @@
         }
       }
     },
-    "sha256": "d29ecb0d5e97a8a193ea3148fc22d108ec8dd78ca76c4accc95ea57d653860f5"
+    "sha256": "0b3f9290fa4ef9cad4f606f22f9ef25f66cf8e7d6f33730ab5a16658820ae703"
   }
 }
