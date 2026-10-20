@@ -7,7 +7,7 @@ Date: 2026-10-20 (Asia/Seoul)
 - Owner direction feedback (2026-10-20, verbatim): **"두번째꺼가 '훨씬' 낫네"**. Classification: `OWNER_DIRECTION_PREFERRED`. It records direction preference and is not final aesthetic approval or `OWNER_ACCEPTED`.
 - A reusable, job-scoped opt-in HTML/CSS grammar is implemented inside AES. Existing compositor, registered profiles, and defaults are unchanged.
 - Five M1 cards and the complete 27.5-second 9:16 water video are rendered locally. No publication or deployment occurred.
-- PR #57 was already squash-merged in Round 3 (`2f1f00c76779d8c3405c51915fed8679b6026303`); it needed no status repair. Round 4 is on `feat/vq-v2-round4-template-extension`; its PR/review/merge state is tracked in the current task status file after delivery.
+- PR #57 was already squash-merged in Round 3 (`2f1f00c76779d8c3405c51915fed8679b6026303`); no status repair was needed. PR #58 was squash-merged after Codex Sol low PASS on 2026-10-20 07:13 UTC as `4e4883aa3beb1bafb4821369d2f0b1a9fc71dfd7`.
 
 ## 2. Before vs After
 
@@ -44,7 +44,7 @@ Round 1 B comparison images exist for cover, money, and JustPark and are used di
 
 ## 7. Decision
 
-**KEEP** the R3 grammar as an isolated, opt-in AES example. Do not promote it to a registered style or compositor default. PR #58 merged after Codex Sol low PASS. The grammar remains opt-in; no registered style or compositor default changed.
+**KEEP** the R3 grammar as an isolated, opt-in AES example. Do not promote it to a registered style or compositor default. PR #58 merged after Codex Sol low PASS.
 
 ## 8. HUMAN_REQUIRED
 
