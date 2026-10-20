@@ -94,8 +94,10 @@ for text, font_path, size, xy, color in specs:
     font = ImageFont.truetype(font_path, size)
     reference = Image.new('RGB', image.size, '#F7F5F0')
     drawer = ImageDraw.Draw(reference)
-    drawer.text(xy, text, font=font, fill=color)
-    left, top, right, bottom = drawer.textbbox(xy, text, font=font)
+    measured = drawer.textbbox((0, 0), text, font=font, anchor='lm')
+    point = (xy[0] - measured[0], xy[1] - measured[1])
+    drawer.text(point, text, font=font, fill=color, anchor='lm')
+    left, top, right, bottom = drawer.textbbox(point, text, font=font, anchor='lm')
     box = (max(0, left - 2), max(0, top - 2), min(width, right + 2), min(height, bottom + 2))
     assert image.crop(box).tobytes() == reference.crop(box).tobytes(), f'{text!r} differs from its exact rendered region'
 print('PASS: all eight exact text rasters')`;
@@ -137,6 +139,8 @@ try {
     assert.equal(receipt.status, 'GENERATED_UNVERIFIED');
     assert.equal(receipt.image_model_generation, 'NOT_USED');
     assert.equal(receipt.text_render_owner, 'Pillow');
+    assert.equal(receipt.layout_self_check.status, 'PASS');
+    assert.ok(receipt.layout_self_check.checks.every((item) => item.status === 'PASS'));
     assert.equal(receipt.photo.source_sha256, sha(sourceBefore));
     assert.deepEqual(receipt.photo.source_px, { width: 496, height: 496 });
     assert.equal(receipt.photo.operation, 'cover_center_crop');

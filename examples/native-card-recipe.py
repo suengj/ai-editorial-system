@@ -41,6 +41,16 @@ def cover(source: Image.Image, size: tuple[int, int]) -> tuple[Image.Image, tupl
     return resized.crop((left, top, left + tw, top + th)), box
 
 
+def draw_measured_left(draw: ImageDraw.ImageDraw, text: str, font: ImageFont.FreeTypeFont,
+                       x: int, top: int, fill: str) -> tuple[int, int, int, int]:
+    """Place actual ink at (x, top), compensating for font bearings/ascent."""
+    measured = draw.textbbox((0, 0), text, font=font, anchor="lm")
+    point = (x - measured[0], top - measured[1])
+    draw.text(point, text, font=font, fill=fill, anchor="lm")
+    return (point[0] + measured[0], point[1] + measured[1],
+            point[0] + measured[2], point[1] + measured[3])
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--source", type=Path, required=True)
@@ -79,15 +89,17 @@ def main() -> None:
     draw = ImageDraw.Draw(canvas)
     draw.rounded_rectangle((72, 64, 112, 72), radius=4, fill=COLORS["accent"])
     title_y = 120 if args.aspect == "1:1" else 130
-    draw.text((72, title_y), "하루에 물은", font=semibold, fill=COLORS["ink"])
-    draw.text((72, title_y + 90), "얼마나 마실까?", font=semibold, fill=COLORS["ink"])
+    title_boxes = [
+        draw_measured_left(draw, "하루에 물은", semibold, 72, title_y, COLORS["ink"]),
+        draw_measured_left(draw, "얼마나 마실까?", semibold, 72, title_y + 90, COLORS["ink"]),
+    ]
 
     # Fixed fact columns: exact labels and values are rasterized by Pillow.
     rows = [(72, "여성", "2.7L"), (558, "남성", "3.7L")]
     fact_y = 790 if args.aspect == "1:1" else 930
     for x, person, amount in rows:
-        draw.text((x, fact_y), person, font=label, fill=COLORS["muted"])
-        draw.text((x, fact_y + 38), amount, font=bold, fill=COLORS["ink"])
+        title_boxes.append(draw_measured_left(draw, person, label, x, fact_y, COLORS["muted"]))
+        title_boxes.append(draw_measured_left(draw, amount, bold, x, fact_y + 38, COLORS["ink"]))
 
     with Image.open(args.source) as opened:
         original = opened.convert("RGB")
@@ -110,8 +122,36 @@ def main() -> None:
 
     source_font = ImageFont.truetype(str(args.font_regular), 23)
     caution_font = ImageFont.truetype(str(args.font_semibold), 27)
-    draw.text((72, height - 154), "National Academies · DRI Water · 2005", font=source_font, fill=COLORS["muted"])
-    draw.text((72, height - 104), "개인별 목표가 아닌 참고값", font=caution_font, fill=COLORS["ink"])
+    source_box = draw_measured_left(draw, "National Academies · DRI Water · 2005", source_font,
+                                    72, height - 154, COLORS["muted"])
+    caution_box = draw_measured_left(draw, "개인별 목표가 아닌 참고값", caution_font,
+                                     72, height - 104, COLORS["ink"])
+    layout_checks = []
+    title_container_y = title_y
+    for i, box in enumerate(title_boxes[:2]):
+        container = (72, title_container_y + i * 90, 1008, title_container_y + i * 90 + semibold.size + 12)
+        inside = container[0] <= box[0] and container[1] <= box[1] and box[2] <= container[2] and box[3] <= container[3]
+        layout_checks.append({"element": f"title_{i+1}", "bbox": box, "container": container,
+                              "left_grid_delta_px": box[0] - 72, "bbox_inside": inside,
+                              "status": "PASS" if inside and box[0] == 72 else "FAIL"})
+    for i, box in enumerate(title_boxes[2:]):
+        col_x = (72, 558)[i % 4 // 2]
+        container = (col_x, fact_y + (i % 2) * 38, col_x + 450,
+                     fact_y + (i % 2) * 38 + (label.size if i % 2 == 0 else bold.size) + 10)
+        inside = container[0] <= box[0] and container[1] <= box[1] and box[2] <= container[2] and box[3] <= container[3]
+        layout_checks.append({"element": f"fact_{i+1}", "bbox": box, "container": container,
+                              "left_grid_delta_px": box[0] - col_x, "bbox_inside": inside,
+                              "status": "PASS" if inside and box[0] == col_x else "FAIL"})
+    for name, box, container in (
+        ("source", source_box, (72, height - 154, width - 72, height - 154 + source_font.size + 8)),
+        ("caution", caution_box, (72, height - 104, width - 72, height - 104 + caution_font.size + 8)),
+    ):
+        inside = container[0] <= box[0] and container[1] <= box[1] and box[2] <= container[2] and box[3] <= container[3]
+        layout_checks.append({"element": name, "bbox": box, "container": container,
+                              "left_grid_delta_px": box[0] - 72, "bbox_inside": inside,
+                              "status": "PASS" if inside and box[0] == 72 else "FAIL"})
+    if any(check["status"] != "PASS" for check in layout_checks):
+        raise SystemExit("LAYOUT_SELFCHECK_FAILED: rendered text escaped its container or left grid")
     args.out.parent.mkdir(parents=True, exist_ok=True)
     canvas.save(args.out, format="PNG", optimize=False, compress_level=9)
     required_scale = (max if args.fit == "cover" else min)(
@@ -144,11 +184,16 @@ def main() -> None:
                       "source_y": height - 154, "source_font_px": 23,
                       "caution_y": height - 104, "caution_font_px": 27,
                       "photo_slot": {"x": slot_x, "y": slot_y, "width": slot_w, "height": slot_h}},
+        "layout_self_check": {"status": "PASS", "checks": layout_checks},
         "fonts": font_files,
         "output": {"path": str(args.out), "sha256": sha256(args.out), "format": "PNG"},
     }
     args.receipt.parent.mkdir(parents=True, exist_ok=True)
     args.receipt.write_text(json.dumps(receipt, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    print("element | bbox/container/grid | result")
+    for check in layout_checks:
+        print(f"{check['element']} | bbox={check['bbox']} container={check['container']} grid_delta={check['left_grid_delta_px']} | {check['status']}")
+    print("SELF_CHECK=PASS")
 
 
 if __name__ == "__main__":
