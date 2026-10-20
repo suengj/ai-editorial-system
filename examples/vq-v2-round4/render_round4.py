@@ -191,7 +191,7 @@ def card_html(frame: dict, index: int, art: Path | None, flow: dict, round6: boo
             line = pieces[-1].strip() if len(pieces) == 2 else text.strip()
             items.append(f'<div class="vq-r6-story-row copy-check"><span class="vq-r6-story-label">{esc(label)}: </span><span>{esc(line)}</span></div>')
         ending = next((text.split("\n\n",1)[1].strip() for text in body_blocks if "\n\n" in text), "")
-        copy = f'<section class="vq-r6-story"><h1 class="vq-r6-title copy-check">{esc(headline)}</h1><div class="vq-r6-story-rows">{"".join(items)}</div><p class="vq-r6-ending copy-check">{esc(ending)}</p></section>'
+        copy = f'<section class="vq-r6-copy vq-r6-story"><h1 class="vq-r6-title copy-check">{esc(headline)}</h1><div class="vq-r6-story-rows">{"".join(items)}</div><p class="vq-r6-ending copy-check">{esc(ending)}</p></section>'
         variant = "story"
         card_class = "vq-r6-story"
     elif cid == "cover":
