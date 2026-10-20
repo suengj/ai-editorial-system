@@ -150,8 +150,9 @@ def esc(value: str) -> str:
     return html.escape(value, quote=True)
 
 
-def head_html() -> str:
-    return f'<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Content-Security-Policy" content="default-src \'none\'; img-src data:; font-src data:; style-src \'unsafe-inline\'; script-src \'unsafe-inline\'"><style>{font_css()}\n{CSS_FILE.read_text(encoding="utf-8")}</style></head><body style="margin:0;background:#101820">'
+def head_html(round6: bool = False) -> str:
+    extra = (ROOT / "examples/vq-v2-round4/round6-variants.css").read_text(encoding="utf-8") if round6 else ""
+    return f'<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Content-Security-Policy" content="default-src \'none\'; img-src data:; font-src data:; style-src \'unsafe-inline\'; script-src \'unsafe-inline\'"><style>{font_css()}\n{CSS_FILE.read_text(encoding="utf-8")}\n{extra}</style></head><body style="margin:0;background:#101820">'
 
 
 def highlighted(text: str, needles: tuple[str, ...]) -> str:
@@ -162,12 +163,38 @@ def highlighted(text: str, needles: tuple[str, ...]) -> str:
     return esc(text)
 
 
-def card_html(frame: dict, index: int, art: Path | None, flow: dict) -> str:
+def card_html(frame: dict, index: int, art: Path | None, flow: dict, round6: bool = False) -> str:
     cid = frame["id"]
     headline = frame["headline"]
     body_blocks = [block["text"] for block in frame["blocks"] if block.get("kind") == "text"]
     picture = f'<img class="vq-r3-photo" src="{data_uri(art)}" alt=""><div class="vq-r3-scrim"></div>' if art else '<div class="vq-r3-scrim" style="background:radial-gradient(ellipse at 50% 55%,#385366 0%,#101820 75%)"></div>'
-    if cid == "cover":
+    if round6 and cid == "cover":
+        copy = f'<section class="vq-r6-copy"><h1 class="vq-r6-title copy-check">{esc(headline)}</h1><p class="vq-r6-body copy-check">{esc(body_blocks[0])}</p></section>'
+        picture = f'<img class="vq-r6-photo" src="{data_uri(art)}" alt="">' if art else ""
+        variant = "declaration"
+        card_class = "vq-r6-declaration"
+    elif round6 and cid == "case-a":
+        rows = body_blocks[0].splitlines()
+        row_html = ''.join(f'<div class="vq-r6-row copy-check"><span>{esc(row.split(":",1)[0])}: </span><strong>{esc(row.split(":",1)[1].strip())}</strong></div>' for row in rows)
+        copy = f'<section class="vq-r6-explainer"><h1 class="vq-r6-title copy-check">{esc(headline)}</h1><div class="vq-r6-rows">{row_html}</div></section>'
+        picture = f'<img class="vq-r6-photo" src="{data_uri(art)}" alt="">' if art else ""
+        variant = "explainer"
+        card_class = "vq-r6-explainer"
+    elif round6 and cid == "opportunity":
+        picture = ""
+        items = []
+        labels = ["원칙", "장애물", "첫 실험"]
+        for label, text in zip(labels, body_blocks):
+            if cid == "opportunity" and "\n\n" in text:
+                text = text.split("\n\n", 1)[0]
+            pieces = text.split("：", 1) if "：" in text else text.split(":", 1)
+            line = pieces[-1].strip() if len(pieces) == 2 else text.strip()
+            items.append(f'<div class="vq-r6-story-row copy-check"><span class="vq-r6-story-label">{esc(label)}: </span><span>{esc(line)}</span></div>')
+        ending = next((text.split("\n\n",1)[1].strip() for text in body_blocks if "\n\n" in text), "")
+        copy = f'<section class="vq-r6-copy vq-r6-story"><h1 class="vq-r6-title copy-check">{esc(headline)}</h1><div class="vq-r6-story-rows">{"".join(items)}</div><p class="vq-r6-ending copy-check">{esc(ending)}</p></section>'
+        variant = "story"
+        card_class = "vq-r6-story"
+    elif cid == "cover":
         copy = f'<section class="vq-r3-copy"><h1 class="vq-r3-title copy-check">{highlighted(headline, ("돈이 되는", "자리로"))}</h1><p class="vq-r3-body copy-check">{esc(body_blocks[0])}</p></section>'
         variant = "cover"
     elif cid == "money":
@@ -209,24 +236,26 @@ def card_html(frame: dict, index: int, art: Path | None, flow: dict) -> str:
         variant = "list"
     source = frame.get("source_note", "")
     photo_class = " has-photo" if art else " deterministic-art"
-    return f'{head_html()}<article class="vq-r3-card vq-r3-{variant}{photo_class}" data-card="{esc(cid)}">{picture}<header class="vq-r3-header"><span class="series-shadow">BUSINESS IDEA / M1</span><span>{index} / 5</span></header>{copy}<footer class="vq-r3-footer"><span>{esc(source)}</span><span>{index} / 5</span></footer></article></body></html>'
+    if round6 and cid in {"cover", "case-a", "opportunity"}:
+        return f'{head_html(round6=True)}<article class="vq-r6-card {card_class}{photo_class}" data-card="{esc(cid)}">{picture}<header class="vq-r6-header"><span>BUSINESS IDEA / M1</span><span>{index} / 5</span></header>{copy}<footer class="vq-r6-footer"><span>{esc(source)}</span><span>{index} / 5</span></footer></article></body></html>'
+    return f'{head_html(round6=round6)}<article class="vq-r3-card vq-r3-{variant}{photo_class}" data-card="{esc(cid)}">{picture}<header class="vq-r3-header"><span class="series-shadow">BUSINESS IDEA / M1</span><span>{index} / 5</span></header>{copy}<footer class="vq-r3-footer"><span>{esc(source)}</span><span>{index} / 5</span></footer></article></body></html>'
 
 
 def fit_check(page, expected_strings: list[str], viewport: str) -> dict:
     report = page.evaluate("""() => {
-      const card=document.querySelector('.vq-r3-card'); const box=card.getBoundingClientRect();
-      const textEls=[...card.querySelectorAll('.vq-r3-header,.vq-r3-footer,.vq-r3-title,.vq-r3-body,.vq-r3-series,.vq-r3-number,.vq-r3-number-label,.vq-r3-flow-node,.vq-r3-list-item,.vq-r3-list-index')];
+      const card=document.querySelector('[data-card]'); const box=card.getBoundingClientRect();
+      const textEls=[...card.querySelectorAll('.vq-r3-header,.vq-r3-footer,.vq-r3-title,.vq-r3-body,.vq-r3-series,.vq-r3-number,.vq-r3-number-label,.vq-r3-flow-node,.vq-r3-list-item,.vq-r3-list-index,.vq-r6-header,.vq-r6-footer,.vq-r6-title,.vq-r6-body,.vq-r6-row,.vq-r6-story-row,.vq-r6-ending')];
       const clipping=textEls.filter(e=>e.scrollWidth>e.clientWidth+1||e.scrollHeight>e.clientHeight+2).map(e=>({selector:e.className,text:e.innerText,scroll:[e.scrollWidth,e.scrollHeight],client:[e.clientWidth,e.clientHeight]}));
       const outOfBounds=textEls.filter(e=>{const r=e.getBoundingClientRect();return r.left<box.left-1||r.right>box.right+1||r.top<box.top-1||r.bottom>box.bottom+1}).map(e=>{const r=e.getBoundingClientRect();return {class:e.className,rect:[r.x,r.y,r.width,r.height],card:[box.x,box.y,box.width,box.height]}});
-      const content=card.querySelector('.vq-r3-copy'),footer=card.querySelector('.vq-r3-footer');
-      const visibleContent=content?[...content.children].filter(e=>e.matches('.vq-r3-title,.vq-r3-body,.vq-r3-flowline,.vq-r3-flow-support,.vq-r3-flow-note,.vq-r3-list-items,.parking-graphic')):[];
+      const content=card.querySelector('.vq-r3-copy,.vq-r6-copy,.vq-r6-explainer,.vq-r6-story'),footer=card.querySelector('.vq-r3-footer,.vq-r6-footer');
+      const visibleContent=content?[...content.children].filter(e=>e.matches('.vq-r3-title,.vq-r3-body,.vq-r3-flowline,.vq-r3-flow-support,.vq-r3-flow-note,.vq-r3-list-items,.parking-graphic,.vq-r6-title,.vq-r6-rows,.vq-r6-story-rows,.vq-r6-ending')):[];
       const maxContentBottom=visibleContent.length?Math.max(...visibleContent.map(e=>e.getBoundingClientRect().bottom)):0;
       const contentFooterOverlap=!!footer&&maxContentBottom>footer.getBoundingClientRect().top+1;
       const sizes=textEls.map(e=>parseFloat(getComputedStyle(e).fontSize));
       const minFont=Math.min(...sizes); const body=document.body;
       return {viewport:[innerWidth,innerHeight],card:[box.width,box.height],pageScroll:[document.documentElement.scrollWidth,document.documentElement.scrollHeight],clipping,outOfBounds,contentFooterOverlap,minFont,fonts:sizes,overflow:card.scrollHeight>card.clientHeight+2||document.documentElement.scrollWidth>innerWidth+1||clipping.length>0||outOfBounds.length>0||contentFooterOverlap};
     }""")
-    text_content = page.locator(".vq-r3-card").inner_text().replace("\n", " ")
+    text_content = page.locator("[data-card]").inner_text().replace("\n", " ")
     normalized = re.sub(r"\s+", " ", text_content)
     missing = [s for s in expected_strings if re.sub(r"\s+", " ", s) not in normalized]
     source_text = re.sub(r"\s+", " ", " ".join(expected_strings))
@@ -258,7 +287,7 @@ def contact_sheet(pairs: list[tuple[Path, Path, str]], out: Path, width: int = 4
     canvas.save(out, format="PNG", optimize=False, compress_level=7)
 
 
-def build_cards(out: Path, series: dict, frames: list[dict]) -> dict:
+def build_cards(out: Path, series: dict, frames: list[dict], round6: bool = False, r4_baseline: Path | None = None) -> dict:
     flow = json.loads(MONEY.read_text(encoding="utf-8"))
     cards = out / "m1"
     cards.mkdir(parents=True, exist_ok=True)
@@ -276,7 +305,7 @@ def build_cards(out: Path, series: dict, frames: list[dict]) -> dict:
             card_out.mkdir(exist_ok=True)
             art = card_art(cid)
             html_path = card_out / f"{cid}.html"
-            html_path.write_text(card_html(frame, idx, art, flow), encoding="utf-8")
+            html_path.write_text(card_html(frame, idx, art, flow, round6=round6), encoding="utf-8")
             page = browser.new_page(viewport={"width": W, "height": H_CARD}, device_scale_factor=1)
             page.route("**/*", lambda route: route.continue_() if route.request.url.startswith(("file:", "data:")) else route.abort())
             page.goto(html_path.as_uri(), wait_until="load")
@@ -295,27 +324,35 @@ def build_cards(out: Path, series: dict, frames: list[dict]) -> dict:
                 expected.extend(value for node in flow["nodes"] for value in (node["label"],node["text"]))
             if cid == "cover": expected += ["BUSINESS IDEA / M1"]
             qa_desktop = fit_check(page, expected, "1080x1350")
-            png = card_out / "round4-1080x1350.png"
-            page.locator(".vq-r3-card").screenshot(path=str(png), animations="disabled")
+            png = card_out / ("round6-1080x1350.png" if round6 else "round4-1080x1350.png")
+            page.locator("[data-card]").screenshot(path=str(png), animations="disabled")
             page.set_viewport_size({"width":390,"height":488})
             qa_mobile = fit_check(page, expected, "390x488")
-            mobile = card_out / "round4-responsive-390x488.png"
-            page.locator(".vq-r3-card").screenshot(path=str(mobile), animations="disabled")
+            mobile = card_out / ("round6-responsive-390x488.png" if round6 else "round4-responsive-390x488.png")
+            page.locator("[data-card]").screenshot(path=str(mobile), animations="disabled")
             page.close()
-            baseline, label = card_baseline(cid)
+            if round6:
+                baseline = (r4_baseline or Path("/Volumes/OricoSSD/MacArchive/vq-v2-round4-final4/m1")) / cid / "round4-1080x1350.png"
+                label = "Round 4 opt-in grammar"
+            else:
+                baseline, label = card_baseline(cid)
             if not baseline.is_file():
                 raise RuntimeError(f"required baseline missing: {baseline}")
             baseline_copy = card_out / "baseline.png"
             shutil.copy2(baseline, baseline_copy)
-            comp = card_out / "baseline-vs-round4.png"
-            contact_sheet([(baseline_copy, png, f"{cid} | {label}  →  Round 4")], comp, width=540)
-            pairs.append((baseline_copy, png, f"{cid} | {label}  →  Round 4"))
-            outcomes.append({"id":cid,"variant":{"cover":"cover","money":"flow","case-a":"list","case-b":"list","opportunity":"list"}[cid],"source_photo":str(art) if art else None,"source_photo_sha256":sha(art) if art else None,"expected_source_strings_sha256":hashlib.sha256("\n".join(expected).encode()).hexdigest(),"rendered_copy_sha256":qa_desktop["rendered_copy_sha256"],"implementation":implementation_identity(),"baseline":str(baseline),"baseline_label":label,"outputs":{"1080x1350":str(png),"390x488":str(mobile),"comparison":str(comp)},"output_sha256":{"1080x1350":sha(png),"390x488":sha(mobile)},"qa":{"desktop":qa_desktop,"mobile":qa_mobile}})
+            round = "round6" if round6 else "round4"
+            comp = card_out / f"baseline-vs-{round}.png"
+            contact_sheet([(baseline_copy, png, f"{cid} | {label}  →  {round.title()}")], comp, width=540)
+            pairs.append((baseline_copy, png, f"{cid} | {label}  →  {round.title()}"))
+            outcomes.append({"id":cid,"variant":({"cover":"declaration","money":"round4-flow","case-a":"explainer","case-b":"round4-list","opportunity":"narrative"} if round6 else {"cover":"cover","money":"flow","case-a":"list","case-b":"list","opportunity":"list"})[cid],"source_photo":str(art) if art else None,"source_photo_sha256":sha(art) if art else None,"expected_source_strings_sha256":hashlib.sha256("\n".join(expected).encode()).hexdigest(),"rendered_copy_sha256":qa_desktop["rendered_copy_sha256"],"implementation":implementation_identity(),"baseline":str(baseline),"baseline_label":label,"outputs":{"1080x1350":str(png),"390x488":str(mobile),"comparison":str(comp)},"output_sha256":{"1080x1350":sha(png),"390x488":sha(mobile)},"qa":{"desktop":qa_desktop,"mobile":qa_mobile}})
         browser.close()
-    contact_sheet(pairs, out / "m1/baseline-vs-round4-contact-sheet.png", width=540)
+    round = "round6" if round6 else "round4"
+    comparison_sheet = out / f"m1/baseline-vs-{round}-contact-sheet.png"
+    mobile_sheet = out / f"m1/{round}-mobile-contact-sheet.png"
+    contact_sheet(pairs, comparison_sheet, width=540)
     # A larger, directly readable mobile sheet; original responsive 390px captures.
-    mobile_contact_sheet([(Path(entry["outputs"]["390x488"]),entry["id"]) for entry in outcomes], out / "m1/round4-mobile-contact-sheet.png")
-    return {"cards":outcomes,"contact_sheet":str(out / "m1/baseline-vs-round4-contact-sheet.png"),"mobile_contact_sheet":str(out / "m1/round4-mobile-contact-sheet.png"),"copy_fact_policy":"frame headlines, text blocks, money-flow nodes and source notes preserved exactly; labels used only where already present in frozen source"}
+    mobile_contact_sheet([(Path(entry["outputs"]["390x488"]),entry["id"]) for entry in outcomes], mobile_sheet)
+    return {"cards":outcomes,"contact_sheet":str(comparison_sheet),"mobile_contact_sheet":str(mobile_sheet),"copy_fact_policy":"frame headlines, text blocks, money-flow nodes and source notes preserved exactly; labels used only where already present in frozen source"}
 
 
 def copy_video_inputs(out: Path) -> list[Path]:
@@ -604,16 +641,19 @@ def main() -> None:
     ap.add_argument("--out",type=Path,default=Path("/Volumes/OricoSSD/MacArchive/vq-v2-round4"))
     ap.add_argument("--cards-only",action="store_true")
     ap.add_argument("--video-only",action="store_true")
+    ap.add_argument("--owner-reference-variants",action="store_true",help="render opt-in R6 owner-selected reference grammars for M1 cards")
+    ap.add_argument("--r4-baseline",type=Path,default=Path("/Volumes/OricoSSD/MacArchive/vq-v2-round4-final4/m1"),help="Round 4 M1 directory containing <card>/round4-1080x1350.png for Round 6 comparisons")
     args=ap.parse_args()
     if args.cards_only and args.video_only: raise SystemExit("choose one scope or neither")
+    if args.owner_reference_variants and not args.cards_only: raise SystemExit("owner reference variants require --cards-only and apply to M1 cards only")
     out=args.out.resolve()
     if out.exists() and any(out.iterdir()): raise SystemExit(f"evidence output must be empty to protect prior results: {out}")
     out.mkdir(parents=True,exist_ok=True)
     series,frames=load_m1()
     cards_result=None; video_result=None
-    if not args.video_only: cards_result=build_cards(out,series,frames)
+    if not args.video_only: cards_result=build_cards(out,series,frames,round6=args.owner_reference_variants,r4_baseline=args.r4_baseline.resolve())
     if not args.cards_only: video_result=render_water(out)
-    result={"schema":"vq-v2-round4-render/1","status":"LOCAL_RENDERED; OWNER_DIRECTION_PREFERRED; OWNER_AESTHETIC_REVIEW_PENDING","owner_quote_verbatim":OWNER_QUOTE,"provider_calls":0,"paid_spend_usd":0,"defaults_changed":False,"implementation":implementation_identity(),"m1":cards_result,"video":video_result,"runtime":{"platform":platform.platform(),"python":platform.python_version()}}
+    result={"schema":"vq-v2-round4-render/1","round":"6-owner-reference-variants" if args.owner_reference_variants else "4","status":"LOCAL_RENDERED; OWNER_REFERENCE_CANDIDATES_SELECTED; OWNER_AESTHETIC_REVIEW_PENDING" if args.owner_reference_variants else "LOCAL_RENDERED; OWNER_DIRECTION_PREFERRED; OWNER_AESTHETIC_REVIEW_PENDING","owner_quote_verbatim":"2,3,4,8,10 괜찮아 - 나머지도 괜찮지만 패턴이 유사해보임" if args.owner_reference_variants else OWNER_QUOTE,"provider_calls":0,"paid_spend_usd":0,"defaults_changed":False,"implementation":implementation_identity(),"m1":cards_result,"video":video_result,"runtime":{"platform":platform.platform(),"python":platform.python_version()}}
     (out/"receipt.json").write_text(json.dumps(result,ensure_ascii=False,indent=2)+"\n",encoding="utf-8")
     print(json.dumps({"status":"OK","out":str(out),"cards":bool(cards_result),"video":bool(video_result)},ensure_ascii=False))
 

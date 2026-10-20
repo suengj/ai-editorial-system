@@ -1,0 +1,61 @@
+{
+  "schema_version": "1.0.0",
+  "evaluation_id": "eval:vq-m1-r3-03-2026-10-20-01",
+  "ref_id": "ref:vq-m1-fsc-correction-2026-10-20",
+  "modality": "visual",
+  "evaluator": {
+    "type": "agent",
+    "agent": {
+      "runtime": "Codex",
+      "model": "GPT-6",
+      "version": "2026-10-20"
+    }
+  },
+  "evaluated_at": "2026-10-20T17:30:00+09:00",
+  "profile_ref": "editorial/profiles/reference/visual.json",
+  "basis": "model_inference",
+  "dimensions": [
+    {
+      "dimension": "hierarchy",
+      "verdict": "adopt",
+      "note": "One correction statement dominates the reading path."
+    },
+    {
+      "dimension": "spacing",
+      "verdict": "adopt",
+      "note": "Large surrounding white space gives the statement room."
+    },
+    {
+      "dimension": "typography-character",
+      "verdict": "adopt",
+      "note": "Expressive headline scale clarifies the primary statement."
+    },
+    {
+      "dimension": "composition",
+      "verdict": "do_not_copy",
+      "note": "Exact split and illustration treatment belong to the source."
+    },
+    {
+      "dimension": "palette-colour-role",
+      "verdict": "do_not_copy",
+      "note": "Exact blue and white campaign treatment is not transferable."
+    }
+  ],
+  "strengths": [
+    "짙은 파랑 상단 안내 일러스트 아래에 정정의 핵심 문장을 큰 글자로 두고 넓은 흰 여백으로 분리한다. 사진·데이터보다 문장 위계가 우선한다."
+  ],
+  "weaknesses": [],
+  "applicable_to": {
+    "content_types": [],
+    "audiences": [],
+    "artifacts": [
+      "visual/slide-image"
+    ],
+    "surfaces": [
+      "instagram"
+    ]
+  },
+  "authority_boundary": "craft_evidence_only",
+  "provenance_class": "external",
+  "notes": "Observed directly from candidate image R3-03. Source page https://www.fsc.go.kr/no040101?cnId=3110; direct image https://www.fsc.go.kr/comm/getImage?fileNo=1&fileTy=ATTACH&srvcId=CARDNEWS&upperNo=3110; archive file /Volumes/OricoSSD/MacArchive/vq-v2-round3/reference-candidates/candidate-03-fsc-correction.jpg; SHA-256 sha256:e867a84701e59da74497339b494ba5f16ed9a271b1d6a05df1b1ca81d4e9a216; dimensions 1250x1250. Owner statement selected candidate among others: \"2,3,4,8,10 괜찮아 - 나머지도 괜찮지만 패턴이 유사해보임\". This is candidate selection, not final aesthetic acceptance. Used only as evidence for the opt-in claim-led-notice grammar; identities and expression are not transferable."
+}

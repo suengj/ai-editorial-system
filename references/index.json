@@ -1,7 +1,7 @@
 {
   "counts": {
     "by_provenance_class": {
-      "external": 27,
+      "external": 32,
       "generated_output": 1,
       "owner_created": 0
     },
@@ -315,6 +315,61 @@
       "promoted": false,
       "provenance_class": "external",
       "ref_id": "ref:timeline-design-space"
+    },
+    {
+      "basis": "model_inference",
+      "evaluated_at": "2026-10-20T17:30:00+09:00",
+      "evaluation_id": "eval:vq-m1-r3-03-2026-10-20-01",
+      "evaluator_type": "agent",
+      "modality": "visual",
+      "path": "references/evaluations/vq-m1-fsc-correction-2026-10-20/vq-m1-r3-03-2026-10-20-01.json",
+      "promoted": false,
+      "provenance_class": "external",
+      "ref_id": "ref:vq-m1-fsc-correction-2026-10-20"
+    },
+    {
+      "basis": "model_inference",
+      "evaluated_at": "2026-10-20T17:30:00+09:00",
+      "evaluation_id": "eval:vq-m1-r3-08-2026-10-20-01",
+      "evaluator_type": "agent",
+      "modality": "visual",
+      "path": "references/evaluations/vq-m1-kigam-poem-2026-10-20/vq-m1-r3-08-2026-10-20-01.json",
+      "promoted": false,
+      "provenance_class": "external",
+      "ref_id": "ref:vq-m1-kigam-poem-2026-10-20"
+    },
+    {
+      "basis": "model_inference",
+      "evaluated_at": "2026-10-20T17:30:00+09:00",
+      "evaluation_id": "eval:vq-m1-r3-04-2026-10-20-01",
+      "evaluator_type": "agent",
+      "modality": "visual",
+      "path": "references/evaluations/vq-m1-kird-gene-edit-2026-10-20/vq-m1-r3-04-2026-10-20-01.json",
+      "promoted": false,
+      "provenance_class": "external",
+      "ref_id": "ref:vq-m1-kird-gene-edit-2026-10-20"
+    },
+    {
+      "basis": "model_inference",
+      "evaluated_at": "2026-10-20T17:30:00+09:00",
+      "evaluation_id": "eval:vq-m1-r3-10-2026-10-20-01",
+      "evaluator_type": "agent",
+      "modality": "visual",
+      "path": "references/evaluations/vq-m1-koreascientists-2026-10-20/vq-m1-r3-10-2026-10-20-01.json",
+      "promoted": false,
+      "provenance_class": "external",
+      "ref_id": "ref:vq-m1-koreascientists-2026-10-20"
+    },
+    {
+      "basis": "model_inference",
+      "evaluated_at": "2026-10-20T17:30:00+09:00",
+      "evaluation_id": "eval:vq-m1-r3-02-2026-10-20-01",
+      "evaluator_type": "agent",
+      "modality": "visual",
+      "path": "references/evaluations/vq-m1-ktv-finance-2026-10-20/vq-m1-r3-02-2026-10-20-01.json",
+      "promoted": false,
+      "provenance_class": "external",
+      "ref_id": "ref:vq-m1-ktv-finance-2026-10-20"
     }
   ],
   "generated": true,
