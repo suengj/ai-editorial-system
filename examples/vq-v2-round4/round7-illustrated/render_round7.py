@@ -51,12 +51,17 @@ def validate(page,frame,viewport):
       const text=[...card.querySelectorAll('.vq-r7-brand,.vq-r7-page,.vq-r7-title,.vq-r7-body,.vq-r7-row,.vq-r7-footer')];
       const clipping=text.filter(e=>e.scrollWidth>e.clientWidth+2||e.scrollHeight>e.clientHeight+8).map(e=>e.innerText);
       const bounds=text.filter(e=>{const r=e.getBoundingClientRect();return r.left<box.left-1||r.right>box.right+1||r.top<box.top-1||r.bottom>box.bottom+1}).map(e=>e.innerText);
-      const art=card.querySelector('.vq-r7-art');
-      return {card:[box.width,box.height],clipping,bounds,artLoaded:art.complete&&art.naturalWidth>0,overflow:card.scrollWidth>box.width+1||card.scrollHeight>box.height+2};
+      const art=card.querySelector('.vq-r7-art'),artBox=art.getBoundingClientRect();
+      const rows=[...card.querySelectorAll('.vq-r7-row')];
+      const rowRatios=rows.map(e=>e.getBoundingClientRect().width/box.width);
+      const rowFontSizes=rows.map(e=>parseFloat(getComputedStyle(e).fontSize));
+      const artRatio=artBox.width/box.width,artCenterOffset=Math.abs((artBox.left+artBox.width/2)-(box.left+box.width/2))/box.width;
+      return {card:[box.width,box.height],clipping,bounds,artLoaded:art.complete&&art.naturalWidth>0,overflow:card.scrollWidth>box.width+1||card.scrollHeight>box.height+2,rowRatios,rowFontSizes,artRatio,artCenterOffset};
     }''')
     text=re.sub(r'\s+',' ',page.locator('[data-card]').inner_text())
     missing=[s for s in expected if re.sub(r'\s+',' ',s) not in text]
-    report.update({'viewport':viewport,'missing_copy':missing,'pass':not (report['clipping'] or report['bounds'] or report['overflow'] or not report['artLoaded'] or missing)})
+    layout_failure=frame['id']=='opportunity' and (min(report['rowRatios'],default=0)<.85 or report['artRatio']<.65 or report['artCenterOffset']>.1 or (viewport=='390x488' and min(report['rowFontSizes'],default=0)<16))
+    report.update({'viewport':viewport,'missing_copy':missing,'opportunity_layout_failure':layout_failure,'pass':not (report['clipping'] or report['bounds'] or report['overflow'] or not report['artLoaded'] or missing or layout_failure)})
     if not report['pass']: raise RuntimeError(f'R7 render QA failed for {frame["id"]} {viewport}: {json.dumps(report,ensure_ascii=False)}')
     return report
 
