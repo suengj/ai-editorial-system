@@ -69,9 +69,9 @@
   .vq-r6-declaration .vq-r6-title { font-size: clamp(38px, 10vw, 48px); }
   .vq-r6-declaration .vq-r6-body { font-size: clamp(18px, 4.7vw, 21px); }
   .vq-r6-explainer .vq-r6-photo { height: 27%; }
-  .vq-r6-explainer .vq-r6-explainer { inset: 29% 6% 9%; gap: 10px; }
+  .vq-r6-explainer .vq-r6-explainer { inset: 28% 6% 9%; gap: 6px; }
   .vq-r6-explainer .vq-r6-title { max-width: 100%; font-size: clamp(28px, 7.3vw, 34px); }
-  .vq-r6-row { grid-template-columns: minmax(91px, 27%) minmax(0, 1fr); gap: 8px; padding: 9px 0; font-size: clamp(16px, 4.1vw, 18px); line-height: 1.2; }
+  .vq-r6-row { grid-template-columns: minmax(91px, 27%) minmax(0, 1fr); gap: 8px; padding: 6px 0; font-size: clamp(16px, 4vw, 17px); line-height: 1.12; }
   .vq-r6-story .vq-r6-copy { inset: 7% 6% 9%; gap: 12px; }
   .vq-r6-story .vq-r6-title { font-size: clamp(29px, 7.5vw, 36px); }
   .vq-r6-story-row { grid-template-columns: 90px minmax(0, 1fr); gap: 8px; padding: 12px 0; font-size: clamp(16px, 4vw, 18px); line-height: 1.22; }
