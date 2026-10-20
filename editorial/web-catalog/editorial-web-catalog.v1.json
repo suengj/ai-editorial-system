@@ -104,7 +104,7 @@
     }
   },
   "catalog_version": "1.0.0",
-  "content_digest": "sha256:200fb1839572c043869eef4fcd3941a40766be850b7a62bb2d65b544a7978e8a",
+  "content_digest": "sha256:9f3daa6af0afb8576c3b36c1acdac3e634c2df77ef54a876363f051c70ab23c3",
   "field_domains": {
     "call_to_action": {
       "max_length": 200,
@@ -212,7 +212,7 @@
           {
             "path": "editorial/STRUCTURED-VISUAL-EXECUTION.md",
             "role": "core:visual",
-            "sha256": "f6423b631905be6dc581819c780ad4034ca55cac5df471d9252982c7cab70488"
+            "sha256": "09b473a88315cbae40ee936358df04252e98d83f842ca78b5dd0caec4ace656f"
           },
           {
             "path": "editorial/constitution.md",
@@ -281,7 +281,7 @@
           {
             "path": "editorial/STRUCTURED-VISUAL-EXECUTION.md",
             "role": "core:visual",
-            "sha256": "f6423b631905be6dc581819c780ad4034ca55cac5df471d9252982c7cab70488"
+            "sha256": "09b473a88315cbae40ee936358df04252e98d83f842ca78b5dd0caec4ace656f"
           },
           {
             "path": "editorial/constitution.md",
@@ -302,7 +302,7 @@
     "manifest": {
       "manifest_version": "2026-10-16.1",
       "path": "editorial/entry-manifest.json",
-      "sha256": "711613466f71f6cc08a4a7bbfbb7ee716665be693e6f544dc52283b1ea4d0ac3"
+      "sha256": "81f918280aa2e678f3820e3269f280b5ebaae545c46f6cbb7a34be12d5dab162"
     },
     "note": "The AES git commit is deliberately not embedded. The consumer pins the AES commit and this file's sha256.",
     "profile_version_semantics": "<manifest_version>+<aes_commit>; the consumer supplies aes_commit from its own pin",
@@ -7942,7 +7942,7 @@
           {
             "path": "editorial/STRUCTURED-VISUAL-EXECUTION.md",
             "role": "core:visual",
-            "sha256": "f6423b631905be6dc581819c780ad4034ca55cac5df471d9252982c7cab70488"
+            "sha256": "09b473a88315cbae40ee936358df04252e98d83f842ca78b5dd0caec4ace656f"
           },
           {
             "path": "editorial/SUENGJ-STYLE.md",
@@ -8080,7 +8080,7 @@
           {
             "path": "editorial/STRUCTURED-VISUAL-EXECUTION.md",
             "role": "core:visual",
-            "sha256": "f6423b631905be6dc581819c780ad4034ca55cac5df471d9252982c7cab70488"
+            "sha256": "09b473a88315cbae40ee936358df04252e98d83f842ca78b5dd0caec4ace656f"
           },
           {
             "path": "editorial/business-idea-magazine.v1.json",
@@ -8152,7 +8152,7 @@
           {
             "path": "editorial/STRUCTURED-VISUAL-EXECUTION.md",
             "role": "core:visual",
-            "sha256": "f6423b631905be6dc581819c780ad4034ca55cac5df471d9252982c7cab70488"
+            "sha256": "09b473a88315cbae40ee936358df04252e98d83f842ca78b5dd0caec4ace656f"
           },
           {
             "path": "editorial/TRENDS-MOA-COMMUNITY-TONE.md",
@@ -8215,7 +8215,7 @@
       },
       {
         "path": "editorial/font-preferences.v1.json",
-        "sha256": "542e37db5aed781304a3e4d62647ef94e6b17481484665e990a679f4e98d82ae"
+        "sha256": "705877d43dcc59433c3ff4d7a8f0b35c0d531c06bebcb750f7afec631cd7f8f0"
       }
     ],
     "genre_presets": {

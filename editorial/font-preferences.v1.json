@@ -13,7 +13,7 @@
   },
   "style_candidate_groups": {
     "selection_status": "OWNER_SELECTED",
-    "provisional_defaults_are_not_final_choices": false,
+    "defaults_are_owner_selected": true,
     "groups": {
       "video": {
         "candidate_numbers": [1, 2],

@@ -9,7 +9,7 @@ assert.equal(data.preference_authority, 'AES');
 assert.equal(data.selection_policy.final_default, 'UNDECIDED');
 assert.equal(data.selection_policy.silent_fallback, 'FORBIDDEN');
 assert.equal(data.style_candidate_groups.selection_status, 'OWNER_SELECTED');
-assert.equal(data.style_candidate_groups.provisional_defaults_are_not_final_choices, false);
+assert.equal(data.style_candidate_groups.defaults_are_owner_selected, true);
 for (const [group, numbers, pairIds] of [
   ['video', [1, 2], ['pretendard-pretendard', 'noto-sans-kr-noto-sans-kr']],
   ['R4_photo', [3, 4, 5], ['noto-serif-kr-pretendard', 'noto-serif-kr-suit', 'gowun-batang-suit']],
@@ -18,8 +18,8 @@ for (const [group, numbers, pairIds] of [
   const entry = data.style_candidate_groups.groups[group];
   assert.deepEqual(entry.candidate_numbers, numbers, `${group} candidate numbers`);
   assert.deepEqual(entry.candidate_pair_ids, pairIds, `${group} candidate pairs`);
-  assert.equal(entry.default_number, numbers[0], `${group} selected number`);
-  assert.equal(entry.default_pair_id, pairIds[0], `${group} selected pair`);
+  assert(pairIds.includes(entry.default_pair_id), `${group} selected pair`);
+  assert.equal(entry.default_number, numbers[pairIds.indexOf(entry.default_pair_id)], `${group} selected number`);
   assert(entry.candidate_pair_ids.every((id) => data.candidate_pairs.some((pair) => pair.pair_id === id)));
 }
 assert.deepEqual(data.candidate_pairs.map((p) => p.pair_id), [

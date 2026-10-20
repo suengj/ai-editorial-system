@@ -73,7 +73,7 @@ export function validateFontPreferences(data) {
     R7_illustrated: { numbers: [1, 2], pairs: ['pretendard-pretendard', 'noto-sans-kr-noto-sans-kr'] },
   };
   const groups = data.style_candidate_groups;
-  if (groups?.selection_status !== 'OWNER_SELECTED' || groups?.provisional_defaults_are_not_final_choices !== false
+  if (groups?.selection_status !== 'OWNER_SELECTED' || groups?.defaults_are_owner_selected !== true
     || Object.keys(groups?.groups ?? {}).sort().join(',') !== Object.keys(groupDefinitions).sort().join(',')) {
     throw typographyError('FONT_CONTRACT_INVALID', 'style candidate groups must preserve OWNER_SELECTED and the canonical group set');
   }
