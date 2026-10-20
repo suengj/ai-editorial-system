@@ -21,6 +21,26 @@
     ],
     "meaning": "Candidate selection for craft exploration only; not final aesthetic approval and does not establish OWNER_ACCEPTED."
   },
+  "owner_style_preference": {
+    "recorded_at": "2026-10-20",
+    "status": "OWNER_STYLE_PREFERENCE",
+    "OWNER_STYLE_PREFERENCE": "R4 >= R7",
+    "quote_verbatim": "둘다 좋긴 한데.. 4차 >= 7차 로 해 - 근데 진짜 둘 다 괜찮아",
+    "meaning": "Both styles are usable. Prefer R4 (photo full-bleed editorial) first; R7 (illustration, color blocks, highlighter) is secondary.",
+    "selection_rule": {
+      "primary": "R4",
+      "secondary": "R7",
+      "allow_r7_when": [
+        "photo_asset_absent_or_weak",
+        "lifestyle_or_practical_information_content"
+      ],
+      "scope": "preference guidance only",
+      "operational_default_changed": false,
+      "operational_default_change_requires_separate_owner_approval": true,
+      "aesthetic_approval": "OWNER_REVIEW_PENDING",
+      "OWNER_ACCEPTED": false
+    }
+  },
   "reference_registry": "references/catalog.json + references/evaluations/ (SUE-643 contract)",
   "approved_examples_json": "Not applicable: editorial/approved-examples.json is scoped to selected personal voice excerpts, not visual reference candidates.",
   "images_committed": false,
