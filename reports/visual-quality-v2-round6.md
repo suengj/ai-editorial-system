@@ -24,9 +24,9 @@ The R4 renderer gained the explicit `--owner-reference-variants` opt-in flag and
 
 All five cards were rendered at 1080×1350 and 390×488 and directly checked in the side-by-side R4/R6 and mobile contact sheets:
 
-- Comparison: `/Volumes/OricoSSD/MacArchive/vq-v2-round6-owner-references-final4/m1/baseline-vs-round6-contact-sheet.png`
-- Responsive 390×488: `/Volumes/OricoSSD/MacArchive/vq-v2-round6-owner-references-final4/m1/round6-mobile-contact-sheet.png`
-- Render receipt: `/Volumes/OricoSSD/MacArchive/vq-v2-round6-owner-references-final4/receipt.json`
+- Comparison: `/Volumes/OricoSSD/MacArchive/vq-v2-round6-owner-references-final5/m1/baseline-vs-round6-contact-sheet.png`
+- Responsive 390×488: `/Volumes/OricoSSD/MacArchive/vq-v2-round6-owner-references-final5/m1/round6-mobile-contact-sheet.png`
+- Render receipt: `/Volumes/OricoSSD/MacArchive/vq-v2-round6-owner-references-final5/receipt.json`
 
 Technical QA passes on all 5/5 cards at both sizes: zero clipping/overflow, exact source-copy multiplicities, and a 16 CSS px minimum on mobile. `money` and `case-b` PNG hashes match their R4 output exactly. The comparison is visual evidence, not proof of aesthetic acceptance.
 
@@ -42,5 +42,6 @@ Technical QA passes on all 5/5 cards at both sizes: zero clipping/overflow, exac
 - Round 6 generation/provider calls: 0; paid spend: USD 0.00. Cumulative estimate remains USD 0.012790 / USD 2.00 cap.
 - `node scripts/registry.mjs --validate`: PASS; `npm run test:registry`: PASS; `npm run test:visual-authority`: PASS; `npm run validate:rights`: PASS; `git diff --check`: PASS.
 - The render receipt binds code to commit `e354fbf2412ac0687040a089d707fdb31830fbd1`, renderer SHA-256 `e3590c918a7922ca85b3ddaa4483c6ac6f5b4dd097af567f058c50ce86d2f8ac`, and stylesheet SHA-256 `c5249d1ffedb9ee44253df5399e405846bb3f45d73f1e088c501fa949c7a765c`.
-- **Codex Sol low review #1:** FAIL on a stale R4 contact-sheet path in the receipt and a fixed R4 baseline path. Both are corrected in `fe3ccd4`; the receipt now resolves to generated files and `--r4-baseline` accepts the comparison directory. Review #2 of the corrected branch head is pending.
+- **Codex Sol low review #1:** FAIL on a stale R4 contact-sheet path in the receipt and a fixed R4 baseline path. Both were corrected in `fe3ccd4`; the receipt now resolves to generated files and `--r4-baseline` accepts the comparison directory.
+- **Codex Sol low review #2:** FAIL because the unflagged R4 receipt used the R6 owner-candidate status. Corrected to preserve the R4 status when the opt-in flag is absent. Review #3 of the corrected branch head is pending.
 - No default/profile change, publication, or deployment. No Linear issue status changed.

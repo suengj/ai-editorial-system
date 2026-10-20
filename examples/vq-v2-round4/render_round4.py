@@ -653,7 +653,7 @@ def main() -> None:
     cards_result=None; video_result=None
     if not args.video_only: cards_result=build_cards(out,series,frames,round6=args.owner_reference_variants,r4_baseline=args.r4_baseline.resolve())
     if not args.cards_only: video_result=render_water(out)
-    result={"schema":"vq-v2-round4-render/1","round":"6-owner-reference-variants" if args.owner_reference_variants else "4","status":"LOCAL_RENDERED; OWNER_REFERENCE_CANDIDATES_SELECTED; OWNER_AESTHETIC_REVIEW_PENDING","owner_quote_verbatim":"2,3,4,8,10 괜찮아 - 나머지도 괜찮지만 패턴이 유사해보임" if args.owner_reference_variants else OWNER_QUOTE,"provider_calls":0,"paid_spend_usd":0,"defaults_changed":False,"implementation":implementation_identity(),"m1":cards_result,"video":video_result,"runtime":{"platform":platform.platform(),"python":platform.python_version()}}
+    result={"schema":"vq-v2-round4-render/1","round":"6-owner-reference-variants" if args.owner_reference_variants else "4","status":"LOCAL_RENDERED; OWNER_REFERENCE_CANDIDATES_SELECTED; OWNER_AESTHETIC_REVIEW_PENDING" if args.owner_reference_variants else "LOCAL_RENDERED; OWNER_DIRECTION_PREFERRED; OWNER_AESTHETIC_REVIEW_PENDING","owner_quote_verbatim":"2,3,4,8,10 괜찮아 - 나머지도 괜찮지만 패턴이 유사해보임" if args.owner_reference_variants else OWNER_QUOTE,"provider_calls":0,"paid_spend_usd":0,"defaults_changed":False,"implementation":implementation_identity(),"m1":cards_result,"video":video_result,"runtime":{"platform":platform.platform(),"python":platform.python_version()}}
     (out/"receipt.json").write_text(json.dumps(result,ensure_ascii=False,indent=2)+"\n",encoding="utf-8")
     print(json.dumps({"status":"OK","out":str(out),"cards":bool(cards_result),"video":bool(video_result)},ensure_ascii=False))
 
