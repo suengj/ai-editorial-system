@@ -24,6 +24,7 @@ function test(name, fn) { fn(); count++; console.log(`PASS ${name}`); }
 function negative(name, edit, code) { test(name, () => { const p = structuredClone(packet), e = structuredClone(evidence); edit(p, e); assert.throws(() => compileBusinessMagazine(p, e, opts), error => error.code === code); }); }
 const before = JSON.stringify([packet, evidence, profile]);
 const output = compileBusinessMagazine(packet, evidence, opts);
+test('practical-information series defaults through the owner R7 fallback', () => { assert.deepEqual(output.series.visual_style, { requested_style: 'AUTO', content_kind: 'lifestyle_practical', photo_asset_quality: 'absent' }); assert.equal(planCarousel(output.series).recipe, 'r7-illustration-fallback'); });
 test('existing carousel compiler accepts five ordered frames', () => assert.equal(planCarousel(output.series).frames.length, 5));
 test('inputs and shared profile are not mutated', () => assert.equal(JSON.stringify([packet, evidence, profile]), before));
 test('no account or publication authority inferred', () => { assert.equal(output.series.profiles.brand, undefined); assert.equal(output.sidecar.publication_authorized, false); assert.equal(output.series.task.watermark.enabled, false); });

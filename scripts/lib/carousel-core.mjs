@@ -69,15 +69,22 @@ export function planCarousel(series, catalog=loadVisualRecipes()) {
   need(text(series.source.ref) && ['source_bound','illustrative'].includes(series.source.scope), 'SERIES_SOURCE', 'actual source ref and scope required');
   keys(series.profiles, ['surface','artifact','brand'], 'profiles');
   need(text(series.profiles.surface) && series.profiles.artifact === 'visual/slide-image', 'SERIES_PROFILE', 'use existing visual/slide-image and a compatible surface');
-  if (series.visual_style !== undefined) {
-    keys(series.visual_style, ['requested_style','content_kind','photo_asset_quality'], 'visual_style');
-    need(['AUTO','R4','R7'].includes(series.visual_style.requested_style ?? 'AUTO'), 'SERIES_STYLE', 'visual_style.requested_style must be AUTO, R4, or R7');
-    need(['unknown','lifestyle_practical','other'].includes(series.visual_style.content_kind ?? 'unknown'), 'SERIES_STYLE', 'visual_style.content_kind is invalid');
-    need(['unknown','strong','weak','absent'].includes(series.visual_style.photo_asset_quality ?? 'unknown'), 'SERIES_STYLE', 'visual_style.photo_asset_quality is invalid');
+  need(Array.isArray(series.frames), 'SERIES_FRAMES', 'frames array required');
+  need(series.visual_style === undefined || obj(series.visual_style), 'SERIES_STYLE', 'visual_style must be an object');
+  const hasPhotoAsset = series.frames.some((frame) => Array.isArray(frame?.blocks) && frame.blocks.some((block) => block?.kind === 'image'));
+  const implicitStyle = series.visual_style === undefined && (!series.recipe || series.recipe === 'editorial-minimal')
+    ? { requested_style: 'AUTO', content_kind: 'unknown', photo_asset_quality: hasPhotoAsset ? 'unknown' : 'absent' }
+    : null;
+  const styleInput = series.visual_style ?? implicitStyle;
+  if (styleInput !== null && styleInput !== undefined) {
+    keys(styleInput, ['requested_style','content_kind','photo_asset_quality'], 'visual_style');
+    need(['AUTO','R4','R7'].includes(styleInput.requested_style ?? 'AUTO'), 'SERIES_STYLE', 'visual_style.requested_style must be AUTO, R4, or R7');
+    need(['unknown','lifestyle_practical','other'].includes(styleInput.content_kind ?? 'unknown'), 'SERIES_STYLE', 'visual_style.content_kind is invalid');
+    need(['unknown','strong','weak','absent'].includes(styleInput.photo_asset_quality ?? 'unknown'), 'SERIES_STYLE', 'visual_style.photo_asset_quality is invalid');
   }
-  const requestedStyle = series.visual_style?.requested_style ?? 'AUTO';
-  const resolvedStyle = series.visual_style !== undefined ? resolveDefaultVisualStyle(series.visual_style) : null;
-  const preserveExplicitRecipe = resolvedStyle && requestedStyle === 'AUTO' && series.recipe && series.recipe !== 'editorial-minimal';
+  const requestedStyle = styleInput?.requested_style ?? 'AUTO';
+  const resolvedStyle = styleInput ? resolveDefaultVisualStyle(styleInput) : null;
+  const preserveExplicitRecipe = series.visual_style && resolvedStyle && requestedStyle === 'AUTO' && series.recipe && series.recipe !== 'editorial-minimal';
   const style = preserveExplicitRecipe
     ? { style: series.recipe, recipe: series.recipe, reason: 'explicit_recipe_preserved' }
     : resolvedStyle;
@@ -227,7 +234,7 @@ export function planCarousel(series, catalog=loadVisualRecipes()) {
     frames.push({id:f.id,index:i+1,function:f.function,beat_ids:f.beat_ids,takeaway:f.takeaway,alt_text:f.alt_text,layout:layoutName,...(f.art_direction?{art_direction:structuredClone(f.art_direction)}:{}),plan});
   }
   need([...beats.keys()].every((id)=>used.has(id)),'SERIES_BEAT_MISSING','a declared beat is not represented');
-  return {schema_version:CAROUSEL_VERSION,series_id:series.series_id,recipe:resolvedRecipeId,...(style?{visual_style:{...style,requested:series.visual_style}}:{}),recipe_hash:hash({version:catalog.schema_version,recipe,regions:recurring,layouts,typography,layout_effects:catalog.layout_effects??{}}),...(series.art_direction_sha256?{art_direction_sha256:series.art_direction_sha256}:{}),preset,typography,frames,
+  return {schema_version:CAROUSEL_VERSION,series_id:series.series_id,recipe:resolvedRecipeId,...(style?{visual_style:{...style,requested:styleInput}}:{}),recipe_hash:hash({version:catalog.schema_version,recipe,regions:recurring,layouts,typography,layout_effects:catalog.layout_effects??{}}),...(series.art_direction_sha256?{art_direction_sha256:series.art_direction_sha256}:{}),preset,typography,frames,
     density_profile:'silent_carousel',narration_dependency:'none',
     review_contract:'editorial/SLIDES-AND-CAROUSELS.md#11-series-information-consistency-contract',
     review_owner:'skills/review-visual/; SUE-646/647; user Phase4 SUE-1337',
@@ -322,7 +329,7 @@ export async function executeCarousel(series,{baseDir=process.cwd(),outDir,raste
   if (wouldRepair) enforceRepairLimit(chk.priorRound,resolve(previousDir),lineage);
   const repairRound=prior?(allChanged?0:chk.priorRound):0;
   mkdirSync(outDir,{recursive:true});
-  const result={lineage_root:lineage,repair_round:repairRound,repair_counted:false,classification:prior?(allChanged?'new_base_all_frames_changed':wouldRepair?'local_repair':'no_change_or_retry'):'base',repaired_frames:prior&&!allChanged?rerender:[],schema_version:CAROUSEL_VERSION,series_id:compiled.series_id,recipe:compiled.recipe,recipe_hash:compiled.recipe_hash,runtime,
+  const result={lineage_root:lineage,repair_round:repairRound,repair_counted:false,classification:prior?(allChanged?'new_base_all_frames_changed':wouldRepair?'local_repair':'no_change_or_retry'):'base',repaired_frames:prior&&!allChanged?rerender:[],schema_version:CAROUSEL_VERSION,series_id:compiled.series_id,recipe:compiled.recipe,...(compiled.visual_style?{visual_style:compiled.visual_style}:{}),recipe_hash:compiled.recipe_hash,runtime,
     status:'INCOMPLETE',frames:[],qa:{mechanical:'PREFLIGHT_PASSED',visual:'NOT_REVIEWED',source_truth:'NOT_ESTABLISHED',publication:'NOT_AUTHORIZED'},publication_authorized:false};
   if (series.art_direction_sha256) result.art_direction_sha256 = series.art_direction_sha256;
   const save=()=>writeJson(resolve(outDir,'series.json'),result);

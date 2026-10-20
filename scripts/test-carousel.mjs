@@ -22,11 +22,12 @@ ok('page numbering is deterministic',()=>assert.deepEqual(first.frames.map((f)=>
 ok('role hierarchy and independent layouts',()=>{assert(first.typography.headline.font_size>first.typography.body.font_size);assert.equal(new Set(first.frames.map((f)=>f.layout)).size,3);});
 ok('silent profile and no narration dependency',()=>{assert.equal(first.density_profile,'silent_carousel');assert.equal(first.narration_dependency,'none');});
 ok('original recipe catalogue remains available beside R4/R7',()=>{const recipes=loadVisualRecipes().recipes;assert.equal(new Set(['editorial-minimal','dark-data','pop-collage'].map((id)=>recipes[id].theme.background)).size,3);assert(recipes['r4-photo-fullbleed']);assert(recipes['r7-illustration-fallback']);});
+ok('existing legacy-default series route through the approved selector',()=>{assert.equal(first.recipe,'r7-illustration-fallback');assert.equal(first.visual_style.reason,'photo_asset_absent');const withPhoto=clone();withPhoto.frames[0].blocks[0]={id:'photo',region:'content',kind:'image',ref:'photo.png'};assert.equal(planCarousel(withPhoto).recipe,'r4-photo-fullbleed');});
 ok('R4 is the default and records its basis',()=>{const s=clone();s.visual_style={requested_style:'AUTO',content_kind:'other',photo_asset_quality:'strong'};const p=planCarousel(s);assert.equal(p.recipe,'r4-photo-fullbleed');assert.equal(p.visual_style.reason,'strong_photo_asset');});
 ok('R7 fallback applies only to documented triggers',()=>{for(const input of [{content_kind:'other',photo_asset_quality:'absent'},{content_kind:'other',photo_asset_quality:'weak'},{content_kind:'lifestyle_practical',photo_asset_quality:'strong'}])assert.equal(resolveDefaultVisualStyle(input).recipe,'r7-illustration-fallback');assert.equal(resolveDefaultVisualStyle({content_kind:'other',photo_asset_quality:'unknown'}).recipe,'r4-photo-fullbleed');});
 ok('AUTO selection preserves a producer-specific recipe',()=>{const s=clone();s.recipe='dark-data';s.visual_style={requested_style:'AUTO',content_kind:'other',photo_asset_quality:'strong'};const p=planCarousel(s);assert.equal(p.recipe,'dark-data');assert.equal(p.visual_style.reason,'explicit_recipe_preserved');});
-ok('explicit R4/R7 and legacy rollback resolve deterministically',()=>{assert.equal(resolveDefaultVisualStyle({requested_style:'R7'}).style,'R7');assert.deepEqual(resolveDefaultVisualStyle({}, {rollback:true}),{style:'legacy',recipe:'editorial-minimal',reason:'rollback_flag'});});
-ok('runtime rollback flag restores the previous recipe selector',()=>{const prior=process.env.VQ_V2_CARD_STYLE_DEFAULT;try{const s=clone();s.visual_style={requested_style:'AUTO',content_kind:'other',photo_asset_quality:'strong'};process.env.VQ_V2_CARD_STYLE_DEFAULT='legacy';assert.equal(planCarousel(s).recipe,'editorial-minimal');}finally{if(prior===undefined)delete process.env.VQ_V2_CARD_STYLE_DEFAULT;else process.env.VQ_V2_CARD_STYLE_DEFAULT=prior;}});
+ok('explicit R4/R7 and legacy rollback resolve deterministically',()=>{assert.equal(resolveDefaultVisualStyle({requested_style:'R7'}).style,'R7');assert.deepEqual(resolveDefaultVisualStyle({}, {rollback:true}),{style:'legacy',recipe:'editorial-minimal',reason:'rollback_flag'});assert.equal(resolveDefaultVisualStyle({requested_style:'R4'},{rollback:true}).style,'R4');});
+ok('runtime rollback flag restores only the default selector',()=>{const prior=process.env.VQ_V2_CARD_STYLE_DEFAULT;try{process.env.VQ_V2_CARD_STYLE_DEFAULT='legacy';const s=clone();s.visual_style={requested_style:'AUTO',content_kind:'other',photo_asset_quality:'strong'};assert.equal(planCarousel(s).recipe,'editorial-minimal');s.visual_style.requested_style='R4';assert.equal(planCarousel(s).recipe,'r4-photo-fullbleed');}finally{if(prior===undefined)delete process.env.VQ_V2_CARD_STYLE_DEFAULT;else process.env.VQ_V2_CARD_STYLE_DEFAULT=prior;}});
 ok('no automatic approval or multi-candidate quota',()=>{assert.equal(first.publication_authorized,false);assert.equal(first.candidate_policy.initial_candidates,1);});
 ok('style selection preserves declared structure and source',()=>{const s=clone();s.recipe='dark-data';const p=planCarousel(s);const structure=(frames)=>frames.map((f)=>({id:f.id,beats:f.beat_ids,layout:f.layout,source:f.plan.source,layers:f.plan.layers.map((l)=>({id:l.id,slot:l.slot,text:l.text,ref:l.ref}))}));assert.deepEqual(structure(p.frames),structure(first.frames));assert.notDeepEqual(p.preset.theme,first.preset.theme);});
 ok('per-series typography override applies everywhere',()=>{const s=clone();s.typography={headline:{font_size:60}};assert(planCarousel(s).frames.every((f)=>f.plan.layers.find((l)=>l.id==='headline').font_size===60));});
@@ -39,6 +40,8 @@ ok('unused recipe edits do not invalidate selected recipe',()=>{const c=loadVisu
 const mutations=[
  ['unknown root field',s=>s.style_axis='new','SERIES_UNKNOWN_FIELD'],
  ['unknown visual style value',s=>s.visual_style={requested_style:'R8'},'SERIES_STYLE'],
+ ['null visual style',s=>s.visual_style=null,'SERIES_STYLE'],
+ ['missing frames uses the named contract error',s=>delete s.frames,'SERIES_FRAMES'],
  ['unknown frame style override',s=>s.frames[0].theme={},'SERIES_UNKNOWN_FIELD'],
  ['unknown typography role',s=>s.typography={foo:{}},'SERIES_UNKNOWN_FIELD'],
  ['invalid typography',s=>s.typography={body:{font_size:2}},'SERIES_TYPE'],
@@ -86,6 +89,7 @@ if(process.argv.includes('--render')) {
   const run=(s,dir,previousDir=null)=>executeCarousel(s,{baseDir:input,outDir:resolve(root,dir),previousDir});
   const a=await run(base,'a');
   ok('real 3-frame series output',()=>assert.equal(a.status,'RENDERED_NEEDS_REVIEW'));
+  ok('render receipt persists the resolved style and reason',()=>{const receipt=JSON.parse(readFileSync(resolve(root,'a/series.json'),'utf8'));assert.equal(receipt.visual_style.style,'R7');assert.equal(receipt.visual_style.reason,'photo_asset_absent');});
   ok('full-size PNG exact 4:5',()=>{const p=decodePng(readFileSync(resolve(root,'a/opening/image.png')));assert.deepEqual([p.width,p.height],[1080,1350]);});
   ok('phone PNG is 390px wide',()=>assert.equal(decodePng(readFileSync(resolve(root,'a/opening/phone.png'))).width,390));
   ok('contact sheet has three columns',()=>assert.equal(decodePng(readFileSync(resolve(root,'a/contact-sheet.png'))).width,1170));
@@ -110,7 +114,7 @@ if(process.argv.includes('--render')) {
   ok('missing generated bytes are not complete',()=>{assert.equal(waiting.status,'INCOMPLETE');assert.equal(waiting.frames[0].status,'RENDER_REQUIRED');assert(!existsSync(resolve(root,'waiting/contact-sheet.png')));});
   const pixels=Buffer.alloc(240*240*4,255);for(let i=0;i<pixels.length;i+=4){pixels[i]=180;pixels[i+1]=90;pixels[i+2]=20;}
   const image=encodePng({width:240,height:240,channels:4,pixels});writeFileSync(resolve(input,'pattern.png'),image);
-  const photo=clone();photo.frames[2].blocks[1]={id:'photo',region:'right',kind:'image',ref:'pattern.png',rights_note:'Authored synthetic pixel pattern, not a real photo.',fit:'contain'};
+  const photo=clone();photo.visual_style={requested_style:'R7',content_kind:'unknown',photo_asset_quality:'absent'};photo.frames[2].blocks[1]={id:'photo',region:'right',kind:'image',ref:'pattern.png',rights_note:'Authored synthetic pixel pattern, not a real photo.',fit:'contain'};
   photo.task.watermark={enabled:true,text:'DEMO',scale:0.02};
   const ph=await run(photo,'photo');
   ok('image plus chart plus watermark in one series',()=>{assert.equal(ph.status,'RENDERED_NEEDS_REVIEW');const r=JSON.parse(readFileSync(resolve(root,'photo/closing/receipt.json'),'utf8'));assert.equal(r.images[0].source_sha256,sha256(image));assert(r.watermark);});
