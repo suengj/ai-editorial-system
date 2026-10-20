@@ -287,7 +287,7 @@ def contact_sheet(pairs: list[tuple[Path, Path, str]], out: Path, width: int = 4
     canvas.save(out, format="PNG", optimize=False, compress_level=7)
 
 
-def build_cards(out: Path, series: dict, frames: list[dict], round6: bool = False) -> dict:
+def build_cards(out: Path, series: dict, frames: list[dict], round6: bool = False, r4_baseline: Path | None = None) -> dict:
     flow = json.loads(MONEY.read_text(encoding="utf-8"))
     cards = out / "m1"
     cards.mkdir(parents=True, exist_ok=True)
@@ -332,7 +332,7 @@ def build_cards(out: Path, series: dict, frames: list[dict], round6: bool = Fals
             page.locator("[data-card]").screenshot(path=str(mobile), animations="disabled")
             page.close()
             if round6:
-                baseline = Path("/Volumes/OricoSSD/MacArchive/vq-v2-round4-final4") / "m1" / cid / "round4-1080x1350.png"
+                baseline = (r4_baseline or Path("/Volumes/OricoSSD/MacArchive/vq-v2-round4-final4/m1")) / cid / "round4-1080x1350.png"
                 label = "Round 4 opt-in grammar"
             else:
                 baseline, label = card_baseline(cid)
@@ -347,10 +347,12 @@ def build_cards(out: Path, series: dict, frames: list[dict], round6: bool = Fals
             outcomes.append({"id":cid,"variant":({"cover":"declaration","money":"round4-flow","case-a":"explainer","case-b":"round4-list","opportunity":"narrative"} if round6 else {"cover":"cover","money":"flow","case-a":"list","case-b":"list","opportunity":"list"})[cid],"source_photo":str(art) if art else None,"source_photo_sha256":sha(art) if art else None,"expected_source_strings_sha256":hashlib.sha256("\n".join(expected).encode()).hexdigest(),"rendered_copy_sha256":qa_desktop["rendered_copy_sha256"],"implementation":implementation_identity(),"baseline":str(baseline),"baseline_label":label,"outputs":{"1080x1350":str(png),"390x488":str(mobile),"comparison":str(comp)},"output_sha256":{"1080x1350":sha(png),"390x488":sha(mobile)},"qa":{"desktop":qa_desktop,"mobile":qa_mobile}})
         browser.close()
     round = "round6" if round6 else "round4"
-    contact_sheet(pairs, out / f"m1/baseline-vs-{round}-contact-sheet.png", width=540)
+    comparison_sheet = out / f"m1/baseline-vs-{round}-contact-sheet.png"
+    mobile_sheet = out / f"m1/{round}-mobile-contact-sheet.png"
+    contact_sheet(pairs, comparison_sheet, width=540)
     # A larger, directly readable mobile sheet; original responsive 390px captures.
-    mobile_contact_sheet([(Path(entry["outputs"]["390x488"]),entry["id"]) for entry in outcomes], out / f"m1/{round}-mobile-contact-sheet.png")
-    return {"cards":outcomes,"contact_sheet":str(out / "m1/baseline-vs-round4-contact-sheet.png"),"mobile_contact_sheet":str(out / "m1/round4-mobile-contact-sheet.png"),"copy_fact_policy":"frame headlines, text blocks, money-flow nodes and source notes preserved exactly; labels used only where already present in frozen source"}
+    mobile_contact_sheet([(Path(entry["outputs"]["390x488"]),entry["id"]) for entry in outcomes], mobile_sheet)
+    return {"cards":outcomes,"contact_sheet":str(comparison_sheet),"mobile_contact_sheet":str(mobile_sheet),"copy_fact_policy":"frame headlines, text blocks, money-flow nodes and source notes preserved exactly; labels used only where already present in frozen source"}
 
 
 def copy_video_inputs(out: Path) -> list[Path]:
@@ -640,6 +642,7 @@ def main() -> None:
     ap.add_argument("--cards-only",action="store_true")
     ap.add_argument("--video-only",action="store_true")
     ap.add_argument("--owner-reference-variants",action="store_true",help="render opt-in R6 owner-selected reference grammars for M1 cards")
+    ap.add_argument("--r4-baseline",type=Path,default=Path("/Volumes/OricoSSD/MacArchive/vq-v2-round4-final4/m1"),help="Round 4 M1 directory containing <card>/round4-1080x1350.png for Round 6 comparisons")
     args=ap.parse_args()
     if args.cards_only and args.video_only: raise SystemExit("choose one scope or neither")
     if args.owner_reference_variants and args.video_only: raise SystemExit("owner reference variants apply to M1 cards only")
@@ -648,7 +651,7 @@ def main() -> None:
     out.mkdir(parents=True,exist_ok=True)
     series,frames=load_m1()
     cards_result=None; video_result=None
-    if not args.video_only: cards_result=build_cards(out,series,frames,round6=args.owner_reference_variants)
+    if not args.video_only: cards_result=build_cards(out,series,frames,round6=args.owner_reference_variants,r4_baseline=args.r4_baseline.resolve())
     if not args.cards_only: video_result=render_water(out)
     result={"schema":"vq-v2-round4-render/1","round":"6-owner-reference-variants" if args.owner_reference_variants else "4","status":"LOCAL_RENDERED; OWNER_REFERENCE_CANDIDATES_SELECTED; OWNER_AESTHETIC_REVIEW_PENDING","owner_quote_verbatim":"2,3,4,8,10 괜찮아 - 나머지도 괜찮지만 패턴이 유사해보임" if args.owner_reference_variants else OWNER_QUOTE,"provider_calls":0,"paid_spend_usd":0,"defaults_changed":False,"implementation":implementation_identity(),"m1":cards_result,"video":video_result,"runtime":{"platform":platform.platform(),"python":platform.python_version()}}
     (out/"receipt.json").write_text(json.dumps(result,ensure_ascii=False,indent=2)+"\n",encoding="utf-8")
