@@ -44,7 +44,7 @@ Round 1 B comparison images exist for cover, money, and JustPark and are used di
 
 ## 7. Decision
 
-**KEEP** the R3 grammar as an isolated, opt-in AES example. Do not promote it to a registered style or compositor default. PR #58 remains open pending the third and final Codex Sol low review of the corrected head.
+**KEEP** the R3 grammar as an isolated, opt-in AES example. Do not promote it to a registered style or compositor default. PR #58 merged after Codex Sol low PASS. The grammar remains opt-in; no registered style or compositor default changed.
 
 ## 8. HUMAN_REQUIRED
 
