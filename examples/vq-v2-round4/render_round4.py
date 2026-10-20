@@ -645,7 +645,7 @@ def main() -> None:
     ap.add_argument("--r4-baseline",type=Path,default=Path("/Volumes/OricoSSD/MacArchive/vq-v2-round4-final4/m1"),help="Round 4 M1 directory containing <card>/round4-1080x1350.png for Round 6 comparisons")
     args=ap.parse_args()
     if args.cards_only and args.video_only: raise SystemExit("choose one scope or neither")
-    if args.owner_reference_variants and args.video_only: raise SystemExit("owner reference variants apply to M1 cards only")
+    if args.owner_reference_variants and not args.cards_only: raise SystemExit("owner reference variants require --cards-only and apply to M1 cards only")
     out=args.out.resolve()
     if out.exists() and any(out.iterdir()): raise SystemExit(f"evidence output must be empty to protect prior results: {out}")
     out.mkdir(parents=True,exist_ok=True)

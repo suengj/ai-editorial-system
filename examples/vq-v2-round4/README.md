@@ -26,7 +26,7 @@ The receipt binds outputs to the exact clean Git commit, renderer SHA-256, and s
 
 ## Round 6 owner-selected reference variants
 
-`render_round4.py --cards-only --owner-reference-variants --out <empty-dir>` opts into three additional card grammars in the same R4 example: a claim-led, whitespace-forward cover; an image-led fact explainer; and a paced editorial close. R4 remains the default, the video path is unchanged, and no registered profile or compositor is changed. The exact owner selection quote, five metadata-only pointers, local archive hashes, observed traits, and variant mapping are in `owner-selected-references.json`; the linked AES catalog/evaluations are under `references/`. The original reference images are copyright-held assets in the external MacArchive and are never copied into Git.
+`render_round4.py --cards-only --owner-reference-variants --out <empty-dir>` opts into three additional card grammars in the same R4 example: a claim-led, whitespace-forward cover; an image-led fact explainer; and a paced editorial close. R4 remains the default; the R6 flag requires `--cards-only`, the video path is unchanged, and no registered profile or compositor is changed. The exact owner selection quote, five metadata-only pointers, local archive hashes, observed traits, and variant mapping are in `owner-selected-references.json`; the linked AES catalog/evaluations are under `references/`. The original reference images are copyright-held assets in the external MacArchive and are never copied into Git.
 
 Supply the R4 output's `m1` directory if it is stored elsewhere; this keeps the comparison source explicit and lets each row bind to the actual R4 card:
 
