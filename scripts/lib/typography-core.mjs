@@ -67,6 +67,25 @@ export function validateFontInventory(inventory) {
 export function validateFontPreferences(data) {
   if (data?.schema_version !== 'aes-font-preferences/1' || data?.preference_authority !== 'AES') throw typographyError('FONT_CONTRACT_INVALID', 'unsupported AES font preference contract');
   if (data?.selection_policy?.final_default !== 'UNDECIDED' || data?.selection_policy?.silent_fallback !== 'FORBIDDEN') throw typographyError('FONT_CONTRACT_INVALID', 'font contract must preserve undecided defaults and reject silent fallback');
+  const groupDefinitions = {
+    video: { numbers: [1, 2], pairs: ['pretendard-pretendard', 'noto-sans-kr-noto-sans-kr'] },
+    R4_photo: { numbers: [3, 4, 5], pairs: ['noto-serif-kr-pretendard', 'noto-serif-kr-suit', 'gowun-batang-suit'] },
+    R7_illustrated: { numbers: [1, 2], pairs: ['pretendard-pretendard', 'noto-sans-kr-noto-sans-kr'] },
+  };
+  const groups = data.style_candidate_groups;
+  if (groups?.selection_status !== 'OWNER_PENDING' || groups?.provisional_defaults_are_not_final_choices !== true
+    || Object.keys(groups?.groups ?? {}).sort().join(',') !== Object.keys(groupDefinitions).sort().join(',')) {
+    throw typographyError('FONT_CONTRACT_INVALID', 'style candidate groups must preserve OWNER_PENDING and the canonical group set');
+  }
+  for (const [name, expectedGroup] of Object.entries(groupDefinitions)) {
+    const group = groups.groups[name];
+    if (JSON.stringify(group?.candidate_numbers) !== JSON.stringify(expectedGroup.numbers)
+      || JSON.stringify(group?.candidate_pair_ids) !== JSON.stringify(expectedGroup.pairs)
+      || group?.provisional_default_number !== expectedGroup.numbers[0]
+      || group?.provisional_default_pair_id !== expectedGroup.pairs[0]) {
+      throw typographyError('FONT_CONTRACT_INVALID', `invalid ${name} font candidate group or provisional default`);
+    }
+  }
   const expected = {
     'pretendard-pretendard': ['pretendard', 'pretendard'],
     'noto-sans-kr-noto-sans-kr': ['noto-sans-kr', 'noto-sans-kr'],

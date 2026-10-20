@@ -11,6 +11,31 @@
     "silent_fallback": "FORBIDDEN",
     "mixed_families": "PRESERVED; intentional title/body pairs are valid"
   },
+  "style_candidate_groups": {
+    "selection_status": "OWNER_PENDING",
+    "provisional_defaults_are_not_final_choices": true,
+    "groups": {
+      "video": {
+        "candidate_numbers": [1, 2],
+        "candidate_pair_ids": ["pretendard-pretendard", "noto-sans-kr-noto-sans-kr"],
+        "provisional_default_number": 1,
+        "provisional_default_pair_id": "pretendard-pretendard"
+      },
+      "R4_photo": {
+        "candidate_numbers": [3, 4, 5],
+        "candidate_pair_ids": ["noto-serif-kr-pretendard", "noto-serif-kr-suit", "gowun-batang-suit"],
+        "provisional_default_number": 3,
+        "provisional_default_pair_id": "noto-serif-kr-pretendard"
+      },
+      "R7_illustrated": {
+        "candidate_numbers": [1, 2],
+        "candidate_pair_ids": ["pretendard-pretendard", "noto-sans-kr-noto-sans-kr"],
+        "provisional_default_number": 1,
+        "provisional_default_pair_id": "pretendard-pretendard"
+      }
+    },
+    "owner_source": "SUE-1689, SUE-1690, SUE-1700; 2026-10-20 verbatim comments"
+  },
   "font_files": {
     "pretendard": {
       "source": "https://github.com/orioncactus/pretendard",

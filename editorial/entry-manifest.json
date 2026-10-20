@@ -14,7 +14,7 @@
     "surface": "editorial/profiles/surface/{id}.json",
     "artifact": "editorial/profiles/artifact/{id_dashed}.json"
   },
-  "font_preferences": { "path": "editorial/font-preferences.v1.json", "revision": 1, "sha256": "6ca471500565f76938c38de349b0fd79ff051838d5d4e03ee28d52243cc4cc22" },
+  "font_preferences": { "path": "editorial/font-preferences.v1.json", "revision": 1, "sha256": "542e37db5aed781304a3e4d62647ef94e6b17481484665e990a679f4e98d82ae" },
   "font_inventory": { "path": "editorial/font-inventory.v1.json", "revision": 1, "sha256": "8e796c670f96ac2a9c59875aaccc033acd2155d629fc79de2e8f0e20f3e64f66" },
   "video_profile_paths": "editorial/profiles/video/{id}.json",
   "video_profiles": {
