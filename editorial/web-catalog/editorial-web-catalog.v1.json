@@ -87,6 +87,7 @@
       "source",
       "profiles",
       "recipe",
+      "visual_style",
       "task",
       "typography",
       "regions",
@@ -103,7 +104,7 @@
     }
   },
   "catalog_version": "1.0.0",
-  "content_digest": "sha256:713555db5a1fc52c56e7f58ae31734b49381760515b3eeb9d6e749ca6fec6920",
+  "content_digest": "sha256:b3c4e884db49cb011b252b961b88f16290d6f1350b35d84eb5a1db16d54db377",
   "field_domains": {
     "call_to_action": {
       "max_length": 200,
@@ -211,7 +212,7 @@
           {
             "path": "editorial/STRUCTURED-VISUAL-EXECUTION.md",
             "role": "core:visual",
-            "sha256": "994d178434f8419bd31f38032335492615dfdea0b3395a037bf3474563be2049"
+            "sha256": "f6423b631905be6dc581819c780ad4034ca55cac5df471d9252982c7cab70488"
           },
           {
             "path": "editorial/constitution.md",
@@ -280,7 +281,7 @@
           {
             "path": "editorial/STRUCTURED-VISUAL-EXECUTION.md",
             "role": "core:visual",
-            "sha256": "994d178434f8419bd31f38032335492615dfdea0b3395a037bf3474563be2049"
+            "sha256": "f6423b631905be6dc581819c780ad4034ca55cac5df471d9252982c7cab70488"
           },
           {
             "path": "editorial/constitution.md",
@@ -301,7 +302,7 @@
     "manifest": {
       "manifest_version": "2026-10-16.1",
       "path": "editorial/entry-manifest.json",
-      "sha256": "40118193704f24c251a9bf8513143935def4bfda1f4ba143739bc41e7f31ec08"
+      "sha256": "c126cb849f017eccfdcb2d73341e8e8d7ee6d1628f2836b9d601bfaf6819bea4"
     },
     "note": "The AES git commit is deliberately not embedded. The consumer pins the AES commit and this file's sha256.",
     "profile_version_semantics": "<manifest_version>+<aes_commit>; the consumer supplies aes_commit from its own pin",
@@ -7941,7 +7942,7 @@
           {
             "path": "editorial/STRUCTURED-VISUAL-EXECUTION.md",
             "role": "core:visual",
-            "sha256": "994d178434f8419bd31f38032335492615dfdea0b3395a037bf3474563be2049"
+            "sha256": "f6423b631905be6dc581819c780ad4034ca55cac5df471d9252982c7cab70488"
           },
           {
             "path": "editorial/SUENGJ-STYLE.md",
@@ -7956,7 +7957,7 @@
           {
             "path": "editorial/visual-recipes.v1.json",
             "role": "visual:values",
-            "sha256": "e75ed2bf3770cc9f5107e8397dcae14a7e23fc4a15951add602222261eca7663"
+            "sha256": "0b3f9290fa4ef9cad4f606f22f9ef25f66cf8e7d6f33730ab5a16658820ae703"
           }
         ]
       },
@@ -8079,7 +8080,7 @@
           {
             "path": "editorial/STRUCTURED-VISUAL-EXECUTION.md",
             "role": "core:visual",
-            "sha256": "994d178434f8419bd31f38032335492615dfdea0b3395a037bf3474563be2049"
+            "sha256": "f6423b631905be6dc581819c780ad4034ca55cac5df471d9252982c7cab70488"
           },
           {
             "path": "editorial/business-idea-magazine.v1.json",
@@ -8094,7 +8095,7 @@
           {
             "path": "editorial/visual-recipes.v1.json",
             "role": "visual:values",
-            "sha256": "e75ed2bf3770cc9f5107e8397dcae14a7e23fc4a15951add602222261eca7663"
+            "sha256": "0b3f9290fa4ef9cad4f606f22f9ef25f66cf8e7d6f33730ab5a16658820ae703"
           }
         ]
       },
@@ -8151,7 +8152,7 @@
           {
             "path": "editorial/STRUCTURED-VISUAL-EXECUTION.md",
             "role": "core:visual",
-            "sha256": "994d178434f8419bd31f38032335492615dfdea0b3395a037bf3474563be2049"
+            "sha256": "f6423b631905be6dc581819c780ad4034ca55cac5df471d9252982c7cab70488"
           },
           {
             "path": "editorial/TRENDS-MOA-COMMUNITY-TONE.md",
@@ -8166,7 +8167,7 @@
           {
             "path": "editorial/visual-recipes.v1.json",
             "role": "visual:values",
-            "sha256": "e75ed2bf3770cc9f5107e8397dcae14a7e23fc4a15951add602222261eca7663"
+            "sha256": "0b3f9290fa4ef9cad4f606f22f9ef25f66cf8e7d6f33730ab5a16658820ae703"
           }
         ]
       },
@@ -8207,6 +8208,14 @@
       {
         "path": "editorial/VISUAL-STORY-COMPILATION.md",
         "sha256": "fae9c3740955db680db6646d98cad6d27515adb3887c3915f76cfb332f86a2c9"
+      },
+      {
+        "path": "editorial/font-inventory.v1.json",
+        "sha256": "8e796c670f96ac2a9c59875aaccc033acd2155d629fc79de2e8f0e20f3e64f66"
+      },
+      {
+        "path": "editorial/font-preferences.v1.json",
+        "sha256": "6ca471500565f76938c38de349b0fd79ff051838d5d4e03ee28d52243cc4cc22"
       }
     ],
     "genre_presets": {
@@ -8567,6 +8576,20 @@
             "y": 0.36
           }
         },
+        "r7-illustration": {
+          "art": {
+            "height": 0.4,
+            "width": 0.84,
+            "x": 0.08,
+            "y": 0.34
+          },
+          "copy": {
+            "height": 0.11,
+            "width": 0.88,
+            "x": 0.06,
+            "y": 0.74
+          }
+        },
         "split": {
           "left": {
             "height": 0.45,
@@ -8661,6 +8684,36 @@
               "weight": 800
             }
           }
+        },
+        "r4-photo-fullbleed": {
+          "default_layout": "hero",
+          "generation_direction": "R4 owner-preferred photo-led editorial direction. Use the supplied strong source photo as the full-bleed visual whenever present, preserving the original pixels and recording crop/focal-point decisions. Keep factual text in the existing deterministic compositor regions. Do not replace a suitable photo with generated illustration. If a usable photo is absent or weak, resolve to R7 before rendering.",
+          "theme": {
+            "accent": "#536756",
+            "background": "#F7F4EC",
+            "font_family": "'Noto Sans KR', 'Noto Sans CJK KR', sans-serif",
+            "foreground": "#14213D"
+          },
+          "typography": {
+            "headline": {
+              "weight": 700
+            }
+          }
+        },
+        "r7-illustration-fallback": {
+          "default_layout": "r7-illustration",
+          "generation_direction": "R7 owner-preferred illustration fallback for weak or absent photo assets, and for lifestyle/practical-information content. Use one centered, large subject with clean color blocks and restrained highlighter accents. Keep all exact text, numbers, citations and labels in the deterministic compositor; never render them into the illustration.",
+          "theme": {
+            "accent": "#FFD72E",
+            "background": "#103DCA",
+            "font_family": "'Noto Sans KR', 'Noto Sans CJK KR', sans-serif",
+            "foreground": "#102452"
+          },
+          "typography": {
+            "headline": {
+              "weight": 800
+            }
+          }
         }
       },
       "regions": {
@@ -8725,6 +8778,6 @@
         }
       }
     },
-    "sha256": "e75ed2bf3770cc9f5107e8397dcae14a7e23fc4a15951add602222261eca7663"
+    "sha256": "0b3f9290fa4ef9cad4f606f22f9ef25f66cf8e7d6f33730ab5a16658820ae703"
   }
 }

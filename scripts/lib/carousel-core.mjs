@@ -9,6 +9,7 @@ import { createHash } from 'node:crypto';
 import { spawnSync } from 'node:child_process';
 import { resolveChrome, verifyChromeText } from './chrome-tokens.mjs';
 import { buildNativeCardPrompt, intakeNativeCard, nativeReviewToFeedbackRecord, containedNativePath, renderNativeChrome, validateNativeCardReview } from './hybrid-card-core.mjs';
+import { resolveDefaultVisualStyle } from './visual-style-policy.mjs';
 
 import { bundledFontDigest } from './typography-core.mjs';
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
@@ -17,7 +18,7 @@ export const CAROUSEL_VERSION = '1.0.0';
 export const CAROUSEL_CONSTRAINTS = Object.freeze({
   frames: Object.freeze({ min: 1, max: 20 }),
   beats: Object.freeze({ min: 1, max: 60 }),
-  series_fields: Object.freeze(['schema_version','series_id','request','source','profiles','recipe','task','typography','regions','layouts','series_label','beats','frames','art_direction_sha256']),
+  series_fields: Object.freeze(['schema_version','series_id','request','source','profiles','recipe','visual_style','task','typography','regions','layouts','series_label','beats','frames','art_direction_sha256']),
   frame_fields: Object.freeze(['id','function','beat_ids','takeaway','alt_text','headline','headline_emphasis','source_note','layout','blocks','caption','job_ref','art_direction']),
   art_direction_fields: Object.freeze(['plan_id','visual_mode','focal_subject','message','reading_order','asset','asset_block_id','avoid','protected','brand_elements','reuse','render_method','native_prompt_strings']),
   block_fields: Object.freeze(['id','region','kind','ref','sha256','mode','fit','rights_note','protect','text','source_ref','instruction','generation','provenance']),
@@ -68,8 +69,29 @@ export function planCarousel(series, catalog=loadVisualRecipes()) {
   need(text(series.source.ref) && ['source_bound','illustrative'].includes(series.source.scope), 'SERIES_SOURCE', 'actual source ref and scope required');
   keys(series.profiles, ['surface','artifact','brand'], 'profiles');
   need(text(series.profiles.surface) && series.profiles.artifact === 'visual/slide-image', 'SERIES_PROFILE', 'use existing visual/slide-image and a compatible surface');
-  const recipe = catalog.recipes[series.recipe];
-  need(recipe, 'SERIES_RECIPE', `unknown recipe: ${series.recipe}`);
+  need(Array.isArray(series.frames), 'SERIES_FRAMES', 'frames array required');
+  need(series.visual_style === undefined || obj(series.visual_style), 'SERIES_STYLE', 'visual_style must be an object');
+  const hasPhotoAsset = series.frames.some((frame) => Array.isArray(frame?.blocks) && frame.blocks.some((block) => block?.kind === 'image'));
+  const implicitStyle = series.visual_style === undefined && (!series.recipe || series.recipe === 'editorial-minimal')
+    ? { requested_style: 'AUTO', content_kind: 'unknown', photo_asset_quality: hasPhotoAsset ? 'unknown' : 'absent' }
+    : null;
+  const styleInput = series.visual_style ?? implicitStyle;
+  if (styleInput !== null && styleInput !== undefined) {
+    keys(styleInput, ['requested_style','content_kind','photo_asset_quality'], 'visual_style');
+    need(['AUTO','R4','R7'].includes(styleInput.requested_style ?? 'AUTO'), 'SERIES_STYLE', 'visual_style.requested_style must be AUTO, R4, or R7');
+    need(['unknown','lifestyle_practical','other'].includes(styleInput.content_kind ?? 'unknown'), 'SERIES_STYLE', 'visual_style.content_kind is invalid');
+    need(['unknown','strong','weak','absent'].includes(styleInput.photo_asset_quality ?? 'unknown'), 'SERIES_STYLE', 'visual_style.photo_asset_quality is invalid');
+  }
+  const requestedStyle = styleInput?.requested_style ?? 'AUTO';
+  const resolvedStyle = styleInput ? resolveDefaultVisualStyle(styleInput) : null;
+  const preserveExplicitRecipe = series.visual_style && resolvedStyle && requestedStyle === 'AUTO' && series.recipe && series.recipe !== 'editorial-minimal';
+  const style = preserveExplicitRecipe
+    ? { style: series.recipe, recipe: series.recipe, reason: 'explicit_recipe_preserved' }
+    : resolvedStyle;
+  const resolvedRecipeId = style?.recipe ?? series.recipe;
+  const applyDefaultTreatment = Boolean(style && !preserveExplicitRecipe && style.reason !== 'rollback_flag' && ['R4','R7'].includes(style.style));
+  const recipe = catalog.recipes[resolvedRecipeId];
+  need(recipe, 'SERIES_RECIPE', `unknown recipe: ${resolvedRecipeId}`);
   const task = series.task ?? {};
   keys(task, ['canvas','theme','text_policy','density','watermark','watermark_layer'], 'task');
   need(task.text_policy !== 'no_text', 'SERIES_TEXT', 'silent carousel includes headlines, sources and pagination');
@@ -125,14 +147,36 @@ export function planCarousel(series, catalog=loadVisualRecipes()) {
       for (const dep of beats.get(id).depends_on) need(used.has(dep), 'SERIES_ORDER', `${id} precedes prerequisite ${dep}`);
       used.add(id);
     }
-    const layoutName = f.layout ?? recipe.default_layout, layout = layouts[layoutName];
+    let frameBlocks = f.blocks;
+    let layoutName = f.layout ?? recipe.default_layout;
+    if (applyDefaultTreatment && (!f.layout || layouts[f.layout]) && (!f.layout || frameBlocks.every((b) => layouts[f.layout]?.[b.region])) && !f.art_direction && !frameBlocks.some((b) => b.kind === 'chart')) {
+      const images = frameBlocks.filter((b) => b.kind === 'image');
+      const texts = frameBlocks.filter((b) => b.kind === 'text');
+      if (style.style === 'R4' && images.length === 1 && texts.length <= 1 && frameBlocks.length === images.length + texts.length) {
+        layoutName = 'hero';
+        frameBlocks = frameBlocks.map((b) => ({ ...b, region: b.kind === 'image' ? 'art' : 'copy' }));
+      } else if (style.style === 'R7' && images.length === 0 && texts.length <= 1 && frameBlocks.length === texts.length) {
+        layoutName = 'r7-illustration';
+        frameBlocks = [
+          { id: 'vq-r7-artwork', region: 'art', kind: 'generated', instruction: 'Create one clear, nonverbal illustration that supports this card’s stated takeaway.' },
+          ...frameBlocks.map((b) => ({ ...b, region: 'copy' })),
+        ];
+      } else if (style.style === 'R7' && images.length === 1 && texts.length <= 1 && frameBlocks.length === images.length + texts.length) {
+        layoutName = 'r7-illustration';
+        frameBlocks = [
+          { id: 'vq-r7-artwork', region: 'art', kind: 'generated', instruction: 'Replace the unsuitable source photo with one clear, nonverbal illustration that supports this card’s stated takeaway.' },
+          ...texts.map((b) => ({ ...b, region: 'copy' })),
+        ];
+      }
+    }
+    const layout = layouts[layoutName];
     need(layout, 'SERIES_LAYOUT', String(layoutName));
-    need(Array.isArray(f.blocks) && f.blocks.length > 0 && f.blocks.length <= Object.keys(layout).length, 'SERIES_BLOCKS', `${f.id}: one block per region; split independent messages`);
+    need(Array.isArray(frameBlocks) && frameBlocks.length > 0 && frameBlocks.length <= Object.keys(layout).length, 'SERIES_BLOCKS', `${f.id}: one block per region; split independent messages`);
     const textSafeEffect = catalog.layout_effects?.[layoutName] ?? {};
     if ((textSafeEffect.background_regions ?? []).length) {
       const bands = textSafeEffect.solid_bands ?? [];
       const contains = (outer, inner) => inner && inner.x >= outer.x && inner.y >= outer.y && inner.x + inner.width <= outer.x + outer.width && inner.y + inner.height <= outer.y + outer.height;
-      for (const b of f.blocks) if (b?.kind === 'text') need(bands.some(band => contains(band, layout[b.region])), 'SERIES_TEXT_SAFE_BAND', `${layoutName}.${b.region}: text region must fit inside a declared solid/scrim text-safe band`);
+      for (const b of frameBlocks) if (b?.kind === 'text') need(bands.some(band => contains(band, layout[b.region])), 'SERIES_TEXT_SAFE_BAND', `${layoutName}.${b.region}: text region must fit inside a declared solid/scrim text-safe band`);
     }
     if (f.art_direction !== undefined) {
       keys(f.art_direction,CAROUSEL_CONSTRAINTS.art_direction_fields,'frame.art_direction');
@@ -143,7 +187,7 @@ export function planCarousel(series, catalog=loadVisualRecipes()) {
       if (f.art_direction.render_method !== undefined) need(['compositor','native_card'].includes(f.art_direction.render_method), 'SERIES_ART_DIRECTION', `${f.id}: invalid render_method`);
       if (nativeCard) {
         need(Array.isArray(f.art_direction.native_prompt_strings) && f.art_direction.native_prompt_strings.length > 0 && f.art_direction.native_prompt_strings.every(text), 'SERIES_ART_DIRECTION', `${f.id}: native_prompt_strings required`);
-        const nativeBlocks = f.blocks.filter((block) => block.kind === 'generated' && block.id === f.art_direction.asset_block_id);
+        const nativeBlocks = frameBlocks.filter((block) => block.kind === 'generated' && block.id === f.art_direction.asset_block_id);
         need(nativeBlocks.length === 1 && f.blocks.length === 1 && f.art_direction.asset.source === 'generated' && f.art_direction.asset.need, 'SERIES_ART_DIRECTION', `${f.id}: native_card requires one generated whole-card block`);
         const canvas = task.canvas ?? {};
         let width = canvas.width ?? 1080, height = canvas.height ?? 1350;
@@ -163,7 +207,7 @@ export function planCarousel(series, catalog=loadVisualRecipes()) {
     addText('series-label',series.series_label,rec.eyebrow,'eyebrow');
     addText('headline',f.headline,rec.headline,'headline');
     if (f.headline_emphasis!==undefined) { need(Array.isArray(f.headline_emphasis)&&f.headline_emphasis.every((e)=>obj(e)&&text(e.match)&&f.headline.includes(e.match)),'SERIES_TEXT',`${f.id}: headline_emphasis spans must be substrings of the headline`); layers.at(-1).emphasis=structuredClone(f.headline_emphasis); }
-    for (const b of f.blocks) {
+    for (const b of frameBlocks) {
       keys(b,CAROUSEL_CONSTRAINTS.block_fields,'block');
       need(slug(b.id) && !['series-label','headline','source','pagination'].includes(b.id) && !layers.some((l)=>l.id===b.id),'SERIES_LAYER_ID',String(b.id));
       need(layout[b.region] && !occupied.has(b.region),'SERIES_REGION',`unknown or duplicate region ${b.region}`); occupied.add(b.region);
@@ -189,7 +233,7 @@ export function planCarousel(series, catalog=loadVisualRecipes()) {
       else layers.push(layer);
     }
     if (f.art_direction) {
-      const generatedBlocks = f.blocks.filter((b) => b.kind === 'generated');
+      const generatedBlocks = frameBlocks.filter((b) => b.kind === 'generated');
       if (f.art_direction.asset.source === 'generated') {
         need(f.art_direction.asset.need === true && generatedBlocks.length === 1 && f.art_direction.asset_block_id === generatedBlocks[0].id, 'SERIES_ART_DIRECTION', `${f.id}: generated asset declaration must bind to exactly one generated block`);
       } else need(generatedBlocks.length === 0, 'SERIES_ART_DIRECTION', `${f.id}: generated block conflicts with the declared asset source`);
@@ -213,7 +257,7 @@ export function planCarousel(series, catalog=loadVisualRecipes()) {
     frames.push({id:f.id,index:i+1,function:f.function,beat_ids:f.beat_ids,takeaway:f.takeaway,alt_text:f.alt_text,layout:layoutName,...(f.art_direction?{art_direction:structuredClone(f.art_direction)}:{}),plan});
   }
   need([...beats.keys()].every((id)=>used.has(id)),'SERIES_BEAT_MISSING','a declared beat is not represented');
-  return {schema_version:CAROUSEL_VERSION,series_id:series.series_id,recipe:series.recipe,recipe_hash:hash({version:catalog.schema_version,recipe,regions:recurring,layouts,typography,layout_effects:catalog.layout_effects??{}}),...(series.art_direction_sha256?{art_direction_sha256:series.art_direction_sha256}:{}),preset,typography,frames,
+  return {schema_version:CAROUSEL_VERSION,series_id:series.series_id,recipe:resolvedRecipeId,...(style?{visual_style:{...style,requested:styleInput}}:{}),recipe_hash:hash({version:catalog.schema_version,recipe,regions:recurring,layouts,typography,layout_effects:catalog.layout_effects??{}}),...(series.art_direction_sha256?{art_direction_sha256:series.art_direction_sha256}:{}),preset,typography,frames,
     density_profile:'silent_carousel',narration_dependency:'none',
     review_contract:'editorial/SLIDES-AND-CAROUSELS.md#11-series-information-consistency-contract',
     review_owner:'skills/review-visual/; SUE-646/647; user Phase4 SUE-1337',
@@ -308,7 +352,7 @@ export async function executeCarousel(series,{baseDir=process.cwd(),outDir,raste
   if (wouldRepair) enforceRepairLimit(chk.priorRound,resolve(previousDir),lineage);
   const repairRound=prior?(allChanged?0:chk.priorRound):0;
   mkdirSync(outDir,{recursive:true});
-  const result={lineage_root:lineage,repair_round:repairRound,repair_counted:false,classification:prior?(allChanged?'new_base_all_frames_changed':wouldRepair?'local_repair':'no_change_or_retry'):'base',repaired_frames:prior&&!allChanged?rerender:[],schema_version:CAROUSEL_VERSION,series_id:compiled.series_id,recipe:compiled.recipe,recipe_hash:compiled.recipe_hash,runtime,
+  const result={lineage_root:lineage,repair_round:repairRound,repair_counted:false,classification:prior?(allChanged?'new_base_all_frames_changed':wouldRepair?'local_repair':'no_change_or_retry'):'base',repaired_frames:prior&&!allChanged?rerender:[],schema_version:CAROUSEL_VERSION,series_id:compiled.series_id,recipe:compiled.recipe,...(compiled.visual_style?{visual_style:compiled.visual_style}:{}),recipe_hash:compiled.recipe_hash,runtime,
     status:'INCOMPLETE',frames:[],qa:{mechanical:'PREFLIGHT_PASSED',visual:'NOT_REVIEWED',source_truth:'NOT_ESTABLISHED',publication:'NOT_AUTHORIZED'},publication_authorized:false};
   if (series.art_direction_sha256) result.art_direction_sha256 = series.art_direction_sha256;
   const save=()=>writeJson(resolve(outDir,'series.json'),result);
