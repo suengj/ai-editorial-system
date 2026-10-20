@@ -1,0 +1,372 @@
+{
+  "mode": "after",
+  "status": "PASS",
+  "grid_x": 64,
+  "checks": [
+    {
+      "element": "brand_container",
+      "check": "left_grid",
+      "delta_px": 0,
+      "status": "PASS"
+    },
+    {
+      "element": "title",
+      "check": "left_grid",
+      "delta_px": 0,
+      "status": "PASS"
+    },
+    {
+      "element": "subtitle_container",
+      "check": "left_grid",
+      "delta_px": 0,
+      "status": "PASS"
+    },
+    {
+      "element": "fact_panel",
+      "check": "left_grid",
+      "delta_px": 0,
+      "status": "PASS"
+    },
+    {
+      "element": "question_band",
+      "check": "left_grid",
+      "delta_px": 0,
+      "status": "PASS"
+    },
+    {
+      "element": "source",
+      "check": "left_grid",
+      "delta_px": 0,
+      "status": "PASS"
+    },
+    {
+      "element": "brand",
+      "check": "bbox_inside_and_symmetric_padding",
+      "bbox_inside": true,
+      "padding_asymmetry_px": 0,
+      "status": "PASS"
+    },
+    {
+      "element": "date",
+      "check": "bbox_inside_and_symmetric_padding",
+      "bbox_inside": true,
+      "padding_asymmetry_px": 2,
+      "status": "PASS"
+    },
+    {
+      "element": "subtitle",
+      "check": "bbox_inside_and_symmetric_padding",
+      "bbox_inside": true,
+      "padding_asymmetry_px": 0,
+      "status": "PASS"
+    },
+    {
+      "element": "fact_label",
+      "check": "bbox_inside_and_symmetric_padding",
+      "bbox_inside": true,
+      "padding_asymmetry_px": 0,
+      "status": "PASS"
+    },
+    {
+      "element": "headline_1",
+      "check": "text_bbox_inside_container",
+      "text_bbox": [
+        64,
+        199,
+        600,
+        253
+      ],
+      "container": [
+        64,
+        180,
+        1016,
+        266
+      ],
+      "bbox_inside": true,
+      "status": "PASS"
+    },
+    {
+      "element": "headline_2",
+      "check": "text_bbox_inside_container",
+      "text_bbox": [
+        64,
+        285,
+        633,
+        339
+      ],
+      "container": [
+        64,
+        266,
+        1016,
+        352
+      ],
+      "bbox_inside": true,
+      "status": "PASS"
+    },
+    {
+      "element": "body_1",
+      "check": "text_bbox_inside_container",
+      "text_bbox": [
+        94,
+        1006,
+        496,
+        1038
+      ],
+      "container": [
+        94,
+        990,
+        1010,
+        1050
+      ],
+      "bbox_inside": true,
+      "status": "PASS"
+    },
+    {
+      "element": "body_2",
+      "check": "text_bbox_inside_container",
+      "text_bbox": [
+        94,
+        1054,
+        611,
+        1082
+      ],
+      "container": [
+        94,
+        1038,
+        1010,
+        1098
+      ],
+      "bbox_inside": true,
+      "status": "PASS"
+    },
+    {
+      "element": "body_3",
+      "check": "text_bbox_inside_container",
+      "text_bbox": [
+        94,
+        1102,
+        500,
+        1130
+      ],
+      "container": [
+        94,
+        1086,
+        1010,
+        1146
+      ],
+      "bbox_inside": true,
+      "status": "PASS"
+    },
+    {
+      "element": "question",
+      "check": "text_bbox_inside_container",
+      "text_bbox": [
+        92,
+        1218,
+        506,
+        1250
+      ],
+      "container": [
+        84,
+        1193,
+        1016,
+        1271
+      ],
+      "bbox_inside": true,
+      "status": "PASS"
+    },
+    {
+      "element": "source",
+      "check": "text_bbox_inside_container",
+      "text_bbox": [
+        64,
+        1299,
+        314,
+        1317
+      ],
+      "container": [
+        64,
+        1282,
+        760,
+        1334
+      ],
+      "bbox_inside": true,
+      "status": "PASS"
+    },
+    {
+      "element": "footer",
+      "check": "text_bbox_inside_container",
+      "text_bbox": [
+        860,
+        1299,
+        951,
+        1317
+      ],
+      "container": [
+        760,
+        1282,
+        1016,
+        1334
+      ],
+      "bbox_inside": true,
+      "status": "PASS"
+    }
+  ],
+  "text_bbox": {
+    "headline_1": [
+      64,
+      199,
+      600,
+      253
+    ],
+    "headline_2": [
+      64,
+      285,
+      633,
+      339
+    ],
+    "body": [
+      [
+        94,
+        1006,
+        496,
+        1038
+      ],
+      [
+        94,
+        1054,
+        611,
+        1082
+      ],
+      [
+        94,
+        1102,
+        500,
+        1130
+      ]
+    ],
+    "question": [
+      92,
+      1218,
+      506,
+      1250
+    ],
+    "source": [
+      64,
+      1299,
+      314,
+      1317
+    ],
+    "footer": [
+      860,
+      1299,
+      951,
+      1317
+    ]
+  },
+  "pill_geometry": {
+    "brand": {
+      "text": "TRENDS.MOA",
+      "box": [
+        64,
+        69,
+        290,
+        112
+      ],
+      "text_bbox": [
+        88,
+        80,
+        266,
+        101
+      ],
+      "padding": {
+        "left": 24,
+        "right": 24,
+        "top": 11,
+        "bottom": 11
+      },
+      "padding_asymmetry_px": 0
+    },
+    "date": {
+      "text": "10.20 TREND",
+      "box": [
+        835,
+        72,
+        1016,
+        109
+      ],
+      "text_bbox": [
+        856,
+        82,
+        993,
+        99
+      ],
+      "padding": {
+        "left": 21,
+        "right": 23,
+        "top": 10,
+        "bottom": 10
+      },
+      "padding_asymmetry_px": 2
+    },
+    "subtitle": {
+      "text": "AI 시대 개발자의 묘한 퇴근 루틴",
+      "box": [
+        64,
+        381,
+        458,
+        427
+      ],
+      "text_bbox": [
+        86,
+        391,
+        436,
+        417
+      ],
+      "padding": {
+        "left": 22,
+        "right": 22,
+        "top": 10,
+        "bottom": 10
+      },
+      "padding_asymmetry_px": 0
+    },
+    "fact_label": {
+      "text": "팩트 체크",
+      "box": [
+        82,
+        923,
+        211,
+        966
+      ],
+      "text_bbox": [
+        102,
+        933,
+        191,
+        956
+      ],
+      "padding": {
+        "left": 20,
+        "right": 20,
+        "top": 10,
+        "bottom": 10
+      },
+      "padding_asymmetry_px": 0
+    }
+  },
+  "canvas_px": [
+    1080,
+    1350
+  ],
+  "font_paths": {
+    "regular": "assets/fonts/aes-sans-kr/AESSansKR-Regular.otf",
+    "bold": "assets/fonts/aes-sans-kr/AESSansKR-ExtraBold.otf"
+  },
+  "font_sha256": {
+    "regular": "fdc9fb9f79107f489eaa8fc8bf52ab9ab8199e0663eaf988848f7351ad22aeb1",
+    "bold": "19f8a6a26c2c7faa0f2f05584f768fa547cfcdcb274a08138ffc9441c64d4f90"
+  },
+  "output_sha256": "0e874aa1dfb790239605f3ad9280bdb16c683d710340543447b3342f2997d705",
+  "output": "evidence/round12-native-layout/after.png",
+  "pillow": "11.3.0"
+}

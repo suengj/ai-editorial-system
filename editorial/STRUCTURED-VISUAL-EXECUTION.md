@@ -114,6 +114,10 @@ receipt는 **무결성 확인(integrity-checked)** 용이지 **암호학적 인�
 
 `examples/native-card-recipe.py`는 저장소 1:1·4:5 card grid를 Pillow에서 재현하는 짧은 참조 구현이다. 사진·글자·수치는 모두 합성 단계에서 처리하며 이미지 모델을 호출하지 않는다. `--font-regular`, `--font-semibold`, `--font-extrabold`는 native Python 실행 환경에서 접근 가능한 실제 폰트 파일을 지정한다. 기본값·OS 서체 대체는 허용하지 않으며, 선택한 폰트 파일 경로와 SHA-256을 실행 기록에 남긴다.
 
+Native text must be measured with the same loaded font file and size used to draw it. Use `textbbox` and an explicit vertical anchor (`lm`/`mm` or equivalent) for centered labels; calculate pill bounds from the measured rendered text plus declared padding. Do not estimate width using another weight/family or fall back to Pillow's default font. After rendering, report a geometry self-check table: every text bbox lies inside its container, pill padding is symmetric within 2 px, and declared shared left-grid edges differ by at most 2 px. Any failed check or font load is a hard error before delivering the image.
+
+`examples/trends-moa-native-layout.py` is the regression fixture for this contract. It renders the screenshot's exact visible copy on a local solid background in `before` (failure-class recreation only) and `after` modes. The before fixture is not the owner's original asset. Run `npm run test:trends-moa-native-layout` for deterministic pixels, bbox/grid/padding assertions, and fail-closed font loading.
+
 결정론 테스트는 Pillow가 필수다. `python3 -m pip install -r examples/requirements-native-card.txt`로 고정 버전을 설치하고 `npm run test:native-card-recipe`를 실행한다. Pillow를 찾지 못하면 테스트는 skip하지 않고 실패한다.
 
 | Canvas | 외곽 여백 | 제목(semibold) | 본문/수치(extrabold) | 사진 슬롯 |
