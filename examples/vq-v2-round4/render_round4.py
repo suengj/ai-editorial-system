@@ -57,6 +57,18 @@ def sha(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
+def implementation_identity() -> dict:
+    head = run(["git", "rev-parse", "HEAD"], capture=True).strip()
+    dirty = run(["git", "status", "--porcelain"], capture=True).strip()
+    if dirty:
+        raise RuntimeError("render receipts require a clean committed worktree")
+    return {
+        "git_head": head,
+        "renderer_sha256": sha(Path(__file__)),
+        "stylesheet_sha256": sha(CSS_FILE),
+    }
+
+
 def data_uri(path: Path) -> str:
     mime = mimetypes.guess_type(path.name)[0] or "application/octet-stream"
     return f"data:{mime};base64,{base64.b64encode(path.read_bytes()).decode('ascii')}"
@@ -140,12 +152,20 @@ def card_html(frame: dict, index: int, art: Path | None, flow: dict) -> str:
         items = []
         labels = ["원칙", "장애물", "첫 실험"]
         for label, text in zip(labels, body_blocks):
+            if cid == "opportunity" and "\n\n" in text:
+                text = text.split("\n\n", 1)[0]
             pieces = text.split("：", 1) if "：" in text else text.split(":", 1)
             line = pieces[-1].strip() if len(pieces) == 2 else text.strip()
             separator = ": " if len(pieces) == 2 else ""
             items.append(f'<div class="vq-r3-list-item copy-check"><span class="vq-r3-list-index">{esc(label)}{separator}</span><span>{esc(line)}</span></div>')
+        continuation_html = ""
+        for label, text in zip(labels, body_blocks):
+            if "\n\n" in text:
+                continuation = text.split("\n\n", 1)[1].strip()
+                if continuation:
+                    continuation_html += f'<p class="vq-r3-body copy-check">{esc(continuation)}</p>'
         parking_lines = '<div class="parking-graphic" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><b></b></div>'
-        copy = f'<section class="vq-r3-copy"><h1 class="vq-r3-title vq-r3-title-secondary copy-check">{highlighted(headline, ("좁게", "가설로"))}</h1><div class="vq-r3-list-items">{"".join(items)}</div>{parking_lines}<p class="vq-r3-body copy-check">{esc("당신이라면 이 사업을 하시겠습니까?")}</p></section>'
+        copy = f'<section class="vq-r3-copy"><h1 class="vq-r3-title vq-r3-title-secondary copy-check">{highlighted(headline, ("좁게", "가설로"))}</h1><div class="vq-r3-list-items">{"".join(items)}</div>{parking_lines}{continuation_html}</section>'
         variant = "list"
     source = frame.get("source_note", "")
     photo_class = " has-photo" if art else " deterministic-art"
@@ -169,8 +189,12 @@ def fit_check(page, expected_strings: list[str], viewport: str) -> dict:
     text_content = page.locator(".vq-r3-card").inner_text().replace("\n", " ")
     normalized = re.sub(r"\s+", " ", text_content)
     missing = [s for s in expected_strings if re.sub(r"\s+", " ", s) not in normalized]
-    report.update({"viewport_label": viewport, "missing_source_strings": missing})
-    if report["overflow"] or missing:
+    counts = {value: normalized.count(re.sub(r"\s+", " ", value)) for value in expected_strings}
+    duplicates = [value for value, count in counts.items() if count != 1]
+    actual_copy = "\n".join(page.locator(".copy-check").all_inner_texts())
+    actual_copy = re.sub(r"\s+", " ", actual_copy).strip()
+    report.update({"viewport_label": viewport, "missing_source_strings": missing, "source_string_occurrences": counts, "non_single_source_strings": duplicates, "rendered_copy_sha256": hashlib.sha256(actual_copy.encode()).hexdigest()})
+    if report["overflow"] or missing or duplicates:
         raise RuntimeError(f"{viewport} card QA failed: {report}")
     if viewport == "390x488" and report["minFont"] < 16:
         raise RuntimeError(f"390px font below 16 CSS px: {report['minFont']}")
@@ -221,8 +245,8 @@ def build_cards(out: Path, series: dict, frames: list[dict]) -> dict:
             for block in frame["blocks"]:
                 if block.get("kind") != "text":
                     continue
-                if cid in {"case-a", "case-b"} and block["text"]:
-                    expected.extend(block["text"].splitlines())
+                if cid in {"case-a", "case-b", "opportunity"} and block["text"]:
+                    expected.extend(line.strip() for line in block["text"].splitlines() if line.strip())
                 else:
                     expected.append(block["text"])
             if cid == "money":
@@ -244,7 +268,7 @@ def build_cards(out: Path, series: dict, frames: list[dict]) -> dict:
             comp = card_out / "baseline-vs-round4.png"
             contact_sheet([(baseline_copy, png, f"{cid} | {label}  →  Round 4")], comp, width=540)
             pairs.append((baseline_copy, png, f"{cid} | {label}  →  Round 4"))
-            outcomes.append({"id":cid,"variant":{"cover":"cover","money":"flow","case-a":"list","case-b":"list","opportunity":"list"}[cid],"source_photo":str(art) if art else None,"source_photo_sha256":sha(art) if art else None,"copy_sha256":hashlib.sha256("\n".join(expected).encode()).hexdigest(),"baseline":str(baseline),"baseline_label":label,"outputs":{"1080x1350":str(png),"390x488":str(mobile),"comparison":str(comp)},"output_sha256":{"1080x1350":sha(png),"390x488":sha(mobile)},"qa":{"desktop":qa_desktop,"mobile":qa_mobile}})
+            outcomes.append({"id":cid,"variant":{"cover":"cover","money":"flow","case-a":"list","case-b":"list","opportunity":"list"}[cid],"source_photo":str(art) if art else None,"source_photo_sha256":sha(art) if art else None,"expected_source_strings_sha256":hashlib.sha256("\n".join(expected).encode()).hexdigest(),"rendered_copy_sha256":qa_desktop["rendered_copy_sha256"],"implementation":implementation_identity(),"baseline":str(baseline),"baseline_label":label,"outputs":{"1080x1350":str(png),"390x488":str(mobile),"comparison":str(comp)},"output_sha256":{"1080x1350":sha(png),"390x488":sha(mobile)},"qa":{"desktop":qa_desktop,"mobile":qa_mobile}})
         browser.close()
     contact_sheet(pairs, out / "m1/baseline-vs-round4-contact-sheet.png", width=540)
     # A larger, directly readable mobile sheet; original responsive 390px captures.
@@ -280,6 +304,40 @@ def video_page_html(images: list[Path], render_plan: dict) -> str:
     return f'''{head_html()}<main id="stage" class="vq-r3-card vq-r3-video vq-r3-cover">{sections}<div class="vq-r3-scrim"></div><div id="data-top" class="vq-r3-video-label">총수분 참고값 · 19–30세</div>{facts}<div id="caption" class="vq-r3-video-copy"><div class="vq-r3-caption"></div><div id="data-bottom" class="vq-r3-video-label">개인별 목표가 아닌 참고값</div></div></main><script>window.CAPTION_PAGES={payload};</script></body></html>'''
 
 
+def video_layout_check(page, t: float) -> dict:
+    result = page.evaluate("""() => {
+      const stage=document.querySelector('#stage'), sb=stage.getBoundingClientRect();
+      const selectors=['#caption .vq-r3-caption','#data-top','#data-bottom','#data-facts .vq-r3-video-fact'];
+      const items=[];
+      for(const selector of selectors){for(const el of document.querySelectorAll(selector)){
+        const style=getComputedStyle(el), r=el.getBoundingClientRect();
+        if(style.display==='none'||style.visibility==='hidden'||!el.innerText.trim()) continue;
+        const font=parseFloat(style.fontSize);
+        const bounds=[r.left>=sb.left-1,r.right<=sb.right+1,r.top>=sb.top-1,r.bottom<=sb.bottom+1].every(Boolean);
+        const clipped=el.scrollWidth>el.clientWidth+1||el.scrollHeight>el.clientHeight+2;
+        items.push({selector,text:el.innerText,rect:[r.x,r.y,r.width,r.height],font,bounds,clipped});
+      }}
+      const caption=items.find(x=>x.selector==='#caption .vq-r3-caption');
+      const top=items.find(x=>x.selector==='#data-top'), bottom=items.find(x=>x.selector==='#data-bottom');
+      const overlap=(a,b)=>a&&b&&a.rect[0]<b.rect[0]+b.rect[2]&&a.rect[0]+a.rect[2]>b.rect[0]&&a.rect[1]<b.rect[1]+b.rect[3]&&a.rect[1]+a.rect[3]>b.rect[1];
+      return {items,min_caption_px:caption?caption.font:null,min_support_px:Math.min(...[top,bottom].filter(Boolean).map(x=>x.font)),support_count:[top,bottom].filter(Boolean).length,issues:items.filter(x=>!x.bounds||x.clipped),caption_support_overlap:overlap(caption,bottom)};
+    }""")
+    result["time_seconds"] = round(t, 3)
+    if 5.5 <= t < 12.6:
+        visible = re.sub(r"\s+", " ", page.locator("#stage").inner_text()).strip()
+        fact_counts = {value: visible.count(value) for value in ("총수분 참고값", "19–30세", "2.7L", "여성", "3.7L", "남성", "개인별 목표가 아닌 참고값")}
+        result["fact_string_occurrences"] = fact_counts
+        if any(count != 1 for count in fact_counts.values()):
+            raise RuntimeError(f"video fact strings do not occur exactly once: {result}")
+    if result["issues"] or result["caption_support_overlap"]:
+        raise RuntimeError(f"video text layout failed: {result}")
+    if result["min_caption_px"] is not None and result["min_caption_px"] < 42:
+        raise RuntimeError(f"video caption below 42 CSS px: {result}")
+    if result["support_count"] and result["min_support_px"] < 44:
+        raise RuntimeError(f"video support label below 44 CSS px: {result}")
+    return result
+
+
 def render_water(out: Path) -> dict:
     images = copy_video_inputs(out)
     plan = json.loads(V56_PLAN.read_text(encoding="utf-8"))
@@ -296,6 +354,7 @@ def render_water(out: Path) -> dict:
     page_path = out / "water/render.html"
     page_path.write_text(video_page_html(images, plan), encoding="utf-8")
     start=time.perf_counter(); cpu_start=resource.getrusage(resource.RUSAGE_SELF)
+    layout_min_caption=999.0; layout_min_support=999.0; layout_support_samples=0
     with sync_playwright() as p:
         chromium = os.environ.get("VQ_CHROMIUM", "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome")
         browser=p.chromium.launch(headless=True,executable_path=chromium)
@@ -324,6 +383,10 @@ def render_water(out: Path) -> dict:
               document.querySelector('#data-bottom').style.display=showData?'block':'none';
               document.querySelector('#data-facts').style.display=showData?'grid':'none';
             }""",[t,image_scene,pages])
+            layout = video_layout_check(page, t)
+            if layout["min_caption_px"] is not None: layout_min_caption=min(layout_min_caption,layout["min_caption_px"])
+            if layout["support_count"]:
+                layout_min_support=min(layout_min_support,layout["min_support_px"]); layout_support_samples+=1
             page.locator("#stage").screenshot(path=str(frame_dir/f"frame-{n:04d}.jpg"),type="jpeg",quality=90,animations="disabled")
         browser.close()
     render_wall=time.perf_counter()-start; cpu_end=resource.getrusage(resource.RUSAGE_SELF)
@@ -354,8 +417,8 @@ def render_water(out: Path) -> dict:
     video_contact_sheet([(a,a,label.split(" | ")[0]+" | Round 4") for _,a,label in before_after],after_sheet)
     ebur = run(["ffmpeg","-hide_banner","-nostats","-i",str(final),"-filter_complex","ebur128=peak=true","-f","null","-"],capture=True)
     (out/"water/ebur128.txt").write_text(ebur,encoding="utf-8")
-    qa={"ffprobe":json.loads(run(["ffprobe","-v","error","-show_streams","-show_format","-of","json",str(final)],capture=True)),"ebur128_summary":next((line.strip() for line in reversed(ebur.splitlines()) if "I:" in line and "LUFS" in line),None),"source_audio_sha256":sha(source_audio),"final_audio_sha256":sha(final_audio),"audio_bitstream_identical":sha(source_audio)==sha(final_audio),"caption_pages":len(pages),"caption_source_srt_sha256":sha(V56_SRT),"caption_timing_plan_sha256":sha(V56_PLAN),"frames":round(duration*FPS),"samples":[str(a) for _,a,_ in before_after]}
-    result={"source_video":str(V56_VIDEO),"source_video_sha256":sha(V56_VIDEO),"assets":[{"path":str(x),"sha256":sha(x)} for x in images],"scene_04_photo_crop_box_px":[230,635,845,1256],"water_fact_strings_displayed":["총수분 참고값","19–30세","2.7L","여성","3.7L","남성","개인별 목표가 아닌 참고값"],"duration_seconds":duration,"fps":FPS,"output":str(final),"output_sha256":sha(final),"before_after_contact_sheet":str(video_sheet),"keyframes_contact_sheet":str(after_sheet),"ebur128_path":str(out/"water/ebur128.txt"),"technical_qa":qa,"runtime":{"playwright_wall_seconds":round(render_wall,2),"process_user_cpu_seconds":round(cpu_end.ru_utime-cpu_start.ru_utime,2),"process_system_cpu_seconds":round(cpu_end.ru_stime-cpu_start.ru_stime,2),"process_max_rss_mb":round(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss/(1024*1024),1),"browser":"Chromium"}}
+    qa={"ffprobe":json.loads(run(["ffprobe","-v","error","-show_streams","-show_format","-of","json",str(final)],capture=True)),"ebur128_summary":next((line.strip() for line in reversed(ebur.splitlines()) if "I:" in line and "LUFS" in line),None),"source_audio_sha256":sha(source_audio),"final_audio_sha256":sha(final_audio),"audio_bitstream_identical":sha(source_audio)==sha(final_audio),"caption_pages":len(pages),"caption_source_srt_sha256":sha(V56_SRT),"caption_timing_plan_sha256":sha(V56_PLAN),"video_frame_layout_checks":round(duration*FPS),"video_layout_issues":0,"minimum_caption_font_px":None if layout_min_caption==999.0 else layout_min_caption,"minimum_support_font_px":None if layout_min_support==999.0 else layout_min_support,"support_label_visible_frames":layout_support_samples,"frames":round(duration*FPS),"samples":[str(a) for _,a,_ in before_after]}
+    result={"implementation":implementation_identity(),"source_video":str(V56_VIDEO),"source_video_sha256":sha(V56_VIDEO),"assets":[{"path":str(x),"sha256":sha(x)} for x in images],"scene_04_photo_crop_box_px":[230,635,845,1256],"water_fact_strings_displayed":["총수분 참고값","19–30세","2.7L","여성","3.7L","남성","개인별 목표가 아닌 참고값"],"duration_seconds":duration,"fps":FPS,"output":str(final),"output_sha256":sha(final),"before_after_contact_sheet":str(video_sheet),"keyframes_contact_sheet":str(after_sheet),"ebur128_path":str(out/"water/ebur128.txt"),"technical_qa":qa,"runtime":{"playwright_wall_seconds":round(render_wall,2),"process_user_cpu_seconds":round(cpu_end.ru_utime-cpu_start.ru_utime,2),"process_system_cpu_seconds":round(cpu_end.ru_stime-cpu_start.ru_stime,2),"process_max_rss_mb":round(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss/(1024*1024),1),"browser":"Chromium"}}
     (out/"water/receipt.json").write_text(json.dumps(result,ensure_ascii=False,indent=2)+"\n",encoding="utf-8")
     return result
 
@@ -397,7 +460,7 @@ def main() -> None:
     cards_result=None; video_result=None
     if not args.video_only: cards_result=build_cards(out,series,frames)
     if not args.cards_only: video_result=render_water(out)
-    result={"schema":"vq-v2-round4-render/1","status":"LOCAL_RENDERED; OWNER_DIRECTION_PREFERRED; OWNER_AESTHETIC_REVIEW_PENDING","owner_quote_verbatim":OWNER_QUOTE,"provider_calls":0,"paid_spend_usd":0,"defaults_changed":False,"m1":cards_result,"video":video_result,"runtime":{"platform":platform.platform(),"python":platform.python_version()}}
+    result={"schema":"vq-v2-round4-render/1","status":"LOCAL_RENDERED; OWNER_DIRECTION_PREFERRED; OWNER_AESTHETIC_REVIEW_PENDING","owner_quote_verbatim":OWNER_QUOTE,"provider_calls":0,"paid_spend_usd":0,"defaults_changed":False,"implementation":implementation_identity(),"m1":cards_result,"video":video_result,"runtime":{"platform":platform.platform(),"python":platform.python_version()}}
     (out/"receipt.json").write_text(json.dumps(result,ensure_ascii=False,indent=2)+"\n",encoding="utf-8")
     print(json.dumps({"status":"OK","out":str(out),"cards":bool(cards_result),"video":bool(video_result)},ensure_ascii=False))
 
