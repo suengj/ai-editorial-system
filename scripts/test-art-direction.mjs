@@ -21,8 +21,12 @@ const evidence = {
     { id: 's2', url: 'https://example.com/b', title: 'Synthetic source B', kind: 'official', published_at: day, checked_at: day },
   ],
   claims: [
-    { id: 'a', kind: 'fact', text: 'Synthetic A offers a service.', source_ids: ['s1'] },
-    { id: 'b', kind: 'fact', text: 'Synthetic B offers an adjacent service.', source_ids: ['s2'] },
+    { id: 'a', kind: 'fact', text: 'Synthetic fact A recorded 12 units in the annual source.', source_ids: ['s1'] },
+    { id: 'b', kind: 'fact', text: 'Synthetic fact B recorded 14 units in the annual source.', source_ids: ['s2'] },
+    { id: 'c', kind: 'fact', text: 'Synthetic fact C recorded 16 units in the annual source.', source_ids: ['s1'] },
+    { id: 'd', kind: 'fact', text: 'Synthetic fact D recorded 18 units in the annual source.', source_ids: ['s2'] },
+    { id: 'e', kind: 'fact', text: 'Synthetic fact E recorded 20 units in the annual source.', source_ids: ['s1'] },
+    { id: 'f', kind: 'fact', text: 'Synthetic fact F recorded 22 units in the annual source.', source_ids: ['s2'] },
     { id: 'h', kind: 'assumption', text: 'A small paid experiment is proposed.', source_ids: [] },
   ],
   cases: [
@@ -36,11 +40,11 @@ const packet = {
   idea: { problem: 'unused capacity', target: 'small shops', payer: 'buyer', mechanism: 'matching', revenue: 'proposed transaction fee' },
   money: { value_flow: '상점에서 구매자에게 서비스 제공', payment_flow: '구매자가 플랫폼을 통해 상점에 결제', platform_revenue: '거래액과 구분한 수수료', main_cost: '정산 및 고객 지원' },
   frames: [
-    { role: 'cover', headline: '가상 서비스의 표지', body: '서비스가 해결하는 문제를 소개합니다.', takeaway: '문제와 아이디어를 파악한다.', alt_text: '가상 표지 설명', claim_ids: ['h'] },
-    { role: 'money', headline: '돈과 서비스 흐름', body: '가치와 결제 흐름을 나눠 봅니다.', takeaway: '가치·결제·수익·비용을 구분한다.', alt_text: '네 가지 합성 금전 항목을 보여주는 도식', claim_ids: ['h'] },
-    { role: 'case-a', headline: '합성 사례 A', body: '합성 사례 A의 근거와 특징입니다.\n\n같은 비교 축에서 봅니다.', takeaway: '첫 사례의 근거를 확인한다.', alt_text: '합성 사례 A의 두 비교 열', claim_ids: ['a'], case_id: 'a' },
-    { role: 'case-b', headline: '합성 사례 B', body: '합성 사례 B의 근거와 특징입니다.\n\n같은 비교 축에서 봅니다.', takeaway: '인접 사례와 차이를 확인한다.', alt_text: '합성 사례 B의 두 비교 열', claim_ids: ['b'], case_id: 'b', case_mode: 'compare' },
-    { role: 'opportunity', headline: '작은 실험', body: '검증할 원칙입니다.\n\n실행을 가로막는 제약입니다.\n\n작게 확인할 첫 실험입니다.', takeaway: '가설을 작은 실험으로 바꾼다.', alt_text: '원칙과 제약과 첫 실험의 세 단계', claim_ids: ['h'] },
+    { role: 'cover', headline: '가상 서비스의 표지', body: 'Annual sources verify values 12 and 16.\nCompare periods before interpreting the trend.', takeaway: '문제와 아이디어를 파악한다.', alt_text: '가상 표지 설명', claim_ids: ['a','c','h'] },
+    { role: 'money', headline: '돈과 서비스 흐름', body: 'Source figures record 18 units for this period.\nValue, payment, revenue, and costs follow separate paths.', takeaway: '가치·결제·수익·비용을 구분한다.', alt_text: '네 가지 합성 금전 항목을 보여주는 도식', claim_ids: ['d','h'] },
+    { role: 'case-a', headline: '합성 사례 A', body: 'Source A: 12 units, 2026.\n\nCompare yearly output and costs.', takeaway: '첫 사례의 근거를 확인한다.', alt_text: '합성 사례 A의 두 비교 열', claim_ids: ['a'], case_id: 'a' },
+    { role: 'case-b', headline: '합성 사례 B', body: 'Source B: 14 and 22 units.\n\nCompare yearly output and costs.', takeaway: '인접 사례와 차이를 확인한다.', alt_text: '합성 사례 B의 두 비교 열', claim_ids: ['b','f'], case_id: 'b', case_mode: 'compare' },
+    { role: 'opportunity', headline: '작은 실험', body: `Source data records 20 units.\n\nCheck the constraint.\n\nTest it. ${profile.cta}`, takeaway: '가설을 작은 실험으로 바꾼다.', alt_text: '원칙과 제약과 첫 실험의 세 단계', claim_ids: ['e','h'] },
   ],
   caption: 'Synthetic fixture. Not a real company claim.',
 };
@@ -84,7 +88,7 @@ let passed = 0;
 async function test(name, fn) { await fn(); passed++; console.log(`PASS ${name}`); }
 const checked = (p, pck = packet, ev = evidence) => validateArtDirectionPlan(p, { evidence: ev, packet: pck, profile, catalog });
 function insertTrend(p = structuredClone(plan), pck = structuredClone(packet)) {
-  const trendFrame = { role: 'trend', headline: '합성 추세 자료', body: '합성 추세를 설명합니다.', takeaway: '자료의 범위 안에서 해석한다.', alt_text: '합성 추세 설명', claim_ids: ['a'] };
+  const trendFrame = { role: 'trend', headline: '합성 추세 자료', body: '합성 추세에서 확인한 12 수치는 공개된 자료에 기록되어 있습니다.\n관측 기간과 비교 기준을 살펴보면 변화의 범위를 판단할 맥락을 얻을 수 있습니다.', takeaway: '자료의 범위 안에서 해석한다.', alt_text: '합성 추세 설명', claim_ids: ['a'] };
   pck.frames.splice(4, 0, trendFrame);
   p.frames.splice(4, 0, frame('trend', 'text', [{ id: 'trend-copy', kind: 'text', role: 'evidence', region: 'content' }], { need: false, source: 'none', rationale: 'Source-backed synthetic trend copy is sufficient.' }, ['a'], 'case_pathway', 'Show only the synthetic sourced trend.', 'A sourced synthetic trend'));
   p.trend_evidence_ref = 's1';
@@ -205,7 +209,7 @@ await test('three repeated layout and block-role signatures warn without failing
 });
 await test('plan compiles to compatible carousel layouts for all five roles', () => {
   const compiled = compileBusinessMagazine(packet, evidence, { sourceRef: '/stable/evidence.json', asOf: day, artDirection: plan });
-  const carousel = planCarousel(compiled.series);
+  const carousel = planCarousel(compiled.series, undefined, compiled.brief);
   assert.deepEqual(carousel.frames.map(f => f.id), ['cover', 'money', 'case-a', 'case-b', 'opportunity']);
   assert.deepEqual(carousel.frames.map(f => f.layout), ['hero', 'flow', 'columns', 'columns', 'stack']);
   assert.equal(carousel.art_direction_sha256, compiled.series.art_direction_sha256);
@@ -215,10 +219,10 @@ await test('carousel rejects generated-asset metadata detached from its block or
   const compiled = compileBusinessMagazine(packet, evidence, { sourceRef: '/stable/evidence.json', asOf: day, artDirection: plan });
   const detached = structuredClone(compiled.series);
   detached.frames[0].art_direction.asset_block_id = 'missing-generated-block';
-  assert.throws(() => planCarousel(detached), /generated asset declaration must bind/);
+  assert.throws(() => planCarousel(detached, undefined, compiled.brief), /generated asset declaration must bind/);
   const malformedHash = structuredClone(compiled.series);
   malformedHash.art_direction_sha256 = 'not-a-digest';
-  assert.throws(() => planCarousel(malformedHash), /art_direction_sha256 must be a SHA-256 digest/);
+  assert.throws(() => planCarousel(malformedHash, undefined, compiled.brief), /art_direction_sha256 must be a SHA-256 digest/);
 });
 await test('stale consumed receipt cannot pass when execution was not rendered-OK', () => {
   const stale = { outputs: { master: { sha256: 'sha256:old-run' } }, generation: [{ id: 'cover-art', asset_in_final_png: true }] };
@@ -227,16 +231,15 @@ await test('stale consumed receipt cannot pass when execution was not rendered-O
 });
 await test('additive layouts pass existing carousel region and invariant validation', () => {
   const compiled = compileBusinessMagazine(packet, evidence, { sourceRef: '/stable/evidence.json', asOf: day, artDirection: plan });
-  const carousel = planCarousel(compiled.series);
+  const carousel = planCarousel(compiled.series, undefined, compiled.brief);
   assert.equal(carousel.frames.length, 5);
   const heroLayers = carousel.frames[0].plan.layers;
-  assert.equal(heroLayers[0].slot.x, 0);
-  assert.equal(heroLayers[0].slot.width, 1);
+  assert.equal(heroLayers[0].slot.x, 72 / 1080);
+  assert.equal(heroLayers[0].slot.width, 1 - 2 * 72 / 1080);
   const safeBands = catalog.layout_effects[carousel.frames[0].layout]?.solid_bands ?? [];
   assert(safeBands.length > 0, 'R4 text layers require an explicit bounded contrast scrim');
   assert(safeBands.every(band => heroLayers.some(layer => layer.kind === 'solid' && layer.id === band.id)));
-  assert(heroLayers.find(l => l.id === 'source').slot.y >= 0.88);
-  assert(heroLayers.find(l => l.id === 'pagination').slot.y >= 0.88);
+  assert(!heroLayers.some(l => l.id === 'source' || l.id === 'pagination'), 'card-news keeps source and pagination in sidecars');
 });
 await test('full-bleed text regions must be inside a declared safe band', () => {
   const compiled = compileBusinessMagazine(packet, evidence, { sourceRef: '/stable/evidence.json', asOf: day, artDirection: plan });
@@ -253,7 +256,7 @@ await test('full-bleed text regions must be inside a declared safe band', () => 
   };
   const unsafe = structuredClone(compiled.series);
   safeBandCatalog.layouts.hero.copy = { ...safeBandCatalog.layouts.hero.copy, x: 0.6, y: 0.72, width: 0.3, height: 0.2 };
-  assert.throws(() => planCarousel(unsafe, safeBandCatalog), e => e.code === 'SERIES_TEXT_SAFE_BAND');
+  assert.throws(() => planCarousel(unsafe, safeBandCatalog, compiled.brief), e => e.code === 'SERIES_TEXT_SAFE_BAND');
 });
 await test('deterministic money diagram keeps packet labels verbatim', () => {
   const compiled = compileBusinessMagazine(packet, evidence, { sourceRef: '/stable/evidence.json', asOf: day, artDirection: plan });
@@ -265,34 +268,11 @@ await test('deterministic money diagram keeps packet labels verbatim', () => {
   assert.match(rendered.svg, /상점에 결제/);
 });
 await test('legacy compiler defaults to an empty series footer when no plan is supplied', () => {
-  const legacyEvidence = {
-    schema_version: '1.0.0', as_of: day,
-    sources: [
-      { id: 's1', url: 'https://example.com/a', title: 'Synthetic source A', kind: 'official', published_at: null, checked_at: day },
-      { id: 's2', url: 'https://example.com/b', title: 'Synthetic source B', kind: 'official', published_at: day, checked_at: day },
-    ],
-    claims: [
-      { id: 'a', kind: 'fact', text: 'Synthetic A offers a service.', source_ids: ['s1'] },
-      { id: 'b', kind: 'fact', text: 'Synthetic B offers an adjacent service.', source_ids: ['s2'] },
-      { id: 'h', kind: 'assumption', text: 'A small paid experiment is proposed.', source_ids: [] },
-    ],
-    cases: [
-      { id: 'a', name: 'Synthetic A', match: 'same_model', claim_ids: ['a'] },
-      { id: 'b', name: 'Synthetic B', match: 'adjacent', claim_ids: ['b'] },
-    ],
-  };
-  const legacyPacket = {
-    schema_version: '1.0.0', series_id: 'bizmag-test', request: '가상 자료로 5장 계획을 검증한다.', series_label: '', evidence_ref: 'evidence.json',
-    idea: { problem: 'unused capacity', target: 'small shops', payer: 'buyer', mechanism: 'matching', revenue: 'proposed transaction fee' },
-    money: { value_flow: 'shop to buyer', payment_flow: 'buyer to platform to shop', platform_revenue: 'fee, not gross transaction volume', main_cost: 'support and settlement' },
-    frames: profile.frame_roles.map((role, i) => ({ role, headline: `가상 제목 ${i + 1}`, body: '가상 설명입니다.', takeaway: '가상 의미입니다.', alt_text: '가상 검증용 카드입니다.', claim_ids: [i === 2 ? 'a' : i === 3 ? 'b' : 'h'], ...(i === 2 ? { case_id: 'a' } : {}), ...(i === 3 ? { case_id: 'b', case_mode: 'compare' } : {}) })), caption: 'Synthetic fixture. Not a real company claim.',
-  };
-  const legacy = compileBusinessMagazine(legacyPacket, legacyEvidence, { sourceRef: '/stable/evidence.json', asOf: day });
+  const legacy = compileBusinessMagazine(packet, evidence, { sourceRef: '/stable/evidence.json', asOf: day });
   assert.equal(legacy.series.series_label, '');
-  assert.equal(planCarousel(legacy.series).frames[0].plan.layers.some((layer) => layer.id === 'series-label'), false);
-  const bytes = [JSON.stringify(legacy.series, null, 2) + '\n', legacy.caption, JSON.stringify(legacy.sidecar, null, 2) + '\n', legacy.generation_brief + '\n'].join('\0');
-  const digest = createHash('sha256').update(bytes).digest('hex');
-  assert.equal(digest, '99caf52b7ccf3e23d9f401e2d1537d8cf63859b9f59d2215ce0c05bf85e45f8e');
+  assert.equal(planCarousel(legacy.series, undefined, legacy.brief).frames[0].plan.layers.some((layer) => layer.id === 'series-label'), false);
+  assert.equal(legacy.series.content_kind, 'card-news');
+  assert.deepEqual(compileBusinessMagazine(packet, evidence, { sourceRef: '/stable/evidence.json', asOf: day }).series, legacy.series);
 });
 await test('plan hash is in series, sidecar and generation brief', () => {
   const compiled = compileBusinessMagazine(packet, evidence, { sourceRef: '/stable/evidence.json', asOf: day, artDirection: plan });
@@ -322,7 +302,7 @@ try {
     const staleOut = resolve(temp, 'render');
     mkdirSync(resolve(staleOut, 'cover'), { recursive: true });
     writeFileSync(resolve(staleOut, 'cover/receipt.json'), JSON.stringify({ status: 'RENDERED_NEEDS_REVIEW', outputs: { master: { sha256: 'sha256:stale' } }, generation: [{ id: 'cover-art', asset_in_final_png: true }] }));
-    const result = await executeCarousel(compiled.series, { baseDir: temp, outDir: staleOut });
+    const result = await executeCarousel(compiled.series, { baseDir: temp, outDir: staleOut, contentBrief: compiled.brief });
     const cover = result.frames.find(f => f.id === 'cover');
     assert.equal(result.status, 'INCOMPLETE');
     assert.equal(cover.status, 'RENDER_REQUIRED');
@@ -353,7 +333,7 @@ try {
       response_sha256: `sha256:${createHash('sha256').update(responseBytes).digest('hex')}`,
     } };
     const compiled = compileBusinessMagazine(generatedPacket, evidence, { sourceRef: 'evidence.json', asOf: day, baseDir: temp, artDirection: generatedPlan });
-    const result = await executeCarousel(compiled.series, { baseDir: temp, outDir: resolve(temp, 'generated-render') });
+    const result = await executeCarousel(compiled.series, { baseDir: temp, outDir: resolve(temp, 'generated-render'), contentBrief: compiled.brief });
     const cover = result.frames.find(f => f.id === 'cover');
     assert.equal(cover.status, 'GENERATED_COMPOSED_NEEDS_REVIEW');
     assert.equal(cover.art_direction_asset_in_final_png, true);
@@ -365,17 +345,17 @@ try {
     const rights = 'Synthetic authored pixels for a local test; not a photograph.';
     heroPlan.frames[0].blocks[0].kind = 'image';
     heroPlan.frames[0].asset = { need: true, source: 'authorized_original', rationale: 'Synthetic pixels exercise the original-image route.', rights_note: rights };
-    heroPacket.frames[0].visual = { kind: 'image', ref: 'hero-synthetic.png', fit: 'cover', rights_note: rights, focal_box: { x: 0.1, y: 0.1, width: 0.8, height: 0.8 }, focal_min_area_ratio: 0.9 };
+    heroPacket.frames[0].visual = { kind: 'image', ref: 'hero-synthetic.png', fit: 'cover', rights_note: rights, focal_box: { x: 0.2, y: 0.2, width: 0.6, height: 0.6 }, focal_min_area_ratio: 0.9 };
     const pixels = Buffer.alloc(320 * 320 * 4);
     for (let i = 0; i < 320 * 320; i++) { pixels[i * 4] = i % 256; pixels[i * 4 + 1] = Math.floor(i / 320) % 256; pixels[i * 4 + 2] = 110; pixels[i * 4 + 3] = 255; }
     writeFileSync(resolve(temp, 'hero-synthetic.png'), encodePng({ width: 320, height: 320, channels: 4, pixels }));
     const compiled = compileBusinessMagazine(heroPacket, evidence, { sourceRef: 'evidence.json', asOf: day, baseDir: temp, artDirection: heroPlan });
     writeDerived(compiled, temp);
-    const result = await executeCarousel(compiled.series, { baseDir: temp, outDir: resolve(temp, 'hero-render') });
+    const result = await executeCarousel(compiled.series, { baseDir: temp, outDir: resolve(temp, 'hero-render'), contentBrief: compiled.brief });
     assert.equal(result.status, 'RENDERED_NEEDS_REVIEW');
     const image = decodePng(readFileSync(resolve(temp, 'hero-render/cover/master.png')));
     const at = (x, y) => [...image.pixels.subarray((y * image.width + x) * image.channels, (y * image.width + x) * image.channels + image.channels)];
-    assert.notDeepEqual(at(5, 100).slice(0, 3), [247, 244, 236]);
+    assert.notDeepEqual(at(100, 100).slice(0, 3), [247, 244, 236]);
     assert.notDeepEqual(at(500, 1000).slice(0, 3), [247, 244, 236]);
     const receipt = JSON.parse(readFileSync(resolve(temp, 'hero-render/cover/receipt.json'), 'utf8'));
     assert.equal(receipt.text.find(t => t.id === 'headline').text, heroPacket.frames[0].headline);

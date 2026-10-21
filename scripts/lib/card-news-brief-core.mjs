@@ -71,7 +71,8 @@ export function validateCardNewsBrief(series, brief) {
       issues.push(issue('CARD_NEWS_CARD_EVIDENCE', 'each card needs a claim, evidence line linked to a brief fact, and takeaway', frame.id));
     }
     for (const id of validIds) usedFacts.add(id);
-    const body = (frame.blocks ?? []).filter((b) => b?.kind === 'text' && b.id !== 'headline' && b.region !== 'headline' && b.region !== 'hero-value').map((b) => b.text ?? '').join('\n');
+    const nativeCopy = frame.art_direction?.render_method === 'native_card' ? (frame.art_direction.native_prompt_strings ?? []).slice(1).join('\n') : '';
+    const body = [...(frame.blocks ?? []).filter((b) => b?.kind === 'text' && b.id !== 'headline' && b.region !== 'headline' && b.region !== 'hero-value').map((b) => b.text ?? ''), nativeCopy].filter(Boolean).join('\n');
     const chars = substantive(body);
     const lines = body.split(/\n+/u).map((x) => x.trim()).filter((x) => substantive(x) >= 8);
     if (chars < 45 || lines.length < 2) issues.push(issue('CARD_NEWS_BODY_TOO_THIN', `body needs at least two substantive lines and about 45 Korean characters (got ${chars} chars, ${lines.length} lines)`, frame.id));
@@ -83,7 +84,7 @@ export function validateCardNewsBrief(series, brief) {
     if (/^\s*(?:\d+(?:\.\d+)?\s*[%％]?|[₩$]\s*[\d,.]+)\s*$/mu.test(body) || (/^[^\n]{1,28}$/u.test(body.trim()) && /[!！?？]/u.test(body))) issues.push(issue('CARD_NEWS_NUMBER_SLOGAN', 'a bare number or slogan cannot stand in for card substance', frame.id));
     if (card?.evidence) {
       const evidenceNumbers = String(card.evidence).match(/\d+(?:[.,]\d+)?/gu) ?? [];
-      const visibleCopy = [frame.headline, ...(frame.blocks ?? []).filter((b) => b?.kind === 'text').map((b) => b.text ?? '')].join('\n');
+      const visibleCopy = [frame.headline, ...(frame.blocks ?? []).filter((b) => b?.kind === 'text').map((b) => b.text ?? ''), ...(frame.art_direction?.render_method === 'native_card' ? frame.art_direction.native_prompt_strings ?? [] : [])].join('\n');
       const visibleNumbers = visibleCopy.match(/\d+(?:[.,]\d+)?/gu) ?? [];
       if (!evidenceNumbers.some((n) => visibleNumbers.includes(n))) issues.push(issue('CARD_NEWS_EVIDENCE_NOT_VISIBLE', 'at least one concrete number or date from the evidence must appear in visible card copy', frame.id));
       const boundFactIds = new Set([...(card.evidence_fact_ids ?? []), ...(card.visual_fact_ids ?? [])]);

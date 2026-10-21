@@ -461,7 +461,9 @@ export async function executeCarousel(series,{baseDir=process.cwd(),outDir,raste
           writeJson(resolve(dir,'receipt.json'),outputReceipt);
         }
       } else {
-        const executed=await executeVisual(f.plan,{baseDir,preset:compiled.preset,outDir:dir,rasterizer});
+        let executed;
+        try { executed=await executeVisual(f.plan,{baseDir,preset:compiled.preset,outDir:dir,rasterizer}); }
+        catch (error) { error.message=`${f.id}: ${error.message}`; throw error; }
         entry.status=executed.status;
         if(f.art_direction?.render_method==='compositor' && isRenderedOk(entry.status)) {
           const sourceLayer=f.plan.layers.find((layer)=>layer.id==='source');

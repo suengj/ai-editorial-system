@@ -430,9 +430,12 @@ export async function executeVisual(plan, { baseDir = process.cwd(), preset = {}
       if (requestsBundledSerif(family)) assertBundledSerifCoverage(printed);
       const lm = family === packet.theme.font_family ? measure : textMeasurer(adapter, family);
       const spaced = (t, z, w) => lm(t, z, w) + (l.letter_spacing ?? 0) * z * [...t].length;
-      const lines = l.balance
-        ? balancedWrap(printed, { width: b.width, size: l.font_size, weight: l.weight, maxLines: l.max_lines, emphasis: emph }, spaced)
-        : wrapText(printed, { width: b.width, height: b.height, size: l.font_size, weight: l.weight, maxLines: l.max_lines, lineHeight: l.line_height }, spaced);
+      let lines;
+      try {
+        lines = l.balance
+          ? balancedWrap(printed, { width: b.width, size: l.font_size, weight: l.weight, maxLines: l.max_lines, emphasis: emph }, spaced)
+          : wrapText(printed, { width: b.width, height: b.height, size: l.font_size, weight: l.weight, maxLines: l.max_lines, lineHeight: l.line_height }, spaced);
+      } catch (error) { error.message = `${l.id}: ${error.message}`; throw error; }
       if (lines.length * l.font_size * l.line_height > b.height) fail('TEXT_OVERFLOW', `${l.id}: ${lines.length} lines exceed the slot height; text was not truncated`);
       const x = b.x + (l.align === 'middle' ? b.width / 2 : l.align === 'end' ? b.width : 0) - (l.optical_margin && l.align === 'start' ? Math.round(l.font_size * 0.04) : 0);
       let cursor = 0; const tsp = [];
