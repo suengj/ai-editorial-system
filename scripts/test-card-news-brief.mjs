@@ -60,6 +60,25 @@ fail((s, b) => { s.frames[0].blocks[0].text = `${'가'.repeat(121)}\n${'나'.rep
 fail((s, b) => { b.per_card['card-1'].evidence_fact_ids = ['unknown']; }, 'CARD_NEWS_CARD_EVIDENCE');
 fail((s, b) => { s.frames[0].blocks.unshift({ id: 'hero', kind: 'text', region: 'hero-value', text: '7%', text_role: 'hero' }); b.per_card['card-1'].evidence = '42%'; b.facts[0].value = 'canonical evidence 42%'; }, 'CARD_NEWS_HERO_NOT_CANONICAL');
 fail((s, b) => { b.per_card['card-1'].evidence = 'The sourced value is 2026, but no matching number is printed on this card.'; s.frames[0].blocks[0].text = '첫째 문장은 독자에게 작동 원리를 차분하게 설명합니다.\n둘째 문장은 이해를 돕는 충분한 맥락을 제공합니다.'; }, 'CARD_NEWS_EVIDENCE_NOT_VISIBLE');
+const genericNumericBrief = structuredClone(brief);
+const genericNumericCardSeries = structuredClone(series);
+genericNumericCardSeries.content_kind = 'card-news'; genericNumericCardSeries.numeric_profile = true; genericNumericCardSeries.footer_policy = 'content_only';
+const genericNumericDir = mkdtempSync(resolve(tmpdir(), 'aes-generic-numeric-card-news-'));
+genericNumericCardSeries.frames.forEach((frame, index) => {
+  const ref = `chart-${index + 1}.json`;
+  writeFileSync(resolve(genericNumericDir, ref), JSON.stringify({ type:'number_visual',layout:'dot-grid',title:'확인 수치',source_note:'sidecar',total:100,filled:index + 1,value_label:`${index + 1}%`,caption:'비율' }));
+  frame.blocks.push({ id:'chart',kind:'chart',ref });
+  genericNumericBrief.per_card[frame.id].visual_fact_ids = [`fact-${index + 1}`];
+});
+writeFileSync(resolve(genericNumericDir,'brief.json'),JSON.stringify(genericNumericBrief));
+writeFileSync(resolve(genericNumericDir,'content-qa.json'),JSON.stringify({schema_version:'1.0.0',would_a_smart_reader_learn_something_new:'Each card ties a sourced number to a useful explanation.',one_surprising_fact:'The cited observations use different units.',reviewed_cards:frames.map((frame)=>frame.id),sources_are_sidecar_only:true,disclaimers_or_meta_on_cards:false}));
+writeFileSync(resolve(genericNumericDir,'series.json'),JSON.stringify(genericNumericCardSeries));
+const genericNumericBaseline = loadAndValidateCardNewsBrief(genericNumericCardSeries,resolve(genericNumericDir,'series.json'));
+assert.equal(genericNumericBaseline.ok,true,`generic numeric card-news passes complete sidecar loading before mutation: ${JSON.stringify(genericNumericBaseline.issues)}`);
+genericNumericCardSeries.frames[0].blocks[0].text += '\n검증되지 않은 99% 성장도 함께 적었습니다.';
+writeFileSync(resolve(genericNumericDir,'series.json'),JSON.stringify(genericNumericCardSeries));
+const genericNumericMutation = loadAndValidateCardNewsBrief(genericNumericCardSeries,resolve(genericNumericDir,'series.json'));
+assert(genericNumericMutation.issues.some((item) => item.code === 'CARD_NEWS_VISIBLE_NUMBER_NOT_CANONICAL' && item.card_id === 'card-1'),'generic numeric card-news rejects an unsupported visible number through the complete sidecar loader');
 fail((s, b) => { for (const id of Object.keys(b.per_card).slice(1)) b.per_card[id].evidence_fact_ids = ['fact-1']; }, 'CARD_NEWS_FACTS_USED');
 fail((s, b) => { b.facts = b.facts.slice(0, 5); }, 'CARD_NEWS_FACT_COUNT');
 const carousel = JSON.parse(readFileSync('scripts/fixtures/carousel/series.json', 'utf8'));
@@ -108,6 +127,18 @@ const boundChartBrief = { facts:[{id:'fact-1',value:'confirmed value 42%',date:'
 assert.equal(validateCardNewsChartFacts(boundChartSeries, boundChartBrief, chartDir).ok, false, 'chart data cannot differ from its canonical brief fact');
 const genericNumericSeries = { ...boundChartSeries, numeric_profile:true, profiles:{ surface:'instagram', artifact:'visual/slide-image' } };
 assert.equal(validateCardNewsChartFacts(genericNumericSeries, boundChartBrief, chartDir).ok, false, 'generic numeric card-news profiles use the same chart-to-fact parity checks');
+const barPath = resolve(chartDir,'supported-bar.json');
+const barSeries = { profiles:{artifact:'visual/slide-image'},numeric_profile:true,frames:[{id:'card-1',blocks:[{kind:'chart',ref:'supported-bar.json'}]}] };
+const barFacts = [125,180,240].map((value,index)=>({id:`bar-${index}`,value:`${['준비','검토','완료'][index]} category ${value}건`,date:'2026-10-21'}));
+const barBrief = {facts:barFacts,per_card:{'card-1':{visual_fact_ids:barFacts.map((fact)=>fact.id),visual_value_bindings:barFacts.map((fact,index)=>({label:['준비','검토','완료'][index],value:[125,180,240][index],display_value:`${[125,180,240][index]}건`,fact_id:fact.id}))}}};
+const supportedBar = {type:'bar',title:'처리 건수',period:'2026-10-21',source_note:'source',x:{label:'단계',tick_labels:{'1':'준비','2':'검토','3':'완료'}},y:{label:'항목',unit:'건',decimals:0},series:[{name:'작업',claim:'source:tasks',points:[[1,125],[2,180],[3,240]]}]};
+writeFileSync(barPath,JSON.stringify(supportedBar));
+assert.equal(validateCardNewsChartFacts(barSeries,barBrief,chartDir).ok,true,'supported bar chart observations and category labels bind to their own canonical facts');
+const unboundBarBrief = structuredClone(barBrief); delete unboundBarBrief.per_card['card-1'].visual_value_bindings;
+assert.equal(validateCardNewsChartFacts(barSeries,unboundBarBrief,chartDir).ok,false,'supported bar values 125/180/240 cannot pass without per-observation label/value bindings');
+const forgedBar = structuredClone(supportedBar); forgedBar.series[0].points[0][1] = 126;
+writeFileSync(barPath,JSON.stringify(forgedBar));
+assert.equal(validateCardNewsChartFacts(barSeries,barBrief,chartDir).ok,false,'supported bar chart values are checked against canonical facts');
 const labeledPath = resolve(chartDir, 'labeled-chart.json');
 const labeledSeries = { profiles:{artifact:'visual/prediction-market-carousel'}, frames:[{id:'card-1',blocks:[{kind:'chart',ref:'labeled-chart.json'}]}] };
 const labeledBrief = { facts:[{id:'october',value:'October probability was 81%',date:'2025-10'}, {id:'december',value:'December probability was 15%',date:'2025-12'}], per_card:{'card-1':{visual_fact_ids:['october','december'],visual_value_bindings:[{label:'October',value:81,fact_id:'october',display_value:'81%'},{label:'December',value:15,fact_id:'december',display_value:'15%'}]}} };
@@ -151,6 +182,7 @@ const visualKinds = [
   {type:'number_visual',layout:'dual-metric',title:'A',source_note:'B',items:[{label:'C',value:4,max:5,value_label:'4%'},{label:'D',value:3,max:5,value_label:'3%'}]},
   ratioChart,
   scenarioSpec,
+  {type:'flow',title:'unused heading',nodes:[{id:'value',label:'가격',text:'상품 가치 4%'},{id:'payment',label:'지급',text:'결제 금액 3%'},{id:'revenue',label:'매출',text:'수익 흐름'},{id:'cost',label:'비용',text:'비용 흐름'}],edges:[{from:'value',to:'payment'}]},
   {type:'line',title:'Trend',period:'period',source_note:'Source',x:{label:'date',show_label:true,tick_labels:{}},y:{label:'probability',unit:'%'},series:[{name:'Market',claim:'source:series',points:[[Date.parse('2026-10-20T00:00:00Z'),3],[Date.parse('2026-10-21T00:00:00Z'),4]]}]},
 ];
 for (const [index, original] of visualKinds.entries()) {

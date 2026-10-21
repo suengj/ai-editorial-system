@@ -162,7 +162,7 @@ export function validateCardNewsBrief(series, brief) {
       const canonicalNumbers = facts.filter((fact) => boundFactIds.has(fact.id)).flatMap((fact) => String(fact.value ?? '').match(/\d+(?:[.,]\d+)?\s*[%％]?/gu) ?? []);
       const heroNumbers = String(hero?.text ?? '').match(/\d+(?:[.,]\d+)?\s*[%％]?/gu) ?? [];
       if (heroNumbers.some((n) => !canonicalNumbers.some((value) => value.replace(/\s/gu, '') === n.replace(/\s/gu, '')))) issues.push(issue('CARD_NEWS_HERO_NOT_CANONICAL', 'hero values must exactly match a canonical brief fact value', frame.id));
-      if (series.profiles?.artifact === 'visual/prediction-market-carousel') {
+      if (series.profiles?.artifact === 'visual/prediction-market-carousel' || series.numeric_profile === true) {
         if (!Array.isArray(card.visual_fact_ids) || !card.visual_fact_ids.length || card.visual_fact_ids.some((id) => !factIds.has(id))) issues.push(issue('CARD_NEWS_VISUAL_FACT_BINDING', 'prediction-market cards must bind every data visual to canonical visual_fact_ids', frame.id));
         const canonicalDigits = new Set(facts.filter((fact) => boundFactIds.has(fact.id)).flatMap((fact) => `${fact.value ?? ''} ${fact.date ?? ''}`.match(/\d+(?:[.,]\d+)?/gu) ?? []).map((n) => n.replace(/,/g, '')));
         const visibleDigits = visibleCopy.match(/\d+(?:[.,]\d+)?/gu) ?? [];
@@ -187,7 +187,7 @@ export function validateCardNewsContentQa(contentQa, series=null) {
 
 /** The complete set of spec strings consumed as SVG text by supported chart renderers. */
 export function renderedChartTextFields(spec) {
-  const fields = [spec?.title];
+  const fields = spec?.type === 'flow' ? [] : [spec?.title];
   if (spec?.type === 'number_visual') {
     if (spec.layout === 'comparison-bars' || spec.layout === 'dual-metric') fields.push(...(spec.items ?? []).flatMap((item) => [item.label, item.value_label]));
     else if (spec.layout === 'dot-grid') fields.push(spec.value_label, spec.caption);
@@ -196,6 +196,8 @@ export function renderedChartTextFields(spec) {
     else if (spec.layout === 'scenario-split') fields.push(spec.date, ...(spec.scenarios ?? []).flatMap((scenario) => [scenario.label, ...(scenario.detail_lines ?? (scenario.detail ? [scenario.detail] : []))]));
   } else if (['line', 'area'].includes(spec?.type)) {
     fields.push(spec.period, spec.source_note, spec.x?.label, ...Object.values(spec.x?.tick_labels ?? {}), spec.y?.label, spec.y?.unit, ...(spec.series ?? []).map((series) => series.name));
+  } else if (spec?.type === 'flow') {
+    fields.push(...(spec.nodes ?? []).flatMap((node) => [node.label, node.text]));
   }
   return fields.filter((value) => typeof value === 'string');
 }
@@ -283,7 +285,10 @@ export function validateCardNewsChartFacts(series, brief, baseDir = process.cwd(
       } else add(frame, 'trend chart requires a declared market_pmc or official_statistics source type');
       continue;
     }
-    if (spec.type !== 'number_visual') continue;
+    if (!['number_visual', 'line', 'bar', 'flow'].includes(spec.type)) {
+      add(frame, `unsupported chart type cannot be checked for source-fact parity: ${spec.type}`);
+      continue;
+    }
     if (renderedChartTextFields(spec).flatMap(nums).some((value) => !allowed.has(value))) add(frame, 'every rendered text field and number-bearing chart claim must match the card visual_fact_ids');
     let values = [];
     if (spec.layout === 'comparison-bars') {
@@ -305,6 +310,25 @@ export function validateCardNewsChartFacts(series, brief, baseDir = process.cwd(
       if (Number.isFinite(spec.ratio?.outflow) && Number.isFinite(spec.ratio?.inflow) && spec.ratio.inflow > 0 && Math.abs(spec.ratio.outflow / spec.ratio.inflow - 2.5) <= 0.15) allowed.add(Number((spec.ratio.outflow / spec.ratio.inflow).toFixed(1)));
     } else if (spec.layout === 'scenario-split') {
       // Strings are checked below, including scenario.detail when detail_lines is absent.
+    } else if (['line', 'bar'].includes(spec.type)) {
+      const chartValues = (spec.series ?? []).flatMap((item) => (item.points ?? []).filter((point) => point?.[1] !== null).map((point) => {
+        const decimals = spec.y?.decimals ?? 2;
+        const unit = spec.y?.unit ?? '';
+        const label = spec.x?.tick_labels?.[String(point[0])] ?? String(point[0]);
+        return { label: spec.type === 'bar' ? label : `${item.name}: ${label}`, value: point[1], display_value: `${point[1].toFixed(decimals)}${unit}` };
+      }));
+      values = chartValues.map((item) => item.value);
+      const bindings = Array.isArray(card.visual_value_bindings) ? card.visual_value_bindings : [];
+      const usedBindings = new Set();
+      for (const item of chartValues) {
+        const index = bindings.findIndex((binding) => binding?.label === item.label && binding?.value === item.value && binding?.display_value === item.display_value);
+        const binding = index >= 0 ? bindings[index] : null;
+        const fact = binding && facts.get(binding.fact_id);
+        if (!binding || usedBindings.has(index) || !ids.includes(binding.fact_id) || !fact || !nums(fact.value).includes(item.value)) {
+          add(frame, `chart observation ${item.label}=${item.value} must bind to its own visual fact`);
+        } else usedBindings.add(index);
+      }
+      if (usedBindings.size !== chartValues.length || bindings.length !== chartValues.length) add(frame, 'visual_value_bindings must cover every chart observation exactly once');
     }
     if (values.some((value) => !Number.isFinite(value) || !allowed.has(value))) add(frame, 'chart data values must match numbers in the card visual_fact_ids');
     const labeledValues = [ ...(spec.items ?? []).map((item) => ({ ...item, display_value: item.value_label })), ...(spec.rates ?? []) ].filter((item) => typeof item?.label === 'string' && Number.isFinite(item.value));
