@@ -177,6 +177,13 @@ console.log('check 6: unbacked mechanical empirical claim');
 // --- 7. shared promotion needs multi-evidence + holdout -----------------------
 console.log('check 7: shared promotion sufficiency');
 {
+  const scoped = clone(basePack);
+  scoped.status = 'active';
+  scoped.activation_scope = { rule_ids: ['reg-report-bare-noun-compression', 'reg-report-hedge-language'] };
+  const { issues, notes } = checkSharedPromotion(scoped, 'zz-ZZ');
+  check('scoped active pack checks only its activated, holdout-tested rule ids', issues.length === 0 && notes.length === 0, JSON.stringify({ issues, notes }));
+}
+{
   const bad = clone(basePack);
   bad.rules[2].evidence_refs = ['eval:only-one'];
   bad.rules[2].holdout_refs = [];

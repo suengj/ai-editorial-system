@@ -3,7 +3,7 @@
   "request":"가상 설계 예시로 3장 카드뉴스. 핵심 메시지, 근거, 정리 순서. 워터마크 없음.",
   "source":{"ref":"source.md","scope":"illustrative"},
   "profiles":{"surface":"instagram","artifact":"visual/slide-image"},
-  "recipe":"editorial-minimal","series_label":"카드뉴스 설계 예시",
+  "recipe":"editorial-minimal","series_label":"",
   "task":{"canvas":{"width":1080,"aspect_ratio":"4:5"},"watermark":{"enabled":false}},
   "beats":[{"id":"question","depends_on":[]},{"id":"evidence","depends_on":["question"]},{"id":"close","depends_on":["evidence"]}],
   "frames":[

@@ -42,6 +42,15 @@ test('visual task for trends.moa loads the community doc, visual rules, and not 
   yes(paths(r).includes('editorial/STRUCTURED-VISUAL-EXECUTION.md') && paths(r).includes('editorial/visual-recipes.v1.json'), 'visual docs');
   yes(!paths(r).includes('editorial/SUENGJ-STYLE.md') && !paths(r).includes('editorial/SIGNALYTICS-BENCHMARK-CARDS.md'), 'no other voice');
 });
+test('ko-KR on-image card tasks load the language pack for signalytics-news and trends-moa', () => {
+  for (const [targetId, artifact] of [['signalytics-news', 'visual/slide-image'], ['trends-moa', 'visual/social-card']]) {
+    const cardIntent = { ...intent('instagram', [artifact]), constraints: { output_language: 'ko-KR' } };
+    const r = resolveEditorial(cardIntent, { targetId, taskKind: 'visual', reader: reader() });
+    eq(r.status, STATUS.READY);
+    yes(paths(r).includes('editorial/profiles/language/ko-KR.json'), `${targetId} did not load ko-KR`);
+    eq(r.loads.find((entry) => entry.path === 'editorial/profiles/language/ko-KR.json').status, 'read');
+  }
+});
 test('video task route loads only its registered video semantic core and SHA-pinned profile', () => {
   const r = resolveEditorial(intent('newsletter', ['video/educational-summary']), { reader: reader() });
   eq(r.status, STATUS.READY);

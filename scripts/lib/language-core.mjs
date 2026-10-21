@@ -222,7 +222,10 @@ export function checkSharedPromotion(pack, where) {
   const issues = [];
   const notes = [];
   const isDraft = pack.status === 'draft';
+  const activeRuleIds = pack.status === 'active' && Array.isArray(pack.activation_scope?.rule_ids)
+    ? new Set(pack.activation_scope.rule_ids) : null;
   for (const rule of pack.rules ?? []) {
+    if (activeRuleIds && !activeRuleIds.has(rule.id)) continue;
     if (!EMPIRICAL_AUTHORITY_CLASSES.has(rule.authority_class)) continue;
     if (rule.generality === 'source_local') continue;
     const ruleWhere = `${where}:${rule.id}`;

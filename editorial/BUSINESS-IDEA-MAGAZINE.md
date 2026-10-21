@@ -94,9 +94,17 @@ SUE-1417 · 명시적으로 선택하는 시리즈 프로필. 새 서비스·DB�
 권리가 불분명하면 원본 링크로 근거를 남기고 독립적인 설명 도식/콘셉트 비주얼로 바꾼다.
 
 회사 화면·행사·고객·사업장 사진을 생성하여 실제 증거처럼 보여주지 않는다.
-생성한 장면이 실사진으로 오인될 수 있으면 **“연출 이미지”**를 표시한다.
+일반 장면 일러스트와 사진에는 라벨을 붙이지 않는다. 가짜 UI·제품 화면·로고·데이터처럼 실제 자료로 오인될 수 있는 요소를 그린 경우에만 plan의 `mockup_risk: true`를 지정하고 **“연출 이미지”**를 표시한다. `source.scope: illustrative`만으로 이 라벨을 켜지 않는다.
 실제 로고가 없으면 회사명을 정확한 문자로 표기하며 가짜 로고를 만들지 않는다.
 회사 사진은 생성 도구로 다시 그리지 않고 필요시 기존 합성 경로에서 보존한다.
+
+사진을 문구 아래 배경으로 크롭할 때는 plan에 `focal_box`(얼굴 또는 핵심 사물 전체의 원본 기준 상자)와 `focal_min_area_ratio`를 기록한다. 보이는 크롭이 focal box를 포함하고 최소 면적 비율을 충족해야 한다. 실패하면 사진 영역과 문구 영역을 분리한 split 레이아웃을 쓰고, split에서도 조건을 만족하지 못하면 R7 일러스트로 바꾼다.
+
+### 카드의 사람 편집자 검토
+
+- AI 요약처럼 읽히는가? 요약체 종결, 명사구 나열, 일반적인 전환 문구를 살핀다.
+- 크롭이 의미 있는가? 얼굴 또는 핵심 사물 전체가 보이는가?
+- 불필요한 라벨이나 푸터가 있는가?
 
 ### 두 실행 경로
 
@@ -117,7 +125,7 @@ SUE-1417 · 명시적으로 선택하는 시리즈 프로필. 새 서비스·DB�
 사용자가 JSON을 작성할 필요는 없다. LLM이 아래 두 파일을 만든다.
 
 `packet.json`:
-- `schema_version: "1.0.0"`, `series_id`, `request`, `series_label`, `evidence_ref`, `caption`.
+- `schema_version: "1.0.0"`, `series_id`, `request`, `series_label`, `evidence_ref`, `caption`. `series_label`은 기본 빈 문자열이며, 명시 입력된 게시 계정 핸들(`@...`)만 선택적으로 허용한다.
 - `idea`: `problem / target / payer / mechanism / revenue`.
 - `money`: `value_flow / payment_flow / platform_revenue / main_cost`.
 - `frames`: 순서대로 `cover / money / case-a / case-b / opportunity`.

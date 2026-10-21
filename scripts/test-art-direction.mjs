@@ -32,7 +32,7 @@ const evidence = {
 };
 const packet = {
   schema_version: '1.0.0', series_id: 'art-direction-test', request: '합성 자료로 ArtDirectionPlan 경로를 검증한다.',
-  series_label: 'BUSINESS IDEA / TEST', evidence_ref: 'evidence.json',
+  series_label: '', evidence_ref: 'evidence.json',
   idea: { problem: 'unused capacity', target: 'small shops', payer: 'buyer', mechanism: 'matching', revenue: 'proposed transaction fee' },
   money: { value_flow: '상점에서 구매자에게 서비스 제공', payment_flow: '구매자가 플랫폼을 통해 상점에 결제', platform_revenue: '거래액과 구분한 수수료', main_cost: '정산 및 고객 지원' },
   frames: [
@@ -257,7 +257,7 @@ await test('deterministic money diagram keeps packet labels verbatim', () => {
   assert.match(rendered.svg, /구매자가 플랫폼을 통해/);
   assert.match(rendered.svg, /상점에 결제/);
 });
-await test('legacy compiler output stays byte-identical when no plan is supplied', () => {
+await test('legacy compiler defaults to an empty series footer when no plan is supplied', () => {
   const legacyEvidence = {
     schema_version: '1.0.0', as_of: day,
     sources: [
@@ -275,15 +275,17 @@ await test('legacy compiler output stays byte-identical when no plan is supplied
     ],
   };
   const legacyPacket = {
-    schema_version: '1.0.0', series_id: 'bizmag-test', request: '가상 자료로 5장 계획을 검증한다.', series_label: 'BUSINESS IDEA / TEST', evidence_ref: 'evidence.json',
+    schema_version: '1.0.0', series_id: 'bizmag-test', request: '가상 자료로 5장 계획을 검증한다.', series_label: '', evidence_ref: 'evidence.json',
     idea: { problem: 'unused capacity', target: 'small shops', payer: 'buyer', mechanism: 'matching', revenue: 'proposed transaction fee' },
     money: { value_flow: 'shop to buyer', payment_flow: 'buyer to platform to shop', platform_revenue: 'fee, not gross transaction volume', main_cost: 'support and settlement' },
     frames: profile.frame_roles.map((role, i) => ({ role, headline: `가상 제목 ${i + 1}`, body: '가상 설명입니다.', takeaway: '가상 의미입니다.', alt_text: '가상 검증용 카드입니다.', claim_ids: [i === 2 ? 'a' : i === 3 ? 'b' : 'h'], ...(i === 2 ? { case_id: 'a' } : {}), ...(i === 3 ? { case_id: 'b', case_mode: 'compare' } : {}) })), caption: 'Synthetic fixture. Not a real company claim.',
   };
   const legacy = compileBusinessMagazine(legacyPacket, legacyEvidence, { sourceRef: '/stable/evidence.json', asOf: day });
+  assert.equal(legacy.series.series_label, '');
+  assert.equal(planCarousel(legacy.series).frames[0].plan.layers.some((layer) => layer.id === 'series-label'), false);
   const bytes = [JSON.stringify(legacy.series, null, 2) + '\n', legacy.caption, JSON.stringify(legacy.sidecar, null, 2) + '\n', legacy.generation_brief + '\n'].join('\0');
   const digest = createHash('sha256').update(bytes).digest('hex');
-  assert.equal(digest, '75bf9b0c1adfdc53b203dfe64fc7c3f7781b7de2d20020eb235bdf930edf61b3');
+  assert.equal(digest, '99caf52b7ccf3e23d9f401e2d1537d8cf63859b9f59d2215ce0c05bf85e45f8e');
 });
 await test('plan hash is in series, sidecar and generation brief', () => {
   const compiled = compileBusinessMagazine(packet, evidence, { sourceRef: '/stable/evidence.json', asOf: day, artDirection: plan });
@@ -356,7 +358,7 @@ try {
     const rights = 'Synthetic authored pixels for a local test; not a photograph.';
     heroPlan.frames[0].blocks[0].kind = 'image';
     heroPlan.frames[0].asset = { need: true, source: 'authorized_original', rationale: 'Synthetic pixels exercise the original-image route.', rights_note: rights };
-    heroPacket.frames[0].visual = { kind: 'image', ref: 'hero-synthetic.png', fit: 'cover', rights_note: rights };
+    heroPacket.frames[0].visual = { kind: 'image', ref: 'hero-synthetic.png', fit: 'cover', rights_note: rights, focal_box: { x: 0.1, y: 0.1, width: 0.8, height: 0.8 }, focal_min_area_ratio: 0.9 };
     const pixels = Buffer.alloc(320 * 320 * 4);
     for (let i = 0; i < 320 * 320; i++) { pixels[i * 4] = i % 256; pixels[i * 4 + 1] = Math.floor(i / 320) % 256; pixels[i * 4 + 2] = 110; pixels[i * 4 + 3] = 255; }
     writeFileSync(resolve(temp, 'hero-synthetic.png'), encodePng({ width: 320, height: 320, channels: 4, pixels }));

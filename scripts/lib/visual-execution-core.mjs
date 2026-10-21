@@ -159,21 +159,25 @@ export async function compileExecution(plan, { baseDir = process.cwd(), preset =
   if (!Array.isArray(plan.layers) || !plan.layers.length || plan.layers.length > 32) fail('LAYERS', 'one to 32 layers required');
   const ids = new Set(), layers = [];
   for (const l of plan.layers) {
-    keys(l, ['id', 'kind', 'slot', 'ref', 'sha256', 'mode', 'fit', 'rights_note', 'protect', 'text', 'source_ref', 'font_size', 'weight', 'align', 'max_lines', 'line_height', 'color', 'gradient', 'auto_scrim', 'letter_spacing', 'font_family', 'balance', 'emphasis', 'normalize', 'min_contrast', 'optical_margin', 'instruction', 'generation', 'provenance'], 'layer');
+    keys(l, ['id', 'kind', 'slot', 'ref', 'sha256', 'mode', 'fit', 'rights_note', 'protect', 'focal_box', 'focal_min_area_ratio', 'focal_fallback', 'mockup_risk', 'text', 'source_ref', 'font_size', 'weight', 'align', 'max_lines', 'line_height', 'color', 'gradient', 'auto_scrim', 'letter_spacing', 'font_family', 'balance', 'emphasis', 'normalize', 'min_contrast', 'optical_margin', 'instruction', 'generation', 'provenance'], 'layer');
     if (!/^[a-z0-9][a-z0-9-]*$/.test(l.id ?? '') || ids.has(l.id)) fail('LAYER_ID', 'layer IDs must be unique lowercase slugs');
     ids.add(l.id);
     if (!['text', 'image', 'chart', 'generated', 'solid'].includes(l.kind)) fail('LAYER_KIND', String(l.kind));
     const permitted = {
       text: ['text', 'source_ref', 'font_size', 'weight', 'align', 'max_lines', 'line_height', 'color', 'letter_spacing', 'font_family', 'balance', 'emphasis', 'normalize', 'min_contrast', 'optical_margin'],
       chart: ['ref', 'sha256'],
-      image: ['ref', 'sha256', 'mode', 'fit', 'rights_note', 'protect', 'provenance', 'generation'],
-      generated: ['ref', 'sha256', 'mode', 'fit', 'rights_note', 'protect', 'instruction', 'generation'],
+      image: ['ref', 'sha256', 'mode', 'fit', 'rights_note', 'protect', 'focal_box', 'focal_min_area_ratio', 'focal_fallback', 'mockup_risk', 'provenance', 'generation'],
+      generated: ['ref', 'sha256', 'mode', 'fit', 'rights_note', 'protect', 'focal_box', 'focal_min_area_ratio', 'focal_fallback', 'mockup_risk', 'instruction', 'generation'],
       solid: ['color', 'gradient', 'auto_scrim'],
     };
     keys(l, ['id', 'kind', 'slot', ...permitted[l.kind]], `layer ${l.id}`);
-    const pixelSlot = box(l.slot, canvas);
+    let pixelSlot = box(l.slot, canvas);
     if (pixelSlot.width < 1 || pixelSlot.height < 1) fail('INVALID_SLOT', 'slot rounds to zero pixels');
     const next = { ...l, pixel_slot: pixelSlot };
+    if (l.mockup_risk !== undefined && typeof l.mockup_risk !== 'boolean') fail('MOCKUP_RISK', `${l.id}: mockup_risk must be boolean`);
+    if ((l.focal_min_area_ratio !== undefined || l.focal_fallback !== undefined) && l.focal_box === undefined) fail('FOCAL_CROP', `${l.id}: focal_min_area_ratio and focal_fallback require focal_box`);
+    const overlapsNormalized = (a, b) => a.x < b.x + b.width && a.x + a.width > b.x && a.y < b.y + b.height && a.y + a.height > b.y;
+    const coveredText = plan.layers.some((other) => other.kind === 'text' && overlapsNormalized(l.slot, other.slot));
     if (l.kind === 'text') {
       str(l.text, 'text'); str(l.source_ref, 'text source_ref');
       const knownRefs = new Set(['request', plan.source.ref, ...plan.layers.map((x) => x.ref).filter(Boolean)]);
@@ -214,11 +218,47 @@ export async function compileExecution(plan, { baseDir = process.cwd(), preset =
         next.mode = l.mode ?? 'exact_composite'; next.fit = l.fit ?? 'contain';
         if (!['exact_composite', 'cutout_composite'].includes(next.mode)) fail('EDIT_REQUIRED', 'supply the actual edited background/cutout; no inpainting is performed by this compositor');
         if (!['contain', 'cover'].includes(next.fit)) fail('IMAGE_FIT', 'contain or cover');
+        if (l.kind === 'image' && next.fit === 'cover' && coveredText && l.focal_box === undefined) fail('FOCAL_CROP', `${l.id}: a cover-cropped photo beneath text requires focal_box and focal_fallback`);
         str(l.rights_note, 'rights_note');
         const png = decodePng(file.bytes);
         if (png.text[WATERMARK_CHUNK_KEY]) fail('INPUT_IS_DERIVATIVE', 'use the clean master; do not stack a previous watermark');
         if (next.mode === 'cutout_composite' && (png.channels !== 4 || !png.pixels.some((v, i) => i % 4 === 3 && v < 255))) fail('CUTOUT_REQUIRED', 'cutout mode requires a supplied PNG with actual alpha; no automatic background removal');
         next.native_geometry = { width: png.width, height: png.height };
+        if (l.focal_box !== undefined) {
+          if (next.fit !== 'cover') fail('FOCAL_CROP', `${l.id}: focal_box requires fit=cover`);
+          const f = box(l.focal_box, png);
+          const ratio = l.focal_min_area_ratio ?? 1;
+          if (!Number.isFinite(ratio) || ratio < 0.9 || ratio > 1) fail('FOCAL_CROP', `${l.id}: focal_min_area_ratio must be in [0.9,1]`);
+          const evaluate = (slot) => {
+            const scale = Math.max(slot.width / png.width, slot.height / png.height);
+            const cropWidth = slot.width / scale, cropHeight = slot.height / scale;
+            const crop = { x: (png.width - cropWidth) / 2, y: (png.height - cropHeight) / 2, width: cropWidth, height: cropHeight };
+            const ix = Math.max(0, Math.min(f.x + f.width, crop.x + crop.width) - Math.max(f.x, crop.x));
+            const iy = Math.max(0, Math.min(f.y + f.height, crop.y + crop.height) - Math.max(f.y, crop.y));
+            return { crop, visibleRatio: ix * iy / (f.width * f.height) };
+          };
+          let evaluated = evaluate(pixelSlot), fallback = 'cover';
+          if (evaluated.visibleRatio + 1e-9 < ratio) {
+            if (l.focal_fallback !== undefined) {
+              keys(l.focal_fallback, ['split_slot', 'r7_instruction'], `${l.id}.focal_fallback`);
+              if (!l.focal_fallback.split_slot || typeof l.focal_fallback.r7_instruction !== 'string' || !l.focal_fallback.r7_instruction.trim()) fail('FOCAL_CROP', `${l.id}: fallback requires split_slot and r7_instruction`);
+              const splitSlot = box(l.focal_fallback.split_slot, canvas);
+              const splitEval = evaluate(splitSlot);
+              const splitHasText = plan.layers.some((other) => other.kind === 'text');
+              const splitOverlapsText = plan.layers.some((other) => other.kind === 'text' && overlapsNormalized(l.focal_fallback.split_slot, other.slot));
+              if (splitEval.visibleRatio + 1e-9 >= ratio && splitHasText && !splitOverlapsText) {
+                pixelSlot = splitSlot; next.pixel_slot = splitSlot; evaluated = splitEval; fallback = 'split';
+              } else {
+                next.kind = 'generated'; next.ref = undefined; next.sha256 = undefined;
+                next.instruction = l.focal_fallback.r7_instruction; next.status = 'RENDER_REQUIRED';
+                fallback = 'r7-illustration';
+              }
+            } else fail('FOCAL_CROP', `${l.id}: visible focal area ${evaluated.visibleRatio.toFixed(4)} < ${ratio}; declare split_slot and r7_instruction fallback`);
+          }
+          next.focal_evidence = fallback === 'r7-illustration'
+            ? { box: f, minimum_area_ratio: ratio, fallback, status: 'R7_RENDER_REQUIRED' }
+            : { box: f, crop: evaluated.crop, visible_area_ratio: Number(evaluated.visibleRatio.toFixed(4)), minimum_area_ratio: ratio, fallback, status: 'PASS' };
+        }
         if (isGeneratedLayer(l)) next.generation_check = checkGeneration(l, file, png, baseDir);
         for (const protectedBox of l.protect ?? []) {
           const p = box(protectedBox, { width: png.width, height: png.height });
@@ -232,7 +272,7 @@ export async function compileExecution(plan, { baseDir = process.cwd(), preset =
     }
     layers.push(next);
   }
-  if (policy === 'no_text' && plan.source.scope === 'illustrative') fail('TEXT_POLICY', 'illustrative scope requires a visible label; no_text conflicts');
+  if (policy === 'no_text' && layers.some((l) => l.mockup_risk === true)) fail('TEXT_POLICY', 'mockup_risk requires a visible illustrative label; no_text conflicts');
   if (policy === 'no_text' && layers.some((l) => l.kind === 'chart')) fail('TEXT_POLICY', 'chart axes require text');
   if (policy === 'no_text' && watermark.enabled) fail('TEXT_POLICY', 'no_text and a text watermark conflict');
   const intersects = (a, b) => a.x < b.x + b.width && a.x + a.width > b.x && a.y < b.y + b.height && a.y + a.height > b.y;
@@ -446,7 +486,7 @@ export async function executeVisual(plan, { baseDir = process.cwd(), preset = {}
     // Background watermarks may sit below evidence marks, but not below copy.
     if (packet.watermark_layer === 'overlay' || l.kind === 'text') exclusions.push({ zone_id: l.id, ...l.slot });
   }
-  if (packet.source.scope === 'illustrative') {
+  if (packet.layers.some((layer) => layer.mockup_risk === true)) {
     elements.push(`<text x="${Math.round(width * 0.05)}" y="${Math.round(height * 0.985)}" font-family="${esc(packet.theme.font_family)}" font-size="${Math.max(14, Math.round(width * 0.018))}" fill="${packet.theme.foreground}">ILLUSTRATIVE / 가상 예시</text>`);
   }
   const contrastEvidence = [];
@@ -511,6 +551,7 @@ export async function executeVisual(plan, { baseDir = process.cwd(), preset = {}
     inputs: inputs.map((f) => ({ ref: f.ref, sha256: f.sha256 })), geometry: packet.canvas,
     outputs: (() => { const d = isRenderedOk(packet.status) ? '' : 'rejected/'; return { master: { ref: `${d}master.png`, sha256: sha256(master) }, image: { ref: `${d}image.png`, sha256: sha256(final) }, svg: { ref: `${d}master.svg`, sha256: sha256(cleanSvg) } }; })(),
     text: textEvidence, charts, images: imageEvidence, generation: generationEvidence, watermark: watermarkEvidence,
+    mockup_labels: packet.layers.filter((layer) => layer.mockup_risk === true).map((layer) => ({ layer_id: layer.id, text: 'ILLUSTRATIVE / 가상 예시', reason: 'mockup_risk' })),
     checks: { output_geometry: 'PASS', text_fit: 'PASS', inputs_rechecked: 'PASS', numeric_render_binding: charts.length ? 'PASS' : 'NOT_APPLICABLE', generated_image: generationEvidence.length ? packet.status : 'NOT_APPLICABLE', contrast: contrastEvidence.length ? 'PASS' : 'NOT_APPLICABLE', ...(scrimEvidence.length ? { auto_scrim: scrimEvidence } : {}), ...(contrastEvidence.length ? { contrast_detail: contrastEvidence } : {}), actual_pixel_semantic_review: 'NOT_RUN_PHASE4', source_truth: 'NOT_ESTABLISHED_BY_RENDERER' },
     api_calls: 0, publication_authorized: false,
   };

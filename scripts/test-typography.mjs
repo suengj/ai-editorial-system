@@ -123,7 +123,7 @@ if (!adapter) { skipped++; console.log('SKIP render tests: no rasterizer'); } el
   writeFileSync(resolve(dir, 'photo.png'), png); writeFileSync(resolve(dir, 'src.md'), 'synthetic source\n');
   const sha = (b) => createHash('sha256').update(b).digest('hex');
   const mk = (layers) => ({ schema_version: '1.0.0', request: '합성 타이포 테스트', source: { ref: 'src.md', scope: 'illustrative' }, profiles: { surface: 'instagram', artifact: 'visual/slide-image' }, task: { canvas: { width: W, aspect_ratio: '4:5' }, watermark: { enabled: false }, theme: { font_family: "'AES Sans KR', sans-serif" } }, layers });
-  const photo = { id: 'photo', kind: 'image', ref: 'photo.png', fit: 'cover', rights_note: 'synthetic', slot: { x: 0, y: 0, width: 1, height: 1 } };
+  const photo = { id: 'photo', kind: 'image', ref: 'photo.png', fit: 'cover', rights_note: 'synthetic', focal_box: { x: 0, y: 0, width: 1, height: 1 }, focal_min_area_ratio: 0.9, slot: { x: 0, y: 0, width: 1, height: 1 } };
   const head = (extra = {}) => ({ id: 'headline', kind: 'text', text: '이번 분기 가장 돈이 되는 자리를 찾아라', source_ref: 'request', slot: { x: 0.06, y: 0.6, width: 0.88, height: 0.25 }, font_size: 96, weight: 800, line_height: 1.14, max_lines: 3, color: '#FFFFFF', ...extra });
   const out = (n) => resolve(dir, n);
   await ok('render: bundled font, balanced, emphasis, auto scrim -> contrast PASS', async () => {

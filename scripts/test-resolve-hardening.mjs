@@ -52,7 +52,7 @@ const evidence = { schema_version: '1.0.0', as_of: day,
   sources: [{ id: 's1', url: 'https://example.com/a', title: 'Synthetic source A', kind: 'official', published_at: null, checked_at: day }, { id: 's2', url: 'https://example.com/b', title: 'Synthetic source B', kind: 'official', published_at: day, checked_at: day }],
   claims: [{ id: 'a', kind: 'fact', text: 'Synthetic A offers a service.', source_ids: ['s1'] }, { id: 'b', kind: 'fact', text: 'Synthetic B offers an adjacent service.', source_ids: ['s2'] }, { id: 'h', kind: 'assumption', text: 'A small paid experiment is proposed.', source_ids: [] }],
   cases: [{ id: 'a', name: 'Synthetic A', match: 'same_model', claim_ids: ['a'] }, { id: 'b', name: 'Synthetic B', match: 'adjacent', claim_ids: ['b'] }] };
-const packet = { schema_version: '1.0.0', series_id: 'bizmag-test', request: '가상 자료로 5장 계획을 검증한다.', series_label: 'BUSINESS IDEA / TEST', evidence_ref: 'evidence.json',
+const packet = { schema_version: '1.0.0', series_id: 'bizmag-test', request: '가상 자료로 5장 계획을 검증한다.', series_label: '', evidence_ref: 'evidence.json',
   idea: { problem: 'unused capacity', target: 'small shops', payer: 'buyer', mechanism: 'matching', revenue: 'proposed transaction fee' },
   money: { value_flow: 'shop to buyer', payment_flow: 'buyer to platform to shop', platform_revenue: 'fee, not gross transaction volume', main_cost: 'support and settlement' },
   frames: profile.frame_roles.map((role, i) => ({ role, headline: `가상 제목 ${i + 1}`, body: '가상 설명입니다.', takeaway: '가상 의미입니다.', alt_text: '가상 검증용 카드입니다.', claim_ids: [i === 2 ? 'a' : i === 3 ? 'b' : 'h'], ...(i === 2 ? { case_id: 'a' } : {}), ...(i === 3 ? { case_id: 'b', case_mode: 'compare' } : {}) })), caption: 'Synthetic fixture. Not a real company claim.' };
@@ -69,7 +69,7 @@ test('BUSINESS-IDEA-MAGAZINE.md: the Signalytics packet flow (compile -> resolve
     }
     const r = runDoc(c, scratch, { '/content/packet.json': resolve(scratch, 'packet.json') });
     const rendering = /render-carousel/.test(c);
-    yes(r.status === 0 || (rendering && !hasRasterizer && r.status === 2), `\`${c}\` exit ${r.status}: ${r.stderr.slice(0, 300)}`);
+    yes(r.status === 0 || (rendering && !hasRasterizer && r.status === 2), `\`${c}\` exit ${r.status}: ${r.stdout.slice(-300)}${r.stderr.slice(0, 300)}`);
   }
   if (hasRasterizer) yes(existsSync(resolve(scratch, 'bizmag-second/series.json')), 'revised render wrote no manifest');
 });
@@ -349,6 +349,8 @@ console.log('S4: repair budget lineage and ledger');
   const root = tmp(), input = resolve(root, 'input'); mkdirSync(input);
   for (const f of ['source.md', 'counts.json']) cpSync(resolve(ROOT, 'scripts/fixtures/carousel', f), resolve(input, f));
   const base = JSON.parse(readFileSync(resolve(ROOT, 'scripts/fixtures/carousel/series.json'), 'utf8'));
+  // Repair-budget checks require completed local renders; keep this synthetic base on R4 so it never needs external R7 artwork.
+  base.visual_style = { requested_style: 'R4', content_kind: 'other', photo_asset_quality: 'strong' };
   const car = (series, dir, previousDir = null) => executeCarousel(series, { baseDir: input, outDir: resolve(root, dir), previousDir: previousDir && resolve(root, previousDir) });
   const edit = (fn) => { const c = structuredClone(base); fn(c); return c; };
   const rejects = async (p, code) => { try { await p; } catch (e) { if (e.code === code || String(e.message).startsWith(`${code}:`)) return; throw new Error(`expected ${code}, got ${e.code}: ${e.message}`); } throw new Error(`expected ${code}, resolved`); };

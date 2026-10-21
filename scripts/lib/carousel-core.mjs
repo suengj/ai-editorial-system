@@ -21,7 +21,7 @@ export const CAROUSEL_CONSTRAINTS = Object.freeze({
   series_fields: Object.freeze(['schema_version','series_id','request','source','profiles','recipe','visual_style','task','typography','regions','layouts','series_label','beats','frames','art_direction_sha256']),
   frame_fields: Object.freeze(['id','function','beat_ids','takeaway','alt_text','headline','headline_emphasis','source_note','layout','blocks','caption','job_ref','art_direction']),
   art_direction_fields: Object.freeze(['plan_id','visual_mode','focal_subject','message','reading_order','asset','asset_block_id','avoid','protected','brand_elements','reuse','render_method','native_prompt_strings']),
-  block_fields: Object.freeze(['id','region','kind','ref','sha256','mode','fit','rights_note','protect','text','source_ref','instruction','generation','provenance']),
+  block_fields: Object.freeze(['id','region','kind','ref','sha256','mode','fit','rights_note','protect','focal_box','focal_min_area_ratio','focal_fallback','mockup_risk','text','source_ref','instruction','generation','provenance']),
   block_kinds: Object.freeze(['text','image','chart','generated']),
   frame_functions: Object.freeze(['orient','assert','show_evidence','explain_mechanism','compare','qualify','turn','show_consequence','decision','close']),
 });
@@ -64,7 +64,7 @@ export function planCarousel(series, catalog=loadVisualRecipes()) {
   keys(series, CAROUSEL_CONSTRAINTS.series_fields, 'series');
   need(series.schema_version === CAROUSEL_VERSION && slug(series.series_id), 'SERIES_VERSION', 'v1 and a slug series_id are required');
   if (series.art_direction_sha256 !== undefined) need(typeof series.art_direction_sha256 === 'string' && /^sha256:[a-f0-9]{64}$/.test(series.art_direction_sha256), 'SERIES_ART_DIRECTION', 'art_direction_sha256 must be a SHA-256 digest');
-  need(text(series.request) && text(series.series_label), 'SERIES_INPUT', 'request and series_label are required');
+  need(text(series.request) && (series.series_label === undefined || series.series_label === '' || /^@[A-Za-z0-9._]+$/.test(series.series_label)), 'SERIES_INPUT', 'request required; optional footer series_label may only be an explicit publishing account handle');
   keys(series.source, ['ref','sha256','scope'], 'source');
   need(text(series.source.ref) && ['source_bound','illustrative'].includes(series.source.scope), 'SERIES_SOURCE', 'actual source ref and scope required');
   keys(series.profiles, ['surface','artifact','brand'], 'profiles');
@@ -204,7 +204,7 @@ export function planCarousel(series, catalog=loadVisualRecipes()) {
     const rec = {...recurring, ...(lfx.recurring_regions ?? {})};
     const sty = (role) => ({...typography[role], ...(lfx.text_style?.[role] ?? {})});
     const addText = (id,value,slot,role,source_ref='request') => layers.push({id,kind:'text',text:value,source_ref,slot,...sty(role)});
-    addText('series-label',series.series_label,rec.eyebrow,'eyebrow');
+    if (series.series_label) addText('series-label',series.series_label,rec.eyebrow,'eyebrow');
     addText('headline',f.headline,rec.headline,'headline');
     if (f.headline_emphasis!==undefined) { need(Array.isArray(f.headline_emphasis)&&f.headline_emphasis.every((e)=>obj(e)&&text(e.match)&&f.headline.includes(e.match)),'SERIES_TEXT',`${f.id}: headline_emphasis spans must be substrings of the headline`); layers.at(-1).emphasis=structuredClone(f.headline_emphasis); }
     for (const b of frameBlocks) {
@@ -221,7 +221,7 @@ export function planCarousel(series, catalog=loadVisualRecipes()) {
         keys(b,['id','region','kind','ref','sha256'],'chart block');
         need(text(b.ref),'SERIES_SOURCE',b.id);
       } else {
-        keys(b,['id','region','kind','ref','sha256','mode','fit','rights_note','protect','provenance',...(b.kind==='generated'?['instruction','generation']:b.kind==='image'?['generation']:[])],'image block');
+        keys(b,['id','region','kind','ref','sha256','mode','fit','rights_note','protect','focal_box','focal_min_area_ratio','focal_fallback','mockup_risk','provenance',...(b.kind==='generated'?['instruction','generation']:b.kind==='image'?['generation']:[])],'image block');
         if (b.kind==='generated') {
           need(text(b.instruction),'SERIES_GENERATION',b.id);
           layer.instruction = f.art_direction?.render_method === 'native_card'
