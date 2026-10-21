@@ -53,7 +53,7 @@ export function svgTextNodesWithEffectiveFontSize(svg) {
     const attrs = parseAttrs(match[2]);
     const parent = stack.at(-1) ?? { fontSize: null, matrix: [1, 0, 0, 1, 0, 0] };
     const transform = transformMatrix(attrs.transform);
-    const matrix = multiply(multiply(parent.matrix, viewBoxScale(attrs)), transform);
+    const matrix = multiply(multiply(parent.matrix, transform), viewBoxScale(attrs));
     const fontRaw = attrs['font-size'] ?? parent.fontSize;
     let fontSize = null;
     if (fontRaw !== null) {

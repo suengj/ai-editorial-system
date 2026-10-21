@@ -52,6 +52,8 @@ await test('SVG token membership includes nested viewBox and ancestor transforms
   assert.throws(() => assertCardNewsSvgTypeTokens('<svg width="100" height="100" viewBox="0 0 100 100"><text font-size="NaN">bad</text></svg>'), /invalid or unsupported SVG font-size/u);
   const rotated = '<svg width="100" height="100"><g transform="scale(0.25 1)"><g transform="rotate(90)"><text font-size="34">rotated</text></g></g></svg>';
   assert.equal(svgTextNodesWithEffectiveFontSize(rotated)[0].effectiveFontSize, 8.5, 'effective size follows the composed affine transform applied to the vertical text extent');
+  const nestedRotated = '<svg width="100" height="100"><svg width="100" height="100" viewBox="0 0 400 100" preserveAspectRatio="none" transform="rotate(90)"><text font-size="34">nested rotated</text></svg></svg>';
+  assert.equal(svgTextNodesWithEffectiveFontSize(nestedRotated)[0].effectiveFontSize, 34, 'nested SVG element transforms apply before its anisotropic viewBox mapping');
 });
 await test('portrait default remains 1080x1350', async () => { const p = clone(base); delete p.task.canvas; assert.equal((await compile(p)).canvas.height, 1350); });
 await test('explicit task beats preset independently', async () => { const p = await compile(base, { preset: { theme: { accent: '#000000' }, watermark: { enabled: true } } }); assert.equal(p.theme.accent, '#2E5BFF'); assert.equal(p.watermark.enabled, false); });
@@ -167,7 +169,7 @@ await test('premium number visuals render bound values, grid, gradient area and 
   const specs = [
     { type:'number_visual', layout:'comparison-bars', title:'가격 비교', source_note:'brief', items:[{label:'10월',value:15,value_label:'15%'},{label:'12월',value:81,value_label:'81%'}] },
     { type:'number_visual', layout:'dot-grid', title:'가격', source_note:'brief', total:100,filled:81,value_label:'81% · 81¢',caption:'100칸 중 81칸' },
-    { type:'number_visual', layout:'trend-area', title:'일주일 흐름', source_note:'brief', start:90,start_label:'90%',start_date:'10.14',end:81,end_label:'81%',end_date:'10.21' },
+    { type:'number_visual', layout:'trend-area', title:'일주일 흐름', source_note:'brief', start:90,start_label:'90%',start_date:'10.14',end:81,end_label:'81%',end_date:'10.21',points:Array.from({length:8},(_,i)=>({observed_at:new Date(Date.parse('2026-10-14T00:00:00Z')+i*86400000).toISOString(),value:90-i*9/7})) },
     { type:'number_visual', layout:'dual-metric', title:'물가와 고용', source_note:'brief', items:[{label:'CPI',value:0.6,max:1,value_label:'0.6%'},{label:'고용',value:29000,max:50000,value_label:'29,000명'}] },
     { type:'number_visual', layout:'rate-gap-ratio', title:'금리와 흐름', source_note:'brief', rates:[{label:'미국',value:4},{label:'한국',value:3}],ratio:{outflow:129.4,inflow:50.4,outflow_label:'해외 자금',inflow_label:'국내 유입',outflow_amount_label:'USD 129.4B',inflow_amount_label:'USD 50.4B',caption:'증권 자금 흐름 · 약 2.5 : 1'} },
     { type:'number_visual', layout:'scenario-split', title:'회의 시나리오', source_note:'brief', date:'10.28',scenarios:[{label:'동결'},{label:'인상'}] },
@@ -175,7 +177,7 @@ await test('premium number visuals render bound values, grid, gradient area and 
   assert.throws(() => renderChartPanel({ ...specs[1], filled: 1, value_label:'99% · 99¢' }, { width: 936, height: 520, theme }), /dot-grid label must match filled dots/);
   assert.throws(() => renderChartPanel({ ...specs[0], items: [{label:'10월',value:7,value_label:'42%'},{label:'12월',value:81,value_label:'81%'}] }, { width:936,height:520,theme }), /comparison-bars label must equal its plotted value/);
   assert.throws(() => renderChartPanel({ ...specs[2], start_label:'7%', end_label:'81%' }, { width:936,height:520,theme }), /endpoint labels must match/);
-  assert.throws(() => renderChartPanel({ ...specs[2], points: [{ observed_at:'2026-10-20',value:90 },{ observed_at:'2026-10-19',value:80},{ observed_at:'2026-10-21',value:81}] }, { width: 936, height: 520, theme }), /finite ordered sourced observations/);
+  assert.throws(() => renderChartPanel({ ...specs[2], points: [{ observed_at:'2026-10-20',value:90 },{ observed_at:'2026-10-19',value:80},{ observed_at:'2026-10-21',value:81}] }, { width: 936, height: 520, theme }), /requires at least two finite ordered dated observations/);
   const results = specs.map((spec) => renderChartPanel(spec,{width:950,height:648,theme}));
   for (const result of results) assertCardNewsSvgTypeTokens(result.svg);
   for (const result of results) assert([...result.svg.matchAll(/font-size="([0-9.]+)"/g)].every((match) => [34,36,110,150].includes(Number(match[1]))), 'numeric SVG text uses only shared token typography');
@@ -197,7 +199,7 @@ await test('premium number visuals render bound values, grid, gradient area and 
   const trendGridY=[...results[2].svg.matchAll(/<line\s[^>]+y1="([0-9.]+)"/gu)].map((match)=>Number(match[1]));
   assert(trendGridY.length>0 && Math.min(...trendGridY)>=0.39*648,'trend hero has a clear region above all gridlines');
   const trendSummary=results[2].displayed[0];
-  assert.deepEqual({start:trendSummary.start,start_label:trendSummary.start_label,start_date:trendSummary.start_date,end:trendSummary.end,end_label:trendSummary.end_label,end_date:trendSummary.end_date,point_count:trendSummary.point_count,delta_label:trendSummary.delta_label},{start:90,start_label:'90%',start_date:'10.14',end:81,end_label:'81%',end_date:'10.21',point_count:2,delta_label:null});
+  assert.deepEqual({start:trendSummary.start,start_label:trendSummary.start_label,start_date:trendSummary.start_date,end:trendSummary.end,end_label:trendSummary.end_label,end_date:trendSummary.end_date,point_count:trendSummary.point_count,delta_label:trendSummary.delta_label},{start:90,start_label:'90%',start_date:'10.14',end:81,end_label:'81%',end_date:'10.21',point_count:8,delta_label:null});
   assert.equal(trendSummary.start_label_box.height,CARD_NEWS_TYPE_TOKENS.label.font_size);
   assert.equal(trendSummary.start_label_path_bbox_check.passed,true);
   const renderedDelta=renderChartPanel({...specs[2],delta_label:'−9%p'},{width:950,height:648,theme});
