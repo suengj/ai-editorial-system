@@ -162,6 +162,20 @@ export function validateCardNewsChartFacts(series, brief, baseDir = process.cwd(
     }
     if (values.some((value) => !Number.isFinite(value) || !allowed.has(value))) add(frame, 'chart data values must match numbers in the card visual_fact_ids');
     if (labels.flatMap(nums).some((value) => !allowed.has(value))) add(frame, 'number-bearing chart labels must match the card visual_fact_ids');
+    const labeledValues = [ ...(spec.items ?? []), ...(spec.rates ?? []) ].filter((item) => typeof item?.label === 'string' && Number.isFinite(item.value));
+    if (labeledValues.length) {
+      const bindings = Array.isArray(card.visual_value_bindings) ? card.visual_value_bindings : [];
+      const usedBindings = new Set();
+      for (const item of labeledValues) {
+        const index = bindings.findIndex((binding) => binding?.label === item.label && binding?.value === item.value);
+        const binding = index >= 0 ? bindings[index] : null;
+        const fact = binding && facts.get(binding.fact_id);
+        if (!binding || usedBindings.has(index) || !ids.includes(binding.fact_id) || !fact || !nums(fact.value).includes(item.value)) {
+          add(frame, `labeled value ${item.label}=${item.value} must bind to its own visual fact`);
+        } else usedBindings.add(index);
+      }
+      if (usedBindings.size !== labeledValues.length || bindings.length !== labeledValues.length) add(frame, 'visual_value_bindings must cover every labeled chart value exactly once');
+    }
   }
   return { ok: issues.length === 0, issues };
 }

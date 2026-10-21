@@ -60,4 +60,13 @@ writeFileSync(chartPath, JSON.stringify({ type:'number_visual', layout:'comparis
 const boundChartSeries = { profiles:{artifact:'visual/prediction-market-carousel'}, frames:[{id:'card-1',blocks:[{kind:'chart',ref:'chart.json'}]}] };
 const boundChartBrief = { facts:[{id:'fact-1',value:'confirmed value 42%',date:'2026-10-21'}], per_card:{'card-1':{visual_fact_ids:['fact-1']}} };
 assert.equal(validateCardNewsChartFacts(boundChartSeries, boundChartBrief, chartDir).ok, false, 'chart data cannot differ from its canonical brief fact');
+const labeledPath = resolve(chartDir, 'labeled-chart.json');
+const labeledSeries = { profiles:{artifact:'visual/prediction-market-carousel'}, frames:[{id:'card-1',blocks:[{kind:'chart',ref:'labeled-chart.json'}]}] };
+const labeledBrief = { facts:[{id:'october',value:'October probability was 81%',date:'2025-10'}, {id:'december',value:'December probability was 15%',date:'2025-12'}], per_card:{'card-1':{visual_fact_ids:['october','december'],visual_value_bindings:[{label:'October',value:81,fact_id:'october'},{label:'December',value:15,fact_id:'december'}]}} };
+const labeledChart = { type:'number_visual',layout:'comparison-bars',items:[{label:'October',value:81,value_label:'81%'},{label:'December',value:15,value_label:'15%'}] };
+writeFileSync(labeledPath, JSON.stringify(labeledChart));
+assert.equal(validateCardNewsChartFacts(labeledSeries, labeledBrief, chartDir).ok, true, 'each chart label and value binds to its matching fact');
+labeledChart.items = [{label:'October',value:15,value_label:'15%'},{label:'December',value:81,value_label:'81%'}];
+writeFileSync(labeledPath, JSON.stringify(labeledChart));
+assert.equal(validateCardNewsChartFacts(labeledSeries, labeledBrief, chartDir).ok, false, 'swapped October/December labels fail even though both numbers exist in the fact set');
 console.log('card-news-brief: 16 assertions PASS');
