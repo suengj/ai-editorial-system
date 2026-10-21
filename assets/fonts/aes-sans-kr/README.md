@@ -7,12 +7,11 @@ Characters outside the subset raise FONT_FALLBACK (never silently substituted). 
 # R4 Noto Serif KR headline face
 
 The R4 prediction-market carousel uses **Noto Serif KR for headlines** and the
-AES Sans KR bundle for body copy. Noto Serif KR is an external OFL asset larger
-than the repository's 512 KB binary limit, so do not add its TTF here or commit
-it. Set `AES_NOTO_SERIF_KR_FONT` to the absolute path of the licensed
-`NotoSerifKR.ttf` before rendering. The isolated fontconfig environment then
-registers that file's directory alongside the AES Sans KR files, and the font
-digest includes the external bytes for render-reuse checks. Without the
-variable, the normal test environment remains deterministic and Noto Serif KR
-falls back to the bundled AES Sans KR face; tests can run without the external
-font file.
+AES Sans KR bundle for body copy. The licensed Noto Serif KR subset is bundled
+at `../noto-serif-kr-pmc/NotoSerifKR-PMC.ttf` (1,524,056 bytes). It is below the
+repository's 2 MiB binary limit; the 512 KiB limit applies to image assets.
+
+The production resolver registers the bundled face and verifies its manifest,
+font digest, license digest, and required glyph coverage. No external font path
+is needed. A missing headline glyph raises `FONT_FALLBACK`; it is never
+silently substituted. The adjacent `LICENSE` file is SIL OFL 1.1.
