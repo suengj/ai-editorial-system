@@ -27,6 +27,7 @@ try {
     writeFileSync(target, `${JSON.stringify(asset, null, 2)}\n`);
   }
   writeFileSync(resolve(out, 'series.json'), JSON.stringify(compiled.series, null, 2) + '\n');
+  writeFileSync(resolve(out, 'brief.json'), JSON.stringify(compiled.brief, null, 2) + '\n');
   writeFileSync(resolve(out, 'editorial-sidecar.json'), JSON.stringify(compiled.sidecar, null, 2) + '\n');
   writeFileSync(resolve(out, 'caption.md'), compiled.caption);
   writeFileSync(resolve(out, 'generation-brief.md'), compiled.generation_brief + '\n');
