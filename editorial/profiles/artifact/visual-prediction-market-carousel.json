@@ -32,6 +32,7 @@
     "order": ["deterministic", "hybrid", "generative"],
     "rule": "Render factual text and PMC values deterministically. Owner-selected illustrative_trend_image replaces plotted chart pixels with one generated, continuous, text-free curve whose direction matches raw PMC history; start, end and change remain renderer typography and must pass PMC parity. Generated art carries no facts or numbers."
   },
+  "trend_render_mode": "flow",
   "trend_image_mode": {
     "id": "illustrative_trend_image",
     "owner_decision": true,

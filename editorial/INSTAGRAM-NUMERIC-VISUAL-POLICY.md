@@ -119,9 +119,22 @@ loss; it means moving operational detail to the correct layer.**
 - The axis defaults to the full 0–100%. A zoom is deterministic: pad by 5 points, round to 5, keep a
   minimum span of 20 points and clamp to 0..100. A zoom label must state its actual range, and a
   dual comparison uses one shared axis.
-- Interpolation is shape-preserving (monotone), linear or step, and keeps every raw point. A moving
-  average is allowed only when requested and labeled. Gaps longer than `max_gap_hours` (default 24)
-  are drawn as separate segments, never bridged. No forward-fill and no synthetic points.
+- `raw` is the default trend render mode. It preserves the exact monotone path through every raw
+  observation; smoothing, resampling, simplification, forward-fill, and synthetic points are
+  prohibited in this mode. Charts that label intermediate observations must use `raw`.
+- **Owner decision (2026-10-21):** card-news trend panels may explicitly use `flow` for a smoothed
+  visual when intermediate points are not labeled. In `flow`, a deterministic resample and Gaussian
+  smoothing may shape the curve, then a monotone curve is drawn through the visual samples. The first
+  and last rendered points must equal the raw endpoints exactly; direction and signed delta must
+  match the raw series. The receipt records `render_mode: flow`, the method and parameters, and the
+  raw PMC data hash. Every visible value and date (including start label, hero, delta badge, and date
+  labels) is independently checked against the verified raw PMC bundle. No caveat text is shown on
+  the card. `flow` is the default only in the prediction-market carousel profile; all other charts
+  default to `raw`.
+- The raw mode retains the canonical interpolation rule: shape-preserving monotone, linear, or step,
+  with every raw point. Moving averages are not used to label observations. Gaps longer than
+  `max_gap_hours` (default 24) are drawn as separate segments, never bridged. No forward-fill or
+  synthetic points.
 
 ## 4. QA and approval
 
