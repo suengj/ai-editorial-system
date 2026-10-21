@@ -407,7 +407,7 @@ export function renderNumberVisualPanel(spec, { width = 900, height = 520, theme
     const left=pad+16, right=width-pad-12, top=height*0.39, bottom=height*0.78, y=(v)=>bottom-((v-yMin)/(yMax-yMin))*(bottom-top), x0=left+90*scale,x1=right;
     for(let i=0;i<5;i++) line(left,y(yMin+(yMax-yMin)*i/4),right,y(yMin+(yMax-yMin)*i/4),fg,0.12,1.5);
     const gid='trend-area-gradient'; els.push(`<defs><linearGradient id="${gid}" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="${accent}" stop-opacity="0.34"/><stop offset="100%" stop-color="${accent}" stop-opacity="0.015"/></linearGradient></defs>`);
-    let curve, curvePaths=[], curveSamples=[], curveEndpoints=null, flowSmoothing=null;
+    let curve, curvePaths=[], curveSamples=[], isolatedPoints=[], curveEndpoints=null, flowSmoothing=null;
     if (points) {
       const toMs = v => Date.parse(v.observed_at), first = toMs(points[0]), span = toMs(points.at(-1)) - first;
       if (points.some(p => !Number.isFinite(toMs(p))) || span <= 0) fail('trend-area observations need increasing timestamps');
@@ -452,6 +452,7 @@ export function renderNumberVisualPanel(spec, { width = 900, height = 520, theme
       let pointOffset = 0;
       for (const pointGroup of pointGroups) {
         const groupPts = pts.slice(pointOffset, pointOffset + pointGroup.length); pointOffset += pointGroup.length;
+        if (groupPts.length === 1) { isolatedPoints.push(groupPts[0]); continue; }
         const h=groupPts.slice(0,-1).map((p,i)=>groupPts[i+1].x-p.x), sec=groupPts.slice(0,-1).map((p,i)=>(groupPts[i+1].y-p.y)/h[i]);
         const slope=Array(groupPts.length).fill(0);
         if(groupPts.length===2) slope[0]=slope[1]=sec[0];
@@ -481,6 +482,10 @@ export function renderNumberVisualPanel(spec, { width = 900, height = 520, theme
     els.push(`<path d="${curve}" fill="none" stroke="${accent}" stroke-width="${n(5*scale)}" stroke-linecap="round"/>`);
     els.push(`<circle cx="${n(x0)}" cy="${n(y(start))}" r="${n(8*scale)}" fill="${bg}" stroke="${accent}" stroke-width="${n(4*scale)}"/>`);
     els.push(`<circle cx="${n(x1)}" cy="${n(y(end))}" r="${n(15*scale)}" fill="${accent}" stroke="${bg}" stroke-width="${n(5*scale)}"/>`);
+    for (const point of isolatedPoints) {
+      if ((Math.abs(point.x - x0) < 0.01 && Math.abs(point.y - y(start)) < 0.01) || (Math.abs(point.x - x1) < 0.01 && Math.abs(point.y - y(end)) < 0.01)) continue;
+      els.push(`<circle cx="${n(point.x)}" cy="${n(point.y)}" r="${n(8*scale)}" fill="${accent}" stroke="${bg}" stroke-width="${n(3*scale)}"/>`);
+    }
     const startWidth=measure?measure(start_label,smallSize,labelWeight):[...start_label].length*smallSize*0.62;
     const panelLeft = 5, panelRight = width - 5;
     const labelCandidates=[
@@ -498,7 +503,7 @@ export function renderNumberVisualPanel(spec, { width = 900, height = 520, theme
       els.push(`<rect x="${n(chipX)}" y="${n(chipY)}" width="${n(chipW)}" height="${n(chipH)}" rx="${n(chipH/2)}" fill="${accent}"/>`);
       text(spec.delta_label,chipX+chipW/2,chipY+chipH*0.72,smallSize,chipWeight,'middle','#FFFFFF');
     }
-    displayed.push({start,start_label,start_label_box:startLabelBox,start_label_path_bbox_check:{passed:true,method:'sampled_curve_point_vs_label_box',stroke_padding:5*scale},curve_endpoints:curveEndpoints,start_date,end,end_label,end_date,point_count:points?.length??2,delta_label:spec.delta_label??null,render_mode:renderMode,...(renderMode==='flow'?{smoothing:flowSmoothing,raw_data_sha256:spec.raw_data_sha256,direction:end>start?'up':end<start?'down':'flat'}:{})});
+    displayed.push({start,start_label,start_label_box:startLabelBox,start_label_path_bbox_check:{passed:true,method:'sampled_curve_point_vs_label_box',stroke_padding:5*scale},curve_endpoints:curveEndpoints,start_date,end,end_label,end_date,point_count:points?.length??2,isolated_observation_count:isolatedPoints.length,delta_label:spec.delta_label??null,render_mode:renderMode,...(renderMode==='flow'?{smoothing:flowSmoothing,raw_data_sha256:spec.raw_data_sha256,direction:end>start?'up':end<start?'down':'flat'}:{})});
   } else if (spec.layout === 'dual-metric') {
     if (!Array.isArray(spec.items)||spec.items.length!==2||spec.items.some(x=>!x.label||!x.value_label||!Number.isFinite(x.value)||!Number.isFinite(x.max)||x.value<0||x.max<=0||x.value>x.max)) fail('dual-metric needs two independently scaled metrics');
     const y0=fixedTypeScale?height*0.18:height*0.30, rowH=height*0.40, x=pad, w=width-pad*2, bh=22*scale;

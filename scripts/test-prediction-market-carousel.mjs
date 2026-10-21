@@ -248,6 +248,13 @@ assert.equal(flow.raw_data_sha256,`sha256:${'a'.repeat(64)}`);
 const twoPointTrend={...trendVisual,start:90,end:81,start_label:'90%',end_label:'81%',points:[{observed_at:'2026-10-14T00:00:00Z',value:90},{observed_at:'2026-10-15T00:00:00Z',value:81}]};
 const twoPointRaw=renderNumberVisualPanel({...twoPointTrend,render_mode:'raw'},{width:936,height:769,theme:{accent:'#FF6B5B'}}).displayed[0];
 assert.equal(twoPointRaw.point_count,2,'raw mode renders two observations');
+const isolatedRaw = renderNumberVisualPanel({ ...trendVisual, points:[
+  {observed_at:'2026-10-14T00:00:00Z',value:90},
+  {observed_at:'2026-10-17T00:00:00Z',value:80},
+  {observed_at:'2026-10-20T00:00:00Z',value:70},
+], start:90, end:70, start_label:'90%', end_label:'70%' }, {width:936,height:769,theme:{accent:'#FF6B5B'}});
+assert.equal(isolatedRaw.displayed[0].isolated_observation_count,3,'each raw observation in its own gap segment is recorded as isolated');
+assert.equal((isolatedRaw.svg.match(/<circle\b/gu) ?? []).length,3,'raw singleton segments receive visible dots, including the middle observation');
 assert.equal(twoPointRaw.curve_endpoints.start.value,90,'raw two-point segment preserves its first endpoint');
 assert.equal(twoPointRaw.curve_endpoints.end.value,81,'raw two-point segment preserves its last endpoint');
 const twoPointFlow=renderNumberVisualPanel({...twoPointTrend,render_mode:'flow',raw_data_sha256:`sha256:${'b'.repeat(64)}`},{width:936,height:769,theme:{accent:'#FF6B5B'}}).displayed[0];
