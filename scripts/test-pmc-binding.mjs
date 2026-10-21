@@ -168,6 +168,12 @@ try {
     const d = r.svg.match(/<path d="([^"]+)"/)[1];
     assert.equal((d.match(/M/g) ?? []).length, 2, 'the single null starts a second sub-path'); assert.equal(r.raw_observation_count, b.bundle.plot.points.length + 1);
   });
+  await rtest('PMC line-chart SVG text uses scaled shared card-news label tokens', async () => {
+    const b = bind('in-gap'); const r = renderChartPanel(b.spec, { width: 936, height: 675, theme: b.plan.task.theme ?? {}, measure: textMeasurer(adapter) });
+    const sizes = [...r.svg.matchAll(/font-size="([0-9.]+)"/gu)].map((match) => Number(match[1]));
+    assert(sizes.length >= 8);
+    assert(sizes.every((size) => size === 29.47), `expected 34px shared label token scaled to 936px; got ${[...new Set(sizes)].join(',')}`);
+  });
   await rtest('theme-only change leaves the data, spec and numbers unchanged', async () => {
     const a = bind('in-theme-a'), c = bind('in-theme-b', { accent: '#B5532F' });
     assert.deepEqual(a.spec, c.spec); assert.notEqual(a.plan.task.theme.accent, c.plan.task.theme.accent);

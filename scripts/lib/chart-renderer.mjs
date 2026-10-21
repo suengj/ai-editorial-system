@@ -249,7 +249,7 @@ export function renderChartPanel(spec, { width = 900, height = 520, theme = {}, 
   const fg = theme.foreground ?? '#222222', accent = theme.accent ?? fg;
   const font = theme.font_family ?? 'Noto Sans CJK KR, Pretendard, sans-serif';
   for (const color of [fg, accent]) if (!/^#[0-9a-f]{6}$/i.test(color)) fail('theme colors must be #RRGGBB');
-  const fs = Math.max(16, Math.min(28, width / 36));
+  const fs = CARD_NEWS_TYPE_TOKENS.label.font_size * width / CARD_NEWS_TYPE_TOKENS.canvas_width;
   const fmt = (v) => `${v.toFixed(decimals)}${spec.y.unit}`;
   const axisFmt = (v) => `${v.toFixed(Number.isInteger(v) ? decimals : Math.max(1, decimals))}${spec.y.unit}`;
   const tw = (t) => measure ? measure(t, fs, 400) : [...String(t)].length * fs;
