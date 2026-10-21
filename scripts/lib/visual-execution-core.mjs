@@ -416,7 +416,12 @@ export async function executeVisual(plan, { baseDir = process.cwd(), preset = {}
     if (l.kind === 'text') {
       const rich = l.balance || l.emphasis || l.letter_spacing !== undefined || l.font_family || l.normalize || l.optical_margin || l.min_contrast !== undefined;
       if (!rich) {
-        const lines = wrapText(l.text, { width: b.width, height: b.height, size: l.font_size, weight: l.weight, maxLines: l.max_lines, lineHeight: l.line_height }, measure);
+        let lines;
+        try { lines = wrapText(l.text, { width: b.width, height: b.height, size: l.font_size, weight: l.weight, maxLines: l.max_lines, lineHeight: l.line_height }, measure); }
+        catch (error) {
+          if (!error.code && /^TEXT_OVERFLOW:/u.test(error.message ?? '')) error.code = 'TEXT_OVERFLOW';
+          error.message = `${l.id}: ${error.message}`; throw error;
+        }
         const x = b.x + (l.align === 'middle' ? b.width / 2 : l.align === 'end' ? b.width : 0);
         elements.push(`<text font-family="${esc(packet.theme.font_family)}" font-size="${l.font_size}" font-weight="${l.weight}" fill="${l.color ?? packet.theme.foreground}" text-anchor="${l.align}">${lines.map((t, i) => `<tspan x="${x}" y="${b.y + l.font_size + i * l.font_size * l.line_height}">${esc(t)}</tspan>`).join('')}</text>`);
         isText.add(elements.length - 1);
@@ -435,7 +440,10 @@ export async function executeVisual(plan, { baseDir = process.cwd(), preset = {}
         lines = l.balance
           ? balancedWrap(printed, { width: b.width, size: l.font_size, weight: l.weight, maxLines: l.max_lines, emphasis: emph }, spaced)
           : wrapText(printed, { width: b.width, height: b.height, size: l.font_size, weight: l.weight, maxLines: l.max_lines, lineHeight: l.line_height }, spaced);
-      } catch (error) { error.message = `${l.id}: ${error.message}`; throw error; }
+      } catch (error) {
+        if (!error.code && /^TEXT_OVERFLOW:/u.test(error.message ?? '')) error.code = 'TEXT_OVERFLOW';
+        error.message = `${l.id}: ${error.message}`; throw error;
+      }
       if (lines.length * l.font_size * l.line_height > b.height) fail('TEXT_OVERFLOW', `${l.id}: ${lines.length} lines exceed the slot height; text was not truncated`);
       const x = b.x + (l.align === 'middle' ? b.width / 2 : l.align === 'end' ? b.width : 0) - (l.optical_margin && l.align === 'start' ? Math.round(l.font_size * 0.04) : 0);
       let cursor = 0; const tsp = [];
