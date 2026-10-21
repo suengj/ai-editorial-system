@@ -176,9 +176,11 @@ await test('premium number visuals render bound values, grid, gradient area and 
   ];
   assert.throws(() => renderChartPanel({ ...specs[1], filled: 1, value_label:'99% · 99¢' }, { width: 936, height: 520, theme }), /dot-grid label must match filled dots/);
   assert.throws(() => renderChartPanel({ ...specs[0], items: [{label:'10월',value:7,value_label:'42%'},{label:'12월',value:81,value_label:'81%'}] }, { width:936,height:520,theme }), /comparison-bars label must equal its plotted value/);
+  assert.throws(() => renderChartPanel(specs[0], { width:936,height:260,theme }), /vertical bounds/,'accepted panel dimensions reject comparison text whose baseline would fall below the panel');
   assert.throws(() => renderChartPanel({ ...specs[2], start_label:'7%', end_label:'81%' }, { width:936,height:520,theme }), /endpoint labels must match/);
   assert.throws(() => renderChartPanel({ ...specs[2], points: [{ observed_at:'2026-10-20',value:90 },{ observed_at:'2026-10-19',value:80},{ observed_at:'2026-10-21',value:81}] }, { width: 936, height: 520, theme }), /requires at least two finite ordered dated observations/);
   const results = specs.map((spec) => renderChartPanel(spec,{width:950,height:648,theme}));
+  for (const result of results) assert.equal(result.geometry.layout_checks.text_bounds.passed,true,'every numeric chart kind runs the shared vertical text-bound check');
   for (const result of results) assertCardNewsSvgTypeTokens(result.svg);
   for (const result of results) assert([...result.svg.matchAll(/font-size="([0-9.]+)"/g)].every((match) => [34,36,110,150].includes(Number(match[1]))), 'numeric SVG text uses only shared token typography');
   const ignoredLegacyType = renderChartPanel({ ...specs[0], typography:{hero_size:99,label_weight:500} }, { width:936,height:520,theme });

@@ -380,7 +380,7 @@ export function renderNumberVisualPanel(spec, { width = 900, height = 520, theme
   els.push(`<rect x="5" y="5" width="${n(width - 10)}" height="${n(height - 10)}" rx="28" fill="#FFFFFF" filter="url(#${shadowId})"/>`);
   if (spec.layout === 'comparison-bars') {
     if (!Array.isArray(spec.items) || spec.items.length !== 2 || spec.items.some(x => !Number.isFinite(x.value) || x.value < 0 || x.value > 100 || !x.label || !x.value_label)) fail('comparison-bars needs two 0–100 items');
-    const x0=pad, barW=width-pad*2, gap=height*0.40, y0=height*0.22, bh=Math.max(32,36*scale);
+    const x0=pad, barW=width-pad*2, gap=height*0.35, y0=height*0.15, bh=Math.max(32,36*scale);
     spec.items.forEach((item,i)=>{ if(labelNumber(item.value_label)!==item.value) fail('comparison-bars label must equal its plotted value'); const y=y0+i*gap; text(item.label,x0,y-smallSize*0.55,smallSize,labelWeight); els.push(`<rect x="${n(x0)}" y="${n(y)}" width="${n(barW)}" height="${n(bh)}" rx="${n(bh/2)}" fill="${fg}" fill-opacity="0.08"/>`); els.push(`<rect x="${n(x0)}" y="${n(y)}" width="${n(barW*item.value/100)}" height="${n(bh)}" rx="${n(bh/2)}" fill="${accent}"/>`); const valueX=fixedTypeScale||item.value===100?width-pad:x0+barW*item.value/100, valueAnchor=fixedTypeScale||item.value===100?'end':item.value===0?'start':'middle'; text(item.value_label,valueX,y+bh+valueSize*0.95,valueSize,heroWeight,valueAnchor); displayed.push({label:item.label,value:item.value,value_label:item.value_label}); });
   } else if (spec.layout === 'dot-grid') {
     const { total, filled, value_label, caption }=spec;
@@ -452,7 +452,11 @@ export function renderNumberVisualPanel(spec, { width = 900, height = 520, theme
       let pointOffset = 0;
       for (const pointGroup of pointGroups) {
         const groupPts = pts.slice(pointOffset, pointOffset + pointGroup.length); pointOffset += pointGroup.length;
-        if (groupPts.length === 1) { isolatedPoints.push(groupPts[0]); continue; }
+        if (groupPts.length === 1) {
+          isolatedPoints.push(groupPts[0]);
+          curvePaths.push({ path:`M ${n(groupPts[0].x)} ${n(groupPts[0].y)}`, startX:groupPts[0].x, endX:groupPts[0].x });
+          continue;
+        }
         const h=groupPts.slice(0,-1).map((p,i)=>groupPts[i+1].x-p.x), sec=groupPts.slice(0,-1).map((p,i)=>(groupPts[i+1].y-p.y)/h[i]);
         const slope=Array(groupPts.length).fill(0);
         if(groupPts.length===2) slope[0]=slope[1]=sec[0];
@@ -556,7 +560,9 @@ export function renderNumberVisualPanel(spec, { width = 900, height = 520, theme
       displayed.push({scenario:s.label,detail_lines:lines});
     });
   }
-  let layoutChecks = null;
+  const outOfBoundsText = textBoxes.filter((box) => box.y < 0 || box.bottom > height);
+  if (outOfBoundsText.length) fail(`text outside chart panel vertical bounds: ${outOfBoundsText.map((box) => box.text).join(', ')}`);
+  let layoutChecks = { text_bounds: { passed:true, method:'shared_text_box_vertical_bounds', checked:textBoxes.length, top:0, bottom:height } };
   if (spec.layout === 'dual-metric') {
     const overlaps = barBoxes.some((bar) => textBoxes.some((box) => box.x < bar.x + bar.width && box.x + box.width > bar.x && box.y < bar.y + bar.height && box.bottom > bar.y));
     const gaps = barBoxes.map((bar) => {
@@ -564,7 +570,7 @@ export function renderNumberVisualPanel(spec, { width = 900, height = 520, theme
       return previous ? bar.y - previous.bottom : 0;
     });
     if (overlaps || gaps.some((gap) => gap < 32)) fail('dual-metric text and bars must not overlap and need at least a 32px gap');
-    layoutChecks = { text_bar_overlap: overlaps, minimum_text_bar_gap_px: Math.min(...gaps) };
+    layoutChecks = { ...layoutChecks, text_bar_overlap: overlaps, minimum_text_bar_gap_px: Math.min(...gaps) };
   }
   return { svg:`<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" role="img"><title>${esc(spec.title)}</title>${els.join('')}</svg>`, renderer:{tool:'aes-number-visual-panel',version:PANEL_RENDERER_VERSION}, geometry:{width,height,...(layoutChecks?{layout_checks:layoutChecks}:{})}, displayed, source_note:spec.source_note };
 }
