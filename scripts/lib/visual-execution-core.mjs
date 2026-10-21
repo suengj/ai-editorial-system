@@ -305,7 +305,7 @@ export async function compileExecution(plan, { baseDir = process.cwd(), preset =
   const packet = {
     schema_version: EXECUTION_VERSION, kind: 'visual_execution', status: pending.length ? 'RENDER_REQUIRED' : 'COMPOSITION_REQUIRED',
     request: plan.request, request_hash: digest(plan), source: { ref: source.ref, sha256: source.sha256, scope: plan.source.scope },
-    profiles: Object.fromEntries(Object.entries(profiles).map(([axis, p]) => [axis, { id: plan.profiles[axis], version: p.profile_version ?? p.schema_version, sha256: digest(p) }])),
+    profiles: Object.fromEntries(Object.entries(profiles).map(([axis, p]) => [axis, { id: plan.profiles[axis], version: p.profile_version ?? p.schema_version, sha256: digest(p), ...(p.trend_render_mode ? { trend_render_mode: p.trend_render_mode } : {}) }])),
     canvas, theme, density, text_policy: policy, watermark, watermark_layer: watermarkLayer, field_origins: origins,
     resolved_requirements: {
       artifact: { primary_job: profiles.artifact.primary_job, composition: profiles.artifact.composition, acceptance: profiles.artifact.acceptance, readability: profiles.artifact.readability_gate },
@@ -484,8 +484,8 @@ export async function executeVisual(plan, { baseDir = process.cwd(), preset = {}
         const spec = chartSpec.type === 'number_visual' && chartSpec.layout === 'trend-area'
           ? {
               ...chartSpec,
-              render_mode: chartSpec.render_mode ?? profiles.artifact.trend_render_mode ?? 'raw',
-              ...(profiles.artifact.trend_render_mode === 'flow' ? {
+              render_mode: chartSpec.render_mode ?? packet.profiles.artifact.trend_render_mode ?? 'raw',
+              ...(packet.profiles.artifact.trend_render_mode === 'flow' ? {
                 raw_data_sha256: `sha256:${JSON.parse(source.bytes).plot_data_sha256 ?? ''}`,
               } : {}),
             }
