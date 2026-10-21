@@ -185,7 +185,7 @@ export function validateCardNewsContentQa(contentQa, series=null) {
   return { ok: issues.length === 0, issues };
 }
 
-/** The complete set of spec strings consumed as SVG text by supported chart renderers. */
+/** Shared AES parity rule: all numbers in text rendered by supported charts must be sourced from the card's bound facts. */
 export function renderedChartTextFields(spec) {
   const fields = spec?.type === 'flow' ? [] : [spec?.title];
   if (spec?.type === 'number_visual') {
@@ -194,7 +194,7 @@ export function renderedChartTextFields(spec) {
     else if (spec.layout === 'trend-area') fields.push(spec.start_label, spec.end_label, spec.start_date, spec.end_date, spec.delta_label);
     else if (spec.layout === 'rate-gap-ratio') fields.push(...(spec.rates ?? []).map((rate) => rate.label), spec.ratio?.caption, spec.ratio?.outflow_label, spec.ratio?.inflow_label, spec.ratio?.outflow_amount_label, spec.ratio?.inflow_amount_label, '2.5:1');
     else if (spec.layout === 'scenario-split') fields.push(spec.date, ...(spec.scenarios ?? []).flatMap((scenario) => [scenario.label, ...(scenario.detail_lines ?? (scenario.detail ? [scenario.detail] : []))]));
-  } else if (['line', 'area'].includes(spec?.type)) {
+  } else if (['line', 'area', 'bar'].includes(spec?.type)) {
     fields.push(spec.period, spec.source_note, spec.x?.label, ...Object.values(spec.x?.tick_labels ?? {}), spec.y?.label, spec.y?.unit, ...(spec.series ?? []).map((series) => series.name));
   } else if (spec?.type === 'flow') {
     fields.push(...(spec.nodes ?? []).flatMap((node) => [node.label, node.text]));

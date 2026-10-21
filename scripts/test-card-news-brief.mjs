@@ -134,6 +134,9 @@ const barBrief = {facts:barFacts,per_card:{'card-1':{visual_fact_ids:barFacts.ma
 const supportedBar = {type:'bar',title:'처리 건수',period:'2026-10-21',source_note:'source',x:{label:'단계',tick_labels:{'1':'준비','2':'검토','3':'완료'}},y:{label:'항목',unit:'건',decimals:0},series:[{name:'작업',claim:'source:tasks',points:[[1,125],[2,180],[3,240]]}]};
 writeFileSync(barPath,JSON.stringify(supportedBar));
 assert.equal(validateCardNewsChartFacts(barSeries,barBrief,chartDir).ok,true,'supported bar chart observations and category labels bind to their own canonical facts');
+const forgedBarPeriod = structuredClone(supportedBar); forgedBarPeriod.period = '99% growth';
+writeFileSync(barPath,JSON.stringify(forgedBarPeriod));
+assert(validateCardNewsChartFacts(barSeries,barBrief,chartDir).issues.some((item) => item.code === 'CARD_NEWS_CHART_NOT_CANONICAL' && item.message.includes('every rendered text field')),'bound bar observations still reject a non-canonical number rendered in the period');
 const unboundBarBrief = structuredClone(barBrief); delete unboundBarBrief.per_card['card-1'].visual_value_bindings;
 assert.equal(validateCardNewsChartFacts(barSeries,unboundBarBrief,chartDir).ok,false,'supported bar values 125/180/240 cannot pass without per-observation label/value bindings');
 const forgedBar = structuredClone(supportedBar); forgedBar.series[0].points[0][1] = 126;
