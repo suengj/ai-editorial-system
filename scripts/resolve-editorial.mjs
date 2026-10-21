@@ -85,7 +85,7 @@ try {
     }
     // A plan (series.json / request.json) is what gets rendered, so its receipt defaults to the visual task kind.
     const plan = v.plan ? json(v.plan) : null;
-    if (plan?.content_kind === 'card-news') {
+    if (plan && (plan.requires_brief === true || plan.profiles?.artifact === 'visual/prediction-market-carousel')) {
       const check = loadAndValidateCardNewsBrief(plan, resolve(v.plan));
       if (!check.ok) {
         console.log(JSON.stringify({ status: 'BLOCKED_CARD_NEWS_BRIEF', issues: check.issues }, null, 2));

@@ -8,7 +8,7 @@ import { CARD_NEWS_TYPE_TOKENS } from './lib/typography-core.mjs';
 import { checkTrendCardEligibility } from './lib/numeric-visual-core.mjs';
 import { loadPmcPlotBundle } from './lib/pmc-bundle-binding.mjs';
 import { pmcPlotToChartSpec } from './lib/pmc-bundle-binding.mjs';
-import { validateCardNewsBrief, validateCardNewsChartFacts } from './lib/card-news-brief-core.mjs';
+import { validateCardNewsBrief, validateCardNewsChartFacts, loadAndValidateCardNewsBrief } from './lib/card-news-brief-core.mjs';
 
 const read = (path) => JSON.parse(readFileSync(path, 'utf8'));
 const manifest = read('editorial/entry-manifest.json');
@@ -46,6 +46,8 @@ assert.throws(() => planCarousel(missingNumericContract, undefined, {}), (error)
 assert.equal(template.content_kind, 'card-news');
 assert.equal(profile.requires_brief, true);
 assert.equal(template.requires_brief, true);
+const missingKind = structuredClone(template); delete missingKind.content_kind;
+assert.equal(loadAndValidateCardNewsBrief(missingKind, 'scripts/fixtures/pmc-bundle/series.json').applies, true, 'the selected PMC artifact invokes the brief loader even with content_kind absent');
 assert.equal(template.numeric_profile, true);
 assert.equal(template.profiles.artifact, 'visual/prediction-market-carousel');
 assert.equal(template.visual_style.requested_style, 'R4');

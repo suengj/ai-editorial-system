@@ -237,8 +237,9 @@ export function validateCardNewsChartFacts(series, brief, baseDir = process.cwd(
 
 export function loadAndValidateCardNewsBrief(series, seriesPath) {
   const profileRequiresBrief = series.profiles?.artifact === 'visual/prediction-market-carousel';
-  if (!profileRequiresBrief && series.content_kind !== 'card-news') return { ok: true, applies: false, issues: [] };
-  if (profileRequiresBrief && (series.requires_brief !== true || series.content_kind !== 'card-news')) {
+  const requiresBrief = profileRequiresBrief || series.requires_brief === true;
+  if (!requiresBrief && series.content_kind !== 'card-news') return { ok: true, applies: false, issues: [] };
+  if (requiresBrief && series.requires_brief !== true) {
     return { ok: false, applies: true, issues: [issue('CARD_NEWS_PROFILE_CONTRACT', 'selected profile requires requires_brief: true and content_kind: card-news')] };
   }
   const briefPath = resolve(seriesPath ? resolve(seriesPath, '..') : process.cwd(), series.brief_file ?? 'brief.json');
