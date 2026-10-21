@@ -180,18 +180,19 @@ export function validateCardNewsChartFacts(series, brief, baseDir = process.cwd(
     }
     if (values.some((value) => !Number.isFinite(value) || !allowed.has(value))) add(frame, 'chart data values must match numbers in the card visual_fact_ids');
     if (labels.flatMap(nums).some((value) => !allowed.has(value))) add(frame, 'number-bearing chart labels must match the card visual_fact_ids');
-    const labeledValues = [ ...(spec.items ?? []), ...(spec.rates ?? []) ].filter((item) => typeof item?.label === 'string' && Number.isFinite(item.value));
+    const labeledValues = [ ...(spec.items ?? []).map((item) => ({ ...item, display_value: item.value_label })), ...(spec.rates ?? []) ].filter((item) => typeof item?.label === 'string' && Number.isFinite(item.value));
     if (spec.layout === 'rate-gap-ratio' && Number.isFinite(spec.ratio?.outflow) && Number.isFinite(spec.ratio?.inflow)) {
       labeledValues.push(
-        { label: spec.ratio.outflow_label, value: spec.ratio.outflow },
-        { label: spec.ratio.inflow_label, value: spec.ratio.inflow },
+        { label: spec.ratio.outflow_label, value: spec.ratio.outflow, display_value: spec.ratio.outflow_amount_label ?? String(spec.ratio.outflow) },
+        { label: spec.ratio.inflow_label, value: spec.ratio.inflow, display_value: spec.ratio.inflow_amount_label ?? String(spec.ratio.inflow) },
       );
     }
     if (labeledValues.length) {
       const bindings = Array.isArray(card.visual_value_bindings) ? card.visual_value_bindings : [];
       const usedBindings = new Set();
       for (const item of labeledValues) {
-        const index = bindings.findIndex((binding) => binding?.label === item.label && binding?.value === item.value);
+        const index = bindings.findIndex((binding) => binding?.label === item.label && binding?.value === item.value
+          && (item.display_value === undefined || binding?.display_value === item.display_value));
         const binding = index >= 0 ? bindings[index] : null;
         const fact = binding && facts.get(binding.fact_id);
         if (!binding || usedBindings.has(index) || !ids.includes(binding.fact_id) || !fact || !nums(fact.value).includes(item.value)) {

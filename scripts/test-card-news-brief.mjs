@@ -74,7 +74,7 @@ const boundChartBrief = { facts:[{id:'fact-1',value:'confirmed value 42%',date:'
 assert.equal(validateCardNewsChartFacts(boundChartSeries, boundChartBrief, chartDir).ok, false, 'chart data cannot differ from its canonical brief fact');
 const labeledPath = resolve(chartDir, 'labeled-chart.json');
 const labeledSeries = { profiles:{artifact:'visual/prediction-market-carousel'}, frames:[{id:'card-1',blocks:[{kind:'chart',ref:'labeled-chart.json'}]}] };
-const labeledBrief = { facts:[{id:'october',value:'October probability was 81%',date:'2025-10'}, {id:'december',value:'December probability was 15%',date:'2025-12'}], per_card:{'card-1':{visual_fact_ids:['october','december'],visual_value_bindings:[{label:'October',value:81,fact_id:'october'},{label:'December',value:15,fact_id:'december'}]}} };
+const labeledBrief = { facts:[{id:'october',value:'October probability was 81%',date:'2025-10'}, {id:'december',value:'December probability was 15%',date:'2025-12'}], per_card:{'card-1':{visual_fact_ids:['october','december'],visual_value_bindings:[{label:'October',value:81,fact_id:'october',display_value:'81%'},{label:'December',value:15,fact_id:'december',display_value:'15%'}]}} };
 const labeledChart = { type:'number_visual',layout:'comparison-bars',items:[{label:'October',value:81,value_label:'81%'},{label:'December',value:15,value_label:'15%'}] };
 writeFileSync(labeledPath, JSON.stringify(labeledChart));
 assert.equal(validateCardNewsChartFacts(labeledSeries, labeledBrief, chartDir).ok, true, 'each chart label and value binds to its matching fact');
@@ -84,14 +84,14 @@ assert.equal(validateCardNewsChartFacts(labeledSeries, labeledBrief, chartDir).o
 const tupleFacts = [
   {id:'us-rate',value:'United States rate 4%',date:'2026-10-21'},
   {id:'kr-rate',value:'Korea rate 3%',date:'2026-10-21'},
-  {id:'outflow',value:'Outflow ratio term 2.5',date:'2026-10-21'},
-  {id:'inflow',value:'Inflow ratio term 1',date:'2026-10-21'},
+  {id:'outflow',value:'Outflow USD 2.5B ratio term',date:'2026-10-21'},
+  {id:'inflow',value:'Inflow USD 1B ratio term',date:'2026-10-21'},
 ];
 const tupleBindings = [
   {label:'United States',value:4,fact_id:'us-rate'}, {label:'Korea',value:3,fact_id:'kr-rate'},
-  {label:'Outflow 2.5',value:2.5,fact_id:'outflow'}, {label:'Inflow 1',value:1,fact_id:'inflow'},
+  {label:'Outflow 2.5',value:2.5,fact_id:'outflow',display_value:'USD 2.5B'}, {label:'Inflow 1',value:1,fact_id:'inflow',display_value:'USD 1B'},
 ];
-const ratioChart = { type:'number_visual',layout:'rate-gap-ratio',rates:[{label:'United States',value:4},{label:'Korea',value:3}],ratio:{outflow:2.5,inflow:1,outflow_label:'Outflow 2.5',inflow_label:'Inflow 1',caption:'ratio'} };
+const ratioChart = { type:'number_visual',layout:'rate-gap-ratio',rates:[{label:'United States',value:4},{label:'Korea',value:3}],ratio:{outflow:2.5,inflow:1,outflow_label:'Outflow 2.5',inflow_label:'Inflow 1',outflow_amount_label:'USD 2.5B',inflow_amount_label:'USD 1B',caption:'ratio'} };
 const ratioChartPath = resolve(chartDir, 'ratio-chart.json');
 const ratioSeries = { profiles:{artifact:'visual/prediction-market-carousel'},frames:[{id:'card-1',blocks:[{kind:'chart',ref:'ratio-chart.json'}]}] };
 const ratioBrief = { facts:tupleFacts,per_card:{'card-1':{visual_fact_ids:tupleFacts.map((fact)=>fact.id),visual_value_bindings:tupleBindings}} };
@@ -100,15 +100,19 @@ assert.equal(validateCardNewsChartFacts(ratioSeries,ratioBrief,chartDir).ok,true
 for (const mutate of [
   (chart) => [chart.rates[0].label,chart.rates[1].label]=[chart.rates[1].label,chart.rates[0].label],
   (chart) => [chart.ratio.outflow_label,chart.ratio.inflow_label]=[chart.ratio.inflow_label,chart.ratio.outflow_label],
+  (chart) => [chart.ratio.outflow_amount_label,chart.ratio.inflow_amount_label]=[chart.ratio.inflow_amount_label,chart.ratio.outflow_amount_label],
 ]) {
   const swapped=structuredClone(ratioChart); mutate(swapped); writeFileSync(ratioChartPath,JSON.stringify(swapped));
   assert.equal(validateCardNewsChartFacts(ratioSeries,ratioBrief,chartDir).ok,false,'swapping any rate or flow label/value/fact tuple is rejected');
 }
 const dualChart = { type:'number_visual',layout:'dual-metric',items:[{label:'United States',value:4,max:5,value_label:'4%'},{label:'Korea',value:3,max:5,value_label:'3%'}] };
 writeFileSync(ratioChartPath,JSON.stringify(dualChart));
-const dualBrief = { facts:tupleFacts.slice(0,2),per_card:{'card-1':{visual_fact_ids:['us-rate','kr-rate'],visual_value_bindings:tupleBindings.slice(0,2)}} };
+const dualBrief = { facts:tupleFacts.slice(0,2),per_card:{'card-1':{visual_fact_ids:['us-rate','kr-rate'],visual_value_bindings:[{...tupleBindings[0],display_value:'4%'},{...tupleBindings[1],display_value:'3%'}]}} };
 assert.equal(validateCardNewsChartFacts(ratioSeries,dualBrief,chartDir).ok,true,'dual-metric labels bind to their own sourced values');
 const swappedDual=structuredClone(dualChart); [swappedDual.items[0].label,swappedDual.items[1].label]=[swappedDual.items[1].label,swappedDual.items[0].label];
 writeFileSync(ratioChartPath,JSON.stringify(swappedDual));
 assert.equal(validateCardNewsChartFacts(ratioSeries,dualBrief,chartDir).ok,false,'swapping dual-metric labels is rejected');
-console.log('card-news-brief: 20 assertions PASS');
+const swappedDualValues=structuredClone(dualChart); [swappedDualValues.items[0].value_label,swappedDualValues.items[1].value_label]=[swappedDualValues.items[1].value_label,swappedDualValues.items[0].value_label];
+writeFileSync(ratioChartPath,JSON.stringify(swappedDualValues));
+assert.equal(validateCardNewsChartFacts(ratioSeries,dualBrief,chartDir).ok,false,'swapping dual-metric display values is rejected');
+console.log('card-news-brief: 22 assertions PASS');

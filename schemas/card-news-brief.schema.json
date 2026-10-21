@@ -54,7 +54,7 @@
             "type": "array", "items": {
               "type": "object", "additionalProperties": false,
               "required": ["label", "value", "fact_id"],
-              "properties": { "label": { "type": "string", "minLength": 1 }, "value": { "type": "number" }, "fact_id": { "type": "string" } }
+              "properties": { "label": { "type": "string", "minLength": 1 }, "value": { "type": "number" }, "fact_id": { "type": "string" }, "display_value": { "type": "string", "minLength": 1 } }
             }
           },
           "takeaway": { "type": "string", "minLength": 8 }
