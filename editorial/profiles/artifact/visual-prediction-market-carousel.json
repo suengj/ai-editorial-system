@@ -1,0 +1,66 @@
+{
+  "schema_version": "1.0.0",
+  "artifact": "visual/prediction-market-carousel",
+  "modality": "visual",
+  "family": "Five-frame, self-contained prediction-market news carousel for signalytics.news.",
+  "primary_job": "Explain one market question, its PMC-bound price history, sourced inflection points, what current news does and does not establish, and the next resolution trigger.",
+  "semantic_density": {
+    "level": "moderate",
+    "rationale": "Each frame carries one editorial claim with evidence or a clearly marked verification need."
+  },
+  "visual_density": {
+    "level": "low",
+    "rationale": "A short headline and a small number of evidence-bearing lines; no dashboard chrome or legal boilerplate."
+  },
+  "text_policy": {
+    "profile": "hybrid_template",
+    "label_count_ceiling": 5,
+    "complexity_ceiling": "Use deterministic text for market names, facts, sources, dates, and PMC values."
+  },
+  "composition": {
+    "dominant_structure": "Editorial assertion followed by chart or sourced evidence.",
+    "supporting_modules_max": 1,
+    "reading_path": "Question, evidence, interpretation, next trigger.",
+    "negative_space": "moderate",
+    "chrome_level": "low; only sequence pagination and task-relevant sourcing."
+  },
+  "audience_adaptation": {
+    "professional-generalist": "Explain market pricing in plain Korean, distinguish contract price from verified event facts, and retain source attribution."
+  },
+  "renderer_preference": {
+    "order": ["deterministic", "hybrid", "generative"],
+    "rule": "Render all factual text and PMC chart values deterministically. Generated art is decorative and cannot carry facts or numbers."
+  },
+  "readability_gate": {
+    "applies": true,
+    "gate": {
+      "viewport": "Instagram 4:5 carousel at phone size",
+      "requirements": ["five substantive frames", "readable without narration", "sources remain attached to claims", "no invented events or dates"]
+    },
+    "rationale": "The cards are a silent editorial sequence and must remain legible on a phone."
+  },
+  "split_rule": {
+    "applies": true,
+    "rule": "One editorial question per frame; never combine disclaimer, timestamp, and content into a separate frame."
+  },
+  "acceptance": [
+    "exactly five cards in hook, trend, inflection, pricing-versus-news, next-watch order",
+    "all market figures are copied from a hash-verified PMC bundle",
+    "the platform's original market name is retained",
+    "dated events and news claims have sources or explicit editor-check placeholders",
+    "no investment or betting call to action",
+    "no disclaimer card or boilerplate data timestamp card"
+  ],
+  "reject": [
+    "disclaimer or investment-advice card",
+    "a separate timestamp or generic-footer card",
+    "unsupported market figures or manually extended history",
+    "unsourced dated event presented as fact",
+    "betting, investment, or engagement CTA"
+  ],
+  "source_authority": [
+    "editorial/PMC-BUNDLE-BINDING.md",
+    "editorial/INSTAGRAM-NUMERIC-VISUAL-POLICY.md",
+    "editorial/SLIDES-AND-CAROUSELS.md"
+  ]
+}

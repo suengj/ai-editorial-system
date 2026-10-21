@@ -94,12 +94,12 @@
       "account": "signalytics.news",
       "surface": "instagram",
       "voice_family": "business",
-      "copy_files": ["editorial/BUSINESS-IDEA-MAGAZINE.md", "editorial/SIGNALYTICS-BENCHMARK-CARDS.md"],
+      "copy_files": ["editorial/BUSINESS-IDEA-MAGAZINE.md", "editorial/SIGNALYTICS-BENCHMARK-CARDS.md", "editorial/SIGNALYTICS-PREDICTION-MARKET-CAROUSEL.md"],
       "copy_defaults": { "style_overlay": "none" },
       "visual": {
-        "artifacts": ["visual/slide-image"],
-        "files": ["editorial/STRUCTURED-VISUAL-EXECUTION.md", "editorial/SLIDES-AND-CAROUSELS.md"],
-        "values": ["editorial/visual-recipes.v1.json", "editorial/business-idea-magazine.v1.json"],
+        "artifacts": ["visual/slide-image", "visual/evidence-visual", "visual/prediction-market-carousel"],
+        "files": ["editorial/STRUCTURED-VISUAL-EXECUTION.md", "editorial/SLIDES-AND-CAROUSELS.md", "editorial/PMC-BUNDLE-BINDING.md", "editorial/INSTAGRAM-NUMERIC-VISUAL-POLICY.md"],
+        "values": ["editorial/visual-recipes.v1.json", "editorial/business-idea-magazine.v1.json", "editorial/prediction-market-carousel.v1.json", "editorial/templates/prediction-market-carousel.series.json"],
         "defaults": { "canvas": { "width": 1080, "aspect_ratio": "4:5" }, "text_policy": "hybrid_template" }
       },
       "output_contract": {

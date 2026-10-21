@@ -1,0 +1,31 @@
+import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import { planCarousel } from './lib/carousel-core.mjs';
+
+const read = (path) => JSON.parse(readFileSync(path, 'utf8'));
+const manifest = read('editorial/entry-manifest.json');
+const target = manifest.sns_targets['signalytics-news'];
+const profile = read('editorial/profiles/artifact/visual-prediction-market-carousel.json');
+const recipe = read('editorial/prediction-market-carousel.v1.json');
+const template = read('editorial/templates/prediction-market-carousel.series.json');
+
+assert(target.visual.artifacts.includes('visual/prediction-market-carousel'));
+assert(target.visual.artifacts.includes('visual/evidence-visual'));
+assert(target.copy_files.includes('editorial/SIGNALYTICS-PREDICTION-MARKET-CAROUSEL.md'));
+assert(target.visual.files.includes('editorial/PMC-BUNDLE-BINDING.md'));
+assert(target.visual.files.includes('editorial/INSTAGRAM-NUMERIC-VISUAL-POLICY.md'));
+assert(target.visual.values.includes('editorial/prediction-market-carousel.v1.json'));
+assert(target.visual.values.includes('editorial/templates/prediction-market-carousel.series.json'));
+assert.equal(profile.artifact, 'visual/prediction-market-carousel');
+assert.deepEqual(recipe.visual_style, { default: 'R4', fallback: 'R7', fallback_when: 'no suitable rights-cleared photo' });
+assert.equal(recipe.card_count, 5);
+assert.deepEqual(template.frames.map((f) => f.id), ['hook', 'trend', 'inflections', 'pricing-news', 'watch-next']);
+assert(template.frames.every((f) => f.headline && f.takeaway && f.source_note && f.blocks.length));
+assert(template.frames[1].blocks.some((b) => b.kind === 'chart' && b.sha256.startsWith('PLACEHOLDER:')));
+assert(!/disclaimer|not investment advice|투자 권유 아님|투자 조언|베팅하러|지금 투자/i.test(JSON.stringify(template)));
+assert(!template.frames.some((f) => /timestamp|기준 시각 카드|데이터 시각 카드/i.test(f.headline)));
+const planned = planCarousel(template);
+assert.equal(planned.frames.length, 5);
+assert.equal(planned.density_profile, 'silent_carousel');
+assert.equal(planned.publication_authorized, false);
+console.log('prediction-market-carousel: 18 assertions PASS');

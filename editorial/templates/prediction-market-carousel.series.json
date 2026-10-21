@@ -1,0 +1,64 @@
+{
+  "schema_version": "1.0.0",
+  "series_id": "prediction-market-sample",
+  "request": "Five-card Korean prediction-market news series for signalytics-news; replace bracketed inputs before rendering.",
+  "source": { "ref": "pmc/inputs/pmc.plot.json", "scope": "source_bound" },
+  "profiles": { "surface": "instagram", "artifact": "visual/slide-image" },
+  "recipe": "r7-illustration-fallback",
+  "visual_style": { "requested_style": "AUTO", "content_kind": "other", "photo_asset_quality": "absent" },
+  "series_label": "",
+  "task": {
+    "canvas": { "width": 1080, "height": 1350, "aspect_ratio": "4:5" },
+    "theme": { "background": "#F7F5F0", "foreground": "#14213D", "accent": "#FF6B5B" },
+    "text_policy": "hybrid_template",
+    "density": { "semantic": "moderate", "visual": "low" },
+    "watermark": { "enabled": false }
+  },
+  "beats": [
+    { "id": "hook", "depends_on": [] },
+    { "id": "trend", "depends_on": ["hook"] },
+    { "id": "inflections", "depends_on": ["trend"] },
+    { "id": "pricing-news", "depends_on": ["inflections"] },
+    { "id": "watch-next", "depends_on": ["pricing-news"] }
+  ],
+  "frames": [
+    {
+      "id": "hook", "function": "orient", "beat_ids": ["hook"],
+      "takeaway": "[플랫폼 시장명]에 반영된 PMC hero 값을 보여준다.",
+      "alt_text": "플랫폼 원문 시장명과 PMC hero 값이 크게 표시된 첫 카드.",
+      "headline": "[PMC hero value]", "source_note": "[YES/선택 outcome의 계약 가격]", "layout": "text",
+      "blocks": [{ "id": "hook-copy", "region": "content", "kind": "text", "text": "[플랫폼 원문 시장명]\n\n[질문이 다루는 시간 경계]", "source_ref": "pmc/inputs/pmc.plot.json" }]
+    },
+    {
+      "id": "trend", "function": "show_evidence", "beat_ids": ["trend"],
+      "takeaway": "요청 기간이 제한되면 PMC의 실제 관측 구간만 차트에 쓴다.",
+      "alt_text": "PMC plot bundle의 원관측으로 그린 가격 추세 차트.",
+      "headline": "[실제 관측 기간]의 가격 흐름", "source_note": "관측값은 있는 그대로 잇는다", "layout": "visual",
+      "blocks": [{ "id": "trend-chart", "region": "content", "kind": "chart", "ref": "pmc/inputs/chart.spec.json", "sha256": "PLACEHOLDER: replace with chart.spec.json SHA-256" }]
+    },
+    {
+      "id": "inflections", "function": "explain_mechanism", "beat_ids": ["inflections"],
+      "takeaway": "날짜가 확인된 사건만 변곡점에 연결한다.",
+      "alt_text": "확인된 사건 날짜와 출처가 표시된 변곡점 카드.",
+      "headline": "가격이 꺾인 날의 맥락", "source_note": "움직임과 원인을 날짜로 대조한다", "layout": "text",
+      "blocks": [{ "id": "inflection-copy", "region": "content", "kind": "text", "text": "[편집자 확인 필요: 날짜·사건·출처 확인]", "source_ref": "pmc/inputs/pmc.plot.json" }]
+    },
+    {
+      "id": "pricing-news", "function": "compare", "beat_ids": ["pricing-news"],
+      "takeaway": "시장 가격 신호와 보도 사실을 나눠 읽는다.",
+      "alt_text": "PMC 가격 신호와 출처를 확인한 뉴스 설명이 나란히 놓인 카드.",
+      "headline": "시장 가격과 뉴스, 따로 읽기", "source_note": "계약 가격은 사건의 확인이 아니다", "layout": "split",
+      "blocks": [
+        { "id": "pricing-copy", "region": "left", "kind": "text", "text": "시장 가격\n[PMC value]\n\n계약의 가격 신호", "source_ref": "pmc/inputs/pmc.plot.json" },
+        { "id": "news-copy", "region": "right", "kind": "text", "text": "뉴스 확인\n[편집자 확인 필요: 보도 날짜·원문 출처 확인]", "source_ref": "pmc/inputs/pmc.plot.json" }
+      ]
+    },
+    {
+      "id": "watch-next", "function": "decision", "beat_ids": ["watch-next"],
+      "takeaway": "계약의 정산 시각과 공개된 판정 트리거를 확인한다.",
+      "alt_text": "계약 정산 날짜와 공개 트리거가 정리된 마지막 카드.",
+      "headline": "다음으로 확인할 지점", "source_note": "계약 규칙과 다음 공개 지표", "layout": "text",
+      "blocks": [{ "id": "watch-copy", "region": "content", "kind": "text", "text": "정산일\n[편집자 확인 필요: 계약 규칙 확인]\n\n트리거\n[편집자 확인 필요: 근거 출처 확인]", "source_ref": "pmc/inputs/pmc.plot.json" }]
+    }
+  ]
+}

@@ -1,0 +1,45 @@
+{
+  "schema_version": "1.0.0",
+  "artifact": "visual/prediction-market-carousel",
+  "series_id": "prediction-market-news",
+  "target": "signalytics-news",
+  "canvas": { "width": 1080, "height": 1350, "aspect_ratio": "4:5" },
+  "card_count": 5,
+  "density_profile": "silent_carousel",
+  "visual_style": { "default": "R4", "fallback": "R7", "fallback_when": "no suitable rights-cleared photo" },
+  "palette": {
+    "background": "#F7F5F0",
+    "text": "#14213D",
+    "accent": "#FF6B5B",
+    "accent_rule": "Use Kalshi coral only for Kalshi; keep Polymarket cobalt reserved for Polymarket.",
+    "contrast": "Use the off-white and navy task override when R7's default color pairing fails phone-size contrast."
+  },
+  "layout": {
+    "hook": "original platform question + large PMC hero value",
+    "trend": "single PMC chart block with one compact provider credit",
+    "inflections": "dated curve turns with sourced event text or editor-check placeholder",
+    "pricing_news": "two-column price signal and verified news",
+    "watch_next": "resolution time and source-verified rule trigger"
+  },
+  "data_contract": {
+    "chart_card": "scripts/bind-pmc-bundle.mjs",
+    "numbers": "hash-verified PMC bundle only",
+    "observation_values": "copy only; no smoothing or manual extension",
+    "source_event_fallback": "[편집자 확인 필요: 날짜·사건·출처 확인]"
+  },
+  "beats": [
+    { "id": "hook", "depends_on": [] },
+    { "id": "trend", "depends_on": ["hook"] },
+    { "id": "inflections", "depends_on": ["trend"] },
+    { "id": "pricing-news", "depends_on": ["inflections"] },
+    { "id": "watch-next", "depends_on": ["pricing-news"] }
+  ],
+  "frames": [
+    { "id": "hook", "function": "orient", "headline": "[플랫폼 원문 시장명]", "takeaway": "[PMC hero value]가 반영된 계약 가격을 한눈에 보여준다.", "body": "[시장 질문과 마감 경계]", "visual": "hero-value" },
+    { "id": "trend", "function": "show_evidence", "headline": "최근 30일, 가격은 어떻게 움직였나", "takeaway": "PMC 원관측으로 추세를 보여준다.", "body": "[PMC chart bundle]", "visual": "pmc-chart" },
+    { "id": "inflections", "function": "explain_mechanism", "headline": "곡선이 꺾인 날, 무슨 일이 있었나", "takeaway": "변곡점과 날짜가 확인된 사건을 연결한다.", "body": "[편집자 확인 필요: 날짜·사건·출처 확인]", "visual": "dated-source-points" },
+    { "id": "pricing-news", "function": "compare", "headline": "계약 가격과 뉴스가 가리키는 곳", "takeaway": "시장 가격 신호와 확인된 뉴스의 의미를 구분한다.", "body": "[뉴스 출처 확인 및 분석 입력]", "visual": "two-column-evidence" },
+    { "id": "watch-next", "function": "decision", "headline": "다음 확인 지점은", "takeaway": "정산일과 가격을 바꿀 수 있는 공개 트리거를 제시한다.", "body": "정산일: [편집자 확인 필요: 계약 규칙 확인]\n트리거: [편집자 확인 필요: 근거 출처 확인]", "visual": "timeline" }
+  ],
+  "exclusions": ["disclaimer_card", "investment_advice_copy", "betting_or_investment_cta", "standalone_timestamp_card", "boilerplate_footer"]
+}
