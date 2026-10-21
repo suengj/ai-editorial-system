@@ -19,7 +19,15 @@ export function resolveCopyProfile(profileId) {
 
 const MAGNITUDES = '천백십만억조';
 const COMMON_UNITS = '(?:달러|명|원|개|건|배|년|월|일|시간|분|초|위|점|회|표)';
-const BARE_NUMBER_MAN_PARTICLES = '(?:큼|에|의|이|은|을|도|으로)';
+// Boundary bias is intentional: a listed ending wins even when it can also
+// begin a magnitude or unit (for example, 35조 / 35조차).
+const KOREAN_ENDINGS = [
+  '만으로', '만큼', '만에', '만의', '만이', '만은', '만을', '만도', '조차', '일까', '일지',
+  '일 것', '일 수', '이다', '이고', '이며', '이나', '이라', '으로', '에서', '에게', '까지', '부터',
+  '보다', '처럼', '대비', '였다', '이었', '의', '가', '이', '은', '는', '을', '를', '와', '과',
+  '도', '만', '에', '로',
+].sort((a, b) => b.length - a.length);
+const KOREAN_ENDING_BOUNDARY = `(?:${KOREAN_ENDINGS.map((ending) => ending.split(' ').map(escapeRegExp).join('\\s*')).join('|')})`;
 const CURRENCY_PREFIXES = ['US$', 'KRW', 'USD', '$', '₩', '€', '¥', '£'];
 
 function escapeRegExp(value) {
@@ -57,7 +65,8 @@ export function countHeroNumericTokens(text, heroNumber) {
   if (!hero) return 0;
 
   const sign = hero.sign ? (hero.sign === '-' ? '[-−]' : escapeRegExp(hero.sign)) : '';
-  const boundary = '(?<![\\d.+\\-−±])(?<!\\d,)';
+  // A period is decimal punctuation only when digits touch both sides.
+  const boundary = '(?<![\\d+\\-−±])(?<!\\d,)(?<!\\d\\.)';
   const signed = sign ? `${sign}\\s*` : '';
   let lead = '';
   if (hero.prefix && sign) {
@@ -73,16 +82,12 @@ export function countHeroNumericTokens(text, heroNumber) {
   const number = spacedCharacters(hero.numericCore);
   const unit = hero.unit ? `\\s*${spacedCharacters(hero.unit)}` : '';
 
-  // Units terminate the numeric token: only a numeric/decimal continuation is
-  // reserved (plus p/P for percent). Bare numbers and magnitudes instead reject
-  // magnitude, percent, and the closed common-unit vocabulary. A bare number
-  // may end before 만 when it is clearly particle-like (만큼, 만에, etc.).
-  let continuation = '(?!\\d|\\.\\d)';
-  if (hero.unit === '%') continuation += '(?![pP])';
-  else if (!hero.unit) {
-    const manParticle = hero.magnitude ? '(?!)' : `\\s*만${BARE_NUMBER_MAN_PARTICLES}`;
-    continuation += `(?!(?:(?!${manParticle})\\s*[${MAGNITUDES}%]|,\\d|\\s*${COMMON_UNITS}))`;
-  }
+  // Check the closed Korean ending list first. A match is a boundary even if
+  // its first character could also continue a magnitude or common unit.
+  const continuations = ['\\d', '(?<=\\d)\\.\\d'];
+  if (hero.unit === '%') continuations.push('[pP]');
+  else if (!hero.unit) continuations.push(`\\s*[${MAGNITUDES}%]`, ',\\d', `\\s*${COMMON_UNITS}`);
+  const continuation = `(?:(?=${KOREAN_ENDING_BOUNDARY})|(?!${continuations.join('|')}))`;
 
   const pattern = new RegExp(`${lead}${number}${unit}${continuation}`, 'giu');
   return [...text.matchAll(pattern)].length;

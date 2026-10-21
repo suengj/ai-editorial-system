@@ -35,6 +35,8 @@ clean('본문에서 35%와 36%를 비교한다.', 'signalytics-news', { heroNumb
 clean('다른 수치 135%는 35%와 다르다.', 'signalytics-news', { heroNumbers: ['135%'] });
 clean('부채비율은 0.35%다. 지난해에는 1.35%였다.', 'signalytics-news', { heroNumbers: ['35%'] });
 flagged('올해는 35%, 지난해도 35%.', 'repeated-hero-number', 'signalytics-news', { heroNumbers: ['35%'] });
+flagged('3억만으로 가능하다. 3억만으로 충분하다.', 'repeated-hero-number', 'signalytics-news', { heroNumbers: ['3억'] });
+flagged('35조차 어렵다. 35조차 어렵다.', 'repeated-hero-number', 'signalytics-news', { heroNumbers: ['35'] });
 
 const numericTokenCases = [
   // Existing regression cases.
@@ -50,7 +52,8 @@ const numericTokenCases = [
   ['3천만원만, 3천만원만', '3천만원', 2],
   ['35%만큼, 35%만큼', '35%', 2],
   ['35만큼, 35만큼', '35', 2],
-  ['35만명', '35', 0],
+  // Boundary-biased Korean ending detection: 만 is accepted before a magnitude/unit continuation.
+  ['35만명', '35', 1],
   ['35만 명', '35만', 0],
   // Sign, decimal, open-ended unit, and whole-token regressions.
   ['수익률은 -35%, -35%다.', '-35%', 2],
@@ -60,7 +63,7 @@ const numericTokenCases = [
   ['35달러, 35달러', '35달러', 2],
   ['35 명 / 35명', '35 명', 2],
   ['35 kg 35 KG', '35 kg', 2],
-  ['35만', '35', 0],
+  ['35만', '35', 1],
   ['+3.5%p, +3.5%p', '+3.5%p', 2],
   ['35bp', '35%', 0],
   // Hero-driven matching keeps particles and punctuation as valid boundaries.
@@ -70,6 +73,22 @@ const numericTokenCases = [
   ['35%였다. 35%였다.', '35%', 2],
   ['35명이다. 35명이다.', '35명', 2],
   ['35%→40%, 35%→45%', '35%', 2],
+  // Korean endings are tested before magnitude and unit guards.
+  ['3억만으로 가능하다. 3억만으로 충분하다.', '3억', 2],
+  ['3천만만큼 늘었다. 3천만만큼 줄었다.', '3천만', 2],
+  ['35조차 어렵다. 35조차 어렵다.', '35', 2],
+  ['35일까? 35일까?', '35', 2],
+  ['35일지 모른다. 35일지 모른다.', '35', 2],
+  // Period is decimal punctuation only between digits, on either side of a token.
+  ['35%...35%', '35%', 2],
+  ['35%.35%', '35%', 2],
+  ['35%. 35%', '35%', 2],
+  ['0.35%', '35%', 0],
+  ['1.35', '35', 0],
+  // Explicit boundary-bias cases for magnitude/unit-leading endings.
+  ['35조차, 35조차', '35', 2],
+  ['35일까, 35일까', '35', 2],
+  ['35만큼, 35만큼', '35', 2],
   // Currency-prefix regressions, including optional whitespace for code prefixes.
   ['$35와 $35다.', '$35', 2],
   ['₩35,000과 ₩35,000이다.', '₩35,000', 2],
