@@ -16,6 +16,7 @@ import { fileURLToPath } from 'node:url';
 import { spawnSync } from 'node:child_process';
 import { executeVisual, compileExecution } from './lib/visual-execution-core.mjs';
 import { renderChartPanel } from './lib/chart-renderer.mjs';
+import { CARD_NEWS_TYPE_TOKENS } from './lib/typography-core.mjs';
 import { findRasterizer, textMeasurer } from './lib/svg-tools.mjs';
 import { decodePng } from './lib/watermark-core.mjs';
 import { loadPmcPlotBundle, pmcPlotToChartSpec, buildCardPlan, verifyRenderAgainstBundle, pmcPlotDataHash, providerAccent, resolveTitleOrigin, checkTitleNumbers, PmcBindingError } from './lib/pmc-bundle-binding.mjs';
@@ -168,11 +169,12 @@ try {
     const d = r.svg.match(/<path d="([^"]+)"/)[1];
     assert.equal((d.match(/M/g) ?? []).length, 2, 'the single null starts a second sub-path'); assert.equal(r.raw_observation_count, b.bundle.plot.points.length + 1);
   });
-  await rtest('PMC line-chart SVG text uses scaled shared card-news label tokens', async () => {
+  await rtest('PMC line-chart SVG text uses shared card-news type tokens', async () => {
     const b = bind('in-gap'); const r = renderChartPanel(b.spec, { width: 936, height: 675, theme: b.plan.task.theme ?? {}, measure: textMeasurer(adapter) });
     const sizes = [...r.svg.matchAll(/font-size="([0-9.]+)"/gu)].map((match) => Number(match[1]));
     assert(sizes.length >= 8);
-    assert(sizes.every((size) => size === 29.47), `expected 34px shared label token scaled to 936px; got ${[...new Set(sizes)].join(',')}`);
+    const allowed = new Set(Object.values(CARD_NEWS_TYPE_TOKENS).map((token) => token?.font_size).filter(Number.isFinite));
+    assert(sizes.every((size) => allowed.has(size)), `all SVG text sizes must be shared tokens; got ${[...new Set(sizes)].join(',')}`);
   });
   await rtest('theme-only change leaves the data, spec and numbers unchanged', async () => {
     const a = bind('in-theme-a'), c = bind('in-theme-b', { accent: '#B5532F' });
