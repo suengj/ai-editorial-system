@@ -50,7 +50,7 @@
 
 **기사/기존 visual-job**: 실제 job을 `job_ref`로 연결한다. 기존 validator와 prompt compiler를 호출하며 VisualBrief/RenderSpec를 execution packet에 참조한다. 승인 잠긴 job은 기존 approved-media 경로로 보내고 새 생성 packet으로 열지 않는다. 작업별 합성 옵션은 원래 compiled prompt를 손으로 고치는 근거가 아니다. 기사/claim 승인 경로의 통합 실증은 Phase 4에서 별도로 확인한다.
 
-**글 없는 source-only 요청**: 원자료 파일과 요청에서 시작한다. 실행 sidecar를 사용하고 가짜 `article_id`/claims를 만들지 않는다. source-only 로컬 문자/사진/차트 합성과 준비된 생성 master를 지원한다. 이것은 기사 기반 VisualBrief의 대체 스키마도, 자동 사실 검증기도 아니다. `source_bound`는 파일 연결 상태이지 사실 검증 통과가 아니다. 가상 자료는 `illustrative`로 표시하며 실제 수치의 근거로 쓰지 않는다.
+**글 없는 source-only 요청**: 원자료 파일과 요청에서 시작한다. 실행 sidecar를 사용하고 가짜 `article_id`/claims를 만들지 않는다. source-only 로컬 문자/사진/차트 합성과 준비된 생성 master를 지원한다. 이것은 기사 기반 VisualBrief의 대체 스키마도, 자동 사실 검증기도 아니다. `source_bound`는 파일 연결 상태이지 사실 검증 통과가 아니다. `illustrative`는 자료의 출처 범위이며 화면 라벨을 자동 표시하지 않는다. 가짜 UI·제품 화면·로고·데이터처럼 실제 자료로 오인될 수 있는 레이어만 `mockup_risk: true`로 지정해 라벨을 표시한다.
 
 기존 integrated generated text·verified-generative-fact 경로는 그대로 유지한다. 로컬 compositor는 지정한 문자 레이어만 정확하게 조판한다. 기사 기반 통합형 생성 결과의 사실/텍스트 검증을 이 도구의 `text_fit` 결과로 대체하지 않는다.
 
@@ -153,10 +153,10 @@ python3 examples/native-card-recipe.py --source /path/to/water-01.png \
 | `task.theme` | background/foreground/accent의 실제 #RRGGBB, font_family. 요청/정식 token에서 resolve한 값. |
 | `task.density / text_policy` | 기존 semantic/visual density 및 text ownership 의도. 실제 밀도 평가는 렌더 후 사람/vision이 수행. |
 | `task.watermark / watermark_layer` | 기존 default-OFF 설정; overlay 또는 독립 background 레이어. |
-| `layers[]` | 순서가 z-order. 종류는 text, image, chart, generated; 배타적 이미지 family가 아님. |
+| `layers[]` | 순서가 z-order. 종류는 text, image, chart, generated; 배타적 이미지 family가 아님. `mockup_risk: true`가 있을 때만 가상 자료 라벨을 렌더. |
 | `layers[].slot` | x/y/width/height 모두 0–1 정규화 좌표. 최종 pixel 좌표도 기록. |
 | text 레이어 | text, source_ref, font_size/weight/align/max_lines/line_height/color. source_ref는 request 또는 실제 입력 ref. |
-| image/generated 레이어 | 실제 ref, rights_note, 선택 digest, contain/cover, exact_composite/cutout_composite, 보호 영역 protect. |
+| image/generated 레이어 | 실제 ref, rights_note, 선택 digest, contain/cover, exact_composite/cutout_composite, 보호 영역 protect. 텍스트 아래 사진 크롭은 원본 기준 `focal_box`, `focal_min_area_ratio`가 필요하며, 실패 시 `focal_fallback.split_slot`을 사용하고 그래도 실패하면 `focal_fallback.r7_instruction`으로 R7을 렌더 요구한다. |
 | chart 레이어 | 기존 chart JSON ref. 관측값을 생성 프롬프트에 다시 입력하지 않음. |
 | ref 없는 generated 레이어 | instruction을 담은 RENDER_REQUIRED. 실제 그림을 만든 것처럼 성공 처리하지 않음. |
 | `caption / job_ref` | 선택 caption, 실제 기존 visual-job 파일. 게시 권한을 담지 않음. |

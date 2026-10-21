@@ -42,6 +42,39 @@ test('visual task for trends.moa loads the community doc, visual rules, and not 
   yes(paths(r).includes('editorial/STRUCTURED-VISUAL-EXECUTION.md') && paths(r).includes('editorial/visual-recipes.v1.json'), 'visual docs');
   yes(!paths(r).includes('editorial/SUENGJ-STYLE.md') && !paths(r).includes('editorial/SIGNALYTICS-BENCHMARK-CARDS.md'), 'no other voice');
 });
+test('ko-KR on-image card tasks load the language pack for signalytics-news and trends-moa', () => {
+  for (const [targetId, artifact] of [['signalytics-news', 'visual/slide-image'], ['trends-moa', 'visual/social-card']]) {
+    const cardIntent = { ...intent('instagram', [artifact]), constraints: { output_language: 'ko-KR' } };
+    const r = resolveEditorial(cardIntent, { targetId, taskKind: 'visual', reader: reader() });
+    eq(r.status, STATUS.READY);
+    yes(paths(r).includes('editorial/profiles/language/ko-KR.json'), `${targetId} did not load ko-KR`);
+    eq(r.loads.find((entry) => entry.path === 'editorial/profiles/language/ko-KR.json').status, 'read');
+  }
+});
+test('ko-KR visual intents infer visual kind and load the language pack for both approved targets', () => {
+  for (const [targetId, artifact] of [['signalytics-news', 'visual/slide-image'], ['trends-moa', 'visual/social-card']]) {
+    const cardIntent = { ...intent('instagram', [artifact]), constraints: { output_language: 'ko-KR' } };
+    const r = resolveEditorial(cardIntent, { targetId, reader: reader() });
+    eq(r.status, STATUS.READY);
+    eq(r.load_plan.task_kind, 'visual');
+    yes(paths(r).includes('editorial/profiles/language/ko-KR.json'), `${targetId} default entry did not load ko-KR`);
+    eq(r.loads.find((entry) => entry.path === 'editorial/profiles/language/ko-KR.json').status, 'read');
+  }
+});
+test('ko-KR pack stays inactive outside activation scope and preserves rule authority', () => {
+  const cardIntent = { ...intent('instagram', ['visual/social-card']), constraints: { output_language: 'ko-KR' } };
+  const personal = resolveEditorial(cardIntent, { targetId: 'personal-instagram', taskKind: 'visual', reader: reader() });
+  yes(!paths(personal).includes('editorial/profiles/language/ko-KR.json'), 'pack leaked to another target');
+  const text = resolveEditorial({ ...intent('newsletter'), constraints: { output_language: 'ko-KR' } }, { targetId: 'signalytics-news', taskKind: 'text', reader: reader() });
+  yes(!paths(text).includes('editorial/profiles/language/ko-KR.json'), 'pack leaked into text task');
+  const pack = JSON.parse(readFileSync(resolve(REPO_ROOT, 'editorial/profiles/language/ko-KR.json'), 'utf8'));
+  const active = new Set(pack.activation_scope.rule_ids);
+  yes(active.size === 2 && active.has('reg-report-bare-noun-compression') && active.has('reg-report-hedge-language'), 'activation rule list drifted');
+  yes(pack.rules.filter((r) => active.has(r.id)).every((r) => r.application_mode === 'soft_detector'), 'active rules must retain soft_detector authority');
+  const attribution = pack.rules.find((r) => r.id === 'reg-news-attribution-placement');
+  yes(attribution.application_mode === 'deprecated_as_instruction' && !active.has(attribution.id), 'quotation rule must remain inactive');
+  yes(pack.activation_scope.note.includes('do not rewrite whole copy') && pack.notes.includes('No whole-copy rewrite, invented quotation'), 'quote preservation and local repair boundary missing');
+});
 test('video task route loads only its registered video semantic core and SHA-pinned profile', () => {
   const r = resolveEditorial(intent('newsletter', ['video/educational-summary']), { reader: reader() });
   eq(r.status, STATUS.READY);

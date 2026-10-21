@@ -41,7 +41,8 @@ export function compileBusinessMagazine(packet, evidence, { sourceRef, sourceSha
   if (packet.art_direction && artDirection && artDirectionHash(packet.art_direction) !== artDirectionHash(artDirection)) requireThat(false, 'BIZ_ART_DIRECTION', 'packet.art_direction and opts.artDirection differ');
   artDirection ??= packet.art_direction;
   requireThat(packet.schema_version === '1.0.0' && text(sourceRef), 'BIZ_INPUT', 'v1 and a stable sourceRef required');
-  requireThat(text(packet.request) && text(packet.series_label) && text(packet.caption), 'BIZ_INPUT', 'request, series_label, caption required');
+  requireThat(text(packet.request) && text(packet.caption), 'BIZ_INPUT', 'request and caption required');
+  requireThat(packet.series_label === undefined || packet.series_label === '' || /^@[A-Za-z0-9._]+$/.test(packet.series_label), 'BIZ_INPUT', 'series_label must be empty or an explicitly supplied publishing account handle');
   if (sourceSha !== undefined) requireThat(/^sha256:[a-f0-9]{64}$/.test(sourceSha), 'BIZ_SOURCE_HASH', 'invalid sourceSha');
   keys(packet.idea, ['problem', 'target', 'payer', 'mechanism', 'revenue'], 'idea');
   for (const k of ['problem', 'target', 'payer', 'mechanism', 'revenue']) requireThat(text(packet.idea[k]), 'BIZ_IDEA', `idea.${k}`);
@@ -130,7 +131,7 @@ export function compileBusinessMagazine(packet, evidence, { sourceRef, sourceSha
       }
       const hasVisual = direction.blocks.some(b => ['image', 'generated', 'chart', 'diagram'].includes(b.kind));
       if (f.visual && !hasVisual) requireThat(false, 'BIZ_ART_DIRECTION', `${f.role}: packet visual is not selected by the art direction plan`);
-      if (f.visual) keys(f.visual, ['kind', 'ref', 'sha256', 'mode', 'fit', 'rights_note', 'protect', 'instruction', 'generation', 'provenance'], 'visual');
+      if (f.visual) keys(f.visual, ['kind', 'ref', 'sha256', 'mode', 'fit', 'rights_note', 'protect', 'focal_box', 'focal_min_area_ratio', 'focal_fallback', 'mockup_risk', 'instruction', 'generation', 'provenance'], 'visual');
       const diagramBlock = direction.blocks.find(b => b.kind === 'diagram');
       if (diagramBlock) {
         requireThat(f.visual === undefined, 'BIZ_ART_DIRECTION_ASSET', `${f.role}: deterministic diagram uses packet fields and cannot accept a packet visual override`);
@@ -158,7 +159,7 @@ export function compileBusinessMagazine(packet, evidence, { sourceRef, sourceSha
         }
         if (planned.kind === 'image') {
           requireThat(f.visual?.kind === 'image' && text(f.visual.ref) && f.visual.rights_note === direction.asset.rights_note, 'BIZ_ART_DIRECTION_ASSET', `${f.role}: authorized original and its rights note must match the packet asset`);
-          const visual = Object.fromEntries(['ref', 'sha256', 'mode', 'fit', 'rights_note', 'protect', 'provenance', 'generation'].filter(k => f.visual[k] !== undefined).map(k => [k, structuredClone(f.visual[k])]));
+          const visual = Object.fromEntries(['ref', 'sha256', 'mode', 'fit', 'rights_note', 'protect', 'focal_box', 'focal_min_area_ratio', 'focal_fallback', 'mockup_risk', 'provenance', 'generation'].filter(k => f.visual[k] !== undefined).map(k => [k, structuredClone(f.visual[k])]));
           visual.ref = resolve(baseDir, visual.ref);
           return { id: planned.id, region: planned.region, kind: 'image', ...visual };
         }
@@ -171,7 +172,7 @@ export function compileBusinessMagazine(packet, evidence, { sourceRef, sourceSha
             `Asset rationale: ${direction.asset.rationale}.`,
             'Illustration only. Do not draw text, numbers, logos, screenshots, product UI, metrics, or citations. The existing compositor renders exact copy and sources.',
           ].filter(Boolean).join('\n');
-          const media = Object.fromEntries(['ref', 'sha256', 'mode', 'fit', 'rights_note', 'protect', 'generation', 'provenance'].filter(k => visual[k] !== undefined).map(k => [k, structuredClone(visual[k])]));
+          const media = Object.fromEntries(['ref', 'sha256', 'mode', 'fit', 'rights_note', 'protect', 'focal_box', 'focal_min_area_ratio', 'focal_fallback', 'mockup_risk', 'generation', 'provenance'].filter(k => visual[k] !== undefined).map(k => [k, structuredClone(visual[k])]));
           if (media.ref) media.ref = resolve(baseDir, media.ref);
           return { id: planned.id, region: planned.region, kind: 'generated', ...media, instruction };
         }
@@ -199,7 +200,7 @@ export function compileBusinessMagazine(packet, evidence, { sourceRef, sourceSha
     const frameFunction = f.role === 'case-b' && f.case_mode === 'deep-dive' ? 'qualify' : f.role === 'trend' ? 'show_evidence' : profile.frame_functions[functionIndex];
     return { id: f.role, function: frameFunction, beat_ids: [f.role], takeaway: f.takeaway, alt_text: f.alt_text, headline: f.headline, source_note: sourceNote, layout: artDirection ? artDirection.frames[i].layout : f.visual ? 'split' : 'text', blocks, ...(artMeta ? { art_direction: artMeta } : {}) };
   });
-  const series = { schema_version: '1.0.0', series_id: packet.series_id, request: packet.request, source: { ref: sourceRef, ...(sourceSha ? { sha256: sourceSha } : {}), scope: 'source_bound' }, profiles: { surface: 'instagram', artifact: 'visual/slide-image' }, recipe: profile.recipe, ...structuredClone(profile.series_options), series_label: packet.series_label, beats: expectedRoles.map((id, i) => ({ id, depends_on: i ? [expectedRoles[i - 1]] : [] })), frames, ...(artDirection ? { art_direction_sha256: artDirectionHash(artDirection) } : {}) };
+  const series = { schema_version: '1.0.0', series_id: packet.series_id, request: packet.request, source: { ref: sourceRef, ...(sourceSha ? { sha256: sourceSha } : {}), scope: 'source_bound' }, profiles: { surface: 'instagram', artifact: 'visual/slide-image' }, recipe: profile.recipe, ...structuredClone(profile.series_options), series_label: packet.series_label ?? '', beats: expectedRoles.map((id, i) => ({ id, depends_on: i ? [expectedRoles[i - 1]] : [] })), frames, ...(artDirection ? { art_direction_sha256: artDirectionHash(artDirection) } : {}) };
   const compatibility = planCarousel(series);
   const caption = `${packet.caption.trim()}\n\n사실과 제안 구분: 실제 사례의 출처는 아래에 기재했습니다. 신규 사업의 수익성과 시장 공백은 검증 전 가설입니다.\n자료 기준: ${evidence.as_of}\n${[...sources.values()].map(s => `[${s.id}] ${s.title}\n${s.url}`).join('\n\n')}\n`;
   const planHash = artDirection ? artDirectionHash(artDirection) : null;

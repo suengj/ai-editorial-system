@@ -19,6 +19,7 @@ ok('three frames and original order',()=>assert.deepEqual(first.frames.map((f)=>
 ok('input unchanged',()=>assert.equal(JSON.stringify(base),json));
 ok('one semantic type role across frames',()=>assert.equal(new Set(first.frames.map((f)=>JSON.stringify(f.plan.layers.find((l)=>l.id==='headline').font_size))).size,1));
 ok('page numbering is deterministic',()=>assert.deepEqual(first.frames.map((f)=>f.plan.layers.at(-1).text),['1 / 3','2 / 3','3 / 3']));
+ok('series footer is empty by default and only renders an explicit account handle',()=>{const s=clone();s.series_label='';assert.equal(planCarousel(s).frames[0].plan.layers.some((l)=>l.id==='series-label'),false);s.series_label='@trends.moa';assert.equal(planCarousel(s).frames[0].plan.layers.find((l)=>l.id==='series-label').text,'@trends.moa');assert.throws(()=>planCarousel({...s,series_label:'IDEA #074'}),(e)=>e.code==='SERIES_INPUT');});
 ok('role hierarchy and independent layouts',()=>{assert(first.typography.headline.font_size>first.typography.body.font_size);assert.equal(new Set(first.frames.map((f)=>f.layout)).size,3);});
 ok('silent profile and no narration dependency',()=>{assert.equal(first.density_profile,'silent_carousel');assert.equal(first.narration_dependency,'none');});
 ok('original recipe catalogue remains available beside R4/R7',()=>{const recipes=loadVisualRecipes().recipes;assert.equal(new Set(['editorial-minimal','dark-data','pop-collage'].map((id)=>recipes[id].theme.background)).size,3);assert(recipes['r4-photo-fullbleed']);assert(recipes['r7-illustration-fallback']);});

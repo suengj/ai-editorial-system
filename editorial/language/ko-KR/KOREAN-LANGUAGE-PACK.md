@@ -13,7 +13,8 @@ is language-agnostic and lives in
 document is restated here, and nothing here is a Korean rule that belongs
 there instead.
 
-**Status: draft, and this pack governs nothing until a human activates it.**
+**Status: active, scoped to Korean on-image card copy for `signalytics-news` and `trends-moa` from 2026-10-21.** This is the owner's approved activation note. Only `reg-report-bare-noun-compression` and `reg-report-hedge-language` are in the activation scope; each remains bound by its `application_mode`. Apply them only as targeted repairs when the copy is actually report/summary register. Do not rewrite whole copy, invent quotations, or delete concrete actors. All rules outside the JSON `activation_scope.rule_ids` remain inactive for this activation.
+
 SUE-604 ran the pack's first holdout evaluation; two `register` rules now
 carry a result other than `not_yet_tested`
 (`reg-report-bare-noun-compression: improved`,
@@ -25,10 +26,9 @@ that is exactly what produced a manufactured quotation and a deleted
 concrete agent alongside the genuine repairs. SUE-610 (§0 below) answers
 that with `application_mode`: a field on every rule stating what it is
 allowed to authorize, independent of whether it has been holdout-validated.
-`calibration_ref` remains `null` and `status` remains `draft` — neither
-holdout promotion nor this reclassification changes that. Activating the
-pack is a separate, human decision
-(`docs/architecture/LANGUAGE-QUALITY-ARCHITECTURE.md` §10).
+`calibration_ref` remains `null`: this activation scopes existing evaluated
+rules and does not claim a new calibration run. The human activation is
+recorded above and in the machine-readable JSON `activation_scope`.
 
 The authority registry this pack draws on is
 `references/korean-language-authorities.md`. Every `authority_ref` in the JSON

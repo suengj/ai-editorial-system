@@ -44,6 +44,14 @@ exists to prevent.
 
 ## Mechanical gates
 
+### Human editor card QA
+
+Before a card series passes editorial review, the editor answers:
+
+- Does this read like an AI summary? Check summary-style endings, list-like noun phrases, and generic transitions.
+- Is the crop meaningful? The visible image must include the subject's face or the whole key object.
+- Is any label or footer unnecessary?
+
 | ID | Gate | Severity | Fires when |
 |---|---|---|---|
 | G-01 | `prompt-echo` | reject | The instruction to the generator appears as prose ("Explain the key facts … using evidence", "What should readers know about …") |

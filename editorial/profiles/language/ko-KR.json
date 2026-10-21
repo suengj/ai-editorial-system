@@ -2,9 +2,16 @@
   "schema_version": "1.1.0",
   "pack_id": "ko-KR",
   "language": "ko",
-  "status": "draft",
+  "status": "active",
   "doc_ref": "editorial/language/ko-KR/KOREAN-LANGUAGE-PACK.md",
   "calibration_ref": null,
+  "activation_scope": {
+    "activated_on": "2026-10-21",
+    "targets": ["signalytics-news", "trends-moa"],
+    "task_kinds": ["visual"],
+    "rule_ids": ["reg-report-bare-noun-compression", "reg-report-hedge-language"],
+    "note": "Owner-approved 2026-10-21 for Korean on-image card copy only. Apply selected rules only as targeted repairs permitted by application_mode; do not rewrite whole copy, invent quotations, or delete concrete actors."
+  },
   "authorities": [
     {
       "id": "nikl-korean-norms",
@@ -795,5 +802,5 @@
     "장르(콘텐츠 타입) 자체의 정의와 요구사항 — editorial/profiles/content/*.json의 소관이며 이 언어팩은 그 위에 언어 오버레이만 얹는다",
     "독자층(오디언스) 프로필 자체의 정의 — editorial/profiles/audience/*.json의 소관"
   ],
-  "notes": "status는 draft다: 이 팩의 NATIVE_QUALITY/GENRE_CONVENTION/AUDIENCE_CONSTRAINT 규칙은 모두 holdout_result: not_yet_tested이며 SUE-604의 홀드아웃 검증을 거치지 않았다. active로 전환하는 것은 사람이 캘리브레이션 버전을 활성화하는 별도 결정이다(docs/architecture/LANGUAGE-QUALITY-ARCHITECTURE.md §10)."
+  "notes": "2026-10-21 owner-approved scoped activation for on-image visual card copy on signalytics-news and trends-moa. Only reg-report-bare-noun-compression and reg-report-hedge-language are in activation_scope; application_mode remains binding. No whole-copy rewrite, invented quotation, or deletion of concrete actors. All other rules remain inactive for this activation."
 }

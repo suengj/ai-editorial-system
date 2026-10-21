@@ -80,3 +80,13 @@ Retain `editorial/SUENGJ-STYLE.md`, respective surface profiles and existing pro
 - [ ] Does the account-specific tone stay out of personal, professional, research and other accounts?
 
 **Scope boundary:** This document has no authority to modify `editorial/voice.md`, `editorial/SUENGJ-STYLE.md`, `editorial/profiles/surface/instagram.json`, numeric/visual policy, content verification or publication controls.
+# 카드 이미지 라벨·크롭·편집자 QA
+
+일반 장면 일러스트와 사진에는 ‘연출 이미지’ 또는 ‘ILLUSTRATIVE / 가상 예시’ 라벨을 붙이지 않는다. 가짜 UI·제품 화면·로고·데이터처럼 실제 자료로 오인될 수 있는 그림에만 plan의 `mockup_risk: true`를 지정해 라벨을 표시한다.
+
+사진을 문구 아래 배경으로 크롭할 때 plan에 `focal_box`(얼굴 또는 핵심 사물 전체)와 `focal_min_area_ratio`를 넣고, 보이는 크롭이 focal box를 포함하는지 검증한다. 실패하면 사진 영역과 문구 영역을 분리한 split 레이아웃을 시도하고, 거기서도 실패하면 R7 일러스트로 바꾼다.
+
+사람 편집자 QA:
+- AI 요약처럼 읽히는가? 요약체 종결, 명사구 나열, 일반적인 전환 문구를 살핀다.
+- 크롭이 의미 있는가? 얼굴 또는 핵심 사물 전체가 보이는가?
+- 불필요한 라벨이나 푸터가 있는가?

@@ -48,6 +48,19 @@
         "null"
       ]
     },
+    "activation_scope": {
+      "description": "Human-approved subset of an active pack. Rules outside this scope remain inactive; application_mode still controls how each selected rule may be used.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["activated_on", "targets", "task_kinds", "rule_ids", "note"],
+      "properties": {
+        "activated_on": { "type": "string", "format": "date" },
+        "targets": { "type": "array", "minItems": 1, "items": { "enum": ["signalytics-news", "trends-moa"] } },
+        "task_kinds": { "type": "array", "minItems": 1, "items": { "enum": ["visual"] } },
+        "rule_ids": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 } },
+        "note": { "type": "string", "minLength": 1 }
+      }
+    },
     "authorities": {
       "description": "External bodies and works this pack rests on. Each records what it governs AND what it does not, so a public-language guide cannot quietly become a literary style authority.",
       "type": "array",
