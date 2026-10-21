@@ -84,6 +84,12 @@
       "key": { "x": 0.06, "y": 0.53, "width": 0.43, "height": 0.09 },
       "copy": { "x": 0.06, "y": 0.64, "width": 0.43, "height": 0.2 }
     },
+    "hero-photo-scrim": {
+      "art": { "x": 0, "y": 0, "width": 1, "height": 1 },
+      "hero-value": { "x": 0.06, "y": 0.34, "width": 0.43, "height": 0.16 },
+      "key": { "x": 0.06, "y": 0.53, "width": 0.43, "height": 0.09 },
+      "copy": { "x": 0.06, "y": 0.64, "width": 0.43, "height": 0.2 }
+    },
     "r7-illustration": {
       "art": {
         "x": 0.08,
@@ -169,6 +175,18 @@
         "eyebrow": { "x": 0.06, "y": 0.04, "width": 0.44, "height": 0.035 },
         "source": { "x": 0.06, "y": 0.9, "width": 0.42, "height": 0.03 },
         "pagination": { "x": 0.8, "y": 0.9, "width": 0.14, "height": 0.03 }
+      }
+    },
+    "hero-photo-scrim": {
+      "background_regions": ["art"],
+      "solid_bands": [
+        { "id": "left-text-zone", "x": 0, "y": 0, "width": 0.54, "height": 0.86, "fill": "theme.background", "gradient": [[0, 0.92], [0.78, 0.92], [1, 0.25]] }
+      ],
+      "recurring_regions": {
+        "headline": { "x": 0.06, "y": 0.08, "width": 0.46, "height": 0.22 },
+        "eyebrow": { "x": 0.06, "y": 0.04, "width": 0.44, "height": 0.035 },
+        "source": { "x": 0.06, "y": 0.845, "width": 0.28, "height": 0.015 },
+        "pagination": { "x": 0.36, "y": 0.845, "width": 0.14, "height": 0.015 }
       }
     }
   },
