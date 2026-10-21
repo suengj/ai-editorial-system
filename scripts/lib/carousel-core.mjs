@@ -10,6 +10,7 @@ import { spawnSync } from 'node:child_process';
 import { resolveChrome, verifyChromeText } from './chrome-tokens.mjs';
 import { buildNativeCardPrompt, intakeNativeCard, nativeReviewToFeedbackRecord, containedNativePath, renderNativeChrome, validateNativeCardReview } from './hybrid-card-core.mjs';
 import { resolveDefaultVisualStyle } from './visual-style-policy.mjs';
+import { validateCardNewsBrief } from './card-news-brief-core.mjs';
 
 import { bundledFontDigest } from './typography-core.mjs';
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
@@ -18,7 +19,7 @@ export const CAROUSEL_VERSION = '1.0.0';
 export const CAROUSEL_CONSTRAINTS = Object.freeze({
   frames: Object.freeze({ min: 1, max: 20 }),
   beats: Object.freeze({ min: 1, max: 60 }),
-  series_fields: Object.freeze(['schema_version','series_id','request','source','profiles','recipe','visual_style','footer_policy','task','typography','regions','layouts','series_label','beats','frames','art_direction_sha256']),
+  series_fields: Object.freeze(['schema_version','series_id','request','source','profiles','recipe','visual_style','footer_policy','content_kind','brief_file','task','typography','regions','layouts','series_label','beats','frames','art_direction_sha256']),
   frame_fields: Object.freeze(['id','function','beat_ids','takeaway','alt_text','headline','headline_emphasis','source_note','layout','blocks','caption','job_ref','art_direction']),
   art_direction_fields: Object.freeze(['plan_id','visual_mode','focal_subject','message','reading_order','asset','asset_block_id','avoid','protected','brand_elements','reuse','render_method','native_prompt_strings']),
   block_fields: Object.freeze(['id','region','kind','ref','sha256','mode','fit','rights_note','protect','focal_box','focal_min_area_ratio','focal_fallback','mockup_risk','text','text_role','source_ref','instruction','generation','provenance']),
@@ -62,9 +63,14 @@ const mergeRoles = (base, override={}) => Object.fromEntries(Object.entries(base
 export function loadVisualRecipes() { return JSON.parse(readFileSync(resolve(ROOT, 'editorial/visual-recipes.v1.json'), 'utf8')); }
 
 /** Pure planning: emits unchanged v1 single-image plans, not rendered evidence. */
-export function planCarousel(series, catalog=loadVisualRecipes()) {
+export function planCarousel(series, catalog=loadVisualRecipes(), contentBrief=null) {
   keys(series, CAROUSEL_CONSTRAINTS.series_fields, 'series');
   need(series.schema_version === CAROUSEL_VERSION && slug(series.series_id), 'SERIES_VERSION', 'v1 and a slug series_id are required');
+  if (series.content_kind === 'card-news') {
+    need(contentBrief, 'CARD_NEWS_BRIEF_REQUIRED', 'brief.json is required for every card-news series');
+    const briefCheck = validateCardNewsBrief(series, contentBrief);
+    need(briefCheck.ok, 'CARD_NEWS_BRIEF_INVALID', briefCheck.issues.map((x) => `${x.code}${x.card_id ? `:${x.card_id}` : ''}`).join(', '));
+  }
   need(series.footer_policy === undefined || ['source_and_pagination','content_only'].includes(series.footer_policy), 'SERIES_FOOTER_POLICY', 'footer_policy must be source_and_pagination or content_only');
   if (series.art_direction_sha256 !== undefined) need(typeof series.art_direction_sha256 === 'string' && /^sha256:[a-f0-9]{64}$/.test(series.art_direction_sha256), 'SERIES_ART_DIRECTION', 'art_direction_sha256 must be a SHA-256 digest');
   need(text(series.request) && (series.series_label === undefined || series.series_label === '' || /^@[A-Za-z0-9._]+$/.test(series.series_label)), 'SERIES_INPUT', 'request required; optional footer series_label may only be an explicit publishing account handle');
@@ -106,12 +112,13 @@ export function planCarousel(series, catalog=loadVisualRecipes()) {
     need(Number.isInteger(style.font_size) && style.font_size >= 14 && style.font_size <= 256 && [400,500,600,700,800].includes(style.weight) && Number.isInteger(style.max_lines) && style.max_lines >= 1 && style.max_lines <= 20 && style.line_height >= 1.05 && style.line_height <= 2 && (style.align === undefined || ['start','middle','end'].includes(style.align)) && (style.font_family === undefined || text(style.font_family)), 'SERIES_TYPE', role);
   }
   keys(series.regions ?? {},Object.keys(catalog.regions),'regions');
-  keys(series.layouts ?? {},Object.keys(catalog.layouts),'layouts');
+  need(obj(series.layouts ?? {}) && Object.keys(series.layouts ?? {}).every(slug), 'SERIES_LAYOUT', 'custom layout ids must be slugs');
   const recurring = {...catalog.regions, ...(series.regions ?? {})};
   const layouts = {...catalog.layouts,...(series.layouts ?? {})};
   for (const [name,layout] of Object.entries(layouts)) {
-    keys(layout,Object.keys(catalog.layouts[name]),`layouts.${name}`);
-    need(Object.keys(catalog.layouts[name]).every((k)=>layout[k]), 'SERIES_REGION', `missing region in ${name}`);
+    const baseLayout = catalog.layouts[name] ?? {};
+    keys(layout,Object.keys(baseLayout).length ? Object.keys(baseLayout) : Object.keys(layout),`layouts.${name}`);
+    need(Object.keys(baseLayout).every((k)=>layout[k]), 'SERIES_REGION', `missing region in ${name}`);
     const effect = catalog.layout_effects?.[name] ?? {};
     const backgroundRegions = effect.background_regions ?? [];
     need(Array.isArray(backgroundRegions) && backgroundRegions.every((id) => Object.hasOwn(layout, id)), 'SERIES_LAYOUT_EFFECT', `${name}: invalid background region`);
@@ -302,10 +309,10 @@ const writeJson=(p,x)=>writeFileSync(p,`${JSON.stringify(x,null,2)}\n`);
 const basenameSafe=(root,path)=>{ need(typeof path==='string' && !relative(root,resolve(root,path)).startsWith('..') && !path.startsWith('/'),'SERIES_REUSE','invalid prior output locator'); return resolve(root,path); };
 
 /** Existing executor owns typography, charts, source hashing and image bytes. */
-export async function executeCarousel(series,{baseDir=process.cwd(),outDir,rasterizer='auto',previousDir=null,targetId=null,targetCatalog=null,nativeSession=null,nativeSessionBaseDir=baseDir}={}) {
+export async function executeCarousel(series,{baseDir=process.cwd(),outDir,rasterizer='auto',previousDir=null,targetId=null,targetCatalog=null,nativeSession=null,nativeSessionBaseDir=baseDir,contentBrief=null}={}) {
   const {compileExecution,executeVisual,prepareOutput,isRenderedOk,GENERATED_OK,RENDER_OK,lineageRootOf,checkRepairLineage,enforceRepairLimit,appendLedger}=await import('./visual-execution-core.mjs');
   const {findRasterizer,rasterize,svgDocument}=await import('./svg-tools.mjs');
-  const compiled=planCarousel(series);
+  const compiled=planCarousel(series,undefined,contentBrief);
   const nativeFrames=compiled.frames.filter((f)=>f.art_direction?.render_method==='native_card');
   const hybridFrames=compiled.frames.filter((f)=>['native_card','compositor'].includes(f.art_direction?.render_method));
   const nativeIds=new Set(nativeFrames.map((f)=>f.id));

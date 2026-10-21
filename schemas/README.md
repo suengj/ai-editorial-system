@@ -2,6 +2,11 @@
 
 Source, Article, and Artifact schemas plus lineage and staleness rules.
 
+`card-news-brief.schema.json` defines the editorial sidecar for card-news
+carousels. `scripts/lib/card-news-brief-core.mjs` enforces cross-file evidence
+mapping and body-depth limits at resolver and render time. Every rendered
+series also requires `card-news-content-qa.schema.json` in `content-qa.json`.
+
 | Contract | Machine schema | Issue |
 |---|---|---|
 | [`content-hub.schema.json`](content-hub.schema.json) | [`content-hub.example.yaml`](content-hub.example.yaml) | AES-CONTENT-HUB (SUE-1300) |

@@ -5,6 +5,28 @@ This document governs **sequential visual surfaces** compiled from a
 carousels, scrollytelling steps, and frames intended to be assembled into a
 narrated video.
 
+### Card-news editorial brief gate
+
+Every card-news carousel must set `content_kind: "card-news"` on its series
+plan and carry a sibling `brief.json` conforming to
+[`schemas/card-news-brief.schema.json`](../schemas/card-news-brief.schema.json).
+The brief is a render prerequisite, not optional research notes. It records the
+reader question, one-sentence angle, 6–10 dated facts with source URL/name,
+reader implication, and a claim/evidence/takeaway map for every card. At least
+six distinct facts must be used across the series. Research sources stay in the
+sidecar; cards do not display research URLs.
+
+The resolver and renderer reject a card-news series with a missing or invalid
+brief, a card without a sourced evidence line, a number/slogan in place of
+substance, fewer than two substantive body lines or 45 non-space body
+characters, more than 120 body characters, or fewer than six distinct facts
+used. Headline text is excluded from the body-length check. Each rendered
+series also carries `content-qa.json` conforming to
+[`schemas/card-news-content-qa.schema.json`](../schemas/card-news-content-qa.schema.json),
+with a reader-learning answer and its single most surprising fact. The
+resolver and renderer require both sidecars. These thresholds are a floor and ceiling for
+readability, not a substitute for an editor's judgment.
+
 It governs information structure, not a slide vendor, theme, animation engine,
 or typography implementation.
 

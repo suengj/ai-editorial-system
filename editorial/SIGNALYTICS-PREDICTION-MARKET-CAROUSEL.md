@@ -1,7 +1,8 @@
 # Signalytics prediction-market carousel (SUE-1726)
 
 Scope: registered `signalytics-news` target, artifact
-`visual/prediction-market-carousel`. Output is five editorial cards with a
+`visual/prediction-market-carousel`. Output is five editorial cards by default,
+with a sixth card when the story needs it (owner request may set six), plus a
 separate `caption.md` and source sidecar. This document governs copy and visible
 card content; PMC continues to own market history and numeric lineage.
 
@@ -37,18 +38,20 @@ card content; PMC continues to own market history and numeric lineage.
   The only permitted on-card source credit is one tiny `출처 Kalshi` or
   `출처 Polymarket` inside the chart panel.
 
-## Five-card order
+## Card order
 
-1. `hook`: strong Korean headline, huge PMC probability and one-line reason it
+1. `hook`: strong Korean headline, huge PMC probability, and a clear reason it
    matters.
-2. `trend`: chart of the actual available window, reader-facing dates and one
+2. `how-to-read`: explain contract cents as payout probability and give the
+   sourced trading volume in one tight explainer.
+3. `trend`: chart of the actual available window, reader-facing dates, and one
    sentence of insight.
-3. `why`: two or three dated, directly sourced event lines woven into the raw
-   PMC price path. Keep temporal sequence distinct from proven causation.
-4. `korea-impact`: concise, verified USD/KRW, Korea-US rate differential and
-   Bank of Korea context.
-5. `watch-next`: a verified next date and the signals that can move the market
-   price.
+4. `why`: dated, sourced inflation, employment, and Fed-policy evidence woven
+   into the observed PMC path. Keep chronology distinct from proven causation.
+5. `korea-impact`: verified USD/KRW, Korea-US rate differential, Bank of Korea
+   context, and concrete transmission to Korean readers.
+6. `watch-next`: verified next date and plain scenario impacts on the market
+   price. The series may use five cards when an explainer is unnecessary.
 
 ## Visual direction
 
@@ -59,6 +62,6 @@ generated-image evidence path for text-free scenes with no logos, fake
 screenshots or real-person likenesses. Keep the PMC chart in its deterministic
 chart panel. Use Noto Serif KR headlines and AES Sans KR body copy. Give every
 card the same grid, margins and text baseline; keep each text block inside its
-container with padding. Contact sheets contain only the five cards in a
-centered 3+2 arrangement. Cards are content-only; only the chart may carry a
+container with padding. Contact sheets contain only the five or six cards in a
+centered 3-column arrangement. Cards are content-only; only the chart may carry a
 tiny provider credit.

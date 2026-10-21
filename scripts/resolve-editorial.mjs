@@ -19,6 +19,7 @@ import { createHash } from 'node:crypto';
 import { parseArgs } from 'node:util';
 import { validateIntent, loadSchema } from './lib/intent-core.mjs';
 import { RuleReader, loadManifest, resolveEditorial, verifyStages, stageStamp, checkDeliveryPackage, DRIVE_TEXT_RE, intentFromPlan, STATUS } from './lib/resolve-core.mjs';
+import { loadAndValidateCardNewsBrief } from './lib/card-news-brief-core.mjs';
 
 try {
   const { values: v } = parseArgs({ options: { 'check-package': { type: 'string' }, stamp: { type: 'string' }, stamps: { type: 'string' }, intent: { type: 'string' }, plan: { type: 'string' }, 'library-merged': { type: 'string' }, target: { type: 'string' }, flow: { type: 'string' }, overrides: { type: 'string' }, 'task-kind': { type: 'string' }, out: { type: 'string' }, 'list-targets': { type: 'boolean', default: false }, flows: { type: 'boolean', default: false }, receipt: { type: 'string' }, stages: { type: 'string' } }, strict: true });
@@ -83,10 +84,19 @@ try {
       if (issues.length) throw Object.assign(new Error(`intent invalid (${issues.length}): ${issues.slice(0, 3).map((i) => `[${i.code}] ${i.where} ${i.message}`).join('; ')}`), { code: 'INTENT_INVALID' });
     }
     // A plan (series.json / request.json) is what gets rendered, so its receipt defaults to the visual task kind.
-    const receipt = resolveEditorial(v.plan ? intentFromPlan(json(v.plan)) : json(v.intent), { targetId: v.target ?? null, flowId: v.flow ?? null, overrides: v.overrides ? json(v.overrides) : {}, taskKind: v['task-kind'] ?? (v.plan ? 'visual' : null), reader });
+    const plan = v.plan ? json(v.plan) : null;
+    if (plan?.content_kind === 'card-news') {
+      const check = loadAndValidateCardNewsBrief(plan, resolve(v.plan));
+      if (!check.ok) {
+        console.log(JSON.stringify({ status: 'BLOCKED_CARD_NEWS_BRIEF', issues: check.issues }, null, 2));
+        process.exitCode = 2;
+        process.exit();
+      }
+    }
+    const receipt = resolveEditorial(plan ? intentFromPlan(plan) : json(v.intent), { targetId: v.target ?? null, flowId: v.flow ?? null, overrides: v.overrides ? json(v.overrides) : {}, taskKind: v['task-kind'] ?? (v.plan ? 'visual' : null), reader });
     const body = `${JSON.stringify(receipt, null, 2)}\n`;
     if (v.out) writeFileSync(resolve(v.out), body); else process.stdout.write(body);
     console.error(`resolve: ${receipt.status}${receipt.profile ? ` profile=${receipt.profile.id} hash=${receipt.profile.resolved_hash.slice(0, 19)}` : ''}${receipt.integrity?.integrity === 'UNVERIFIED' ? ` integrity=UNVERIFIED(${receipt.integrity.unverified_required.length} required rule file(s) not git-verified)` : ''}${receipt.conflicts.length ? ` conflicts=${receipt.conflicts.map((c) => c.code).join(',')}` : ''}`);
     if (receipt.status !== STATUS.READY) process.exitCode = 2;
   }
-} catch (e) { console.error(`[${e.code ?? 'ERROR'}] ${e.message}`); process.exitCode = 1; }
+} catch (e) { console.error(`[${e.code ?? 'ERROR'}] ${e.message}`); process.exitCode = e.code === 'CARD_NEWS_BRIEF_INVALID' || e.code === 'CARD_NEWS_BRIEF_REQUIRED' ? 2 : 1; }

@@ -257,18 +257,19 @@ export function renderChartPanel(spec, { width = 900, height = 520, theme = {}, 
     return axisFmt(value);
   });
   const left = Math.max(78, Math.ceil(Math.max(...yTickLabels.map(tw)) + 18));
-  const right = spec.type === 'line' ? Math.max(100, Math.ceil(Math.max(...spec.series.map((s) => tw(axisFmt(s.points.filter((p) => p[1] !== null).at(-1)[1])))) + 22)) : 26;
+  const right = spec.type === 'line' ? Math.max(spec.emphasize_endpoint ? 125 : 100, Math.ceil(Math.max(...spec.series.map((s) => tw(axisFmt(s.points.filter((p) => p[1] !== null).at(-1)[1])))) + (spec.emphasize_endpoint ? 58 : 22))) : 26;
   const top = spec.type === 'bar' ? 100 : 78, bottom = spec.type === 'bar' ? 126 : 120, pw = width - left - right, ph = height - top - bottom;
   if (pw < width * 0.35 || ph < 80) fail('labels leave insufficient plot space; increase panel size or use another layout');
   const sx = (x) => left + (xmax === xmin ? pw / 2 : ((x - xmin) / (xmax - xmin)) * pw);
   const sy = (y) => top + ph - ((y - ymin) / (ymax - ymin)) * ph;
   const els = [];
-  function text(t, x, y, { anchor = 'start', weight = 400, limit = width - x - 8 } = {}) {
-    if (tw(t) > limit) fail(`text does not fit: ${t}; move full context to a caption, do not truncate`);
-    els.push(`<text x="${n(x)}" y="${n(y)}" text-anchor="${anchor}" font-family="${esc(font)}" font-size="${n(fs)}" font-weight="${weight}" fill="${fg}">${esc(t)}</text>`);
+  function text(t, x, y, { anchor = 'start', weight = 400, size = fs, limit = width - x - 8 } = {}) {
+    const measured = measure ? measure(t, size, weight) : [...String(t)].length * size;
+    if (measured > limit) fail(`text does not fit: ${t}; move full context to a caption, do not truncate`);
+    els.push(`<text x="${n(x)}" y="${n(y)}" text-anchor="${anchor}" font-family="${esc(font)}" font-size="${n(size)}" font-weight="${weight}" fill="${fg}">${esc(t)}</text>`);
   }
   text(spec.title, left, 30, { weight: 600 });
-  text(`${spec.period} · ${spec.y.label}`, left, 59);
+  if (spec.show_mini_label !== false) text(`${spec.period} · ${spec.y.label}`, left, 59);
   for (let i = 0; i <= 4; i++) {
     const v = ymin + (ymax - ymin) * i / 4, y = sy(v);
     els.push(`<line x1="${n(left)}" y1="${n(y)}" x2="${n(left + pw)}" y2="${n(y)}" stroke="${fg}" stroke-opacity="0.14"/>`);
@@ -286,12 +287,13 @@ export function renderChartPanel(spec, { width = 900, height = 520, theme = {}, 
         d += `${open ? 'L' : 'M'}${n(sx(p[0]))},${n(sy(p[1]))} `; open = true;
         els.push(`<circle cx="${n(sx(p[0]))}" cy="${n(sy(p[1]))}" r="2.5" fill="${accent}"/>`);
       }
-      els.push(`<path d="${d.trim()}" fill="none" stroke="${accent}" stroke-width="3" stroke-dasharray="${['none', '7 4', '2 4', '10 3'][i]}"/>`);
+      els.push(`<path d="${d.trim()}" fill="none" stroke="${accent}" stroke-width="${Number.isFinite(spec.line_width) ? Math.max(2, Math.min(8, spec.line_width)) : 3}" stroke-dasharray="${['none', '7 4', '2 4', '10 3'][i]}"/>`);
       const last = actual.at(-1); let ly = sy(last[1]);
+      if (spec.emphasize_endpoint === true) els.push(`<circle cx="${n(sx(last[0]))}" cy="${n(sy(last[1]))}" r="12" fill="${theme.background ?? '#FFFFFF'}" stroke="${accent}" stroke-width="6"/>`);
       while (endpointYs.some((y) => Math.abs(y - ly) < fs * 1.2)) ly += fs * 1.25;
       if (ly > top + ph + fs * 0.5) fail('endpoint labels collide; split series or increase height');
       endpointYs.push(ly);
-      text(axisFmt(last[1]), left + pw + 10, ly + fs * 0.32, { limit: right - 12 });
+      text(axisFmt(last[1]), left + pw + 10, ly + fs * 0.32, { weight: spec.emphasize_endpoint ? 800 : 400, size: spec.emphasize_endpoint ? fs + 4 : fs, limit: right - 12 });
       displayed.push({ series: s.name, endpoint: last, endpoint_label: axisFmt(last[1]), claim: s.claim });
     } else {
       const cell = pw / actual.length;
