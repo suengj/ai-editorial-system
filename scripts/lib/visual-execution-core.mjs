@@ -9,7 +9,7 @@ import { resolve } from 'node:path';
 import { loadAxisProfiles } from './profile-core.mjs';
 import { sha256, resolveWatermark, applyWatermark, decodePng, encodePng, WATERMARK_CHUNK_KEY, FONT_STACK } from './watermark-core.mjs';
 import { renderChartPanel, validateChartAgainstArticle } from './chart-renderer.mjs';
-import { balancedWrap, normalizeKoreanText, locateEmphasis, weightRuns, hasOrphan, requestsBundledFont, assertFontCoverage, bundledFontEnv, verifyBundledResolution, hexToRgb, contrastRatio, worstBackground, autoScrimOpacity } from './typography-core.mjs';
+import { balancedWrap, normalizeKoreanText, locateEmphasis, weightRuns, hasOrphan, requestsBundledFont, requestsBundledSerif, assertFontCoverage, assertBundledSerifCoverage, bundledFontEnv, bundledFontDigest, SERIF_FONT_PATH, verifyBundledResolution, verifyBundledSerifResolution, hexToRgb, contrastRatio, worstBackground, autoScrimOpacity } from './typography-core.mjs';
 import { esc, svgDocument, findRasterizer, rasterize, textMeasurer, wrapText } from './svg-tools.mjs';
 
 // SUE-1426 R2: a generated image only counts as image-generation success with real evidence
@@ -394,8 +394,11 @@ export async function executeVisual(plan, { baseDir = process.cwd(), preset = {}
     writeFileSync(resolve(outDir, 'execution.json'), `${JSON.stringify(packet, null, 2)}\n`);
     return packet;
   }
-  if (requestsBundledFont(packet.theme.font_family) || packet.layers.some((l) => requestsBundledFont(l.font_family))) {
+  const usesSans = requestsBundledFont(packet.theme.font_family) || packet.layers.some((l) => requestsBundledFont(l.font_family));
+  const usesSerif = requestsBundledSerif(packet.theme.font_family) || packet.layers.some((l) => requestsBundledSerif(l.font_family));
+  if (usesSans || usesSerif) {
     adapter = { ...adapter, env: bundledFontEnv() }; // rasterizer sees only the bundled fonts: same result on any machine
+    if (usesSerif) verifyBundledSerifResolution(adapter.env);
     for (const l of packet.layers.filter((layer) => layer.kind === 'text' && requestsBundledFont(layer.font_family ?? packet.theme.font_family))) {
       for (const w of new Set([l.weight, ...(l.emphasis ?? []).map((e) => e.weight ?? l.weight)])) verifyBundledResolution(w, adapter.env);
     }
@@ -424,6 +427,7 @@ export async function executeVisual(plan, { baseDir = process.cwd(), preset = {}
       const printed = l.normalize ? normalizeKoreanText(l.text) : l.text;
       const emph = locateEmphasis(printed, (l.emphasis ?? []).map((e) => ({ ...e, weight: e.weight ?? l.weight })));
       if (requestsBundledFont(family)) { assertFontCoverage(printed, l.weight); for (const e of emph) assertFontCoverage(printed.slice(e.start, e.end), e.weight); }
+      if (requestsBundledSerif(family)) assertBundledSerifCoverage(printed);
       const lm = family === packet.theme.font_family ? measure : textMeasurer(adapter, family);
       const spaced = (t, z, w) => lm(t, z, w) + (l.letter_spacing ?? 0) * z * [...t].length;
       const lines = l.balance
@@ -556,7 +560,7 @@ export async function executeVisual(plan, { baseDir = process.cwd(), preset = {}
   const repairCounted = Boolean(repairOf) && priorOk && isRenderedOk(packet.status);
   const receipt = {
     schema_version: EXECUTION_VERSION, lineage_root: lineage, repair_round: repairCounted ? repairRound + 1 : repairRound, repair_counted: repairCounted, repair_of: repairPrior, status: packet.status, request_hash: packet.request_hash, execution_hash: packet.execution_hash,
-    renderer: { tool: 'aes-visual-execution', version: EXECUTION_VERSION, ...packet.rasterizer, font_stack: packet.theme.font_family },
+    renderer: { tool: 'aes-visual-execution', version: EXECUTION_VERSION, ...packet.rasterizer, font_stack: packet.theme.font_family, font_digest: bundledFontDigest(), ...(usesSerif ? { serif_face: SERIF_FONT_PATH } : {}) },
     inputs: inputs.map((f) => ({ ref: f.ref, sha256: f.sha256 })), geometry: packet.canvas,
     outputs: (() => { const d = isRenderedOk(packet.status) ? '' : 'rejected/'; return { master: { ref: `${d}master.png`, sha256: sha256(master) }, image: { ref: `${d}image.png`, sha256: sha256(final) }, svg: { ref: `${d}master.svg`, sha256: sha256(cleanSvg) } }; })(),
     text: textEvidence, charts, images: imageEvidence, generation: generationEvidence, watermark: watermarkEvidence,

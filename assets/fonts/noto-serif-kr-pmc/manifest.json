@@ -1,0 +1,19 @@
+{
+  "schema_version": "aes-font-registration/1",
+  "font_id": "noto-serif-kr-pmc",
+  "family": "Noto Serif KR",
+  "face": "SemiBold",
+  "weight": 600,
+  "source": "Google Fonts Noto Serif KR; OFL 1.1",
+  "files": {
+    "font": "NotoSerifKR-PMC.ttf",
+    "font_sha256": "0c28b17df3cfe49f3b08c5ce0917b874c5be3fce1400fc6f120ba456cba1d40c",
+    "license": "LICENSE",
+    "license_sha256": "5e0da210fb04058a8c0087985d2d456b931c2579811a49655721d3cf0c36b6d6"
+  },
+  "coverage": {
+    "basic_latin": true,
+    "ks_x_1001_common_hangul_syllables": 2350,
+    "korean_jamo_and_symbols": true
+  }
+}

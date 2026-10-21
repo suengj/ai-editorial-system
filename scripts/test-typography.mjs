@@ -117,21 +117,15 @@ await ok('font digest covers bytes; env isolates FONTCONFIG_*', () => {
   assert(!('FONTCONFIG_SYSROOT' in e) && e.FONTCONFIG_FILE && e.FONTCONFIG_PATH);
   assert.throws(() => isolatedEnv({ FONTCONFIG_FILE: 'x' }));
 });
-await ok('external Noto Serif face is optional, path-registered and digest-bound', () => {
-  const envKey = T.OPTIONAL_SERIF_FONT_ENV, oldPath = process.env[envKey];
-  const external = mkdtempSync(resolve(tmpdir(), 'aes-noto-serif-test-'));
-  const fontPath = resolve(external, 'NotoSerifKR.ttf'); writeFileSync(fontPath, Buffer.from('test font bytes'));
+await ok('registered bundled Noto Serif face resolves, is digest-bound, and fails closed on missing glyphs', () => {
+  const oldPath = process.env[T.OPTIONAL_SERIF_FONT_ENV]; delete process.env[T.OPTIONAL_SERIF_FONT_ENV];
   try {
-    process.env[envKey] = fontPath;
-    const fontEnv = T.bundledFontEnv();
-    assert(readFileSync(fontEnv.FONTCONFIG_FILE, 'utf8').includes(external));
+    assert.equal(T.serifFontManifest().weight, 600);
+    assert.equal(T.verifyBundledSerifResolution(T.bundledFontEnv()), T.SERIF_FONT_PATH);
     assert(/^sha256:[0-9a-f]{64}$/.test(T.bundledFontDigest()));
-    process.env[envKey] = resolve(external, 'missing.ttf');
-    assert.throws(() => T.bundledFontEnv(), code('FONT_FALLBACK'));
-  } finally {
-    if (oldPath === undefined) delete process.env[envKey]; else process.env[envKey] = oldPath;
-  }
-  assert(/^sha256:[0-9a-f]{64}$/.test(T.bundledFontDigest()), 'default bundled-font fallback remains available');
+    T.assertBundledSerifCoverage('사업 2026 ₩ %');
+    assert.throws(() => T.assertBundledSerifCoverage('사업 뷁'), code('FONT_FALLBACK'));
+  } finally { if (oldPath !== undefined) process.env[T.OPTIONAL_SERIF_FONT_ENV] = oldPath; }
 });
 await ok('verifyChromeText compares printed vs resolved', () => {
   const r = resolveChrome({ target: 'acctA', catalog }); assert(verifyChromeText(r, { brand_label: 'ALPHA LAB' }));
@@ -156,6 +150,12 @@ if (!adapter) { skipped++; console.log('SKIP render tests: no rasterizer'); } el
       head({ balance: true, letter_spacing: -0.025, optical_margin: true, min_contrast: 4.5, emphasis: [{ match: '돈이 되는 자리', weight: 900, color: '#FFD479' }] })]), { baseDir: dir, outDir: out('ok') });
     assert.equal(r.receipt.checks.contrast, 'PASS'); assert(r.receipt.checks.auto_scrim[0].opacity > 0.3);
     assert.equal(r.receipt.text[0].orphan, false); assert.equal(r.receipt.text[0].lines.join(' '), r.receipt.text[0].text);
+  });
+  await ok('render: actual headline uses registered Noto Serif KR face', async () => {
+    const r = await executeVisual(mk([photo, head({ font_family: "'Noto Serif KR', serif", font_size: 64, weight: 600, balance: true, min_contrast: 1 })]), { baseDir: dir, outDir: out('serif-headline') });
+    assert.equal(r.receipt.renderer.serif_face, T.SERIF_FONT_PATH);
+    assert.equal(r.receipt.renderer.font_digest, T.bundledFontDigest());
+    assert(readFileSync(out('serif-headline/master.svg'), 'utf8').includes("font-family=\"'Noto Serif KR', serif\""));
   });
   await ok('render: no scrim on bright photo -> CONTRAST_FAIL', async () => {
     await assert.rejects(executeVisual(mk([photo, head({ min_contrast: 4.5 })]), { baseDir: dir, outDir: out('bad') }), code('CONTRAST_FAIL'));
