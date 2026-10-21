@@ -368,8 +368,9 @@ export async function executeCarousel(series,{baseDir=process.cwd(),outDir,raste
   const packets=[];
   for (const f of compiled.frames) packets.push(await compileExecution(f.plan,{baseDir,preset:compiled.preset}));
   const chrome=hybridFrames.length?resolveHybridChrome(targetId,targetCatalog):null;
+  const hasChromeFooter=(series.footer_policy??'source_and_pagination')==='source_and_pagination';
   const pageMarkFor=(f)=>chrome.values.page_mark_format.replaceAll('{index}',String(f.index)).replaceAll('{total}',String(compiled.frames.length));
-  const verifyChrome=(proof,f)=>{verifyChromeText(chrome,{[chrome.values.kicker?'kicker':'brand_label']:proof.label});need(proof.page_mark===pageMarkFor(f),'UNRESOLVED_LABEL',`${f.id}: printed page mark differs from page_mark_format`);};
+  const verifyChrome=(proof,f)=>{verifyChromeText(chrome,{[chrome.values.kicker?'kicker':'brand_label']:proof.label});need(proof.footer_enabled===hasChromeFooter,'UNRESOLVED_LABEL',`${f.id}: chrome footer does not match the content policy`);if(hasChromeFooter)need(proof.page_mark===pageMarkFor(f),'UNRESOLVED_LABEL',`${f.id}: printed page mark differs from page_mark_format`);else need(proof.page_mark===null&&proof.source_line===null,'UNRESOLVED_LABEL',`${f.id}: content-only chrome must omit its footer`);};
   const targetLabel=chrome?(chrome.values.kicker??chrome.values.brand_label):null;
   const nativePrompts=new Map(nativeFrames.map((f)=>[f.id,buildNativeCardPrompt(f,{palette:packets[compiled.frames.indexOf(f)].theme,fontFamily:packets[compiled.frames.indexOf(f)].theme.font_family})]));
   const prior=previousDir?JSON.parse(readFileSync(resolve(previousDir,'series.json'),'utf8')):null;
@@ -429,7 +430,7 @@ export async function executeCarousel(series,{baseDir=process.cwd(),outDir,raste
         } else {
           const intake=intakeNativeCard({pngPath:supplied.png_path,sourceDir:supplied.source_dir,receipt:supplied.receipt,baseDir:nativeSessionBaseDir,rasterizer:adapter});
           const sourceLayer=f.plan.layers.find((layer)=>layer.id==='source');
-          const composed=renderNativeChrome(intake.bytes,{label:targetLabel,sourceLine:sourceLayer?.text,pageMark:pageMarkFor(f),tokens:packets[i].theme,rasterizer:adapter});
+          const composed=renderNativeChrome(intake.bytes,{label:targetLabel,...(hasChromeFooter?{sourceLine:sourceLayer?.text,pageMark:pageMarkFor(f)}:{}),tokens:packets[i].theme,rasterizer:adapter});
           need(hash(readFileSync(intake.path))===intake.receipt.source_sha256,'NATIVE_SOURCE_CHANGED',`${f.id}: native source changed during rendering`);
           const finalSha=hash(composed.bytes);
           const review=supplied.review??(supplied.review_path?JSON.parse(readFileSync(containedNativePath(nativeSessionBaseDir,supplied.review_path,'review_path'),'utf8')):null);
@@ -464,7 +465,7 @@ export async function executeCarousel(series,{baseDir=process.cwd(),outDir,raste
         entry.status=executed.status;
         if(f.art_direction?.render_method==='compositor' && isRenderedOk(entry.status)) {
           const sourceLayer=f.plan.layers.find((layer)=>layer.id==='source');
-          const chromeOptions={label:targetLabel,sourceLine:sourceLayer?.text,pageMark:pageMarkFor(f),tokens:packets[i].theme,rasterizer:adapter};
+          const chromeOptions={label:targetLabel,...(hasChromeFooter?{sourceLine:sourceLayer?.text,pageMark:pageMarkFor(f)}:{}),tokens:packets[i].theme,rasterizer:adapter};
           const masterChrome=renderNativeChrome(readFileSync(resolve(dir,'master.png')),{...chromeOptions});
           const imageChrome=renderNativeChrome(readFileSync(resolve(dir,'image.png')),{...chromeOptions});
           verifyChrome(masterChrome.proof,f); verifyChrome(imageChrome.proof,f);

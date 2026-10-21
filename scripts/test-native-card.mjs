@@ -85,6 +85,11 @@ try {
   const normalized=intakeNativeCard({pngPath:'small.png',receipt:{route:'native_session',generator_id:'native-image-generator',sha256:hash(smallBytes)},baseDir:temp}).bytes;
   const palette=recipes.recipes['editorial-minimal'].theme;
   const chrome=renderNativeChrome(normalized,{label:targetCatalog.targets[0].label,sourceLine:'Source: synthetic fixture',pageMark:'1/3',tokens:palette});
+  const contentOnlyChrome=renderNativeChrome(normalized,{label:targetCatalog.targets[0].label,tokens:palette});
+  assert.equal(contentOnlyChrome.proof.footer_enabled,false,'content-only hybrid composition leaves the footer disabled');
+  assert.equal(contentOnlyChrome.proof.source_line,null);
+  assert.equal(contentOnlyChrome.proof.page_mark,null);
+  assert.deepEqual(contentOnlyChrome.proof.bands.map((band)=>band.y),[0],'content-only chrome records only the header band');
   await test('deterministic chrome draws the target label and changes zero pixels outside reserved bands',()=>{
     assert.equal(chrome.proof.label,'Synthetic target display label');
     assert.equal(chrome.proof.outside_changed_pixels,0);
