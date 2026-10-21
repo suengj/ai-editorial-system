@@ -21,6 +21,7 @@ import { findRasterizer, textMeasurer } from './lib/svg-tools.mjs';
 import { decodePng } from './lib/watermark-core.mjs';
 import { loadPmcPlotBundle, pmcPlotToChartSpec, buildCardPlan, verifyRenderAgainstBundle, pmcPlotDataHash, providerAccent, resolveTitleOrigin, checkTitleNumbers, PmcBindingError } from './lib/pmc-bundle-binding.mjs';
 import { validateCardNewsChartFacts } from './lib/card-news-brief-core.mjs';
+import { CAROUSEL_CONSTRAINTS } from './lib/carousel-core.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const fx = resolve(root, 'scripts/fixtures/pmc-bundle');
@@ -108,6 +109,39 @@ try {
     const b={trend_eligibility:{source_type:'market_pmc'},per_card:{trend:{visual_fact_ids:[]}}};
     assert.equal(validateCardNewsChartFacts(s,b,d).ok,true);
     for(const [key,value] of [['delta_label','+99%p'],['start_date','12.31'],['end_date','01.01']]) { writeFileSync(resolve(d,'trend.json'),JSON.stringify({...spec,[key]:value}));assert.equal(validateCardNewsChartFacts(s,b,d).ok,false,`forged ${key} rejected`); }
+  });
+  await test('PMC source binding rejects forged trend and line-chart data for every allowed frame function', () => {
+    const bundle = loadPmcPlotBundle(GAP);
+    const points = bundle.plot.points.map((p) => ({ observed_at:p.observed_at, value:Number((p.value*100).toPrecision(12)) }));
+    const dt = (v) => `${String(new Date(v).getUTCMonth()+1).padStart(2,'0')}.${String(new Date(v).getUTCDate()).padStart(2,'0')}`;
+    const delta = Number(bundle.plot.delta.value_pp);
+    const trend = { type:'number_visual', layout:'trend-area', start:points[0].value, end:points.at(-1).value, start_label:`${points[0].value}%`, end_label:`${points.at(-1).value}%`, start_date:dt(bundle.plot.delta.baseline_at), end_date:dt(bundle.plot.delta.last_at), delta_label:`${delta>0?'+':delta<0?'−':''}${Number(Math.abs(delta).toPrecision(12))}%p`, points };
+    const line = pmcPlotToChartSpec(bundle);
+    const d = resolve(dir,'function-independent-binding'); mkdirSync(d,{recursive:true}); copyFileSync(GAP,resolve(d,'pmc.plot.json'));
+    const chartPath = resolve(d,'chart.json');
+    const brief = { trend_eligibility:{source_type:'market_pmc'}, per_card:{trend:{visual_fact_ids:[]}} };
+    const seriesFor = (fn) => ({profiles:{artifact:'visual/prediction-market-carousel'},source:{ref:'pmc.plot.json'},frames:[{id:'trend',function:fn,blocks:[{kind:'chart',ref:'chart.json'}]}]});
+    for (const frameFunction of CAROUSEL_CONSTRAINTS.frame_functions) {
+      for (const [label, mutate] of [
+        ['trend date',(s) => { s.start_date='12.31'; }],
+        ['trend observation',(s) => { s.points[1].value += 1; }],
+      ]) {
+        const forged = structuredClone(trend); mutate(forged); writeFileSync(chartPath,JSON.stringify(forged));
+        assert.equal(validateCardNewsChartFacts(seriesFor(frameFunction),brief,d).ok,false,`${frameFunction} rejects forged ${label}`);
+      }
+      for (const [label, mutate] of [
+        ['title',(s) => { s.title='forged title'; }],
+        ['period',(s) => { s.period='forged period'; }],
+        ['date ticks',(s) => { s.x.tick_labels=['forged']; }],
+        ['observation',(s) => { s.series[0].points[0][1] += 1; }],
+      ]) {
+        const forged = structuredClone(line); mutate(forged); writeFileSync(chartPath,JSON.stringify(forged));
+        assert.equal(validateCardNewsChartFacts(seriesFor(frameFunction),brief,d).ok,false,`${frameFunction} rejects forged line-chart ${label}`);
+      }
+    }
+    const nonEditorialProfile = seriesFor('compare'); nonEditorialProfile.profiles.artifact = 'visual/evidence-visual';
+    const alteredData = structuredClone(line); alteredData.series[0].points[0][1] += 1; writeFileSync(chartPath,JSON.stringify(alteredData));
+    assert.equal(validateCardNewsChartFacts(nonEditorialProfile,brief,d).ok,false,'a PMC bundle reference triggers binding even when the artifact profile is different');
   });
   await test('chart-facing period and captions use reader language without process labels', () => {
     const b = loadPmcPlotBundle(GAP); b.plot.meta.outcome_label = null; b.plot.meta.outcome = null;

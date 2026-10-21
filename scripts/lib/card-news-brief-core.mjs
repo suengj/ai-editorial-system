@@ -140,7 +140,9 @@ export function validateCardNewsContentQa(contentQa, series=null) {
 /** Confirm that numeric chart data and number-bearing labels belong to each card's cited facts. */
 export function validateCardNewsChartFacts(series, brief, baseDir = process.cwd()) {
   const issues = [];
-  if (series.profiles?.artifact !== 'visual/prediction-market-carousel') return { ok: true, issues };
+  let sourcePmcBundle = null;
+  try { if (series.source?.ref) sourcePmcBundle = loadPmcPlotBundle(resolve(baseDir, series.source.ref)); } catch { /* A non-PMC source is validated by its declared receipt and facts. */ }
+  if (series.profiles?.artifact !== 'visual/prediction-market-carousel' && brief.trend_eligibility?.source_type !== 'market_pmc' && !sourcePmcBundle) return { ok: true, issues };
   const facts = new Map((brief.facts ?? []).map((fact) => [fact.id, fact]));
   const nums = (value) => String(value ?? '').match(/[-+−]?\d+(?:[.,]\d+)?/gu)?.map((n) => Number(n.replace(/,/g, '').replace('−', '-'))) ?? [];
   const add = (frame, message) => issues.push(issue('CARD_NEWS_CHART_NOT_CANONICAL', message, frame.id));
@@ -155,11 +157,13 @@ export function validateCardNewsChartFacts(series, brief, baseDir = process.cwd(
     let spec;
     try { spec = JSON.parse(readFileSync(resolve(baseDir, block.ref), 'utf8')); }
     catch { add(frame, `data visual bytes are missing or invalid: ${block.ref}`); continue; }
-    if (frame.function === 'show_evidence') {
-      const eligibility = brief.trend_eligibility ?? {};
-      if (eligibility.source_type === 'market_pmc') {
+    const eligibility = brief.trend_eligibility ?? {};
+    const requiresTrendBinding = frame.function === 'show_evidence'
+      || ((eligibility.source_type === 'market_pmc' || sourcePmcBundle) && (spec.type === 'line' || spec.layout === 'trend-area'));
+    if (requiresTrendBinding) {
+      if (eligibility.source_type === 'market_pmc' || sourcePmcBundle) {
         try {
-          const bundle = loadPmcPlotBundle(resolve(baseDir, series.source.ref));
+          const bundle = sourcePmcBundle ?? loadPmcPlotBundle(resolve(baseDir, series.source.ref));
           if (spec.type === 'number_visual' && spec.layout === 'trend-area') {
             const expected = bundle.plot.points.filter((point) => point.value !== null).map((point) => ({ observed_at: point.observed_at, value: Number((point.value * 100).toPrecision(12)) }));
             const dateLabel = (iso) => { const d = new Date(iso); return `${String(d.getUTCMonth()+1).padStart(2,'0')}.${String(d.getUTCDate()).padStart(2,'0')}`; };

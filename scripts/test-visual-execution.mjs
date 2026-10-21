@@ -50,6 +50,8 @@ await test('SVG token membership includes nested viewBox and ancestor transforms
   const scaled = valid.replace('transform="scale(2)"', 'transform="scale(1)"');
   assert.throws(() => assertCardNewsSvgTypeTokens(scaled), /after transform\/viewBox scaling/u);
   assert.throws(() => assertCardNewsSvgTypeTokens('<svg width="100" height="100" viewBox="0 0 100 100"><text font-size="NaN">bad</text></svg>'), /invalid or unsupported SVG font-size/u);
+  const rotated = '<svg width="100" height="100"><g transform="scale(0.25 1)"><g transform="rotate(90)"><text font-size="34">rotated</text></g></g></svg>';
+  assert.equal(svgTextNodesWithEffectiveFontSize(rotated)[0].effectiveFontSize, 8.5, 'effective size follows the composed affine transform applied to the vertical text extent');
 });
 await test('portrait default remains 1080x1350', async () => { const p = clone(base); delete p.task.canvas; assert.equal((await compile(p)).canvas.height, 1350); });
 await test('explicit task beats preset independently', async () => { const p = await compile(base, { preset: { theme: { accent: '#000000' }, watermark: { enabled: true } } }); assert.equal(p.theme.accent, '#2E5BFF'); assert.equal(p.watermark.enabled, false); });

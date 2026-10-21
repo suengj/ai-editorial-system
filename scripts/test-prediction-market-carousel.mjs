@@ -233,6 +233,15 @@ assert.equal(flow.delta_label,'−9%p','flow delta badge remains bound to the ra
 assert.equal(flow.smoothing.method,'uniform_resample_gaussian');
 assert.deepEqual(flow.smoothing.parameters,{resample_count:40,sigma_samples:2,kernel_radius:6,endpoints:'raw_exact'});
 assert.equal(flow.raw_data_sha256,`sha256:${'a'.repeat(64)}`);
+const twoPointTrend={...trendVisual,start:90,end:81,start_label:'90%',end_label:'81%',points:[{observed_at:'2026-10-14T00:00:00Z',value:90},{observed_at:'2026-10-15T00:00:00Z',value:81}]};
+const twoPointRaw=renderNumberVisualPanel({...twoPointTrend,render_mode:'raw'},{width:936,height:769,theme:{accent:'#FF6B5B'}}).displayed[0];
+assert.equal(twoPointRaw.point_count,2,'raw mode renders two observations');
+assert.equal(twoPointRaw.curve_endpoints.start.value,90,'raw two-point segment preserves its first endpoint');
+assert.equal(twoPointRaw.curve_endpoints.end.value,81,'raw two-point segment preserves its last endpoint');
+const twoPointFlow=renderNumberVisualPanel({...twoPointTrend,render_mode:'flow',raw_data_sha256:`sha256:${'b'.repeat(64)}`},{width:936,height:769,theme:{accent:'#FF6B5B'}}).displayed[0];
+assert.equal(twoPointFlow.point_count,2,'flow mode renders two raw observations');
+assert.equal(twoPointFlow.curve_endpoints.start.value,90,'flow mode preserves the exact two-point start');
+assert.equal(twoPointFlow.curve_endpoints.end.value,81,'flow mode preserves the exact two-point end');
 assert.equal(flow.start_label_path_bbox_check.passed,true,'the start label bounding box does not intersect the sampled curve path');
 assert.throws(()=>renderNumberVisualPanel({...trendVisual,render_mode:'flow',raw_data_sha256:`sha256:${'a'.repeat(64)}`,intermediate_labels:['10.14: 90%']},{width:936,height:769}),/flow mode is forbidden/u);
 const numericLayers = numericPlan.frames.flatMap((frame) => frame.plan.layers).filter((layer) => layer.kind === 'text');

@@ -399,7 +399,7 @@ export function renderNumberVisualPanel(spec, { width = 900, height = 520, theme
     if (renderMode === 'flow' && ((spec.intermediate_labels?.length ?? 0) > 0 || points?.some((p) => p.label !== undefined))) fail('flow mode is forbidden when intermediate point labels are shown');
     if (renderMode === 'flow' && !/^sha256:[a-f0-9]{64}$/.test(spec.raw_data_sha256 ?? '')) fail('flow mode requires the verified raw PMC data hash');
     if (![start,end].every(v=>Number.isFinite(v)&&v>=0&&v<=100)||!start_label||!end_label||!start_date||!end_date) fail('trend-area needs two dated 0–100 endpoints');
-    if (points !== undefined && (!Array.isArray(points) || points.length < 3 || points.some((p,i) => !Number.isFinite(p.value) || p.value < 0 || p.value > 100 || typeof p.observed_at !== 'string' || !Number.isFinite(Date.parse(p.observed_at)) || (i > 0 && Date.parse(p.observed_at) <= Date.parse(points[i-1].observed_at))))) fail('trend-area points must be finite ordered sourced observations in range');
+    if (points !== undefined && (!Array.isArray(points) || points.length < 2 || points.some((p,i) => !Number.isFinite(p.value) || p.value < 0 || p.value > 100 || typeof p.observed_at !== 'string' || !Number.isFinite(Date.parse(p.observed_at)) || (i > 0 && Date.parse(p.observed_at) <= Date.parse(points[i-1].observed_at))))) fail('trend-area points must be finite ordered sourced observations in range');
     if (labelNumber(start_label)!==start || labelNumber(end_label)!==end) fail('trend-area endpoint labels must match their plotted values');
     if (points && (points[0].value !== start || points.at(-1).value !== end)) fail('trend-area point endpoints must match the supplied endpoints');
     const values = points?.map(p => p.value) ?? [start,end];

@@ -26,14 +26,16 @@ const transformMatrix = (value = '') => {
   return matrix;
 };
 const viewBoxScale = (attrs) => {
-  if (!attrs.viewBox) return 1;
+  if (!attrs.viewBox) return [1, 0, 0, 1, 0, 0];
   const box = attrs.viewBox.trim().split(/[\s,]+/u).map(Number);
   const width = Number.parseFloat(attrs.width), height = Number.parseFloat(attrs.height);
   if (box.length !== 4 || box.some((value) => !Number.isFinite(value)) || box[2] <= 0 || box[3] <= 0 || !Number.isFinite(width) || !Number.isFinite(height)) {
     throw new Error(`cannot resolve SVG viewBox scale: ${JSON.stringify(attrs)}`);
   }
   const scaleX = width / box[2], scaleY = height / box[3];
-  return attrs.preserveAspectRatio?.trim().startsWith('none') ? scaleY : Math.min(scaleX, scaleY);
+  if (attrs.preserveAspectRatio?.trim().startsWith('none')) return [scaleX, 0, 0, scaleY, 0, 0];
+  const scale = Math.min(scaleX, scaleY);
+  return [scale, 0, 0, scale, 0, 0];
 };
 
 export function svgTextNodesWithEffectiveFontSize(svg) {
@@ -49,8 +51,9 @@ export function svgTextNodesWithEffectiveFontSize(svg) {
       continue;
     }
     const attrs = parseAttrs(match[2]);
-    const parent = stack.at(-1) ?? { fontSize: null, scaleY: 1 };
+    const parent = stack.at(-1) ?? { fontSize: null, matrix: [1, 0, 0, 1, 0, 0] };
     const transform = transformMatrix(attrs.transform);
+    const matrix = multiply(multiply(parent.matrix, viewBoxScale(attrs)), transform);
     const fontRaw = attrs['font-size'] ?? parent.fontSize;
     let fontSize = null;
     if (fontRaw !== null) {
@@ -58,7 +61,7 @@ export function svgTextNodesWithEffectiveFontSize(svg) {
       if (!Number.isFinite(parsed) || !/^\s*[+-]?(?:\d+\.?\d*|\.\d+)(?:px)?\s*$/u.test(fontRaw)) throw new Error(`invalid or unsupported SVG font-size: ${fontRaw}`);
       fontSize = parsed;
     }
-    const scaleY = parent.scaleY * viewBoxScale(attrs) * Math.hypot(transform[2], transform[3]);
+    const scaleY = Math.hypot(matrix[2], matrix[3]);
     if (name === 'text') {
       if (fontSize === null) throw new Error('SVG text node has no resolvable font-size');
       const start = match.index + match[0].length;
@@ -67,7 +70,7 @@ export function svgTextNodesWithEffectiveFontSize(svg) {
       const content = svg.slice(start, end).replace(/<[^>]*>/gu, '').replace(/&amp;/gu, '&').replace(/&lt;/gu, '<').replace(/&gt;/gu, '>').trim();
       nodes.push({ text: content, fontSize, effectiveFontSize: fontSize * scaleY, scaleY, attrs });
     }
-    if (!/\/\s*>$/u.test(match[0])) stack.push({ name, fontSize, scaleY });
+    if (!/\/\s*>$/u.test(match[0])) stack.push({ name, fontSize, matrix });
   }
   return nodes;
 }
