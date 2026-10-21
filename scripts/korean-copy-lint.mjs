@@ -19,6 +19,7 @@ export function resolveCopyProfile(profileId) {
 
 const MAGNITUDES = '만억조천';
 const MAGNITUDE_FOLLOWING_UNITS = '(?:명|원|달러|유로|엔|개|건|곳|회|배|톤|kg|㎏|km|㎞|명|가구|%|p)';
+const CURRENCY_PREFIXES = ['US$', 'KRW', 'USD', '$', '₩', '€', '¥', '£'];
 
 function escapeRegExp(value) {
   return value.replace(/[.*+?^${}()|[\]\\]/gu, '\\$&');
@@ -26,11 +27,13 @@ function escapeRegExp(value) {
 
 function parseHero(heroNumber) {
   const hero = heroNumber.trim();
-  const match = /^([+\-−±]?)(\d{1,3}(?:,\d{3})+|\d+)(\.\d+)?\s*([만억조천])?\s*(.*)$/u.exec(hero);
+  const prefixPattern = CURRENCY_PREFIXES.map(escapeRegExp).join('|');
+  const match = new RegExp(`^(${prefixPattern})?\\s*([+\\-−±]?)(\\d{1,3}(?:,\\d{3})+|\\d+)(\\.\\d+)?\\s*([만억조천])?\\s*(.*)$`, 'iu').exec(hero);
   if (!match) return null;
-  const [, rawSign, integer, fraction = '', magnitude = '', rawUnit = ''] = match;
+  const [, rawPrefix = '', rawSign, integer, fraction = '', magnitude = '', rawUnit = ''] = match;
   const unit = rawUnit.trim().replaceAll(/\s+/gu, ' ');
   return {
+    prefix: rawPrefix.toUpperCase(),
     sign: rawSign === '−' ? '-' : rawSign,
     integer,
     fraction,
@@ -45,6 +48,7 @@ export function countHeroNumericTokens(text, heroNumber) {
   const hero = parseHero(heroNumber);
   if (!hero) return 0;
 
+  const prefix = hero.prefix ? `(?<![\\p{L}\\d])${escapeRegExp(hero.prefix)}\\s*` : '';
   const sign = hero.sign ? (hero.sign === '-' ? '[-−]' : escapeRegExp(hero.sign)) : '';
   const number = `${escapeRegExp(hero.integer)}${escapeRegExp(hero.fraction)}`;
   const magnitude = hero.magnitude ? `\\s*${escapeRegExp(hero.magnitude)}` : '';
@@ -57,7 +61,7 @@ export function countHeroNumericTokens(text, heroNumber) {
   else if (!hero.unit && !hero.magnitude) continuation += `(?!\\s*[${MAGNITUDES}%]|,\\d)`;
   else if (!hero.unit && hero.magnitude) continuation += `(?!\\s*${MAGNITUDE_FOLLOWING_UNITS})`;
 
-  const pattern = new RegExp(`(?<![\\d.+\\-−±])(?<!\\d,)${sign}${number}${magnitude}${unit}${continuation}`, 'giu');
+  const pattern = new RegExp(`${prefix}(?<![\\d.+\\-−±])(?<!\\d,)${sign}${number}${magnitude}${unit}${continuation}`, 'giu');
   return [...text.matchAll(pattern)].length;
 }
 

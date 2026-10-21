@@ -63,6 +63,10 @@ const numericTokenCases = [
   ['35%였다. 35%였다.', '35%', 2],
   ['35명이다. 35명이다.', '35명', 2],
   ['35%→40%, 35%→45%', '35%', 2],
+  // Currency-prefix regressions, including optional whitespace for code prefixes.
+  ['$35와 $35다.', '$35', 2],
+  ['₩35,000과 ₩35,000이다.', '₩35,000', 2],
+  ['US$ 35, US$35', 'US$35', 2],
 ];
 for (const [text, heroNumber, expected] of numericTokenCases) {
   assert.equal(countHeroNumericTokens(text, heroNumber), expected, `${JSON.stringify(text)} should contain ${heroNumber} ${expected} time(s)`);
