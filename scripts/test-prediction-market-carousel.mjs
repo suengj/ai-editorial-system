@@ -199,6 +199,10 @@ const forgedChartSpec = pmcPlotToChartSpec(pmcBundle); forgedChartSpec.series[0]
 writeFileSync(resolve(pmcChartDir,'chart.spec.json'), JSON.stringify(forgedChartSpec));
 assert.equal(validateCardNewsChartFacts(boundTrendSeries,boundTrendBrief,pmcChartDir).ok,false,'a forged trend point fails PMC chart binding');
 const canonicalLineSpec = pmcPlotToChartSpec(pmcBundle);
+const indexedForgedLineSpec = structuredClone(canonicalLineSpec);
+indexedForgedLineSpec.series[0].points = indexedForgedLineSpec.series[0].points.map((point, index) => [index, point[1] + 7]);
+writeFileSync(resolve(pmcChartDir,'chart.spec.json'), JSON.stringify(indexedForgedLineSpec));
+assert.equal(validateCardNewsChartFacts(boundTrendSeries,boundTrendBrief,pmcChartDir).ok,false,'PMC-bound trends reject forged observations even when timestamps are replaced with sequential indices and calendar ticks remain');
 for (const [mutate, description] of [
   [(s) => { s.x.tick_labels[String(s.series[0].points[0][0])] = '10.99'; }, 'tick'],
   [(s) => { s.title = '2099.01'; }, 'title'],

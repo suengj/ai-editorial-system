@@ -18,9 +18,20 @@ function magnitudeStrings(value, out = []) {
   return out;
 }
 
-function isTrendChart(spec) {
+function isMarketSourceReference(value, key = '') {
+  if (typeof value === 'string') {
+    return /^(?:pmc:|market_pmc$)|\b(?:prediction market|market source|pmc)\b/iu.test(value)
+      || /^(?:source|source_type|source_ref|claim|bundle|bundle_ref)$/iu.test(key) && /market|pmc/iu.test(value);
+  }
+  if (Array.isArray(value)) return value.some((item) => isMarketSourceReference(item, key));
+  if (value && typeof value === 'object') return Object.entries(value).some(([childKey, child]) => isMarketSourceReference(child, childKey));
+  return false;
+}
+
+function isTrendChart(spec, hasVerifiedPmcSource = false) {
   if (spec?.type === 'number_visual' && spec.layout === 'trend-area') return true;
   if (!['line', 'area'].includes(spec?.type)) return false;
+  if (hasVerifiedPmcSource || isMarketSourceReference(spec)) return true;
   const temporal = (point) => Array.isArray(point)
     ? (typeof point[0] === 'string' && Number.isFinite(Date.parse(point[0])) || Number.isFinite(point[0]) && point[0] > 1e9)
     : point && (typeof point.observed_at === 'string' || typeof point.t === 'string' || Number.isFinite(point.timestamp));
@@ -62,7 +73,7 @@ export function validateCardNewsBrief(series, brief) {
     try { loadPmcPlotBundle(resolve(brief._series_dir ?? process.cwd(), series.source?.ref ?? '')); hasVerifiedPmcSource = true; } catch { /* Non-PMC plans use their chart specs and declared eligibility. */ }
     const trendFrames = series.frames.filter((frame) => (frame.blocks ?? []).some((block) => {
       if (block.kind !== 'chart') return false;
-      try { return isTrendChart(JSON.parse(readFileSync(resolve(brief._series_dir ?? process.cwd(), block.ref), 'utf8'))); }
+      try { return isTrendChart(JSON.parse(readFileSync(resolve(brief._series_dir ?? process.cwd(), block.ref), 'utf8')), hasVerifiedPmcSource); }
       catch { return hasVerifiedPmcSource; }
     }));
     if (trendFrames.length) {
@@ -199,7 +210,7 @@ export function validateCardNewsChartFacts(series, brief, baseDir = process.cwd(
     try { spec = JSON.parse(readFileSync(resolve(baseDir, block.ref), 'utf8')); }
     catch { add(frame, `data visual bytes are missing or invalid: ${block.ref}`); continue; }
     const eligibility = brief.trend_eligibility ?? {};
-    const requiresTrendBinding = isTrendChart(spec);
+    const requiresTrendBinding = isTrendChart(spec, Boolean(sourcePmcBundle));
     if (requiresTrendBinding) {
       if (eligibility.source_type === 'market_pmc' || sourcePmcBundle) {
         try {
