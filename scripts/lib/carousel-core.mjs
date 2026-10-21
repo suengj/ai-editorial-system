@@ -19,7 +19,7 @@ export const CAROUSEL_VERSION = '1.0.0';
 export const CAROUSEL_CONSTRAINTS = Object.freeze({
   frames: Object.freeze({ min: 1, max: 20 }),
   beats: Object.freeze({ min: 1, max: 60 }),
-  series_fields: Object.freeze(['schema_version','series_id','request','source','profiles','recipe','visual_style','footer_policy','content_kind','numeric_profile','brief_file','task','typography','regions','layouts','series_label','beats','frames','art_direction_sha256']),
+  series_fields: Object.freeze(['schema_version','series_id','request','source','profiles','recipe','visual_style','footer_policy','content_kind','requires_brief','numeric_profile','brief_file','task','typography','regions','layouts','series_label','beats','frames','art_direction_sha256']),
   frame_fields: Object.freeze(['id','function','beat_ids','takeaway','alt_text','headline','headline_emphasis','source_note','layout','blocks','caption','job_ref','art_direction']),
   art_direction_fields: Object.freeze(['plan_id','visual_mode','focal_subject','message','reading_order','asset','asset_block_id','avoid','protected','brand_elements','reuse','render_method','native_prompt_strings']),
   block_fields: Object.freeze(['id','region','kind','ref','sha256','mode','fit','rights_note','protect','focal_box','focal_min_area_ratio','focal_fallback','mockup_risk','text','text_role','source_ref','instruction','generation','provenance']),
@@ -68,6 +68,7 @@ export function planCarousel(series, catalog=loadVisualRecipes(), contentBrief=n
   keys(series, CAROUSEL_CONSTRAINTS.series_fields, 'series');
   need(series.schema_version === CAROUSEL_VERSION && slug(series.series_id), 'SERIES_VERSION', 'v1 and a slug series_id are required');
   if (series.profiles?.artifact === 'visual/prediction-market-carousel') {
+    need(series.requires_brief === true, 'CARD_NEWS_BRIEF_CONTRACT', 'prediction-market series must declare requires_brief: true');
     need(series.content_kind === 'card-news' && series.numeric_profile === true, 'CARD_NEWS_PROFILE_CONTRACT', 'prediction-market carousel profile requires card-news content and its numeric contract');
     need(contentBrief, 'CARD_NEWS_BRIEF_REQUIRED', 'the selected prediction-market profile requires its sourced brief');
   }

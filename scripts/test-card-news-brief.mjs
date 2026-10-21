@@ -41,6 +41,7 @@ fail((s, b) => { for (const id of Object.keys(b.per_card).slice(1)) b.per_card[i
 fail((s, b) => { b.facts = b.facts.slice(0, 5); }, 'CARD_NEWS_FACT_COUNT');
 const carousel = JSON.parse(readFileSync('scripts/fixtures/carousel/series.json', 'utf8'));
 assert.throws(() => planCarousel({ ...carousel, content_kind: 'card-news' }), (error) => error.code === 'CARD_NEWS_BRIEF_REQUIRED');
+assert.throws(() => planCarousel({ ...carousel, profiles: { surface: 'instagram', artifact: 'visual/prediction-market-carousel' } }), (error) => error.code === 'CARD_NEWS_BRIEF_CONTRACT', 'selected card-news profile cannot opt out by omitting content_kind');
 carousel.recipe = 'dark-data';
 carousel.layouts = { 'local-panel': { content: { x: 0.06, y: 0.35, width: 0.88, height: 0.45 } } };
 carousel.frames[0].layout = 'local-panel';

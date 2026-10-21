@@ -1,6 +1,7 @@
 {
   "schema_version": "1.0.0",
   "artifact": "visual/prediction-market-carousel",
+  "requires_brief": true,
   "modality": "visual",
   "family": "Five-frame, self-contained prediction-market news carousel for signalytics.news.",
   "primary_job": "Explain one market question, its PMC-bound price history, sourced inflection points, what current news does and does not establish, and the next resolution trigger.",

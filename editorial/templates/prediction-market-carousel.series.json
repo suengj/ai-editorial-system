@@ -11,6 +11,7 @@
     "artifact": "visual/prediction-market-carousel"
   },
   "content_kind": "card-news",
+  "requires_brief": true,
   "numeric_profile": true,
   "recipe": "r4-photo-fullbleed",
   "visual_style": {

@@ -44,6 +44,8 @@ assert.throws(() => planCarousel(template), (error) => error.code === 'CARD_NEWS
 const missingNumericContract = structuredClone(template); delete missingNumericContract.numeric_profile;
 assert.throws(() => planCarousel(missingNumericContract, undefined, {}), (error) => error.code === 'CARD_NEWS_PROFILE_CONTRACT', 'selected profile cannot disable numeric gates by omitting its flag');
 assert.equal(template.content_kind, 'card-news');
+assert.equal(profile.requires_brief, true);
+assert.equal(template.requires_brief, true);
 assert.equal(template.numeric_profile, true);
 assert.equal(template.profiles.artifact, 'visual/prediction-market-carousel');
 assert.equal(template.visual_style.requested_style, 'R4');
