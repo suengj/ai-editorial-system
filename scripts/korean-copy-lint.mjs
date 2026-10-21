@@ -17,79 +17,48 @@ export function resolveCopyProfile(profileId) {
   return family;
 }
 
-function canonicalNumber(value) {
-  const [integerPart, fractionPart] = value.replaceAll(',', '').split('.');
-  const integer = integerPart.replace(/^0+(?=\d)/u, '');
-  const fraction = fractionPart?.replace(/0+$/u, '') ?? '';
-  return fraction ? `${integer}.${fraction}` : integer;
+const MAGNITUDES = '만억조천';
+const MAGNITUDE_FOLLOWING_UNITS = '(?:명|원|달러|유로|엔|개|건|곳|회|배|톤|kg|㎏|km|㎞|명|가구|%|p)';
+
+function escapeRegExp(value) {
+  return value.replace(/[.*+?^${}()|[\]\\]/gu, '\\$&');
 }
 
-function canonicalSign(sign) {
-  return sign === '−' ? '-' : sign;
-}
-
-function canonicalUnit(unit) {
-  // Korean particles and sentence endings may follow a unit without spacing:
-  // e.g. 35%다, 35명은. Keep the unit itself intact and exclude that suffix.
-  const suffix = /(?:에서|으로|까지|부터|보다|은|는|이|가|을|를|의|에|로|와|과|도|다)$/u;
-  const match = suffix.exec(unit);
-  if (match && match.index > 0) unit = unit.slice(0, match.index);
-  return unit.toLowerCase().replaceAll(/\s/gu, '');
-}
-
-export function tokenizeNumericTokens(text) {
-  if (typeof text !== 'string') throw new TypeError('text must be a string');
-  const tokens = [];
-  for (let index = 0; index < text.length;) {
-    const signStart = /[+\-−±]/u.test(text[index] ?? '') && /[0-9]/u.test(text[index + 1] ?? '');
-    const digitStart = /[0-9]/u.test(text[index] ?? '');
-    if (!signStart && !digitStart) {
-      index += 1;
-      continue;
-    }
-
-    const start = index;
-    const previous = text[index - 1] ?? '';
-    const previousPrevious = text[index - 2] ?? '';
-    if (/[0-9.]/u.test(previous) || (previous === ',' && /[0-9]/u.test(previousPrevious)) || (/[+\-−±]/u.test(previous) && digitStart) || (signStart && /[\p{L}\p{N}_]/u.test(previous))) {
-      index += 1;
-      continue;
-    }
-    const sign = signStart ? canonicalSign(text[index++]) : '';
-    let integer = '';
-    while (/[0-9]/u.test(text[index] ?? '')) integer += text[index++];
-    while (text[index] === ',') {
-      const group = text.slice(index + 1, index + 4);
-      const next = text[index + 4];
-      if (!/^[0-9]{3}$/u.test(group) || (/[0-9]/u.test(next ?? ''))) break;
-      integer += group;
-      index += 4;
-    }
-
-    let value = integer;
-    if (text[index] === '.' && /[0-9]/u.test(text[index + 1] ?? '')) {
-      value += '.';
-      index += 1;
-      while (/[0-9]/u.test(text[index] ?? '')) value += text[index++];
-    }
-    const numberEnd = index;
-    while (/\s/u.test(text[index] ?? '')) index += 1;
-    const unitStart = index;
-    while (/[\p{L}\p{S}%]/u.test(text[index] ?? '')) index += 1;
-    const rawUnit = text.slice(unitStart, index);
-    const unit = canonicalUnit(rawUnit);
-    const canonicalValue = canonicalNumber(value);
-    tokens.push({ sign, value: canonicalValue, unit, normalized: `${sign}${canonicalValue}${unit}`, start, end: rawUnit ? index : numberEnd });
-  }
-  return tokens;
+function parseHero(heroNumber) {
+  const hero = heroNumber.trim();
+  const match = /^([+\-−±]?)(\d{1,3}(?:,\d{3})+|\d+)(\.\d+)?\s*([만억조천])?\s*(.*)$/u.exec(hero);
+  if (!match) return null;
+  const [, rawSign, integer, fraction = '', magnitude = '', rawUnit = ''] = match;
+  const unit = rawUnit.trim().replaceAll(/\s+/gu, ' ');
+  return {
+    sign: rawSign === '−' ? '-' : rawSign,
+    integer,
+    fraction,
+    magnitude,
+    unit,
+  };
 }
 
 export function countHeroNumericTokens(text, heroNumber) {
-  const trimmedHero = heroNumber.trim();
-  const heroTokens = tokenizeNumericTokens(trimmedHero);
-  if (heroTokens.length !== 1 || heroTokens[0].start !== 0 || heroTokens[0].end !== trimmedHero.length) return 0;
-  const hero = heroTokens[0].normalized;
-  return tokenizeNumericTokens(text).filter((token) => token.normalized === hero).length;
+  if (typeof text !== 'string') throw new TypeError('text must be a string');
+  if (typeof heroNumber !== 'string') return 0;
+  const hero = parseHero(heroNumber);
+  if (!hero) return 0;
+
+  const sign = hero.sign ? (hero.sign === '-' ? '[-−]' : escapeRegExp(hero.sign)) : '';
+  const number = `${escapeRegExp(hero.integer)}${escapeRegExp(hero.fraction)}`;
+  const magnitude = hero.magnitude ? `\\s*${escapeRegExp(hero.magnitude)}` : '';
+  const unit = hero.unit ? `\\s*${hero.unit.split(/\s+/u).map(escapeRegExp).join('\\s*')}` : '';
+
+  // Only known numeric continuations are reserved. Korean particles and prose
+  // endings remain boundaries, including when attached directly to the unit.
+  let continuation = '(?!\\d|\\.\\d)';
+  if (hero.unit === '%') continuation += '(?![pP])';
+  else if (!hero.unit && !hero.magnitude) continuation += `(?!\\s*[${MAGNITUDES}%]|,\\d)`;
+  else if (!hero.unit && hero.magnitude) continuation += `(?!\\s*${MAGNITUDE_FOLLOWING_UNITS})`;
+
+  const pattern = new RegExp(`(?<![\\d.+\\-−±])(?<!\\d,)${sign}${number}${magnitude}${unit}${continuation}`, 'giu');
+  return [...text.matchAll(pattern)].length;
 }
 
 export function lintKoreanCopy({ text, profileId = 'general', heroNumbers = [] } = {}) {

@@ -56,6 +56,13 @@ const numericTokenCases = [
   ['35만', '35', 0],
   ['+3.5%p, +3.5%p', '+3.5%p', 2],
   ['35bp', '35%', 0],
+  // Hero-driven matching keeps particles and punctuation as valid boundaries.
+  ['35만 명, 35만 명', '35만 명', 2],
+  ['35 km/h, 35 km/h', '35 km/h', 2],
+  ['35만 달러, 35만 원', '35만', 0],
+  ['35%였다. 35%였다.', '35%', 2],
+  ['35명이다. 35명이다.', '35명', 2],
+  ['35%→40%, 35%→45%', '35%', 2],
 ];
 for (const [text, heroNumber, expected] of numericTokenCases) {
   assert.equal(countHeroNumericTokens(text, heroNumber), expected, `${JSON.stringify(text)} should contain ${heroNumber} ${expected} time(s)`);
