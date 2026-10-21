@@ -133,13 +133,29 @@ export function validateCardNewsChartFacts(series, brief, baseDir = process.cwd(
     try { spec = JSON.parse(readFileSync(resolve(baseDir, block.ref), 'utf8')); }
     catch { add(frame, `data visual bytes are missing or invalid: ${block.ref}`); continue; }
     if (frame.function === 'show_evidence') {
-      try {
-        const bundle = loadPmcPlotBundle(resolve(baseDir, series.source.ref));
-        const expected = pmcPlotToChartSpec(bundle);
-        const actualSeries = spec.series?.map((series) => ({ name: series.name, claim: series.claim, points: series.points }));
-        const expectedSeries = expected.series.map((series) => ({ name: series.name, claim: series.claim, points: series.points }));
-        if (spec.type !== 'line' || JSON.stringify(actualSeries) !== JSON.stringify(expectedSeries)) add(frame, 'trend chart points and labels must match the selected verified PMC bundle');
-      } catch { add(frame, 'trend chart cannot be bound to the selected verified PMC bundle'); }
+      const eligibility = brief.trend_eligibility ?? {};
+      if (eligibility.source_type === 'market_pmc') {
+        try {
+          const bundle = loadPmcPlotBundle(resolve(baseDir, series.source.ref));
+          const expected = pmcPlotToChartSpec(bundle);
+          const actualSeries = spec.series?.map((item) => ({ name: item.name, claim: item.claim, points: item.points }));
+          const expectedSeries = expected.series.map((item) => ({ name: item.name, claim: item.claim, points: item.points }));
+          if (spec.type !== 'line' || JSON.stringify(actualSeries) !== JSON.stringify(expectedSeries)) add(frame, 'trend chart points and labels must match the selected verified PMC bundle');
+        } catch { add(frame, 'trend chart cannot be bound to the selected verified PMC bundle'); }
+      } else if (eligibility.source_type === 'official_statistics') {
+        const observations = eligibility.observations ?? [];
+        const expectedPoints = observations.map((point) => [Date.parse(point.t), point.p]);
+        const actualPoints = spec.series?.length === 1 ? spec.series[0].points : null;
+        const receiptValid = typeof eligibility.source_name === 'string' && eligibility.source_name.trim()
+          && typeof eligibility.source_url === 'string' && eligibility.source_url.startsWith('https://')
+          && typeof eligibility.observation_period === 'string' && eligibility.observation_period.trim()
+          && eligibility.comparable === true && expectedPoints.length >= 2 && expectedPoints.every(([t, p]) => Number.isFinite(t) && Number.isFinite(p));
+        if (!receiptValid || spec.type !== 'line' || spec.period !== eligibility.observation_period
+          || !String(spec.source_note ?? '').includes(eligibility.source_name)
+          || JSON.stringify(actualPoints) !== JSON.stringify(expectedPoints)) {
+          add(frame, 'official trend chart must match the brief source/period receipt and ordered observations');
+        }
+      } else add(frame, 'trend chart requires a declared market_pmc or official_statistics source type');
       continue;
     }
     if (spec.type !== 'number_visual') continue;
@@ -164,6 +180,12 @@ export function validateCardNewsChartFacts(series, brief, baseDir = process.cwd(
     if (values.some((value) => !Number.isFinite(value) || !allowed.has(value))) add(frame, 'chart data values must match numbers in the card visual_fact_ids');
     if (labels.flatMap(nums).some((value) => !allowed.has(value))) add(frame, 'number-bearing chart labels must match the card visual_fact_ids');
     const labeledValues = [ ...(spec.items ?? []), ...(spec.rates ?? []) ].filter((item) => typeof item?.label === 'string' && Number.isFinite(item.value));
+    if (spec.layout === 'rate-gap-ratio' && Number.isFinite(spec.ratio?.outflow) && Number.isFinite(spec.ratio?.inflow)) {
+      labeledValues.push(
+        { label: spec.ratio.outflow_label, value: spec.ratio.outflow },
+        { label: spec.ratio.inflow_label, value: spec.ratio.inflow },
+      );
+    }
     if (labeledValues.length) {
       const bindings = Array.isArray(card.visual_value_bindings) ? card.visual_value_bindings : [];
       const usedBindings = new Set();
