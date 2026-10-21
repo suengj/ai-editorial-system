@@ -231,7 +231,7 @@ export function validateCardNewsChartFacts(series, brief, baseDir = process.cwd(
         const binding = index >= 0 ? bindings[index] : null;
         const fact = binding && facts.get(binding.fact_id);
         const expectedDirection = item.direction ?? null;
-        const directionMatch = !expectedDirection || (fact?.direction === expectedDirection && fact?.amount === item.value);
+        const directionMatch = !expectedDirection || (fact?.direction === expectedDirection && fact?.amount === item.value && binding?.direction === expectedDirection);
         if (!binding || usedBindings.has(index) || !ids.includes(binding.fact_id) || !fact || !nums(fact.value).includes(item.value) || !directionMatch) {
           add(frame, `labeled value ${item.label}=${item.value} must bind to its own visual fact`);
         } else usedBindings.add(index);

@@ -89,7 +89,7 @@ const tupleFacts = [
 ];
 const tupleBindings = [
   {label:'United States',value:4,fact_id:'us-rate'}, {label:'Korea',value:3,fact_id:'kr-rate'},
-  {label:'Outflow 2.5',value:2.5,fact_id:'outflow',display_value:'USD 2.5B'}, {label:'Inflow 1',value:1,fact_id:'inflow',display_value:'USD 1B'},
+  {label:'Outflow 2.5',value:2.5,fact_id:'outflow',display_value:'USD 2.5B',direction:'outflow'}, {label:'Inflow 1',value:1,fact_id:'inflow',display_value:'USD 1B',direction:'inflow'},
 ];
 const ratioChart = { type:'number_visual',layout:'rate-gap-ratio',rates:[{label:'United States',value:4},{label:'Korea',value:3}],ratio:{outflow:2.5,inflow:1,outflow_label:'Outflow 2.5',inflow_label:'Inflow 1',outflow_amount_label:'USD 2.5B',inflow_amount_label:'USD 1B',caption:'ratio'} };
 const ratioChartPath = resolve(chartDir, 'ratio-chart.json');
@@ -108,8 +108,8 @@ for (const mutate of [
 const fullFlowSwap=structuredClone(ratioChart);
 [fullFlowSwap.ratio.outflow_label,fullFlowSwap.ratio.inflow_label]=[fullFlowSwap.ratio.inflow_label,fullFlowSwap.ratio.outflow_label];
 const fullFlowBrief=structuredClone(ratioBrief);
-const flowBindings=fullFlowBrief.per_card['card-1'].visual_value_bindings.slice(2);
-[flowBindings[0].label,flowBindings[1].label]=[flowBindings[1].label,flowBindings[0].label];
+const flowBindings=fullFlowBrief.per_card['card-1'].visual_value_bindings;
+[flowBindings[2],flowBindings[3]]=[flowBindings[3],flowBindings[2]];
 writeFileSync(ratioChartPath,JSON.stringify(fullFlowSwap));
 assert.equal(validateCardNewsChartFacts(ratioSeries,fullFlowBrief,chartDir).ok,false,'swapping both flow labels and their bindings cannot override direction-bound source facts');
 const dualChart = { type:'number_visual',layout:'dual-metric',items:[{label:'United States',value:4,max:5,value_label:'4%'},{label:'Korea',value:3,max:5,value_label:'3%'}] };
