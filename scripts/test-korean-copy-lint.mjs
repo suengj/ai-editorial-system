@@ -3,7 +3,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { lintKoreanCopy } from './korean-copy-lint.mjs';
+import { countHeroNumericTokens, lintKoreanCopy } from './korean-copy-lint.mjs';
 
 const flagged = (text, id, profileId = 'signalytics-news', extra = {}) => {
   const result = lintKoreanCopy({ text, profileId, ...extra });
@@ -35,6 +35,19 @@ clean('본문에서 35%와 36%를 비교한다.', 'signalytics-news', { heroNumb
 clean('다른 수치 135%는 35%와 다르다.', 'signalytics-news', { heroNumbers: ['135%'] });
 clean('부채비율은 0.35%다. 지난해에는 1.35%였다.', 'signalytics-news', { heroNumbers: ['35%'] });
 flagged('올해는 35%, 지난해도 35%.', 'repeated-hero-number', 'signalytics-news', { heroNumbers: ['35%'] });
+
+const numericTokenCases = [
+  ['35%,35%,40%', '35%', 2],
+  ['올해는 35%, 지난해도 35%.', '35%', 2],
+  ['0.35% 1.35%', '35%', 0],
+  ['35,000명', '35', 0],
+  ['1,350%', '350%', 0],
+  ['(35%)', '35%', 1],
+  ['35%p', '35%', 0],
+];
+for (const [text, heroNumber, expected] of numericTokenCases) {
+  assert.equal(countHeroNumericTokens(text, heroNumber), expected, `${JSON.stringify(text)} should contain ${heroNumber} ${expected} time(s)`);
+}
 
 const community = lintKoreanCopy({ text: '이번 글에서는 커뮤니티 이야기를 살펴보겠습니다.', profileId: 'trends-moa' });
 assert.equal(community.profile_family, 'community');

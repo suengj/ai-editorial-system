@@ -17,6 +17,63 @@ export function resolveCopyProfile(profileId) {
   return family;
 }
 
+const NUMERIC_UNITS = [
+  '%p', '%', '퍼센트포인트', '퍼센트', 'bps', 'bp', 'GB', 'MB', 'TB', 'km', 'cm', 'mm', 'kg', 'g',
+  '개월', '시간', '분', '초', '년', '월', '일', '주', '명', '원', '배', '개', '건', '회', '곳', '대', '점', '위', '층', '세', '살', '차', '건', '억', '만',
+];
+
+function canonicalNumber(value) {
+  const [integerPart, fractionPart] = value.replaceAll(',', '').split('.');
+  const integer = integerPart.replace(/^0+(?=\d)/u, '');
+  const fraction = fractionPart?.replace(/0+$/u, '') ?? '';
+  return fraction ? `${integer}.${fraction}` : integer;
+}
+
+function unitAt(text, index) {
+  return NUMERIC_UNITS.find((unit) => text.startsWith(unit, index)) ?? '';
+}
+
+export function tokenizeNumericTokens(text) {
+  if (typeof text !== 'string') throw new TypeError('text must be a string');
+  const tokens = [];
+  for (let index = 0; index < text.length;) {
+    if (!/[0-9]/u.test(text[index]) || (index > 0 && /[0-9.]/u.test(text[index - 1]))) {
+      index += 1;
+      continue;
+    }
+
+    const start = index;
+    let integer = '';
+    while (/[0-9]/u.test(text[index] ?? '')) integer += text[index++];
+    while (text[index] === ',') {
+      const group = text.slice(index + 1, index + 4);
+      const next = text[index + 4];
+      if (!/^[0-9]{3}$/u.test(group) || (/[0-9]/u.test(next ?? ''))) break;
+      integer += group;
+      index += 4;
+    }
+
+    let value = integer;
+    if (text[index] === '.' && /[0-9]/u.test(text[index + 1] ?? '')) {
+      value += '.';
+      index += 1;
+      while (/[0-9]/u.test(text[index] ?? '')) value += text[index++];
+    }
+    const unit = unitAt(text, index);
+    index += unit.length;
+    tokens.push({ value: canonicalNumber(value), unit, normalized: `${canonicalNumber(value)}${unit}`, start, end: index });
+  }
+  return tokens;
+}
+
+export function countHeroNumericTokens(text, heroNumber) {
+  const trimmedHero = heroNumber.trim();
+  const heroTokens = tokenizeNumericTokens(trimmedHero);
+  if (heroTokens.length !== 1 || heroTokens[0].start !== 0 || heroTokens[0].end !== trimmedHero.length) return 0;
+  const hero = heroTokens[0].normalized;
+  return tokenizeNumericTokens(text).filter((token) => token.normalized === hero).length;
+}
+
 export function lintKoreanCopy({ text, profileId = 'general', heroNumbers = [] } = {}) {
   if (typeof text !== 'string') throw new TypeError('text must be a string');
   const family = resolveCopyProfile(profileId);
@@ -28,10 +85,7 @@ export function lintKoreanCopy({ text, profileId = 'general', heroNumbers = [] }
   }
   for (const number of heroNumbers) {
     if (typeof number !== 'string' || number.trim() === '') continue;
-    const escaped = number.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    // Keep decimal and thousands separators attached to the numeric token,
-    // while allowing sentence punctuation after a complete value like 35%.
-    const count = [...text.matchAll(new RegExp(`(?<![\\p{N}.,])${escaped}(?![\\p{N}]|[.,][\\p{N}])`, 'gu'))].length;
+    const count = countHeroNumericTokens(text, number);
     if (count > 1) findings.push({ id: 'repeated-hero-number', severity: 'warn', match: number.trim(), count, message: '히어로 수치가 본문에서 반복됩니다. 반복이 독자 이해에 필요한지 확인하세요.' });
   }
   return { profile_id: profileId, profile_family: family, findings, hard_blocks: 0 };
