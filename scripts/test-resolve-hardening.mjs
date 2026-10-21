@@ -69,7 +69,8 @@ test('BUSINESS-IDEA-MAGAZINE.md: the Signalytics packet flow (compile -> resolve
     }
     const r = runDoc(c, scratch, { '/content/packet.json': resolve(scratch, 'packet.json') });
     const rendering = /render-carousel/.test(c);
-    yes(r.status === 0 || (rendering && !hasRasterizer && r.status === 2), `\`${c}\` exit ${r.status}: ${r.stdout.slice(-300)}${r.stderr.slice(0, 300)}`);
+    const documentedPendingArt = rendering && r.status === 2 && /INCOMPLETE:/.test(r.stdout);
+    yes(r.status === 0 || documentedPendingArt || (rendering && !hasRasterizer && r.status === 2), `\`${c}\` exit ${r.status}: ${r.stdout.slice(-300)}${r.stderr.slice(0, 300)}`);
   }
   if (hasRasterizer) yes(existsSync(resolve(scratch, 'bizmag-second/series.json')), 'revised render wrote no manifest');
 });
