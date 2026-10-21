@@ -58,10 +58,12 @@ export function validateCardNewsBrief(series, brief) {
     }
   }
   if (series.profiles?.artifact === 'visual/prediction-market-carousel') {
+    let hasVerifiedPmcSource = false;
+    try { loadPmcPlotBundle(resolve(brief._series_dir ?? process.cwd(), series.source?.ref ?? '')); hasVerifiedPmcSource = true; } catch { /* Non-PMC plans use their chart specs and declared eligibility. */ }
     const trendFrames = series.frames.filter((frame) => (frame.blocks ?? []).some((block) => {
       if (block.kind !== 'chart') return false;
       try { return isTrendChart(JSON.parse(readFileSync(resolve(brief._series_dir ?? process.cwd(), block.ref), 'utf8'))); }
-      catch { return false; }
+      catch { return hasVerifiedPmcSource; }
     }));
     if (trendFrames.length) {
       const trendIssueAdd = (problem, cardId) => issues.push(issue(problem.code, problem.message, cardId));

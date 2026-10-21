@@ -211,6 +211,8 @@ for (const [mutate, description] of [
 const trendPoints = Array.from({length:24},(_,i)=>({observed_at:new Date(Date.UTC(2026,9,14)+i*60*60*1000).toISOString(),value:i===0?90:i===23?81:90-(i/23)*9+(i%3===0?1.8:-1.2)}));
 const trendVisual = {type:'number_visual',layout:'trend-area',title:'test trend',source_note:'Kalshi',start:90,end:81,start_label:'90%',end_label:'81%',start_date:'10.14',end_date:'10.15',delta_label:'−9%p',points:trendPoints};
 const rawDefault=renderNumberVisualPanel(trendVisual,{width:936,height:769,theme:{accent:'#FF6B5B'}});
+assert.throws(()=>renderNumberVisualPanel({...trendVisual,points:undefined},{width:936,height:769}),/requires at least two finite ordered dated observations/u,'raw trend mode cannot invent a curve without observations');
+assert.throws(()=>renderNumberVisualPanel({...trendVisual,points:[]},{width:936,height:769}),/requires at least two finite ordered dated observations/u,'empty raw history cannot produce synthetic geometry');
 const rawExplicit=renderNumberVisualPanel({...trendVisual,render_mode:'raw'},{width:936,height:769,theme:{accent:'#FF6B5B'}});
 const rawTrendText = svgTextNodesWithEffectiveFontSize(rawDefault.svg);
 const cardNewsTokenSizes = Object.values(CARD_NEWS_TYPE_TOKENS).map((token) => token?.font_size).filter(Number.isFinite);
