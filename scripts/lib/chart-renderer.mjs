@@ -406,18 +406,20 @@ export function renderNumberVisualPanel(spec, { width = 900, height = 520, theme
     if (points) {
       const toMs = v => Date.parse(v.observed_at), first = toMs(points[0]), span = toMs(points.at(-1)) - first;
       if (points.some(p => !Number.isFinite(toMs(p))) || span <= 0) fail('trend-area observations need increasing timestamps');
-      const smooth = points.map((p,i) => {
-        if (i===0 || i===points.length-1) return p.value;
-        const weights=[1,2,3,2,1]; let totalWeight=0, sum=0;
-        for(let offset=-2;offset<=2;offset++) { const source=points[Math.max(0,Math.min(points.length-1,i+offset))]; const weight=weights[offset+2]; sum+=source.value*weight; totalWeight+=weight; }
-        return sum/totalWeight;
-      });
-      const pts = points.map((p,i) => ({x:left + (right-left) * (toMs(p)-first) / span, y:y(smooth[i])}));
+      const pts = points.map(p => ({x:left + (right-left) * (toMs(p)-first) / span, y:y(p.value)}));
+      const h=pts.slice(0,-1).map((p,i)=>pts[i+1].x-p.x), sec=pts.slice(0,-1).map((p,i)=>(pts[i+1].y-p.y)/h[i]);
+      const slope=Array(pts.length).fill(0);
+      if(pts.length===2) slope[0]=slope[1]=sec[0];
+      else {
+        const endpoint=(h0,h1,d0,d1)=>{let v=((2*h0+h1)*d0-h0*d1)/(h0+h1);if(Math.sign(v)!==Math.sign(d0))v=0;else if(Math.sign(d0)!==Math.sign(d1)&&Math.abs(v)>3*Math.abs(d0))v=3*d0;return v;};
+        slope[0]=endpoint(h[0],h[1],sec[0],sec[1]);
+        slope[pts.length-1]=endpoint(h.at(-1),h.at(-2),sec.at(-1),sec.at(-2));
+        for(let i=1;i<pts.length-1;i++){if(sec[i-1]*sec[i]<=0)slope[i]=0;else{const w1=2*h[i]+h[i-1],w2=h[i]+2*h[i-1];slope[i]=(w1+w2)/(w1/sec[i-1]+w2/sec[i]);}}
+      }
       const segs=[];
       for (let i=0;i<pts.length-1;i++) {
-        const p0=pts[Math.max(0,i-1)], p1=pts[i], p2=pts[i+1], p3=pts[Math.min(pts.length-1,i+2)];
-        const d=p2.x-p1.x, c1x=p1.x+d/3, c2x=p2.x-d/3;
-        const c1y=p1.y+(p2.y-p0.y)/6, c2y=p2.y-(p3.y-p1.y)/6;
+        const p1=pts[i], p2=pts[i+1], d=h[i], c1x=p1.x+d/3, c2x=p2.x-d/3;
+        const c1y=p1.y+slope[i]*d/3, c2y=p2.y-slope[i+1]*d/3;
         segs.push(`C ${n(c1x)} ${n(c1y)} ${n(c2x)} ${n(c2y)} ${n(p2.x)} ${n(p2.y)}`);
       }
       curve=`M ${n(pts[0].x)} ${n(pts[0].y)} ${segs.join(' ')}`;
