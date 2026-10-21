@@ -155,7 +155,7 @@ export function validateCardNewsContentQa(contentQa, series=null) {
 
 /** The complete set of spec strings consumed as SVG text by supported chart renderers. */
 export function renderedChartTextFields(spec) {
-  const fields = [spec?.title, spec?.source_note];
+  const fields = [spec?.title];
   if (spec?.type === 'number_visual') {
     if (spec.layout === 'comparison-bars' || spec.layout === 'dual-metric') fields.push(...(spec.items ?? []).flatMap((item) => [item.label, item.value_label]));
     else if (spec.layout === 'dot-grid') fields.push(spec.value_label, spec.caption);
@@ -163,7 +163,7 @@ export function renderedChartTextFields(spec) {
     else if (spec.layout === 'rate-gap-ratio') fields.push(...(spec.rates ?? []).map((rate) => rate.label), spec.ratio?.caption, spec.ratio?.outflow_label, spec.ratio?.inflow_label, spec.ratio?.outflow_amount_label, spec.ratio?.inflow_amount_label, '2.5:1');
     else if (spec.layout === 'scenario-split') fields.push(spec.date, ...(spec.scenarios ?? []).flatMap((scenario) => [scenario.label, ...(scenario.detail_lines ?? (scenario.detail ? [scenario.detail] : []))]));
   } else if (['line', 'area'].includes(spec?.type)) {
-    fields.push(spec.period, spec.x?.label, ...Object.values(spec.x?.tick_labels ?? {}), spec.y?.label, spec.y?.unit, ...(spec.series ?? []).flatMap((series) => [series.name, series.claim]));
+    fields.push(spec.period, spec.source_note, spec.x?.label, ...Object.values(spec.x?.tick_labels ?? {}), spec.y?.label, spec.y?.unit, ...(spec.series ?? []).map((series) => series.name));
   }
   return fields.filter((value) => typeof value === 'string');
 }
@@ -185,10 +185,21 @@ export function validateCardNewsChartFacts(series, brief, baseDir = process.cwd(
       const fact = facts.get(id);
       return fact ? nums(`${fact.value ?? ''} ${fact.date ?? ''}`) : [];
     }));
+    for (const point of brief.trend_eligibility?.observations ?? []) {
+      if (Number.isFinite(point?.p)) allowed.add(point.p);
+      const date = new Date(point?.t);
+      if (Number.isFinite(date.getTime())) {
+        allowed.add(date.getUTCFullYear());
+        allowed.add(date.getUTCMonth() + 1);
+        allowed.add(date.getUTCDate());
+        allowed.add(Number(`${date.getUTCMonth() + 1}.${String(date.getUTCDate()).padStart(2, '0')}`));
+      }
+    }
     let spec;
     try { spec = JSON.parse(readFileSync(resolve(baseDir, block.ref), 'utf8')); }
     catch { add(frame, `data visual bytes are missing or invalid: ${block.ref}`); continue; }
     const eligibility = brief.trend_eligibility ?? {};
+    if (renderedChartTextFields(spec).flatMap(nums).some((value) => !allowed.has(value))) add(frame, 'every rendered text field and number-bearing chart claim must match the card visual_fact_ids');
     const requiresTrendBinding = isTrendChart(spec);
     if (requiresTrendBinding) {
       if (eligibility.source_type === 'market_pmc' || sourcePmcBundle) {
@@ -260,7 +271,6 @@ export function validateCardNewsChartFacts(series, brief, baseDir = process.cwd(
       // Strings are checked below, including scenario.detail when detail_lines is absent.
     }
     if (values.some((value) => !Number.isFinite(value) || !allowed.has(value))) add(frame, 'chart data values must match numbers in the card visual_fact_ids');
-    if (renderedChartTextFields(spec).flatMap(nums).some((value) => !allowed.has(value))) add(frame, 'every rendered text field and number-bearing chart claim must match the card visual_fact_ids');
     const labeledValues = [ ...(spec.items ?? []).map((item) => ({ ...item, display_value: item.value_label })), ...(spec.rates ?? []) ].filter((item) => typeof item?.label === 'string' && Number.isFinite(item.value));
     if (spec.layout === 'rate-gap-ratio' && Number.isFinite(spec.ratio?.outflow) && Number.isFinite(spec.ratio?.inflow)) {
       labeledValues.push(

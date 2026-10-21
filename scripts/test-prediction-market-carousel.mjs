@@ -171,7 +171,8 @@ const boundTrendSeries = { ...numericReady, source:{ ...numericReady.source,ref:
 const boundTrendBrief = { ...brief, per_card:{[boundTrendFrame.id]:brief.per_card[boundTrendFrame.id]} };
 const pmcBundle = loadPmcPlotBundle(resolve(pmcChartDir,'pmc.plot.json'));
 writeFileSync(resolve(pmcChartDir,'chart.spec.json'), JSON.stringify(pmcPlotToChartSpec(pmcBundle)));
-assert.equal(validateCardNewsChartFacts(boundTrendSeries,boundTrendBrief,pmcChartDir).ok,true,'the trend chart must exactly match points and labels from the verified selected PMC bundle');
+const boundTrendChartResult = validateCardNewsChartFacts(boundTrendSeries,boundTrendBrief,pmcChartDir);
+assert.equal(boundTrendChartResult.ok,true,`the trend chart must exactly match points and labels from the verified selected PMC bundle (${JSON.stringify(boundTrendChartResult.issues)})`);
 const pmcStart=pmcBundle.plot.points.find((point)=>point.observed_at===pmcBundle.plot.delta.baseline_at);
 const pmcEnd=pmcBundle.plot.points.find((point)=>point.observed_at===pmcBundle.plot.delta.last_at);
 const pmcTrendArea = {

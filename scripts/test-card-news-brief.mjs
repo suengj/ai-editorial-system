@@ -3,7 +3,7 @@ import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { resolve } from 'node:path';
 import { renderedChartTextFields, validateCardNewsBrief, validateCardNewsChartFacts, validateCardNewsContentQa } from './lib/card-news-brief-core.mjs';
-import { renderNumberVisualPanel } from './lib/chart-renderer.mjs';
+import { renderChartPanel, renderNumberVisualPanel } from './lib/chart-renderer.mjs';
 import { validate as validateJsonSchema } from './lib/json-schema-lite.mjs';
 import { planCarousel } from './lib/carousel-core.mjs';
 
@@ -26,7 +26,7 @@ statsSeries.source = { ref: 'stats/history.csv', scope: 'source_bound' };
 statsSeries.frames[0].blocks.push({ id: 'trend-chart', kind: 'chart', ref: 'stats/history.csv' });
 const statsBrief = structuredClone(brief);
 for (const card of Object.values(statsBrief.per_card)) card.visual_fact_ids = [...card.evidence_fact_ids];
-statsBrief.trend_eligibility = { source_type: 'official_statistics', source_name: 'National Statistics Office', source_url: 'https://stats.example.gov/series', observation_period: '2020–2025 annual observations', comparable: true, observations: [{ t: '2020-01-01T00:00:00Z', p: 20 }, { t: '2025-01-01T00:00:00Z', p: 40 }], direction: 'up' };
+statsBrief.trend_eligibility = { source_type: 'official_statistics', source_name: 'National Statistics Office', source_url: 'https://stats.example.gov/series', observation_period: 'annual observations', comparable: true, observations: [{ t: '2020-01-01T00:00:00Z', p: 20 }, { t: '2025-01-01T00:00:00Z', p: 40 }], direction: 'up' };
 assert.equal(validateCardNewsBrief(statsSeries, statsBrief).ok, true, 'official statistics use source, period, and comparability checks without market liquidity/freshness');
 const officialChartDir = mkdtempSync(resolve(tmpdir(), 'aes-card-news-official-chart-'));
 const officialChartPath = resolve(officialChartDir, 'official-trend-chart.json');
@@ -137,6 +137,7 @@ const visualKinds = [
   {type:'number_visual',layout:'dual-metric',title:'A',source_note:'B',items:[{label:'C',value:4,max:5,value_label:'4%'},{label:'D',value:3,max:5,value_label:'3%'}]},
   ratioChart,
   scenarioSpec,
+  {type:'line',title:'Trend',period:'period',source_note:'Source',x:{label:'date',show_label:true,tick_labels:{}},y:{label:'probability',unit:'%'},series:[{name:'Market',claim:'source:series',points:[[Date.parse('2026-10-20T00:00:00Z'),3],[Date.parse('2026-10-21T00:00:00Z'),4]]}]},
 ];
 for (const [index, original] of visualKinds.entries()) {
   const sentinelSpec = structuredClone(original);
@@ -147,7 +148,7 @@ for (const [index, original] of visualKinds.entries()) {
   writeFileSync(resolve(chartDir,'sentinel.json'),JSON.stringify(poisoned));
   const result = validateCardNewsChartFacts(validationSeries,{facts:tupleFacts,per_card:{'card-1':{visual_fact_ids:tupleFacts.map((fact)=>fact.id)} }},chartDir);
   let svgHasSentinel = false;
-  try { svgHasSentinel = renderNumberVisualPanel(poisoned).svg.includes('sentinel 9917'); } catch { /* Invalid poisoned geometry is itself a safe rejection. */ }
+  try { svgHasSentinel = (poisoned.type === 'number_visual' ? renderNumberVisualPanel(poisoned) : renderChartPanel(poisoned)).svg.includes('sentinel 9917'); } catch { /* Invalid poisoned geometry is itself a safe rejection. */ }
   if (svgHasSentinel) assert.equal(result.ok,false,`visual kind ${index} must reject every unbound rendered text number`);
   assert(textFields.length > 0, `visual kind ${index} exposes rendered text fields to the parity gate`);
 }
