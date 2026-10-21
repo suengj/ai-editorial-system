@@ -113,7 +113,7 @@
     }
   },
   "catalog_version": "1.0.0",
-  "content_digest": "sha256:185de28244e5b4a97611fee756277f3486e24342930829d7dda945cabadbb539",
+  "content_digest": "sha256:12ae0192013d57df3fd68c041d75dcd26bba9584d3ff170ecd36af8a449bdca6",
   "field_domains": {
     "call_to_action": {
       "max_length": 200,
@@ -8052,7 +8052,7 @@
           {
             "path": "editorial/BUSINESS-IDEA-MAGAZINE.md",
             "role": "copy:business",
-            "sha256": "0765cd367eb04a3b930f94da7f8f8e60d3eb5e4ca96db7da18e2c4adfedc9aee"
+            "sha256": "081478e6d86f7b3cddae9ccfbe9a62f10ad57c39b6ff7b8c602f090b73661d24"
           },
           {
             "path": "editorial/SIGNALYTICS-BENCHMARK-CARDS.md",
@@ -8079,7 +8079,7 @@
           {
             "path": "editorial/BUSINESS-IDEA-MAGAZINE.md",
             "role": "copy:business",
-            "sha256": "0765cd367eb04a3b930f94da7f8f8e60d3eb5e4ca96db7da18e2c4adfedc9aee"
+            "sha256": "081478e6d86f7b3cddae9ccfbe9a62f10ad57c39b6ff7b8c602f090b73661d24"
           },
           {
             "path": "editorial/INSTAGRAM-NUMERIC-VISUAL-POLICY.md",
