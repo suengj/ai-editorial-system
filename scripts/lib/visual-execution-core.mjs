@@ -227,6 +227,7 @@ export async function compileExecution(plan, { baseDir = process.cwd(), preset =
         if (l.focal_box !== undefined) {
           if (next.fit !== 'cover') fail('FOCAL_CROP', `${l.id}: focal_box requires fit=cover`);
           const f = box(l.focal_box, png);
+          if (f.width < 1 || f.height < 1) fail('FOCAL_CROP', `${l.id}: focal_box rounds to zero source pixels`);
           const ratio = l.focal_min_area_ratio ?? 1;
           if (!Number.isFinite(ratio) || ratio < 0.9 || ratio > 1) fail('FOCAL_CROP', `${l.id}: focal_min_area_ratio must be in [0.9,1]`);
           const evaluate = (slot) => {
@@ -235,7 +236,9 @@ export async function compileExecution(plan, { baseDir = process.cwd(), preset =
             const crop = { x: (png.width - cropWidth) / 2, y: (png.height - cropHeight) / 2, width: cropWidth, height: cropHeight };
             const ix = Math.max(0, Math.min(f.x + f.width, crop.x + crop.width) - Math.max(f.x, crop.x));
             const iy = Math.max(0, Math.min(f.y + f.height, crop.y + crop.height) - Math.max(f.y, crop.y));
-            return { crop, visibleRatio: ix * iy / (f.width * f.height) };
+            const visibleRatio = ix * iy / (f.width * f.height);
+            if (!Number.isFinite(crop.x) || !Number.isFinite(crop.y) || !Number.isFinite(crop.width) || !Number.isFinite(crop.height) || crop.width <= 0 || crop.height <= 0 || !Number.isFinite(visibleRatio)) fail('FOCAL_CROP', `${l.id}: focal visibility calculation is not finite`);
+            return { crop, visibleRatio };
           };
           let evaluated = evaluate(pixelSlot), fallback = 'cover';
           if (evaluated.visibleRatio + 1e-9 < ratio) {

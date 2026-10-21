@@ -214,7 +214,14 @@ export function buildLoadPlan(intent, manifest, { targetId = null, taskKind = nu
     }
   }
   const lang = intent?.constraints?.output_language ?? intent?.request?.language;
-  if (typeof lang === 'string' && Object.hasOwn(manifest.language_packs, lang)) add(manifest.language_packs[lang], 'language');
+  // The ko-KR pack is owner-activated only for visual work on these targets.
+  // Keep its load boundary explicit so a language preference cannot activate
+  // the pack on unrelated accounts or text-only tasks.
+  const languageActivation = lang === 'ko' || lang === 'ko-KR'
+    ? { targets: ['signalytics-news', 'trends-moa'], task_kinds: ['visual'] }
+    : null;
+  const activationAllowed = !languageActivation || (languageActivation.targets.includes(targetId) && languageActivation.task_kinds.includes(taskKind));
+  if (typeof lang === 'string' && Object.hasOwn(manifest.language_packs, lang) && activationAllowed) add(manifest.language_packs[lang], 'language');
 
   const target = targetId && Object.hasOwn(manifest.sns_targets, targetId) ? manifest.sns_targets[targetId] : null;
   if (target) {
