@@ -1,7 +1,11 @@
 import { readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
+import { dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { checkTrendCardEligibility } from './numeric-visual-core.mjs';
 import { loadPmcPlotBundle, pmcPlotToChartSpec } from './pmc-bundle-binding.mjs';
+import { validate as validateSchema } from './json-schema-lite.mjs';
+
+const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 
 const substantive = (value) => String(value ?? '').replace(/\s+/gu, '').length;
 const issue = (code, message, card_id = undefined) => ({ code, message, ...(card_id ? { card_id } : {}) });
@@ -341,6 +345,19 @@ export function loadAndValidateCardNewsBrief(series, seriesPath) {
   const qaPath = resolve(seriesPath ? resolve(seriesPath, '..') : process.cwd(), 'content-qa.json');
   try { contentQa = JSON.parse(readFileSync(qaPath, 'utf8')); }
   catch { return { ok: false, applies: true, brief_path: briefPath, content_qa_path: qaPath, issues: [issue('CARD_NEWS_CONTENT_QA_REQUIRED', `required content-qa sidecar is missing or invalid: ${qaPath}`)] }; }
+  const briefSchema = JSON.parse(readFileSync(resolve(REPO_ROOT, 'schemas/card-news-brief.schema.json'), 'utf8'));
+  const qaSchema = JSON.parse(readFileSync(resolve(REPO_ROOT, 'schemas/card-news-content-qa.schema.json'), 'utf8'));
+  const briefSchemaErrors = validateSchema(brief, briefSchema);
+  const qaSchemaErrors = validateSchema(contentQa, qaSchema);
+  if (briefSchemaErrors.length || qaSchemaErrors.length) {
+    return {
+      ok: false, applies: true, brief_path: briefPath, content_qa_path: qaPath,
+      issues: [
+        ...briefSchemaErrors.map((error) => issue('CARD_NEWS_BRIEF_SCHEMA', `${error.path}: ${error.message}`)),
+        ...qaSchemaErrors.map((error) => issue('CARD_NEWS_CONTENT_QA_SCHEMA', `${error.path}: ${error.message}`)),
+      ],
+    };
+  }
   brief._series_dir = resolve(seriesPath ? resolve(seriesPath, '..') : process.cwd());
   const briefResult = validateCardNewsBrief(series, brief);
   const chartResult = validateCardNewsChartFacts(series, brief, brief._series_dir);

@@ -14,7 +14,7 @@
 const KNOWN_KEYWORDS = new Set([
   '$schema', '$id', '$ref', '$defs', 'title', 'description',
   'type', 'const', 'enum', 'required', 'properties', 'additionalProperties',
-  'items', 'minItems', 'maxItems', 'minProperties', 'maxProperties', 'pattern', 'minLength', 'maxLength', 'minimum', 'maximum', 'exclusiveMinimum', 'format',
+  'items', 'minItems', 'maxItems', 'minProperties', 'maxProperties', 'uniqueItems', 'pattern', 'minLength', 'maxLength', 'minimum', 'maximum', 'exclusiveMinimum', 'format',
 ]);
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
@@ -92,6 +92,9 @@ export function validate(value, schema, root = schema, path = '$') {
     if (schema.format === 'date-time' && !DATE_TIME_RE.test(value)) {
       errors.push({ path, message: 'not an ISO date-time' });
     }
+    if (schema.format === 'uri') {
+      try { new URL(value); } catch { errors.push({ path, message: 'not a valid URI' }); }
+    }
   }
 
   if (typeof value === 'number' && schema.minimum !== undefined && value < schema.minimum) {
@@ -111,6 +114,7 @@ export function validate(value, schema, root = schema, path = '$') {
     if (schema.maxItems !== undefined && value.length > schema.maxItems) {
       errors.push({ path, message: `more than maxItems ${schema.maxItems}` });
     }
+    if (schema.uniqueItems === true && new Set(value.map((item) => JSON.stringify(item))).size !== value.length) errors.push({ path, message: 'array items are not unique' });
     value.forEach((item, i) => {
       errors.push(...validate(item, schema.items, root, `${path}[${i}]`));
     });
@@ -127,7 +131,9 @@ export function validate(value, schema, root = schema, path = '$') {
       if (key in props) {
         errors.push(...validate(sub, props[key], root, `${path}.${key}`));
       } else if (schema.additionalProperties === false) {
-        errors.push({ path, message: `unexpected property "${key}"` });
+        errors.push({ path: `${path}.${key}`, message: 'unexpected property' });
+      } else if (schema.additionalProperties && typeof schema.additionalProperties === 'object') {
+        errors.push(...validate(sub, schema.additionalProperties, root, `${path}.${key}`));
       }
     }
   }
