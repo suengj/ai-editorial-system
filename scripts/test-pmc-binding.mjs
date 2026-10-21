@@ -20,6 +20,7 @@ import { CARD_NEWS_TYPE_TOKENS } from './lib/typography-core.mjs';
 import { findRasterizer, textMeasurer } from './lib/svg-tools.mjs';
 import { decodePng } from './lib/watermark-core.mjs';
 import { loadPmcPlotBundle, pmcPlotToChartSpec, buildCardPlan, verifyRenderAgainstBundle, pmcPlotDataHash, providerAccent, resolveTitleOrigin, checkTitleNumbers, PmcBindingError } from './lib/pmc-bundle-binding.mjs';
+import { validateCardNewsChartFacts } from './lib/card-news-brief-core.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const fx = resolve(root, 'scripts/fixtures/pmc-bundle');
@@ -99,6 +100,14 @@ try {
     assert.equal(pts.length - real.length, changes);
     assert.equal(s.y.min, 0); assert.equal(s.y.max, 100); assert.equal(s.y.unit, '%');
     assert.equal(s.source_note, '출처 Manifold'); assert.ok(!/https?:|\//.test(s.source_note));
+  });
+  await test('PMC trend dates and signed delta are bound to the bundle', () => {
+    const bundle=loadPmcPlotBundle(GAP), points=bundle.plot.points.map(p=>({observed_at:p.observed_at,value:Number((p.value*100).toPrecision(12))})), dt=(v)=>`${String(new Date(v).getUTCMonth()+1).padStart(2,'0')}.${String(new Date(v).getUTCDate()).padStart(2,'0')}`, delta=Number(bundle.plot.delta.value_pp), spec={type:'number_visual',layout:'trend-area',start:points[0].value,end:points.at(-1).value,start_label:`${points[0].value}%`,end_label:`${points.at(-1).value}%`,start_date:dt(bundle.plot.delta.baseline_at),end_date:dt(bundle.plot.delta.last_at),delta_label:`${delta>0?'+':delta<0?'−':''}${Number(Math.abs(delta).toPrecision(12))}%p`,points};
+    const d=resolve(dir,'trend-labels');mkdirSync(d,{recursive:true});copyFileSync(GAP,resolve(d,'pmc.plot.json'));writeFileSync(resolve(d,'trend.json'),JSON.stringify(spec));
+    const s={profiles:{artifact:'visual/prediction-market-carousel'},source:{ref:'pmc.plot.json'},frames:[{id:'trend',function:'show_evidence',blocks:[{kind:'chart',ref:'trend.json'}]}]};
+    const b={trend_eligibility:{source_type:'market_pmc'},per_card:{trend:{visual_fact_ids:[]}}};
+    assert.equal(validateCardNewsChartFacts(s,b,d).ok,true);
+    for(const [key,value] of [['delta_label','+99%p'],['start_date','12.31'],['end_date','01.01']]) { writeFileSync(resolve(d,'trend.json'),JSON.stringify({...spec,[key]:value}));assert.equal(validateCardNewsChartFacts(s,b,d).ok,false,`forged ${key} rejected`); }
   });
   await test('chart-facing period and captions use reader language without process labels', () => {
     const b = loadPmcPlotBundle(GAP); b.plot.meta.outcome_label = null; b.plot.meta.outcome = null;
