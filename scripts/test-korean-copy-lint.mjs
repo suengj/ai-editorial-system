@@ -71,6 +71,13 @@ const numericTokenCases = [
   ['-$35와 -$35다.', '-$35', 2],
   ['+₩35,000과 +₩35,000이다.', '+₩35,000', 2],
   ['$-35와 -$35', '-$35', 2],
+  // Korean magnitude sequences and whitespace-insensitive hero/text matching.
+  ['3천만 원과 3천만 원이다.', '3천만원', 2],
+  ['3 천만원, 3천 만원', '3천만원', 2],
+  ['1조 2천억원, 1조2천억 원', '1조2천억 원', 2],
+  ['3백십만원과 3백십만원', '3백십만원', 2],
+  ['3천만원', '3천만', 0],
+  ['- $ 3 천 만 원, −$3천만원', '-$3천만원', 2],
 ];
 for (const [text, heroNumber, expected] of numericTokenCases) {
   assert.equal(countHeroNumericTokens(text, heroNumber), expected, `${JSON.stringify(text)} should contain ${heroNumber} ${expected} time(s)`);

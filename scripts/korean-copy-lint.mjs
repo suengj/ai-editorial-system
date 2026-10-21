@@ -17,7 +17,7 @@ export function resolveCopyProfile(profileId) {
   return family;
 }
 
-const MAGNITUDES = '만억조천';
+const MAGNITUDES = '천백십만억조';
 const MAGNITUDE_FOLLOWING_UNITS = '(?:명|원|달러|유로|엔|개|건|곳|회|배|톤|kg|㎏|km|㎞|명|가구|%|p)';
 const CURRENCY_PREFIXES = ['US$', 'KRW', 'USD', '$', '₩', '€', '¥', '£'];
 
@@ -25,20 +25,25 @@ function escapeRegExp(value) {
   return value.replace(/[.*+?^${}()|[\]\\]/gu, '\\$&');
 }
 
+function spacedCharacters(value) {
+  return [...value].map(escapeRegExp).join('\\s*');
+}
+
 function parseHero(heroNumber) {
-  const hero = heroNumber.trim();
+  const hero = heroNumber.replaceAll(/\s+/gu, '');
   const prefixPattern = CURRENCY_PREFIXES.map(escapeRegExp).join('|');
-  const match = new RegExp(`^(?:(${prefixPattern})\\s*([+\\-−±]?)|([+\\-−±])\\s*(${prefixPattern})?|([+\\-−±]))?(\\d{1,3}(?:,\\d{3})+|\\d+)(\\.\\d+)?\\s*([만억조천])?\\s*(.*)$`, 'iu').exec(hero);
+  const numericGroup = '(?:\\d{1,3}(?:,\\d{3})+|\\d+)';
+  const match = new RegExp(`^(?:(${prefixPattern})([+\\-−±]?)|([+\\-−±])(${prefixPattern})?|([+\\-−±]))?(${numericGroup}(?:\\.\\d+)?(?:[${MAGNITUDES}]${numericGroup}?)*)\\s*(.*)$`, 'iu').exec(hero);
   if (!match) return null;
-  const [, prefixFirst = '', signAfterPrefix = '', signBeforePrefix = '', prefixAfterSign = '', bareSign = '', integer, fraction = '', magnitude = '', rawUnit = ''] = match;
+  const [, prefixFirst = '', signAfterPrefix = '', signBeforePrefix = '', prefixAfterSign = '', bareSign = '', numericCore, rawUnit = ''] = match;
   const rawPrefix = prefixFirst || prefixAfterSign;
   const rawSign = signAfterPrefix || signBeforePrefix || bareSign;
   const unit = rawUnit.trim().replaceAll(/\s+/gu, ' ');
+  const magnitude = [...numericCore].filter((char) => MAGNITUDES.includes(char)).join('');
   return {
     prefix: rawPrefix.toUpperCase(),
     sign: rawSign === '−' ? '-' : rawSign,
-    integer,
-    fraction,
+    numericCore,
     magnitude,
     unit,
   };
@@ -52,29 +57,29 @@ export function countHeroNumericTokens(text, heroNumber) {
 
   const sign = hero.sign ? (hero.sign === '-' ? '[-−]' : escapeRegExp(hero.sign)) : '';
   const boundary = '(?<![\\d.+\\-−±])(?<!\\d,)';
+  const signed = sign ? `${sign}\\s*` : '';
   let lead = '';
   if (hero.prefix && sign) {
-    const prefix = `(?<![\\p{L}\\d])${escapeRegExp(hero.prefix)}\\s*`;
-    lead = `(?:${prefix}${sign}|${boundary}${sign}\\s*${escapeRegExp(hero.prefix)})`;
+    const prefix = `(?<![\\p{L}\\d])${spacedCharacters(hero.prefix)}\\s*`;
+    lead = `(?:${prefix}${signed}|${boundary}${signed}${spacedCharacters(hero.prefix)}\\s*)`;
   } else if (hero.prefix) {
-    lead = `(?<![\\p{L}\\d])${escapeRegExp(hero.prefix)}\\s*`;
+    lead = `(?<![\\p{L}\\d])${spacedCharacters(hero.prefix)}\\s*`;
   } else if (sign) {
-    lead = `${boundary}${sign}`;
+    lead = `${boundary}${signed}`;
   } else {
     lead = boundary;
   }
-  const number = `${escapeRegExp(hero.integer)}${escapeRegExp(hero.fraction)}`;
-  const magnitude = hero.magnitude ? `\\s*${escapeRegExp(hero.magnitude)}` : '';
-  const unit = hero.unit ? `\\s*${hero.unit.split(/\s+/u).map(escapeRegExp).join('\\s*')}` : '';
+  const number = spacedCharacters(hero.numericCore);
+  const unit = hero.unit ? `\\s*${spacedCharacters(hero.unit)}` : '';
 
   // Only known numeric continuations are reserved. Korean particles and prose
   // endings remain boundaries, including when attached directly to the unit.
-  let continuation = '(?!\\d|\\.\\d)';
+  let continuation = `(?![\\d${MAGNITUDES}]|\\.\\d)`;
   if (hero.unit === '%') continuation += '(?![pP])';
   else if (!hero.unit && !hero.magnitude) continuation += `(?!\\s*[${MAGNITUDES}%]|,\\d)`;
   else if (!hero.unit && hero.magnitude) continuation += `(?!\\s*${MAGNITUDE_FOLLOWING_UNITS})`;
 
-  const pattern = new RegExp(`${lead}${number}${magnitude}${unit}${continuation}`, 'giu');
+  const pattern = new RegExp(`${lead}${number}${unit}${continuation}`, 'giu');
   return [...text.matchAll(pattern)].length;
 }
 
