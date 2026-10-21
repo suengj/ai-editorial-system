@@ -135,7 +135,7 @@ await test('premium number visuals render bound values, grid, gradient area and 
     { type:'number_visual', layout:'dot-grid', title:'가격', source_note:'brief', total:100,filled:81,value_label:'81% · 81¢',caption:'100칸 중 81칸' },
     { type:'number_visual', layout:'trend-area', title:'일주일 흐름', source_note:'brief', start:90,start_label:'90%',start_date:'10.14',end:81,end_label:'81%',end_date:'10.21' },
     { type:'number_visual', layout:'dual-metric', title:'물가와 고용', source_note:'brief', items:[{label:'CPI',value:0.6,max:1,value_label:'0.6%'},{label:'고용',value:29000,max:50000,value_label:'29,000명'}] },
-    { type:'number_visual', layout:'rate-gap-ratio', title:'금리와 흐름', source_note:'brief', rates:[{label:'미국',value:4},{label:'한국',value:3}],ratio:{outflow:129.4,inflow:50.4,outflow_label:'해외 129.4',inflow_label:'유입 50.4',caption:'USD bn'} },
+    { type:'number_visual', layout:'rate-gap-ratio', title:'금리와 흐름', source_note:'brief', rates:[{label:'미국',value:4},{label:'한국',value:3}],ratio:{outflow:129.4,inflow:50.4,outflow_label:'해외 자금',inflow_label:'국내 유입',outflow_amount_label:'USD 129.4B',inflow_amount_label:'USD 50.4B',caption:'증권 자금 흐름 · 약 2.5 : 1'} },
     { type:'number_visual', layout:'scenario-split', title:'회의 시나리오', source_note:'brief', date:'10.28',scenarios:[{label:'동결'},{label:'인상'}] },
   ];
   assert.throws(() => renderChartPanel({ ...specs[1], filled: 1, value_label:'99% · 99¢' }, { width: 936, height: 520, theme }), /dot-grid label must match filled dots/);
@@ -156,15 +156,25 @@ await test('premium number visuals render bound values, grid, gradient area and 
   assert.match(results[1].svg,/font-size="110\.00" font-weight="700"[^>]*>81% · 81센트/,'dot-grid headline uses the shared secondary token and Korean unit spelling');
   assert.match(results[2].svg,/linearGradient/);
   assert.match(results[2].svg,/ C /);
+  const trendGridY=[...results[2].svg.matchAll(/<line\s[^>]+y1="([0-9.]+)"/gu)].map((match)=>Number(match[1]));
+  assert(trendGridY.length>0 && Math.min(...trendGridY)>=0.39*648,'trend hero has a clear region above all gridlines');
   assert.deepEqual(results[2].displayed[0],{start:90,start_label:'90%',start_date:'10.14',end:81,end_label:'81%',end_date:'10.21',point_count:2,delta_label:null});
   const renderedDelta=renderChartPanel({...specs[2],delta_label:'−9%p'},{width:950,height:648,theme});
   assert.match(renderedDelta.svg,/>-9%p<\/text>/,'trend delta uses a renderer-safe minus glyph');
   assert.deepEqual(results[3].displayed.map(x=>x.value_label),['0.6%','29,000명']);
   assert.equal(results[4].displayed.at(-1).gap,'1.00%p');
   assert.equal(results[4].displayed.at(-1).ratio,'2.5:1');
+  assert.match(results[4].svg,/>USD 129.4B</);
+  assert.match(results[4].svg,/>USD 50.4B</);
+  const ratioOnly=renderChartPanel({...specs[4],ratio:{outflow:2.5,inflow:1,outflow_label:'나가는 돈',inflow_label:'들어오는 돈',caption:'증권 자금 흐름 · 2.5:1'}},{width:936,height:520,theme});
+  assert.match(ratioOnly.svg,/>2\.5</,'ratio-only flow labels show the sourced 2.5 term');
+  assert.match(ratioOnly.svg,/>1</,'ratio-only flow labels show the sourced 1 term');
+  assertCardNewsSvgTypeTokens(ratioOnly.svg);
   assert.deepEqual(results[5].displayed.map(x=>x.scenario),['동결','인상']);
   const explicitScale={hero_size:150,label_size:34,body_size:36,chip_size:34,hero_weight:800,label_weight:600,body_weight:400,chip_weight:700};
   const fixedDual=renderChartPanel({...specs[3],typography:explicitScale},{width:936,height:793,theme});
+  assert.equal(fixedDual.geometry.layout_checks.text_bar_overlap,false);
+  assert(fixedDual.geometry.layout_checks.minimum_text_bar_gap_px>=32,'hero numbers have at least 32px of clear space above their bars');
   assert.equal([...fixedDual.svg.matchAll(/font-size="([0-9.]+)"/g)].map((m)=>Number(m[1])).filter((n)=>n===150).length,2);
   assert.equal([...fixedDual.svg.matchAll(/font-size="([0-9.]+)"/g)].map((m)=>Number(m[1])).filter((n)=>n===34).length,2);
   assert.match(fixedDual.svg,/font-size="34\.00" font-weight="600"[^>]*>CPI/);

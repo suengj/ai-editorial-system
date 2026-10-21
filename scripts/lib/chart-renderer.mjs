@@ -354,7 +354,7 @@ export function renderNumberVisualPanel(spec, { width = 900, height = 520, theme
   const fixedTypeScale = true, scale = width / 900;
   const labelSize = expectedType.label_size, valueSize = expectedType.hero_size, secondarySize = CARD_NEWS_TYPE_TOKENS.secondary.font_size, smallSize = expectedType.chip_size, bodySize = expectedType.body_size;
   const heroWeight = expectedType.hero_weight, labelWeight = expectedType.label_weight, bodyWeight = expectedType.body_weight, chipWeight = expectedType.chip_weight, captionWeight = expectedType.label_weight, dateWeight = expectedType.label_weight, scenarioLabelWeight = expectedType.label_weight;
-  const els = [], displayed = [];
+  const els = [], displayed = [], textBoxes = [], barBoxes = [];
   const text = (value, x, y, size = labelSize, weight = 600, anchor = 'start', color = fg) => {
     if (typeof value !== 'string' || !value.length) fail('visible labels must be non-empty strings');
     const measured = measure ? measure(value, size, weight) : [...value].length * size * 0.62;
@@ -362,6 +362,10 @@ export function renderNumberVisualPanel(spec, { width = 900, height = 520, theme
     if (measured > limit) fail(`text does not fit: ${value}`);
     const content = esc(value.replace(/¢/gu, '센트').replace(/−/gu, '-'));
     els.push(`<text x="${n(x)}" y="${n(y)}" text-anchor="${anchor}" font-family="${esc(font)}" font-size="${n(size)}" font-weight="${weight}" fill="${color}">${content}</text>`);
+    const left = anchor === 'end' ? x - measured : anchor === 'middle' ? x - measured / 2 : x;
+    const box = { x: left, y: y - size * 0.8, width: measured, height: size, bottom: y + size * 0.2, text: value };
+    textBoxes.push(box);
+    return box;
   };
   const labelNumber = (value) => {
     const match = String(value ?? '').replace(/,/g, '').match(/[-+−]?\d+(?:\.\d+)?/u);
@@ -394,7 +398,7 @@ export function renderNumberVisualPanel(spec, { width = 900, height = 520, theme
     if (points && (points[0].value !== start || points.at(-1).value !== end)) fail('trend-area point endpoints must match the supplied endpoints');
     const values = points?.map(p => p.value) ?? [start,end];
     const yMin=Math.max(0,Math.floor(Math.min(...values)-4)), yMax=Math.min(100,Math.ceil(Math.max(...values)+4));
-    const left=pad+16, right=width-pad-12, top=height*0.14, bottom=height*0.78, y=(v)=>bottom-((v-yMin)/(yMax-yMin))*(bottom-top), x0=left,x1=right;
+    const left=pad+16, right=width-pad-12, top=height*0.39, bottom=height*0.78, y=(v)=>bottom-((v-yMin)/(yMax-yMin))*(bottom-top), x0=left,x1=right;
     for(let i=0;i<5;i++) line(left,y(yMin+(yMax-yMin)*i/4),right,y(yMin+(yMax-yMin)*i/4),fg,0.12,1.5);
     const gid='trend-area-gradient'; els.push(`<defs><linearGradient id="${gid}" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="${accent}" stop-opacity="0.34"/><stop offset="100%" stop-color="${accent}" stop-opacity="0.015"/></linearGradient></defs>`);
     let curve;
@@ -424,7 +428,7 @@ export function renderNumberVisualPanel(spec, { width = 900, height = 520, theme
     els.push(`<path d="${curve}" fill="none" stroke="${accent}" stroke-width="${n(5*scale)}" stroke-linecap="round"/>`);
     els.push(`<circle cx="${n(x0)}" cy="${n(y(start))}" r="${n(8*scale)}" fill="${bg}" stroke="${accent}" stroke-width="${n(4*scale)}"/>`);
     els.push(`<circle cx="${n(x1)}" cy="${n(y(end))}" r="${n(15*scale)}" fill="${accent}" stroke="${bg}" stroke-width="${n(5*scale)}"/>`);
-    text(start_label,x0,y(start)-22*scale,smallSize,labelWeight,'start'); text(end_label,x1-170*scale,height*0.32,valueSize,heroWeight,'middle'); text(start_date,x0,bottom+44*scale,smallSize,dateWeight); text(end_date,x1,bottom+44*scale,smallSize,dateWeight,'end');
+    text(start_label,x0,y(start)-22*scale,smallSize,labelWeight,'start'); text(end_label,x1-170*scale,height*0.27,valueSize,heroWeight,'middle'); text(start_date,x0,bottom+44*scale,smallSize,dateWeight); text(end_date,x1,bottom+44*scale,smallSize,dateWeight,'end');
     if (spec.delta_label) {
       const chipW=156*scale, chipH=48*scale, chipX=width-pad-chipW, chipY=height*0.88;
       els.push(`<rect x="${n(chipX)}" y="${n(chipY)}" width="${n(chipW)}" height="${n(chipH)}" rx="${n(chipH/2)}" fill="${accent}"/>`);
@@ -434,7 +438,18 @@ export function renderNumberVisualPanel(spec, { width = 900, height = 520, theme
   } else if (spec.layout === 'dual-metric') {
     if (!Array.isArray(spec.items)||spec.items.length!==2||spec.items.some(x=>!x.label||!x.value_label||!Number.isFinite(x.value)||!Number.isFinite(x.max)||x.value<0||x.max<=0||x.value>x.max)) fail('dual-metric needs two independently scaled metrics');
     const y0=fixedTypeScale?height*0.18:height*0.30, rowH=height*0.40, x=pad, w=width-pad*2, bh=22*scale;
-    spec.items.forEach((item,i)=>{if(labelNumber(item.value_label)!==item.value)fail('dual-metric label must equal its metric value');const labelY=y0+i*rowH, valueY=fixedTypeScale?labelY+smallSize+valueSize*0.70:labelY; text(item.label,x,labelY,smallSize,labelWeight); text(item.value_label,width-pad,valueY,valueSize,heroWeight,'end'); const by=valueY+(fixedTypeScale?16:28)*scale; line(x,by+bh/2,x+w,by+bh/2,fg,0.10,bh); els.push(`<rect x="${n(x)}" y="${n(by)}" width="${n(w*item.value/item.max)}" height="${n(bh)}" rx="${n(bh/2)}" fill="${accent}"/>`); displayed.push({label:item.label,value:item.value,max:item.max,value_label:item.value_label});});
+    spec.items.forEach((item,i)=>{
+      if(labelNumber(item.value_label)!==item.value)fail('dual-metric label must equal its metric value');
+      const labelY=y0+i*rowH, valueY=fixedTypeScale?labelY+smallSize+valueSize*0.70:labelY;
+      const labelBox=text(item.label,x,labelY,smallSize,labelWeight);
+      const valueBox=text(item.value_label,width-pad,valueY,valueSize,heroWeight,'end');
+      const by=Math.max(labelBox.bottom,valueBox.bottom)+32;
+      const barWidth=w*item.value/item.max;
+      line(x,by+bh/2,x+w,by+bh/2,fg,0.10,bh);
+      els.push(`<rect x="${n(x)}" y="${n(by)}" width="${n(barWidth)}" height="${n(bh)}" rx="${n(bh/2)}" fill="${accent}"/>`);
+      barBoxes.push({x,y:by,width:barWidth,height:bh,item_index:i});
+      displayed.push({label:item.label,value:item.value,max:item.max,value_label:item.value_label});
+    });
   } else if (spec.layout === 'rate-gap-ratio') {
     const { rates, ratio }=spec;
     if (!Array.isArray(rates)||rates.length!==2||rates.some(x=>!x.label||!Number.isFinite(x.value)||x.value<0||x.value>5)||rates[0].value<=rates[1].value||!Number.isFinite(ratio?.outflow)||!Number.isFinite(ratio?.inflow)||ratio.inflow<=0||Math.abs(ratio.outflow/ratio.inflow-2.5)>0.15||!ratio.outflow_label||!ratio.inflow_label||!ratio.caption) fail('rate-gap-ratio needs descending rates and a source-bound ratio near 2.5:1');
@@ -451,8 +466,8 @@ export function renderNumberVisualPanel(spec, { width = 900, height = 520, theme
     }
     const max=ratio.outflow, captionY=height*0.61, row1Y=height*0.71, row2Y=height*0.85, barH=16*scale;
     text(ratio.caption,x,captionY,smallSize,labelWeight);
-    for (const [index,item] of [{label:ratio.outflow_label,value:ratio.outflow,color:accent},{label:ratio.inflow_label,value:ratio.inflow,color:fg}].entries()) {
-      const labelY=index===0?row1Y:row2Y; text(item.label,x,labelY,smallSize,labelWeight); const barY=labelY+10*scale;
+    for (const [index,item] of [{label:ratio.outflow_label,value:ratio.outflow,amount_label:ratio.outflow_amount_label,color:accent},{label:ratio.inflow_label,value:ratio.inflow,amount_label:ratio.inflow_amount_label,color:fg}].entries()) {
+      const labelY=index===0?row1Y:row2Y; text(item.label,x,labelY,smallSize,labelWeight); text(item.amount_label ?? String(item.value),width-pad,labelY,smallSize,chipWeight,'end',item.color); const barY=labelY+10*scale;
       els.push(`<rect x="${n(x)}" y="${n(barY)}" width="${n(w)}" height="${n(barH)}" rx="${n(barH/2)}" fill="${fg}" fill-opacity="0.08"/>`);
       els.push(`<rect x="${n(x)}" y="${n(barY)}" width="${n(w*item.value/max)}" height="${n(barH)}" rx="${n(barH/2)}" fill="${item.color}"/>`);
     }
@@ -472,5 +487,15 @@ export function renderNumberVisualPanel(spec, { width = 900, height = 520, theme
       displayed.push({scenario:s.label,detail_lines:lines});
     });
   }
-  return { svg:`<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" role="img"><title>${esc(spec.title)}</title>${els.join('')}</svg>`, renderer:{tool:'aes-number-visual-panel',version:PANEL_RENDERER_VERSION}, geometry:{width,height}, displayed, source_note:spec.source_note };
+  let layoutChecks = null;
+  if (spec.layout === 'dual-metric') {
+    const overlaps = barBoxes.some((bar) => textBoxes.some((box) => box.x < bar.x + bar.width && box.x + box.width > bar.x && box.y < bar.y + bar.height && box.bottom > bar.y));
+    const gaps = barBoxes.map((bar) => {
+      const previous = textBoxes.filter((box) => box.x < bar.x + bar.width && box.x + box.width > bar.x && box.bottom <= bar.y).sort((a,b) => b.bottom-a.bottom)[0];
+      return previous ? bar.y - previous.bottom : 0;
+    });
+    if (overlaps || gaps.some((gap) => gap < 32)) fail('dual-metric text and bars must not overlap and need at least a 32px gap');
+    layoutChecks = { text_bar_overlap: overlaps, minimum_text_bar_gap_px: Math.min(...gaps) };
+  }
+  return { svg:`<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" role="img"><title>${esc(spec.title)}</title>${els.join('')}</svg>`, renderer:{tool:'aes-number-visual-panel',version:PANEL_RENDERER_VERSION}, geometry:{width,height,...(layoutChecks?{layout_checks:layoutChecks}:{})}, displayed, source_note:spec.source_note };
 }

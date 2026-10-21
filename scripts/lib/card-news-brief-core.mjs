@@ -174,6 +174,7 @@ export function validateCardNewsChartFacts(series, brief, baseDir = process.cwd(
     } else if (spec.layout === 'rate-gap-ratio') {
       values = [...(spec.rates ?? []).map((rate) => rate.value), spec.ratio?.outflow, spec.ratio?.inflow];
       labels = [...(spec.rates ?? []).map((rate) => rate.label), spec.ratio?.outflow_label, spec.ratio?.inflow_label];
+      labels.push(spec.ratio?.outflow_amount_label, spec.ratio?.inflow_amount_label);
     } else if (spec.layout === 'scenario-split') {
       labels = [spec.date, ...(spec.scenarios ?? []).flatMap((scenario) => [scenario.label, ...(scenario.detail_lines ?? [])])];
     }
