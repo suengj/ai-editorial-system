@@ -106,6 +106,13 @@ test('resolve-editorial --plan derives surface/artifact; the account is never in
   const ok = run(['scripts/resolve-editorial.mjs', '--plan', 'scripts/fixtures/carousel/series.json', '--target', 'signalytics-news']);
   eq(ok.status, 0, ok.stderr);
 });
+test('resolve-editorial blocks generic card-news plans when their brief sidecar is absent', () => {
+  const dir = tmp();
+  const plan = { schema_version:'1.0.0', series_id:'generic-card-news', content_kind:'card-news', source:{ref:'source.md',scope:'illustrative'}, profiles:{surface:'instagram',artifact:'visual/slide-image'}, frames:[] };
+  const file = resolve(dir,'series.json'); writeFileSync(file,JSON.stringify(plan));
+  const result = run(['scripts/resolve-editorial.mjs','--plan',file,'--target','personal-instagram']);
+  eq(result.status,2); yes(/BLOCKED_CARD_NEWS_BRIEF/u.test(result.stdout),'missing card-news brief must block READY');
+});
 
 console.log('B1: RuleReader validity');
 const sh = (cwd, ...a) => spawnSync('git', ['-C', cwd, ...a], { encoding: 'utf8' });
