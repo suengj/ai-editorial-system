@@ -29,7 +29,9 @@ export function lintKoreanCopy({ text, profileId = 'general', heroNumbers = [] }
   for (const number of heroNumbers) {
     if (typeof number !== 'string' || number.trim() === '') continue;
     const escaped = number.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    const count = [...text.matchAll(new RegExp(`(?<![0-9])${escaped}(?![0-9])`, 'gu'))].length;
+    // Treat decimal and thousands separators as part of the numeric token so
+    // a hero value like 35% does not match inside 0.35% or 1,035%.
+    const count = [...text.matchAll(new RegExp(`(?<![\\p{N}.,])${escaped}(?![\\p{N}.,])`, 'gu'))].length;
     if (count > 1) findings.push({ id: 'repeated-hero-number', severity: 'warn', match: number.trim(), count, message: '히어로 수치가 본문에서 반복됩니다. 반복이 독자 이해에 필요한지 확인하세요.' });
   }
   return { profile_id: profileId, profile_family: family, findings, hard_blocks: 0 };

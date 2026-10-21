@@ -39,6 +39,23 @@ ok('job reference is retained for original authority path',()=>{const s=clone();
 ok('no chart values copied into prompts',()=>{assert(first.frames.flatMap((f)=>f.plan.layers).filter((l)=>l.kind==='chart').every((l)=>l.ref && !l.points && !l.instruction));});
 const gen=clone();gen.frames[0].layout='visual';gen.frames[0].blocks=[{id:'art',region:'content',kind:'generated',instruction:'One quiet paper sculpture.'}];
 ok('generation instructions explicitly stay in content slot',()=>{const l=planCarousel(gen).frames[0].plan.layers.find((x)=>x.kind==='generated');assert(l.instruction.includes('compositor clips'));assert.deepEqual(l.slot,loadVisualRecipes().layouts.visual.content);});
+ok('all supporting-art recipes plan compatible prompts with style tokens and palette bindings',()=>{
+  const catalog=loadVisualRecipes();
+  const ids=['photo-editorial','flat-editorial','isometric','clay-3d','glass-3d','risograph','paper-collage','line-accent'];
+  for(const id of ids){
+    const s=clone();s.recipe=id;delete s.visual_style;
+    s.frames[0].layout=undefined;
+    s.frames[0].blocks=[{id:'supporting-art',region:'content',kind:'generated',instruction:'A quiet visual metaphor for the stated takeaway.'}];
+    const planned=planCarousel(s,catalog);
+    const layer=planned.frames[0].plan.layers.find((x)=>x.id==='supporting-art');
+    assert.equal(planned.recipe,id);
+    assert.equal(planned.frames[0].layout,'visual');
+    assert.ok(layer,`${id} generated layer exists`);
+    for(const token of catalog.recipes[id].prompt_style_tokens)assert.ok(layer.instruction.includes(token),`${id} prompt includes style token ${token}`);
+    for(const [role,binding] of Object.entries(catalog.recipes[id].palette_binding))assert.ok(layer.instruction.includes(`${role}=${binding}`),`${id} prompt includes ${role} palette binding`);
+    assert.ok(!layer.instruction.includes('undefined'),`${id} prompt contains no undefined`);
+  }
+});
 ok('unused recipe edits do not invalidate selected recipe',()=>{const c=loadVisualRecipes();c.recipes['pop-collage'].theme.background='#123456';assert.equal(planCarousel(base,c).recipe_hash,first.recipe_hash);});
 const mutations=[
  ['unknown root field',s=>s.style_axis='new','SERIES_UNKNOWN_FIELD'],

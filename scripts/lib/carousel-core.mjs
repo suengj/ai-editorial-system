@@ -59,6 +59,19 @@ function checkRegions(regions, { bandedBackgroundRegions = [] } = {}) {
 const mergeRoles = (base, override={}) => Object.fromEntries(Object.entries(base).map(([role, style]) => [role, {...style, ...(override[role] ?? {})}]));
 export function loadVisualRecipes() { return JSON.parse(readFileSync(resolve(ROOT, 'editorial/visual-recipes.v1.json'), 'utf8')); }
 
+function supportingArtDirection(recipe) {
+  const tokens = recipe.prompt_style_tokens ?? [];
+  const palette = Object.entries(recipe.palette_binding ?? {})
+    .map(([role, binding]) => `${role}=${binding}`);
+  const constraints = recipe.negative_constraints ?? [];
+  return [
+    'Text-free editorial supporting art.',
+    tokens.length ? `Style tokens: ${tokens.join('; ')}.` : '',
+    palette.length ? `Palette bindings: ${palette.join('; ')}.` : '',
+    constraints.length ? `Constraints: ${constraints.join('; ')}.` : '',
+  ].filter(Boolean).join('\n');
+}
+
 /** Pure planning: emits unchanged v1 single-image plans, not rendered evidence. */
 export function planCarousel(series, catalog=loadVisualRecipes()) {
   keys(series, CAROUSEL_CONSTRAINTS.series_fields, 'series');
@@ -90,8 +103,20 @@ export function planCarousel(series, catalog=loadVisualRecipes()) {
     : resolvedStyle;
   const resolvedRecipeId = style?.recipe ?? series.recipe;
   const applyDefaultTreatment = Boolean(style && !preserveExplicitRecipe && style.reason !== 'rollback_flag' && ['R4','R7'].includes(style.style));
-  const recipe = catalog.recipes[resolvedRecipeId];
-  need(recipe, 'SERIES_RECIPE', `unknown recipe: ${resolvedRecipeId}`);
+  const catalogRecipe = catalog.recipes[resolvedRecipeId];
+  need(catalogRecipe, 'SERIES_RECIPE', `unknown recipe: ${resolvedRecipeId}`);
+  // Supporting-art recipes are prompt guidance layered onto the existing
+  // carousel compositor. Supply compatible defaults without changing catalog
+  // records or the legacy recipe contract.
+  const recipe = catalogRecipe.kind === 'supporting_art'
+    ? {
+      ...catalogRecipe,
+      theme: catalogRecipe.theme ?? catalog.recipes['editorial-minimal']?.theme ?? {},
+      typography: catalogRecipe.typography ?? {},
+      generation_direction: catalogRecipe.generation_direction ?? supportingArtDirection(catalogRecipe),
+      default_layout: catalogRecipe.default_layout ?? 'visual',
+    }
+    : catalogRecipe;
   const task = series.task ?? {};
   keys(task, ['canvas','theme','text_policy','density','watermark','watermark_layer'], 'task');
   need(task.text_policy !== 'no_text', 'SERIES_TEXT', 'silent carousel includes headlines, sources and pagination');

@@ -1,5 +1,8 @@
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
+import { execFileSync } from 'node:child_process';
+import { resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { lintKoreanCopy } from './korean-copy-lint.mjs';
 
 const flagged = (text, id, profileId = 'signalytics-news', extra = {}) => {
@@ -20,11 +23,15 @@ flagged('금리 변화에 대한 설명을 진행합니다.', 'about-phrase');
 flagged('자료를 통해 시장을 살펴봅니다.', 'through-phrase');
 flagged('투자자는 조건을 확인하는 것이 중요합니다.', 'important-template');
 flagged('정책이 되어지고 있다.', 'double-passive-doeojida');
+flagged('그 절차는 적용되어집니다.', 'double-passive-doeojida');
+flagged('제도가 개선되어졌다.', 'double-passive-doeojida');
 flagged('이번 글에서는 금리 전망을 살펴보겠습니다.', 'meta-work-words');
 flagged('역대급 성과를 냈다.', 'unsupported-superlative');
+clean('일정은 최대한 여유롭게 잡았다.');
 flagged('본문에서 35%와 35%가 반복된다.', 'repeated-hero-number', 'signalytics-news', { heroNumbers: ['35%'] });
 clean('본문에서 35%와 36%를 비교한다.', 'signalytics-news', { heroNumbers: ['35%'] });
 clean('다른 수치 135%는 35%와 다르다.', 'signalytics-news', { heroNumbers: ['135%'] });
+clean('부채비율은 0.35%다. 지난해에는 1.35%였다.', 'signalytics-news', { heroNumbers: ['35%'] });
 
 const community = lintKoreanCopy({ text: '이번 글에서는 커뮤니티 이야기를 살펴보겠습니다.', profileId: 'trends-moa' });
 assert.equal(community.profile_family, 'community');
@@ -34,6 +41,28 @@ assert.equal(community.hard_blocks, 0);
 const approved = JSON.parse(readFileSync(new URL('../editorial/approved-examples.json', import.meta.url), 'utf8'));
 assert.ok(approved.approvals.length > 0);
 assert.ok(approved.approvals.every((a) => a.kind === 'owner_selected_excerpt' && !('text' in a)), 'approved prose stays private and pointer-only in this repository');
-// No detector finding is a hard block, so no approved excerpt can be blocked by this lint.
-assert.ok(lintKoreanCopy({ text: '승인 예문은 private pointer로만 등록됩니다.', profileId: 'personal-linkedin' }).findings.every((f) => f.severity === 'warn'));
-console.log('korean-copy-lint: PASS — deterministic positive/negative examples, profile routing, warning-only levels, and private approved-sample boundary');
+const approvedExpected = new Map([
+  ['excerpt:owner-personal-20261014-o1', []],
+  ['excerpt:owner-personal-20261014-l1', ['about-phrase']],
+  ['excerpt:owner-personal-20261014-t1', []],
+]);
+const libraryRoot = process.env.INTELLIGENCE_LIBRARY_REPO ?? resolve(fileURLToPath(new URL('..', import.meta.url)), '../intelligence-library');
+if (existsSync(resolve(libraryRoot, '.git'))) {
+  const excerpts = approved.approvals.filter((a) => approvedExpected.has(a.entry_id));
+  assert.equal(excerpts.length, approvedExpected.size, 'all selected approved pointers are registered');
+  for (const excerpt of excerpts) {
+    const match = excerpt.source_ref.locator.match(/\/blob\/([a-f0-9]{40})\/([^#]+)#L(\d+)/);
+    assert.ok(match, `${excerpt.entry_id} must be a commit-pinned single-line pointer`);
+    const [, commit, path, lineText] = match;
+    const source = execFileSync('git', ['-C', libraryRoot, 'show', `${commit}:${path}`], { encoding: 'utf8' });
+    const text = source.split(/\r?\n/u)[Number(lineText) - 1];
+    assert.ok(text, `${excerpt.entry_id} pinned line is available`);
+    const result = lintKoreanCopy({ text, profileId: 'personal-linkedin' });
+    assert.deepEqual(result.findings.map((f) => f.id), approvedExpected.get(excerpt.entry_id), `${excerpt.entry_id} expected advisory findings`);
+    assert.equal(result.hard_blocks, 0);
+  }
+  console.log('korean-copy-lint: PASS — approved pinned excerpt advisories match the recorded clean/about-phrase/clean expectations');
+} else {
+  console.log('korean-copy-lint: SKIP approved excerpt prose — private intelligence-library checkout unavailable');
+}
+console.log('korean-copy-lint: PASS — positive/negative examples, profile routing, warning-only levels, and private approved-sample boundary');
