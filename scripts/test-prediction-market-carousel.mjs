@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { planCarousel } from './lib/carousel-core.mjs';
+import { CARD_NEWS_TYPE_TOKENS } from './lib/typography-core.mjs';
+import { checkTrendCardEligibility } from './lib/numeric-visual-core.mjs';
 
 const read = (path) => JSON.parse(readFileSync(path, 'utf8'));
 const manifest = read('editorial/entry-manifest.json');
@@ -74,6 +76,63 @@ assert(planned.frames[0].plan.layers.every((layer) => !Object.hasOwn(layer, 'tex
 const badCopy = structuredClone(ready);
 badCopy.frames[0].blocks[1].text = '30일 요청, 실제 차트는 7일';
 assert.throws(() => planCarousel(badCopy), (error) => error.code === 'SERIES_COPY', 'pipeline/meta copy must fail closed before rendering');
+const trendEligibility = {
+  volume_24h: 10,
+  updated_at: '2026-10-21T10:00:00Z',
+  checked_at: '2026-10-21T11:00:00Z',
+  observations: [{ t: '2026-10-20T10:00:00Z', p: 30 }, { t: '2026-10-21T10:00:00Z', p: 42 }],
+  direction: 'up'
+};
+assert.deepEqual(checkTrendCardEligibility(trendEligibility), [], 'liquid fresh history allows a direction derived from its endpoints');
+assert(checkTrendCardEligibility({ ...trendEligibility, volume_24h: 0 }).some((issue) => issue.code === 'TREND_ILLIQUID'));
+assert(checkTrendCardEligibility({ ...trendEligibility, updated_at: '2026-10-19T00:00:00Z' }).some((issue) => issue.code === 'TREND_STALE'));
+assert(checkTrendCardEligibility({ ...trendEligibility, observations: [] }).some((issue) => issue.code === 'TREND_HISTORY_REQUIRED'), 'no history blocks a trend card');
+assert(checkTrendCardEligibility({ ...trendEligibility, direction: 'down' }).some((issue) => issue.code === 'TREND_DIRECTION'), 'trend direction cannot contradict raw history');
+
+const numericReady = structuredClone(ready);
+numericReady.content_kind = 'card-news';
+numericReady.numeric_profile = true;
+numericReady.footer_policy = 'content_only';
+for (const frame of numericReady.frames) {
+  frame.blocks = frame.blocks.map((block) => block.kind === 'generated'
+    ? { id: `${frame.id}-data-visual`, region: block.region, kind: 'chart', ref: `charts/${frame.id}.json`, sha256: `sha256:${'a'.repeat(64)}` }
+    : block);
+  for (const block of frame.blocks) if (block.kind === 'text' && block.text_role === 'hero') block.text = '99%';
+  const body = frame.blocks.find((block) => block.kind === 'text' && block.text_role === 'body');
+  if (body) body.text = `10월 21일 기준 42%의 가격을 보였습니다.\n이 흐름은 다음 회의 전 환율과 대출금리 전망에도 영향을 줍니다.`;
+  else {
+    frame.layout = 'split';
+    const chart = frame.blocks.find((block) => block.kind === 'chart');
+    chart.region = 'left';
+    frame.blocks.push({ id: `${frame.id}-body`, region: 'right', kind: 'text', text: `10월 21일 기준 42%의 가격을 보였습니다.\n이 흐름은 다음 회의 전 환율과 대출금리 전망에도 영향을 줍니다.`, text_role: 'body', source_ref: 'source-sidecar.json' });
+  }
+}
+const factIds = ['f1','f2','f3','f4','f5','f6'];
+const brief = {
+  schema_version: '1.0.0', reader_question: '시장 가격은 어떤 방향으로 움직였나?',
+  angle: '가격의 변화는 회의 전 기대와 국내 금융 여건을 함께 움직인다.',
+  so_what: '독자는 시장 가격과 국내 환율 및 대출금리의 연결을 읽을 수 있다.',
+  trend_eligibility: structuredClone(trendEligibility),
+  facts: factIds.map((id) => ({ id, value: '42% confirmed value', date: '2026-10-21', source_url: 'https://example.com/source', source_name: 'Source' })),
+  per_card: Object.fromEntries(numericReady.frames.map((frame, i) => [frame.id, {
+    claim: '가격 흐름이 바뀌었다.', evidence: '42% confirmed value', evidence_fact_ids: i === 0 ? [factIds[0], factIds[5]] : [factIds[i]], takeaway: '다음 회의를 주시한다.'
+  }]))
+};
+const numericPlan = planCarousel(numericReady, undefined, brief);
+const numericLayers = numericPlan.frames.flatMap((frame) => frame.plan.layers).filter((layer) => layer.kind === 'text');
+assert(numericPlan.frames.every((frame) => frame.plan.layers.some((layer) => layer.kind === 'chart')), 'numeric profile requires a data visual on every card');
+assert(numericLayers.every((layer) => [64, 150, 110, 34, 36].includes(layer.font_size)), 'numeric profile uses only shared card-news font sizes');
+assert(Object.values(numericPlan.typography).every((style) => [64, 150, 110, 34, 36].includes(style.font_size)), 'renderer typography config exposes no non-token font sizes');
+assert.deepEqual(numericPlan.card_news_type_tokens, CARD_NEWS_TYPE_TOKENS, 'renderer plan carries the shared token contract');
+assert.equal(numericLayers.find((layer) => layer.id === 'headline').font_family, CARD_NEWS_TYPE_TOKENS.headline.font_family);
+const noVisual = structuredClone(numericReady); noVisual.frames[0].blocks = noVisual.frames[0].blocks.filter((block) => block.kind !== 'chart');
+assert.throws(() => planCarousel(noVisual, undefined, brief), (error) => error.code === 'CARD_NEWS_DATA_VISUAL', 'numeric profile rejects a card without a hero data visual');
+const noTrendHistory = structuredClone(brief); noTrendHistory.trend_eligibility.observations = [];
+assert.throws(() => planCarousel(numericReady, undefined, noTrendHistory), (error) => error.code === 'CARD_NEWS_BRIEF_INVALID' && /TREND_HISTORY_REQUIRED/.test(error.message), 'numeric card-news trend gate rejects missing history');
+for (const banned of ['투자 권유 아님', '2026-10-21 기준 시각', '선두', '원관측', 'illustrative', '연출 이미지', 'USD bn', '수치는 정확하지 않음']) {
+  const blocked = structuredClone(numericReady); blocked.frames[0].headline = banned;
+  assert.throws(() => planCarousel(blocked, undefined, brief), (error) => error.code === 'SERIES_COPY', `card-news copy rejects ${banned}`);
+}
 for (const banned of [
   '계약 가격은 연준의 실제 결정을 확정하지 않습니다',
   '두 사실이 이번 가격 변화를 일으켰다고 단정할 수 없습니다',

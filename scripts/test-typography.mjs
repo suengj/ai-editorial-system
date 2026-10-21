@@ -75,6 +75,15 @@ await ok('type scale roles + override + unknown role', () => {
   assert(T.TYPE_SCALE.display.line_height < T.TYPE_SCALE.body.line_height && T.TYPE_SCALE.display.letter_spacing < 0);
   assert.equal(T.resolveScale('body', { font_size: 40 }).font_size, 40); assert.throws(() => T.resolveScale('nope'), code('TYPE_SCALE_ROLE'));
 });
+await ok('shared card-news tokens are the 1080px owner scale', () => {
+  assert.equal(T.CARD_NEWS_TYPE_TOKENS.canvas_width, 1080);
+  assert.equal(T.CARD_NEWS_TYPE_TOKENS.margin_px, 72);
+  assert.deepEqual([T.CARD_NEWS_TYPE_TOKENS.headline.font_size, T.CARD_NEWS_TYPE_TOKENS.headline.weight], [64, 600]);
+  assert.deepEqual([T.CARD_NEWS_TYPE_TOKENS.hero.font_size, T.CARD_NEWS_TYPE_TOKENS.secondary.font_size], [150, 110]);
+  assert.deepEqual([T.CARD_NEWS_TYPE_TOKENS.label.font_size, T.CARD_NEWS_TYPE_TOKENS.body.font_size, T.CARD_NEWS_TYPE_TOKENS.body.max_lines], [34, 36, 2]);
+  assert.deepEqual([T.CARD_NEWS_TYPE_TOKENS.chip.font_size, T.CARD_NEWS_TYPE_TOKENS.chip.weight], [34, 700]);
+  assert.match(T.CARD_NEWS_TYPE_TOKENS.headline.font_family, /Noto Serif KR/);
+});
 await ok('WCAG maths', () => { assert.equal(T.contrastRatio([0, 0, 0], [255, 255, 255]).toFixed(1), '21.0'); assert(T.contrastRatio([255, 255, 255], [255, 255, 255]) === 1); });
 await ok('autoScrimOpacity: 0 on dark, >0 on bright, null when impossible', () => {
   const W = [255, 255, 255], K = [11, 24, 36];

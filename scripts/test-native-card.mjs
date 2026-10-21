@@ -122,12 +122,13 @@ try {
     const series=nativeFrame(), bytes=png(1080,1350), nativePath=resolve(temp,'full.png'); writeFileSync(nativePath,bytes);
     const target={id:'personal-instagram',label:'Synthetic target display label'};
     const sourceLine=series.frames[0].source_note;
-    const expectedChrome=renderNativeChrome(bytes,{label:target.label,sourceLine,pageMark:'1/3',tokens:palette});
+    const expectedChrome=renderNativeChrome(bytes,{label:target.label,sourceLine,pageMark:'1/3',tokens:planCarousel(series).preset.theme});
     const attachedReview={...review,card_sha256:hash(expectedChrome.bytes)};
     const session={schema_version:'1.0.0',route:'native_session',frames:{opening:{png_path:'full.png',receipt:{route:'native_session',generator_id:'native-image-generator',sha256:hash(bytes)},review:attachedReview}}};
     const out=resolve(temp,'render-pass');
     const result=await executeCarousel(series,{baseDir:FIX,outDir:out,targetId:target.id,targetCatalog,nativeSession:session,nativeSessionBaseDir:temp});
     const opening=result.frames.find(f=>f.id==='opening');
+    if(result.status!=='RENDERED_NEEDS_REVIEW') console.error('native-card render diagnostic',JSON.stringify({status:result.status,opening,qa:result.qa}));
     assert.equal(result.status,'RENDERED_NEEDS_REVIEW');
     assert.equal(opening.native_review_status,'PASS');
     assert.equal(opening.chrome_outside_changed_pixels,0);

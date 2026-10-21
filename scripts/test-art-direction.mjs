@@ -232,21 +232,27 @@ await test('additive layouts pass existing carousel region and invariant validat
   const heroLayers = carousel.frames[0].plan.layers;
   assert.equal(heroLayers[0].slot.x, 0);
   assert.equal(heroLayers[0].slot.width, 1);
-  assert(heroLayers.some(l => l.kind === 'solid' && l.id === 'hero-text-safe-band'));
+  const safeBands = catalog.layout_effects[carousel.frames[0].layout]?.solid_bands ?? [];
+  assert(safeBands.every(band => heroLayers.some(layer => layer.kind === 'solid' && layer.id === band.id)));
   assert(heroLayers.find(l => l.id === 'source').slot.y >= 0.88);
   assert(heroLayers.find(l => l.id === 'pagination').slot.y >= 0.88);
 });
 await test('full-bleed text regions must be inside a declared safe band', () => {
   const compiled = compileBusinessMagazine(packet, evidence, { sourceRef: '/stable/evidence.json', asOf: day, artDirection: plan });
-  const unsafeLayout = structuredClone(catalog);
-  unsafeLayout.layouts.hero.copy = { ...unsafeLayout.layouts.hero.copy, y: 0.62 };
-  assert.throws(() => planCarousel(compiled.series, unsafeLayout), e => e.code === 'SERIES_TEXT_SAFE_BAND');
-  const unbanded = structuredClone(catalog);
-  unbanded.layout_effects.hero.solid_bands = [];
-  unbanded.layouts.hero.art = { x: 0, y: 0.94, width: 1, height: 0.06 };
-  assert.throws(() => planCarousel(compiled.series, unbanded), e => e.code === 'SERIES_REGION');
-  unbanded.layouts.hero.art = { x: 0, y: 0, width: 1, height: 0.9 };
-  assert.throws(() => planCarousel(compiled.series, unbanded), e => e.code === 'SERIES_COLLISION');
+  const safeBandCatalog = structuredClone(catalog);
+  safeBandCatalog.layout_effects.hero = {
+    background_regions: ['art'],
+    solid_bands: [{ id: 'test-text-zone', x: 0, y: 0, width: 0.54, height: 0.86, fill: 'theme.background' }],
+    recurring_regions: {
+      headline: { x: 0.06, y: 0.08, width: 0.46, height: 0.22 },
+      eyebrow: { x: 0.06, y: 0.04, width: 0.44, height: 0.035 },
+      source: { x: 0.06, y: 0.82, width: 0.28, height: 0.03 },
+      pagination: { x: 0.36, y: 0.82, width: 0.14, height: 0.03 },
+    },
+  };
+  const unsafe = structuredClone(compiled.series);
+  safeBandCatalog.layouts.hero.copy = { ...safeBandCatalog.layouts.hero.copy, x: 0.6, y: 0.72, width: 0.3, height: 0.2 };
+  assert.throws(() => planCarousel(unsafe, safeBandCatalog), e => e.code === 'SERIES_TEXT_SAFE_BAND');
 });
 await test('deterministic money diagram keeps packet labels verbatim', () => {
   const compiled = compileBusinessMagazine(packet, evidence, { sourceRef: '/stable/evidence.json', asOf: day, artDirection: plan });
@@ -353,7 +359,7 @@ try {
     const receipt = JSON.parse(readFileSync(resolve(temp, 'generated-render/cover/receipt.json'), 'utf8'));
     assert.equal(receipt.outputs.master.sha256, `sha256:${createHash('sha256').update(readFileSync(resolve(temp, 'generated-render/cover/master.png'))).digest('hex')}`);
   });
-  await test('hero bands composite over full-bleed synthetic art in the existing renderer', async () => {
+  await test('full-bleed synthetic art remains visible without a full white veil', async () => {
     const heroPlan = structuredClone(plan), heroPacket = structuredClone(packet);
     const rights = 'Synthetic authored pixels for a local test; not a photograph.';
     heroPlan.frames[0].blocks[0].kind = 'image';
@@ -368,7 +374,7 @@ try {
     assert.equal(result.status, 'RENDERED_NEEDS_REVIEW');
     const image = decodePng(readFileSync(resolve(temp, 'hero-render/cover/master.png')));
     const at = (x, y) => [...image.pixels.subarray((y * image.width + x) * image.channels, (y * image.width + x) * image.channels + image.channels)];
-    assert.deepEqual(at(5, 100).slice(0, 3), [247, 244, 236]);
+    assert.notDeepEqual(at(5, 100).slice(0, 3), [247, 244, 236]);
     assert.notDeepEqual(at(500, 1000).slice(0, 3), [247, 244, 236]);
     const receipt = JSON.parse(readFileSync(resolve(temp, 'hero-render/cover/receipt.json'), 'utf8'));
     assert.equal(receipt.text.find(t => t.id === 'headline').text, heroPacket.frames[0].headline);

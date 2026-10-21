@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
+import { checkTrendCardEligibility } from './numeric-visual-core.mjs';
 
 const substantive = (value) => String(value ?? '').replace(/\s+/gu, '').length;
 const issue = (code, message, card_id = undefined) => ({ code, message, ...(card_id ? { card_id } : {}) });
@@ -22,6 +23,10 @@ export function validateCardNewsBrief(series, brief) {
     try { if (new URL(fact.source_url).protocol !== 'https:') throw new Error(); } catch { issues.push(issue('CARD_NEWS_FACT_URL', `fact ${fact?.id ?? '(missing id)'} needs an https source_url`)); }
   }
   const mapped = brief.per_card && typeof brief.per_card === 'object' ? brief.per_card : {};
+  if (series.numeric_profile === true && series.frames.some((frame) => frame.id === 'trend')) {
+    const trendIssues = checkTrendCardEligibility(brief.trend_eligibility);
+    for (const trendIssue of trendIssues) issues.push(issue(trendIssue.code, trendIssue.message, 'trend'));
+  }
   const usedFacts = new Set();
   for (const frame of series.frames) {
     const card = mapped[frame.id];
@@ -36,6 +41,10 @@ export function validateCardNewsBrief(series, brief) {
     const lines = body.split(/\n+/u).map((x) => x.trim()).filter((x) => substantive(x) >= 8);
     if (chars < 45 || lines.length < 2) issues.push(issue('CARD_NEWS_BODY_TOO_THIN', `body needs at least two substantive lines and about 45 Korean characters (got ${chars} chars, ${lines.length} lines)`, frame.id));
     if (chars > 120) issues.push(issue('CARD_NEWS_BODY_TOO_LONG', `body exceeds the 120-character readability cap (got ${chars})`, frame.id));
+    const hero = (frame.blocks ?? []).find((block) => block?.kind === 'text' && (block.region === 'hero-value' || block.text_role === 'hero'));
+    if (hero?.text && body.includes(hero.text)) issues.push(issue('CARD_NEWS_HERO_REPEAT', 'supporting copy must not repeat the hero number', frame.id));
+    const scenarioCard = /scenario|시나리오/i.test([frame.id, frame.headline, ...(frame.blocks ?? []).map((block) => block?.ref ?? block?.id ?? '')].join(' '));
+    if (scenarioCard && !/(환율|대출\s*금리)/u.test(body)) issues.push(issue('CARD_NEWS_SCENARIO_IMPACT', 'scenario cards must state an impact on the reader, such as 환율 or 대출금리', frame.id));
     if (/^\s*(?:\d+(?:\.\d+)?\s*[%％]?|[₩$]\s*[\d,.]+)\s*$/mu.test(body) || (/^[^\n]{1,28}$/u.test(body.trim()) && /[!！?？]/u.test(body))) issues.push(issue('CARD_NEWS_NUMBER_SLOGAN', 'a bare number or slogan cannot stand in for card substance', frame.id));
     if (card?.evidence) {
       const evidenceNumbers = String(card.evidence).match(/\d+(?:[.,]\d+)?/gu) ?? [];

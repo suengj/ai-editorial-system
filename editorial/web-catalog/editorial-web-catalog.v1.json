@@ -36,7 +36,12 @@
       "fit",
       "rights_note",
       "protect",
+      "focal_box",
+      "focal_min_area_ratio",
+      "focal_fallback",
+      "mockup_risk",
       "text",
+      "text_role",
       "source_ref",
       "instruction",
       "generation",
@@ -88,6 +93,10 @@
       "profiles",
       "recipe",
       "visual_style",
+      "footer_policy",
+      "content_kind",
+      "numeric_profile",
+      "brief_file",
       "task",
       "typography",
       "regions",
@@ -104,7 +113,7 @@
     }
   },
   "catalog_version": "1.0.0",
-  "content_digest": "sha256:440f6f1d8ea726e7ed20c5cf2a9340652c7ba1c6cf445a6ee34402d6eccc08d4",
+  "content_digest": "sha256:d29cc5e18590656beb6e9628f39a0a263e2635febf7e7e0a34693e4e327fb52c",
   "field_domains": {
     "call_to_action": {
       "max_length": 200,
@@ -212,7 +221,7 @@
           {
             "path": "editorial/STRUCTURED-VISUAL-EXECUTION.md",
             "role": "core:visual",
-            "sha256": "09b473a88315cbae40ee936358df04252e98d83f842ca78b5dd0caec4ace656f"
+            "sha256": "19e9ebf3f1c1f556a8d7a11027361b973cf54a22f1e08c15602e114387c12926"
           },
           {
             "path": "editorial/constitution.md",
@@ -281,7 +290,7 @@
           {
             "path": "editorial/STRUCTURED-VISUAL-EXECUTION.md",
             "role": "core:visual",
-            "sha256": "09b473a88315cbae40ee936358df04252e98d83f842ca78b5dd0caec4ace656f"
+            "sha256": "19e9ebf3f1c1f556a8d7a11027361b973cf54a22f1e08c15602e114387c12926"
           },
           {
             "path": "editorial/constitution.md",
@@ -302,7 +311,7 @@
     "manifest": {
       "manifest_version": "2026-10-16.1",
       "path": "editorial/entry-manifest.json",
-      "sha256": "534684145b93337610c7e1903606446d68cfb0ff669f51d0b1d951961a6cf15e"
+      "sha256": "e172539140f795171273b81ecc9ed058dcd19d4390b7a06d8eee880b5a2b8b39"
     },
     "note": "The AES git commit is deliberately not embedded. The consumer pins the AES commit and this file's sha256.",
     "profile_version_semantics": "<manifest_version>+<aes_commit>; the consumer supplies aes_commit from its own pin",
@@ -7942,7 +7951,7 @@
           {
             "path": "editorial/STRUCTURED-VISUAL-EXECUTION.md",
             "role": "core:visual",
-            "sha256": "09b473a88315cbae40ee936358df04252e98d83f842ca78b5dd0caec4ace656f"
+            "sha256": "19e9ebf3f1c1f556a8d7a11027361b973cf54a22f1e08c15602e114387c12926"
           },
           {
             "path": "editorial/SUENGJ-STYLE.md",
@@ -7957,7 +7966,7 @@
           {
             "path": "editorial/visual-recipes.v1.json",
             "role": "visual:values",
-            "sha256": "0b3f9290fa4ef9cad4f606f22f9ef25f66cf8e7d6f33730ab5a16658820ae703"
+            "sha256": "4ac71fd5403beb5ec987f8fd2c5cf6f30aed43fe08de6c633091d3c9435abb3c"
           }
         ]
       },
@@ -8043,12 +8052,17 @@
           {
             "path": "editorial/BUSINESS-IDEA-MAGAZINE.md",
             "role": "copy:business",
-            "sha256": "a7425dc356f743bfde00f33461ea7be2fd51c52335ed6ae2fc2f8f83b3698e57"
+            "sha256": "0765cd367eb04a3b930f94da7f8f8e60d3eb5e4ca96db7da18e2c4adfedc9aee"
           },
           {
             "path": "editorial/SIGNALYTICS-BENCHMARK-CARDS.md",
             "role": "copy:business",
-            "sha256": "92b81872e5edaa1da1e9938fd67e98a4dcae1c48b90e22c5ddc9cb69169b0170"
+            "sha256": "90de266ca6de9aba0f8428d514b267e49d625e50ecf4a9daddb41a52383ea20f"
+          },
+          {
+            "path": "editorial/SIGNALYTICS-PREDICTION-MARKET-CAROUSEL.md",
+            "role": "copy:business",
+            "sha256": "8e01ec25d0db1223cdc3c748498ace325ae9f639a278fbffae00f02166d10690"
           },
           {
             "path": "editorial/constitution.md",
@@ -8065,27 +8079,42 @@
           {
             "path": "editorial/BUSINESS-IDEA-MAGAZINE.md",
             "role": "copy:business",
-            "sha256": "a7425dc356f743bfde00f33461ea7be2fd51c52335ed6ae2fc2f8f83b3698e57"
+            "sha256": "0765cd367eb04a3b930f94da7f8f8e60d3eb5e4ca96db7da18e2c4adfedc9aee"
+          },
+          {
+            "path": "editorial/INSTAGRAM-NUMERIC-VISUAL-POLICY.md",
+            "role": "visual:rules",
+            "sha256": "b161326f0eca8276fa36c8990762e8646744b94265493f07666c336f7846b38b"
+          },
+          {
+            "path": "editorial/PMC-BUNDLE-BINDING.md",
+            "role": "visual:rules",
+            "sha256": "15d2cdb95cba5d2795fbb5bf0b4271140931acbf6f32877fe5f562646a381b14"
           },
           {
             "path": "editorial/SIGNALYTICS-BENCHMARK-CARDS.md",
             "role": "copy:business",
-            "sha256": "92b81872e5edaa1da1e9938fd67e98a4dcae1c48b90e22c5ddc9cb69169b0170"
+            "sha256": "90de266ca6de9aba0f8428d514b267e49d625e50ecf4a9daddb41a52383ea20f"
+          },
+          {
+            "path": "editorial/SIGNALYTICS-PREDICTION-MARKET-CAROUSEL.md",
+            "role": "copy:business",
+            "sha256": "8e01ec25d0db1223cdc3c748498ace325ae9f639a278fbffae00f02166d10690"
           },
           {
             "path": "editorial/SLIDES-AND-CAROUSELS.md",
             "role": "visual:rules",
-            "sha256": "e1b7d3a64082a7643e08a41fb1728663ab09b7051a0d81fed72d10281fb06b50"
+            "sha256": "76ef498cbc997bd72bc5c88b7a3985a8fd97b428a2dc52c28afd81f557d9c20b"
           },
           {
             "path": "editorial/STRUCTURED-VISUAL-EXECUTION.md",
             "role": "core:visual",
-            "sha256": "09b473a88315cbae40ee936358df04252e98d83f842ca78b5dd0caec4ace656f"
+            "sha256": "19e9ebf3f1c1f556a8d7a11027361b973cf54a22f1e08c15602e114387c12926"
           },
           {
             "path": "editorial/business-idea-magazine.v1.json",
             "role": "visual:values",
-            "sha256": "35435a0f257b4a05175ab102dbe415e5a9661fd2c184386f43dfc3b0bd922a60"
+            "sha256": "c1c47e15f8b441ff5eda2f6daceac527d4c340c7a25a2860def44cd5a72bfe3d"
           },
           {
             "path": "editorial/constitution.md",
@@ -8093,9 +8122,19 @@
             "sha256": "6a6b58a9fce5f29099d74c23f10587c6560904ffe0a6a7c001e2ab330b2b6997"
           },
           {
+            "path": "editorial/prediction-market-carousel.v1.json",
+            "role": "visual:values",
+            "sha256": "785b015fa3c33d15881fe37ff2aad4bec40136d079d74a1838a135f1aa4a5e38"
+          },
+          {
+            "path": "editorial/templates/prediction-market-carousel.series.json",
+            "role": "visual:values",
+            "sha256": "78248afaab12b3245d285db3e2fd98a0ad956733cc0d536137409c696497f150"
+          },
+          {
             "path": "editorial/visual-recipes.v1.json",
             "role": "visual:values",
-            "sha256": "0b3f9290fa4ef9cad4f606f22f9ef25f66cf8e7d6f33730ab5a16658820ae703"
+            "sha256": "4ac71fd5403beb5ec987f8fd2c5cf6f30aed43fe08de6c633091d3c9435abb3c"
           }
         ]
       },
@@ -8105,7 +8144,9 @@
         "visual"
       ],
       "visual_artifacts": [
-        "visual/slide-image"
+        "visual/slide-image",
+        "visual/evidence-visual",
+        "visual/prediction-market-carousel"
       ],
       "visual_defaults": {
         "canvas": {
@@ -8130,7 +8171,7 @@
           {
             "path": "editorial/TRENDS-MOA-COMMUNITY-TONE.md",
             "role": "copy:community",
-            "sha256": "e8e0acdedae92ca18106436003ef8355d3a35e67577edbea576c740c9d52f383"
+            "sha256": "3da72396dfb0cee41f918ddeb88b0f25101bc0ac100dc5cb688f94173fce54ef"
           },
           {
             "path": "editorial/constitution.md",
@@ -8147,17 +8188,17 @@
           {
             "path": "editorial/SLIDES-AND-CAROUSELS.md",
             "role": "visual:rules",
-            "sha256": "e1b7d3a64082a7643e08a41fb1728663ab09b7051a0d81fed72d10281fb06b50"
+            "sha256": "76ef498cbc997bd72bc5c88b7a3985a8fd97b428a2dc52c28afd81f557d9c20b"
           },
           {
             "path": "editorial/STRUCTURED-VISUAL-EXECUTION.md",
             "role": "core:visual",
-            "sha256": "09b473a88315cbae40ee936358df04252e98d83f842ca78b5dd0caec4ace656f"
+            "sha256": "19e9ebf3f1c1f556a8d7a11027361b973cf54a22f1e08c15602e114387c12926"
           },
           {
             "path": "editorial/TRENDS-MOA-COMMUNITY-TONE.md",
             "role": "copy:community",
-            "sha256": "e8e0acdedae92ca18106436003ef8355d3a35e67577edbea576c740c9d52f383"
+            "sha256": "3da72396dfb0cee41f918ddeb88b0f25101bc0ac100dc5cb688f94173fce54ef"
           },
           {
             "path": "editorial/constitution.md",
@@ -8167,7 +8208,7 @@
           {
             "path": "editorial/visual-recipes.v1.json",
             "role": "visual:values",
-            "sha256": "0b3f9290fa4ef9cad4f606f22f9ef25f66cf8e7d6f33730ab5a16658820ae703"
+            "sha256": "4ac71fd5403beb5ec987f8fd2c5cf6f30aed43fe08de6c633091d3c9435abb3c"
           }
         ]
       },
@@ -8506,23 +8547,119 @@
         "hero": {
           "background_regions": [
             "art"
+          ]
+        },
+        "hero-clean": {
+          "background_regions": [
+            "art"
           ],
+          "recurring_regions": {
+            "eyebrow": {
+              "height": 0.035,
+              "width": 0.44,
+              "x": 0.06,
+              "y": 0.04
+            },
+            "headline": {
+              "height": 0.22,
+              "width": 0.46,
+              "x": 0.06,
+              "y": 0.08
+            },
+            "pagination": {
+              "height": 0.03,
+              "width": 0.14,
+              "x": 0.8,
+              "y": 0.9
+            },
+            "source": {
+              "height": 0.03,
+              "width": 0.42,
+              "x": 0.06,
+              "y": 0.9
+            }
+          },
           "solid_bands": [
             {
               "fill": "theme.background",
-              "height": 0.565,
-              "id": "hero-text-safe-band",
+              "gradient": [
+                [
+                  0,
+                  0.98
+                ],
+                [
+                  0.54,
+                  0.98
+                ],
+                [
+                  0.75,
+                  0.48
+                ],
+                [
+                  1,
+                  0
+                ]
+              ],
+              "height": 1,
+              "id": "left-text-zone",
               "width": 1,
               "x": 0,
-              "y": 0.035
+              "y": 0
+            }
+          ]
+        },
+        "hero-photo-scrim": {
+          "background_regions": [
+            "art"
+          ],
+          "recurring_regions": {
+            "eyebrow": {
+              "height": 0.035,
+              "width": 0.44,
+              "x": 0.06,
+              "y": 0.04
             },
+            "headline": {
+              "height": 0.22,
+              "width": 0.46,
+              "x": 0.06,
+              "y": 0.08
+            },
+            "pagination": {
+              "height": 0.015,
+              "width": 0.14,
+              "x": 0.36,
+              "y": 0.845
+            },
+            "source": {
+              "height": 0.015,
+              "width": 0.28,
+              "x": 0.06,
+              "y": 0.845
+            }
+          },
+          "solid_bands": [
             {
               "fill": "theme.background",
-              "height": 0.08,
-              "id": "hero-source-safe-band",
-              "width": 1,
+              "gradient": [
+                [
+                  0,
+                  0.92
+                ],
+                [
+                  0.78,
+                  0.92
+                ],
+                [
+                  1,
+                  0.25
+                ]
+              ],
+              "height": 0.86,
+              "id": "left-text-zone",
+              "width": 0.54,
               "x": 0,
-              "y": 0.85
+              "y": 0
             }
           ]
         }
@@ -8573,7 +8710,65 @@
             "height": 0.24,
             "width": 0.88,
             "x": 0.06,
+            "y": 0.56
+          },
+          "hero-value": {
+            "height": 0.17,
+            "width": 0.88,
+            "x": 0.06,
             "y": 0.36
+          }
+        },
+        "hero-clean": {
+          "art": {
+            "height": 1,
+            "width": 1,
+            "x": 0,
+            "y": 0
+          },
+          "copy": {
+            "height": 0.2,
+            "width": 0.43,
+            "x": 0.06,
+            "y": 0.64
+          },
+          "hero-value": {
+            "height": 0.16,
+            "width": 0.43,
+            "x": 0.06,
+            "y": 0.34
+          },
+          "key": {
+            "height": 0.09,
+            "width": 0.43,
+            "x": 0.06,
+            "y": 0.53
+          }
+        },
+        "hero-photo-scrim": {
+          "art": {
+            "height": 1,
+            "width": 1,
+            "x": 0,
+            "y": 0
+          },
+          "copy": {
+            "height": 0.2,
+            "width": 0.43,
+            "x": 0.06,
+            "y": 0.64
+          },
+          "hero-value": {
+            "height": 0.16,
+            "width": 0.43,
+            "x": 0.06,
+            "y": 0.34
+          },
+          "key": {
+            "height": 0.09,
+            "width": 0.43,
+            "x": 0.06,
+            "y": 0.53
           }
         },
         "r7-illustration": {
@@ -8662,7 +8857,7 @@
           "theme": {
             "accent": "#536756",
             "background": "#F7F4EC",
-            "font_family": "'Noto Serif CJK KR', 'Noto Serif KR', Georgia, serif",
+            "font_family": "'Noto Serif KR', 'Noto Serif CJK KR', Georgia, serif",
             "foreground": "#14213D"
           },
           "typography": {
@@ -8751,6 +8946,20 @@
           "max_lines": 7,
           "weight": 400
         },
+        "chip": {
+          "font_family": "AES Sans KR",
+          "font_size": 34,
+          "line_height": 1.1,
+          "max_lines": 1,
+          "weight": 700
+        },
+        "date": {
+          "font_family": "'Noto Serif KR', 'Noto Serif CJK KR', serif",
+          "font_size": 96,
+          "line_height": 1.1,
+          "max_lines": 1,
+          "weight": 700
+        },
         "eyebrow": {
           "font_size": 28,
           "line_height": 1.15,
@@ -8762,6 +8971,20 @@
           "line_height": 1.2,
           "max_lines": 2,
           "weight": 700
+        },
+        "hero": {
+          "font_family": "AES Sans KR",
+          "font_size": 232,
+          "line_height": 1.05,
+          "max_lines": 1,
+          "weight": 800
+        },
+        "label": {
+          "font_family": "AES Sans KR",
+          "font_size": 28,
+          "line_height": 1.2,
+          "max_lines": 2,
+          "weight": 600
         },
         "pagination": {
           "align": "end",
@@ -8778,6 +9001,6 @@
         }
       }
     },
-    "sha256": "0b3f9290fa4ef9cad4f606f22f9ef25f66cf8e7d6f33730ab5a16658820ae703"
+    "sha256": "4ac71fd5403beb5ec987f8fd2c5cf6f30aed43fe08de6c633091d3c9435abb3c"
   }
 }

@@ -24,6 +24,17 @@
       }
     },
     "so_what": { "type": "string", "minLength": 20 },
+    "trend_eligibility": {
+      "type": "object", "additionalProperties": false,
+      "required": ["volume_24h", "updated_at", "checked_at", "observations", "direction"],
+      "properties": {
+        "volume_24h": { "type": "number", "exclusiveMinimum": 0 },
+        "updated_at": { "type": "string", "format": "date-time" },
+        "checked_at": { "type": "string", "format": "date-time" },
+        "observations": { "type": "array", "minItems": 2, "items": { "type": "object", "additionalProperties": false, "required": ["t", "p"], "properties": { "t": { "type": "string", "format": "date-time" }, "p": { "type": "number" } } } },
+        "direction": { "enum": ["up", "down", "flat"] }
+      }
+    },
     "per_card": {
       "type": "object", "minProperties": 1,
       "additionalProperties": {

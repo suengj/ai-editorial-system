@@ -5,7 +5,7 @@ import { readFileSync, writeFileSync, mkdirSync, mkdtempSync, copyFileSync, exis
 import { dirname, resolve } from 'node:path';
 import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
-import { planCarousel, executeCarousel, loadVisualRecipes } from './lib/carousel-core.mjs';
+import { planCarousel, executeCarousel, loadVisualRecipes, isForbiddenCardNewsCopy } from './lib/carousel-core.mjs';
 import { resolveDefaultVisualStyle } from './lib/visual-style-policy.mjs';
 
 const ROOT=resolve(dirname(fileURLToPath(import.meta.url)),'..');
@@ -14,6 +14,10 @@ const base=JSON.parse(readFileSync(resolve(FIX,'series.json'),'utf8'));
 const clone=(x=base)=>structuredClone(x); let passed=0;
 const ok=(name,fn)=>{fn();passed++;console.log(`PASS ${name}`);};
 const bad=(name,mut,code)=>ok(name,()=>{const v=clone();mut(v);assert.throws(()=>planCarousel(v),(e)=>e.code===code);});
+ok('shared card-news copy gate rejects boilerplate, timing, workflow jargon, and false-accuracy caveats',()=>{
+  for(const phrase of ['투자 권유 아님','2026-10-21 기준 시각','as-of 11:30','선두','원관측','illustrative','연출 이미지','USD bn','수치는 정확하지 않음']) assert(isForbiddenCardNewsCopy(phrase),phrase);
+  assert.equal(isForbiddenCardNewsCopy('물가가 오르자 시장 금리도 움직였다.'),false);
+});
 const first=planCarousel(base),json=JSON.stringify(base);
 ok('three frames and original order',()=>assert.deepEqual(first.frames.map((f)=>f.id),['opening','evidence','closing']));
 ok('input unchanged',()=>assert.equal(JSON.stringify(base),json));

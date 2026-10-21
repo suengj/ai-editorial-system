@@ -41,6 +41,24 @@ export function computeAxis(allPoints, { zoom, padding_pp, min_span_pp }) {
 /** Actual observed span in whole days (floor), never the requested window. */
 export const observedDays = (obs) => Math.floor((ts(obs[obs.length - 1].t) - ts(obs[0].t)) / DAY);
 
+/** Market trend gate shared by numeric-card producers; freshness is measured at the recorded check time. */
+export function checkTrendCardEligibility(input, maxAgeHours = 24) {
+  const issues = [];
+  const add = (code, message) => issues.push({ code, message });
+  const volume = Number(input?.volume_24h);
+  if (!Number.isFinite(volume) || volume <= 0) add('TREND_ILLIQUID', '24-hour market volume must be non-zero');
+  const updated = ts(input?.updated_at), checked = ts(input?.checked_at);
+  if (!Number.isFinite(updated) || !Number.isFinite(checked) || checked < updated || checked - updated > maxAgeHours * HOUR) add('TREND_STALE', 'market update must be fresh within the configured age at checked_at');
+  const observations = Array.isArray(input?.observations) ? input.observations : [];
+  if (observations.length < 2) add('TREND_HISTORY_REQUIRED', 'trend cards require at least two history points');
+  if (observations.length >= 2) {
+    const first = observations[0], last = observations.at(-1);
+    const actual = last.p > first.p ? 'up' : last.p < first.p ? 'down' : 'flat';
+    if (!['up', 'down'].includes(actual) || input.direction !== actual) add('TREND_DIRECTION', 'trend direction must match the first and last history points');
+  }
+  return issues;
+}
+
 /**
  * @returns {{code:string, where:string, message:string}[]} empty when the spec complies.
  */
@@ -50,6 +68,7 @@ export function checkNumericCard(spec, profile = loadNumericProfile()) {
   const d = profile.units.decimals;
   if (!spec || typeof spec !== 'object') return [{ code: 'SPEC', where: '$', message: 'spec must be an object' }];
   if (spec.profile !== profile.profile) err('PROFILE', 'profile', `must be ${profile.profile}`);
+  if (spec.trend_card === true) for (const issue of checkTrendCardEligibility(spec.trend_eligibility)) err(issue.code, 'trend_eligibility', issue.message);
 
   // ---- lane separation
   const art = spec.art_direction ?? {};

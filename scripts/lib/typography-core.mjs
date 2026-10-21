@@ -206,6 +206,28 @@ export const TYPE_SCALE = Object.freeze({
   caption:  { font_size: 28,  weight: 400, letter_spacing: 0, line_height: 1.4, max_lines: 3 },
   source:   { font_size: 24,  weight: 400, letter_spacing: 0.005, line_height: 1.3, max_lines: 2 },
 });
+/** Shared card-news tokens at the 1080px logical canvas. These are consumed by carousel planning. */
+export const CARD_NEWS_TYPE_TOKENS = Object.freeze({
+  canvas_width: 1080,
+  margin_px: 72,
+  panel_geometry: Object.freeze({ x: 72, width: 936 }),
+  headline: Object.freeze({ font_family: "'Noto Serif KR', 'Noto Serif CJK KR', serif", font_size: 64, weight: 600, max_lines: 2, line_height: 1.2 }),
+  hero: Object.freeze({ font_size: 150, weight: 800, max_lines: 1, line_height: 1.05 }),
+  secondary: Object.freeze({ font_size: 110, weight: 700, max_lines: 2, line_height: 1.1 }),
+  label: Object.freeze({ font_size: 34, weight: 600, max_lines: 2, line_height: 1.2 }),
+  chip: Object.freeze({ font_size: 34, weight: 700, max_lines: 1, line_height: 1.1 }),
+  body: Object.freeze({ font_size: 36, weight: 400, max_lines: 2, line_height: 1.35 }),
+});
+export const CARD_NEWS_TYPE_ROLES = Object.freeze({
+  headline: CARD_NEWS_TYPE_TOKENS.headline,
+  hero: CARD_NEWS_TYPE_TOKENS.hero,
+  date: CARD_NEWS_TYPE_TOKENS.secondary,
+  secondary: CARD_NEWS_TYPE_TOKENS.secondary,
+  eyebrow: CARD_NEWS_TYPE_TOKENS.label,
+  label: CARD_NEWS_TYPE_TOKENS.label,
+  chip: CARD_NEWS_TYPE_TOKENS.chip,
+  body: CARD_NEWS_TYPE_TOKENS.body,
+});
 export function resolveScale(role, overrides = {}, scale = TYPE_SCALE) {
   if (!Object.hasOwn(scale, role)) throw typographyError('TYPE_SCALE_ROLE', `unknown type-scale role: ${role}`);
   return { ...scale[role], ...overrides };

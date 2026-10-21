@@ -217,6 +217,13 @@
       "line_height": 1.2,
       "font_family": "AES Sans KR"
     },
+    "chip": {
+      "font_size": 34,
+      "weight": 700,
+      "max_lines": 1,
+      "line_height": 1.1,
+      "font_family": "AES Sans KR"
+    },
     "body": {
       "font_size": 38,
       "weight": 400,
