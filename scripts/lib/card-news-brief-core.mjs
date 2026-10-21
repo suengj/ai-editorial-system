@@ -199,7 +199,6 @@ export function validateCardNewsChartFacts(series, brief, baseDir = process.cwd(
     try { spec = JSON.parse(readFileSync(resolve(baseDir, block.ref), 'utf8')); }
     catch { add(frame, `data visual bytes are missing or invalid: ${block.ref}`); continue; }
     const eligibility = brief.trend_eligibility ?? {};
-    if (renderedChartTextFields(spec).flatMap(nums).some((value) => !allowed.has(value))) add(frame, 'every rendered text field and number-bearing chart claim must match the card visual_fact_ids');
     const requiresTrendBinding = isTrendChart(spec);
     if (requiresTrendBinding) {
       if (eligibility.source_type === 'market_pmc' || sourcePmcBundle) {
@@ -218,6 +217,7 @@ export function validateCardNewsChartFacts(series, brief, baseDir = process.cwd(
               || spec.start_label !== expectedStartLabel || spec.end_label !== expectedEndLabel
               || spec.start_date !== dateLabel(bundle.plot.delta.baseline_at) || spec.end_date !== dateLabel(bundle.plot.delta.last_at)
               || spec.delta_label !== expectedDelta) add(frame, 'trend-area points, endpoints, dates, and signed delta must match the selected verified PMC bundle');
+            if (nums(spec.title).some((value) => !allowed.has(value))) add(frame, 'number-bearing trend titles must match the card visual_fact_ids');
           } else {
             const expected = pmcPlotToChartSpec(bundle);
             const displayedText = (chart) => ({
@@ -245,10 +245,12 @@ export function validateCardNewsChartFacts(series, brief, baseDir = process.cwd(
           || JSON.stringify(actualPoints) !== JSON.stringify(expectedPoints)) {
           add(frame, 'official trend chart must match the brief source/period receipt and ordered observations');
         }
+        if (renderedChartTextFields(spec).flatMap(nums).some((value) => !allowed.has(value))) add(frame, 'every rendered text field and number-bearing chart claim must match the card visual_fact_ids');
       } else add(frame, 'trend chart requires a declared market_pmc or official_statistics source type');
       continue;
     }
     if (spec.type !== 'number_visual') continue;
+    if (renderedChartTextFields(spec).flatMap(nums).some((value) => !allowed.has(value))) add(frame, 'every rendered text field and number-bearing chart claim must match the card visual_fact_ids');
     let values = [];
     if (spec.layout === 'comparison-bars') {
       values = (spec.items ?? []).map((item) => item.value);
