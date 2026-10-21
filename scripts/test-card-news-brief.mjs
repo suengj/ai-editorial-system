@@ -4,6 +4,7 @@ import { tmpdir } from 'node:os';
 import { resolve } from 'node:path';
 import { renderedChartTextFields, validateCardNewsBrief, validateCardNewsChartFacts, validateCardNewsContentQa } from './lib/card-news-brief-core.mjs';
 import { renderNumberVisualPanel } from './lib/chart-renderer.mjs';
+import { validate as validateJsonSchema } from './lib/json-schema-lite.mjs';
 import { planCarousel } from './lib/carousel-core.mjs';
 
 const frames = Array.from({ length: 6 }, (_, i) => ({
@@ -77,6 +78,16 @@ assert.deepEqual(briefSchema.properties.facts.minItems, 6);
 assert.deepEqual(briefSchema.properties.facts.maxItems, 10);
 assert(briefSchema.properties.per_card.additionalProperties.required.includes('evidence_fact_ids'));
 assert(qaSchema.required.includes('one_surprising_fact'));
+const schemaSampleBrief = structuredClone(brief);
+schemaSampleBrief.facts[0] = { ...schemaSampleBrief.facts[0], value:'Outflow USD 2.5B', direction:'outflow', amount:2.5 };
+schemaSampleBrief.facts[1] = { ...schemaSampleBrief.facts[1], value:'Inflow USD 1B', direction:'inflow', amount:1 };
+schemaSampleBrief.per_card['card-1'].visual_value_bindings = [
+  {label:'Outflow',value:2.5,fact_id:'fact-1',display_value:'USD 2.5B',direction:'outflow'},
+  {label:'Inflow',value:1,fact_id:'fact-2',display_value:'USD 1B',direction:'inflow'},
+];
+assert.deepEqual(validateJsonSchema(schemaSampleBrief,briefSchema),[],'a sample brief with ratio direction and amount fields conforms to the published schema');
+const invalidAmountBrief=structuredClone(schemaSampleBrief); invalidAmountBrief.facts[0].amount=0;
+assert(validateJsonSchema(invalidAmountBrief,briefSchema).length>0,'ratio amounts must be positive in the schema');
 const chartDir = mkdtempSync(resolve(tmpdir(), 'aes-card-news-chart-'));
 const chartPath = resolve(chartDir, 'chart.json');
 writeFileSync(chartPath, JSON.stringify({ type:'number_visual', layout:'comparison-bars', items:[{label:'시장',value:7,value_label:'42%'}] }));

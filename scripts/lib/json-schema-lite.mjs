@@ -14,7 +14,7 @@
 const KNOWN_KEYWORDS = new Set([
   '$schema', '$id', '$ref', '$defs', 'title', 'description',
   'type', 'const', 'enum', 'required', 'properties', 'additionalProperties',
-  'items', 'minItems', 'maxItems', 'minProperties', 'maxProperties', 'pattern', 'minLength', 'maxLength', 'minimum', 'maximum', 'format',
+  'items', 'minItems', 'maxItems', 'minProperties', 'maxProperties', 'pattern', 'minLength', 'maxLength', 'minimum', 'maximum', 'exclusiveMinimum', 'format',
 ]);
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
@@ -96,6 +96,9 @@ export function validate(value, schema, root = schema, path = '$') {
 
   if (typeof value === 'number' && schema.minimum !== undefined && value < schema.minimum) {
     errors.push({ path, message: `below minimum ${schema.minimum}` });
+  }
+  if (typeof value === 'number' && schema.exclusiveMinimum !== undefined && value <= schema.exclusiveMinimum) {
+    errors.push({ path, message: `not greater than exclusiveMinimum ${schema.exclusiveMinimum}` });
   }
   if (typeof value === 'number' && schema.maximum !== undefined && value > schema.maximum) {
     errors.push({ path, message: `above maximum ${schema.maximum}` });
