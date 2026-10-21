@@ -357,6 +357,7 @@ export function renderNumberVisualPanel(spec, { width = 900, height = 520, theme
   const heroWeight = expectedType.hero_weight, labelWeight = expectedType.label_weight, bodyWeight = expectedType.body_weight, chipWeight = expectedType.chip_weight, captionWeight = expectedType.label_weight, dateWeight = expectedType.label_weight, scenarioLabelWeight = expectedType.label_weight;
   const els = [], displayed = [], textBoxes = [], barBoxes = [];
   const text = (value, x, y, size = labelSize, weight = 600, anchor = 'start', color = fg) => {
+    if (!Number.isFinite(size) || size <= 0) fail('text font size must be finite and positive');
     if (typeof value !== 'string' || !value.length) fail('visible labels must be non-empty strings');
     const measured = measure ? measure(value, size, weight) : [...value].length * size * 0.62;
     const limit = anchor === 'end' ? x - 12 : anchor === 'middle' ? Math.min(x, width - x) * 2 - 24 : width - x - 12;
@@ -403,7 +404,7 @@ export function renderNumberVisualPanel(spec, { width = 900, height = 520, theme
     if (points && (points[0].value !== start || points.at(-1).value !== end)) fail('trend-area point endpoints must match the supplied endpoints');
     const values = points?.map(p => p.value) ?? [start,end];
     const yMin=Math.max(0,Math.floor(Math.min(...values)-4)), yMax=Math.min(100,Math.ceil(Math.max(...values)+4));
-    const left=pad+16, right=width-pad-12, top=height*0.39, bottom=height*0.78, y=(v)=>bottom-((v-yMin)/(yMax-yMin))*(bottom-top), x0=left,x1=right;
+    const left=pad+16, right=width-pad-12, top=height*0.39, bottom=height*0.78, y=(v)=>bottom-((v-yMin)/(yMax-yMin))*(bottom-top), x0=left+90*scale,x1=right;
     for(let i=0;i<5;i++) line(left,y(yMin+(yMax-yMin)*i/4),right,y(yMin+(yMax-yMin)*i/4),fg,0.12,1.5);
     const gid='trend-area-gradient'; els.push(`<defs><linearGradient id="${gid}" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="${accent}" stop-opacity="0.34"/><stop offset="100%" stop-color="${accent}" stop-opacity="0.015"/></linearGradient></defs>`);
     let curve, curveSamples=[], curveEndpoints=null, flowSmoothing=null;
@@ -436,7 +437,7 @@ export function renderNumberVisualPanel(spec, { width = 900, height = 520, theme
         visualPoints = smoothed;
         flowSmoothing = { method: 'uniform_resample_gaussian', parameters: { resample_count: resampleCount, sigma_samples: sigma, kernel_radius: radius, endpoints: 'raw_exact' } };
       }
-      const pts = visualPoints.map(p => ({x:left + (right-left) * (toMs(p)-first) / span, y:y(p.value)}));
+      const pts = visualPoints.map(p => ({x:x0 + (x1-x0) * (toMs(p)-first) / span, y:y(p.value)}));
       curveEndpoints={start:{...pts[0],value:visualPoints[0].value},end:{...pts.at(-1),value:visualPoints.at(-1).value}};
       const h=pts.slice(0,-1).map((p,i)=>pts[i+1].x-p.x), sec=pts.slice(0,-1).map((p,i)=>(pts[i+1].y-p.y)/h[i]);
       const slope=Array(pts.length).fill(0);
@@ -468,16 +469,16 @@ export function renderNumberVisualPanel(spec, { width = 900, height = 520, theme
     els.push(`<circle cx="${n(x0)}" cy="${n(y(start))}" r="${n(8*scale)}" fill="${bg}" stroke="${accent}" stroke-width="${n(4*scale)}"/>`);
     els.push(`<circle cx="${n(x1)}" cy="${n(y(end))}" r="${n(15*scale)}" fill="${accent}" stroke="${bg}" stroke-width="${n(5*scale)}"/>`);
     const startWidth=measure?measure(start_label,smallSize,labelWeight):[...start_label].length*smallSize*0.62;
+    const panelLeft = 5, panelRight = width - 5;
     const labelCandidates=[
-      {x:x0,y:y(start)-smallSize*1.25,anchor:'start'},
-      {x:Math.max(8,x0-startWidth-18*scale),y:y(start)-smallSize*0.35,anchor:'start'},
-      {x:x0+24*scale,y:y(start)+smallSize*1.35,anchor:'start'},
+      {x:Math.max(panelLeft+12*scale,x0-startWidth-16*scale),y:y(start)-smallSize*1.25,anchor:'start'},
     ];
     const collides=(candidate)=>{const bx=candidate.x,by=candidate.y-smallSize*0.8,bw=startWidth,bh=smallSize,padCurve=5*scale;return curveSamples.some(p=>p.x+padCurve>=bx&&p.x-padCurve<=bx+bw&&p.y+padCurve>=by&&p.y-padCurve<=by+bh);};
     const startLabel=labelCandidates.find(c=>!collides(c));
     if(!startLabel) fail('start label collides with trend path');
-    text(start_label,startLabel.x,startLabel.y,{anchor:startLabel.anchor,size:smallSize,weight:labelWeight});
+    text(start_label,startLabel.x,startLabel.y,smallSize,labelWeight,startLabel.anchor);
     const startLabelBox={x:startLabel.x,y:startLabel.y-smallSize*0.8,width:startWidth,height:smallSize};
+    if (startLabelBox.x < panelLeft || startLabelBox.x + startLabelBox.width > panelRight || startLabelBox.y < panelLeft) fail('start label must stay inside the chart panel');
     text(end_label,x1-170*scale,height*0.27,valueSize,heroWeight,'middle'); text(start_date,x0,bottom+44*scale,smallSize,dateWeight); text(end_date,x1,bottom+44*scale,smallSize,dateWeight,'end');
     if (spec.delta_label) {
       const chipW=156*scale, chipH=48*scale, chipX=width-pad-chipW, chipY=height*0.88;

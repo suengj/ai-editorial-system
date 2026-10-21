@@ -8,6 +8,7 @@ import { fileURLToPath } from 'node:url';
 import { compileExecution, executeVisual } from './lib/visual-execution-core.mjs';
 import { renderChart, renderChartPanel } from './lib/chart-renderer.mjs';
 import { CARD_NEWS_TYPE_TOKENS } from './lib/typography-core.mjs';
+import { svgTextNodesWithEffectiveFontSize } from './lib/svg-effective-font-size.mjs';
 import { decodePng, encodePng, sha256, resolveWatermark, applyWatermark } from './lib/watermark-core.mjs';
 import { findRasterizer, rasterize } from './lib/svg-tools.mjs';
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
@@ -25,8 +26,9 @@ const run = (p, name) => executeVisual(p, { baseDir: dir, outDir: resolve(dir, n
 const reject = (p, code) => assert.rejects(() => compile(p), (e) => e.code === code);
 const assertCardNewsSvgTypeTokens = (svg) => {
   const allowed = new Set(Object.values(CARD_NEWS_TYPE_TOKENS).map((token) => token?.font_size).filter(Number.isFinite));
-  const sizes = [...svg.matchAll(/font-size="([0-9.]+)"/gu)].map((match) => Number(match[1]));
-  assert(sizes.length > 0 && sizes.every((size) => allowed.has(size)), `SVG text sizes must use shared card-news tokens: ${sizes.join(',')}`);
+  const nodes = svgTextNodesWithEffectiveFontSize(svg);
+  const sizes = nodes.map((node) => node.effectiveFontSize);
+  assert(sizes.length > 0 && sizes.every((size) => [...allowed].some((token) => Math.abs(size - token) < 0.01)), `every SVG text node must render at a shared card-news token after transform/viewBox scaling: ${sizes.join(',')}`);
 };
 const adapter = findRasterizer('magick') ?? findRasterizer('rsvg');
 assert.ok(adapter, 'actual SVG rasterizer required: tests do not fake a rendered result');
@@ -42,6 +44,13 @@ writeFileSync(resolve(dir, 'cutout.png'), encodePng(cutout));
 const photo = clone(base);
 photo.layers = [{ id: 'photo', kind: 'image', ref: 'source.png', rights_note: 'synthetic test pixels authored for this test; not a real photograph', slot: { x: 0.5, y: 0.3, width: 320 / 1080, height: 200 / 1080 } }];
 await test('explicit 1:1 overrides Instagram portrait recipe', async () => { const p = await compile(base); assert.equal(p.canvas.height, 1080); assert.equal(p.watermark.enabled, false); });
+await test('SVG token membership includes nested viewBox and ancestor transforms', async () => {
+  const valid = '<svg width="100" height="100" viewBox="0 0 100 100"><g transform="scale(2)"><svg x="0" y="0" width="50" height="50" viewBox="0 0 100 100"><text font-size="34">label</text></svg></g></svg>';
+  assert.equal(svgTextNodesWithEffectiveFontSize(valid)[0].effectiveFontSize, 34);
+  const scaled = valid.replace('transform="scale(2)"', 'transform="scale(1)"');
+  assert.throws(() => assertCardNewsSvgTypeTokens(scaled), /after transform\/viewBox scaling/u);
+  assert.throws(() => assertCardNewsSvgTypeTokens('<svg width="100" height="100" viewBox="0 0 100 100"><text font-size="NaN">bad</text></svg>'), /invalid or unsupported SVG font-size/u);
+});
 await test('portrait default remains 1080x1350', async () => { const p = clone(base); delete p.task.canvas; assert.equal((await compile(p)).canvas.height, 1350); });
 await test('explicit task beats preset independently', async () => { const p = await compile(base, { preset: { theme: { accent: '#000000' }, watermark: { enabled: true } } }); assert.equal(p.theme.accent, '#2E5BFF'); assert.equal(p.watermark.enabled, false); });
 await test('preset affects execution hash, not original request hash', async () => { const p = clone(base); delete p.task.theme.accent; const a = await compile(p); const b = await compile(p, { preset: { theme: { accent: '#000000' } } }); assert.equal(a.request_hash, b.request_hash); assert.notEqual(a.execution_hash, b.execution_hash); });
@@ -180,7 +189,10 @@ await test('premium number visuals render bound values, grid, gradient area and 
   assert.match(results[2].svg,/ C /);
   const trendGridY=[...results[2].svg.matchAll(/<line\s[^>]+y1="([0-9.]+)"/gu)].map((match)=>Number(match[1]));
   assert(trendGridY.length>0 && Math.min(...trendGridY)>=0.39*648,'trend hero has a clear region above all gridlines');
-  assert.deepEqual(results[2].displayed[0],{start:90,start_label:'90%',start_date:'10.14',end:81,end_label:'81%',end_date:'10.21',point_count:2,delta_label:null});
+  const trendSummary=results[2].displayed[0];
+  assert.deepEqual({start:trendSummary.start,start_label:trendSummary.start_label,start_date:trendSummary.start_date,end:trendSummary.end,end_label:trendSummary.end_label,end_date:trendSummary.end_date,point_count:trendSummary.point_count,delta_label:trendSummary.delta_label},{start:90,start_label:'90%',start_date:'10.14',end:81,end_label:'81%',end_date:'10.21',point_count:2,delta_label:null});
+  assert.equal(trendSummary.start_label_box.height,CARD_NEWS_TYPE_TOKENS.label.font_size);
+  assert.equal(trendSummary.start_label_path_bbox_check.passed,true);
   const renderedDelta=renderChartPanel({...specs[2],delta_label:'−9%p'},{width:950,height:648,theme});
   assert.match(renderedDelta.svg,/>-9%p<\/text>/,'trend delta uses a renderer-safe minus glyph');
   assert.deepEqual(results[3].displayed.map(x=>x.value_label),['0.6%','29,000명']);

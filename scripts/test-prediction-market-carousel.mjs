@@ -5,6 +5,7 @@ import { resolve } from 'node:path';
 import { planCarousel } from './lib/carousel-core.mjs';
 import { compileExecution } from './lib/visual-execution-core.mjs';
 import { CARD_NEWS_TYPE_TOKENS } from './lib/typography-core.mjs';
+import { svgTextNodesWithEffectiveFontSize } from './lib/svg-effective-font-size.mjs';
 import { checkTrendCardEligibility } from './lib/numeric-visual-core.mjs';
 import { loadPmcPlotBundle } from './lib/pmc-bundle-binding.mjs';
 import { pmcPlotToChartSpec } from './lib/pmc-bundle-binding.mjs';
@@ -201,6 +202,16 @@ const trendPoints = Array.from({length:24},(_,i)=>({observed_at:new Date(Date.UT
 const trendVisual = {type:'number_visual',layout:'trend-area',title:'test trend',source_note:'Kalshi',start:90,end:81,start_label:'90%',end_label:'81%',start_date:'10.14',end_date:'10.15',delta_label:'−9%p',points:trendPoints};
 const rawDefault=renderNumberVisualPanel(trendVisual,{width:936,height:769,theme:{accent:'#FF6B5B'}});
 const rawExplicit=renderNumberVisualPanel({...trendVisual,render_mode:'raw'},{width:936,height:769,theme:{accent:'#FF6B5B'}});
+const rawTrendText = svgTextNodesWithEffectiveFontSize(rawDefault.svg);
+const cardNewsTokenSizes = Object.values(CARD_NEWS_TYPE_TOKENS).map((token) => token?.font_size).filter(Number.isFinite);
+assert(rawTrendText.length > 0 && rawTrendText.every((node) => cardNewsTokenSizes.some((token) => Math.abs(node.effectiveFontSize - token) < 0.01)), 'every trend-panel text node uses a shared token after SVG scaling');
+for (const label of ['90%', '10.14', '10.15']) {
+  const node = rawTrendText.find((item) => item.text === label);
+  assert(node, `trend panel includes ${label}`);
+  assert.equal(node.effectiveFontSize, CARD_NEWS_TYPE_TOKENS.label.font_size, `${label} renders at the 34px label token after SVG scaling`);
+  assert.equal(node.attrs['font-weight'], String(CARD_NEWS_TYPE_TOKENS.label.weight), `${label} uses the shared label weight`);
+  assert.equal(node.attrs.fill, '#14213D', `${label} uses the date-label color`);
+}
 const curvePath=(svg)=>svg.match(/<path d="([^"]+)" fill="url\(#trend-area-gradient\)"/u)?.[1];
 assert.equal(curvePath(rawDefault.svg),curvePath(rawExplicit.svg),'raw mode preserves the exact monotone path (0px difference, within 0.5px)');
 assert.equal(rawDefault.displayed[0].render_mode,'raw');
