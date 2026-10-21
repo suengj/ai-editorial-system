@@ -59,10 +59,20 @@ function checkRegions(regions, { bandedBackgroundRegions = [] } = {}) {
 const mergeRoles = (base, override={}) => Object.fromEntries(Object.entries(base).map(([role, style]) => [role, {...style, ...(override[role] ?? {})}]));
 export function loadVisualRecipes() { return JSON.parse(readFileSync(resolve(ROOT, 'editorial/visual-recipes.v1.json'), 'utf8')); }
 
-function supportingArtDirection(recipe) {
+function supportingArtDirection(recipe, theme = {}) {
   const tokens = recipe.prompt_style_tokens ?? [];
+  const paletteSources = {
+    background: ['background'],
+    primary: ['primary_structure', 'primary', 'foreground'],
+    accent: ['accent'],
+    neutral: ['neutral', 'foreground'],
+  };
   const palette = Object.entries(recipe.palette_binding ?? {})
-    .map(([role, binding]) => `${role}=${binding}`);
+    .map(([role]) => {
+      const color = (paletteSources[role] ?? [role]).map((key) => theme[key]).find((value) => typeof value === 'string' && value.trim());
+      return color ? `${role}=${color}` : null;
+    })
+    .filter(Boolean);
   const constraints = recipe.negative_constraints ?? [];
   return [
     'Text-free editorial supporting art.',
@@ -113,7 +123,7 @@ export function planCarousel(series, catalog=loadVisualRecipes()) {
       ...catalogRecipe,
       theme: catalogRecipe.theme ?? catalog.recipes['editorial-minimal']?.theme ?? {},
       typography: catalogRecipe.typography ?? {},
-      generation_direction: catalogRecipe.generation_direction ?? supportingArtDirection(catalogRecipe),
+      generation_direction: catalogRecipe.generation_direction ?? '',
       default_layout: catalogRecipe.default_layout ?? 'visual',
     }
     : catalogRecipe;
@@ -249,9 +259,13 @@ export function planCarousel(series, catalog=loadVisualRecipes()) {
         keys(b,['id','region','kind','ref','sha256','mode','fit','rights_note','protect','focal_box','focal_min_area_ratio','focal_fallback','mockup_risk','provenance',...(b.kind==='generated'?['instruction','generation']:b.kind==='image'?['generation']:[])],'image block');
         if (b.kind==='generated') {
           need(text(b.instruction),'SERIES_GENERATION',b.id);
+          const resolvedSupportingArt = recipe.kind === 'supporting_art'
+            ? supportingArtDirection(recipe, { ...recipe.theme, ...(task.theme ?? {}) })
+            : '';
+          const generationDirection = [recipe.generation_direction, resolvedSupportingArt].filter(Boolean).join('\n');
           layer.instruction = f.art_direction?.render_method === 'native_card'
             ? b.instruction
-            : `${recipe.generation_direction}\nFrame purpose: ${f.takeaway}\n${b.instruction}\nCreate only the illustration for the content slot ${JSON.stringify(layer.slot)}. The compositor clips this asset to that slot; it adds headline, source, page count and watermark separately. Do not draw exact text, data, numbers or branding. A prompt alone is not pixel reservation.`;
+            : `${generationDirection}\nFrame purpose: ${f.takeaway}\n${b.instruction}\nCreate only the illustration for the content slot ${JSON.stringify(layer.slot)}. The compositor clips this asset to that slot; it adds headline, source, page count and watermark separately. Do not draw exact text, data, numbers or branding. A prompt alone is not pixel reservation.`;
         } else need(text(b.ref),'SERIES_SOURCE',b.id);
       }
       if ((catalog.layout_effects?.[layoutName]?.background_regions ?? []).includes(b.region)) backgroundLayers.push(layer);

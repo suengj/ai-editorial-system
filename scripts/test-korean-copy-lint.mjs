@@ -25,6 +25,8 @@ flagged('투자자는 조건을 확인하는 것이 중요합니다.', 'importan
 flagged('정책이 되어지고 있다.', 'double-passive-doeojida');
 flagged('그 절차는 적용되어집니다.', 'double-passive-doeojida');
 flagged('제도가 개선되어졌다.', 'double-passive-doeojida');
+flagged('내용이 확정되어졌습니다.', 'double-passive-doeojida');
+flagged('내용이 확정되어졌고 다음 단계로 갔다.', 'double-passive-doeojida');
 flagged('이번 글에서는 금리 전망을 살펴보겠습니다.', 'meta-work-words');
 flagged('역대급 성과를 냈다.', 'unsupported-superlative');
 clean('일정은 최대한 여유롭게 잡았다.');
@@ -32,6 +34,7 @@ flagged('본문에서 35%와 35%가 반복된다.', 'repeated-hero-number', 'sig
 clean('본문에서 35%와 36%를 비교한다.', 'signalytics-news', { heroNumbers: ['35%'] });
 clean('다른 수치 135%는 35%와 다르다.', 'signalytics-news', { heroNumbers: ['135%'] });
 clean('부채비율은 0.35%다. 지난해에는 1.35%였다.', 'signalytics-news', { heroNumbers: ['35%'] });
+flagged('올해는 35%, 지난해도 35%.', 'repeated-hero-number', 'signalytics-news', { heroNumbers: ['35%'] });
 
 const community = lintKoreanCopy({ text: '이번 글에서는 커뮤니티 이야기를 살펴보겠습니다.', profileId: 'trends-moa' });
 assert.equal(community.profile_family, 'community');

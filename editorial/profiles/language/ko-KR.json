@@ -27,7 +27,7 @@
       {"id":"about-phrase","pattern":"에 대한","message":"‘~에 대한’이 반복되거나 명사화를 늘리는지 확인하세요.","profiles":["economics-desk","community","personal","general"]},
       {"id":"through-phrase","pattern":"(?:을|를) 통해","message":"‘~를 통해’가 구체적인 동작을 흐리는지 확인하세요.","profiles":["economics-desk","community","personal","general"]},
       {"id":"important-template","pattern":"하는 것이 중요합니다","message":"‘~하는 것이 중요합니다’ 상투 구문을 구체적인 주체와 동작으로 바꿀 수 있는지 확인하세요.","profiles":["economics-desk","community","personal","general"]},
-      {"id":"double-passive-doeojida","pattern":"되어(?:지(?:다|는|고|며|었다|을|기)|집니다|졌다|지는|지며|지고|질|짐)","message":"이중 피동 ‘되어지다’가 필요한 표현인지 확인하세요.","profiles":["economics-desk","community","personal","general"]},
+      {"id":"double-passive-doeojida","pattern":"되어(?:지|졌|진|집)[가-힣]*","message":"이중 피동 ‘되어지다’가 필요한 표현인지 확인하세요.","profiles":["economics-desk","community","personal","general"]},
       {"id":"meta-work-words","pattern":"(?:이번|이)\\s*(?:글|카드|영상|콘텐츠)에서는|살펴보겠습니다|정리해보겠습니다|다루겠습니다|알아보겠습니다","message":"글 자체를 안내하는 메타 표현을 덜고 독자에게 필요한 내용으로 시작할 수 있는지 확인하세요.","profiles":["economics-desk"]},
       {"id":"unsupported-superlative","pattern":"최고|최대(?!한)|최초|유일|압도적|역대급|완벽","message":"최상급 표현에 비교 범위와 근거가 있는지 확인하세요. 이 경고만으로 사실 오류를 판정하지 않습니다.","profiles":["economics-desk","community","personal","general"]}
     ]
