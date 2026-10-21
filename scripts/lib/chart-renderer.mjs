@@ -340,8 +340,14 @@ export function renderNumberVisualPanel(spec, { width = 900, height = 520, theme
   const bg = theme.background ?? '#F7F5F0', fg = theme.foreground ?? '#14213D', accent = theme.accent ?? '#FF6B5B';
   for (const color of [bg, fg, accent]) if (!/^#[0-9a-f]{6}$/i.test(color)) fail('theme colors must be #RRGGBB');
   const font = theme.font_family ?? 'Noto Sans CJK KR, Pretendard, sans-serif';
-  const scale = width / 900;
-  const labelSize = Math.max(34, 34 * scale), valueSize = Math.max(140, 140 * scale), smallSize = Math.max(34, 34 * scale);
+  const typography = spec.typography === undefined ? {} : spec.typography;
+  const typographyKeys = ['hero_size', 'label_size', 'body_size', 'chip_size', 'hero_weight', 'label_weight', 'body_weight', 'chip_weight'];
+  if (spec.typography !== undefined && (!typography || typeof typography !== 'object' || Array.isArray(typography) || Object.keys(typography).some((key) => !typographyKeys.includes(key)))) fail('typography must use the supported explicit type-scale fields');
+  for (const key of ['hero_size', 'label_size', 'body_size', 'chip_size']) if (typography[key] !== undefined && (!Number.isFinite(typography[key]) || typography[key] < 10 || typography[key] > 256)) fail(`typography.${key} must be a valid pixel size`);
+  for (const key of ['hero_weight', 'label_weight', 'body_weight', 'chip_weight']) if (typography[key] !== undefined && ![400, 500, 600, 700, 800, 900].includes(typography[key])) fail(`typography.${key} must be a supported weight`);
+  const fixedTypeScale = Object.keys(typography).length > 0, scale = width / 900;
+  const labelSize = typography.label_size ?? Math.max(34, 34 * scale), valueSize = typography.hero_size ?? Math.max(140, 140 * scale), smallSize = typography.chip_size ?? Math.max(34, 34 * scale), bodySize = typography.body_size ?? smallSize;
+  const heroWeight = typography.hero_weight ?? 800, labelWeight = typography.label_weight ?? 700, bodyWeight = typography.body_weight ?? 600, chipWeight = typography.chip_weight ?? 800, captionWeight = typography.label_weight ?? 600, dateWeight = typography.label_weight ?? 500, scenarioLabelWeight = typography.label_weight ?? 800;
   const els = [], displayed = [];
   const text = (value, x, y, size = labelSize, weight = 600, anchor = 'start', color = fg) => {
     if (typeof value !== 'string' || !value.length) fail('visible labels must be non-empty strings');
@@ -358,7 +364,7 @@ export function renderNumberVisualPanel(spec, { width = 900, height = 520, theme
   if (spec.layout === 'comparison-bars') {
     if (!Array.isArray(spec.items) || spec.items.length !== 2 || spec.items.some(x => !Number.isFinite(x.value) || x.value < 0 || x.value > 100 || !x.label || !x.value_label)) fail('comparison-bars needs two 0–100 items');
     const x0=pad, barW=width-pad*2, gap=height*0.40, y0=height*0.22, bh=Math.max(32,36*scale);
-    spec.items.forEach((item,i)=>{ const y=y0+i*gap; text(item.label,x0,y-smallSize*0.55,smallSize,700); els.push(`<rect x="${n(x0)}" y="${n(y)}" width="${n(barW)}" height="${n(bh)}" rx="${n(bh/2)}" fill="${fg}" fill-opacity="0.08"/>`); els.push(`<rect x="${n(x0)}" y="${n(y)}" width="${n(barW*item.value/100)}" height="${n(bh)}" rx="${n(bh/2)}" fill="${accent}"/>`); text(item.value_label,x0+barW*item.value/100,y+bh+valueSize*0.95,valueSize,800,'middle'); displayed.push({label:item.label,value:item.value,value_label:item.value_label}); });
+    spec.items.forEach((item,i)=>{ const y=y0+i*gap; text(item.label,x0,y-smallSize*0.55,smallSize,labelWeight); els.push(`<rect x="${n(x0)}" y="${n(y)}" width="${n(barW)}" height="${n(bh)}" rx="${n(bh/2)}" fill="${fg}" fill-opacity="0.08"/>`); els.push(`<rect x="${n(x0)}" y="${n(y)}" width="${n(barW*item.value/100)}" height="${n(bh)}" rx="${n(bh/2)}" fill="${accent}"/>`); const valueX=fixedTypeScale||item.value===100?width-pad:x0+barW*item.value/100, valueAnchor=fixedTypeScale||item.value===100?'end':item.value===0?'start':'middle'; text(item.value_label,valueX,y+bh+valueSize*0.95,valueSize,heroWeight,valueAnchor); displayed.push({label:item.label,value:item.value,value_label:item.value_label}); });
   } else if (spec.layout === 'dot-grid') {
     const { total, filled, value_label, caption }=spec;
     if (!Number.isInteger(total)||!Number.isInteger(filled)||filled<0||filled>total||!value_label||!caption) fail('dot-grid needs bounded integer counts and labels');
@@ -366,7 +372,7 @@ export function renderNumberVisualPanel(spec, { width = 900, height = 520, theme
     const cols=10, r=Math.min(18*scale,(width-pad*2)/(cols*2.5)), gap=r*2.45, gridW=(cols-1)*gap;
     const startX=(width-gridW)/2, startY=height*0.28;
     for(let i=0;i<total;i++){ const x=startX+(i%cols)*gap,y=startY+Math.floor(i/cols)*gap; els.push(`<circle cx="${n(x)}" cy="${n(y)}" r="${n(r)}" fill="${i<filled?accent:fg}" fill-opacity="${i<filled?0.96:0.10}"/>`); }
-    text(value_label,width/2,height*0.20,valueSize,800,'middle'); text(caption,width/2,height*0.94,smallSize,600,'middle'); displayed.push({filled,total,value_label});
+    text(value_label,width/2,height*0.20,valueSize,heroWeight,'middle'); text(caption,width/2,height*0.94,smallSize,captionWeight,'middle'); displayed.push({filled,total,value_label});
   } else if (spec.layout === 'trend-area') {
     const { start, end, start_label, end_label, start_date, end_date, points }=spec;
     if (![start,end].every(v=>Number.isFinite(v)&&v>=0&&v<=100)||!start_label||!end_label||!start_date||!end_date) fail('trend-area needs two dated 0–100 endpoints');
@@ -404,29 +410,35 @@ export function renderNumberVisualPanel(spec, { width = 900, height = 520, theme
     els.push(`<path d="${curve}" fill="none" stroke="${accent}" stroke-width="${n(5*scale)}" stroke-linecap="round"/>`);
     els.push(`<circle cx="${n(x0)}" cy="${n(y(start))}" r="${n(8*scale)}" fill="${bg}" stroke="${accent}" stroke-width="${n(4*scale)}"/>`);
     els.push(`<circle cx="${n(x1)}" cy="${n(y(end))}" r="${n(15*scale)}" fill="${accent}" stroke="${bg}" stroke-width="${n(5*scale)}"/>`);
-    text(start_label,x0,y(start)-22*scale,smallSize,700,'start'); text(end_label,x1-170*scale,height*0.32,valueSize,800,'middle'); text(start_date,x0,bottom+44*scale,smallSize,500); text(end_date,x1,bottom+44*scale,smallSize,500,'end');
+    text(start_label,x0,y(start)-22*scale,smallSize,labelWeight,'start'); text(end_label,x1-170*scale,height*0.32,valueSize,heroWeight,'middle'); text(start_date,x0,bottom+44*scale,smallSize,dateWeight); text(end_date,x1,bottom+44*scale,smallSize,dateWeight,'end');
     if (spec.delta_label) {
       const chipW=156*scale, chipH=48*scale, chipX=width-pad-chipW, chipY=height*0.88;
       els.push(`<rect x="${n(chipX)}" y="${n(chipY)}" width="${n(chipW)}" height="${n(chipH)}" rx="${n(chipH/2)}" fill="${accent}"/>`);
-      text(spec.delta_label,chipX+chipW/2,chipY+chipH*0.72,smallSize,800,'middle','#FFFFFF');
+      text(spec.delta_label,chipX+chipW/2,chipY+chipH*0.72,smallSize,chipWeight,'middle','#FFFFFF');
     }
     displayed.push({start,start_label,start_date,end,end_label,end_date,point_count:points?.length??2,delta_label:spec.delta_label??null});
   } else if (spec.layout === 'dual-metric') {
     if (!Array.isArray(spec.items)||spec.items.length!==2||spec.items.some(x=>!x.label||!x.value_label||!Number.isFinite(x.value)||!Number.isFinite(x.max)||x.value<0||x.max<=0||x.value>x.max)) fail('dual-metric needs two independently scaled metrics');
-    const y0=height*0.30, rowH=height*0.40, x=pad, w=width-pad*2, bh=22*scale;
-    spec.items.forEach((item,i)=>{const y=y0+i*rowH; text(item.label,x,y,smallSize,700); text(item.value_label,width-pad,y,valueSize,800,'end'); const by=y+28*scale; line(x,by+bh/2,x+w,by+bh/2,fg,0.10,bh); els.push(`<rect x="${n(x)}" y="${n(by)}" width="${n(w*item.value/item.max)}" height="${n(bh)}" rx="${n(bh/2)}" fill="${accent}"/>`); displayed.push({label:item.label,value:item.value,max:item.max,value_label:item.value_label});});
+    const y0=fixedTypeScale?height*0.18:height*0.30, rowH=height*0.40, x=pad, w=width-pad*2, bh=22*scale;
+    spec.items.forEach((item,i)=>{const labelY=y0+i*rowH, valueY=fixedTypeScale?labelY+smallSize+valueSize*0.70:labelY; text(item.label,x,labelY,smallSize,labelWeight); text(item.value_label,width-pad,valueY,valueSize,heroWeight,'end'); const by=valueY+(fixedTypeScale?16:28)*scale; line(x,by+bh/2,x+w,by+bh/2,fg,0.10,bh); els.push(`<rect x="${n(x)}" y="${n(by)}" width="${n(w*item.value/item.max)}" height="${n(bh)}" rx="${n(bh/2)}" fill="${accent}"/>`); displayed.push({label:item.label,value:item.value,max:item.max,value_label:item.value_label});});
   } else if (spec.layout === 'rate-gap-ratio') {
     const { rates, ratio }=spec;
     if (!Array.isArray(rates)||rates.length!==2||rates.some(x=>!x.label||!Number.isFinite(x.value)||x.value<0||x.value>5)||rates[0].value<=rates[1].value||!Number.isFinite(ratio?.outflow)||!Number.isFinite(ratio?.inflow)||ratio.inflow<=0||Math.abs(ratio.outflow/ratio.inflow-2.5)>0.15||!ratio.outflow_label||!ratio.inflow_label||!ratio.caption) fail('rate-gap-ratio needs descending rates and a source-bound ratio near 2.5:1');
     const x=pad,w=width-pad*2, y0=height*0.11, bh=28*scale;
-    rates.forEach((r,i)=>{const y=y0+i*height*0.18;text(r.label,x,y-smallSize*0.48,smallSize,700);els.push(`<rect x="${n(x)}" y="${n(y)}" width="${n(w)}" height="${n(bh)}" rx="${n(bh/2)}" fill="${fg}" fill-opacity="0.08"/>`);els.push(`<rect x="${n(x)}" y="${n(y)}" width="${n(w*r.value/5)}" height="${n(bh)}" rx="${n(bh/2)}" fill="${i===0?accent:fg}"/>`);text(`${r.value.toFixed(2)}%`,width-pad,y+bh*0.84,smallSize,700,'end');displayed.push({label:r.label,value:r.value});});
-    const gy=height*0.45, gapX=x+w*0.60, startY=height*0.13, endY=startY+height*0.18;
-    els.push(`<path d="M ${n(gapX-12)} ${n(startY+28*scale)} h 12 v ${n(endY-startY)} h -12 M ${n(gapX)} ${n((startY+endY)/2)} h ${n(96*scale)}" fill="none" stroke="${accent}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>`);
-    text('금리차 1.00%p',width-pad,height*0.49,smallSize,700,'end',accent);
+    rates.forEach((r,i)=>{const y=y0+i*height*0.18;text(r.label,x,y-smallSize*0.48,smallSize,labelWeight);els.push(`<rect x="${n(x)}" y="${n(y)}" width="${n(w)}" height="${n(bh)}" rx="${n(bh/2)}" fill="${fg}" fill-opacity="0.08"/>`);els.push(`<rect x="${n(x)}" y="${n(y)}" width="${n(w*r.value/5)}" height="${n(bh)}" rx="${n(bh/2)}" fill="${i===0?accent:fg}"/>`);text(`${r.value.toFixed(2)}%`,width-pad,y+bh*0.84,smallSize,labelWeight,'end');displayed.push({label:r.label,value:r.value});});
+    if (fixedTypeScale) {
+      const firstBarY=y0, secondBarY=y0+height*0.18, gapX=width-pad-265, gapTop=firstBarY+bh+8*scale, gapBottom=secondBarY-8*scale, gapMiddle=(gapTop+gapBottom)/2;
+      els.push(`<path d="M ${n(gapX-12)} ${n(gapTop)} h 12 v ${n(gapBottom-gapTop)} h -12" fill="none" stroke="${accent}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>`);
+      text('금리차 1.00%p',width-pad,gapMiddle+smallSize*0.35,smallSize,chipWeight,'end',accent);
+    } else {
+      const gapX=x+w*0.60, startY=height*0.13, endY=startY+height*0.18;
+      els.push(`<path d="M ${n(gapX-12)} ${n(startY+28*scale)} h 12 v ${n(endY-startY)} h -12 M ${n(gapX)} ${n((startY+endY)/2)} h ${n(96*scale)}" fill="none" stroke="${accent}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>`);
+      text('금리차 1.00%p',width-pad,height*0.49,smallSize,700,'end',accent);
+    }
     const max=ratio.outflow, captionY=height*0.61, row1Y=height*0.71, row2Y=height*0.85, barH=16*scale;
-    text(ratio.caption,x,captionY,smallSize,700);
+    text(ratio.caption,x,captionY,smallSize,labelWeight);
     for (const [index,item] of [{label:ratio.outflow_label,value:ratio.outflow,color:accent},{label:ratio.inflow_label,value:ratio.inflow,color:fg}].entries()) {
-      const labelY=index===0?row1Y:row2Y; text(item.label,x,labelY,smallSize,700); const barY=labelY+10*scale;
+      const labelY=index===0?row1Y:row2Y; text(item.label,x,labelY,smallSize,labelWeight); const barY=labelY+10*scale;
       els.push(`<rect x="${n(x)}" y="${n(barY)}" width="${n(w)}" height="${n(barH)}" rx="${n(barH/2)}" fill="${fg}" fill-opacity="0.08"/>`);
       els.push(`<rect x="${n(x)}" y="${n(barY)}" width="${n(w*item.value/max)}" height="${n(barH)}" rx="${n(barH/2)}" fill="${item.color}"/>`);
     }
@@ -434,15 +446,15 @@ export function renderNumberVisualPanel(spec, { width = 900, height = 520, theme
   } else if (spec.layout === 'scenario-split') {
     const { date, scenarios }=spec;
     if(!date||!Array.isArray(scenarios)||scenarios.length!==2||scenarios.some(s=>!s.label)) fail('scenario-split needs a date and two scenario branches');
-    text(date,width/2,height*0.23,valueSize,800,'middle');
+    text(date,width/2,height*0.23,valueSize,heroWeight,'middle');
     const cx=width/2, cy=height*0.42, y=height*0.70, lx=width*0.25, rx=width*0.75;
     line(cx,cy,cx,y-54*scale,accent,0.55,4*scale); line(cx,y-54*scale,lx,y-12*scale,accent,0.55,4*scale); line(cx,y-54*scale,rx,y-12*scale,accent,0.55,4*scale);
     scenarios.forEach((s,i)=>{
       const x=i?rx:lx, branchColor=i?fg:accent, lines=s.detail_lines??(s.detail?[s.detail]:[]);
       els.push(`<circle cx="${n(x)}" cy="${n(y)}" r="${n(17*scale)}" fill="${branchColor}"/>`);
       els.push(`<path d="M ${n(x-7*scale)} ${n(y)} l ${n(6*scale)} ${n(6*scale)} l ${n(12*scale)} ${n(-13*scale)}" fill="none" stroke="#FFFFFF" stroke-width="${n(3*scale)}" stroke-linecap="round" stroke-linejoin="round"/>`);
-      text(s.label,x,y+70*scale,labelSize,800,'middle',branchColor);
-      lines.forEach((lineText,j)=>text(lineText,x,height*0.88+j*smallSize*1.15,smallSize,600,'middle'));
+      text(s.label,x,y+70*scale,labelSize,scenarioLabelWeight,'middle',branchColor);
+      lines.forEach((lineText,j)=>text(lineText,x,height*0.88+j*bodySize*1.5,bodySize,bodyWeight,'middle'));
       displayed.push({scenario:s.label,detail_lines:lines});
     });
   }
