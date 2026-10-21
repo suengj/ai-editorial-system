@@ -95,6 +95,7 @@
       "visual_style",
       "footer_policy",
       "content_kind",
+      "requires_brief",
       "numeric_profile",
       "brief_file",
       "task",
@@ -113,7 +114,7 @@
     }
   },
   "catalog_version": "1.0.0",
-  "content_digest": "sha256:12ae0192013d57df3fd68c041d75dcd26bba9584d3ff170ecd36af8a449bdca6",
+  "content_digest": "sha256:8cbd955ab2d9d2c43110b64ca035f988238b4ed3ac866262dc899bbc61956019",
   "field_domains": {
     "call_to_action": {
       "max_length": 200,
@@ -8129,7 +8130,7 @@
           {
             "path": "editorial/templates/prediction-market-carousel.series.json",
             "role": "visual:values",
-            "sha256": "0e028e9da2a5be371bcbbabe229f6a6792e14f6c7f0c8f4ef08587c4b91030c0"
+            "sha256": "33e25835c9bf252bd7a7f7fa233b223edd6df62f59af3c5ccdff7445dfb7f253"
           },
           {
             "path": "editorial/visual-recipes.v1.json",
