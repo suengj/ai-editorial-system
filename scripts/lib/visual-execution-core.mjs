@@ -213,7 +213,7 @@ export async function compileExecution(plan, { baseDir = process.cwd(), preset =
       if (l.kind === 'chart') {
         // Chart values stay in their existing canonical spec, not in the prompt.
         const chart = JSON.parse(file.bytes);
-        if (!['line', 'bar', 'flow'].includes(chart.type)) fail('CHART_BINDING', 'v1 binds line/bar/flow; use an existing rendered evidence image for another geometry');
+        if (!['line', 'bar', 'flow', 'number_visual'].includes(chart.type)) fail('CHART_BINDING', 'v1 binds line/bar/flow/number_visual');
       } else {
         next.mode = l.mode ?? 'exact_composite'; next.fit = l.fit ?? 'contain';
         let replacedWithR7 = false;

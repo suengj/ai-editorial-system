@@ -111,6 +111,29 @@ await test('incompatible report/card combination rejected', async () => { const 
 await test('explicit conflicting geometry rejected', async () => { const p = clone(base); p.task.canvas = { width: 1080, height: 1000, aspect_ratio: '1:1' }; await reject(p, 'INVALID_GEOMETRY'); });
 await test('supplied cutout actually renders', async () => { const p = clone(photo); p.layers[0].ref = 'cutout.png'; p.layers[0].mode = 'cutout_composite'; const r = await run(p, 'cutout'); assert.equal(r.receipt.images[0].mode, 'cutout_composite'); });
 await test('negative comparison retains zero and labels', async () => { const p = fixture('bar.json'); p.series[0].points[0][1] = -125; const r = renderChartPanel(p); assert.equal(r.axis.ymin, -125); assert.equal(r.displayed[0].value, -125); });
+await test('premium number visuals render bound values, grid, gradient area and branches', async () => {
+  const theme = { background: '#F7F5F0', foreground: '#14213D', accent: '#FF6B5B' };
+  const specs = [
+    { type:'number_visual', layout:'comparison-bars', title:'가격 비교', source_note:'brief', items:[{label:'10월',value:15,value_label:'15%'},{label:'12월',value:81,value_label:'81%'}] },
+    { type:'number_visual', layout:'dot-grid', title:'가격', source_note:'brief', total:100,filled:81,value_label:'81% · 81¢',caption:'100칸 중 81칸' },
+    { type:'number_visual', layout:'trend-area', title:'일주일 흐름', source_note:'brief', start:90,start_label:'90%',start_date:'10.14',end:81,end_label:'81%',end_date:'10.21' },
+    { type:'number_visual', layout:'dual-metric', title:'물가와 고용', source_note:'brief', items:[{label:'CPI',value:0.6,max:1,value_label:'0.6%'},{label:'고용',value:29000,max:50000,value_label:'29,000명'}] },
+    { type:'number_visual', layout:'rate-gap-ratio', title:'금리와 흐름', source_note:'brief', rates:[{label:'미국',value:4},{label:'한국',value:3}],ratio:{outflow:129.4,inflow:50.4,outflow_label:'해외 129.4',inflow_label:'유입 50.4',caption:'USD bn'} },
+    { type:'number_visual', layout:'scenario-split', title:'회의 시나리오', source_note:'brief', date:'10.28',scenarios:[{label:'동결'},{label:'인상'}] },
+  ];
+  const results = specs.map((spec) => renderChartPanel(spec,{width:950,height:648,theme}));
+  assert.equal(results[0].displayed.map(x=>x.value).join(','),'15,81');
+  const fullScaleBars=renderChartPanel({...specs[0],items:[{label:'A',value:100,value_label:'100%'},{label:'B',value:0,value_label:'0%'}]},{width:950,height:648,theme});
+  assert.match(fullScaleBars.svg,/text-anchor="end"/);
+  assert.equal(results[1].displayed[0].filled,81);
+  assert.match(results[2].svg,/linearGradient/);
+  assert.match(results[2].svg,/ C /);
+  assert.deepEqual(results[2].displayed[0],{start:90,start_label:'90%',start_date:'10.14',end:81,end_label:'81%',end_date:'10.21'});
+  assert.deepEqual(results[3].displayed.map(x=>x.value_label),['0.6%','29,000명']);
+  assert.equal(results[4].displayed.at(-1).gap,'1.00%p');
+  assert.equal(results[4].displayed.at(-1).ratio,'2.5:1');
+  assert.deepEqual(results[5].displayed.map(x=>x.scenario),['동결','인상']);
+});
 await test('explicit height is not lost to an inherited preset ratio', async () => { const p = clone(base); p.task.canvas = { height: 900 }; const r = await compile(p, { preset: { canvas: { width: 1080, aspect_ratio: '1:1' } } }); assert.equal(r.canvas.height, 900); });
 await test('height plus ratio derives width', async () => { const p = clone(base); p.task.canvas = { height: 900, aspect_ratio: '1:1' }; const r = await compile(p); assert.equal(r.canvas.width, 900); });
 console.log(JSON.stringify({ passed, output_dir: dir, renderer: adapter.version, native_generation: 'NOT_RUN_PHASE4', real_photo_UAT: 'NOT_RUN_PHASE4', live_PMC: 'NOT_RUN', ci: 'NOT_RUN' }));

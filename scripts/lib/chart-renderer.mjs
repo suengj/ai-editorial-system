@@ -156,10 +156,10 @@ export function validateChartAgainstArticle(spec, article) {
 
 /**
  * Responsive composition binding (SUE-1336). The legacy renderChart output is
- * untouched. This bounded line/bar panel reads the SAME source spec shape;
- * it does not fetch markets, smooth observations, or own source authority.
+ * untouched. Panels consume source-bound specs, do not fetch data, and never
+ * own source authority.
  */
-export const PANEL_RENDERER_VERSION = '1.1.0';
+export const PANEL_RENDERER_VERSION = '1.2.0';
 function renderFlowDiagramPanel(spec, { width = 900, height = 520, theme = {}, measure = null } = {}) {
   const fail = (message) => { throw new Error(`FLOW_INVALID: ${message}`); };
   if (![width, height].every(Number.isFinite) || width < 400 || height < 260) fail('panel must be at least 400x260');
@@ -213,8 +213,9 @@ function renderFlowDiagramPanel(spec, { width = 900, height = 520, theme = {}, m
 export function renderChartPanel(spec, { width = 900, height = 520, theme = {}, measure = null } = {}) {
   const fail = (m) => { throw new Error(`CHART_INVALID: ${m}`); };
   const obj = (v) => v && typeof v === 'object' && !Array.isArray(v);
-  if (!obj(spec) || !['line', 'bar', 'flow'].includes(spec.type)) fail('supported types: line, bar, flow');
+  if (!obj(spec) || !['line', 'bar', 'flow', 'number_visual'].includes(spec.type)) fail('supported types: line, bar, flow, number_visual');
   if (spec.type === 'flow') return renderFlowDiagramPanel(spec, { width, height, theme, measure });
+  if (spec.type === 'number_visual') return renderNumberVisualPanel(spec, { width, height, theme, measure });
   for (const k of ['title', 'period', 'source_note']) if (typeof spec[k] !== 'string' || !spec[k].trim()) fail(`${k} is required`);
   if (!spec.x?.label || !spec.y?.label || typeof spec.y.unit !== 'string') fail('axis labels and explicit unit are required');
   if (![width, height].every(Number.isFinite) || width < 400 || height < 260) fail('panel must be at least 400x260');
@@ -328,4 +329,81 @@ export function renderChartPanel(spec, { width = 900, height = 520, theme = {}, 
     displayed, raw_observation_count: points.length,
     gap_policy: 'null observations break paths; no interpolation, forward-fill or synthetic baseline',
   };
+}
+
+/** Purpose-built, deterministic SVG modules for premium editorial number cards. */
+export function renderNumberVisualPanel(spec, { width = 900, height = 520, theme = {}, measure = null } = {}) {
+  const fail = (message) => { throw new Error(`NUMBER_VISUAL_INVALID: ${message}`); };
+  if (!spec || spec.type !== 'number_visual' || !['comparison-bars','dot-grid','trend-area','dual-metric','rate-gap-ratio','scenario-split'].includes(spec.layout)) fail('unsupported layout');
+  if (![width, height].every(Number.isFinite) || width < 400 || height < 260) fail('panel must be at least 400x260');
+  if (typeof spec.title !== 'string' || !spec.title.trim() || typeof spec.source_note !== 'string' || !spec.source_note.trim()) fail('title and source_note are required');
+  const bg = theme.background ?? '#F7F5F0', fg = theme.foreground ?? '#14213D', accent = theme.accent ?? '#FF6B5B';
+  for (const color of [bg, fg, accent]) if (!/^#[0-9a-f]{6}$/i.test(color)) fail('theme colors must be #RRGGBB');
+  const font = theme.font_family ?? 'Noto Sans CJK KR, Pretendard, sans-serif';
+  const scale = width / 900;
+  const labelSize = Math.max(30, 30 * scale), valueSize = Math.max(44, 58 * scale), smallSize = Math.max(30, 32 * scale);
+  const els = [], displayed = [];
+  const text = (value, x, y, size = labelSize, weight = 600, anchor = 'start', color = fg) => {
+    if (typeof value !== 'string' || !value.length) fail('visible labels must be non-empty strings');
+    const measured = measure ? measure(value, size, weight) : [...value].length * size * 0.62;
+    const limit = anchor === 'end' ? x - 12 : anchor === 'middle' ? Math.min(x, width - x) * 2 - 24 : width - x - 12;
+    if (measured > limit) fail(`text does not fit: ${value}`);
+    els.push(`<text x="${n(x)}" y="${n(y)}" text-anchor="${anchor}" font-family="${esc(font)}" font-size="${n(size)}" font-weight="${weight}" fill="${color}">${esc(value)}</text>`);
+  };
+  const line = (x1,y1,x2,y2, stroke=fg, opacity=0.15, strokeWidth=2) => els.push(`<line x1="${n(x1)}" y1="${n(y1)}" x2="${n(x2)}" y2="${n(y2)}" stroke="${stroke}" stroke-opacity="${opacity}" stroke-width="${strokeWidth}" stroke-linecap="round"/>`);
+  const pad = 36 * scale;
+  if (spec.layout === 'comparison-bars') {
+    if (!Array.isArray(spec.items) || spec.items.length !== 2 || spec.items.some(x => !Number.isFinite(x.value) || x.value < 0 || x.value > 100 || !x.label || !x.value_label)) fail('comparison-bars needs two 0–100 items');
+    const x0=pad, barW=width-pad*2, gap=height*0.25, y0=height*0.3, bh=Math.max(32,36*scale);
+    spec.items.forEach((item,i)=>{ const y=y0+i*gap; text(item.label,x0,y-smallSize*0.55,smallSize,700); els.push(`<rect x="${n(x0)}" y="${n(y)}" width="${n(barW)}" height="${n(bh)}" rx="${n(bh/2)}" fill="${fg}" fill-opacity="0.08"/>`); els.push(`<rect x="${n(x0)}" y="${n(y)}" width="${n(barW*item.value/100)}" height="${n(bh)}" rx="${n(bh/2)}" fill="${accent}"/>`); if(item.value>=88) text(item.value_label,x0+barW-12,y+bh*0.83,valueSize,800,'end'); else text(item.value_label,x0+barW*item.value/100+16,y+bh*0.83,valueSize,800); displayed.push({label:item.label,value:item.value,value_label:item.value_label}); });
+  } else if (spec.layout === 'dot-grid') {
+    const { total, filled, value_label, caption }=spec;
+    if (!Number.isInteger(total)||!Number.isInteger(filled)||filled<0||filled>total||!value_label||!caption) fail('dot-grid needs bounded integer counts and labels');
+    if (total !== 100) fail('dot-grid requires a 100-point scale');
+    const cols=10, r=Math.min(9.5*scale,(width-pad*2)/(cols*2.5)), gap=r*2.3, gridW=(cols-1)*gap;
+    const startX=(width-gridW)/2, startY=height*0.13;
+    for(let i=0;i<total;i++){ const x=startX+(i%cols)*gap,y=startY+Math.floor(i/cols)*gap; els.push(`<circle cx="${n(x)}" cy="${n(y)}" r="${n(r)}" fill="${i<filled?accent:fg}" fill-opacity="${i<filled?0.96:0.10}"/>`); }
+    text(value_label,width/2,height*0.77,valueSize,800,'middle'); text(caption,width/2,height*0.91,smallSize,600,'middle'); displayed.push({filled,total,value_label});
+  } else if (spec.layout === 'trend-area') {
+    const { start, end, start_label, end_label, start_date, end_date }=spec;
+    if (![start,end].every(v=>Number.isFinite(v)&&v>=0&&v<=100)||!start_label||!end_label||!start_date||!end_date) fail('trend-area needs two dated 0–100 endpoints');
+    const yMin=Math.min(70,start,end), yMax=Math.max(100,start,end);
+    const left=pad+16, right=width-pad-12, top=height*0.14, bottom=height*0.78, y=(v)=>bottom-((v-yMin)/(yMax-yMin))*(bottom-top), x0=left,x1=right;
+    for(let i=0;i<5;i++) line(left,y(yMin+(yMax-yMin)*i/4),right,y(yMin+(yMax-yMin)*i/4),fg,0.12,1.5);
+    const gid='trend-area-gradient'; els.push(`<defs><linearGradient id="${gid}" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="${accent}" stop-opacity="0.34"/><stop offset="100%" stop-color="${accent}" stop-opacity="0.015"/></linearGradient></defs>`);
+    const cx1=x0+(x1-x0)*0.32, cx2=x0+(x1-x0)*0.69, cy1=y(start)+(y(end)-y(start))*0.22, cy2=y(start)+(y(end)-y(start))*0.78;
+    const curve=`M ${n(x0)} ${n(y(start))} C ${n(cx1)} ${n(cy1)} ${n(cx2)} ${n(cy2)} ${n(x1)} ${n(y(end))}`;
+    els.push(`<path d="${curve} L ${n(x1)} ${n(bottom)} L ${n(x0)} ${n(bottom)} Z" fill="url(#${gid})"/>`);
+    els.push(`<path d="${curve}" fill="none" stroke="${accent}" stroke-width="${n(5*scale)}" stroke-linecap="round"/>`);
+    els.push(`<circle cx="${n(x0)}" cy="${n(y(start))}" r="${n(8*scale)}" fill="${bg}" stroke="${accent}" stroke-width="${n(4*scale)}"/>`);
+    els.push(`<circle cx="${n(x1)}" cy="${n(y(end))}" r="${n(15*scale)}" fill="${accent}" stroke="${bg}" stroke-width="${n(5*scale)}"/>`);
+    text(start_label,x0,y(start)-22*scale,smallSize,700,'start'); text(end_label,x1-8,y(end)-22*scale,valueSize,800,'end'); text(start_date,x0,bottom+44*scale,smallSize,500); text(end_date,x1,bottom+44*scale,smallSize,500,'end');
+    displayed.push({start,start_label,start_date,end,end_label,end_date});
+  } else if (spec.layout === 'dual-metric') {
+    if (!Array.isArray(spec.items)||spec.items.length!==2||spec.items.some(x=>!x.label||!x.value_label||!Number.isFinite(x.value)||!Number.isFinite(x.max)||x.value<0||x.max<=0||x.value>x.max)) fail('dual-metric needs two independently scaled metrics');
+    const y0=height*0.30, rowH=height*0.40, x=pad, w=width-pad*2, bh=22*scale;
+    spec.items.forEach((item,i)=>{const y=y0+i*rowH; text(item.label,x,y,smallSize,700); text(item.value_label,width-pad,y,valueSize,800,'end'); const by=y+28*scale; line(x,by+bh/2,x+w,by+bh/2,fg,0.10,bh); els.push(`<rect x="${n(x)}" y="${n(by)}" width="${n(w*item.value/item.max)}" height="${n(bh)}" rx="${n(bh/2)}" fill="${accent}"/>`); displayed.push({label:item.label,value:item.value,max:item.max,value_label:item.value_label});});
+  } else if (spec.layout === 'rate-gap-ratio') {
+    const { rates, ratio }=spec;
+    if (!Array.isArray(rates)||rates.length!==2||rates.some(x=>!x.label||!Number.isFinite(x.value)||x.value<0||x.value>5)||rates[0].value<=rates[1].value||!Number.isFinite(ratio?.outflow)||!Number.isFinite(ratio?.inflow)||ratio.inflow<=0||Math.abs(ratio.outflow/ratio.inflow-2.5)>0.15||!ratio.outflow_label||!ratio.inflow_label||!ratio.caption) fail('rate-gap-ratio needs descending rates and a source-bound ratio near 2.5:1');
+    const x=pad,w=width-pad*2, y0=height*0.11, bh=28*scale;
+    rates.forEach((r,i)=>{const y=y0+i*height*0.18;text(r.label,x,y-smallSize*0.48,smallSize,700);els.push(`<rect x="${n(x)}" y="${n(y)}" width="${n(w)}" height="${n(bh)}" rx="${n(bh/2)}" fill="${fg}" fill-opacity="0.08"/>`);els.push(`<rect x="${n(x)}" y="${n(y)}" width="${n(w*r.value/5)}" height="${n(bh)}" rx="${n(bh/2)}" fill="${i===0?accent:fg}"/>`);text(`${r.value.toFixed(2)}%`,width-pad,y+bh*0.84,smallSize,700,'end');displayed.push({label:r.label,value:r.value});});
+    const gy=height*0.45; line(x,gy,width-pad,gy,fg,0.22,2); text('금리차',x,gy+smallSize*1.05,smallSize,600); text('1.00%p',width-pad,gy+smallSize*1.05,valueSize,800,'end',accent);
+    const max=ratio.outflow, captionY=height*0.61, row1Y=height*0.71, row2Y=height*0.85, barH=16*scale;
+    text(ratio.caption,x,captionY,smallSize,700);
+    for (const [index,item] of [{label:ratio.outflow_label,value:ratio.outflow,color:accent},{label:ratio.inflow_label,value:ratio.inflow,color:fg}].entries()) {
+      const labelY=index===0?row1Y:row2Y; text(item.label,x,labelY,smallSize,700); const barY=labelY+10*scale;
+      els.push(`<rect x="${n(x)}" y="${n(barY)}" width="${n(w)}" height="${n(barH)}" rx="${n(barH/2)}" fill="${fg}" fill-opacity="0.08"/>`);
+      els.push(`<rect x="${n(x)}" y="${n(barY)}" width="${n(w*item.value/max)}" height="${n(barH)}" rx="${n(barH/2)}" fill="${item.color}"/>`);
+    }
+    displayed.push({gap:`${(rates[0].value-rates[1].value).toFixed(2)}%p`,ratio:'2.5:1',outflow:ratio.outflow,inflow:ratio.inflow});
+  } else if (spec.layout === 'scenario-split') {
+    const { date, scenarios }=spec;
+    if(!date||!Array.isArray(scenarios)||scenarios.length!==2||scenarios.some(s=>!s.label)) fail('scenario-split needs a date and two scenario branches');
+    text(date,width/2,height*0.23,valueSize,800,'middle');
+    const cx=width/2, cy=height*0.42, y=height*0.70, lx=width*0.25, rx=width*0.75;
+    line(cx,cy,cx,y-54*scale,accent,0.55,4*scale); line(cx,y-54*scale,lx,y-12*scale,accent,0.55,4*scale); line(cx,y-54*scale,rx,y-12*scale,accent,0.55,4*scale);
+    scenarios.forEach((s,i)=>{const x=i?rx:lx;els.push(`<circle cx="${n(x)}" cy="${n(y)}" r="${n(17*scale)}" fill="${accent}"/>`);text(s.label,x,y+70*scale,valueSize,800,'middle');displayed.push({scenario:s.label});});
+  }
+  return { svg:`<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" role="img"><title>${esc(spec.title)}</title>${els.join('')}</svg>`, renderer:{tool:'aes-number-visual-panel',version:PANEL_RENDERER_VERSION}, geometry:{width,height}, displayed, source_note:spec.source_note };
 }
