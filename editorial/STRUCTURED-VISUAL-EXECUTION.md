@@ -211,7 +211,7 @@ python3 examples/native-card-recipe.py --source /path/to/water-01.png \
 
 recipe 선택은 이번 작업의 디자인 지시다. 실제 brand/reference 권한과 사실·잠금을 우회하지 않는다. 호환 가능한 `task.theme`·`task.canvas` 지정이 recipe 기본값보다 우선한다. 한 시리즈에서는 색상·비율·역할별 타이포를 한 번 결정한다. 개별 카드가 임의로 다른 글자 크기/색으로 바꾸는 대신 시리즈 공통 옵션을 바꾸거나 카드를 분할한다. 한 번의 피드백을 영구 선호로 저장하지 않는다.
 
-현재 로컬 recipe는 본문 `text`, 근거/사진 `visual`, 좌우 비교 `split`의 세 가지 layout을 지원한다. 같은 시리즈에서 내부 layout은 달라도 eyebrow/headline/source/pagination은 공통 영역이다. 더 복잡한 infographic/report layout이나 전체 화면 integrated art는 기존 해당 경로를 사용하고 이 단순 preset이 모든 미감을 재현한다고 주장하지 않는다.
+현재 carousel recipe는 본문 `text`, 근거/사진 `visual`, 좌우 비교 `split`과 데이터 카드용 명시 layout을 지원한다. 기존 series는 eyebrow/headline/source/pagination 공통 chrome을 유지한다. 명시한 `footer_policy: "content_only"`는 source/pagination layer를 만들지 않는다. 이 경우 사실 출처는 별도 handoff sidecar에 보존하고, 화면 출처는 해당 카드의 데이터 패널 안에 작게 넣을 수 있다. 역할별 typography는 `font_family`를 지정할 수 있고, 텍스트 block은 선택적으로 `text_role`을 골라 hero 계층을 쓴다. 더 복잡한 infographic/report layout이나 전체 화면 integrated art는 기존 해당 경로를 사용하고 이 단순 preset이 모든 미감을 재현한다고 주장하지 않는다.
 
 ### 실행과 결과
 

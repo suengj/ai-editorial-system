@@ -18,10 +18,10 @@ export const CAROUSEL_VERSION = '1.0.0';
 export const CAROUSEL_CONSTRAINTS = Object.freeze({
   frames: Object.freeze({ min: 1, max: 20 }),
   beats: Object.freeze({ min: 1, max: 60 }),
-  series_fields: Object.freeze(['schema_version','series_id','request','source','profiles','recipe','visual_style','task','typography','regions','layouts','series_label','beats','frames','art_direction_sha256']),
+  series_fields: Object.freeze(['schema_version','series_id','request','source','profiles','recipe','visual_style','footer_policy','task','typography','regions','layouts','series_label','beats','frames','art_direction_sha256']),
   frame_fields: Object.freeze(['id','function','beat_ids','takeaway','alt_text','headline','headline_emphasis','source_note','layout','blocks','caption','job_ref','art_direction']),
   art_direction_fields: Object.freeze(['plan_id','visual_mode','focal_subject','message','reading_order','asset','asset_block_id','avoid','protected','brand_elements','reuse','render_method','native_prompt_strings']),
-  block_fields: Object.freeze(['id','region','kind','ref','sha256','mode','fit','rights_note','protect','focal_box','focal_min_area_ratio','focal_fallback','mockup_risk','text','source_ref','instruction','generation','provenance']),
+  block_fields: Object.freeze(['id','region','kind','ref','sha256','mode','fit','rights_note','protect','focal_box','focal_min_area_ratio','focal_fallback','mockup_risk','text','text_role','source_ref','instruction','generation','provenance']),
   block_kinds: Object.freeze(['text','image','chart','generated']),
   frame_functions: Object.freeze(['orient','assert','show_evidence','explain_mechanism','compare','qualify','turn','show_consequence','decision','close']),
 });
@@ -36,6 +36,8 @@ export function receiptConfirmsGeneratedAsset(status, receipt, masterSha256, blo
 const fail = (code, message) => { const e = new Error(message); e.code = code; throw e; };
 const need = (condition, code, message) => { if (!condition) fail(code, message); };
 const text = (s) => typeof s === 'string' && s.trim().length > 0;
+const contentOnlyCopyIssue = (s) => /\[[^\]]+\]|\{\{[^}]+\}\}|\b(?:PLACEHOLDER|TODO|TBD)\b|편집자 확인 필요/i.test(s)
+  || /30일 요청|실제 차트는 7일|거래가 관측된 점만 이었다|움직임은 확인, 원인은 확인 중|계약 가격은 사건의 확인이 아니다|\bPMC\b|\b\d+\s*\/\s*\d+\b|as[- ]of|기준 시각/i.test(s);
 const slug = (s) => typeof s === 'string' && /^[a-z0-9][a-z0-9-]*$/.test(s);
 function keys(value, allowed, where) {
   need(obj(value), 'SERIES_INPUT', `${where} must be an object`);
@@ -63,6 +65,7 @@ export function loadVisualRecipes() { return JSON.parse(readFileSync(resolve(ROO
 export function planCarousel(series, catalog=loadVisualRecipes()) {
   keys(series, CAROUSEL_CONSTRAINTS.series_fields, 'series');
   need(series.schema_version === CAROUSEL_VERSION && slug(series.series_id), 'SERIES_VERSION', 'v1 and a slug series_id are required');
+  need(series.footer_policy === undefined || ['source_and_pagination','content_only'].includes(series.footer_policy), 'SERIES_FOOTER_POLICY', 'footer_policy must be source_and_pagination or content_only');
   if (series.art_direction_sha256 !== undefined) need(typeof series.art_direction_sha256 === 'string' && /^sha256:[a-f0-9]{64}$/.test(series.art_direction_sha256), 'SERIES_ART_DIRECTION', 'art_direction_sha256 must be a SHA-256 digest');
   need(text(series.request) && (series.series_label === undefined || series.series_label === '' || /^@[A-Za-z0-9._]+$/.test(series.series_label)), 'SERIES_INPUT', 'request required; optional footer series_label may only be an explicit publishing account handle');
   keys(series.source, ['ref','sha256','scope'], 'source');
@@ -99,8 +102,8 @@ export function planCarousel(series, catalog=loadVisualRecipes()) {
   keys(series.typography ?? {}, Object.keys(catalog.typography), 'typography');
   const typography = mergeRoles(mergeRoles(catalog.typography,recipe.typography),series.typography);
   for (const [role,style] of Object.entries(typography)) {
-    keys(style,['font_size','weight','max_lines','line_height','align'],`typography.${role}`);
-    need(Number.isInteger(style.font_size) && style.font_size >= 14 && style.font_size <= 256 && [400,500,600,700,800].includes(style.weight) && Number.isInteger(style.max_lines) && style.max_lines >= 1 && style.max_lines <= 20 && style.line_height >= 1.05 && style.line_height <= 2 && (style.align === undefined || ['start','middle','end'].includes(style.align)), 'SERIES_TYPE', role);
+    keys(style,['font_size','weight','max_lines','line_height','align','font_family'],`typography.${role}`);
+    need(Number.isInteger(style.font_size) && style.font_size >= 14 && style.font_size <= 256 && [400,500,600,700,800].includes(style.weight) && Number.isInteger(style.max_lines) && style.max_lines >= 1 && style.max_lines <= 20 && style.line_height >= 1.05 && style.line_height <= 2 && (style.align === undefined || ['start','middle','end'].includes(style.align)) && (style.font_family === undefined || text(style.font_family)), 'SERIES_TYPE', role);
   }
   keys(series.regions ?? {},Object.keys(catalog.regions),'regions');
   keys(series.layouts ?? {},Object.keys(catalog.layouts),'layouts');
@@ -115,7 +118,10 @@ export function planCarousel(series, catalog=loadVisualRecipes()) {
     const solidBands = effect.solid_bands ?? [];
     const bandedBackgroundRegions = solidBands.length ? backgroundRegions : [];
     const rec = {...recurring, ...(effect.recurring_regions ?? {})};
-    checkRegions({...rec,...layout},{bandedBackgroundRegions});
+    const regionsToCheck = (series.footer_policy ?? 'source_and_pagination') === 'content_only'
+      ? Object.fromEntries(Object.entries(rec).filter(([id]) => !['source','pagination'].includes(id)))
+      : rec;
+    checkRegions({...regionsToCheck,...layout},{bandedBackgroundRegions});
     for (const band of solidBands) {
       need(obj(band) && /^[a-z0-9][a-z0-9-]*$/.test(band.id ?? '') && ['x','y','width','height'].every(k => Number.isFinite(band[k]) && band[k] >= 0 && band[k] <= 1) && band.width > 0 && band.height > 0 && band.x + band.width <= 1 && band.y + band.height <= 1 && (band.fill === 'theme.background' || /^#[0-9a-f]{6}$/i.test(band.fill ?? '')) && (band.gradient === undefined || (Array.isArray(band.gradient) && band.gradient.length >= 2 && band.gradient.every(st => Array.isArray(st) && st.length === 2 && st.every(n => Number.isFinite(n) && n >= 0 && n <= 1)))), 'SERIES_LAYOUT_EFFECT', `${name}: invalid solid band`);
     }
@@ -141,6 +147,10 @@ export function planCarousel(series, catalog=loadVisualRecipes()) {
     keys(f,CAROUSEL_CONSTRAINTS.frame_fields,'frame');
     need(slug(f.id) && !ids.has(f.id), 'SERIES_FRAME_ID', 'unique frame slug required'); ids.add(f.id);
     need(functions.includes(f.function) && text(f.takeaway) && text(f.alt_text) && text(f.headline) && text(f.source_note), 'SERIES_MEANING', `${f.id}: function, takeaway, alt text, headline and source_note required`);
+    if (series.footer_policy === 'content_only') {
+      const visibleCopy = [f.headline, ...(f.blocks ?? []).filter((b) => b?.kind === 'text').map((b) => b.text)].filter((s) => typeof s === 'string').join('\n');
+      need(!contentOnlyCopyIssue(visibleCopy), 'SERIES_COPY', `${f.id}: visible copy contains a placeholder or process/meta phrase`);
+    }
     need(Array.isArray(f.beat_ids) && f.beat_ids.length && new Set(f.beat_ids).size===f.beat_ids.length, 'SERIES_BEATS', f.id);
     for (const id of f.beat_ids) {
       need(beats.has(id), 'SERIES_BEATS', `unknown beat ${id}`);
@@ -212,11 +222,12 @@ export function planCarousel(series, catalog=loadVisualRecipes()) {
       need(slug(b.id) && !['series-label','headline','source','pagination'].includes(b.id) && !layers.some((l)=>l.id===b.id),'SERIES_LAYER_ID',String(b.id));
       need(layout[b.region] && !occupied.has(b.region),'SERIES_REGION',`unknown or duplicate region ${b.region}`); occupied.add(b.region);
       need(CAROUSEL_CONSTRAINTS.block_kinds.includes(b.kind),'SERIES_LAYER',String(b.kind));
-      const {region,...layer}=b; layer.slot=layout[region];
+      const {region,text_role,...layer}=b; layer.slot=layout[region];
       if (b.kind==='text') {
-        keys(b,['id','region','kind','text','source_ref'],'text block');
+        keys(b,['id','region','kind','text','text_role','source_ref'],'text block');
         need(text(b.text) && text(b.source_ref),'SERIES_TEXT',b.id);
-        Object.assign(layer,sty('body'));
+        need(text_role === undefined || Object.hasOwn(typography, text_role), 'SERIES_TYPE', `${b.id}: unknown text_role`);
+        Object.assign(layer,sty(text_role ?? 'body'));
       } else if (b.kind==='chart') {
         keys(b,['id','region','kind','ref','sha256'],'chart block');
         need(text(b.ref),'SERIES_SOURCE',b.id);
@@ -250,8 +261,10 @@ export function planCarousel(series, catalog=loadVisualRecipes()) {
       }));
       layers.push(...backgroundLayers, ...bands, ...contentLayers);
     }
-    addText('source',f.source_note,rec.source,'source',series.source.ref);
-    addText('pagination',`${i+1} / ${series.frames.length}`,rec.pagination,'pagination');
+    if ((series.footer_policy ?? 'source_and_pagination') === 'source_and_pagination') {
+      addText('source',f.source_note,rec.source,'source',series.source.ref);
+      addText('pagination',`${i+1} / ${series.frames.length}`,rec.pagination,'pagination');
+    }
     const plan = {schema_version:'1.0.0',request:series.request,source:series.source,profiles:series.profiles,task:lfx.theme?{...structuredClone(task),theme:{...(task.theme??{}),...lfx.theme}}:structuredClone(task),layers,caption:f.caption??''};
     if (f.job_ref) plan.job_ref=f.job_ref;
     frames.push({id:f.id,index:i+1,function:f.function,beat_ids:f.beat_ids,takeaway:f.takeaway,alt_text:f.alt_text,layout:layoutName,...(f.art_direction?{art_direction:structuredClone(f.art_direction)}:{}),plan});
