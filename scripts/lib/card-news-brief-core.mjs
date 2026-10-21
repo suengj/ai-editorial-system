@@ -6,6 +6,10 @@ import { loadPmcPlotBundle, pmcPlotToChartSpec } from './pmc-bundle-binding.mjs'
 const substantive = (value) => String(value ?? '').replace(/\s+/gu, '').length;
 const issue = (code, message, card_id = undefined) => ({ code, message, ...(card_id ? { card_id } : {}) });
 const englishMagnitude = /\b(?:billion|million|trillion)\b/iu;
+const labelNumber = (value) => {
+  const match = String(value ?? '').replace(/,/g, '').match(/[-+−]?\d+(?:\.\d+)?/u);
+  return match ? Number(match[0].replace('−', '-')) : null;
+};
 
 function magnitudeStrings(value, out = []) {
   if (typeof value === 'string') out.push(value);
@@ -161,7 +165,10 @@ export function validateCardNewsChartFacts(series, brief, baseDir = process.cwd(
             const dateLabel = (iso) => { const d = new Date(iso); return `${String(d.getUTCMonth()+1).padStart(2,'0')}.${String(d.getUTCDate()).padStart(2,'0')}`; };
             const signedDelta = Number(bundle.plot.delta.value_pp);
             const expectedDelta = `${signedDelta > 0 ? '+' : signedDelta < 0 ? '−' : ''}${Number(Math.abs(signedDelta).toPrecision(12))}%p`;
-            if (JSON.stringify(spec.points) !== JSON.stringify(expected) || spec.start !== expected[0]?.value || spec.end !== expected.at(-1)?.value
+            const renderMode = spec.render_mode ?? (series.profiles?.artifact === 'visual/prediction-market-carousel' ? 'flow' : 'raw');
+            if (!['raw','flow'].includes(renderMode) || (renderMode === 'flow' && ((spec.intermediate_labels?.length ?? 0) > 0 || spec.points?.some((point) => point.label !== undefined)))
+              || JSON.stringify(spec.points) !== JSON.stringify(expected) || spec.start !== expected[0]?.value || spec.end !== expected.at(-1)?.value
+              || labelNumber(spec.start_label) !== expected[0]?.value || labelNumber(spec.end_label) !== expected.at(-1)?.value
               || spec.start_date !== dateLabel(bundle.plot.delta.baseline_at) || spec.end_date !== dateLabel(bundle.plot.delta.last_at)
               || spec.delta_label?.replace('-', '−') !== expectedDelta) add(frame, 'trend-area points, endpoints, dates, and signed delta must match the selected verified PMC bundle');
           } else {

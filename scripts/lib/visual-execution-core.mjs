@@ -480,7 +480,16 @@ export async function executeVisual(plan, { baseDir = process.cwd(), preset = {}
     } else {
       const file = localInput(l.ref, baseDir, l.sha256); inputs.push(file);
       if (l.kind === 'chart') {
-        const spec = JSON.parse(file.bytes);
+        const chartSpec = JSON.parse(file.bytes);
+        const spec = chartSpec.type === 'number_visual' && chartSpec.layout === 'trend-area'
+          ? {
+              ...chartSpec,
+              render_mode: chartSpec.render_mode ?? profiles.artifact.trend_render_mode ?? 'raw',
+              ...(profiles.artifact.trend_render_mode === 'flow' ? {
+                raw_data_sha256: `sha256:${JSON.parse(source.bytes).plot_data_sha256 ?? ''}`,
+              } : {}),
+            }
+          : chartSpec;
         if (article?.verification) {
           const errors = validateChartAgainstArticle(spec, article);
           if (errors.length) fail('CHART_CLAIM', errors.join('; '));

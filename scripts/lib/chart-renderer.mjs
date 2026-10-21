@@ -393,6 +393,10 @@ export function renderNumberVisualPanel(spec, { width = 900, height = 520, theme
     text(value_label,width/2,height*0.20,secondarySize,CARD_NEWS_TYPE_TOKENS.secondary.weight,'middle'); text(caption,width/2,height*0.94,smallSize,captionWeight,'middle'); displayed.push({filled,total,value_label});
   } else if (spec.layout === 'trend-area') {
     const { start, end, start_label, end_label, start_date, end_date, points }=spec;
+    const renderMode = spec.render_mode ?? 'raw';
+    if (!['raw', 'flow'].includes(renderMode)) fail('render_mode must be raw or flow');
+    if (renderMode === 'flow' && ((spec.intermediate_labels?.length ?? 0) > 0 || points?.some((p) => p.label !== undefined))) fail('flow mode is forbidden when intermediate point labels are shown');
+    if (renderMode === 'flow' && !/^sha256:[a-f0-9]{64}$/.test(spec.raw_data_sha256 ?? '')) fail('flow mode requires the verified raw PMC data hash');
     if (![start,end].every(v=>Number.isFinite(v)&&v>=0&&v<=100)||!start_label||!end_label||!start_date||!end_date) fail('trend-area needs two dated 0–100 endpoints');
     if (points !== undefined && (!Array.isArray(points) || points.length < 3 || points.some((p,i) => !Number.isFinite(p.value) || p.value < 0 || p.value > 100 || typeof p.observed_at !== 'string' || !Number.isFinite(Date.parse(p.observed_at)) || (i > 0 && Date.parse(p.observed_at) <= Date.parse(points[i-1].observed_at))))) fail('trend-area points must be finite ordered sourced observations in range');
     if (labelNumber(start_label)!==start || labelNumber(end_label)!==end) fail('trend-area endpoint labels must match their plotted values');
@@ -402,11 +406,38 @@ export function renderNumberVisualPanel(spec, { width = 900, height = 520, theme
     const left=pad+16, right=width-pad-12, top=height*0.39, bottom=height*0.78, y=(v)=>bottom-((v-yMin)/(yMax-yMin))*(bottom-top), x0=left,x1=right;
     for(let i=0;i<5;i++) line(left,y(yMin+(yMax-yMin)*i/4),right,y(yMin+(yMax-yMin)*i/4),fg,0.12,1.5);
     const gid='trend-area-gradient'; els.push(`<defs><linearGradient id="${gid}" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="${accent}" stop-opacity="0.34"/><stop offset="100%" stop-color="${accent}" stop-opacity="0.015"/></linearGradient></defs>`);
-    let curve;
+    let curve, curveSamples=[], curveEndpoints=null, flowSmoothing=null;
     if (points) {
       const toMs = v => Date.parse(v.observed_at), first = toMs(points[0]), span = toMs(points.at(-1)) - first;
       if (points.some(p => !Number.isFinite(toMs(p))) || span <= 0) fail('trend-area observations need increasing timestamps');
-      const pts = points.map(p => ({x:left + (right-left) * (toMs(p)-first) / span, y:y(p.value)}));
+      let visualPoints = points;
+      if (renderMode === 'flow') {
+        const resampleCount = 40, sigma = 2, radius = 6;
+        const raw = points.map(p => ({ t: toMs(p), value: p.value }));
+        const sampleAt = (t) => {
+          let i = 0; while (i < raw.length - 2 && raw[i + 1].t < t) i++;
+          const a = raw[i], b = raw[i + 1], f = (t - a.t) / (b.t - a.t);
+          return a.value + (b.value - a.value) * f;
+        };
+        const sampled = Array.from({ length: resampleCount }, (_, i) => {
+          const t = first + span * i / (resampleCount - 1);
+          return { observed_at: new Date(t).toISOString(), value: sampleAt(t) };
+        });
+        const kernel = Array.from({ length: radius * 2 + 1 }, (_, i) => Math.exp(-0.5 * ((i - radius) / sigma) ** 2));
+        const smoothed = sampled.map((p, i) => {
+          let total = 0, weight = 0;
+          for (let k = -radius; k <= radius; k++) {
+            const w = kernel[k + radius], at = Math.max(0, Math.min(sampled.length - 1, i + k));
+            total += sampled[at].value * w; weight += w;
+          }
+          return { ...p, value: total / weight };
+        });
+        smoothed[0].value = points[0].value; smoothed.at(-1).value = points.at(-1).value;
+        visualPoints = smoothed;
+        flowSmoothing = { method: 'uniform_resample_gaussian', parameters: { resample_count: resampleCount, sigma_samples: sigma, kernel_radius: radius, endpoints: 'raw_exact' } };
+      }
+      const pts = visualPoints.map(p => ({x:left + (right-left) * (toMs(p)-first) / span, y:y(p.value)}));
+      curveEndpoints={start:{...pts[0],value:visualPoints[0].value},end:{...pts.at(-1),value:visualPoints.at(-1).value}};
       const h=pts.slice(0,-1).map((p,i)=>pts[i+1].x-p.x), sec=pts.slice(0,-1).map((p,i)=>(pts[i+1].y-p.y)/h[i]);
       const slope=Array(pts.length).fill(0);
       if(pts.length===2) slope[0]=slope[1]=sec[0];
@@ -423,6 +454,11 @@ export function renderNumberVisualPanel(spec, { width = 900, height = 520, theme
         segs.push(`C ${n(c1x)} ${n(c1y)} ${n(c2x)} ${n(c2y)} ${n(p2.x)} ${n(p2.y)}`);
       }
       curve=`M ${n(pts[0].x)} ${n(pts[0].y)} ${segs.join(' ')}`;
+      // Sample the same cubic segments at sub-pixel intervals for the label collision guard.
+      for (let i=0;i<pts.length-1;i++) {
+        const p1=pts[i],p2=pts[i+1],d=h[i],c1={x:p1.x+d/3,y:p1.y+slope[i]*d/3},c2={x:p2.x-d/3,y:p2.y-slope[i+1]*d/3};
+        for(let j=0;j<=16;j++){const t=j/16,u=1-t;curveSamples.push({x:u**3*p1.x+3*u*u*t*c1.x+3*u*t*t*c2.x+t**3*p2.x,y:u**3*p1.y+3*u*u*t*c1.y+3*u*t*t*c2.y+t**3*p2.y});}
+      }
     } else {
       const cx1=x0+(x1-x0)*0.32, cx2=x0+(x1-x0)*0.69, cy1=y(start)+(y(end)-y(start))*0.22, cy2=y(start)+(y(end)-y(start))*0.78;
       curve=`M ${n(x0)} ${n(y(start))} C ${n(cx1)} ${n(cy1)} ${n(cx2)} ${n(cy2)} ${n(x1)} ${n(y(end))}`;
@@ -431,13 +467,24 @@ export function renderNumberVisualPanel(spec, { width = 900, height = 520, theme
     els.push(`<path d="${curve}" fill="none" stroke="${accent}" stroke-width="${n(5*scale)}" stroke-linecap="round"/>`);
     els.push(`<circle cx="${n(x0)}" cy="${n(y(start))}" r="${n(8*scale)}" fill="${bg}" stroke="${accent}" stroke-width="${n(4*scale)}"/>`);
     els.push(`<circle cx="${n(x1)}" cy="${n(y(end))}" r="${n(15*scale)}" fill="${accent}" stroke="${bg}" stroke-width="${n(5*scale)}"/>`);
-    text(start_label,x0,y(start)-22*scale,smallSize,labelWeight,'start'); text(end_label,x1-170*scale,height*0.27,valueSize,heroWeight,'middle'); text(start_date,x0,bottom+44*scale,smallSize,dateWeight); text(end_date,x1,bottom+44*scale,smallSize,dateWeight,'end');
+    const startWidth=measure?measure(start_label,smallSize,labelWeight):[...start_label].length*smallSize*0.62;
+    const labelCandidates=[
+      {x:x0,y:y(start)-smallSize*1.25,anchor:'start'},
+      {x:Math.max(8,x0-startWidth-18*scale),y:y(start)-smallSize*0.35,anchor:'start'},
+      {x:x0+24*scale,y:y(start)+smallSize*1.35,anchor:'start'},
+    ];
+    const collides=(candidate)=>{const bx=candidate.x,by=candidate.y-smallSize*0.8,bw=startWidth,bh=smallSize,padCurve=5*scale;return curveSamples.some(p=>p.x+padCurve>=bx&&p.x-padCurve<=bx+bw&&p.y+padCurve>=by&&p.y-padCurve<=by+bh);};
+    const startLabel=labelCandidates.find(c=>!collides(c));
+    if(!startLabel) fail('start label collides with trend path');
+    text(start_label,startLabel.x,startLabel.y,{anchor:startLabel.anchor,size:smallSize,weight:labelWeight});
+    const startLabelBox={x:startLabel.x,y:startLabel.y-smallSize*0.8,width:startWidth,height:smallSize};
+    text(end_label,x1-170*scale,height*0.27,valueSize,heroWeight,'middle'); text(start_date,x0,bottom+44*scale,smallSize,dateWeight); text(end_date,x1,bottom+44*scale,smallSize,dateWeight,'end');
     if (spec.delta_label) {
       const chipW=156*scale, chipH=48*scale, chipX=width-pad-chipW, chipY=height*0.88;
       els.push(`<rect x="${n(chipX)}" y="${n(chipY)}" width="${n(chipW)}" height="${n(chipH)}" rx="${n(chipH/2)}" fill="${accent}"/>`);
       text(spec.delta_label,chipX+chipW/2,chipY+chipH*0.72,smallSize,chipWeight,'middle','#FFFFFF');
     }
-    displayed.push({start,start_label,start_date,end,end_label,end_date,point_count:points?.length??2,delta_label:spec.delta_label??null});
+    displayed.push({start,start_label,start_label_box:startLabelBox,start_label_path_bbox_check:{passed:true,method:'sampled_curve_point_vs_label_box',stroke_padding:5*scale},curve_endpoints:curveEndpoints,start_date,end,end_label,end_date,point_count:points?.length??2,delta_label:spec.delta_label??null,render_mode:renderMode,...(renderMode==='flow'?{smoothing:flowSmoothing,raw_data_sha256:spec.raw_data_sha256,direction:end>start?'up':end<start?'down':'flat'}:{})});
   } else if (spec.layout === 'dual-metric') {
     if (!Array.isArray(spec.items)||spec.items.length!==2||spec.items.some(x=>!x.label||!x.value_label||!Number.isFinite(x.value)||!Number.isFinite(x.max)||x.value<0||x.max<=0||x.value>x.max)) fail('dual-metric needs two independently scaled metrics');
     const y0=fixedTypeScale?height*0.18:height*0.30, rowH=height*0.40, x=pad, w=width-pad*2, bh=22*scale;

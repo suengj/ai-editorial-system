@@ -9,6 +9,7 @@ import { checkTrendCardEligibility } from './lib/numeric-visual-core.mjs';
 import { loadPmcPlotBundle } from './lib/pmc-bundle-binding.mjs';
 import { pmcPlotToChartSpec } from './lib/pmc-bundle-binding.mjs';
 import { validateCardNewsBrief, validateCardNewsChartFacts, loadAndValidateCardNewsBrief } from './lib/card-news-brief-core.mjs';
+import { renderNumberVisualPanel } from './lib/chart-renderer.mjs';
 
 const read = (path) => JSON.parse(readFileSync(path, 'utf8'));
 const manifest = read('editorial/entry-manifest.json');
@@ -25,6 +26,7 @@ assert(target.visual.files.includes('editorial/INSTAGRAM-NUMERIC-VISUAL-POLICY.m
 assert(target.visual.values.includes('editorial/prediction-market-carousel.v1.json'));
 assert(target.visual.values.includes('editorial/templates/prediction-market-carousel.series.json'));
 assert.equal(profile.artifact, 'visual/prediction-market-carousel');
+assert.equal(profile.trend_render_mode,'flow','prediction-market carousel profile defaults to flow mode');
 assert.equal(profile.trend_image_mode.id, 'illustrative_trend_image');
 assert.equal(profile.trend_image_mode.owner_decision, true);
 assert.equal(profile.trend_image_mode.requires_raw_history, true);
@@ -169,9 +171,49 @@ const boundTrendBrief = { ...brief, per_card:{[boundTrendFrame.id]:brief.per_car
 const pmcBundle = loadPmcPlotBundle(resolve(pmcChartDir,'pmc.plot.json'));
 writeFileSync(resolve(pmcChartDir,'chart.spec.json'), JSON.stringify(pmcPlotToChartSpec(pmcBundle)));
 assert.equal(validateCardNewsChartFacts(boundTrendSeries,boundTrendBrief,pmcChartDir).ok,true,'the trend chart must exactly match points and labels from the verified selected PMC bundle');
+const pmcStart=pmcBundle.plot.points.find((point)=>point.observed_at===pmcBundle.plot.delta.baseline_at);
+const pmcEnd=pmcBundle.plot.points.find((point)=>point.observed_at===pmcBundle.plot.delta.last_at);
+const pmcTrendArea = {
+  type:'number_visual',layout:'trend-area',start:Number((pmcStart.value*100).toPrecision(12)),end:Number((pmcEnd.value*100).toPrecision(12)),
+  start_label:`${Number((pmcStart.value*100).toPrecision(12))}%`,
+  end_label:`${Number((pmcEnd.value*100).toPrecision(12))}%`,
+  start_date:`${String(new Date(pmcBundle.plot.delta.baseline_at).getUTCMonth()+1).padStart(2,'0')}.${String(new Date(pmcBundle.plot.delta.baseline_at).getUTCDate()).padStart(2,'0')}`,
+  end_date:`${String(new Date(pmcBundle.plot.delta.last_at).getUTCMonth()+1).padStart(2,'0')}.${String(new Date(pmcBundle.plot.delta.last_at).getUTCDate()).padStart(2,'0')}`,
+  delta_label:`${Number(pmcBundle.plot.delta.value_pp)>0?'+':Number(pmcBundle.plot.delta.value_pp)<0?'−':''}${Math.abs(Number(pmcBundle.plot.delta.value_pp))}%p`,
+  points:pmcBundle.plot.points.filter((point)=>point.value!==null).map((point)=>({observed_at:point.observed_at,value:Number((point.value*100).toPrecision(12))})),
+};
+const forgedStartLabel = structuredClone(pmcTrendArea); forgedStartLabel.start_label = '89%';
+writeFileSync(resolve(pmcChartDir,'chart.spec.json'), JSON.stringify(forgedStartLabel));
+assert.equal(validateCardNewsChartFacts(boundTrendSeries,boundTrendBrief,pmcChartDir).ok,false,'a forged displayed start label fails PMC chart binding');
+for (const [field, value] of [['end_label','44%'],['delta_label','+4%p'],['start_date','10.99'],['end_date','10.98']]) {
+  const forged = {...pmcTrendArea,[field]:value};
+  writeFileSync(resolve(pmcChartDir,'chart.spec.json'), JSON.stringify(forged));
+  assert.equal(validateCardNewsChartFacts(boundTrendSeries,boundTrendBrief,pmcChartDir).ok,false,`a forged displayed ${field} fails PMC chart binding`);
+}
+const labeledFlowSpec = {...pmcTrendArea,intermediate_labels:['10.18: 44%']};
+writeFileSync(resolve(pmcChartDir,'chart.spec.json'), JSON.stringify(labeledFlowSpec));
+assert.equal(validateCardNewsChartFacts(boundTrendSeries,boundTrendBrief,pmcChartDir).ok,false,'flow mode is refused when intermediate point labels are present');
 const forgedChartSpec = pmcPlotToChartSpec(pmcBundle); forgedChartSpec.series[0].points[0][1] += 5;
 writeFileSync(resolve(pmcChartDir,'chart.spec.json'), JSON.stringify(forgedChartSpec));
 assert.equal(validateCardNewsChartFacts(boundTrendSeries,boundTrendBrief,pmcChartDir).ok,false,'a forged trend point fails PMC chart binding');
+
+const trendPoints = Array.from({length:24},(_,i)=>({observed_at:new Date(Date.UTC(2026,9,14)+i*60*60*1000).toISOString(),value:i===0?90:i===23?81:90-(i/23)*9+(i%3===0?1.8:-1.2)}));
+const trendVisual = {type:'number_visual',layout:'trend-area',title:'test trend',source_note:'Kalshi',start:90,end:81,start_label:'90%',end_label:'81%',start_date:'10.14',end_date:'10.15',delta_label:'−9%p',points:trendPoints};
+const rawDefault=renderNumberVisualPanel(trendVisual,{width:936,height:769,theme:{accent:'#FF6B5B'}});
+const rawExplicit=renderNumberVisualPanel({...trendVisual,render_mode:'raw'},{width:936,height:769,theme:{accent:'#FF6B5B'}});
+const curvePath=(svg)=>svg.match(/<path d="([^"]+)" fill="url\(#trend-area-gradient\)"/u)?.[1];
+assert.equal(curvePath(rawDefault.svg),curvePath(rawExplicit.svg),'raw mode preserves the exact monotone path (0px difference, within 0.5px)');
+assert.equal(rawDefault.displayed[0].render_mode,'raw');
+const flow=renderNumberVisualPanel({...trendVisual,render_mode:'flow',raw_data_sha256:`sha256:${'a'.repeat(64)}`},{width:936,height:769,theme:{accent:'#FF6B5B'}}).displayed[0];
+assert.equal(flow.curve_endpoints.start.value,90,'flow first curve point equals the raw start exactly');
+assert.equal(flow.curve_endpoints.end.value,81,'flow last curve point equals the raw end exactly');
+assert.equal(flow.direction,'down','flow preserves the raw overall direction');
+assert.equal(flow.delta_label,'−9%p','flow delta badge remains bound to the raw delta');
+assert.equal(flow.smoothing.method,'uniform_resample_gaussian');
+assert.deepEqual(flow.smoothing.parameters,{resample_count:40,sigma_samples:2,kernel_radius:6,endpoints:'raw_exact'});
+assert.equal(flow.raw_data_sha256,`sha256:${'a'.repeat(64)}`);
+assert.equal(flow.start_label_path_bbox_check.passed,true,'the start label bounding box does not intersect the sampled curve path');
+assert.throws(()=>renderNumberVisualPanel({...trendVisual,render_mode:'flow',raw_data_sha256:`sha256:${'a'.repeat(64)}`,intermediate_labels:['10.14: 90%']},{width:936,height:769}),/flow mode is forbidden/u);
 const numericLayers = numericPlan.frames.flatMap((frame) => frame.plan.layers).filter((layer) => layer.kind === 'text');
 assert(numericPlan.frames.every((frame) => frame.plan.layers.some((layer) => layer.kind === 'chart')), 'numeric profile requires a data visual on every card');
 assert(numericLayers.every((layer) => [64, 150, 110, 34, 36].includes(layer.font_size)), 'numeric profile uses only shared card-news font sizes');
