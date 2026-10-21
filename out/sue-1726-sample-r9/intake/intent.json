@@ -1,0 +1,76 @@
+{
+  "schema_version": "2.0.0",
+  "intent_id": "intent:2026-10-21-sue-1726-round-9",
+  "created_at": "2026-10-21T13:19:26.173Z",
+  "request": {
+    "utterance": "SUE-1726 round 9, on branch feat/sue-1726-pm-carousel in the AES repo. Start from out/sue-1726-sample-r8/ and render to out/sue-1726-sample-r9/. The r8 direction is right: number visuals are the hero. The execution is too plain and too small. Scale visuals to fill 55–65% of each card; hero numbers at least 140px, labels at least 34px, body at least 32px at 1080 width. Use the punchy r7 headlines in Noto Serif KR: 10월엔 쉬고, 12월엔 올린다; 인상 기대, 한 발 물러섰다; 물가는 뜨겁고, 고용은 느려졌다; 동결과 인상, 체감은 다르다. Trend: smooth curve with visible weekly wiggle using real intermediate PMC points, smoothed; gradient area, 90% start dot, large 81% end label and -9%p delta chip. Scenario branches: 동결 → 원·달러 상승압력 완화 · 대출금리 숨 고르기; 인상 → 금리차 1.25%p로 확대 · 변동금리 상방. Korea: 금리차 gap bracket and outflow vs inflow proportion bars (2.5:1), labels 나가는 돈 / 들어오는 돈; remove USD bn jargon. Add subtle chart-panel shadow, coral plus navy. No caveats, disclaimers or meta words. Keep real numbers matching brief. Image spend cap USD 0.04. Phone-size self-review and re-render if small or plain. Tests must pass. Commit and push.",
+    "language": "en",
+    "received_by": "codex",
+    "received_at": "2026-10-21T00:00:00Z"
+  },
+  "axes": {
+    "transformation": {
+      "value": "rewrite",
+      "state": "confirmed",
+      "profile_ref": "editorial/profiles/transformation/rewrite.json",
+      "basis": "The owner asks to rebuild round 7 into a visually led round 8 while retaining its sourced claims and values."
+    },
+    "content_type": {
+      "value": "news",
+      "state": "confirmed",
+      "profile_ref": "editorial/profiles/content/news.json",
+      "basis": "The registered Signalytics carousel and its supplied brief are a news carousel."
+    },
+    "audience": {
+      "value": "professional-generalist",
+      "state": "assumed",
+      "profile_ref": "editorial/profiles/audience/professional-generalist.json",
+      "basis": "The registered Signalytics target uses a professional-generalist audience."
+    },
+    "surface": {
+      "value": "instagram",
+      "state": "confirmed",
+      "profile_ref": "editorial/profiles/surface/instagram.json",
+      "basis": "The manifest registers signalytics-news on Instagram."
+    },
+    "artifacts": [
+      {
+        "value": "visual/prediction-market-carousel",
+        "state": "confirmed",
+        "profile_ref": "editorial/profiles/artifact/visual-prediction-market-carousel.json",
+        "basis": "The manifest registers this artifact for signalytics-news; the user requests a six-card continuation of the supplied series."
+      }
+    ]
+  },
+  "inputs": {
+    "sources": [],
+    "references": []
+  },
+  "constraints": {
+    "output_language": "ko-KR",
+    "must_cover": [
+      "81% vs 15%",
+      "90% to 81% trend",
+      "0.6% CPI",
+      "29,000 jobs",
+      "US 4.00% and Korea 3.00% with 1.00%p gap",
+      "2.5:1 outflow ratio",
+      "10.28 freeze/hike scenarios"
+    ],
+    "must_avoid": [
+      "visible caveats",
+      "illustrative labels",
+      "production meta copy",
+      "footers",
+      "disclaimers"
+    ]
+  },
+  "overrides": [],
+  "clarification": {
+    "required": [],
+    "asked": [],
+    "resolution": "proceeded"
+  },
+  "calibration_ref": null,
+  "status": "ready"
+}

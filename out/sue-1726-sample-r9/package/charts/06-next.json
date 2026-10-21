@@ -1,0 +1,23 @@
+{
+  "type": "number_visual",
+  "layout": "scenario-split",
+  "title": "10월 FOMC 시나리오",
+  "source_note": "Federal Reserve FOMC calendar",
+  "date": "10.28",
+  "scenarios": [
+    {
+      "label": "동결",
+      "detail_lines": [
+        "원·달러 상승압력 완화",
+        "대출금리 숨 고르기"
+      ]
+    },
+    {
+      "label": "인상",
+      "detail_lines": [
+        "금리차 1.25%p로 확대",
+        "변동금리 상방"
+      ]
+    }
+  ]
+}

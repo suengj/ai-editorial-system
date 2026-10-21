@@ -1,0 +1,285 @@
+{
+  "lineage_root": "sha256:b237abe5c6411acceda41b98bf25c26497d45f286ff64deece8906cc62ebf8a2",
+  "repair_round": 0,
+  "repair_counted": false,
+  "classification": "new_base_all_frames_changed",
+  "repaired_frames": [],
+  "schema_version": "1.0.0",
+  "series_id": "sue-1726-round-9-number-visuals",
+  "recipe": "r7-illustration-fallback",
+  "visual_style": {
+    "style": "R7",
+    "recipe": "r7-illustration-fallback",
+    "reason": "explicit_style",
+    "requested": {
+      "requested_style": "R7",
+      "content_kind": "other",
+      "photo_asset_quality": "absent"
+    }
+  },
+  "recipe_hash": "sha256:f9ede8fbc1286da9c28ba5d93d546f4f480011be9807a5c4a08beb3dd5612b1f",
+  "runtime": {
+    "adapter": {
+      "name": "rsvg",
+      "version": "rsvg-convert version 2.60.0"
+    },
+    "font_environment": "sha256:828d8983aa1d9cc8e626706ab6b516a05baf1739b36c19b919f8c9eb6cd0ab4d",
+    "code": [
+      "sha256:f9889294af6387910c0c6545dd42e8d1895eb60cf6883dccd2dcb2c3a9802ee2",
+      "sha256:a547ad0977d13ada4a3bad954c1b9db1acf39a4a5df2b0c0b80a0c78fee60dac",
+      "sha256:3d72ec49b3c83f69b61960bbe25078abe554d23b6ce6bd723784194864d33a2a",
+      "sha256:4c8a2620e41bc96fe4b7f0d361f901d4094e2eb5e87262224e34162847567b3e",
+      "sha256:3baca5becaab607f6385941b91e0e7a5d4c27ba8be4a7c8c157c6612e0e9b831",
+      "sha256:b6f6cce8783c424028129ca7f7134f396e6e3b21f817e6e975d1725d437457b8"
+    ],
+    "bundled_fonts": "sha256:5ce44213f42f00f601169f93dfbdba49106614f5885655140fdd9f923b1af2ad"
+  },
+  "status": "RENDERED_NEEDS_REVIEW",
+  "frames": [
+    {
+      "id": "hook",
+      "index": 1,
+      "function": "orient",
+      "beat_ids": [
+        "hook"
+      ],
+      "takeaway": "10월 직후 인상 가격과 12월까지의 인상 가격은 크게 갈린다.",
+      "alt_text": "두 개의 가로 막대가 10월 인상 15%와 12월 인상 81%를 비교한다.",
+      "fingerprint": "sha256:9da32c9eed44ebe24a2c30d4e9b4402eeb49ed5f9992197d3177c9872e92f5ef",
+      "status": "RENDERED_NEEDS_REVIEW",
+      "reused": false,
+      "outputs": {
+        "master.png": {
+          "ref": "hook/master.png",
+          "sha256": "sha256:6726fa9dfe40a04e2570670da719df60896feb1454eff564b51f9b2c1816479a"
+        },
+        "image.png": {
+          "ref": "hook/image.png",
+          "sha256": "sha256:6726fa9dfe40a04e2570670da719df60896feb1454eff564b51f9b2c1816479a"
+        },
+        "master.svg": {
+          "ref": "hook/master.svg",
+          "sha256": "sha256:df8a6e416659001e5aff79f129beb5c422a9948e2ef4840b8a0eb081b582fc91"
+        },
+        "execution.json": {
+          "ref": "hook/execution.json",
+          "sha256": "sha256:8cafe5acaa21120f1c4450eb2b553dd36334be5b4fe96967416dc65002244ed3"
+        },
+        "receipt.json": {
+          "ref": "hook/receipt.json",
+          "sha256": "sha256:312ec51083b1563aa9b517cda93a2dfcb5562a57197da281d988815c84752d55"
+        }
+      },
+      "phone": {
+        "ref": "hook/phone.png",
+        "sha256": "sha256:b58c0514bcf474abebb8d2739331dab7aff7afcf8896e94d1e1e088371a8d686"
+      }
+    },
+    {
+      "id": "how-to-read",
+      "index": 2,
+      "function": "orient",
+      "beat_ids": [
+        "how-to-read"
+      ],
+      "takeaway": "12월 계약은 81센트에 거래되고 있고, 100칸 중 81칸으로 가격을 읽을 수 있다.",
+      "alt_text": "100개의 원형 점 중 81개가 채워져 있고 아래에 81센트 가격이 표시된다.",
+      "fingerprint": "sha256:eb60cfc957efd59ba1ae125bdef69475783fc5d7f35632fbd07b1215ac84d217",
+      "status": "RENDERED_NEEDS_REVIEW",
+      "reused": false,
+      "outputs": {
+        "master.png": {
+          "ref": "how-to-read/master.png",
+          "sha256": "sha256:99f4b284031a90816676833b33262166c83e0bda347c604c7e040b0f6ef194eb"
+        },
+        "image.png": {
+          "ref": "how-to-read/image.png",
+          "sha256": "sha256:99f4b284031a90816676833b33262166c83e0bda347c604c7e040b0f6ef194eb"
+        },
+        "master.svg": {
+          "ref": "how-to-read/master.svg",
+          "sha256": "sha256:645e989f3245f2c7b6e865e3ea8b6ddee91e0a527f7700539aa7dc394723ddbd"
+        },
+        "execution.json": {
+          "ref": "how-to-read/execution.json",
+          "sha256": "sha256:e645f9c8c5a1778ee8733aa12766227893fa54406d2aba0e00fa4ef42786bf3a"
+        },
+        "receipt.json": {
+          "ref": "how-to-read/receipt.json",
+          "sha256": "sha256:a818dfa371c5660e38379e20df4d2f4ca7e804db6270cd2f50f7a056abc552d6"
+        }
+      },
+      "phone": {
+        "ref": "how-to-read/phone.png",
+        "sha256": "sha256:42b29b8d4c0871d048cd4180a843f3fd7edf38c5264df3b8d79de55a93441d62"
+      }
+    },
+    {
+      "id": "trend",
+      "index": 3,
+      "function": "show_evidence",
+      "beat_ids": [
+        "trend"
+      ],
+      "takeaway": "12월 인상 가격은 10월 14일 90%에서 10월 21일 81%로 낮아졌다.",
+      "alt_text": "10월 14일 90%에서 10월 21일 81%로 이어지는 부드러운 면적 곡선과 끝점 표시.",
+      "fingerprint": "sha256:f401bfe66634b967ade2398e0a85e01ff6d86c87a44029077b04d0bf12b37487",
+      "status": "RENDERED_NEEDS_REVIEW",
+      "reused": false,
+      "outputs": {
+        "master.png": {
+          "ref": "trend/master.png",
+          "sha256": "sha256:e662c71da1425427f80c5af7a49bb3aef0ada4bf6f29c934143ed3255e5efd80"
+        },
+        "image.png": {
+          "ref": "trend/image.png",
+          "sha256": "sha256:e662c71da1425427f80c5af7a49bb3aef0ada4bf6f29c934143ed3255e5efd80"
+        },
+        "master.svg": {
+          "ref": "trend/master.svg",
+          "sha256": "sha256:050aa6ce21e04380975d17d22f3a9a3bb871e79cbf79fed1e1c0097c5ec1ce8f"
+        },
+        "execution.json": {
+          "ref": "trend/execution.json",
+          "sha256": "sha256:15fa0ff1f5c2d0576f72e961efc75f6675bccdf9dc00123bb23912abba6773d4"
+        },
+        "receipt.json": {
+          "ref": "trend/receipt.json",
+          "sha256": "sha256:b8609d5834910809040d6a208ce3b43dda1c15fbcbf48ac4fd32a7418f56bbe9"
+        }
+      },
+      "phone": {
+        "ref": "trend/phone.png",
+        "sha256": "sha256:5bd1cfe93c61d29d7d683ed2dd38c6cee01ed48ff02155dd5a616107f1d74307"
+      }
+    },
+    {
+      "id": "why",
+      "index": 4,
+      "function": "explain_mechanism",
+      "beat_ids": [
+        "why"
+      ],
+      "takeaway": "9월 소비자물가는 0.6% 올랐고 비농업 고용은 29,000명 증가했다.",
+      "alt_text": "소비자물가 0.6%와 비농업 고용 증가 29,000명을 두 개의 독립된 막대가 보여준다.",
+      "fingerprint": "sha256:c1773fe33bb4602ac81e247ac03fb6519bad4de53cf40cd0f09c99935d4411a4",
+      "status": "RENDERED_NEEDS_REVIEW",
+      "reused": false,
+      "outputs": {
+        "master.png": {
+          "ref": "why/master.png",
+          "sha256": "sha256:65cc38ed18f5f7a9e3ab009b9633b7639cda633edd34e24986730c385fd3076c"
+        },
+        "image.png": {
+          "ref": "why/image.png",
+          "sha256": "sha256:65cc38ed18f5f7a9e3ab009b9633b7639cda633edd34e24986730c385fd3076c"
+        },
+        "master.svg": {
+          "ref": "why/master.svg",
+          "sha256": "sha256:fae3b06d8064179e712b3765f3641839e952ccecacbd210155c7cef4f18dc6ee"
+        },
+        "execution.json": {
+          "ref": "why/execution.json",
+          "sha256": "sha256:d6cd21820eaea135e061052859ddb67a7bda269eae7cc753e7ff83730e179b04"
+        },
+        "receipt.json": {
+          "ref": "why/receipt.json",
+          "sha256": "sha256:52e37e4e1d3038ab01577effd6e139d0b4efc63337e79c2ad21373936b0483d0"
+        }
+      },
+      "phone": {
+        "ref": "why/phone.png",
+        "sha256": "sha256:4f55e312db8ee22f48677fb979a614cc4d4eb9f28086aa4dbc3c012d334a7553"
+      }
+    },
+    {
+      "id": "korea-impact",
+      "index": 5,
+      "function": "show_consequence",
+      "beat_ids": [
+        "korea-impact"
+      ],
+      "takeaway": "미국 상단 금리는 4.00%, 한국 기준금리는 3.00%이며 해외 증권 투자는 유입의 약 2.5배다.",
+      "alt_text": "미국과 한국 금리 차이의 괄호 표시와 나가는 돈·들어오는 돈 2.5대 1 비율 막대.",
+      "fingerprint": "sha256:56ffff42956b23a8acc271d6e6e4c76297fa7bf29da603b2a95e3ed375e3b705",
+      "status": "RENDERED_NEEDS_REVIEW",
+      "reused": false,
+      "outputs": {
+        "master.png": {
+          "ref": "korea-impact/master.png",
+          "sha256": "sha256:7c571f8f2ebbf95ca59a68fa9f3465b283fa4d93344a419328222340aa1e0973"
+        },
+        "image.png": {
+          "ref": "korea-impact/image.png",
+          "sha256": "sha256:7c571f8f2ebbf95ca59a68fa9f3465b283fa4d93344a419328222340aa1e0973"
+        },
+        "master.svg": {
+          "ref": "korea-impact/master.svg",
+          "sha256": "sha256:f2fdb74773c0c92795aa8efccbba3298339aa7fbabf2e3d7d2467048d40ef250"
+        },
+        "execution.json": {
+          "ref": "korea-impact/execution.json",
+          "sha256": "sha256:082d98547ae7f4162ccc2b7d000d5d5f95708446c8f3ce03b09bcc3488fb6ac8"
+        },
+        "receipt.json": {
+          "ref": "korea-impact/receipt.json",
+          "sha256": "sha256:dd336a826b41718c9456ee6d789a5571732336e1a96b9686410fea4937de6804"
+        }
+      },
+      "phone": {
+        "ref": "korea-impact/phone.png",
+        "sha256": "sha256:f12ded8d477265309f6d00caee40e2cca51e38f549a386aa9e77710009e879a0"
+      }
+    },
+    {
+      "id": "watch-next",
+      "index": 6,
+      "function": "decision",
+      "beat_ids": [
+        "watch-next"
+      ],
+      "takeaway": "10월 28일 회의 결과는 동결과 인상 두 갈래로 읽힌다.",
+      "alt_text": "10.28에서 동결과 인상으로 나뉘는 화살표와 각 경로의 한국 금리 영향.",
+      "fingerprint": "sha256:a4c0b8facc64e7c2a0f0153a56f052587122e4fb813964141a95cc6cf0e38078",
+      "status": "RENDERED_NEEDS_REVIEW",
+      "reused": false,
+      "outputs": {
+        "master.png": {
+          "ref": "watch-next/master.png",
+          "sha256": "sha256:6add320f468ff2d2e3e3ea8dd178a0826e19efaa1d395dc3e2455c551eb59d97"
+        },
+        "image.png": {
+          "ref": "watch-next/image.png",
+          "sha256": "sha256:6add320f468ff2d2e3e3ea8dd178a0826e19efaa1d395dc3e2455c551eb59d97"
+        },
+        "master.svg": {
+          "ref": "watch-next/master.svg",
+          "sha256": "sha256:1aadb076af1bfe246bb191da5202acdc2ebb02e0e18b77629b0b9f2473ca9935"
+        },
+        "execution.json": {
+          "ref": "watch-next/execution.json",
+          "sha256": "sha256:4837f5d20f661fb8c1689f35d5766033537001a7ccf9065ad6b36ba18be0b0b4"
+        },
+        "receipt.json": {
+          "ref": "watch-next/receipt.json",
+          "sha256": "sha256:61f55f2f344bc60ddcd97c547af099be96f4e25b0a338c2b5118d4f09ccbe0d3"
+        }
+      },
+      "phone": {
+        "ref": "watch-next/phone.png",
+        "sha256": "sha256:329ab38027c09f76109e36c0fcb21939897ce844c6e9a2eee465e0f7b5d6ccbe"
+      }
+    }
+  ],
+  "qa": {
+    "mechanical": "PREFLIGHT_PASSED",
+    "visual": "NOT_REVIEWED",
+    "source_truth": "NOT_ESTABLISHED",
+    "publication": "NOT_AUTHORIZED"
+  },
+  "publication_authorized": false,
+  "contact_sheet": {
+    "ref": "contact-sheet.png",
+    "sha256": "sha256:9d880b12025bdad31030c4d0cf1ca305d47a0080cee7a2fc5d775dfb8c51c0ef"
+  }
+}

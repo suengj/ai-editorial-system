@@ -1,0 +1,67 @@
+{
+  "blocked_uses": [],
+  "brief_version": "editorial-brief/1",
+  "conflicts": [],
+  "copy_plan": null,
+  "integrity": {
+    "state": "VERIFIED",
+    "unverified_required": []
+  },
+  "intent_id": "intent:2026-10-21-sue-1726-round-9",
+  "library": {
+    "analytics_collected": false,
+    "data_only": true,
+    "fallbacks": [],
+    "notes": [],
+    "packet": null,
+    "searched": false,
+    "selected": [],
+    "skip_reason": "no_packet_provided",
+    "skipped": true,
+    "stale_revision": false,
+    "supporting_notes": []
+  },
+  "profile": {
+    "id": "target:signalytics-news",
+    "resolved_hash": "sha256:6f40ab9acc0aedf34bce3e701f578fb67a80c925187a3c181b22b079852782e6",
+    "version": "2026-10-16.1+69005fd"
+  },
+  "status": "READY",
+  "target": {
+    "account": "signalytics.news",
+    "id": "signalytics-news",
+    "status": "COPY_AND_VISUAL_MAPPED",
+    "surface": "instagram",
+    "voice_family": "business"
+  },
+  "visual_plan": {
+    "artifacts": [
+      "visual/slide-image",
+      "visual/evidence-visual",
+      "visual/prediction-market-carousel"
+    ],
+    "canvas": {
+      "aspect_ratio": "4:5",
+      "width": 1080
+    },
+    "execution": "plan only; no image generated or rendered by this step",
+    "reference_may_establish_facts": false,
+    "requested_intensity": null,
+    "text_policy": "hybrid_template",
+    "visual_references": []
+  },
+  "quality": {
+    "examples": {
+      "policy": "style_description_only",
+      "status": "STYLE_DESCRIPTION_ONLY",
+      "loaded": []
+    },
+    "guidance": null,
+    "tracked": [
+      "first_result_adopted",
+      "repeated_errors",
+      "revision_count"
+    ],
+    "analytics_collected": false
+  }
+}

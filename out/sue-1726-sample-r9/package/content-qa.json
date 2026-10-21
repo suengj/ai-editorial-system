@@ -1,0 +1,17 @@
+{
+  "schema_version": "1.0.0",
+  "would_a_smart_reader_learn_something_new": "시점별 인상 가격이 15%와 81%로 갈리고, 물가·고용·한미 금리차가 한국 경로와 함께 읽힌다.",
+  "one_surprising_fact": "해외 증권 투자액은 국내 유입액의 약 2.5배다.",
+  "sources_are_sidecar_only": true,
+  "disclaimers_or_meta_on_cards": false,
+  "reviewed_cards": [
+    "hook",
+    "how-to-read",
+    "trend",
+    "why",
+    "korea-impact",
+    "watch-next"
+  ],
+  "visual_review": "AGENT_SELF_REVIEW_PASS_OWNER_REVIEW_PENDING",
+  "numeric_review": "PMC_RAW_ENDPOINT_PARITY_PASS_48_OBSERVATIONS"
+}

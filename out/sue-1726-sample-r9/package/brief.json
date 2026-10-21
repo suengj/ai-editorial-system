@@ -1,0 +1,169 @@
+{
+  "schema_version": "1.0.0",
+  "reader_question": "10월엔 쉬고 12월엔 올린다는 시장 가격은 환율과 대출금리에 어떤 경로로 이어질까?",
+  "angle": "Kalshi는 10월 직후 인상 가격을 15%로, 12월까지 인상 가격을 81%로 반영해 시점별 기대가 갈린다.",
+  "facts": [
+    {
+      "id": "oct-market",
+      "value": "KXFED-26OCT-T4.00 price 15%; total volume 245526.39 contracts; observed 2026-10-21T05:00:00Z; retrieved 2026-10-21T11:21:22.939885Z.",
+      "date": "2026-10-21T05:00:00Z",
+      "source_name": "PMC live run, Kalshi market history",
+      "source_url": "https://kalshi.com/markets/KXFED/KXFED-26OCT-T4.00"
+    },
+    {
+      "id": "dec-market",
+      "value": "KXFED-26DEC-T4.00 price 81%; total volume 56056.35 contracts; observed 2026-10-21T05:00:00Z; retrieved 2026-10-21T11:21:22.939885Z.",
+      "date": "2026-10-21T05:00:00Z",
+      "source_name": "PMC live run, Kalshi market history",
+      "source_url": "https://kalshi.com/markets/KXFED/KXFED-26DEC-T4.00"
+    },
+    {
+      "id": "dec-history",
+      "value": "Raw history 90% at 2026-10-14T13:00:00Z to 81% at 2026-10-21T05:00:00Z; 48 observations; change −9%p.",
+      "date": "2026-10-21T05:00:00Z",
+      "source_name": "PMC Kalshi candlestick history",
+      "source_url": "https://kalshi.com/markets/KXFED/KXFED-26DEC-T4.00"
+    },
+    {
+      "id": "fed-range",
+      "value": "Federal funds target range is 3.75–4.00%; the Fed raised it by 25 basis points on Sep 16, effective Sep 17, 2026.",
+      "date": "2026-09-16/17",
+      "source_name": "Federal Reserve Board, FOMC statement",
+      "source_url": "https://www.federalreserve.gov/newsevents/pressreleases/monetary20260916a.htm"
+    },
+    {
+      "id": "september-cpi",
+      "value": "September 2026 CPI-U rose 0.6% month over month; core CPI rose 0.3% month over month.",
+      "date": "2026-10-14",
+      "source_name": "U.S. Bureau of Labor Statistics, CPI September 2026",
+      "source_url": "https://www.bls.gov/news.release/archives/cpi_10142026.htm"
+    },
+    {
+      "id": "september-jobs",
+      "value": "September 2026 nonfarm payrolls increased by 29,000; unemployment was 4.2%.",
+      "date": "2026-10-02",
+      "source_name": "U.S. Bureau of Labor Statistics, Employment Situation September 2026",
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_10022026.htm"
+    },
+    {
+      "id": "bok-rate",
+      "value": "Bank of Korea policy rate was 3.00% after a 25 bp increase on Aug 27, 2026.",
+      "date": "2026-08-27",
+      "source_name": "Bank of Korea, Monetary Policy Decision",
+      "source_url": "https://www.bok.or.kr/eng/bbs/E0000634/view.do?depth=400069&menuNo=400069&nttId=11064193"
+    },
+    {
+      "id": "bok-flows",
+      "value": "Resident overseas securities investment was USD 129.4 billion vs foreign portfolio investment in Korean securities of USD 50.4 billion during Jan–Nov 2025.",
+      "date": "2026-01-19 analysis; Jan–Nov 2025 data",
+      "source_name": "Bank of Korea, foreign exchange market analysis",
+      "source_url": "https://www.bok.or.kr/eng/bbs/B0000548/view.do?menuNo=400523&nttId=10096088"
+    },
+    {
+      "id": "mortgage-rate",
+      "value": "The weighted average rate on newly issued bank mortgages was 4.66% in Aug 2026, up 0.18 percentage points from the prior month.",
+      "date": "2026-09-30 release; Aug 2026 data",
+      "source_name": "SBS English citing Bank of Korea statistics",
+      "source_url": "https://news.sbs.co.kr/english/article.do?news_id=N1008776669"
+    },
+    {
+      "id": "fomc-date",
+      "value": "The next FOMC meeting is scheduled for Oct 27–28, 2026.",
+      "date": "2026-10-21 checked",
+      "source_name": "Federal Reserve Board, FOMC meeting calendar",
+      "source_url": "https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm"
+    }
+  ],
+  "so_what": "연준의 다음 선택이 원·달러와 한미 금리차, 변동형 주택대출금리에 줄 수 있는 조건부 영향을 구분해 읽는다.",
+  "data_boundaries": {
+    "pmc_run_id": "eca409d3-7294-47f5-91cc-a3f1343c3412",
+    "pmc_as_of": "2026-10-21T11:21:22.939885Z",
+    "market_ids": [
+      "KXFED-26OCT-T4.00",
+      "KXFED-26DEC-T4.00"
+    ],
+    "freshness_fields": {
+      "KXFED-26OCT-T4.00": {
+        "observed_at": "2026-10-21T05:00:00Z",
+        "retrieved_at": "2026-10-21T11:21:22.939885Z"
+      },
+      "KXFED-26DEC-T4.00": {
+        "observed_at": "2026-10-21T05:00:00Z",
+        "retrieved_at": "2026-10-21T11:21:22.939885Z"
+      }
+    },
+    "liquidity": {
+      "source": "Kalshi public trade API market details",
+      "retrieved_at": "2026-10-21T11:33:49.673997+00:00",
+      "oct": {
+        "total_volume_contracts": 245526.39,
+        "volume_24h_contracts": 434.36,
+        "open_interest_contracts": 72019.73,
+        "source_url": "https://api.elections.kalshi.com/trade-api/v2/markets/KXFED-26OCT-T4.00"
+      },
+      "dec": {
+        "total_volume_contracts": 56056.35,
+        "volume_24h_contracts": 557.58,
+        "open_interest_contracts": 19255.76,
+        "source_url": "https://api.elections.kalshi.com/trade-api/v2/markets/KXFED-26DEC-T4.00"
+      }
+    },
+    "history": "December contract raw observations 90% to 81% across 48 points.",
+    "publication": "NOT_AUTHORIZED"
+  },
+  "per_card": {
+    "hook": {
+      "claim": "10월 직후 인상 가격은 낮지만 12월까지 인상 가격은 높다.",
+      "evidence": "Kalshi prices: October 15%, December 81%.",
+      "takeaway": "시점에 따라 인상 기대가 크게 갈린다.",
+      "evidence_fact_ids": [
+        "oct-market",
+        "dec-market"
+      ]
+    },
+    "how-to-read": {
+      "claim": "12월 계약은 회의 뒤 기준금리 상단 4.00% 초과 여부를 묻는다.",
+      "evidence": "December contract price 81%, 81 cents.",
+      "takeaway": "계약의 문턱과 가격을 함께 읽는다.",
+      "evidence_fact_ids": [
+        "dec-market"
+      ]
+    },
+    "trend": {
+      "claim": "12월 인상 가격은 10월 14일에서 21일까지 낮아졌다.",
+      "evidence": "Raw history 90% → 81%; change −9%p.",
+      "takeaway": "종점은 90%에서 81%로 이동했다.",
+      "evidence_fact_ids": [
+        "dec-history"
+      ]
+    },
+    "why": {
+      "claim": "9월 물가는 올랐고 비농업 고용은 29,000명 증가했다.",
+      "evidence": "September CPI +0.6% m/m; payrolls +29,000.",
+      "takeaway": "물가와 고용 신호를 함께 본다.",
+      "evidence_fact_ids": [
+        "september-cpi",
+        "september-jobs"
+      ]
+    },
+    "korea-impact": {
+      "claim": "미국 상단 4.00%와 한국 3.00% 사이 금리차는 1.00%p다.",
+      "evidence": "Target upper bound 4.00%, BOK 3.00%; overseas flows USD 129.4B vs USD 50.4B.",
+      "takeaway": "한미 금리차와 자금 흐름이 한국에 닿는다.",
+      "evidence_fact_ids": [
+        "fed-range",
+        "bok-rate",
+        "bok-flows"
+      ]
+    },
+    "watch-next": {
+      "claim": "다음 FOMC 회의는 10월 27–28일이다.",
+      "evidence": "FOMC meeting scheduled for Oct 27–28, 2026.",
+      "takeaway": "10.28에 동결 또는 인상으로 갈린다.",
+      "evidence_fact_ids": [
+        "fomc-date",
+        "mortgage-rate"
+      ]
+    }
+  }
+}

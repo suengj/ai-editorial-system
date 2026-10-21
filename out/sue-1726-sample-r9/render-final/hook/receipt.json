@@ -1,0 +1,124 @@
+{
+  "schema_version": "1.0.0",
+  "lineage_root": "sha256:602bd5461a7622119984de6407e3c0d4cd9b64acaaae5cc2274d0844243c1525",
+  "repair_round": 0,
+  "repair_counted": false,
+  "repair_of": null,
+  "status": "RENDERED_NEEDS_REVIEW",
+  "request_hash": "sha256:efaf23648115754f0c5a0d53302485261dff196821e6d94d2baf810292a748e8",
+  "execution_hash": "sha256:b05dd8b6ecc3bb39d6271035774ac37f421143d10bba300a916480cb38acc0b2",
+  "renderer": {
+    "tool": "aes-visual-execution",
+    "version": "rsvg-convert version 2.60.0",
+    "name": "rsvg",
+    "font_stack": "'Noto Sans KR', 'Noto Sans CJK KR', sans-serif"
+  },
+  "inputs": [
+    {
+      "ref": "source-sidecar.json",
+      "sha256": "sha256:0183325dd3317b32ad824f56d6bdee6ab3fd6cb95f3402497b35a50470d01432"
+    },
+    {
+      "ref": "charts/01-hook.json",
+      "sha256": "sha256:454e5c494515dfd0b4c8628cff23752112c36bd5c74094b3337fb1eb33d89729"
+    }
+  ],
+  "geometry": {
+    "width": 1080,
+    "height": 1350,
+    "aspect_ratio": "4:5"
+  },
+  "outputs": {
+    "master": {
+      "ref": "master.png",
+      "sha256": "sha256:6726fa9dfe40a04e2570670da719df60896feb1454eff564b51f9b2c1816479a"
+    },
+    "image": {
+      "ref": "image.png",
+      "sha256": "sha256:6726fa9dfe40a04e2570670da719df60896feb1454eff564b51f9b2c1816479a"
+    },
+    "svg": {
+      "ref": "master.svg",
+      "sha256": "sha256:df8a6e416659001e5aff79f129beb5c422a9948e2ef4840b8a0eb081b582fc91"
+    }
+  },
+  "text": [
+    {
+      "id": "headline",
+      "text": "10월엔 쉬고, 12월엔 올린다",
+      "source_ref": "request",
+      "lines": [
+        "10월엔 쉬고, 12월엔 올린다"
+      ],
+      "font_size": 68,
+      "slot": {
+        "x": 65,
+        "y": 135,
+        "width": 950,
+        "height": 284
+      },
+      "orphan": false
+    },
+    {
+      "id": "hook-copy",
+      "text": "10월 회의 뒤 인상 가격은 15%입니다.\n12월까지 한 차례 인상 가격은 81%로 시장에 높게 매겨졌습니다.",
+      "source_ref": "source-sidecar.json#oct-market+dec-market",
+      "lines": [
+        "10월 회의 뒤 인상 가격은 15%입니다.",
+        "12월까지 한 차례 인상 가격은 81%로 시장에 높게 매겨졌습니다."
+      ],
+      "font_size": 32,
+      "slot": {
+        "x": 65,
+        "y": 1161,
+        "width": 950,
+        "height": 95
+      },
+      "orphan": false
+    }
+  ],
+  "charts": [
+    {
+      "id": "comparison",
+      "source_ref": "charts/01-hook.json",
+      "source_sha256": "sha256:454e5c494515dfd0b4c8628cff23752112c36bd5c74094b3337fb1eb33d89729",
+      "renderer": {
+        "tool": "aes-number-visual-panel",
+        "version": "1.2.0"
+      },
+      "geometry": {
+        "width": 950,
+        "height": 729
+      },
+      "displayed": [
+        {
+          "label": "10월 회의 뒤",
+          "value": 15,
+          "value_label": "15%"
+        },
+        {
+          "label": "12월까지",
+          "value": 81,
+          "value_label": "81%"
+        }
+      ],
+      "source_note": "Kalshi 2026-10-21"
+    }
+  ],
+  "images": [],
+  "generation": [],
+  "watermark": null,
+  "mockup_labels": [],
+  "checks": {
+    "output_geometry": "PASS",
+    "text_fit": "PASS",
+    "inputs_rechecked": "PASS",
+    "numeric_render_binding": "PASS",
+    "generated_image": "NOT_APPLICABLE",
+    "contrast": "NOT_APPLICABLE",
+    "actual_pixel_semantic_review": "NOT_RUN_PHASE4",
+    "source_truth": "NOT_ESTABLISHED_BY_RENDERER"
+  },
+  "api_calls": 0,
+  "publication_authorized": false
+}

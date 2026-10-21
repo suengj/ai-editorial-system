@@ -341,7 +341,7 @@ export function renderNumberVisualPanel(spec, { width = 900, height = 520, theme
   for (const color of [bg, fg, accent]) if (!/^#[0-9a-f]{6}$/i.test(color)) fail('theme colors must be #RRGGBB');
   const font = theme.font_family ?? 'Noto Sans CJK KR, Pretendard, sans-serif';
   const scale = width / 900;
-  const labelSize = Math.max(30, 30 * scale), valueSize = Math.max(44, 58 * scale), smallSize = Math.max(30, 32 * scale);
+  const labelSize = Math.max(34, 34 * scale), valueSize = Math.max(140, 140 * scale), smallSize = Math.max(34, 34 * scale);
   const els = [], displayed = [];
   const text = (value, x, y, size = labelSize, weight = 600, anchor = 'start', color = fg) => {
     if (typeof value !== 'string' || !value.length) fail('visible labels must be non-empty strings');
@@ -352,33 +352,65 @@ export function renderNumberVisualPanel(spec, { width = 900, height = 520, theme
   };
   const line = (x1,y1,x2,y2, stroke=fg, opacity=0.15, strokeWidth=2) => els.push(`<line x1="${n(x1)}" y1="${n(y1)}" x2="${n(x2)}" y2="${n(y2)}" stroke="${stroke}" stroke-opacity="${opacity}" stroke-width="${strokeWidth}" stroke-linecap="round"/>`);
   const pad = 36 * scale;
+  const shadowId = 'number-panel-shadow';
+  els.push(`<defs><filter id="${shadowId}" x="-12%" y="-12%" width="124%" height="132%"><feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="${fg}" flood-opacity="0.12"/></filter></defs>`);
+  els.push(`<rect x="5" y="5" width="${n(width - 10)}" height="${n(height - 10)}" rx="28" fill="#FFFFFF" filter="url(#${shadowId})"/>`);
   if (spec.layout === 'comparison-bars') {
     if (!Array.isArray(spec.items) || spec.items.length !== 2 || spec.items.some(x => !Number.isFinite(x.value) || x.value < 0 || x.value > 100 || !x.label || !x.value_label)) fail('comparison-bars needs two 0–100 items');
-    const x0=pad, barW=width-pad*2, gap=height*0.25, y0=height*0.3, bh=Math.max(32,36*scale);
-    spec.items.forEach((item,i)=>{ const y=y0+i*gap; text(item.label,x0,y-smallSize*0.55,smallSize,700); els.push(`<rect x="${n(x0)}" y="${n(y)}" width="${n(barW)}" height="${n(bh)}" rx="${n(bh/2)}" fill="${fg}" fill-opacity="0.08"/>`); els.push(`<rect x="${n(x0)}" y="${n(y)}" width="${n(barW*item.value/100)}" height="${n(bh)}" rx="${n(bh/2)}" fill="${accent}"/>`); if(item.value>=88) text(item.value_label,x0+barW-12,y+bh*0.83,valueSize,800,'end'); else text(item.value_label,x0+barW*item.value/100+16,y+bh*0.83,valueSize,800); displayed.push({label:item.label,value:item.value,value_label:item.value_label}); });
+    const x0=pad, barW=width-pad*2, gap=height*0.40, y0=height*0.22, bh=Math.max(32,36*scale);
+    spec.items.forEach((item,i)=>{ const y=y0+i*gap; text(item.label,x0,y-smallSize*0.55,smallSize,700); els.push(`<rect x="${n(x0)}" y="${n(y)}" width="${n(barW)}" height="${n(bh)}" rx="${n(bh/2)}" fill="${fg}" fill-opacity="0.08"/>`); els.push(`<rect x="${n(x0)}" y="${n(y)}" width="${n(barW*item.value/100)}" height="${n(bh)}" rx="${n(bh/2)}" fill="${accent}"/>`); text(item.value_label,x0+barW*item.value/100,y+bh+valueSize*0.95,valueSize,800,'middle'); displayed.push({label:item.label,value:item.value,value_label:item.value_label}); });
   } else if (spec.layout === 'dot-grid') {
     const { total, filled, value_label, caption }=spec;
     if (!Number.isInteger(total)||!Number.isInteger(filled)||filled<0||filled>total||!value_label||!caption) fail('dot-grid needs bounded integer counts and labels');
     if (total !== 100) fail('dot-grid requires a 100-point scale');
-    const cols=10, r=Math.min(9.5*scale,(width-pad*2)/(cols*2.5)), gap=r*2.3, gridW=(cols-1)*gap;
-    const startX=(width-gridW)/2, startY=height*0.13;
+    const cols=10, r=Math.min(18*scale,(width-pad*2)/(cols*2.5)), gap=r*2.45, gridW=(cols-1)*gap;
+    const startX=(width-gridW)/2, startY=height*0.28;
     for(let i=0;i<total;i++){ const x=startX+(i%cols)*gap,y=startY+Math.floor(i/cols)*gap; els.push(`<circle cx="${n(x)}" cy="${n(y)}" r="${n(r)}" fill="${i<filled?accent:fg}" fill-opacity="${i<filled?0.96:0.10}"/>`); }
-    text(value_label,width/2,height*0.77,valueSize,800,'middle'); text(caption,width/2,height*0.91,smallSize,600,'middle'); displayed.push({filled,total,value_label});
+    text(value_label,width/2,height*0.20,valueSize,800,'middle'); text(caption,width/2,height*0.94,smallSize,600,'middle'); displayed.push({filled,total,value_label});
   } else if (spec.layout === 'trend-area') {
-    const { start, end, start_label, end_label, start_date, end_date }=spec;
+    const { start, end, start_label, end_label, start_date, end_date, points }=spec;
     if (![start,end].every(v=>Number.isFinite(v)&&v>=0&&v<=100)||!start_label||!end_label||!start_date||!end_date) fail('trend-area needs two dated 0–100 endpoints');
-    const yMin=Math.min(70,start,end), yMax=Math.max(100,start,end);
+    if (points !== undefined && (!Array.isArray(points) || points.length < 3 || points.some(p => !Number.isFinite(p.value) || p.value < 0 || p.value > 100 || typeof p.observed_at !== 'string'))) fail('trend-area points must be sourced observations');
+    if (points && (points[0].value !== start || points.at(-1).value !== end)) fail('trend-area point endpoints must match the supplied endpoints');
+    const values = points?.map(p => p.value) ?? [start,end];
+    const yMin=Math.max(0,Math.floor(Math.min(...values)-4)), yMax=Math.min(100,Math.ceil(Math.max(...values)+4));
     const left=pad+16, right=width-pad-12, top=height*0.14, bottom=height*0.78, y=(v)=>bottom-((v-yMin)/(yMax-yMin))*(bottom-top), x0=left,x1=right;
     for(let i=0;i<5;i++) line(left,y(yMin+(yMax-yMin)*i/4),right,y(yMin+(yMax-yMin)*i/4),fg,0.12,1.5);
     const gid='trend-area-gradient'; els.push(`<defs><linearGradient id="${gid}" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="${accent}" stop-opacity="0.34"/><stop offset="100%" stop-color="${accent}" stop-opacity="0.015"/></linearGradient></defs>`);
-    const cx1=x0+(x1-x0)*0.32, cx2=x0+(x1-x0)*0.69, cy1=y(start)+(y(end)-y(start))*0.22, cy2=y(start)+(y(end)-y(start))*0.78;
-    const curve=`M ${n(x0)} ${n(y(start))} C ${n(cx1)} ${n(cy1)} ${n(cx2)} ${n(cy2)} ${n(x1)} ${n(y(end))}`;
+    let curve;
+    if (points) {
+      const toMs = v => Date.parse(v.observed_at), first = toMs(points[0]), span = toMs(points.at(-1)) - first;
+      if (points.some(p => !Number.isFinite(toMs(p))) || span <= 0) fail('trend-area observations need increasing timestamps');
+      const smooth = points.map((p,i) => {
+        if (i===0 || i===points.length-1) return p.value;
+        const weights=[1,2,3,2,1]; let totalWeight=0, sum=0;
+        for(let offset=-2;offset<=2;offset++) { const source=points[Math.max(0,Math.min(points.length-1,i+offset))]; const weight=weights[offset+2]; sum+=source.value*weight; totalWeight+=weight; }
+        return sum/totalWeight;
+      });
+      const pts = points.map((p,i) => ({x:left + (right-left) * (toMs(p)-first) / span, y:y(smooth[i])}));
+      const segs=[];
+      for (let i=0;i<pts.length-1;i++) {
+        const p0=pts[Math.max(0,i-1)], p1=pts[i], p2=pts[i+1], p3=pts[Math.min(pts.length-1,i+2)];
+        const d=p2.x-p1.x, c1x=p1.x+d/3, c2x=p2.x-d/3;
+        const c1y=p1.y+(p2.y-p0.y)/6, c2y=p2.y-(p3.y-p1.y)/6;
+        segs.push(`C ${n(c1x)} ${n(c1y)} ${n(c2x)} ${n(c2y)} ${n(p2.x)} ${n(p2.y)}`);
+      }
+      curve=`M ${n(pts[0].x)} ${n(pts[0].y)} ${segs.join(' ')}`;
+    } else {
+      const cx1=x0+(x1-x0)*0.32, cx2=x0+(x1-x0)*0.69, cy1=y(start)+(y(end)-y(start))*0.22, cy2=y(start)+(y(end)-y(start))*0.78;
+      curve=`M ${n(x0)} ${n(y(start))} C ${n(cx1)} ${n(cy1)} ${n(cx2)} ${n(cy2)} ${n(x1)} ${n(y(end))}`;
+    }
     els.push(`<path d="${curve} L ${n(x1)} ${n(bottom)} L ${n(x0)} ${n(bottom)} Z" fill="url(#${gid})"/>`);
     els.push(`<path d="${curve}" fill="none" stroke="${accent}" stroke-width="${n(5*scale)}" stroke-linecap="round"/>`);
     els.push(`<circle cx="${n(x0)}" cy="${n(y(start))}" r="${n(8*scale)}" fill="${bg}" stroke="${accent}" stroke-width="${n(4*scale)}"/>`);
     els.push(`<circle cx="${n(x1)}" cy="${n(y(end))}" r="${n(15*scale)}" fill="${accent}" stroke="${bg}" stroke-width="${n(5*scale)}"/>`);
-    text(start_label,x0,y(start)-22*scale,smallSize,700,'start'); text(end_label,x1-8,y(end)-22*scale,valueSize,800,'end'); text(start_date,x0,bottom+44*scale,smallSize,500); text(end_date,x1,bottom+44*scale,smallSize,500,'end');
-    displayed.push({start,start_label,start_date,end,end_label,end_date});
+    text(start_label,x0,y(start)-22*scale,smallSize,700,'start'); text(end_label,x1-170*scale,height*0.32,valueSize,800,'middle'); text(start_date,x0,bottom+44*scale,smallSize,500); text(end_date,x1,bottom+44*scale,smallSize,500,'end');
+    if (spec.delta_label) {
+      const chipW=156*scale, chipH=48*scale, chipX=width-pad-chipW, chipY=height*0.88;
+      els.push(`<rect x="${n(chipX)}" y="${n(chipY)}" width="${n(chipW)}" height="${n(chipH)}" rx="${n(chipH/2)}" fill="${accent}"/>`);
+      text(spec.delta_label,chipX+chipW/2,chipY+chipH*0.72,smallSize,800,'middle','#FFFFFF');
+    }
+    displayed.push({start,start_label,start_date,end,end_label,end_date,point_count:points?.length??2,delta_label:spec.delta_label??null});
   } else if (spec.layout === 'dual-metric') {
     if (!Array.isArray(spec.items)||spec.items.length!==2||spec.items.some(x=>!x.label||!x.value_label||!Number.isFinite(x.value)||!Number.isFinite(x.max)||x.value<0||x.max<=0||x.value>x.max)) fail('dual-metric needs two independently scaled metrics');
     const y0=height*0.30, rowH=height*0.40, x=pad, w=width-pad*2, bh=22*scale;
@@ -388,7 +420,9 @@ export function renderNumberVisualPanel(spec, { width = 900, height = 520, theme
     if (!Array.isArray(rates)||rates.length!==2||rates.some(x=>!x.label||!Number.isFinite(x.value)||x.value<0||x.value>5)||rates[0].value<=rates[1].value||!Number.isFinite(ratio?.outflow)||!Number.isFinite(ratio?.inflow)||ratio.inflow<=0||Math.abs(ratio.outflow/ratio.inflow-2.5)>0.15||!ratio.outflow_label||!ratio.inflow_label||!ratio.caption) fail('rate-gap-ratio needs descending rates and a source-bound ratio near 2.5:1');
     const x=pad,w=width-pad*2, y0=height*0.11, bh=28*scale;
     rates.forEach((r,i)=>{const y=y0+i*height*0.18;text(r.label,x,y-smallSize*0.48,smallSize,700);els.push(`<rect x="${n(x)}" y="${n(y)}" width="${n(w)}" height="${n(bh)}" rx="${n(bh/2)}" fill="${fg}" fill-opacity="0.08"/>`);els.push(`<rect x="${n(x)}" y="${n(y)}" width="${n(w*r.value/5)}" height="${n(bh)}" rx="${n(bh/2)}" fill="${i===0?accent:fg}"/>`);text(`${r.value.toFixed(2)}%`,width-pad,y+bh*0.84,smallSize,700,'end');displayed.push({label:r.label,value:r.value});});
-    const gy=height*0.45; line(x,gy,width-pad,gy,fg,0.22,2); text('금리차',x,gy+smallSize*1.05,smallSize,600); text('1.00%p',width-pad,gy+smallSize*1.05,valueSize,800,'end',accent);
+    const gy=height*0.45, gapX=x+w*0.60, startY=height*0.13, endY=startY+height*0.18;
+    els.push(`<path d="M ${n(gapX-12)} ${n(startY+28*scale)} h 12 v ${n(endY-startY)} h -12 M ${n(gapX)} ${n((startY+endY)/2)} h ${n(96*scale)}" fill="none" stroke="${accent}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>`);
+    text('금리차 1.00%p',width-pad,height*0.49,smallSize,700,'end',accent);
     const max=ratio.outflow, captionY=height*0.61, row1Y=height*0.71, row2Y=height*0.85, barH=16*scale;
     text(ratio.caption,x,captionY,smallSize,700);
     for (const [index,item] of [{label:ratio.outflow_label,value:ratio.outflow,color:accent},{label:ratio.inflow_label,value:ratio.inflow,color:fg}].entries()) {
@@ -403,7 +437,14 @@ export function renderNumberVisualPanel(spec, { width = 900, height = 520, theme
     text(date,width/2,height*0.23,valueSize,800,'middle');
     const cx=width/2, cy=height*0.42, y=height*0.70, lx=width*0.25, rx=width*0.75;
     line(cx,cy,cx,y-54*scale,accent,0.55,4*scale); line(cx,y-54*scale,lx,y-12*scale,accent,0.55,4*scale); line(cx,y-54*scale,rx,y-12*scale,accent,0.55,4*scale);
-    scenarios.forEach((s,i)=>{const x=i?rx:lx;els.push(`<circle cx="${n(x)}" cy="${n(y)}" r="${n(17*scale)}" fill="${accent}"/>`);text(s.label,x,y+70*scale,valueSize,800,'middle');displayed.push({scenario:s.label});});
+    scenarios.forEach((s,i)=>{
+      const x=i?rx:lx, branchColor=i?fg:accent, lines=s.detail_lines??(s.detail?[s.detail]:[]);
+      els.push(`<circle cx="${n(x)}" cy="${n(y)}" r="${n(17*scale)}" fill="${branchColor}"/>`);
+      els.push(`<path d="M ${n(x-7*scale)} ${n(y)} l ${n(6*scale)} ${n(6*scale)} l ${n(12*scale)} ${n(-13*scale)}" fill="none" stroke="#FFFFFF" stroke-width="${n(3*scale)}" stroke-linecap="round" stroke-linejoin="round"/>`);
+      text(s.label,x,y+70*scale,labelSize,800,'middle',branchColor);
+      lines.forEach((lineText,j)=>text(lineText,x,height*0.88+j*smallSize*1.15,smallSize,600,'middle'));
+      displayed.push({scenario:s.label,detail_lines:lines});
+    });
   }
   return { svg:`<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" role="img"><title>${esc(spec.title)}</title>${els.join('')}</svg>`, renderer:{tool:'aes-number-visual-panel',version:PANEL_RENDERER_VERSION}, geometry:{width,height}, displayed, source_note:spec.source_note };
 }
