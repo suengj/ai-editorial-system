@@ -21,11 +21,14 @@ card content; PMC continues to own market history and numeric lineage.
   the selected hash-verified PMC bundle. Do not recompute, extend, smooth or
   manually interpolate them. If the available history covers a week, describe
   it as `이번 주`; never mention an internal history cap or unavailable request.
-- Build the chart card with `scripts/bind-pmc-bundle.mjs`; copy the emitted
-  `chart.spec.json` reference and SHA-256 into the rendered series. Verify the
-  render against the same bundle. If movement is small, use an honest axis and
-  a delta callout. Show actual y-axis tick values and the axis range in the chart
-  itself when zoomed; do not explain the axis in card prose.
+- Default chart cards use `scripts/bind-pmc-bundle.mjs`; copy the emitted
+  `chart.spec.json` reference and SHA-256 into the rendered series. By explicit
+  owner decision, a chart may instead use `illustrative_trend_image`: one
+  generated smooth continuous curve with no text or numbers, whose direction
+  matches the first and last raw PMC observations. The renderer overlays those
+  exact start/end values and their `%p` change; parity is required. Missing PMC
+  history blocks this mode. For deterministic chart cards, show actual y-axis
+  ticks and range when zoomed.
 - Separate contract pricing from verified news. A price is a market signal,
   not evidence that an event happened. Cite every news claim in the sidecar
   JSON, with its date and direct source URL. Do not put research URLs on cards.
@@ -59,9 +62,10 @@ Reuse the existing `r4-photo-fullbleed` recipe, `hero`/`visual` layouts,
 `business-magazine-core` and `carousel-core`. Keep prediction-market work as a
 content variant. If the owner opts in to generated imagery, use the existing
 generated-image evidence path for text-free scenes with no logos, fake
-screenshots or real-person likenesses. Keep the PMC chart in its deterministic
-chart panel. Use Noto Serif KR headlines and AES Sans KR body copy. Give every
-card the same grid, margins and text baseline; keep each text block inside its
-container with padding. Contact sheets contain only the five or six cards in a
-centered 3-column arrangement. Cards are content-only; only the chart may carry a
+screenshots or real-person likenesses. `illustrative_trend_image` may replace
+the plotted chart pixels only under the source and parity rules above. Use Noto
+Serif KR headlines and AES Sans KR body copy. Give every card the same grid,
+margins and text baseline; keep each text block inside its container with
+padding. Contact sheets contain only the five or six cards in a centered
+3-column arrangement. Cards are content-only; a deterministic chart may carry a
 tiny provider credit.

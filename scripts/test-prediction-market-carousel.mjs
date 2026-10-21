@@ -17,6 +17,11 @@ assert(target.visual.files.includes('editorial/INSTAGRAM-NUMERIC-VISUAL-POLICY.m
 assert(target.visual.values.includes('editorial/prediction-market-carousel.v1.json'));
 assert(target.visual.values.includes('editorial/templates/prediction-market-carousel.series.json'));
 assert.equal(profile.artifact, 'visual/prediction-market-carousel');
+assert.equal(profile.trend_image_mode.id, 'illustrative_trend_image');
+assert.equal(profile.trend_image_mode.owner_decision, true);
+assert.equal(profile.trend_image_mode.requires_raw_history, true);
+assert.deepEqual(profile.trend_image_mode.renderer_overlays, ['start_value', 'end_value', 'change_pp']);
+assert.equal(profile.trend_image_mode.numeric_parity_check, 'required');
 assert.deepEqual(recipe.visual_style, { default: 'R4', fallback: 'R7', fallback_when: 'no suitable rights-cleared photo' });
 assert.equal(recipe.card_count, 5);
 assert.deepEqual(template.frames.map((f) => f.id), ['hook', 'trend', 'why', 'korea-impact', 'watch-next']);

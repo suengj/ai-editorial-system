@@ -57,9 +57,12 @@ export function checkNumericCard(spec, profile = loadNumericProfile()) {
     if (ART_KEYS_FORBIDDEN.includes(k)) err('LANE_ART_OWNS_DATA', `art_direction.${k}`, 'AI art direction may not carry factual/chart data');
     else if (!profile.lanes.ai_art_direction.owns.includes(k)) err('LANE_ART_UNKNOWN', `art_direction.${k}`, 'unknown art-direction field');
   }
-  if (spec.rendering?.chart_geometry !== 'deterministic') err('LANE_CHART_NOT_DETERMINISTIC', 'rendering.chart_geometry', 'chart geometry must be rendered by deterministic code');
+  const illustrativeTrend = spec.rendering?.chart_geometry === 'illustrative_trend_image';
+  const trendModeAllowed = profile.chart_image_modes?.allowed?.includes('illustrative_trend_image') === true;
+  if (spec.rendering?.chart_geometry !== 'deterministic' && !(illustrativeTrend && trendModeAllowed)) err('LANE_CHART_NOT_DETERMINISTIC', 'rendering.chart_geometry', 'chart geometry must be deterministic or use the owner-approved illustrative trend mode');
   if (spec.rendering?.final_composition !== 'deterministic') err('LANE_COMPOSITION_NOT_DETERMINISTIC', 'rendering.final_composition', 'final composition must be deterministic');
-  if (!['none', 'decorative_only'].includes(spec.rendering?.image_ai_role)) err('LANE_IMAGE_AI_DRAWS_DATA', 'rendering.image_ai_role', 'image AI may only be none or decorative_only');
+  const allowedImageRoles = illustrativeTrend && trendModeAllowed ? ['none', 'decorative_only', 'trend_illustration'] : ['none', 'decorative_only'];
+  if (!allowedImageRoles.includes(spec.rendering?.image_ai_role)) err('LANE_IMAGE_AI_DRAWS_DATA', 'rendering.image_ai_role', 'image AI may only be none/decorative, or supply a text-free illustrative trend curve in the owner-approved mode');
   for (const [i, a] of (art.decorative_assets ?? []).entries()) {
     if (a.overlaps_plot || a.contains_data) err('LANE_DECORATION_OVER_DATA', `art_direction.decorative_assets[${i}]`, 'decorative assets must not overlap the plot or contain data');
   }
@@ -154,6 +157,27 @@ export function checkNumericCard(spec, profile = loadNumericProfile()) {
     }
     if (spec.interpolation?.preserves_all_points !== true) err('INTERPOLATION_POINTS', 'interpolation.preserves_all_points', 'every raw point and endpoint must be preserved');
     endpoints.push(last);
+  }
+
+  // Owner-approved illustration: the image supplies curve direction only. All labels remain
+  // deterministic text derived from the first/last raw PMC observations.
+  if (illustrativeTrend) {
+    const ti = spec.rendering?.trend_image ?? {};
+    const overlays = spec.rendering?.overlays ?? {};
+    if (!trendModeAllowed) err('TREND_MODE_NOT_APPROVED', 'rendering.chart_geometry', 'illustrative trend mode is not enabled by the profile');
+    if (series.length !== 1 || (series[0]?.observations?.length ?? 0) < 2) err('TREND_HISTORY_REQUIRED', 'series', 'illustrative trend requires one series with at least two raw history observations');
+    if (ti.curve !== 'smooth_continuous') err('TREND_CURVE', 'rendering.trend_image.curve', 'illustrative trend image must describe one smooth continuous curve');
+    if (ti.contains_text !== false || ti.contains_numbers !== false || ti.contains_axes !== false) err('TREND_IMAGE_TEXT', 'rendering.trend_image', 'illustrative trend image must contain no text, numbers or axes');
+    if (ti.direction_source !== 'raw_history') err('TREND_DIRECTION_SOURCE', 'rendering.trend_image.direction_source', 'curve direction must come from raw PMC history endpoints');
+    if (series[0]?.observations?.length >= 2) {
+      const obs = series[0].observations, first = obs[0], last = obs.at(-1);
+      const want = last.p > first.p ? 'up' : last.p < first.p ? 'down' : 'flat';
+      if (!['up', 'down'].includes(want) || ti.direction !== want) err('TREND_DIRECTION', 'rendering.trend_image.direction', `curve direction must match raw endpoints (${want})`);
+      const delta = round(last.p - first.p, d);
+      if (overlays.start_value !== first.p || overlays.start_text !== fmtPct(first.p, d)) err('TREND_OVERLAY_START', 'rendering.overlays', `start overlay must equal ${fmtPct(first.p, d)}`);
+      if (overlays.end_value !== last.p || overlays.end_text !== fmtPct(last.p, d)) err('TREND_OVERLAY_END', 'rendering.overlays', `end overlay must equal ${fmtPct(last.p, d)}`);
+      if (overlays.change_pp !== delta || overlays.change_text !== fmtPp(delta, d)) err('TREND_OVERLAY_DELTA', 'rendering.overlays', `change overlay must equal ${fmtPp(delta, d)}`);
+    }
   }
 
   // ---- axis (one shared, deterministic)

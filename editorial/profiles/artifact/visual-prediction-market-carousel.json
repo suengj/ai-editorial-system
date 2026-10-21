@@ -29,7 +29,18 @@
   },
   "renderer_preference": {
     "order": ["deterministic", "hybrid", "generative"],
-    "rule": "Render all factual text and PMC chart values deterministically. Generated art is decorative and cannot carry facts or numbers."
+    "rule": "Render factual text and PMC values deterministically. Owner-selected illustrative_trend_image replaces plotted chart pixels with one generated, continuous, text-free curve whose direction matches raw PMC history; start, end and change remain renderer typography and must pass PMC parity. Generated art carries no facts or numbers."
+  },
+  "trend_image_mode": {
+    "id": "illustrative_trend_image",
+    "owner_decision": true,
+    "requires_raw_history": true,
+    "curve": "smooth_continuous",
+    "direction_from": "first_and_last_pmc_observations",
+    "image_must_contain": [],
+    "image_must_not_contain": ["text", "numbers", "axes", "grid", "logos", "interfaces"],
+    "renderer_overlays": ["start_value", "end_value", "change_pp"],
+    "numeric_parity_check": "required"
   },
   "readability_gate": {
     "applies": true,

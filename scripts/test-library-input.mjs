@@ -210,7 +210,7 @@ if (!existsSync(join(libRepo, 'multimodal/units.py'))) {
     eq(run.status, 0, run.stderr);
     const brief = JSON.parse(readFileSync(join(out, 'a/brief.json'), 'utf8'));
     eq(brief.status, 'READY'); eq(brief.copy_plan.fact_sources.library.length, 1); eq(brief.copy_plan.expression_references.length, 1); eq(brief.visual_plan.visual_references.length, 1);
-    eq(brief.visual_plan.artifacts, ['visual/slide-image']); yes(brief.profile.id === 'target:signalytics-news', 'resolved profile');
+    eq(brief.visual_plan.artifacts, ['visual/slide-image', 'visual/evidence-visual', 'visual/prediction-market-carousel']); yes(brief.profile.id === 'target:signalytics-news', 'resolved profile');
     // the merged intent is what resolve-editorial itself consumes: same hash from the standalone CLI
     const res = node(['resolve-editorial.mjs', '--intent', join(out, 'a/intent.merged.json'), '--library-merged', join(out, 'a/library-verified-refs.json'), '--target', 'signalytics-news', '--out', join(out, 'r.json')]);
     eq(res.status, 0, res.stderr); eq(JSON.parse(readFileSync(join(out, 'r.json'), 'utf8')).profile.resolved_hash, brief.profile.resolved_hash);

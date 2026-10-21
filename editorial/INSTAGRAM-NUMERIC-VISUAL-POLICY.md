@@ -25,7 +25,7 @@ completion nor permission to post on social media.
 
 | AI art direction (may) | Deterministic rendering (must) |
 |---|---|
-| grounded title, layout, palette choice, hierarchy, optional decorative assets | exact numbers, axes, chart geometry, endpoint labels, footer, final composition |
+| grounded title, layout, palette choice, hierarchy, optional decorative assets; under the explicit owner-selected illustrative mode, a text-free trend curve whose direction is fixed by raw observations | exact numbers, axes, chart geometry or numeric overlays, endpoint labels, footer, final composition |
 
 - The AI never changes or invents numbers, dates, quotes, sources, coverage or market conditions.
   Any number in the AI title, bare or with a unit, must be a value the deterministic lane displays
@@ -35,8 +35,13 @@ completion nor permission to post on social media.
   or a short summary of the user's request. The deterministic lane only displays it. Provenance is
   recorded as `title_origin` ∈ {`source_rewrite`, `request_summary`, `source_verbatim`}; when present,
   an unknown value fails (`TITLE_ORIGIN`).
-- An image model never draws or redraws the data chart. `rendering.image_ai_role` is `none` or
-  `decorative_only`, and decorative assets never overlap the plot or carry data.
+- The default image model role is `none` or `decorative_only`. By explicit owner decision,
+  `illustrative_trend_image` may replace the plotted chart image. It may contain only one smooth,
+  continuous, text-free curve; its up/down direction must match the first and last raw PMC
+  observations. It contains no labels, numbers, axes, grid, logos or interface elements. The
+  renderer adds the start → end values and `%p` change as typography copied from those observations.
+  A current quote alone cannot stand in for a history endpoint. This mode is blocked when the source
+  observations are unavailable, and the parity checker validates direction, endpoints and delta.
 
 ## 2. Approved visual direction
 
