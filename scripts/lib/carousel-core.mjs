@@ -10,7 +10,7 @@ import { spawnSync } from 'node:child_process';
 import { resolveChrome, verifyChromeText } from './chrome-tokens.mjs';
 import { buildNativeCardPrompt, intakeNativeCard, nativeReviewToFeedbackRecord, containedNativePath, renderNativeChrome, validateNativeCardReview } from './hybrid-card-core.mjs';
 import { resolveDefaultVisualStyle } from './visual-style-policy.mjs';
-import { validateCardNewsBrief } from './card-news-brief-core.mjs';
+import { validateCardNewsBrief, validateCardNewsPrerequisites } from './card-news-brief-core.mjs';
 
 import { bundledFontDigest, CARD_NEWS_TYPE_ROLES, CARD_NEWS_TYPE_TOKENS } from './typography-core.mjs';
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
@@ -67,19 +67,15 @@ export function loadVisualRecipes() { return JSON.parse(readFileSync(resolve(ROO
 export function planCarousel(series, catalog=loadVisualRecipes(), contentBrief=null) {
   keys(series, CAROUSEL_CONSTRAINTS.series_fields, 'series');
   need(series.schema_version === CAROUSEL_VERSION && slug(series.series_id), 'SERIES_VERSION', 'v1 and a slug series_id are required');
-  if (series.profiles?.artifact === 'visual/prediction-market-carousel') {
-    need(series.requires_brief === true, 'CARD_NEWS_BRIEF_CONTRACT', 'prediction-market series must declare requires_brief: true');
-    need(series.content_kind === 'card-news' && series.numeric_profile === true, 'CARD_NEWS_PROFILE_CONTRACT', 'prediction-market carousel profile requires card-news content and its numeric contract');
-    need(contentBrief, 'CARD_NEWS_BRIEF_REQUIRED', 'the selected prediction-market profile requires its sourced brief');
-  }
+  const prerequisites = validateCardNewsPrerequisites(series);
+  const contractIssues = prerequisites.issues.filter((problem) => ['CARD_NEWS_BRIEF_CONTRACT','CARD_NEWS_PROFILE_CONTRACT','CARD_NEWS_NUMERIC_PROFILE'].includes(problem.code));
+  need(contractIssues.length === 0, contractIssues[0]?.code ?? 'CARD_NEWS_PROFILE_CONTRACT', contractIssues.map((problem) => problem.message).join('; '));
+  if (series.profiles?.artifact === 'visual/prediction-market-carousel') need(contentBrief, 'CARD_NEWS_BRIEF_REQUIRED', 'the selected prediction-market profile requires its sourced brief');
+  if (series.content_kind === 'card-news') need(contentBrief, 'CARD_NEWS_BRIEF_REQUIRED', 'brief.json is required for every card-news series');
+  need(prerequisites.ok, prerequisites.issues[0]?.code ?? 'CARD_NEWS_PROFILE_CONTRACT', prerequisites.issues.map((problem) => problem.message).join('; '));
   if (series.content_kind === 'card-news') {
-    need(contentBrief, 'CARD_NEWS_BRIEF_REQUIRED', 'brief.json is required for every card-news series');
     const briefCheck = validateCardNewsBrief(series, contentBrief);
     need(briefCheck.ok, 'CARD_NEWS_BRIEF_INVALID', briefCheck.issues.map((x) => `${x.code}${x.card_id ? `:${x.card_id}` : ''}`).join(', '));
-    need(series.footer_policy === 'content_only', 'CARD_NEWS_CONTENT_ONLY', 'card-news artwork is content-only: no disclaimer, timestamp, source, or pagination footer');
-    if (series.numeric_profile === true) {
-      need(series.frames.every((frame) => frame.blocks?.some((block) => block.kind === 'chart')), 'CARD_NEWS_DATA_VISUAL', 'every numeric card needs a chart/data visual block as its hero');
-    } else need(series.numeric_profile === undefined || series.numeric_profile === false, 'CARD_NEWS_NUMERIC_PROFILE', 'numeric_profile must be boolean');
   }
   need(series.footer_policy === undefined || ['source_and_pagination','content_only'].includes(series.footer_policy), 'SERIES_FOOTER_POLICY', 'footer_policy must be source_and_pagination or content_only');
   if (series.art_direction_sha256 !== undefined) need(typeof series.art_direction_sha256 === 'string' && /^sha256:[a-f0-9]{64}$/.test(series.art_direction_sha256), 'SERIES_ART_DIRECTION', 'art_direction_sha256 must be a SHA-256 digest');

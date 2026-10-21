@@ -50,7 +50,12 @@ assert.equal(template.content_kind, 'card-news');
 assert.equal(profile.requires_brief, true);
 assert.equal(template.requires_brief, true);
 const missingKind = structuredClone(template); delete missingKind.content_kind;
-assert.equal(loadAndValidateCardNewsBrief(missingKind, 'scripts/fixtures/pmc-bundle/series.json').applies, true, 'the selected PMC artifact invokes the brief loader even with content_kind absent');
+assert.equal(loadAndValidateCardNewsBrief(missingKind, 'scripts/fixtures/pmc-bundle/series.json').ok, false, 'the resolver blocks a selected PMC profile whose content_kind is absent');
+for (const field of ['content_kind','numeric_profile','footer_policy']) {
+  const incomplete = structuredClone(template); delete incomplete[field];
+  assert.equal(loadAndValidateCardNewsBrief(incomplete, 'scripts/fixtures/pmc-bundle/series.json').ok, false, `the resolver blocks missing ${field} before issuing READY`);
+  assert.throws(() => planCarousel(incomplete, undefined, {}), /card-news|numeric|footer/i, `the planner applies the same ${field} prerequisite`);
+}
 assert.equal(template.numeric_profile, true);
 assert.equal(template.profiles.artifact, 'visual/prediction-market-carousel');
 assert.equal(template.visual_style.requested_style, 'R4');
@@ -84,7 +89,7 @@ const replaceStrings = (value) => {
 };
 Object.assign(ready, replaceStrings(ready));
 for (const frame of ready.frames) for (const block of frame.blocks) if (block.kind === 'chart') block.sha256 = `sha256:${'a'.repeat(64)}`;
-const genericReady = structuredClone(ready); delete genericReady.content_kind; delete genericReady.numeric_profile; genericReady.profiles.artifact = 'visual/slide-image';
+const genericReady = structuredClone(ready); delete genericReady.content_kind; delete genericReady.numeric_profile; delete genericReady.requires_brief; genericReady.profiles.artifact = 'visual/slide-image';
 const planned = planCarousel(genericReady);
 assert.equal(planned.frames.length, 5);
 assert.equal(planned.density_profile, 'silent_carousel');

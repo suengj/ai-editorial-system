@@ -28,6 +28,23 @@ function isMarketSourceReference(value, key = '') {
   return false;
 }
 
+/** One prerequisite contract for both READY resolution and carousel planning. */
+export function validateCardNewsPrerequisites(series) {
+  const issues = [];
+  const predictionMarket = series?.profiles?.artifact === 'visual/prediction-market-carousel';
+  const applies = predictionMarket || series?.requires_brief === true || series?.content_kind === 'card-news' || series?.numeric_profile === true;
+  if (!applies) return { applies: false, ok: true, issues };
+  if (predictionMarket && series.requires_brief !== true) issues.push(issue('CARD_NEWS_BRIEF_CONTRACT', 'prediction-market series must declare requires_brief: true'));
+  if ((predictionMarket || series.requires_brief === true || series.numeric_profile === true) && series.content_kind !== 'card-news') issues.push(issue('CARD_NEWS_PROFILE_CONTRACT', 'selected card-news profile requires content_kind: card-news'));
+  if (predictionMarket && series.numeric_profile !== true) issues.push(issue('CARD_NEWS_PROFILE_CONTRACT', 'prediction-market profile requires numeric_profile: true'));
+  if (series.content_kind === 'card-news' && series.footer_policy !== 'content_only') issues.push(issue('CARD_NEWS_CONTENT_ONLY', 'card-news artwork is content-only: no disclaimer, timestamp, source, or pagination footer'));
+  if (series.numeric_profile !== undefined && typeof series.numeric_profile !== 'boolean') issues.push(issue('CARD_NEWS_NUMERIC_PROFILE', 'numeric_profile must be boolean'));
+  if (series.numeric_profile === true && Array.isArray(series.frames) && !series.frames.every((frame) => frame.blocks?.some((block) => block.kind === 'chart'))) {
+    issues.push(issue('CARD_NEWS_DATA_VISUAL', 'every numeric card needs a chart/data visual block as its hero'));
+  }
+  return { applies, ok: issues.length === 0, issues };
+}
+
 function isTrendChart(spec, hasVerifiedPmcSource = false) {
   if (spec?.type === 'number_visual' && spec.layout === 'trend-area') return true;
   if (!['line', 'area'].includes(spec?.type)) return false;
@@ -314,12 +331,9 @@ export function validateCardNewsChartFacts(series, brief, baseDir = process.cwd(
 }
 
 export function loadAndValidateCardNewsBrief(series, seriesPath) {
-  const profileRequiresBrief = series.profiles?.artifact === 'visual/prediction-market-carousel';
-  const requiresBrief = profileRequiresBrief || series.requires_brief === true;
-  if (!requiresBrief && series.content_kind !== 'card-news') return { ok: true, applies: false, issues: [] };
-  if (requiresBrief && series.requires_brief !== true) {
-    return { ok: false, applies: true, issues: [issue('CARD_NEWS_PROFILE_CONTRACT', 'selected profile requires requires_brief: true and content_kind: card-news')] };
-  }
+  const prerequisites = validateCardNewsPrerequisites(series);
+  if (!prerequisites.applies) return { ok: true, applies: false, issues: [] };
+  if (!prerequisites.ok) return { ok: false, applies: true, issues: prerequisites.issues };
   const briefPath = resolve(seriesPath ? resolve(seriesPath, '..') : process.cwd(), series.brief_file ?? 'brief.json');
   let brief, contentQa;
   try { brief = JSON.parse(readFileSync(briefPath, 'utf8')); }
