@@ -11,7 +11,7 @@ Reviewed the final six-card contact sheet and the 390px phone previews. This is 
 | Korea | PASS | Rate bars show 4.00% and 3.00% with a compact 1.00%p gap bracket; proportion bars read 나가는 돈 / 들어오는 돈 at 2.5:1. No USD bn wording appears. |
 | Next meeting | PASS | 10.28 branches to 동결 and 인상; both branches carry the requested Korean impacts with check icons. |
 
-All six cards use a subtle white-panel shadow, navy type, and coral accents. Chart panels occupy 54% of the card height at 1080×1350. Body text is at least 32px, labels at least 34px, and hero values at least 140px at 1080 width. No visible caveat, disclaimer, metadata, or footer was added.
+All six cards use a subtle white-panel shadow, navy type, and coral accents. Chart panels occupy 55% of the card height at 1080×1350. Body text is at least 32px, labels at least 34px, and hero values at least 140px at 1080 width. No visible caveat, disclaimer, metadata, or footer was added.
 
 Image generation calls: 0. Spend: USD 0.00 of the USD 0.04 cap.
 Renderer result: `RENDERED_NEEDS_REVIEW`; owner approval: pending; publication: not authorized.

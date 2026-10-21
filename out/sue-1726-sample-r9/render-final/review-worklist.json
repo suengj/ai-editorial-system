@@ -16,7 +16,7 @@
   "contract": "editorial/SLIDES-AND-CAROUSELS.md#11-series-information-consistency-contract",
   "contact_sheet": {
     "ref": "contact-sheet.png",
-    "sha256": "sha256:9d880b12025bdad31030c4d0cf1ca305d47a0080cee7a2fc5d775dfb8c51c0ef"
+    "sha256": "sha256:7eea8bf492f0c7c94e487e61d0d529e216ff54cb54ac2a1324f74590e4b9709c"
   },
   "dimensions": [
     "focal_hierarchy",
@@ -32,11 +32,11 @@
       "id": "hook",
       "full": {
         "ref": "hook/image.png",
-        "sha256": "sha256:6726fa9dfe40a04e2570670da719df60896feb1454eff564b51f9b2c1816479a"
+        "sha256": "sha256:44eaae540e3bbc0cdf6788f5fd58c047e24060432e628cc274c75064eaf84898"
       },
       "phone": {
         "ref": "hook/phone.png",
-        "sha256": "sha256:b58c0514bcf474abebb8d2739331dab7aff7afcf8896e94d1e1e088371a8d686"
+        "sha256": "sha256:514a4c29abd8a4aafe895720a7b4f4ea9ae4eedb5cac9daf0ac73daad062f107"
       },
       "alt_text": "두 개의 가로 막대가 10월 인상 15%와 12월 인상 81%를 비교한다.",
       "verdict": "NOT_REVIEWED"
@@ -45,11 +45,11 @@
       "id": "how-to-read",
       "full": {
         "ref": "how-to-read/image.png",
-        "sha256": "sha256:99f4b284031a90816676833b33262166c83e0bda347c604c7e040b0f6ef194eb"
+        "sha256": "sha256:4b8c30b80fc4eec3085b1535697332d3ef814d9bd90418f65a741963185f4e47"
       },
       "phone": {
         "ref": "how-to-read/phone.png",
-        "sha256": "sha256:42b29b8d4c0871d048cd4180a843f3fd7edf38c5264df3b8d79de55a93441d62"
+        "sha256": "sha256:6671f55d9579b5b8352cd4784be3025700b4630db8259fe2c08de7a9cd97b21a"
       },
       "alt_text": "100개의 원형 점 중 81개가 채워져 있고 아래에 81센트 가격이 표시된다.",
       "verdict": "NOT_REVIEWED"
@@ -58,11 +58,11 @@
       "id": "trend",
       "full": {
         "ref": "trend/image.png",
-        "sha256": "sha256:e662c71da1425427f80c5af7a49bb3aef0ada4bf6f29c934143ed3255e5efd80"
+        "sha256": "sha256:23933bdf4edac14b8099decdf05ea8d85426926749bc34b6fcce151f99f22cbd"
       },
       "phone": {
         "ref": "trend/phone.png",
-        "sha256": "sha256:5bd1cfe93c61d29d7d683ed2dd38c6cee01ed48ff02155dd5a616107f1d74307"
+        "sha256": "sha256:c15119aa0c9f5c36a93fafdff59ae6bad4e811d8fee96f380547fe728f900766"
       },
       "alt_text": "10월 14일 90%에서 10월 21일 81%로 이어지는 부드러운 면적 곡선과 끝점 표시.",
       "verdict": "NOT_REVIEWED"
@@ -71,11 +71,11 @@
       "id": "why",
       "full": {
         "ref": "why/image.png",
-        "sha256": "sha256:65cc38ed18f5f7a9e3ab009b9633b7639cda633edd34e24986730c385fd3076c"
+        "sha256": "sha256:df5c1b761c12fc782017e56d8721b5090c31c57b05728d90e808824264a5cb7c"
       },
       "phone": {
         "ref": "why/phone.png",
-        "sha256": "sha256:4f55e312db8ee22f48677fb979a614cc4d4eb9f28086aa4dbc3c012d334a7553"
+        "sha256": "sha256:0f4fb5ee3ccc8076affd24e4a1ead293146bab4a83c11d5a0d8e01aad3ff0d73"
       },
       "alt_text": "소비자물가 0.6%와 비농업 고용 증가 29,000명을 두 개의 독립된 막대가 보여준다.",
       "verdict": "NOT_REVIEWED"
@@ -84,11 +84,11 @@
       "id": "korea-impact",
       "full": {
         "ref": "korea-impact/image.png",
-        "sha256": "sha256:7c571f8f2ebbf95ca59a68fa9f3465b283fa4d93344a419328222340aa1e0973"
+        "sha256": "sha256:6fdc4cfb13d062d98650506877b51745c3f709ea5e191ffd8aa1f69fa033abcf"
       },
       "phone": {
         "ref": "korea-impact/phone.png",
-        "sha256": "sha256:f12ded8d477265309f6d00caee40e2cca51e38f549a386aa9e77710009e879a0"
+        "sha256": "sha256:05c406c7289029d925cb9357373a0ec330acf9ac0a2f96a9122bece0f164de08"
       },
       "alt_text": "미국과 한국 금리 차이의 괄호 표시와 나가는 돈·들어오는 돈 2.5대 1 비율 막대.",
       "verdict": "NOT_REVIEWED"
@@ -97,11 +97,11 @@
       "id": "watch-next",
       "full": {
         "ref": "watch-next/image.png",
-        "sha256": "sha256:6add320f468ff2d2e3e3ea8dd178a0826e19efaa1d395dc3e2455c551eb59d97"
+        "sha256": "sha256:01e6bc3e3f6e3d200bfe3f160405e69fc29cb1af6a0f8cfb5992d6fb73cae56f"
       },
       "phone": {
         "ref": "watch-next/phone.png",
-        "sha256": "sha256:329ab38027c09f76109e36c0fcb21939897ce844c6e9a2eee465e0f7b5d6ccbe"
+        "sha256": "sha256:4fccb242731fefa2bad6c9c7e61989a07d34114c986a580ab86109eb073f19f2"
       },
       "alt_text": "10.28에서 동결과 인상으로 나뉘는 화살표와 각 경로의 한국 금리 영향.",
       "verdict": "NOT_REVIEWED"

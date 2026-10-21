@@ -2,7 +2,7 @@
   "receipt_version": "1.0.0",
   "intent_id": "intent:2026-10-21-sue-1726-round-9",
   "status": "READY",
-  "revision": "69005fd",
+  "revision": "828b56c",
   "manifest": {
     "path": "editorial/entry-manifest.json",
     "version": "2026-10-16.1",
@@ -133,7 +133,7 @@
       "reason": null
     },
     "reused": false,
-    "cache_key": "sha256:8a3f1d1fb93ea82cb1d47d36bece92b99099bda0ee91231ab861421d963f39d9"
+    "cache_key": "sha256:692fd5d076a08d7d829901e24e90484bd3c86c93fd051684304c718b73282b4c"
   },
   "loads": [
     {
@@ -341,12 +341,12 @@
   },
   "profile": {
     "id": "target:signalytics-news",
-    "version": "2026-10-16.1+69005fd",
-    "resolved_hash": "sha256:6f40ab9acc0aedf34bce3e701f578fb67a80c925187a3c181b22b079852782e6",
+    "version": "2026-10-16.1+828b56c",
+    "resolved_hash": "sha256:6a2149174ac4a07622de37f21b7095585acc12846e1a4612bb460052907cf93b",
     "body": {
       "status": "READY",
       "intent_id": "intent:2026-10-21-sue-1726-round-9",
-      "revision": "69005fd",
+      "revision": "828b56c",
       "target_id": "signalytics-news",
       "flow_id": null,
       "id": "target:signalytics-news",

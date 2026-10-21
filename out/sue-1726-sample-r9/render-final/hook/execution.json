@@ -3,7 +3,7 @@
   "kind": "visual_execution",
   "status": "RENDERED_NEEDS_REVIEW",
   "request": "SUE-1726 round 9: scale up the number-led cards while retaining the supplied Signalytics source facts.",
-  "request_hash": "sha256:efaf23648115754f0c5a0d53302485261dff196821e6d94d2baf810292a748e8",
+  "request_hash": "sha256:d325aa1c6780dac7d8b8b2776b81f7e8d01a0faa839b1a05d50761c372c3899c",
   "source": {
     "ref": "source-sidecar.json",
     "sha256": "sha256:0183325dd3317b32ad824f56d6bdee6ab3fd6cb95f3402497b35a50470d01432",
@@ -115,9 +115,9 @@
       "source_ref": "request",
       "slot": {
         "x": 0.06,
-        "y": 0.1,
+        "y": 0.08,
         "width": 0.88,
-        "height": 0.21
+        "height": 0.18
       },
       "font_size": 68,
       "weight": 700,
@@ -126,9 +126,9 @@
       "font_family": "'Noto Serif KR', 'Noto Serif CJK KR', serif",
       "pixel_slot": {
         "x": 65,
-        "y": 135,
+        "y": 108,
         "width": 950,
-        "height": 284
+        "height": 243
       },
       "align": "start"
     },
@@ -138,15 +138,15 @@
       "ref": "charts/01-hook.json",
       "slot": {
         "x": 0.06,
-        "y": 0.31,
+        "y": 0.27,
         "width": 0.88,
-        "height": 0.54
+        "height": 0.55
       },
       "pixel_slot": {
         "x": 65,
-        "y": 419,
+        "y": 365,
         "width": 950,
-        "height": 729
+        "height": 743
       },
       "sha256": "sha256:454e5c494515dfd0b4c8628cff23752112c36bd5c74094b3337fb1eb33d89729"
     },
@@ -157,9 +157,9 @@
       "source_ref": "source-sidecar.json#oct-market+dec-market",
       "slot": {
         "x": 0.06,
-        "y": 0.86,
+        "y": 0.83,
         "width": 0.88,
-        "height": 0.07
+        "height": 0.1
       },
       "font_size": 32,
       "weight": 500,
@@ -168,9 +168,9 @@
       "font_family": "Noto Sans CJK KR, Pretendard, sans-serif",
       "pixel_slot": {
         "x": 65,
-        "y": 1161,
+        "y": 1121,
         "width": 950,
-        "height": 95
+        "height": 135
       },
       "align": "start"
     }
@@ -183,7 +183,7 @@
     "visual": "NOT_REVIEWED",
     "publication": "NOT_AUTHORIZED"
   },
-  "execution_hash": "sha256:b05dd8b6ecc3bb39d6271035774ac37f421143d10bba300a916480cb38acc0b2",
+  "execution_hash": "sha256:918f70786aa28597d4b7954da356b7221aa55bf218389cbd6b15993ac0374896",
   "rasterizer": {
     "name": "rsvg",
     "version": "rsvg-convert version 2.60.0"

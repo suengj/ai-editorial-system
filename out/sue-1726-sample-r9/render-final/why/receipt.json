@@ -5,8 +5,8 @@
   "repair_counted": false,
   "repair_of": null,
   "status": "RENDERED_NEEDS_REVIEW",
-  "request_hash": "sha256:980095dfc436dc7438c773c7198e6aaed68c5ffd58a2021d6b7b55bf9938f6de",
-  "execution_hash": "sha256:f7654a423b311af55f7eac8be39a76b78fd44d431dce197bae5fefdf2e69a0ba",
+  "request_hash": "sha256:6996df9539467503c10505f7681bbe3e29bd88e0e3dea948c0901bb9bd53ac17",
+  "execution_hash": "sha256:3c48cc828f60ca179ee1c9a07d85ff5e16bc1914e6ae56d72569ddab08422180",
   "renderer": {
     "tool": "aes-visual-execution",
     "version": "rsvg-convert version 2.60.0",
@@ -31,15 +31,15 @@
   "outputs": {
     "master": {
       "ref": "master.png",
-      "sha256": "sha256:65cc38ed18f5f7a9e3ab009b9633b7639cda633edd34e24986730c385fd3076c"
+      "sha256": "sha256:df5c1b761c12fc782017e56d8721b5090c31c57b05728d90e808824264a5cb7c"
     },
     "image": {
       "ref": "image.png",
-      "sha256": "sha256:65cc38ed18f5f7a9e3ab009b9633b7639cda633edd34e24986730c385fd3076c"
+      "sha256": "sha256:df5c1b761c12fc782017e56d8721b5090c31c57b05728d90e808824264a5cb7c"
     },
     "svg": {
       "ref": "master.svg",
-      "sha256": "sha256:fae3b06d8064179e712b3765f3641839e952ccecacbd210155c7cef4f18dc6ee"
+      "sha256": "sha256:8954bd90052a7985a6f72654b7a1104a3b8134809b6ba530c3989be86e2c4e79"
     }
   },
   "text": [
@@ -53,9 +53,9 @@
       "font_size": 68,
       "slot": {
         "x": 65,
-        "y": 135,
+        "y": 108,
         "width": 950,
-        "height": 284
+        "height": 243
       },
       "orphan": false
     },
@@ -70,9 +70,9 @@
       "font_size": 32,
       "slot": {
         "x": 65,
-        "y": 1161,
+        "y": 1121,
         "width": 950,
-        "height": 95
+        "height": 135
       },
       "orphan": false
     }
@@ -88,7 +88,7 @@
       },
       "geometry": {
         "width": 950,
-        "height": 729
+        "height": 743
       },
       "displayed": [
         {

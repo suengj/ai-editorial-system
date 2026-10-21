@@ -2,19 +2,19 @@
   "generate": {
     "stage": "generate",
     "profile_id": "target:signalytics-news",
-    "profile_version": "2026-10-16.1+69005fd",
-    "resolved_hash": "sha256:6f40ab9acc0aedf34bce3e701f578fb67a80c925187a3c181b22b079852782e6"
+    "profile_version": "2026-10-16.1+828b56c",
+    "resolved_hash": "sha256:6a2149174ac4a07622de37f21b7095585acc12846e1a4612bb460052907cf93b"
   },
   "polish": {
     "stage": "polish",
     "profile_id": "target:signalytics-news",
-    "profile_version": "2026-10-16.1+69005fd",
-    "resolved_hash": "sha256:6f40ab9acc0aedf34bce3e701f578fb67a80c925187a3c181b22b079852782e6"
+    "profile_version": "2026-10-16.1+828b56c",
+    "resolved_hash": "sha256:6a2149174ac4a07622de37f21b7095585acc12846e1a4612bb460052907cf93b"
   },
   "review": {
     "stage": "review",
     "profile_id": "target:signalytics-news",
-    "profile_version": "2026-10-16.1+69005fd",
-    "resolved_hash": "sha256:6f40ab9acc0aedf34bce3e701f578fb67a80c925187a3c181b22b079852782e6"
+    "profile_version": "2026-10-16.1+828b56c",
+    "resolved_hash": "sha256:6a2149174ac4a07622de37f21b7095585acc12846e1a4612bb460052907cf93b"
   }
 }

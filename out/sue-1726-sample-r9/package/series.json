@@ -266,16 +266,24 @@
     "number-story": {
       "visual": {
         "x": 0.06,
-        "y": 0.31,
+        "y": 0.27,
         "width": 0.88,
-        "height": 0.54
+        "height": 0.55
       },
       "copy": {
         "x": 0.06,
-        "y": 0.86,
+        "y": 0.83,
         "width": 0.88,
-        "height": 0.07
+        "height": 0.1
       }
+    }
+  },
+  "regions": {
+    "headline": {
+      "x": 0.06,
+      "y": 0.08,
+      "width": 0.88,
+      "height": 0.18
     }
   }
 }
