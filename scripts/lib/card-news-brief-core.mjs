@@ -5,6 +5,14 @@ import { loadPmcPlotBundle, pmcPlotToChartSpec } from './pmc-bundle-binding.mjs'
 
 const substantive = (value) => String(value ?? '').replace(/\s+/gu, '').length;
 const issue = (code, message, card_id = undefined) => ({ code, message, ...(card_id ? { card_id } : {}) });
+const englishMagnitude = /\b(?:billion|million|trillion)\b/iu;
+
+function magnitudeStrings(value, out = []) {
+  if (typeof value === 'string') out.push(value);
+  else if (Array.isArray(value)) for (const item of value) magnitudeStrings(item, out);
+  else if (value && typeof value === 'object') for (const item of Object.values(value)) magnitudeStrings(item, out);
+  return out;
+}
 
 /** Content gate shared by the resolver and carousel renderer. Sidecar facts never enter the card artwork. */
 export function validateCardNewsBrief(series, brief) {
@@ -24,6 +32,17 @@ export function validateCardNewsBrief(series, brief) {
     try { if (new URL(fact.source_url).protocol !== 'https:') throw new Error(); } catch { issues.push(issue('CARD_NEWS_FACT_URL', `fact ${fact?.id ?? '(missing id)'} needs an https source_url`)); }
   }
   const mapped = brief.per_card && typeof brief.per_card === 'object' ? brief.per_card : {};
+  if (series.profiles?.artifact === 'visual/prediction-market-carousel') {
+    for (const frame of series.frames) {
+      const visible = [frame.headline, ...(frame.blocks ?? []).filter((block) => block.kind === 'text').map((block) => block.text)];
+      for (const block of frame.blocks ?? []) {
+        if (block.kind !== 'chart') continue;
+        try { visible.push(...magnitudeStrings(JSON.parse(readFileSync(resolve(brief._series_dir ?? process.cwd(), block.ref), 'utf8')))); }
+        catch { /* The chart validator reports missing or invalid chart bytes separately. */ }
+      }
+      if (visible.some((value) => englishMagnitude.test(String(value ?? '')))) issues.push(issue('CARD_NEWS_KO_MAGNITUDE', 'Korean visible text must not use English magnitude words (billion, million, trillion)', frame.id));
+    }
+  }
   if (series.profiles?.artifact === 'visual/prediction-market-carousel') {
     const trendFrames = series.frames.filter((frame) => (frame.blocks ?? []).some((block) => block.kind === 'chart' && /(?:trend|history|pmc)/i.test(`${block.id} ${block.ref}`)));
     if (trendFrames.length) {
@@ -137,10 +156,15 @@ export function validateCardNewsChartFacts(series, brief, baseDir = process.cwd(
       if (eligibility.source_type === 'market_pmc') {
         try {
           const bundle = loadPmcPlotBundle(resolve(baseDir, series.source.ref));
-          const expected = pmcPlotToChartSpec(bundle);
-          const actualSeries = spec.series?.map((item) => ({ name: item.name, claim: item.claim, points: item.points }));
-          const expectedSeries = expected.series.map((item) => ({ name: item.name, claim: item.claim, points: item.points }));
-          if (spec.type !== 'line' || JSON.stringify(actualSeries) !== JSON.stringify(expectedSeries)) add(frame, 'trend chart points and labels must match the selected verified PMC bundle');
+          if (spec.type === 'number_visual' && spec.layout === 'trend-area') {
+            const expected = bundle.plot.points.filter((point) => point.value !== null).map((point) => ({ observed_at: point.observed_at, value: Number((point.value * 100).toPrecision(12)) }));
+            if (JSON.stringify(spec.points) !== JSON.stringify(expected) || spec.start !== expected[0]?.value || spec.end !== expected.at(-1)?.value) add(frame, 'trend-area points and endpoints must match non-missing observations in the selected verified PMC bundle');
+          } else {
+            const expected = pmcPlotToChartSpec(bundle);
+            const actualSeries = spec.series?.map((item) => ({ name: item.name, claim: item.claim, points: item.points }));
+            const expectedSeries = expected.series.map((item) => ({ name: item.name, claim: item.claim, points: item.points }));
+            if (spec.type !== 'line' || JSON.stringify(actualSeries) !== JSON.stringify(expectedSeries)) add(frame, 'trend chart points and labels must match the selected verified PMC bundle');
+          }
         } catch { add(frame, 'trend chart cannot be bound to the selected verified PMC bundle'); }
       } else if (eligibility.source_type === 'official_statistics') {
         const observations = eligibility.observations ?? [];
@@ -168,6 +192,12 @@ export function validateCardNewsChartFacts(series, brief, baseDir = process.cwd(
     } else if (spec.layout === 'trend-area') {
       values = [spec.start, spec.end, ...(spec.points ?? []).map((point) => point.value)];
       labels = [spec.start_label, spec.end_label, spec.start_date, spec.end_date, spec.delta_label];
+      if (brief.trend_eligibility?.source_type === 'market_pmc') {
+        try {
+          const bundle = loadPmcPlotBundle(resolve(baseDir, series.source.ref));
+          allowed = new Set([...allowed, ...bundle.plot.points.filter((point) => point.value !== null).map((point) => Number((point.value * 100).toPrecision(12)))]);
+        } catch { /* The PMC binding branch above emits the diagnostic. */ }
+      }
     } else if (spec.layout === 'dual-metric') {
       values = (spec.items ?? []).map((item) => item.value);
       labels = (spec.items ?? []).flatMap((item) => [item.label, item.value_label]);

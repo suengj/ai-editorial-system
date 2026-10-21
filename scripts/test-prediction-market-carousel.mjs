@@ -8,7 +8,7 @@ import { CARD_NEWS_TYPE_TOKENS } from './lib/typography-core.mjs';
 import { checkTrendCardEligibility } from './lib/numeric-visual-core.mjs';
 import { loadPmcPlotBundle } from './lib/pmc-bundle-binding.mjs';
 import { pmcPlotToChartSpec } from './lib/pmc-bundle-binding.mjs';
-import { validateCardNewsChartFacts } from './lib/card-news-brief-core.mjs';
+import { validateCardNewsBrief, validateCardNewsChartFacts } from './lib/card-news-brief-core.mjs';
 
 const read = (path) => JSON.parse(readFileSync(path, 'utf8'));
 const manifest = read('editorial/entry-manifest.json');
@@ -144,6 +144,9 @@ const brief = {
     claim: '가격 흐름이 바뀌었다.', evidence: frameFactIds[i].map((id) => factValues[factIds.indexOf(id)]).join('; '), evidence_fact_ids: frameFactIds[i], visual_fact_ids: frameFactIds[i], takeaway: '다음 회의를 주시한다.'
   }]))
 };
+const KoreanMagnitudeSeries = structuredClone(numericReady);
+KoreanMagnitudeSeries.frames[0].blocks.find((block) => block.kind === 'text').text = '유입액은 USD 129.4 billion입니다.';
+assert(validateCardNewsBrief(KoreanMagnitudeSeries, brief).issues.some((item) => item.code === 'CARD_NEWS_KO_MAGNITUDE'), 'Korean PM card visible text rejects English magnitude words');
 assert.throws(() => planCarousel(numericReady, undefined, brief), (error) => error.code === 'CARD_NEWS_BRIEF_INVALID' && /CARD_NEWS_HERO_NOT_CANONICAL/.test(error.message), '7% or 99% hero cannot pass against differently bound sourced evidence');
 const heroValues = { hook: '15%', trend: '48.5%', why: '0.6%', 'korea-impact': '4.00%', 'watch-next': '27–28' };
 const bodyValues = { hook: '81%', trend: '31.2%', why: '81%', 'korea-impact': '3.00%', 'watch-next': '10월 27일 시작, 28일 종료' };
