@@ -213,7 +213,8 @@ export function compileBusinessMagazine(packet, evidence, { sourceRef, sourceSha
     per_card: Object.fromEntries(packet.frames.map(frame => {
       const evidenceFactIds = frame.claim_ids.filter(id => claims.get(id)?.kind === 'fact');
       const evidence = evidenceFactIds.map(id => claims.get(id).text).join('; ');
-      return [frame.role, { claim: frame.headline, evidence, evidence_fact_ids: evidenceFactIds, takeaway: frame.takeaway }];
+      const claim = frame.headline.trim().length >= 8 ? frame.headline : frame.takeaway;
+      return [frame.role, { claim, evidence, evidence_fact_ids: evidenceFactIds, takeaway: frame.takeaway }];
     })),
   };
   const compatibility = planCarousel(series, undefined, brief);
