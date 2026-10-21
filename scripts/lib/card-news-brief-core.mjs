@@ -25,20 +25,39 @@ export function validateCardNewsBrief(series, brief) {
   }
   const mapped = brief.per_card && typeof brief.per_card === 'object' ? brief.per_card : {};
   if (series.profiles?.artifact === 'visual/prediction-market-carousel') {
-    const trendFrames = series.frames.filter((frame) => frame.function === 'show_evidence' || (frame.blocks ?? []).some((block) => block.kind === 'chart' && /(?:trend|history|pmc)/i.test(`${block.id} ${block.ref}`)));
+    const trendFrames = series.frames.filter((frame) => (frame.blocks ?? []).some((block) => block.kind === 'chart' && /(?:trend|history|pmc)/i.test(`${block.id} ${block.ref}`)));
     if (trendFrames.length) {
       const trendIssueAdd = (problem, cardId) => issues.push(issue(problem.code, problem.message, cardId));
       for (const frame of trendFrames) {
         const eligibility = brief.trend_eligibility;
-        for (const problem of checkTrendCardEligibility(eligibility)) trendIssueAdd(problem, frame.id);
-        try {
-          const bundle = loadPmcPlotBundle(resolve(brief._series_dir ?? process.cwd(), series.source?.ref ?? ''));
-          const pmc = bundle.plot.points.map((point) => ({ t: point.observed_at, p: Number((point.value * 100).toPrecision(12)) }));
-          const supplied = eligibility?.observations ?? [];
-          if (JSON.stringify(supplied) !== JSON.stringify(pmc)) trendIssueAdd({ code: 'TREND_PMC_BINDING', message: 'trend history must exactly match ordered observations in the selected verified PMC bundle' }, frame.id);
-        } catch {
-          // The render/resolve entry supplies the plan directory for this check. Direct planning cannot silently certify an unbound history.
-          trendIssueAdd({ code: 'TREND_PMC_BINDING', message: 'a verified selected PMC bundle is required for trend eligibility' }, frame.id);
+        if (eligibility?.source_type === 'market_pmc') {
+          for (const problem of checkTrendCardEligibility(eligibility)) trendIssueAdd(problem, frame.id);
+          try {
+            const bundle = loadPmcPlotBundle(resolve(brief._series_dir ?? process.cwd(), series.source?.ref ?? ''));
+            const pmc = bundle.plot.points.map((point) => ({ t: point.observed_at, p: Number((point.value * 100).toPrecision(12)) }));
+            const supplied = eligibility?.observations ?? [];
+            if (JSON.stringify(supplied) !== JSON.stringify(pmc)) trendIssueAdd({ code: 'TREND_PMC_BINDING', message: 'trend history must exactly match ordered observations in the selected verified PMC bundle' }, frame.id);
+          } catch {
+            trendIssueAdd({ code: 'TREND_PMC_BINDING', message: 'a verified selected PMC bundle is required for market trend eligibility' }, frame.id);
+          }
+        } else if (eligibility?.source_type === 'official_statistics') {
+          try {
+            loadPmcPlotBundle(resolve(brief._series_dir ?? process.cwd(), series.source?.ref ?? ''));
+            trendIssueAdd({ code: 'TREND_SOURCE_TYPE_MISMATCH', message: 'a verified PMC bundle must use market_pmc eligibility' }, frame.id);
+          } catch { /* a non-PMC source may use official-statistics eligibility */ }
+          if (!String(eligibility.source_name ?? '').trim() || !String(eligibility.source_url ?? '').startsWith('https://')) trendIssueAdd({ code: 'TREND_SOURCE_REQUIRED', message: 'official statistics trend needs a named HTTPS source' }, frame.id);
+          if (!String(eligibility.observation_period ?? '').trim()) trendIssueAdd({ code: 'TREND_PERIOD_REQUIRED', message: 'official statistics trend needs an observation period' }, frame.id);
+          if (eligibility.comparable !== true) trendIssueAdd({ code: 'TREND_COMPARABILITY_REQUIRED', message: 'official statistics trend needs an explicit comparability check' }, frame.id);
+          const observations = eligibility.observations ?? [];
+          if (observations.length < 2) trendIssueAdd({ code: 'TREND_HISTORY_REQUIRED', message: 'trend cards require at least two history points' }, frame.id);
+          if (observations.length >= 2) {
+            const valid = observations.every((point, index) => Number.isFinite(Date.parse(point?.t)) && Number.isFinite(point?.p) && point.p >= 0 && point.p <= 100 && (index === 0 || Date.parse(point.t) > Date.parse(observations[index - 1]?.t)));
+            if (!valid) trendIssueAdd({ code: 'TREND_HISTORY_INVALID', message: 'history must contain finite ordered observations' }, frame.id);
+            const actual = observations.at(-1).p > observations[0].p ? 'up' : observations.at(-1).p < observations[0].p ? 'down' : 'flat';
+            if (eligibility.direction !== actual || actual === 'flat') trendIssueAdd({ code: 'TREND_DIRECTION', message: 'trend direction must match the first and last observations' }, frame.id);
+          }
+        } else {
+          trendIssueAdd({ code: 'TREND_SOURCE_TYPE_REQUIRED', message: 'trend eligibility must identify a market_pmc or official_statistics source' }, frame.id);
         }
       }
     }

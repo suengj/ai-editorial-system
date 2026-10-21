@@ -18,6 +18,18 @@ const brief = {
   per_card: Object.fromEntries(frames.map((f, i) => [f.id, { claim: '가격은 이벤트 확률의 시장 표시다.', evidence: `2026-10-${14 + i} 기준으로 0.${i + 1} 수치가 확인된다.`, evidence_fact_ids: [`fact-${i + 1}`], takeaway: '가격과 실제 사건을 구분해서 읽는다.' }])),
 };
 assert.equal(validateCardNewsBrief(series, brief).ok, true);
+const statsSeries = structuredClone(series);
+statsSeries.profiles = { artifact: 'visual/prediction-market-carousel' };
+statsSeries.source = { ref: 'stats/history.csv', scope: 'source_bound' };
+statsSeries.frames[0].blocks.push({ id: 'trend-chart', kind: 'chart', ref: 'stats/history.csv' });
+const statsBrief = structuredClone(brief);
+for (const card of Object.values(statsBrief.per_card)) card.visual_fact_ids = [...card.evidence_fact_ids];
+statsBrief.trend_eligibility = { source_type: 'official_statistics', source_name: 'National Statistics Office', source_url: 'https://stats.example.gov/series', observation_period: '2020–2025 annual observations', comparable: true, observations: [{ t: '2020-01-01T00:00:00Z', p: 20 }, { t: '2025-01-01T00:00:00Z', p: 40 }], direction: 'up' };
+assert.equal(validateCardNewsBrief(statsSeries, statsBrief).ok, true, 'official statistics use source, period, and comparability checks without market liquidity/freshness');
+const statsNoComparable = structuredClone(statsBrief); statsNoComparable.trend_eligibility.comparable = false;
+assert(validateCardNewsBrief(statsSeries, statsNoComparable).issues.some((x) => x.code === 'TREND_COMPARABILITY_REQUIRED'));
+const statsNoSource = structuredClone(statsBrief); statsNoSource.trend_eligibility.source_url = '';
+assert(validateCardNewsBrief(statsSeries, statsNoSource).issues.some((x) => x.code === 'TREND_SOURCE_REQUIRED'));
 const fail = (mutate, code) => { const s = structuredClone(series), b = structuredClone(brief); mutate(s, b); assert(validateCardNewsBrief(s, b).issues.some((x) => x.code === code), code); };
 fail((s, b) => { delete b.per_card['card-1']; }, 'CARD_NEWS_CARD_EVIDENCE');
 fail((s, b) => { s.frames[0].blocks[0].text = '둘째 줄'; }, 'CARD_NEWS_BODY_TOO_THIN');

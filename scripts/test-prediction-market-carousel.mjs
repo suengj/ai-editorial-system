@@ -136,7 +136,7 @@ const brief = {
   schema_version: '1.0.0', reader_question: '시장 가격은 어떤 방향으로 움직였나?',
   angle: '가격의 변화는 회의 전 기대와 국내 금융 여건을 함께 움직인다.',
   so_what: '독자는 시장 가격과 국내 환율 및 대출금리의 연결을 읽을 수 있다.',
-  trend_eligibility: { volume_24h: 10, updated_at: historyUpdated, checked_at: historyChecked, observations: plotPoints, direction: plotPoints.at(-1).p > plotPoints[0].p ? 'up' : 'down' },
+  trend_eligibility: { source_type: 'market_pmc', volume_24h: 10, updated_at: historyUpdated, checked_at: historyChecked, observations: plotPoints, direction: plotPoints.at(-1).p > plotPoints[0].p ? 'up' : 'down' },
   facts: factIds.map((id, i) => ({ id, value: factValues[i], date: '2026-10-21', source_url: `https://example.com/${id}`, source_name: 'Source' })),
   per_card: Object.fromEntries(numericReady.frames.map((frame, i) => [frame.id, {
     claim: '가격 흐름이 바뀌었다.', evidence: frameFactIds[i].map((id) => factValues[factIds.indexOf(id)]).join('; '), evidence_fact_ids: frameFactIds[i], visual_fact_ids: frameFactIds[i], takeaway: '다음 회의를 주시한다.'
