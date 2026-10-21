@@ -233,6 +233,7 @@ await test('additive layouts pass existing carousel region and invariant validat
   assert.equal(heroLayers[0].slot.x, 0);
   assert.equal(heroLayers[0].slot.width, 1);
   const safeBands = catalog.layout_effects[carousel.frames[0].layout]?.solid_bands ?? [];
+  assert(safeBands.length > 0, 'R4 text layers require an explicit bounded contrast scrim');
   assert(safeBands.every(band => heroLayers.some(layer => layer.kind === 'solid' && layer.id === band.id)));
   assert(heroLayers.find(l => l.id === 'source').slot.y >= 0.88);
   assert(heroLayers.find(l => l.id === 'pagination').slot.y >= 0.88);

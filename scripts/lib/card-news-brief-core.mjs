@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { checkTrendCardEligibility } from './numeric-visual-core.mjs';
+import { loadPmcPlotBundle, pmcPlotToChartSpec } from './pmc-bundle-binding.mjs';
 
 const substantive = (value) => String(value ?? '').replace(/\s+/gu, '').length;
 const issue = (code, message, card_id = undefined) => ({ code, message, ...(card_id ? { card_id } : {}) });
@@ -23,9 +24,24 @@ export function validateCardNewsBrief(series, brief) {
     try { if (new URL(fact.source_url).protocol !== 'https:') throw new Error(); } catch { issues.push(issue('CARD_NEWS_FACT_URL', `fact ${fact?.id ?? '(missing id)'} needs an https source_url`)); }
   }
   const mapped = brief.per_card && typeof brief.per_card === 'object' ? brief.per_card : {};
-  if (series.numeric_profile === true && series.frames.some((frame) => frame.id === 'trend')) {
-    const trendIssues = checkTrendCardEligibility(brief.trend_eligibility);
-    for (const trendIssue of trendIssues) issues.push(issue(trendIssue.code, trendIssue.message, 'trend'));
+  if (series.profiles?.artifact === 'visual/prediction-market-carousel') {
+    const trendFrames = series.frames.filter((frame) => frame.function === 'show_evidence' || (frame.blocks ?? []).some((block) => block.kind === 'chart' && /(?:trend|history|pmc)/i.test(`${block.id} ${block.ref}`)));
+    if (trendFrames.length) {
+      const trendIssueAdd = (problem, cardId) => issues.push(issue(problem.code, problem.message, cardId));
+      for (const frame of trendFrames) {
+        const eligibility = brief.trend_eligibility;
+        for (const problem of checkTrendCardEligibility(eligibility)) trendIssueAdd(problem, frame.id);
+        try {
+          const bundle = loadPmcPlotBundle(resolve(brief._series_dir ?? process.cwd(), series.source?.ref ?? ''));
+          const pmc = bundle.plot.points.map((point) => ({ t: point.observed_at, p: Number((point.value * 100).toPrecision(12)) }));
+          const supplied = eligibility?.observations ?? [];
+          if (JSON.stringify(supplied) !== JSON.stringify(pmc)) trendIssueAdd({ code: 'TREND_PMC_BINDING', message: 'trend history must exactly match ordered observations in the selected verified PMC bundle' }, frame.id);
+        } catch {
+          // The render/resolve entry supplies the plan directory for this check. Direct planning cannot silently certify an unbound history.
+          trendIssueAdd({ code: 'TREND_PMC_BINDING', message: 'a verified selected PMC bundle is required for trend eligibility' }, frame.id);
+        }
+      }
+    }
   }
   const usedFacts = new Set();
   for (const frame of series.frames) {
@@ -51,6 +67,16 @@ export function validateCardNewsBrief(series, brief) {
       const visibleCopy = [frame.headline, ...(frame.blocks ?? []).filter((b) => b?.kind === 'text').map((b) => b.text ?? '')].join('\n');
       const visibleNumbers = visibleCopy.match(/\d+(?:[.,]\d+)?/gu) ?? [];
       if (!evidenceNumbers.some((n) => visibleNumbers.includes(n))) issues.push(issue('CARD_NEWS_EVIDENCE_NOT_VISIBLE', 'at least one concrete number or date from the evidence must appear in visible card copy', frame.id));
+      const boundFactIds = new Set([...(card.evidence_fact_ids ?? []), ...(card.visual_fact_ids ?? [])]);
+      const canonicalNumbers = facts.filter((fact) => boundFactIds.has(fact.id)).flatMap((fact) => String(fact.value ?? '').match(/\d+(?:[.,]\d+)?\s*[%％]?/gu) ?? []);
+      const heroNumbers = String(hero?.text ?? '').match(/\d+(?:[.,]\d+)?\s*[%％]?/gu) ?? [];
+      if (heroNumbers.some((n) => !canonicalNumbers.some((value) => value.replace(/\s/gu, '') === n.replace(/\s/gu, '')))) issues.push(issue('CARD_NEWS_HERO_NOT_CANONICAL', 'hero values must exactly match a canonical brief fact value', frame.id));
+      if (series.profiles?.artifact === 'visual/prediction-market-carousel') {
+        if (!Array.isArray(card.visual_fact_ids) || !card.visual_fact_ids.length || card.visual_fact_ids.some((id) => !factIds.has(id))) issues.push(issue('CARD_NEWS_VISUAL_FACT_BINDING', 'prediction-market cards must bind every data visual to canonical visual_fact_ids', frame.id));
+        const canonicalDigits = new Set(facts.filter((fact) => boundFactIds.has(fact.id)).flatMap((fact) => `${fact.value ?? ''} ${fact.date ?? ''}`.match(/\d+(?:[.,]\d+)?/gu) ?? []).map((n) => n.replace(/,/g, '')));
+        const visibleDigits = visibleCopy.match(/\d+(?:[.,]\d+)?/gu) ?? [];
+        if (visibleDigits.some((n) => !canonicalDigits.has(n.replace(/,/g, '')))) issues.push(issue('CARD_NEWS_VISIBLE_NUMBER_NOT_CANONICAL', 'every visible number must match a fact bound to this card', frame.id));
+      }
     }
   }
   if (usedFacts.size < 6) issues.push(issue('CARD_NEWS_FACTS_USED', `at least six distinct brief facts must be used across the series (got ${usedFacts.size})`));
@@ -68,6 +94,59 @@ export function validateCardNewsContentQa(contentQa, series=null) {
   return { ok: issues.length === 0, issues };
 }
 
+/** Confirm that numeric chart data and number-bearing labels belong to each card's cited facts. */
+export function validateCardNewsChartFacts(series, brief, baseDir = process.cwd()) {
+  const issues = [];
+  if (series.profiles?.artifact !== 'visual/prediction-market-carousel') return { ok: true, issues };
+  const facts = new Map((brief.facts ?? []).map((fact) => [fact.id, fact]));
+  const nums = (value) => String(value ?? '').match(/[-+−]?\d+(?:[.,]\d+)?/gu)?.map((n) => Number(n.replace(/,/g, '').replace('−', '-'))) ?? [];
+  const add = (frame, message) => issues.push(issue('CARD_NEWS_CHART_NOT_CANONICAL', message, frame.id));
+  for (const frame of series.frames) for (const block of frame.blocks ?? []) {
+    if (block.kind !== 'chart') continue;
+    const card = brief.per_card?.[frame.id] ?? {};
+    const ids = [...(card.visual_fact_ids ?? [])];
+    const allowed = new Set(ids.flatMap((id) => {
+      const fact = facts.get(id);
+      return fact ? nums(`${fact.value ?? ''} ${fact.date ?? ''}`) : [];
+    }));
+    let spec;
+    try { spec = JSON.parse(readFileSync(resolve(baseDir, block.ref), 'utf8')); }
+    catch { add(frame, `data visual bytes are missing or invalid: ${block.ref}`); continue; }
+    if (frame.function === 'show_evidence') {
+      try {
+        const bundle = loadPmcPlotBundle(resolve(baseDir, series.source.ref));
+        const expected = pmcPlotToChartSpec(bundle);
+        const actualSeries = spec.series?.map((series) => ({ name: series.name, claim: series.claim, points: series.points }));
+        const expectedSeries = expected.series.map((series) => ({ name: series.name, claim: series.claim, points: series.points }));
+        if (spec.type !== 'line' || JSON.stringify(actualSeries) !== JSON.stringify(expectedSeries)) add(frame, 'trend chart points and labels must match the selected verified PMC bundle');
+      } catch { add(frame, 'trend chart cannot be bound to the selected verified PMC bundle'); }
+      continue;
+    }
+    if (spec.type !== 'number_visual') continue;
+    let values = [], labels = [];
+    if (spec.layout === 'comparison-bars') {
+      values = (spec.items ?? []).map((item) => item.value);
+      labels = (spec.items ?? []).flatMap((item) => [item.label, item.value_label]);
+    } else if (spec.layout === 'dot-grid') {
+      values = [spec.filled]; labels = [spec.value_label, spec.caption?.replace(/\b100\b/gu, '')];
+    } else if (spec.layout === 'trend-area') {
+      values = [spec.start, spec.end, ...(spec.points ?? []).map((point) => point.value)];
+      labels = [spec.start_label, spec.end_label, spec.start_date, spec.end_date, spec.delta_label];
+    } else if (spec.layout === 'dual-metric') {
+      values = (spec.items ?? []).map((item) => item.value);
+      labels = (spec.items ?? []).flatMap((item) => [item.label, item.value_label]);
+    } else if (spec.layout === 'rate-gap-ratio') {
+      values = [...(spec.rates ?? []).map((rate) => rate.value), spec.ratio?.outflow, spec.ratio?.inflow];
+      labels = [...(spec.rates ?? []).map((rate) => rate.label), spec.ratio?.outflow_label, spec.ratio?.inflow_label];
+    } else if (spec.layout === 'scenario-split') {
+      labels = [spec.date, ...(spec.scenarios ?? []).flatMap((scenario) => [scenario.label, ...(scenario.detail_lines ?? [])])];
+    }
+    if (values.some((value) => !Number.isFinite(value) || !allowed.has(value))) add(frame, 'chart data values must match numbers in the card visual_fact_ids');
+    if (labels.flatMap(nums).some((value) => !allowed.has(value))) add(frame, 'number-bearing chart labels must match the card visual_fact_ids');
+  }
+  return { ok: issues.length === 0, issues };
+}
+
 export function loadAndValidateCardNewsBrief(series, seriesPath) {
   if (series.content_kind !== 'card-news') return { ok: true, applies: false, issues: [] };
   const briefPath = resolve(seriesPath ? resolve(seriesPath, '..') : process.cwd(), series.brief_file ?? 'brief.json');
@@ -77,7 +156,9 @@ export function loadAndValidateCardNewsBrief(series, seriesPath) {
   const qaPath = resolve(seriesPath ? resolve(seriesPath, '..') : process.cwd(), 'content-qa.json');
   try { contentQa = JSON.parse(readFileSync(qaPath, 'utf8')); }
   catch { return { ok: false, applies: true, brief_path: briefPath, content_qa_path: qaPath, issues: [issue('CARD_NEWS_CONTENT_QA_REQUIRED', `required content-qa sidecar is missing or invalid: ${qaPath}`)] }; }
+  brief._series_dir = resolve(seriesPath ? resolve(seriesPath, '..') : process.cwd());
   const briefResult = validateCardNewsBrief(series, brief);
+  const chartResult = validateCardNewsChartFacts(series, brief, brief._series_dir);
   const qaResult = validateCardNewsContentQa(contentQa, series);
-  return { ok: briefResult.ok && qaResult.ok, issues: [...briefResult.issues, ...qaResult.issues], applies: true, brief_path: briefPath, content_qa_path: qaPath, brief, content_qa: contentQa, fact_count: briefResult.fact_count, distinct_facts_used: briefResult.distinct_facts_used };
+  return { ok: briefResult.ok && chartResult.ok && qaResult.ok, issues: [...briefResult.issues, ...chartResult.issues, ...qaResult.issues], applies: true, brief_path: briefPath, content_qa_path: qaPath, brief, content_qa: contentQa, fact_count: briefResult.fact_count, distinct_facts_used: briefResult.distinct_facts_used };
 }

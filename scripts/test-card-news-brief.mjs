@@ -1,13 +1,15 @@
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
-import { validateCardNewsBrief, validateCardNewsContentQa } from './lib/card-news-brief-core.mjs';
+import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { resolve } from 'node:path';
+import { validateCardNewsBrief, validateCardNewsChartFacts, validateCardNewsContentQa } from './lib/card-news-brief-core.mjs';
 import { planCarousel } from './lib/carousel-core.mjs';
 
 const frames = Array.from({ length: 6 }, (_, i) => ({
   id: `card-${i + 1}`, headline: `헤드라인 ${i + 1}`,
   blocks: [{ id: 'copy', kind: 'text', region: 'copy', text: `첫째 근거 문장에 2026년 10월 ${i + 14}일 수치를 담습니다.\n둘째 문장에서 독자에게 작동 원리를 구체적으로 설명합니다.` }],
 }));
-const facts = Array.from({ length: 6 }, (_, i) => ({ id: `fact-${i + 1}`, value: `확인된 사실의 구체 값 ${i + 1}`, date: `2026-10-${14 + i}`, source_url: `https://example.com/${i + 1}`, source_name: '검증 출처' }));
+const facts = Array.from({ length: 6 }, (_, i) => ({ id: `fact-${i + 1}`, value: `확인된 사실 ${i + 1}: ${i + 1}%`, date: `2026-10-${14 + i}`, source_url: `https://example.com/${i + 1}`, source_name: '검증 출처' }));
 const series = { frames };
 const brief = {
   schema_version: '1.0.0', reader_question: '연준 금리 인상 계약의 가격이 의미하는 바는 무엇인가?',
@@ -21,6 +23,7 @@ fail((s, b) => { delete b.per_card['card-1']; }, 'CARD_NEWS_CARD_EVIDENCE');
 fail((s, b) => { s.frames[0].blocks[0].text = '둘째 줄'; }, 'CARD_NEWS_BODY_TOO_THIN');
 fail((s, b) => { s.frames[0].blocks[0].text = `${'가'.repeat(121)}\n${'나'.repeat(5)}`; }, 'CARD_NEWS_BODY_TOO_LONG');
 fail((s, b) => { b.per_card['card-1'].evidence_fact_ids = ['unknown']; }, 'CARD_NEWS_CARD_EVIDENCE');
+fail((s, b) => { s.frames[0].blocks.unshift({ id: 'hero', kind: 'text', region: 'hero-value', text: '7%', text_role: 'hero' }); b.per_card['card-1'].evidence = '42%'; b.facts[0].value = 'canonical evidence 42%'; }, 'CARD_NEWS_HERO_NOT_CANONICAL');
 fail((s, b) => { b.per_card['card-1'].evidence = 'The sourced value is 2026, but no matching number is printed on this card.'; s.frames[0].blocks[0].text = '첫째 문장은 독자에게 작동 원리를 차분하게 설명합니다.\n둘째 문장은 이해를 돕는 충분한 맥락을 제공합니다.'; }, 'CARD_NEWS_EVIDENCE_NOT_VISIBLE');
 fail((s, b) => { for (const id of Object.keys(b.per_card).slice(1)) b.per_card[id].evidence_fact_ids = ['fact-1']; }, 'CARD_NEWS_FACTS_USED');
 fail((s, b) => { b.facts = b.facts.slice(0, 5); }, 'CARD_NEWS_FACT_COUNT');
@@ -39,4 +42,10 @@ assert.deepEqual(briefSchema.properties.facts.minItems, 6);
 assert.deepEqual(briefSchema.properties.facts.maxItems, 10);
 assert(briefSchema.properties.per_card.additionalProperties.required.includes('evidence_fact_ids'));
 assert(qaSchema.required.includes('one_surprising_fact'));
+const chartDir = mkdtempSync(resolve(tmpdir(), 'aes-card-news-chart-'));
+const chartPath = resolve(chartDir, 'chart.json');
+writeFileSync(chartPath, JSON.stringify({ type:'number_visual', layout:'comparison-bars', items:[{label:'시장',value:7,value_label:'42%'}] }));
+const boundChartSeries = { profiles:{artifact:'visual/prediction-market-carousel'}, frames:[{id:'card-1',blocks:[{kind:'chart',ref:'chart.json'}]}] };
+const boundChartBrief = { facts:[{id:'fact-1',value:'confirmed value 42%',date:'2026-10-21'}], per_card:{'card-1':{visual_fact_ids:['fact-1']}} };
+assert.equal(validateCardNewsChartFacts(boundChartSeries, boundChartBrief, chartDir).ok, false, 'chart data cannot differ from its canonical brief fact');
 console.log('card-news-brief: 16 assertions PASS');

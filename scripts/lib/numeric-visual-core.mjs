@@ -53,6 +53,9 @@ export function checkTrendCardEligibility(input, maxAgeHours = 24) {
   if (observations.length < 2) add('TREND_HISTORY_REQUIRED', 'trend cards require at least two history points');
   if (observations.length >= 2) {
     const first = observations[0], last = observations.at(-1);
+    if (observations.some((point, index) => !Number.isFinite(ts(point?.t)) || !Number.isFinite(point?.p) || point.p < 0 || point.p > 100 || (index > 0 && ts(point.t) <= ts(observations[index - 1]?.t)))) {
+      add('TREND_HISTORY_INVALID', 'history must contain finite 0..100 probabilities in strictly increasing timestamp order');
+    }
     const actual = last.p > first.p ? 'up' : last.p < first.p ? 'down' : 'flat';
     if (!['up', 'down'].includes(actual) || input.direction !== actual) add('TREND_DIRECTION', 'trend direction must match the first and last history points');
   }

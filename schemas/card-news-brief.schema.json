@@ -31,7 +31,7 @@
         "volume_24h": { "type": "number", "exclusiveMinimum": 0 },
         "updated_at": { "type": "string", "format": "date-time" },
         "checked_at": { "type": "string", "format": "date-time" },
-        "observations": { "type": "array", "minItems": 2, "items": { "type": "object", "additionalProperties": false, "required": ["t", "p"], "properties": { "t": { "type": "string", "format": "date-time" }, "p": { "type": "number" } } } },
+        "observations": { "type": "array", "minItems": 2, "items": { "type": "object", "additionalProperties": false, "required": ["t", "p"], "properties": { "t": { "type": "string", "format": "date-time" }, "p": { "type": "number", "minimum": 0, "maximum": 100 } } } },
         "direction": { "enum": ["up", "down", "flat"] }
       }
     },
@@ -44,6 +44,7 @@
           "claim": { "type": "string", "minLength": 8 },
           "evidence": { "type": "string", "minLength": 8 },
           "evidence_fact_ids": { "type": "array", "minItems": 1, "items": { "type": "string" } },
+          "visual_fact_ids": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "type": "string" } },
           "takeaway": { "type": "string", "minLength": 8 }
         }
       }

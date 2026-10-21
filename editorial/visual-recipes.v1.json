@@ -163,7 +163,16 @@
     "hero": {
       "background_regions": [
         "art"
-      ]
+      ],
+      "solid_bands": [
+        { "id": "r4-text-zone-scrim", "x": 0.04, "y": 0.04, "width": 0.92, "height": 0.92, "fill": "theme.background", "gradient": [[0, 0.92], [0.42, 0.84], [0.78, 0.4], [1, 0]] }
+      ],
+      "recurring_regions": {
+        "headline": { "x": 0.06, "y": 0.08, "width": 0.88, "height": 0.22 },
+        "eyebrow": { "x": 0.06, "y": 0.04, "width": 0.44, "height": 0.035 },
+        "source": { "x": 0.06, "y": 0.9, "width": 0.42, "height": 0.03 },
+        "pagination": { "x": 0.8, "y": 0.9, "width": 0.14, "height": 0.03 }
+      }
     },
     "hero-clean": {
       "background_regions": ["art"],

@@ -67,6 +67,10 @@ export function loadVisualRecipes() { return JSON.parse(readFileSync(resolve(ROO
 export function planCarousel(series, catalog=loadVisualRecipes(), contentBrief=null) {
   keys(series, CAROUSEL_CONSTRAINTS.series_fields, 'series');
   need(series.schema_version === CAROUSEL_VERSION && slug(series.series_id), 'SERIES_VERSION', 'v1 and a slug series_id are required');
+  if (series.profiles?.artifact === 'visual/prediction-market-carousel') {
+    need(series.content_kind === 'card-news' && series.numeric_profile === true, 'CARD_NEWS_PROFILE_CONTRACT', 'prediction-market carousel profile requires card-news content and its numeric contract');
+    need(contentBrief, 'CARD_NEWS_BRIEF_REQUIRED', 'the selected prediction-market profile requires its sourced brief');
+  }
   if (series.content_kind === 'card-news') {
     need(contentBrief, 'CARD_NEWS_BRIEF_REQUIRED', 'brief.json is required for every card-news series');
     const briefCheck = validateCardNewsBrief(series, contentBrief);
@@ -82,7 +86,7 @@ export function planCarousel(series, catalog=loadVisualRecipes(), contentBrief=n
   keys(series.source, ['ref','sha256','scope'], 'source');
   need(text(series.source.ref) && ['source_bound','illustrative'].includes(series.source.scope), 'SERIES_SOURCE', 'actual source ref and scope required');
   keys(series.profiles, ['surface','artifact','brand'], 'profiles');
-  need(text(series.profiles.surface) && series.profiles.artifact === 'visual/slide-image', 'SERIES_PROFILE', 'use existing visual/slide-image and a compatible surface');
+  need(text(series.profiles.surface) && ['visual/slide-image','visual/prediction-market-carousel'].includes(series.profiles.artifact), 'SERIES_PROFILE', 'use a registered slide-image or prediction-market-carousel artifact and a compatible surface');
   need(Array.isArray(series.frames), 'SERIES_FRAMES', 'frames array required');
   need(series.visual_style === undefined || obj(series.visual_style), 'SERIES_STYLE', 'visual_style must be an object');
   const hasPhotoAsset = series.frames.some((frame) => Array.isArray(frame?.blocks) && frame.blocks.some((block) => block?.kind === 'image'));
@@ -130,6 +134,7 @@ export function planCarousel(series, catalog=loadVisualRecipes(), contentBrief=n
     const backgroundRegions = effect.background_regions ?? [];
     need(Array.isArray(backgroundRegions) && backgroundRegions.every((id) => Object.hasOwn(layout, id)), 'SERIES_LAYOUT_EFFECT', `${name}: invalid background region`);
     const solidBands = effect.solid_bands ?? [];
+    if (backgroundRegions.length) need(solidBands.length > 0, 'SERIES_TEXT_SAFE_BAND', `${name}: a background behind text requires an explicit solid/scrim safe band`);
     const bandedBackgroundRegions = effect.background_regions ?? [];
     const rec = {...recurring, ...(effect.recurring_regions ?? {})};
     const regionsToCheck = (series.footer_policy ?? 'source_and_pagination') === 'content_only'
@@ -197,8 +202,9 @@ export function planCarousel(series, catalog=loadVisualRecipes(), contentBrief=n
     need(layout, 'SERIES_LAYOUT', String(layoutName));
     need(Array.isArray(frameBlocks) && frameBlocks.length > 0 && frameBlocks.length <= Object.keys(layout).length, 'SERIES_BLOCKS', `${f.id}: one block per region; split independent messages`);
     const textSafeEffect = catalog.layout_effects?.[layoutName] ?? {};
-    if ((textSafeEffect.background_regions ?? []).length && (textSafeEffect.solid_bands ?? []).length) {
+    if ((textSafeEffect.background_regions ?? []).length && frameBlocks.some((block) => block?.kind === 'text')) {
       const bands = textSafeEffect.solid_bands ?? [];
+      need(bands.length > 0, 'SERIES_TEXT_SAFE_BAND', `${layoutName}: text over a background requires a declared solid/scrim safe band`);
       const contains = (outer, inner) => inner && inner.x >= outer.x && inner.y >= outer.y && inner.x + inner.width <= outer.x + outer.width && inner.y + inner.height <= outer.y + outer.height;
       for (const b of frameBlocks) if (b?.kind === 'text') need(bands.some(band => contains(band, layout[b.region])), 'SERIES_TEXT_SAFE_BAND', `${layoutName}.${b.region}: text region must fit inside a declared solid/scrim text-safe band`);
     }
@@ -231,20 +237,28 @@ export function planCarousel(series, catalog=loadVisualRecipes(), contentBrief=n
       if (series.content_kind === 'card-news') {
         const token = CARD_NEWS_TYPE_ROLES[role];
         need(token, 'CARD_NEWS_TYPE_ROLE', `no shared card-news token for ${role}`);
-        return {...style, ...token};
+        return {...style, ...token, min_contrast: 4.5};
       }
       return style;
     };
     const addText = (id,value,slot,role,source_ref='request') => layers.push({id,kind:'text',text:value,source_ref,slot,...sty(role)});
     if (series.series_label) addText('series-label',series.series_label,rec.eyebrow,'eyebrow');
-    addText('headline',f.headline,rec.headline,'headline');
+    const margin = series.content_kind === 'card-news' ? CARD_NEWS_TYPE_TOKENS.margin_px / CARD_NEWS_TYPE_TOKENS.canvas_width : null;
+    const tokenSlot = (slot) => {
+      if (margin === null) return slot;
+      const right = slot.x + slot.width;
+      if (slot.x < margin + 0.002 && right > 1 - margin - 0.002) return { ...slot, x: margin, width: 1 - margin * 2 };
+      if (slot.x < margin + 0.002) return { ...slot, x: margin, width: right - margin };
+      return slot;
+    };
+    addText('headline',f.headline,tokenSlot(rec.headline),'headline');
     if (f.headline_emphasis!==undefined) { need(Array.isArray(f.headline_emphasis)&&f.headline_emphasis.every((e)=>obj(e)&&text(e.match)&&f.headline.includes(e.match)),'SERIES_TEXT',`${f.id}: headline_emphasis spans must be substrings of the headline`); layers.at(-1).emphasis=structuredClone(f.headline_emphasis); }
     for (const b of frameBlocks) {
       keys(b,CAROUSEL_CONSTRAINTS.block_fields,'block');
       need(slug(b.id) && !['series-label','headline','source','pagination'].includes(b.id) && !layers.some((l)=>l.id===b.id),'SERIES_LAYER_ID',String(b.id));
       need(layout[b.region] && !occupied.has(b.region),'SERIES_REGION',`unknown or duplicate region ${b.region}`); occupied.add(b.region);
       need(CAROUSEL_CONSTRAINTS.block_kinds.includes(b.kind),'SERIES_LAYER',String(b.kind));
-      const {region,text_role,...layer}=b; layer.slot=layout[region];
+      const {region,text_role,...layer}=b; layer.slot=tokenSlot(layout[region]);
       if (b.kind==='text') {
         keys(b,['id','region','kind','text','text_role','source_ref'],'text block');
         need(text(b.text) && text(b.source_ref),'SERIES_TEXT',b.id);

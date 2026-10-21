@@ -84,6 +84,17 @@ await test('R7 pending illustration skips discarded photo protected-crop validat
 await test('cutout requires actual alpha', async () => { const p = clone(photo); p.layers[0].mode = 'cutout_composite'; await reject(p, 'CUTOUT_REQUIRED'); p.layers[0].ref = 'cutout.png'; assert.equal((await compile(p)).layers[0].mode, 'cutout_composite'); });
 await test('inpainting is not falsely claimed', async () => { const p = clone(photo); p.layers[0].mode = 'generative_edit'; await reject(p, 'EDIT_REQUIRED'); });
 await test('actual Korean card PNG and measured wrap', async () => { const p = await run(base, 'card'); assert.equal(p.status, 'RENDERED_NEEDS_REVIEW'); const img = decodePng(readFileSync(resolve(dir, 'card/image.png'))); assert.equal(img.width, 1080); assert.equal(img.height, 1080); assert.equal(p.receipt.text[0].lines.length, 2); assert.equal(p.receipt.publication_authorized, false); });
+await test('bounded text-zone scrim passes an actual contrast read-back', async () => {
+  const p = clone(photo);
+  p.layers = [
+    { id:'photo',kind:'image',ref:'source.png',rights_note:'synthetic test pixels',slot:{x:0,y:0,width:1,height:1} },
+    { id:'text-zone',kind:'solid',color:'#F7F5F0',slot:{x:0.04,y:0.04,width:0.52,height:0.86} },
+    { id:'headline',kind:'text',text:'Evidence is clear',source_ref:'source.md',slot:{x:0.06,y:0.08,width:0.46,height:0.22},font_size:64,weight:600,min_contrast:4.5 },
+  ];
+  const result = await run(p,'bounded-text-scrim');
+  assert.equal(result.receipt.checks.contrast,'PASS');
+  assert(result.receipt.checks.contrast_detail.some((entry) => entry.id === 'headline' && entry.ratio >= 4.5));
+});
 await test('watermark OFF is byte-identical clean master', async () => { assert.deepEqual(readFileSync(resolve(dir, 'card/master.png')), readFileSync(resolve(dir, 'card/image.png'))); });
 await test('text overflow fails without truncating or leaving PNG', async () => { const p = clone(base); p.layers[0].text = '정보를 삭제해서는 안 됩니다. '.repeat(12); await assert.rejects(() => run(p, 'overflow'), /TEXT_OVERFLOW/); assert.equal(existsSync(resolve(dir, 'overflow/image.png')), false); });
 await test('exact image slot preserves unscaled source pixels', async () => { const p = await run(photo, 'photo'); const img = decodePng(readFileSync(resolve(dir, 'photo/image.png'))); const raw = decodePng(source); const b = p.layers[0].pixel_slot; /* rsvg-convert writes opaque 3-channel PNG, ImageMagick PNG32 writes 4: compare RGB at each file's own stride */ for (let y = 0; y < 200; y++) for (let x = 0; x < 320; x++) assert.deepEqual(img.pixels.subarray(((b.y + y) * img.width + b.x + x) * img.channels, ((b.y + y) * img.width + b.x + x) * img.channels + 3), raw.pixels.subarray((y * 320 + x) * raw.channels, (y * 320 + x) * raw.channels + 3)); assert.equal(sha256(readFileSync(resolve(dir, 'source.png'))), sha256(source)); });
@@ -121,30 +132,45 @@ await test('premium number visuals render bound values, grid, gradient area and 
     { type:'number_visual', layout:'rate-gap-ratio', title:'금리와 흐름', source_note:'brief', rates:[{label:'미국',value:4},{label:'한국',value:3}],ratio:{outflow:129.4,inflow:50.4,outflow_label:'해외 129.4',inflow_label:'유입 50.4',caption:'USD bn'} },
     { type:'number_visual', layout:'scenario-split', title:'회의 시나리오', source_note:'brief', date:'10.28',scenarios:[{label:'동결'},{label:'인상'}] },
   ];
+  assert.throws(() => renderChartPanel({ ...specs[1], filled: 1, value_label:'99% · 99¢' }, { width: 936, height: 520, theme }), /dot-grid label must match filled dots/);
+  assert.throws(() => renderChartPanel({ ...specs[0], items: [{label:'10월',value:7,value_label:'42%'},{label:'12월',value:81,value_label:'81%'}] }, { width:936,height:520,theme }), /comparison-bars label must equal its plotted value/);
+  assert.throws(() => renderChartPanel({ ...specs[2], start_label:'7%', end_label:'81%' }, { width:936,height:520,theme }), /endpoint labels must match/);
+  assert.throws(() => renderChartPanel({ ...specs[2], points: [{ observed_at:'2026-10-20',value:90 },{ observed_at:'2026-10-19',value:80},{ observed_at:'2026-10-21',value:81}] }, { width: 936, height: 520, theme }), /finite ordered sourced observations/);
   const results = specs.map((spec) => renderChartPanel(spec,{width:950,height:648,theme}));
+  for (const result of results) assert([...result.svg.matchAll(/font-size="([0-9.]+)"/g)].every((match) => [34,36,110,150].includes(Number(match[1]))), 'numeric SVG text uses only shared token typography');
+  const ignoredLegacyType = renderChartPanel({ ...specs[0], typography:{hero_size:99,label_weight:500} }, { width:936,height:520,theme });
+  assert.match(ignoredLegacyType.svg,/font-size="150\.00"/,'legacy numeric style hints cannot override the fixed token scale');
   assert.equal(results[0].displayed.map(x=>x.value).join(','),'15,81');
   const fullScaleBars=renderChartPanel({...specs[0],items:[{label:'A',value:100,value_label:'100%'},{label:'B',value:0,value_label:'0%'}]},{width:950,height:648,theme});
   assert.match(fullScaleBars.svg,/text-anchor="end"/);
   assert.equal(results[1].displayed[0].filled,81);
+  assert.match(results[1].svg,/font-size="110\.00" font-weight="700"[^>]*>81% · 81센트/,'dot-grid headline uses the shared secondary token and Korean unit spelling');
   assert.match(results[2].svg,/linearGradient/);
   assert.match(results[2].svg,/ C /);
   assert.deepEqual(results[2].displayed[0],{start:90,start_label:'90%',start_date:'10.14',end:81,end_label:'81%',end_date:'10.21',point_count:2,delta_label:null});
+  const renderedDelta=renderChartPanel({...specs[2],delta_label:'−9%p'},{width:950,height:648,theme});
+  assert.match(renderedDelta.svg,/>-9%p<\/text>/,'trend delta uses a renderer-safe minus glyph');
   assert.deepEqual(results[3].displayed.map(x=>x.value_label),['0.6%','29,000명']);
   assert.equal(results[4].displayed.at(-1).gap,'1.00%p');
   assert.equal(results[4].displayed.at(-1).ratio,'2.5:1');
   assert.deepEqual(results[5].displayed.map(x=>x.scenario),['동결','인상']);
-  const explicitScale={hero_size:150,label_size:34,body_size:36,chip_size:34,hero_weight:800,label_weight:500,body_weight:500,chip_weight:700};
+  const explicitScale={hero_size:150,label_size:34,body_size:36,chip_size:34,hero_weight:800,label_weight:600,body_weight:400,chip_weight:700};
   const fixedDual=renderChartPanel({...specs[3],typography:explicitScale},{width:936,height:793,theme});
   assert.equal([...fixedDual.svg.matchAll(/font-size="([0-9.]+)"/g)].map((m)=>Number(m[1])).filter((n)=>n===150).length,2);
   assert.equal([...fixedDual.svg.matchAll(/font-size="([0-9.]+)"/g)].map((m)=>Number(m[1])).filter((n)=>n===34).length,2);
-  assert.match(fixedDual.svg,/font-size="34\.00" font-weight="500"[^>]*>CPI/);
+  assert.match(fixedDual.svg,/font-size="34\.00" font-weight="600"[^>]*>CPI/);
   assert.match(fixedDual.svg,/font-size="150\.00" font-weight="800"[^>]*>0\.6%/);
   assert.match(fixedDual.svg,/font-size="150\.00" font-weight="800"[^>]*>29,000명/);
-  assert.match(results[3].svg,/font-size="147\.78"/);
+  assert.match(results[3].svg,/font-size="150\.00"/);
   const fixedRates=renderChartPanel({...specs[4],typography:explicitScale},{width:936,height:793,theme});
+  assert.match(fixedRates.svg, /금리차 1\.00%p/);
+  const changedRates=renderChartPanel({...specs[4],rates:[{label:'미국',value:5},{label:'한국',value:3}],typography:explicitScale},{width:936,height:793,theme});
+  assert.match(changedRates.svg, /금리차 2\.00%p/);
+  assert.doesNotMatch(changedRates.svg, /금리차 1\.00%p/);
+  assert.match(fixedRates.svg, /x="62\.40"/);
   assert.match(fixedRates.svg,/font-size="34\.00" font-weight="700"[^>]*>금리차 1\.00%p/);
-  assert.match(fixedRates.svg,/font-size="34\.00" font-weight="500"[^>]*>미국/);
-  assert.match(fixedRates.svg,/font-size="34\.00" font-weight="500"[^>]*>4\.00%/);
+  assert.match(fixedRates.svg,/font-size="34\.00" font-weight="600"[^>]*>미국/);
+  assert.match(fixedRates.svg,/font-size="34\.00" font-weight="600"[^>]*>4\.00%/);
 });
 await test('explicit height is not lost to an inherited preset ratio', async () => { const p = clone(base); p.task.canvas = { height: 900 }; const r = await compile(p, { preset: { canvas: { width: 1080, aspect_ratio: '1:1' } } }); assert.equal(r.canvas.height, 900); });
 await test('height plus ratio derives width', async () => { const p = clone(base); p.task.canvas = { height: 900, aspect_ratio: '1:1' }; const r = await compile(p); assert.equal(r.canvas.width, 900); });

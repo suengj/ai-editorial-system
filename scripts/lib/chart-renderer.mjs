@@ -331,6 +331,8 @@ export function renderChartPanel(spec, { width = 900, height = 520, theme = {}, 
   };
 }
 
+import { CARD_NEWS_TYPE_TOKENS } from './typography-core.mjs';
+
 /** Purpose-built, deterministic SVG modules for premium editorial number cards. */
 export function renderNumberVisualPanel(spec, { width = 900, height = 520, theme = {}, measure = null } = {}) {
   const fail = (message) => { throw new Error(`NUMBER_VISUAL_INVALID: ${message}`); };
@@ -345,38 +347,48 @@ export function renderNumberVisualPanel(spec, { width = 900, height = 520, theme
   if (spec.typography !== undefined && (!typography || typeof typography !== 'object' || Array.isArray(typography) || Object.keys(typography).some((key) => !typographyKeys.includes(key)))) fail('typography must use the supported explicit type-scale fields');
   for (const key of ['hero_size', 'label_size', 'body_size', 'chip_size']) if (typography[key] !== undefined && (!Number.isFinite(typography[key]) || typography[key] < 10 || typography[key] > 256)) fail(`typography.${key} must be a valid pixel size`);
   for (const key of ['hero_weight', 'label_weight', 'body_weight', 'chip_weight']) if (typography[key] !== undefined && ![400, 500, 600, 700, 800, 900].includes(typography[key])) fail(`typography.${key} must be a supported weight`);
-  const fixedTypeScale = Object.keys(typography).length > 0, scale = width / 900;
-  const labelSize = typography.label_size ?? Math.max(34, 34 * scale), valueSize = typography.hero_size ?? Math.max(140, 140 * scale), smallSize = typography.chip_size ?? Math.max(34, 34 * scale), bodySize = typography.body_size ?? smallSize;
-  const heroWeight = typography.hero_weight ?? 800, labelWeight = typography.label_weight ?? 700, bodyWeight = typography.body_weight ?? 600, chipWeight = typography.chip_weight ?? 800, captionWeight = typography.label_weight ?? 600, dateWeight = typography.label_weight ?? 500, scenarioLabelWeight = typography.label_weight ?? 800;
+  const expectedType = { hero_size: CARD_NEWS_TYPE_TOKENS.hero.font_size, label_size: CARD_NEWS_TYPE_TOKENS.label.font_size, body_size: CARD_NEWS_TYPE_TOKENS.body.font_size, chip_size: CARD_NEWS_TYPE_TOKENS.chip.font_size, hero_weight: CARD_NEWS_TYPE_TOKENS.hero.weight, label_weight: CARD_NEWS_TYPE_TOKENS.label.weight, body_weight: CARD_NEWS_TYPE_TOKENS.body.weight, chip_weight: CARD_NEWS_TYPE_TOKENS.chip.weight };
+  // Legacy specs may carry old type values. They are deliberately ignored: this renderer always emits the shared card-news tokens.
+  const fixedTypeScale = true, scale = width / 900;
+  const labelSize = expectedType.label_size, valueSize = expectedType.hero_size, secondarySize = CARD_NEWS_TYPE_TOKENS.secondary.font_size, smallSize = expectedType.chip_size, bodySize = expectedType.body_size;
+  const heroWeight = expectedType.hero_weight, labelWeight = expectedType.label_weight, bodyWeight = expectedType.body_weight, chipWeight = expectedType.chip_weight, captionWeight = expectedType.label_weight, dateWeight = expectedType.label_weight, scenarioLabelWeight = expectedType.label_weight;
   const els = [], displayed = [];
   const text = (value, x, y, size = labelSize, weight = 600, anchor = 'start', color = fg) => {
     if (typeof value !== 'string' || !value.length) fail('visible labels must be non-empty strings');
     const measured = measure ? measure(value, size, weight) : [...value].length * size * 0.62;
     const limit = anchor === 'end' ? x - 12 : anchor === 'middle' ? Math.min(x, width - x) * 2 - 24 : width - x - 12;
     if (measured > limit) fail(`text does not fit: ${value}`);
-    els.push(`<text x="${n(x)}" y="${n(y)}" text-anchor="${anchor}" font-family="${esc(font)}" font-size="${n(size)}" font-weight="${weight}" fill="${color}">${esc(value)}</text>`);
+    const content = esc(value.replace(/¢/gu, '센트').replace(/−/gu, '-'));
+    els.push(`<text x="${n(x)}" y="${n(y)}" text-anchor="${anchor}" font-family="${esc(font)}" font-size="${n(size)}" font-weight="${weight}" fill="${color}">${content}</text>`);
+  };
+  const labelNumber = (value) => {
+    const match = String(value ?? '').replace(/,/g, '').match(/[-+−]?\d+(?:\.\d+)?/u);
+    return match ? Number(match[0].replace('−', '-')) : null;
   };
   const line = (x1,y1,x2,y2, stroke=fg, opacity=0.15, strokeWidth=2) => els.push(`<line x1="${n(x1)}" y1="${n(y1)}" x2="${n(x2)}" y2="${n(y2)}" stroke="${stroke}" stroke-opacity="${opacity}" stroke-width="${strokeWidth}" stroke-linecap="round"/>`);
-  const pad = 36 * scale;
+  const pad = CARD_NEWS_TYPE_TOKENS.margin_px * width / CARD_NEWS_TYPE_TOKENS.canvas_width;
   const shadowId = 'number-panel-shadow';
   els.push(`<defs><filter id="${shadowId}" x="-12%" y="-12%" width="124%" height="132%"><feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="${fg}" flood-opacity="0.12"/></filter></defs>`);
   els.push(`<rect x="5" y="5" width="${n(width - 10)}" height="${n(height - 10)}" rx="28" fill="#FFFFFF" filter="url(#${shadowId})"/>`);
   if (spec.layout === 'comparison-bars') {
     if (!Array.isArray(spec.items) || spec.items.length !== 2 || spec.items.some(x => !Number.isFinite(x.value) || x.value < 0 || x.value > 100 || !x.label || !x.value_label)) fail('comparison-bars needs two 0–100 items');
     const x0=pad, barW=width-pad*2, gap=height*0.40, y0=height*0.22, bh=Math.max(32,36*scale);
-    spec.items.forEach((item,i)=>{ const y=y0+i*gap; text(item.label,x0,y-smallSize*0.55,smallSize,labelWeight); els.push(`<rect x="${n(x0)}" y="${n(y)}" width="${n(barW)}" height="${n(bh)}" rx="${n(bh/2)}" fill="${fg}" fill-opacity="0.08"/>`); els.push(`<rect x="${n(x0)}" y="${n(y)}" width="${n(barW*item.value/100)}" height="${n(bh)}" rx="${n(bh/2)}" fill="${accent}"/>`); const valueX=fixedTypeScale||item.value===100?width-pad:x0+barW*item.value/100, valueAnchor=fixedTypeScale||item.value===100?'end':item.value===0?'start':'middle'; text(item.value_label,valueX,y+bh+valueSize*0.95,valueSize,heroWeight,valueAnchor); displayed.push({label:item.label,value:item.value,value_label:item.value_label}); });
+    spec.items.forEach((item,i)=>{ if(labelNumber(item.value_label)!==item.value) fail('comparison-bars label must equal its plotted value'); const y=y0+i*gap; text(item.label,x0,y-smallSize*0.55,smallSize,labelWeight); els.push(`<rect x="${n(x0)}" y="${n(y)}" width="${n(barW)}" height="${n(bh)}" rx="${n(bh/2)}" fill="${fg}" fill-opacity="0.08"/>`); els.push(`<rect x="${n(x0)}" y="${n(y)}" width="${n(barW*item.value/100)}" height="${n(bh)}" rx="${n(bh/2)}" fill="${accent}"/>`); const valueX=fixedTypeScale||item.value===100?width-pad:x0+barW*item.value/100, valueAnchor=fixedTypeScale||item.value===100?'end':item.value===0?'start':'middle'; text(item.value_label,valueX,y+bh+valueSize*0.95,valueSize,heroWeight,valueAnchor); displayed.push({label:item.label,value:item.value,value_label:item.value_label}); });
   } else if (spec.layout === 'dot-grid') {
     const { total, filled, value_label, caption }=spec;
     if (!Number.isInteger(total)||!Number.isInteger(filled)||filled<0||filled>total||!value_label||!caption) fail('dot-grid needs bounded integer counts and labels');
     if (total !== 100) fail('dot-grid requires a 100-point scale');
+    const rate = `${filled}%`;
+    if (!new RegExp(`(?:^|\\D)${rate}(?:\\D|$)`).test(value_label)) fail('dot-grid label must match filled dots on the 100-point scale');
     const cols=10, r=Math.min(18*scale,(width-pad*2)/(cols*2.5)), gap=r*2.45, gridW=(cols-1)*gap;
     const startX=(width-gridW)/2, startY=height*0.28;
     for(let i=0;i<total;i++){ const x=startX+(i%cols)*gap,y=startY+Math.floor(i/cols)*gap; els.push(`<circle cx="${n(x)}" cy="${n(y)}" r="${n(r)}" fill="${i<filled?accent:fg}" fill-opacity="${i<filled?0.96:0.10}"/>`); }
-    text(value_label,width/2,height*0.20,valueSize,heroWeight,'middle'); text(caption,width/2,height*0.94,smallSize,captionWeight,'middle'); displayed.push({filled,total,value_label});
+    text(value_label,width/2,height*0.20,secondarySize,CARD_NEWS_TYPE_TOKENS.secondary.weight,'middle'); text(caption,width/2,height*0.94,smallSize,captionWeight,'middle'); displayed.push({filled,total,value_label});
   } else if (spec.layout === 'trend-area') {
     const { start, end, start_label, end_label, start_date, end_date, points }=spec;
     if (![start,end].every(v=>Number.isFinite(v)&&v>=0&&v<=100)||!start_label||!end_label||!start_date||!end_date) fail('trend-area needs two dated 0–100 endpoints');
-    if (points !== undefined && (!Array.isArray(points) || points.length < 3 || points.some(p => !Number.isFinite(p.value) || p.value < 0 || p.value > 100 || typeof p.observed_at !== 'string'))) fail('trend-area points must be sourced observations');
+    if (points !== undefined && (!Array.isArray(points) || points.length < 3 || points.some((p,i) => !Number.isFinite(p.value) || p.value < 0 || p.value > 100 || typeof p.observed_at !== 'string' || !Number.isFinite(Date.parse(p.observed_at)) || (i > 0 && Date.parse(p.observed_at) <= Date.parse(points[i-1].observed_at))))) fail('trend-area points must be finite ordered sourced observations in range');
+    if (labelNumber(start_label)!==start || labelNumber(end_label)!==end) fail('trend-area endpoint labels must match their plotted values');
     if (points && (points[0].value !== start || points.at(-1).value !== end)) fail('trend-area point endpoints must match the supplied endpoints');
     const values = points?.map(p => p.value) ?? [start,end];
     const yMin=Math.max(0,Math.floor(Math.min(...values)-4)), yMax=Math.min(100,Math.ceil(Math.max(...values)+4));
@@ -420,7 +432,7 @@ export function renderNumberVisualPanel(spec, { width = 900, height = 520, theme
   } else if (spec.layout === 'dual-metric') {
     if (!Array.isArray(spec.items)||spec.items.length!==2||spec.items.some(x=>!x.label||!x.value_label||!Number.isFinite(x.value)||!Number.isFinite(x.max)||x.value<0||x.max<=0||x.value>x.max)) fail('dual-metric needs two independently scaled metrics');
     const y0=fixedTypeScale?height*0.18:height*0.30, rowH=height*0.40, x=pad, w=width-pad*2, bh=22*scale;
-    spec.items.forEach((item,i)=>{const labelY=y0+i*rowH, valueY=fixedTypeScale?labelY+smallSize+valueSize*0.70:labelY; text(item.label,x,labelY,smallSize,labelWeight); text(item.value_label,width-pad,valueY,valueSize,heroWeight,'end'); const by=valueY+(fixedTypeScale?16:28)*scale; line(x,by+bh/2,x+w,by+bh/2,fg,0.10,bh); els.push(`<rect x="${n(x)}" y="${n(by)}" width="${n(w*item.value/item.max)}" height="${n(bh)}" rx="${n(bh/2)}" fill="${accent}"/>`); displayed.push({label:item.label,value:item.value,max:item.max,value_label:item.value_label});});
+    spec.items.forEach((item,i)=>{if(labelNumber(item.value_label)!==item.value)fail('dual-metric label must equal its metric value');const labelY=y0+i*rowH, valueY=fixedTypeScale?labelY+smallSize+valueSize*0.70:labelY; text(item.label,x,labelY,smallSize,labelWeight); text(item.value_label,width-pad,valueY,valueSize,heroWeight,'end'); const by=valueY+(fixedTypeScale?16:28)*scale; line(x,by+bh/2,x+w,by+bh/2,fg,0.10,bh); els.push(`<rect x="${n(x)}" y="${n(by)}" width="${n(w*item.value/item.max)}" height="${n(bh)}" rx="${n(bh/2)}" fill="${accent}"/>`); displayed.push({label:item.label,value:item.value,max:item.max,value_label:item.value_label});});
   } else if (spec.layout === 'rate-gap-ratio') {
     const { rates, ratio }=spec;
     if (!Array.isArray(rates)||rates.length!==2||rates.some(x=>!x.label||!Number.isFinite(x.value)||x.value<0||x.value>5)||rates[0].value<=rates[1].value||!Number.isFinite(ratio?.outflow)||!Number.isFinite(ratio?.inflow)||ratio.inflow<=0||Math.abs(ratio.outflow/ratio.inflow-2.5)>0.15||!ratio.outflow_label||!ratio.inflow_label||!ratio.caption) fail('rate-gap-ratio needs descending rates and a source-bound ratio near 2.5:1');
@@ -429,11 +441,11 @@ export function renderNumberVisualPanel(spec, { width = 900, height = 520, theme
     if (fixedTypeScale) {
       const firstBarY=y0, secondBarY=y0+height*0.18, gapX=width-pad-265, gapTop=firstBarY+bh+8*scale, gapBottom=secondBarY-8*scale, gapMiddle=(gapTop+gapBottom)/2;
       els.push(`<path d="M ${n(gapX-12)} ${n(gapTop)} h 12 v ${n(gapBottom-gapTop)} h -12" fill="none" stroke="${accent}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>`);
-      text('금리차 1.00%p',width-pad,gapMiddle+smallSize*0.35,smallSize,chipWeight,'end',accent);
+      text(`금리차 ${(rates[0].value-rates[1].value).toFixed(2)}%p`,width-pad,gapMiddle+smallSize*0.35,smallSize,chipWeight,'end',accent);
     } else {
       const gapX=x+w*0.60, startY=height*0.13, endY=startY+height*0.18;
       els.push(`<path d="M ${n(gapX-12)} ${n(startY+28*scale)} h 12 v ${n(endY-startY)} h -12 M ${n(gapX)} ${n((startY+endY)/2)} h ${n(96*scale)}" fill="none" stroke="${accent}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>`);
-      text('금리차 1.00%p',width-pad,height*0.49,smallSize,700,'end',accent);
+      text(`금리차 ${(rates[0].value-rates[1].value).toFixed(2)}%p`,width-pad,height*0.49,smallSize,chipWeight,'end',accent);
     }
     const max=ratio.outflow, captionY=height*0.61, row1Y=height*0.71, row2Y=height*0.85, barH=16*scale;
     text(ratio.caption,x,captionY,smallSize,labelWeight);

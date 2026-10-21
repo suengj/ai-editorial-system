@@ -8,8 +8,10 @@
   },
   "profiles": {
     "surface": "instagram",
-    "artifact": "visual/slide-image"
+    "artifact": "visual/prediction-market-carousel"
   },
+  "content_kind": "card-news",
+  "numeric_profile": true,
   "recipe": "r4-photo-fullbleed",
   "visual_style": {
     "requested_style": "R4",

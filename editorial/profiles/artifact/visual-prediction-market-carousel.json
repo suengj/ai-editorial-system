@@ -22,7 +22,7 @@
     "supporting_modules_max": 1,
     "reading_path": "Question, evidence, interpretation, next trigger.",
     "negative_space": "moderate",
-    "chrome_level": "low; only sequence pagination and task-relevant sourcing."
+    "chrome_level": "low; artwork contains content only, with no pagination or footer."
   },
   "audience_adaptation": {
     "professional-generalist": "Explain market pricing in plain Korean, distinguish contract price from verified event facts, and retain source attribution."
@@ -46,7 +46,7 @@
     "applies": true,
     "gate": {
       "viewport": "Instagram 4:5 carousel at phone size",
-      "requirements": ["five substantive frames", "readable without narration", "sources remain attached to claims", "no invented events or dates"]
+      "requirements": ["five substantive frames plus a sixth only when the brief has a distinct sourced fact requiring it", "readable without narration", "sources remain attached to claims", "no invented events or dates"]
     },
     "rationale": "The cards are a silent editorial sequence and must remain legible on a phone."
   },
@@ -55,10 +55,10 @@
     "rule": "One editorial question per frame; never combine disclaimer, timestamp, and content into a separate frame."
   },
   "acceptance": [
-    "exactly five cards in hook, trend, inflection, pricing-versus-news, next-watch order",
+    "five cards in hook, trend, inflection, Korea impact, next-watch order; add a sixth only for a distinct sourced fact",
     "all market figures are copied from a hash-verified PMC bundle",
     "the platform's original market name is retained",
-    "dated events and news claims have sources or explicit editor-check placeholders",
+    "dated events and news claims have sources; editor-check placeholders are forbidden",
     "no investment or betting call to action",
     "no disclaimer card or boilerplate data timestamp card"
   ],

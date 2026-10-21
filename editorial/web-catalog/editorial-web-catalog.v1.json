@@ -113,7 +113,7 @@
     }
   },
   "catalog_version": "1.0.0",
-  "content_digest": "sha256:d29cc5e18590656beb6e9628f39a0a263e2635febf7e7e0a34693e4e327fb52c",
+  "content_digest": "sha256:185de28244e5b4a97611fee756277f3486e24342930829d7dda945cabadbb539",
   "field_domains": {
     "call_to_action": {
       "max_length": 200,
@@ -7966,7 +7966,7 @@
           {
             "path": "editorial/visual-recipes.v1.json",
             "role": "visual:values",
-            "sha256": "4ac71fd5403beb5ec987f8fd2c5cf6f30aed43fe08de6c633091d3c9435abb3c"
+            "sha256": "914577a168435704a785fc84026d3acb5e535ee48664087d503e454b4c06c997"
           }
         ]
       },
@@ -8129,12 +8129,12 @@
           {
             "path": "editorial/templates/prediction-market-carousel.series.json",
             "role": "visual:values",
-            "sha256": "78248afaab12b3245d285db3e2fd98a0ad956733cc0d536137409c696497f150"
+            "sha256": "0e028e9da2a5be371bcbbabe229f6a6792e14f6c7f0c8f4ef08587c4b91030c0"
           },
           {
             "path": "editorial/visual-recipes.v1.json",
             "role": "visual:values",
-            "sha256": "4ac71fd5403beb5ec987f8fd2c5cf6f30aed43fe08de6c633091d3c9435abb3c"
+            "sha256": "914577a168435704a785fc84026d3acb5e535ee48664087d503e454b4c06c997"
           }
         ]
       },
@@ -8208,7 +8208,7 @@
           {
             "path": "editorial/visual-recipes.v1.json",
             "role": "visual:values",
-            "sha256": "4ac71fd5403beb5ec987f8fd2c5cf6f30aed43fe08de6c633091d3c9435abb3c"
+            "sha256": "914577a168435704a785fc84026d3acb5e535ee48664087d503e454b4c06c997"
           }
         ]
       },
@@ -8547,6 +8547,60 @@
         "hero": {
           "background_regions": [
             "art"
+          ],
+          "recurring_regions": {
+            "eyebrow": {
+              "height": 0.035,
+              "width": 0.44,
+              "x": 0.06,
+              "y": 0.04
+            },
+            "headline": {
+              "height": 0.22,
+              "width": 0.88,
+              "x": 0.06,
+              "y": 0.08
+            },
+            "pagination": {
+              "height": 0.03,
+              "width": 0.14,
+              "x": 0.8,
+              "y": 0.9
+            },
+            "source": {
+              "height": 0.03,
+              "width": 0.42,
+              "x": 0.06,
+              "y": 0.9
+            }
+          },
+          "solid_bands": [
+            {
+              "fill": "theme.background",
+              "gradient": [
+                [
+                  0,
+                  0.92
+                ],
+                [
+                  0.42,
+                  0.84
+                ],
+                [
+                  0.78,
+                  0.4
+                ],
+                [
+                  1,
+                  0
+                ]
+              ],
+              "height": 0.92,
+              "id": "r4-text-zone-scrim",
+              "width": 0.92,
+              "x": 0.04,
+              "y": 0.04
+            }
           ]
         },
         "hero-clean": {
@@ -9001,6 +9055,6 @@
         }
       }
     },
-    "sha256": "4ac71fd5403beb5ec987f8fd2c5cf6f30aed43fe08de6c633091d3c9435abb3c"
+    "sha256": "914577a168435704a785fc84026d3acb5e535ee48664087d503e454b4c06c997"
   }
 }

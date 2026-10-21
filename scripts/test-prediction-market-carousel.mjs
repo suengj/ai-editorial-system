@@ -1,8 +1,14 @@
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { copyFileSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { resolve } from 'node:path';
 import { planCarousel } from './lib/carousel-core.mjs';
+import { compileExecution } from './lib/visual-execution-core.mjs';
 import { CARD_NEWS_TYPE_TOKENS } from './lib/typography-core.mjs';
 import { checkTrendCardEligibility } from './lib/numeric-visual-core.mjs';
+import { loadPmcPlotBundle } from './lib/pmc-bundle-binding.mjs';
+import { pmcPlotToChartSpec } from './lib/pmc-bundle-binding.mjs';
+import { validateCardNewsChartFacts } from './lib/card-news-brief-core.mjs';
 
 const read = (path) => JSON.parse(readFileSync(path, 'utf8'));
 const manifest = read('editorial/entry-manifest.json');
@@ -24,6 +30,9 @@ assert.equal(profile.trend_image_mode.owner_decision, true);
 assert.equal(profile.trend_image_mode.requires_raw_history, true);
 assert.deepEqual(profile.trend_image_mode.renderer_overlays, ['start_value', 'end_value', 'change_pp']);
 assert.equal(profile.trend_image_mode.numeric_parity_check, 'required');
+assert(/no pagination/i.test(profile.composition.chrome_level), 'selected profile forbids pagination on content-only artwork');
+assert(profile.acceptance.some((rule) => /sixth only for a distinct sourced fact/.test(rule)), 'selected profile allows a conditional sixth card');
+assert(profile.acceptance.some((rule) => /placeholders are forbidden/.test(rule)), 'selected profile bans editor-check placeholders');
 assert.deepEqual(recipe.visual_style, { default: 'R4', fallback: 'R7', fallback_when: 'no suitable rights-cleared photo' });
 assert.equal(recipe.card_count, 5);
 assert.deepEqual(template.frames.map((f) => f.id), ['hook', 'trend', 'why', 'korea-impact', 'watch-next']);
@@ -31,6 +40,12 @@ assert(template.frames.every((f) => f.headline && f.takeaway && f.blocks.length)
 assert(template.frames[1].blocks.some((b) => b.kind === 'chart' && b.sha256.startsWith('PLACEHOLDER:')));
 assert.equal(template.footer_policy, 'content_only');
 assert.equal(template.recipe, 'r4-photo-fullbleed');
+assert.throws(() => planCarousel(template), (error) => error.code === 'CARD_NEWS_BRIEF_REQUIRED', 'selected production template cannot plan without its required sourced brief');
+const missingNumericContract = structuredClone(template); delete missingNumericContract.numeric_profile;
+assert.throws(() => planCarousel(missingNumericContract, undefined, {}), (error) => error.code === 'CARD_NEWS_PROFILE_CONTRACT', 'selected profile cannot disable numeric gates by omitting its flag');
+assert.equal(template.content_kind, 'card-news');
+assert.equal(template.numeric_profile, true);
+assert.equal(template.profiles.artifact, 'visual/prediction-market-carousel');
 assert.equal(template.visual_style.requested_style, 'R4');
 assert(template.frames.every((f) => ['hero', 'visual'].includes(f.layout)), 'prediction-market series reuses shared carousel layouts');
 assert.equal(template.frames[0].blocks.find((b) => b.text_role === 'hero').region, 'hero-value');
@@ -62,7 +77,8 @@ const replaceStrings = (value) => {
 };
 Object.assign(ready, replaceStrings(ready));
 for (const frame of ready.frames) for (const block of frame.blocks) if (block.kind === 'chart') block.sha256 = `sha256:${'a'.repeat(64)}`;
-const planned = planCarousel(ready);
+const genericReady = structuredClone(ready); delete genericReady.content_kind; delete genericReady.numeric_profile; genericReady.profiles.artifact = 'visual/slide-image';
+const planned = planCarousel(genericReady);
 assert.equal(planned.frames.length, 5);
 assert.equal(planned.density_profile, 'silent_carousel');
 assert.equal(planned.publication_authorized, false);
@@ -73,7 +89,7 @@ assert(!/30일 요청|실제 차트는 7일|거래가 관측된 점만 이었다
 assert(!/\[[^\]]+\]|PLACEHOLDER|TODO|TBD/i.test(visibleText.join('\n')), 'placeholder text is forbidden in rendered copy');
 assert(planned.frames[0].plan.layers.some((layer) => layer.id === 'hero-value' && layer.font_size >= 140), 'hero probability must be visually dominant');
 assert(planned.frames[0].plan.layers.every((layer) => !Object.hasOwn(layer, 'text_role')), 'text_role is consumed by the planner, not leaked into visual layers');
-const badCopy = structuredClone(ready);
+const badCopy = structuredClone(genericReady);
 badCopy.frames[0].blocks[1].text = '30일 요청, 실제 차트는 7일';
 assert.throws(() => planCarousel(badCopy), (error) => error.code === 'SERIES_COPY', 'pipeline/meta copy must fail closed before rendering');
 const trendEligibility = {
@@ -92,6 +108,8 @@ assert(checkTrendCardEligibility({ ...trendEligibility, direction: 'down' }).som
 const numericReady = structuredClone(ready);
 numericReady.content_kind = 'card-news';
 numericReady.numeric_profile = true;
+numericReady.profiles.artifact = 'visual/prediction-market-carousel';
+numericReady.source.ref = 'scripts/fixtures/pmc-bundle/manifold-illustrative-gap-1ec91c13.plot.json';
 numericReady.footer_policy = 'content_only';
 for (const frame of numericReady.frames) {
   frame.blocks = frame.blocks.map((block) => block.kind === 'generated'
@@ -107,28 +125,86 @@ for (const frame of numericReady.frames) {
     frame.blocks.push({ id: `${frame.id}-body`, region: 'right', kind: 'text', text: `10월 21일 기준 42%의 가격을 보였습니다.\n이 흐름은 다음 회의 전 환율과 대출금리 전망에도 영향을 줍니다.`, text_role: 'body', source_ref: 'source-sidecar.json' });
   }
 }
-const factIds = ['f1','f2','f3','f4','f5','f6'];
+const factIds = ['oct-market','dec-market','dec-history','september-cpi','fed-range','fomc-date'];
+const factValues = ['15% Kalshi October market price','81% Kalshi December market price','Raw history 31.2% to 48.5% endpoint','0.6% September CPI month-over-month','4.00% Fed range upper bound and 3.00% Bank of Korea rate','October 27–28 FOMC meeting'];
+const frameFactIds = [[factIds[0],factIds[1]],[factIds[2]],[factIds[3],factIds[1]],[factIds[4]],[factIds[5]]];
+const fixtureBundle = loadPmcPlotBundle(numericReady.source.ref);
+const plotPoints = fixtureBundle.plot.points.map((p) => ({ t: p.observed_at, p: Number((p.value * 100).toPrecision(12)) }));
+const historyUpdated = plotPoints.at(-1).t;
+const historyChecked = new Date(Date.parse(historyUpdated) + 60 * 60 * 1000).toISOString();
 const brief = {
   schema_version: '1.0.0', reader_question: '시장 가격은 어떤 방향으로 움직였나?',
   angle: '가격의 변화는 회의 전 기대와 국내 금융 여건을 함께 움직인다.',
   so_what: '독자는 시장 가격과 국내 환율 및 대출금리의 연결을 읽을 수 있다.',
-  trend_eligibility: structuredClone(trendEligibility),
-  facts: factIds.map((id) => ({ id, value: '42% confirmed value', date: '2026-10-21', source_url: 'https://example.com/source', source_name: 'Source' })),
+  trend_eligibility: { volume_24h: 10, updated_at: historyUpdated, checked_at: historyChecked, observations: plotPoints, direction: plotPoints.at(-1).p > plotPoints[0].p ? 'up' : 'down' },
+  facts: factIds.map((id, i) => ({ id, value: factValues[i], date: '2026-10-21', source_url: `https://example.com/${id}`, source_name: 'Source' })),
   per_card: Object.fromEntries(numericReady.frames.map((frame, i) => [frame.id, {
-    claim: '가격 흐름이 바뀌었다.', evidence: '42% confirmed value', evidence_fact_ids: i === 0 ? [factIds[0], factIds[5]] : [factIds[i]], takeaway: '다음 회의를 주시한다.'
+    claim: '가격 흐름이 바뀌었다.', evidence: frameFactIds[i].map((id) => factValues[factIds.indexOf(id)]).join('; '), evidence_fact_ids: frameFactIds[i], visual_fact_ids: frameFactIds[i], takeaway: '다음 회의를 주시한다.'
   }]))
 };
+assert.throws(() => planCarousel(numericReady, undefined, brief), (error) => error.code === 'CARD_NEWS_BRIEF_INVALID' && /CARD_NEWS_HERO_NOT_CANONICAL/.test(error.message), '7% or 99% hero cannot pass against differently bound sourced evidence');
+const heroValues = { hook: '15%', trend: '48.5%', why: '0.6%', 'korea-impact': '4.00%', 'watch-next': '27–28' };
+const bodyValues = { hook: '81%', trend: '31.2%', why: '81%', 'korea-impact': '3.00%', 'watch-next': '10월 27일 시작, 28일 종료' };
+for (const frame of numericReady.frames) {
+  frame.headline = '확인된 가격과 다음 변수';
+  for (const block of frame.blocks) if (block.kind === 'text') {
+  if (block.text_role === 'hero') block.text = heroValues[frame.id];
+  else if (block.text_role === 'body') block.text = `확인된 공개 자료에서 수치는 ${bodyValues[frame.id]}로 기록됐습니다.\n이 흐름은 다음 회의 전에 환율과 대출금리 전망에도 영향을 줍니다.`;
+  }
+}
 const numericPlan = planCarousel(numericReady, undefined, brief);
+const pmcChartDir = mkdtempSync(resolve(tmpdir(), 'aes-pmc-chart-binding-'));
+copyFileSync(numericReady.source.ref, resolve(pmcChartDir, 'pmc.plot.json'));
+const boundTrendFrame = structuredClone(numericReady.frames.find((frame) => frame.function === 'show_evidence'));
+boundTrendFrame.blocks = [{ id:'trend-chart',kind:'chart',ref:'chart.spec.json' }];
+const boundTrendSeries = { ...numericReady, source:{ ...numericReady.source,ref:'pmc.plot.json' },frames:[boundTrendFrame] };
+const boundTrendBrief = { ...brief, per_card:{[boundTrendFrame.id]:brief.per_card[boundTrendFrame.id]} };
+const pmcBundle = loadPmcPlotBundle(resolve(pmcChartDir,'pmc.plot.json'));
+writeFileSync(resolve(pmcChartDir,'chart.spec.json'), JSON.stringify(pmcPlotToChartSpec(pmcBundle)));
+assert.equal(validateCardNewsChartFacts(boundTrendSeries,boundTrendBrief,pmcChartDir).ok,true,'the trend chart must exactly match points and labels from the verified selected PMC bundle');
+const forgedChartSpec = pmcPlotToChartSpec(pmcBundle); forgedChartSpec.series[0].points[0][1] += 5;
+writeFileSync(resolve(pmcChartDir,'chart.spec.json'), JSON.stringify(forgedChartSpec));
+assert.equal(validateCardNewsChartFacts(boundTrendSeries,boundTrendBrief,pmcChartDir).ok,false,'a forged trend point fails PMC chart binding');
 const numericLayers = numericPlan.frames.flatMap((frame) => frame.plan.layers).filter((layer) => layer.kind === 'text');
 assert(numericPlan.frames.every((frame) => frame.plan.layers.some((layer) => layer.kind === 'chart')), 'numeric profile requires a data visual on every card');
 assert(numericLayers.every((layer) => [64, 150, 110, 34, 36].includes(layer.font_size)), 'numeric profile uses only shared card-news font sizes');
 assert(Object.values(numericPlan.typography).every((style) => [64, 150, 110, 34, 36].includes(style.font_size)), 'renderer typography config exposes no non-token font sizes');
 assert.deepEqual(numericPlan.card_news_type_tokens, CARD_NEWS_TYPE_TOKENS, 'renderer plan carries the shared token contract');
 assert.equal(numericLayers.find((layer) => layer.id === 'headline').font_family, CARD_NEWS_TYPE_TOKENS.headline.font_family);
+assert(numericLayers.every((layer) => layer.min_contrast === 4.5), 'compiled profile text carries a measured contrast requirement');
+assert(numericLayers.every((layer) => Math.abs(layer.slot.x * 1080 - 72) < 1 || layer.slot.x > 0.1), 'compiled text slots use the shared 72px left margin');
+const r4Bands = numericPlan.frames.flatMap((frame) => frame.plan.layers.filter((layer) => layer.kind === 'solid' && layer.id === 'r4-text-zone-scrim'));
+assert.equal(r4Bands.length, numericPlan.frames.filter((frame) => frame.layout === 'hero').length, 'every R4 photo-led frame has an explicit compiled text-zone scrim');
+const compiledDir = mkdtempSync(resolve(tmpdir(), 'aes-pmc-slots-'));
+const chartPath = resolve(compiledDir, 'number-visual.json');
+writeFileSync(chartPath, JSON.stringify({ type:'number_visual', layout:'dot-grid', title:'가격', source_note:'brief', total:100, filled:15, value_label:'15%', caption:'15개' }));
+const slotTestFrame = numericPlan.frames.find((frame) => frame.layout === 'split');
+const compilablePlan = structuredClone(slotTestFrame.plan);
+compilablePlan.source.ref = resolve(numericReady.source.ref);
+for (const layer of compilablePlan.layers) if (layer.kind === 'text') layer.source_ref = 'request';
+for (const layer of compilablePlan.layers) if (layer.kind === 'chart') { layer.ref = chartPath; delete layer.sha256; }
+const compiledPacket = await compileExecution(compilablePlan, { baseDir: compiledDir, preset: numericPlan.preset });
+const plannedChart = slotTestFrame.plan.layers.find((layer) => layer.kind === 'chart');
+assert(compiledPacket.layers.filter((layer) => ['headline', plannedChart.id].includes(layer.id)).every((layer) => layer.pixel_slot.x === 72), 'compiled headline and left data panel use the exact 72px left margin');
+const compiledChart = compiledPacket.layers.find((layer) => layer.kind === 'chart');
+assert.equal(compiledChart.pixel_slot.width, Math.round(plannedChart.slot.width * 1080), 'compiled data panel width preserves the profile slot geometry');
 const noVisual = structuredClone(numericReady); noVisual.frames[0].blocks = noVisual.frames[0].blocks.filter((block) => block.kind !== 'chart');
 assert.throws(() => planCarousel(noVisual, undefined, brief), (error) => error.code === 'CARD_NEWS_DATA_VISUAL', 'numeric profile rejects a card without a hero data visual');
 const noTrendHistory = structuredClone(brief); noTrendHistory.trend_eligibility.observations = [];
 assert.throws(() => planCarousel(numericReady, undefined, noTrendHistory), (error) => error.code === 'CARD_NEWS_BRIEF_INVALID' && /TREND_HISTORY_REQUIRED/.test(error.message), 'numeric card-news trend gate rejects missing history');
+for (const mutate of [
+  (input) => { input.observations[0].t = 'not-a-time'; },
+  (input) => { input.observations[2].p = -900; },
+  (input) => { input.observations[2].p = 1000; },
+  (input) => { input.observations[2].t = input.observations[0].t; },
+]) {
+  const invalid = structuredClone(brief); mutate(invalid.trend_eligibility);
+  assert.throws(() => planCarousel(numericReady, undefined, invalid), (error) => error.code === 'CARD_NEWS_BRIEF_INVALID', 'invalid, out-of-range, or unordered PMC history is rejected');
+}
+const renamedTrend = structuredClone(numericReady); renamedTrend.frames.find((frame) => frame.id === 'trend').id = 'renamed-market-history';
+const renamedBrief = structuredClone(brief); renamedBrief.per_card['renamed-market-history'] = renamedBrief.per_card.trend; delete renamedBrief.per_card.trend;
+renamedBrief.trend_eligibility.observations[2].p = -900;
+assert.throws(() => planCarousel(renamedTrend, undefined, renamedBrief), (error) => error.code === 'CARD_NEWS_BRIEF_INVALID' && /TREND_HISTORY_INVALID/.test(error.message), 'renaming a trend frame cannot bypass valid ordered PMC history checks');
 for (const banned of ['투자 권유 아님', '2026-10-21 기준 시각', '선두', '원관측', 'illustrative', '연출 이미지', 'USD bn', '수치는 정확하지 않음']) {
   const blocked = structuredClone(numericReady); blocked.frames[0].headline = banned;
   assert.throws(() => planCarousel(blocked, undefined, brief), (error) => error.code === 'SERIES_COPY', `card-news copy rejects ${banned}`);
@@ -138,7 +214,7 @@ for (const banned of [
   '두 사실이 이번 가격 변화를 일으켰다고 단정할 수 없습니다',
   '확정하지 않습니다', '확정하지 않는다', '확정되지 않습니다', '단정할 수 없습니다', '단정하지 않는다', '투자 권유', '참고용',
 ]) {
-  const blocked = structuredClone(ready);
+  const blocked = structuredClone(genericReady);
   blocked.frames[0].blocks[1].text = banned;
   assert.throws(() => planCarousel(blocked), (error) => error.code === 'SERIES_COPY', `visible-copy ban rejects: ${banned}`);
 }
