@@ -51,6 +51,16 @@ test('ko-KR on-image card tasks load the language pack for signalytics-news and 
     eq(r.loads.find((entry) => entry.path === 'editorial/profiles/language/ko-KR.json').status, 'read');
   }
 });
+test('ko-KR visual intents infer visual kind and load the language pack for both approved targets', () => {
+  for (const [targetId, artifact] of [['signalytics-news', 'visual/slide-image'], ['trends-moa', 'visual/social-card']]) {
+    const cardIntent = { ...intent('instagram', [artifact]), constraints: { output_language: 'ko-KR' } };
+    const r = resolveEditorial(cardIntent, { targetId, reader: reader() });
+    eq(r.status, STATUS.READY);
+    eq(r.load_plan.task_kind, 'visual');
+    yes(paths(r).includes('editorial/profiles/language/ko-KR.json'), `${targetId} default entry did not load ko-KR`);
+    eq(r.loads.find((entry) => entry.path === 'editorial/profiles/language/ko-KR.json').status, 'read');
+  }
+});
 test('ko-KR pack stays inactive outside activation scope and preserves rule authority', () => {
   const cardIntent = { ...intent('instagram', ['visual/social-card']), constraints: { output_language: 'ko-KR' } };
   const personal = resolveEditorial(cardIntent, { targetId: 'personal-instagram', taskKind: 'visual', reader: reader() });

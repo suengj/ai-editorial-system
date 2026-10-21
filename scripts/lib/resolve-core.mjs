@@ -220,7 +220,7 @@ export function buildLoadPlan(intent, manifest, { targetId = null, taskKind = nu
   const languageActivation = lang === 'ko' || lang === 'ko-KR'
     ? { targets: ['signalytics-news', 'trends-moa'], task_kinds: ['visual'] }
     : null;
-  const activationAllowed = !languageActivation || (languageActivation.targets.includes(targetId) && languageActivation.task_kinds.includes(taskKind));
+  const activationAllowed = !languageActivation || (languageActivation.targets.includes(targetId) && languageActivation.task_kinds.includes(kind));
   if (typeof lang === 'string' && Object.hasOwn(manifest.language_packs, lang) && activationAllowed) add(manifest.language_packs[lang], 'language');
 
   const target = targetId && Object.hasOwn(manifest.sns_targets, targetId) ? manifest.sns_targets[targetId] : null;

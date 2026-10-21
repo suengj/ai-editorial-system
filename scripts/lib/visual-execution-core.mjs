@@ -250,7 +250,7 @@ export async function compileExecution(plan, { baseDir = process.cwd(), preset =
               const splitHasText = plan.layers.some((other) => other.kind === 'text');
               const splitOverlapsText = plan.layers.some((other) => other.kind === 'text' && overlapsNormalized(l.focal_fallback.split_slot, other.slot));
               if (splitEval.visibleRatio + 1e-9 >= ratio && splitHasText && !splitOverlapsText) {
-                pixelSlot = splitSlot; next.pixel_slot = splitSlot; evaluated = splitEval; fallback = 'split';
+                pixelSlot = splitSlot; next.slot = { ...l.focal_fallback.split_slot }; next.pixel_slot = splitSlot; evaluated = splitEval; fallback = 'split';
               } else {
                 next.kind = 'generated'; next.ref = undefined; next.sha256 = undefined;
                 next.instruction = l.focal_fallback.r7_instruction; next.status = 'RENDER_REQUIRED';
