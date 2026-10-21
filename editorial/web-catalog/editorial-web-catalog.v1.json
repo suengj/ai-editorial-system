@@ -114,7 +114,7 @@
     }
   },
   "catalog_version": "1.0.0",
-  "content_digest": "sha256:8cbd955ab2d9d2c43110b64ca035f988238b4ed3ac866262dc899bbc61956019",
+  "content_digest": "sha256:3cdd628fbf5b9796ed7b4a8e80449e4c36cd6146a81c0eca7de20be0c6943af7",
   "field_domains": {
     "call_to_action": {
       "max_length": 200,
@@ -8085,12 +8085,12 @@
           {
             "path": "editorial/INSTAGRAM-NUMERIC-VISUAL-POLICY.md",
             "role": "visual:rules",
-            "sha256": "b161326f0eca8276fa36c8990762e8646744b94265493f07666c336f7846b38b"
+            "sha256": "52b0982c5416267331b75b37d9834ed0074523e5691b8b44f8afdd1118d445e0"
           },
           {
             "path": "editorial/PMC-BUNDLE-BINDING.md",
             "role": "visual:rules",
-            "sha256": "15d2cdb95cba5d2795fbb5bf0b4271140931acbf6f32877fe5f562646a381b14"
+            "sha256": "00e802c65f9d21df8a3bad20c4a4d4264eb36acf9644f2682e5722c6947629d6"
           },
           {
             "path": "editorial/SIGNALYTICS-BENCHMARK-CARDS.md",
