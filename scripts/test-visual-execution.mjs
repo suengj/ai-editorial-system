@@ -7,6 +7,7 @@ import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { compileExecution, executeVisual } from './lib/visual-execution-core.mjs';
 import { renderChart, renderChartPanel } from './lib/chart-renderer.mjs';
+import { CARD_NEWS_TYPE_TOKENS } from './lib/typography-core.mjs';
 import { decodePng, encodePng, sha256, resolveWatermark, applyWatermark } from './lib/watermark-core.mjs';
 import { findRasterizer, rasterize } from './lib/svg-tools.mjs';
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
@@ -22,6 +23,11 @@ async function test(name, fn) { await fn(); passed++; console.log(`PASS ${name}`
 const compile = (p, opts = {}) => compileExecution(p, { baseDir: dir, ...opts });
 const run = (p, name) => executeVisual(p, { baseDir: dir, outDir: resolve(dir, name), rasterizer: adapter.name });
 const reject = (p, code) => assert.rejects(() => compile(p), (e) => e.code === code);
+const assertCardNewsSvgTypeTokens = (svg) => {
+  const allowed = new Set(Object.values(CARD_NEWS_TYPE_TOKENS).map((token) => token?.font_size).filter(Number.isFinite));
+  const sizes = [...svg.matchAll(/font-size="([0-9.]+)"/gu)].map((match) => Number(match[1]));
+  assert(sizes.length > 0 && sizes.every((size) => allowed.has(size)), `SVG text sizes must use shared card-news tokens: ${sizes.join(',')}`);
+};
 const adapter = findRasterizer('magick') ?? findRasterizer('rsvg');
 assert.ok(adapter, 'actual SVG rasterizer required: tests do not fake a rendered result');
 const wm = { render: (svg) => rasterize(svg, adapter), version: adapter.version };
@@ -137,8 +143,11 @@ await test('premium number visuals render bound values, grid, gradient area and 
   assert.throws(() => renderChartPanel({ ...specs[2], start_label:'7%', end_label:'81%' }, { width:936,height:520,theme }), /endpoint labels must match/);
   assert.throws(() => renderChartPanel({ ...specs[2], points: [{ observed_at:'2026-10-20',value:90 },{ observed_at:'2026-10-19',value:80},{ observed_at:'2026-10-21',value:81}] }, { width: 936, height: 520, theme }), /finite ordered sourced observations/);
   const results = specs.map((spec) => renderChartPanel(spec,{width:950,height:648,theme}));
+  for (const result of results) assertCardNewsSvgTypeTokens(result.svg);
   for (const result of results) assert([...result.svg.matchAll(/font-size="([0-9.]+)"/g)].every((match) => [34,36,110,150].includes(Number(match[1]))), 'numeric SVG text uses only shared token typography');
   const ignoredLegacyType = renderChartPanel({ ...specs[0], typography:{hero_size:99,label_weight:500} }, { width:936,height:520,theme });
+  assertCardNewsSvgTypeTokens(ignoredLegacyType.svg);
+  for (const width of [936,1080]) assertCardNewsSvgTypeTokens(renderChartPanel({ ...fixture('line.json'), emphasize_endpoint:true }, { width,height:520,theme }).svg);
   assert.match(ignoredLegacyType.svg,/font-size="150\.00"/,'legacy numeric style hints cannot override the fixed token scale');
   assert.equal(results[0].displayed.map(x=>x.value).join(','),'15,81');
   const fullScaleBars=renderChartPanel({...specs[0],items:[{label:'A',value:100,value_label:'100%'},{label:'B',value:0,value_label:'0%'}]},{width:950,height:648,theme});

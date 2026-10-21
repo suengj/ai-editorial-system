@@ -249,7 +249,9 @@ export function renderChartPanel(spec, { width = 900, height = 520, theme = {}, 
   const fg = theme.foreground ?? '#222222', accent = theme.accent ?? fg;
   const font = theme.font_family ?? 'Noto Sans CJK KR, Pretendard, sans-serif';
   for (const color of [fg, accent]) if (!/^#[0-9a-f]{6}$/i.test(color)) fail('theme colors must be #RRGGBB');
-  const fs = CARD_NEWS_TYPE_TOKENS.label.font_size * width / CARD_NEWS_TYPE_TOKENS.canvas_width;
+  const cardNewsSizes = Object.values(CARD_NEWS_TYPE_TOKENS).map((token) => token?.font_size).filter(Number.isFinite);
+  const snapCardNewsSize = (size) => cardNewsSizes.reduce((best, token) => Math.abs(token - size) < Math.abs(best - size) ? token : best, cardNewsSizes[0]);
+  const fs = snapCardNewsSize(CARD_NEWS_TYPE_TOKENS.label.font_size * width / CARD_NEWS_TYPE_TOKENS.canvas_width);
   const fmt = (v) => `${v.toFixed(decimals)}${spec.y.unit}`;
   const axisFmt = (v) => `${v.toFixed(Number.isInteger(v) ? decimals : Math.max(1, decimals))}${spec.y.unit}`;
   const tw = (t) => measure ? measure(t, fs, 400) : [...String(t)].length * fs;
@@ -294,7 +296,7 @@ export function renderChartPanel(spec, { width = 900, height = 520, theme = {}, 
       while (endpointYs.some((y) => Math.abs(y - ly) < fs * 1.2)) ly += fs * 1.25;
       if (ly > top + ph + fs * 0.5) fail('endpoint labels collide; split series or increase height');
       endpointYs.push(ly);
-      text(axisFmt(last[1]), left + pw + 10, ly + fs * 0.32, { weight: spec.emphasize_endpoint ? 800 : 400, size: spec.emphasize_endpoint ? fs + 4 : fs, limit: right - 12 });
+      text(axisFmt(last[1]), left + pw + 10, ly + fs * 0.32, { weight: spec.emphasize_endpoint ? 800 : 400, size: spec.emphasize_endpoint ? snapCardNewsSize(fs + 4) : fs, limit: right - 12 });
       displayed.push({ series: s.name, endpoint: last, endpoint_label: axisFmt(last[1]), claim: s.claim });
     } else {
       const cell = pw / actual.length;
