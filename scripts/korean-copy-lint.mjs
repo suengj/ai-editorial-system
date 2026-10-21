@@ -17,11 +17,6 @@ export function resolveCopyProfile(profileId) {
   return family;
 }
 
-const NUMERIC_UNITS = [
-  '%p', '%', '퍼센트포인트', '퍼센트', 'bps', 'bp', 'GB', 'MB', 'TB', 'km', 'cm', 'mm', 'kg', 'g',
-  '개월', '시간', '분', '초', '년', '월', '일', '주', '명', '원', '배', '개', '건', '회', '곳', '대', '점', '위', '층', '세', '살', '차', '건', '억', '만',
-];
-
 function canonicalNumber(value) {
   const [integerPart, fractionPart] = value.replaceAll(',', '').split('.');
   const integer = integerPart.replace(/^0+(?=\d)/u, '');
@@ -29,20 +24,38 @@ function canonicalNumber(value) {
   return fraction ? `${integer}.${fraction}` : integer;
 }
 
-function unitAt(text, index) {
-  return NUMERIC_UNITS.find((unit) => text.startsWith(unit, index)) ?? '';
+function canonicalSign(sign) {
+  return sign === '−' ? '-' : sign;
+}
+
+function canonicalUnit(unit) {
+  // Korean particles and sentence endings may follow a unit without spacing:
+  // e.g. 35%다, 35명은. Keep the unit itself intact and exclude that suffix.
+  const suffix = /(?:에서|으로|까지|부터|보다|은|는|이|가|을|를|의|에|로|와|과|도|다)$/u;
+  const match = suffix.exec(unit);
+  if (match && match.index > 0) unit = unit.slice(0, match.index);
+  return unit.toLowerCase().replaceAll(/\s/gu, '');
 }
 
 export function tokenizeNumericTokens(text) {
   if (typeof text !== 'string') throw new TypeError('text must be a string');
   const tokens = [];
   for (let index = 0; index < text.length;) {
-    if (!/[0-9]/u.test(text[index]) || (index > 0 && /[0-9.]/u.test(text[index - 1]))) {
+    const signStart = /[+\-−±]/u.test(text[index] ?? '') && /[0-9]/u.test(text[index + 1] ?? '');
+    const digitStart = /[0-9]/u.test(text[index] ?? '');
+    if (!signStart && !digitStart) {
       index += 1;
       continue;
     }
 
     const start = index;
+    const previous = text[index - 1] ?? '';
+    const previousPrevious = text[index - 2] ?? '';
+    if (/[0-9.]/u.test(previous) || (previous === ',' && /[0-9]/u.test(previousPrevious)) || (/[+\-−±]/u.test(previous) && digitStart) || (signStart && /[\p{L}\p{N}_]/u.test(previous))) {
+      index += 1;
+      continue;
+    }
+    const sign = signStart ? canonicalSign(text[index++]) : '';
     let integer = '';
     while (/[0-9]/u.test(text[index] ?? '')) integer += text[index++];
     while (text[index] === ',') {
@@ -59,9 +72,14 @@ export function tokenizeNumericTokens(text) {
       index += 1;
       while (/[0-9]/u.test(text[index] ?? '')) value += text[index++];
     }
-    const unit = unitAt(text, index);
-    index += unit.length;
-    tokens.push({ value: canonicalNumber(value), unit, normalized: `${canonicalNumber(value)}${unit}`, start, end: index });
+    const numberEnd = index;
+    while (/\s/u.test(text[index] ?? '')) index += 1;
+    const unitStart = index;
+    while (/[\p{L}\p{S}%]/u.test(text[index] ?? '')) index += 1;
+    const rawUnit = text.slice(unitStart, index);
+    const unit = canonicalUnit(rawUnit);
+    const canonicalValue = canonicalNumber(value);
+    tokens.push({ sign, value: canonicalValue, unit, normalized: `${sign}${canonicalValue}${unit}`, start, end: rawUnit ? index : numberEnd });
   }
   return tokens;
 }

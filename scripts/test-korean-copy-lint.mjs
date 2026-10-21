@@ -37,6 +37,7 @@ clean('부채비율은 0.35%다. 지난해에는 1.35%였다.', 'signalytics-new
 flagged('올해는 35%, 지난해도 35%.', 'repeated-hero-number', 'signalytics-news', { heroNumbers: ['35%'] });
 
 const numericTokenCases = [
+  // Existing regression cases.
   ['35%,35%,40%', '35%', 2],
   ['올해는 35%, 지난해도 35%.', '35%', 2],
   ['0.35% 1.35%', '35%', 0],
@@ -44,6 +45,17 @@ const numericTokenCases = [
   ['1,350%', '350%', 0],
   ['(35%)', '35%', 1],
   ['35%p', '35%', 0],
+  // Sign, decimal, open-ended unit, and whole-token regressions.
+  ['수익률은 -35%, -35%다.', '-35%', 2],
+  ['−35%', '-35%', 1],
+  ['+35 -35', '35', 0],
+  ['35만명, 35만명', '35만명', 2],
+  ['35달러, 35달러', '35달러', 2],
+  ['35 명 / 35명', '35 명', 2],
+  ['35 kg 35 KG', '35 kg', 2],
+  ['35만', '35', 0],
+  ['+3.5%p, +3.5%p', '+3.5%p', 2],
+  ['35bp', '35%', 0],
 ];
 for (const [text, heroNumber, expected] of numericTokenCases) {
   assert.equal(countHeroNumericTokens(text, heroNumber), expected, `${JSON.stringify(text)} should contain ${heroNumber} ${expected} time(s)`);
