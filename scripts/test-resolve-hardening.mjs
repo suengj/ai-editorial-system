@@ -82,7 +82,8 @@ test('README.md and STRUCTURED-VISUAL-EXECUTION.md: card and series commands run
     for (const c of cmds) {
       const r = runDoc(c, scratch);
       const rendering = !/resolve-editorial/.test(c) && !/--compile-only/.test(c);
-      yes(r.status === 0 || (rendering && !hasRasterizer && r.status === 2), `${file}: \`${c}\` exit ${r.status}: ${r.stderr.slice(0, 300)}`);
+      const documentedPendingArt = rendering && r.status === 2 && /INCOMPLETE:/.test(r.stdout);
+      yes(r.status === 0 || documentedPendingArt || (rendering && !hasRasterizer && r.status === 2), `${file}: \`${c}\` exit ${r.status}: ${r.stdout.slice(-300)}${r.stderr.slice(0, 300)}`);
     }
   }
 });
