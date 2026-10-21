@@ -28,9 +28,11 @@ function escapeRegExp(value) {
 function parseHero(heroNumber) {
   const hero = heroNumber.trim();
   const prefixPattern = CURRENCY_PREFIXES.map(escapeRegExp).join('|');
-  const match = new RegExp(`^(${prefixPattern})?\\s*([+\\-−±]?)(\\d{1,3}(?:,\\d{3})+|\\d+)(\\.\\d+)?\\s*([만억조천])?\\s*(.*)$`, 'iu').exec(hero);
+  const match = new RegExp(`^(?:(${prefixPattern})\\s*([+\\-−±]?)|([+\\-−±])\\s*(${prefixPattern})?|([+\\-−±]))?(\\d{1,3}(?:,\\d{3})+|\\d+)(\\.\\d+)?\\s*([만억조천])?\\s*(.*)$`, 'iu').exec(hero);
   if (!match) return null;
-  const [, rawPrefix = '', rawSign, integer, fraction = '', magnitude = '', rawUnit = ''] = match;
+  const [, prefixFirst = '', signAfterPrefix = '', signBeforePrefix = '', prefixAfterSign = '', bareSign = '', integer, fraction = '', magnitude = '', rawUnit = ''] = match;
+  const rawPrefix = prefixFirst || prefixAfterSign;
+  const rawSign = signAfterPrefix || signBeforePrefix || bareSign;
   const unit = rawUnit.trim().replaceAll(/\s+/gu, ' ');
   return {
     prefix: rawPrefix.toUpperCase(),
@@ -48,8 +50,19 @@ export function countHeroNumericTokens(text, heroNumber) {
   const hero = parseHero(heroNumber);
   if (!hero) return 0;
 
-  const prefix = hero.prefix ? `(?<![\\p{L}\\d])${escapeRegExp(hero.prefix)}\\s*` : '';
   const sign = hero.sign ? (hero.sign === '-' ? '[-−]' : escapeRegExp(hero.sign)) : '';
+  const boundary = '(?<![\\d.+\\-−±])(?<!\\d,)';
+  let lead = '';
+  if (hero.prefix && sign) {
+    const prefix = `(?<![\\p{L}\\d])${escapeRegExp(hero.prefix)}\\s*`;
+    lead = `(?:${prefix}${sign}|${boundary}${sign}\\s*${escapeRegExp(hero.prefix)})`;
+  } else if (hero.prefix) {
+    lead = `(?<![\\p{L}\\d])${escapeRegExp(hero.prefix)}\\s*`;
+  } else if (sign) {
+    lead = `${boundary}${sign}`;
+  } else {
+    lead = boundary;
+  }
   const number = `${escapeRegExp(hero.integer)}${escapeRegExp(hero.fraction)}`;
   const magnitude = hero.magnitude ? `\\s*${escapeRegExp(hero.magnitude)}` : '';
   const unit = hero.unit ? `\\s*${hero.unit.split(/\s+/u).map(escapeRegExp).join('\\s*')}` : '';
@@ -61,7 +74,7 @@ export function countHeroNumericTokens(text, heroNumber) {
   else if (!hero.unit && !hero.magnitude) continuation += `(?!\\s*[${MAGNITUDES}%]|,\\d)`;
   else if (!hero.unit && hero.magnitude) continuation += `(?!\\s*${MAGNITUDE_FOLLOWING_UNITS})`;
 
-  const pattern = new RegExp(`${prefix}(?<![\\d.+\\-−±])(?<!\\d,)${sign}${number}${magnitude}${unit}${continuation}`, 'giu');
+  const pattern = new RegExp(`${lead}${number}${magnitude}${unit}${continuation}`, 'giu');
   return [...text.matchAll(pattern)].length;
 }
 
