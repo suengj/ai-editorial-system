@@ -58,88 +58,6 @@
         "height": 0.45
       }
     },
-    "pm-hook": {
-      "market-name": {
-        "x": 0.08,
-        "y": 0.31,
-        "width": 0.84,
-        "height": 0.06
-      },
-      "hero": {
-        "x": 0.07,
-        "y": 0.39,
-        "width": 0.86,
-        "height": 0.27
-      },
-      "takeaway": {
-        "x": 0.08,
-        "y": 0.7,
-        "width": 0.84,
-        "height": 0.12
-      }
-    },
-    "pm-trend": {
-      "chart": {
-        "x": 0.05,
-        "y": 0.31,
-        "width": 0.9,
-        "height": 0.46
-      },
-      "takeaway": {
-        "x": 0.08,
-        "y": 0.8,
-        "width": 0.84,
-        "height": 0.07
-      }
-    },
-    "pm-inflections": {
-      "content": {
-        "x": 0.08,
-        "y": 0.36,
-        "width": 0.84,
-        "height": 0.38
-      },
-      "takeaway": {
-        "x": 0.08,
-        "y": 0.78,
-        "width": 0.84,
-        "height": 0.08
-      }
-    },
-    "pm-pricing": {
-      "left": {
-        "x": 0.07,
-        "y": 0.37,
-        "width": 0.4,
-        "height": 0.4
-      },
-      "right": {
-        "x": 0.53,
-        "y": 0.37,
-        "width": 0.4,
-        "height": 0.4
-      },
-      "takeaway": {
-        "x": 0.08,
-        "y": 0.78,
-        "width": 0.84,
-        "height": 0.08
-      }
-    },
-    "pm-watch": {
-      "date": {
-        "x": 0.08,
-        "y": 0.35,
-        "width": 0.84,
-        "height": 0.19
-      },
-      "trigger": {
-        "x": 0.08,
-        "y": 0.62,
-        "width": 0.84,
-        "height": 0.2
-      }
-    },
     "hero": {
       "art": {
         "x": 0,
@@ -149,9 +67,15 @@
       },
       "copy": {
         "x": 0.06,
-        "y": 0.36,
+        "y": 0.56,
         "width": 0.88,
         "height": 0.24
+      },
+      "hero-value": {
+        "x": 0.06,
+        "y": 0.36,
+        "width": 0.88,
+        "height": 0.17
       }
     },
     "r7-illustration": {
@@ -224,103 +148,9 @@
     }
   },
   "layout_effects": {
-    "pm-hook": {
-      "solid_bands": [
-        {
-          "id": "hero-accent-field",
-          "x": 0.05,
-          "y": 0.38,
-          "width": 0.9,
-          "height": 0.29,
-          "fill": "#FF6B5B"
-        }
-      ]
-    },
-    "pm-trend": {
-      "solid_bands": [
-        {
-          "id": "chart-panel",
-          "x": 0.04,
-          "y": 0.3,
-          "width": 0.92,
-          "height": 0.55,
-          "fill": "#FFFFFF"
-        }
-      ]
-    },
-    "pm-inflections": {
-      "solid_bands": [
-        {
-          "id": "inflection-panel",
-          "x": 0.04,
-          "y": 0.35,
-          "width": 0.92,
-          "height": 0.49,
-          "fill": "#FFFFFF"
-        }
-      ]
-    },
-    "pm-pricing": {
-      "solid_bands": [
-        {
-          "id": "market-panel",
-          "x": 0.05,
-          "y": 0.35,
-          "width": 0.43,
-          "height": 0.45,
-          "fill": "#F0EDE5"
-        },
-        {
-          "id": "news-panel",
-          "x": 0.52,
-          "y": 0.35,
-          "width": 0.43,
-          "height": 0.45,
-          "fill": "#FFFFFF"
-        }
-      ]
-    },
-    "pm-watch": {
-      "solid_bands": [
-        {
-          "id": "resolution-date-panel",
-          "x": 0.05,
-          "y": 0.34,
-          "width": 0.9,
-          "height": 0.21,
-          "fill": "#FF6B5B"
-        },
-        {
-          "id": "resolution-trigger-panel",
-          "x": 0.05,
-          "y": 0.6,
-          "width": 0.9,
-          "height": 0.24,
-          "fill": "#FFFFFF"
-        }
-      ]
-    },
     "hero": {
       "background_regions": [
         "art"
-      ],
-      "solid_bands": [
-        {
-          "id": "hero-text-safe-band",
-          "x": 0,
-          "y": 0.035,
-          "width": 1,
-          "height": 0.565,
-          "fill": "theme.background"
-        },
-        {
-          "id": "hero-source-safe-band",
-          "x": 0,
-          "y": 0.85,
-          "width": 1,
-          "height": 0.08,
-          "fill": "theme.background"
-        }
       ]
     }
   },
@@ -369,6 +199,13 @@
       "max_lines": 1,
       "line_height": 1.15,
       "align": "end"
+    },
+    "date": {
+      "font_size": 96,
+      "weight": 700,
+      "max_lines": 1,
+      "line_height": 1.1,
+      "font_family": "'Noto Serif KR', 'Noto Serif CJK KR', serif"
     }
   },
   "recipes": {
@@ -385,33 +222,6 @@
         }
       },
       "generation_direction": "Restrained magazine composition; generous negative space; one clear subject; quiet material texture. No ornamental mini dashboards or icon grids. Typography remains in reserved compositor regions.",
-      "default_layout": "text"
-    },
-    "r4-prediction-market": {
-      "theme": {
-        "background": "#F7F5F0",
-        "foreground": "#14213D",
-        "accent": "#FF6B5B",
-        "font_family": "AES Sans KR"
-      },
-      "typography": {
-        "headline": {
-          "font_size": 70,
-          "weight": 800,
-          "font_family": "'Noto Serif KR', 'Noto Serif CJK KR', serif"
-        },
-        "body": {
-          "font_size": 38,
-          "weight": 600,
-          "font_family": "AES Sans KR"
-        },
-        "source": {
-          "font_size": 22,
-          "weight": 400,
-          "font_family": "AES Sans KR"
-        }
-      },
-      "generation_direction": "R4 Korean business-magazine card news. Build each canvas with a deliberate typographic grid, visible navy/coral hierarchy, large editorial type, and a strong data panel where evidence exists. Use only typography, the provided chart, and simple geometric bands. No generated images, faux data, dashboards, process labels, page folios, or footer copy.",
       "default_layout": "text"
     },
     "dark-data": {

@@ -396,7 +396,9 @@ export async function executeVisual(plan, { baseDir = process.cwd(), preset = {}
   }
   if (requestsBundledFont(packet.theme.font_family) || packet.layers.some((l) => requestsBundledFont(l.font_family))) {
     adapter = { ...adapter, env: bundledFontEnv() }; // rasterizer sees only the bundled fonts: same result on any machine
-    for (const w of new Set(packet.layers.filter((l) => l.kind === 'text').flatMap((l) => [l.weight, ...(l.emphasis ?? []).map((e) => e.weight ?? l.weight)]))) verifyBundledResolution(w, adapter.env);
+    for (const l of packet.layers.filter((layer) => layer.kind === 'text' && requestsBundledFont(layer.font_family ?? packet.theme.font_family))) {
+      for (const w of new Set([l.weight, ...(l.emphasis ?? []).map((e) => e.weight ?? l.weight)])) verifyBundledResolution(w, adapter.env);
+    }
   }
   const { width, height } = packet.canvas;
   const measure = textMeasurer(adapter, packet.theme.font_family);

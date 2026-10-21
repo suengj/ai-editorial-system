@@ -9,6 +9,7 @@ import { isolatedEnv } from './svg-tools.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 export const FONT_DIR = resolve(HERE, '../../assets/fonts/aes-sans-kr');
+export const OPTIONAL_SERIF_FONT_ENV = 'AES_NOTO_SERIF_KR_FONT';
 export const FONT_PREFERENCES_PATH = resolve(HERE, '../../editorial/font-preferences.v1.json');
 export const FONT_INVENTORY_PATH = resolve(HERE, '../../editorial/font-inventory.v1.json');
 export const ENTRY_MANIFEST_PATH = resolve(HERE, '../../editorial/entry-manifest.json');
@@ -164,17 +165,23 @@ export function bundledFontDigest() {
   const h = createHash('sha256'), m = fontManifest();
   h.update(readFileSync(resolve(FONT_DIR, 'manifest.json')));
   for (const f of Object.values(m.files)) h.update(readFileSync(resolve(FONT_DIR, f)));
+  // Optional R4 headline face is external because the OFL font is larger than the repo's binary limit.
+  const serifPath = process.env[OPTIONAL_SERIF_FONT_ENV];
+  if (serifPath) { h.update(OPTIONAL_SERIF_FONT_ENV); h.update(serifPath); h.update(readFileSync(resolve(serifPath))); }
   return `sha256:${h.digest('hex')}`;
 }
 
 /** Environment that makes the rasterizer see ONLY the bundled fonts (no system fonts, same result on any machine). */
 export function bundledFontEnv() {
-  const tag = createHash('sha256').update(FONT_DIR).digest('hex').slice(0, 12);
+  const serifPath = process.env[OPTIONAL_SERIF_FONT_ENV] ? resolve(process.env[OPTIONAL_SERIF_FONT_ENV]) : null;
+  if (serifPath && !existsSync(serifPath)) throw typographyError('FONT_FALLBACK', `${OPTIONAL_SERIF_FONT_ENV} does not exist: ${serifPath}`);
+  const dirs = [FONT_DIR, ...(serifPath ? [dirname(serifPath)] : [])];
+  const tag = createHash('sha256').update(dirs.join('\n')).digest('hex').slice(0, 12);
   const dir = resolve(tmpdir(), `aes-fontconfig-${tag}`);
   const conf = resolve(dir, 'fonts.conf');
   if (!existsSync(conf)) {
     mkdirSync(resolve(dir, 'cache'), { recursive: true });
-    writeFileSync(conf, `<?xml version="1.0"?><!DOCTYPE fontconfig SYSTEM "fonts.dtd"><fontconfig><dir>${FONT_DIR}</dir><cachedir>${resolve(dir, 'cache')}</cachedir></fontconfig>\n`);
+    writeFileSync(conf, `<?xml version="1.0"?><!DOCTYPE fontconfig SYSTEM "fonts.dtd"><fontconfig>${dirs.map((fontDir) => `<dir>${fontDir.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;')}</dir>`).join('')}<cachedir>${resolve(dir, 'cache')}</cachedir></fontconfig>\n`);
   }
   // PANGOCAIRO_BACKEND=fc: on macOS pango defaults to CoreText, which ignores FONTCONFIG_FILE and would silently use system fonts.
   return { FONTCONFIG_FILE: conf, FONTCONFIG_PATH: dir, PANGOCAIRO_BACKEND: 'fc' };

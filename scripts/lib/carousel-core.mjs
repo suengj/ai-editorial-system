@@ -37,7 +37,7 @@ const fail = (code, message) => { const e = new Error(message); e.code = code; t
 const need = (condition, code, message) => { if (!condition) fail(code, message); };
 const text = (s) => typeof s === 'string' && s.trim().length > 0;
 const contentOnlyCopyIssue = (s) => /\[[^\]]+\]|\{\{[^}]+\}\}|\b(?:PLACEHOLDER|TODO|TBD)\b|편집자 확인 필요/i.test(s)
-  || /30일 요청|실제 차트는 7일|거래가 관측된 점만 이었다|움직임은 확인, 원인은 확인 중|계약 가격은 사건의 확인이 아니다|\bPMC\b|\b\d+\s*\/\s*\d+\b|as[- ]of|기준 시각/i.test(s);
+  || /30일 요청|실제 차트는 7일|거래가 관측된 점만 이었다|움직임은 확인, 원인은 확인 중|계약 가격은 사건의 확인이 아니다|확정하지 않(?:습니다|는다|음)|확정되지 않(?:습니다|는다|음)|단정할 수 없(?:습니다|다)|단정하지 않(?:습니다|는다|음)|투자\s*권유|참고용|\bPMC\b|\b\d+\s*\/\s*\d+\b|as[- ]of|기준 시각/i.test(s);
 const slug = (s) => typeof s === 'string' && /^[a-z0-9][a-z0-9-]*$/.test(s);
 function keys(value, allowed, where) {
   need(obj(value), 'SERIES_INPUT', `${where} must be an object`);
@@ -116,7 +116,7 @@ export function planCarousel(series, catalog=loadVisualRecipes()) {
     const backgroundRegions = effect.background_regions ?? [];
     need(Array.isArray(backgroundRegions) && backgroundRegions.every((id) => Object.hasOwn(layout, id)), 'SERIES_LAYOUT_EFFECT', `${name}: invalid background region`);
     const solidBands = effect.solid_bands ?? [];
-    const bandedBackgroundRegions = solidBands.length ? backgroundRegions : [];
+    const bandedBackgroundRegions = effect.background_regions ?? [];
     const rec = {...recurring, ...(effect.recurring_regions ?? {})};
     const regionsToCheck = (series.footer_policy ?? 'source_and_pagination') === 'content_only'
       ? Object.fromEntries(Object.entries(rec).filter(([id]) => !['source','pagination'].includes(id)))
@@ -125,7 +125,7 @@ export function planCarousel(series, catalog=loadVisualRecipes()) {
     for (const band of solidBands) {
       need(obj(band) && /^[a-z0-9][a-z0-9-]*$/.test(band.id ?? '') && ['x','y','width','height'].every(k => Number.isFinite(band[k]) && band[k] >= 0 && band[k] <= 1) && band.width > 0 && band.height > 0 && band.x + band.width <= 1 && band.y + band.height <= 1 && (band.fill === 'theme.background' || /^#[0-9a-f]{6}$/i.test(band.fill ?? '')) && (band.gradient === undefined || (Array.isArray(band.gradient) && band.gradient.length >= 2 && band.gradient.every(st => Array.isArray(st) && st.length === 2 && st.every(n => Number.isFinite(n) && n >= 0 && n <= 1)))), 'SERIES_LAYOUT_EFFECT', `${name}: invalid solid band`);
     }
-    if (backgroundRegions.length) {
+    if (backgroundRegions.length && solidBands.length) {
       const contains = (outer, inner) => inner.x >= outer.x && inner.y >= outer.y && inner.x + inner.width <= outer.x + outer.width && inner.y + inner.height <= outer.y + outer.height;
       const textRegions = [rec.eyebrow, rec.headline, rec.source, rec.pagination];
       need(solidBands.length > 0 && textRegions.every(region => solidBands.some(band => contains(band, region))), 'SERIES_TEXT_SAFE_BAND', `${name}: recurring text regions must fit inside a declared solid/scrim text-safe band`);
@@ -183,7 +183,7 @@ export function planCarousel(series, catalog=loadVisualRecipes()) {
     need(layout, 'SERIES_LAYOUT', String(layoutName));
     need(Array.isArray(frameBlocks) && frameBlocks.length > 0 && frameBlocks.length <= Object.keys(layout).length, 'SERIES_BLOCKS', `${f.id}: one block per region; split independent messages`);
     const textSafeEffect = catalog.layout_effects?.[layoutName] ?? {};
-    if ((textSafeEffect.background_regions ?? []).length) {
+    if ((textSafeEffect.background_regions ?? []).length && (textSafeEffect.solid_bands ?? []).length) {
       const bands = textSafeEffect.solid_bands ?? [];
       const contains = (outer, inner) => inner && inner.x >= outer.x && inner.y >= outer.y && inner.x + inner.width <= outer.x + outer.width && inner.y + inner.height <= outer.y + outer.height;
       for (const b of frameBlocks) if (b?.kind === 'text') need(bands.some(band => contains(band, layout[b.region])), 'SERIES_TEXT_SAFE_BAND', `${layoutName}.${b.region}: text region must fit inside a declared solid/scrim text-safe band`);
@@ -476,9 +476,16 @@ export async function executeCarousel(series,{baseDir=process.cwd(),outDir,raste
         const phone=rasterize(svgDocument(phoneWidth,phoneHeight,element),adapter);
         writeFileSync(resolve(outDir,f.id,'phone.png'),phone);
         f.phone={ref:`${f.id}/phone.png`,sha256:hash(phone)};
-        tiles.push(`<svg x="${(i%3)*phoneWidth}" y="${Math.floor(i/3)*phoneHeight}" width="${phoneWidth}" height="${phoneHeight}">${element}</svg>`);
+        // The registered PMC five-card package uses a centered 3+2 grid; generic carousels retain their 3-column grid.
+        const gap=12, sheetWidth=phoneWidth*3+gap*4, contentWidth=sheetWidth-gap*2;
+        const row=i<3?0:Math.floor(i/3), col=i%3, rowCount=compiled.frames.length===5&&row===1?2:3;
+        const rowWidth=rowCount*phoneWidth+(rowCount-1)*gap;
+        const x=gap+Math.round((contentWidth-rowWidth)/2)+col*(phoneWidth+gap), y=gap+row*(phoneHeight+gap);
+        const phoneElement=`<image width="${phoneWidth}" height="${phoneHeight}" xlink:href="data:image/png;base64,${phone.toString('base64')}"/>`;
+        tiles.push(`<svg x="${x}" y="${y}" width="${phoneWidth}" height="${phoneHeight}">${phoneElement}</svg>`);
       }
-      const sheet=rasterize(svgDocument(Math.min(3,result.frames.length)*phoneWidth,Math.ceil(result.frames.length/3)*phoneHeight,tiles.join('')),adapter);
+      const gap=12, sheetWidth=Math.min(3,result.frames.length)*phoneWidth+(Math.min(3,result.frames.length)-1)*gap+gap*2, sheetHeight=Math.ceil(result.frames.length/3)*phoneHeight+(Math.ceil(result.frames.length/3)-1)*gap+gap*2;
+      const sheet=rasterize(svgDocument(sheetWidth,sheetHeight,`<rect x="0" y="0" width="${sheetWidth}" height="${sheetHeight}" fill="#E8E4DA"/>${tiles.join('')}`),adapter);
       writeFileSync(resolve(outDir,'contact-sheet.png'),sheet); result.contact_sheet={ref:'contact-sheet.png',sha256:hash(sheet)};
     }
     writeJson(resolve(outDir,'review-worklist.json'),{series_id:series.series_id,...(series.art_direction_sha256?{art_direction_sha256:series.art_direction_sha256}:{}),review_owner:compiled.review_owner,status:'NOT_REVIEWED',not_a_visual_review_record:true,

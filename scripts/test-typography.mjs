@@ -108,6 +108,22 @@ await ok('font digest covers bytes; env isolates FONTCONFIG_*', () => {
   assert(!('FONTCONFIG_SYSROOT' in e) && e.FONTCONFIG_FILE && e.FONTCONFIG_PATH);
   assert.throws(() => isolatedEnv({ FONTCONFIG_FILE: 'x' }));
 });
+await ok('external Noto Serif face is optional, path-registered and digest-bound', () => {
+  const envKey = T.OPTIONAL_SERIF_FONT_ENV, oldPath = process.env[envKey];
+  const external = mkdtempSync(resolve(tmpdir(), 'aes-noto-serif-test-'));
+  const fontPath = resolve(external, 'NotoSerifKR.ttf'); writeFileSync(fontPath, Buffer.from('test font bytes'));
+  try {
+    process.env[envKey] = fontPath;
+    const fontEnv = T.bundledFontEnv();
+    assert(readFileSync(fontEnv.FONTCONFIG_FILE, 'utf8').includes(external));
+    assert(/^sha256:[0-9a-f]{64}$/.test(T.bundledFontDigest()));
+    process.env[envKey] = resolve(external, 'missing.ttf');
+    assert.throws(() => T.bundledFontEnv(), code('FONT_FALLBACK'));
+  } finally {
+    if (oldPath === undefined) delete process.env[envKey]; else process.env[envKey] = oldPath;
+  }
+  assert(/^sha256:[0-9a-f]{64}$/.test(T.bundledFontDigest()), 'default bundled-font fallback remains available');
+});
 await ok('verifyChromeText compares printed vs resolved', () => {
   const r = resolveChrome({ target: 'acctA', catalog }); assert(verifyChromeText(r, { brand_label: 'ALPHA LAB' }));
   assert.throws(() => verifyChromeText(r, { brand_label: 'OTHER' }), code('UNRESOLVED_LABEL'));

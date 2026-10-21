@@ -99,9 +99,13 @@ try {
     assert.equal(s.y.min, 0); assert.equal(s.y.max, 100); assert.equal(s.y.unit, '%');
     assert.equal(s.source_note, '출처 Manifold'); assert.ok(!/https?:|\//.test(s.source_note));
   });
-  await test('a bundle without an outcome label gets a clean series title (no dangling separator)', () => {
+  await test('chart-facing period and captions use reader language without process labels', () => {
     const b = loadPmcPlotBundle(GAP); b.plot.meta.outcome_label = null; b.plot.meta.outcome = null;
-    const s = pmcPlotToChartSpec(b); assert.equal(s.title, 'Manifold'); assert.equal(s.series[0].name, 'manifold');
+    const s = pmcPlotToChartSpec(b);
+    assert.match(s.title, /^\d+월 \d+일 → /); assert.equal(s.period, '이번 주'); assert.equal(s.series[0].name, 'manifold');
+    assert.equal(s.x.label, '날짜'); assert.equal(s.x.show_label, false);
+    assert.equal(s.source_note, '출처 Manifold');
+    assert(!/UTC|관측|시장 확률|202\d-/.test(`${s.period} ${s.x.label} ${s.source_note}`));
   });
   await test('a typed title without --title-origin is request_summary; PMC meta.title is source_verbatim', () => {
     const b = loadPmcPlotBundle(GAP), opts = { specRef: 'c', specSha256: 'sha256:x', plotRef: 'pmc.plot.json' };
@@ -149,6 +153,15 @@ try {
     assert.equal(r.receipt.charts[0].source_sha256, compileHashOf(readFileSync(resolve(b.inputs, 'chart.spec.json'), 'utf8')).sha256);
     const img = decodePng(readFileSync(resolve(dir, 'out-main/image.png'))); assert.deepEqual([img.width, img.height], [1080, 1350]);
     assert.equal(r.receipt.checks.actual_pixel_semantic_review, 'NOT_RUN_PHASE4');
+  });
+  await test('reader-facing Korean delta and chart endpoint preserve PMC parity without a raw delta string', () => {
+    const b = bind('reader-copy');
+    const receipt = receiptFor(b.bundle, b.spec);
+    const pp = b.bundle.plot.delta.value_pp;
+    receipt.text = [{ id: 'headline', text: `이번 주, ${Math.abs(pp).toLocaleString('ko-KR', { maximumFractionDigits: 2 })}%p ${pp < 0 ? '내렸다' : '올랐다'}` }];
+    const qa = verifyRenderAgainstBundle(b.bundle, receipt);
+    assert.equal(qa.ok, true); assert.deepEqual(qa.notes, []);
+    assert.equal(qa.checks.hero_text_layer, 'PASS'); assert.equal(qa.checks.delta_text_layer, 'PASS');
   });
   await rtest('the gap is drawn as two separate sub-paths, not bridged', async () => {
     const b = bind('in-gap'); const r = renderChartPanel(b.spec, { width: 972, height: 675, theme: b.plan.task.theme ?? {}, measure: textMeasurer(adapter) });

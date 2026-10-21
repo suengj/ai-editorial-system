@@ -86,7 +86,7 @@ await ok('review2 #14: a single-colour asset is never a generated-image success,
     assert.equal((await run(series({ ref: 'flat.png', generation: { ...g, flat_art_attestation: att } }), `s14-${att.by}`)).frames[0].status, GENERATION_NOT_VERIFIED, att.by);
 });
 await ok('S5: a kind:"image" layer that says it is generated gets the same checks', async () => {
-  const mk = (extra) => { const s = series({ ref: 'rich.png' }); const b = s.frames[0].blocks[0]; b.kind = 'image'; delete b.instruction; delete b.generation; Object.assign(b, extra); return s; };
+  const mk = (extra) => { const s = series({ ref: 'rich.png' }); const b = s.frames[0].blocks[0]; b.kind = 'image'; b.fit = 'contain'; delete b.instruction; delete b.generation; Object.assign(b, extra); return s; };
   assert.equal((await run(mk({ provenance: { origin: 'generated' } }), 's5-img1')).frames[0].status, GENERATION_NOT_VERIFIED);
   assert.equal((await run(mk({ rights_note: 'AI generated with a provider' }), 's5-img2')).frames[0].status, GENERATION_NOT_VERIFIED);
   assert.equal((await run(mk({ provenance: { origin: 'generated' }, generation: ev('rich.png', rich) }), 's5-img3')).frames[0].status, GENERATED_OK);
@@ -107,7 +107,10 @@ await ok('real-evidence rich asset is GENERATED_COMPOSED_NEEDS_REVIEW and the as
   assert.equal(rc.publication_authorized, false); assert.equal(rc.api_calls, 0);
 });
 await ok('deterministic chart/diagram frames keep RENDERED_NEEDS_REVIEW', async () => {
-  const r = await run(structuredClone(base), 'plain'); assert.equal(r.status, RENDER_OK);
+  const r = await run(structuredClone(base), 'plain');
+  assert.equal(r.status, 'INCOMPLETE');
+  assert.equal(r.frames[0].status, 'RENDER_REQUIRED', 'the fallback illustration still needs a real image');
+  assert.deepEqual(r.frames.slice(1).map((f) => f.status), [RENDER_OK, RENDER_OK], 'deterministic chart and text frames render independently');
 });
 
 // Repair budget + preservation. Base = 'good'. Fix 1 edits only the closing frame text.

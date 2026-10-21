@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0.0",
-  "series_id": "prediction-market-sample",
-  "request": "Five-card Korean prediction-market editorial series for signalytics-news. Render only after replacing data-bound copy from the verified PMC bundle and verifying the sidecar facts.",
+  "series_id": "prediction-market-series",
+  "request": "Signalytics five-card Korean editorial series using the shared R4 photo-fullbleed carousel and the existing PMC chart panel.",
   "source": {
     "ref": "pmc/inputs/pmc.plot.json",
     "scope": "source_bound"
@@ -10,11 +10,11 @@
     "surface": "instagram",
     "artifact": "visual/slide-image"
   },
-  "recipe": "r4-prediction-market",
+  "recipe": "r4-photo-fullbleed",
   "visual_style": {
-    "requested_style": "AUTO",
+    "requested_style": "R4",
     "content_kind": "other",
-    "photo_asset_quality": "absent"
+    "photo_asset_quality": "strong"
   },
   "footer_policy": "content_only",
   "series_label": "",
@@ -50,21 +50,21 @@
       ]
     },
     {
-      "id": "inflections",
+      "id": "why",
       "depends_on": [
         "trend"
       ]
     },
     {
-      "id": "pricing-news",
+      "id": "korea-impact",
       "depends_on": [
-        "inflections"
+        "why"
       ]
     },
     {
       "id": "watch-next",
       "depends_on": [
-        "pricing-news"
+        "korea-impact"
       ]
     }
   ],
@@ -75,34 +75,43 @@
       "beat_ids": [
         "hook"
       ],
-      "takeaway": "계약 시장에 반영된 가능성을 한눈에 보여준다.",
-      "alt_text": "자연스러운 한국어 질문 아래 큰 확률과 짧은 해석이 놓인 표지 카드.",
-      "headline": "연준, 올해 안에 금리 내릴까?",
+      "takeaway": "시리즈의 핵심 가격 신호는 92%다.",
+      "alt_text": "연준 금리 인상 시장 가격 92%를 크게 보여주는 표지와 연준 건물을 상징하는 장면.",
+      "headline": "시장은 이미\n‘인상’에 걸었다",
       "source_note": "내부 귀속 정보 — 카드에는 표시하지 않음",
-      "layout": "pm-hook",
+      "layout": "hero",
       "blocks": [
         {
-          "id": "market-name",
-          "region": "market-name",
-          "kind": "text",
-          "text": "[플랫폼 원문 시장명]",
-          "text_role": "label",
-          "source_ref": "pmc/inputs/pmc.plot.json"
+          "id": "hook-art",
+          "region": "art",
+          "kind": "generated",
+          "ref": "generated/hook.png",
+          "fit": "cover",
+          "rights_note": "Original generated editorial scene for this series.",
+          "focal_box": {
+            "x": 0.54,
+            "y": 0.34,
+            "width": 0.38,
+            "height": 0.48
+          },
+          "focal_min_area_ratio": 1,
+          "instruction": "Text-free full-bleed editorial photograph: a dignified generic neoclassical central-bank building exterior at early morning, no seal, flag, signage, recognizable person, text, or numbers. Keep the upper-left and central text area pale, quiet, and uncluttered; place the building mass and warm sunlight toward the right and lower third. Vertical 4:5 crop-safe composition."
         },
         {
           "id": "hero-value",
-          "region": "hero",
+          "region": "hero-value",
           "kind": "text",
-          "text": "[PMC hero value]",
+          "text": "92%",
           "text_role": "hero",
           "source_ref": "pmc/inputs/pmc.plot.json"
         },
         {
-          "id": "hook-takeaway",
-          "region": "takeaway",
+          "id": "hook-copy",
+          "region": "copy",
           "kind": "text",
-          "text": "[한 줄 한국어 해석]",
-          "source_ref": "pmc/inputs/pmc.plot.json"
+          "text": "인하를 예상했다면, 이 숫자는 정반대 신호다.",
+          "text_role": "body",
+          "source_ref": "source-sidecar.json"
         }
       ]
     },
@@ -112,88 +121,110 @@
       "beat_ids": [
         "trend"
       ],
-      "takeaway": "이번 주 원관측에서 확인되는 오르내림만 읽는다.",
-      "alt_text": "PMC plot bundle의 원관측으로 그린 가격 추세 차트.",
-      "headline": "이번 주, 가격은 어디로 움직였나",
-      "source_note": "차트 내부 작은 출처 표기만 허용",
-      "layout": "pm-trend",
+      "takeaway": "10월 14일 → 19일 사이 1%p 내렸다.",
+      "alt_text": "10월 14일부터 19일까지의 Kalshi 확률 원관측을 표시한 선형 차트. 세로축은 85%부터 95%까지 실제 눈금으로 표시.",
+      "headline": "이번 주, 1%p 내렸지만\n여전히 90%대",
+      "source_note": "내부 귀속 정보 — 카드에는 표시하지 않음",
+      "layout": "visual",
       "blocks": [
         {
           "id": "trend-chart",
-          "region": "chart",
+          "region": "content",
           "kind": "chart",
           "ref": "pmc/inputs/chart.spec.json",
           "sha256": "PLACEHOLDER: replace with chart.spec.json SHA-256"
-        },
-        {
-          "id": "trend-takeaway",
-          "region": "takeaway",
-          "kind": "text",
-          "text": "[이번 주 변동을 요약하는 한 줄]",
-          "source_ref": "pmc/inputs/pmc.plot.json"
         }
       ]
     },
     {
-      "id": "inflections",
+      "id": "why",
       "function": "explain_mechanism",
       "beat_ids": [
-        "inflections"
+        "why"
       ],
-      "takeaway": "움직임의 크기와 날짜를 PMC 원관측으로 보여준다.",
-      "alt_text": "이번 주 확률이 가장 크게 움직인 날짜와 값을 짧게 짚은 카드.",
-      "headline": "확률이 꺾인 순간",
+      "takeaway": "CPI 발표 뒤 계약 가격은 93%에서 90%대로 움직였다.",
+      "alt_text": "9월 CPI와 워시 의장의 발언, 같은 주 금리 인상 계약 가격의 흐름을 한 장에 엮은 장면.",
+      "headline": "물가는 올랐고,\n연준은 방향을 열어뒀다",
       "source_note": "내부 귀속 정보 — 카드에는 표시하지 않음",
-      "layout": "pm-inflections",
+      "layout": "hero",
       "blocks": [
         {
-          "id": "inflection-copy",
-          "region": "content",
-          "kind": "text",
-          "text": "[날짜와 PMC 값으로만 구성한 변곡점 1–3개]",
-          "source_ref": "pmc/inputs/pmc.plot.json"
+          "id": "why-art",
+          "region": "art",
+          "kind": "generated",
+          "ref": "generated/why.png",
+          "fit": "cover",
+          "rights_note": "Original generated editorial scene for this series.",
+          "focal_box": {
+            "x": 0.54,
+            "y": 0.34,
+            "width": 0.38,
+            "height": 0.48
+          },
+          "focal_min_area_ratio": 1,
+          "instruction": "Text-free full-bleed editorial photograph of an economist desk: printed but completely unreadable blank chart paper, pencil, neutral coffee cup and warm window light; no letters, numbers, logos, fake screen, portrait, or UI. Keep the upper-left and central overlay region pale and visually quiet; place the paper and objects toward the right and lower third. Vertical 4:5 crop-safe composition."
         },
         {
-          "id": "inflection-takeaway",
-          "region": "takeaway",
+          "id": "why-value",
+          "region": "hero-value",
           "kind": "text",
-          "text": "[움직임의 크기를 담은 한 줄]",
-          "source_ref": "pmc/inputs/pmc.plot.json"
+          "text": "0.6%",
+          "text_role": "hero",
+          "source_ref": "source-sidecar.json"
+        },
+        {
+          "id": "why-copy",
+          "region": "copy",
+          "kind": "text",
+          "text": "10월 14일 · 9월 CPI 전월 대비 0.6% 상승, 계약은 93%에서 출발.\n10월 16일 · 워시가 두 차례 회의 결과를 예단하지 않자, 가격은 90%대에 남았다.",
+          "text_role": "body",
+          "source_ref": "source-sidecar.json"
         }
       ]
     },
     {
-      "id": "pricing-news",
-      "function": "compare",
+      "id": "korea-impact",
+      "function": "show_consequence",
       "beat_ids": [
-        "pricing-news"
+        "korea-impact"
       ],
-      "takeaway": "계약 가격과 확인된 사실을 서로 다른 칸에 둔다.",
-      "alt_text": "시장 가격 신호와 확인된 공개 사실을 좌우로 비교한 카드.",
-      "headline": "가격은 움직였다. 확인된 사실은?",
+      "takeaway": "미국 금리와 원/달러, 한국은행 판단이 맞물린다.",
+      "alt_text": "서울 금융지구를 상징하는 장면과 현재 미국·한국 기준금리 차이, 원/달러 환율 변수를 짧게 설명한 카드.",
+      "headline": "한국에선\n원/달러와 금리차",
       "source_note": "내부 귀속 정보 — 카드에는 표시하지 않음",
-      "layout": "pm-pricing",
+      "layout": "hero",
       "blocks": [
         {
-          "id": "pricing-copy",
-          "region": "left",
-          "kind": "text",
-          "text": "시장 가격\n[PMC hero value]\n\n계약에 반영된 가능성",
-          "source_ref": "pmc/inputs/pmc.plot.json"
+          "id": "korea-art",
+          "region": "art",
+          "kind": "generated",
+          "ref": "generated/korea.png",
+          "fit": "cover",
+          "rights_note": "Original generated editorial scene for this series.",
+          "focal_box": {
+            "x": 0.54,
+            "y": 0.34,
+            "width": 0.38,
+            "height": 0.48
+          },
+          "focal_min_area_ratio": 1,
+          "instruction": "Text-free full-bleed editorial photograph of Seoul financial-district towers at blue hour with subtle abstract red-and-blue light reflections suggesting currency exchange; no currency banknotes, letters, numbers, logos, signage, recognizable people, or UI. Keep the upper-left and central overlay region pale and quiet; place towers and light reflections to the right and lower third. Vertical 4:5 crop-safe composition."
         },
         {
-          "id": "news-copy",
-          "region": "right",
+          "id": "korea-value",
+          "region": "hero-value",
           "kind": "text",
-          "text": "확인된 사실\n[날짜가 확인된 공개 정보 1–3줄]",
-          "source_ref": "pmc/inputs/pmc.plot.json"
+          "text": "3.75–4.00%",
+          "text_role": "hero",
+          "source_ref": "source-sidecar.json"
         },
         {
-          "id": "pricing-takeaway",
-          "region": "takeaway",
+          "id": "korea-copy",
+          "region": "copy",
           "kind": "text",
-          "text": "[가격 신호와 확인 사실을 구분하는 한 줄]",
-          "source_ref": "pmc/inputs/pmc.plot.json"
+          "text": "한국 기준금리 3.00%보다 높다.\nFed가 올리면 한미 금리차가 벌어진다.\n달러·원 흐름과 한국은행 판단에도 변수다.",
+          "text_role": "body",
+          "source_ref": "source-sidecar.json"
         }
       ]
     },
@@ -203,28 +234,75 @@
       "beat_ids": [
         "watch-next"
       ],
-      "takeaway": "다음 가격 변화를 가를 공개 일정을 구체적으로 짚는다.",
-      "alt_text": "계약 날짜와 공식 발표 등 확인된 다음 신호가 적힌 마무리 카드.",
-      "headline": "다음 변곡점은 언제?",
+      "takeaway": "FOMC 결정과 다음 물가 지표, 연준 발언이 가격을 바꿀 변수다.",
+      "alt_text": "큰 날짜 27–28과 FOMC 회의, 이후 가격에 영향을 줄 수 있는 물가 지표와 연준 발언.",
+      "headline": "10월",
       "source_note": "내부 귀속 정보 — 카드에는 표시하지 않음",
-      "layout": "pm-watch",
+      "layout": "hero",
       "blocks": [
         {
-          "id": "resolution-date",
-          "region": "date",
-          "kind": "text",
-          "text": "[검증된 계약 정산일]",
-          "text_role": "hero",
-          "source_ref": "pmc/inputs/pmc.plot.json"
+          "id": "watch-art",
+          "region": "art",
+          "kind": "generated",
+          "ref": "generated/watch.png",
+          "fit": "cover",
+          "rights_note": "Original generated editorial scene for this series.",
+          "focal_box": {
+            "x": 0.34,
+            "y": 0.34,
+            "width": 0.64,
+            "height": 0.64
+          },
+          "focal_min_area_ratio": 1,
+          "instruction": "Text-free editorial photograph of a blank paper calendar with a coral-circled empty week square, navy pen and warm window light. Keep upper-left and center pale for dark headline overlay. No dates, letters, numbers, logos, screens, charts, UI, people, or watermark."
         },
         {
-          "id": "watch-trigger",
-          "region": "trigger",
+          "id": "meeting-date",
+          "region": "hero-value",
           "kind": "text",
-          "text": "[정산 판단에 직접 연결되는 확인된 공개 일정 또는 규칙]",
-          "source_ref": "pmc/inputs/pmc.plot.json"
+          "text": "27–28",
+          "text_role": "hero",
+          "source_ref": "source-sidecar.json"
+        },
+        {
+          "id": "watch-copy",
+          "region": "copy",
+          "kind": "text",
+          "text": "FOMC 회의 결과, 물가 지표와 연준 발언이\n시장 가격을 바꿀 다음 신호다.",
+          "text_role": "body",
+          "source_ref": "source-sidecar.json"
         }
       ]
     }
-  ]
+  ],
+  "typography": {
+    "headline": {
+      "font_size": 68,
+      "weight": 700,
+      "max_lines": 2,
+      "line_height": 1.15,
+      "font_family": "'Noto Serif KR', 'Noto Serif CJK KR', serif"
+    },
+    "hero": {
+      "font_size": 214,
+      "weight": 800,
+      "max_lines": 1,
+      "line_height": 1.05,
+      "font_family": "AES Sans KR"
+    },
+    "body": {
+      "font_size": 36,
+      "weight": 600,
+      "max_lines": 7,
+      "line_height": 1.35,
+      "font_family": "AES Sans KR"
+    },
+    "label": {
+      "font_size": 30,
+      "weight": 600,
+      "max_lines": 2,
+      "line_height": 1.2,
+      "font_family": "AES Sans KR"
+    }
+  }
 }

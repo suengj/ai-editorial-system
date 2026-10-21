@@ -20,6 +20,7 @@ const PLOT = { w: W - PAD.left - PAD.right, h: H - PAD.top - PAD.bottom };
 
 /** Fixed precision so output does not depend on floating-point formatting. */
 const n = (v) => Number(v).toFixed(2);
+const chartCaption = (spec) => spec.x?.show_label === false ? spec.source_note : `${spec.x.label} · ${spec.source_note}`;
 
 const esc = (s) => String(s)
   .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
@@ -107,7 +108,7 @@ ${gridLines}
   <line class="axis" x1="${n(PAD.left)}" y1="${n(PAD.top + PLOT.h)}" x2="${n(PAD.left + PLOT.w)}" y2="${n(PAD.top + PLOT.h)}"/>
 ${xTicks}
 ${seriesEls}
-  <text class="note" x="${n(PAD.left)}" y="${n(H - 12)}">${esc(spec.x.label)} · ${esc(spec.source_note)}</text>
+  <text class="note" x="${n(PAD.left)}" y="${n(H - 12)}">${esc(chartCaption(spec))}</text>
 </svg>
 `;
 }
@@ -249,9 +250,14 @@ export function renderChartPanel(spec, { width = 900, height = 520, theme = {}, 
   for (const color of [fg, accent]) if (!/^#[0-9a-f]{6}$/i.test(color)) fail('theme colors must be #RRGGBB');
   const fs = Math.max(16, Math.min(28, width / 36));
   const fmt = (v) => `${v.toFixed(decimals)}${spec.y.unit}`;
+  const axisFmt = (v) => `${v.toFixed(Number.isInteger(v) ? decimals : Math.max(1, decimals))}${spec.y.unit}`;
   const tw = (t) => measure ? measure(t, fs, 400) : [...String(t)].length * fs;
-  const left = Math.max(78, Math.ceil(Math.max(tw(fmt(ymin)), tw(fmt(ymax))) + 18));
-  const right = spec.type === 'line' ? Math.max(100, Math.ceil(Math.max(...spec.series.map((s) => tw(fmt(s.points.filter((p) => p[1] !== null).at(-1)[1])))) + 22)) : 26;
+  const yTickLabels = Array.from({ length: 5 }, (_, i) => {
+    const value = ymin + (ymax - ymin) * i / 4;
+    return axisFmt(value);
+  });
+  const left = Math.max(78, Math.ceil(Math.max(...yTickLabels.map(tw)) + 18));
+  const right = spec.type === 'line' ? Math.max(100, Math.ceil(Math.max(...spec.series.map((s) => tw(axisFmt(s.points.filter((p) => p[1] !== null).at(-1)[1])))) + 22)) : 26;
   const top = spec.type === 'bar' ? 100 : 78, bottom = spec.type === 'bar' ? 126 : 120, pw = width - left - right, ph = height - top - bottom;
   if (pw < width * 0.35 || ph < 80) fail('labels leave insufficient plot space; increase panel size or use another layout');
   const sx = (x) => left + (xmax === xmin ? pw / 2 : ((x - xmin) / (xmax - xmin)) * pw);
@@ -266,7 +272,7 @@ export function renderChartPanel(spec, { width = 900, height = 520, theme = {}, 
   for (let i = 0; i <= 4; i++) {
     const v = ymin + (ymax - ymin) * i / 4, y = sy(v);
     els.push(`<line x1="${n(left)}" y1="${n(y)}" x2="${n(left + pw)}" y2="${n(y)}" stroke="${fg}" stroke-opacity="0.14"/>`);
-    text(fmt(v), left - 10, y + fs * 0.32, { anchor: 'end', limit: left - 12 });
+    text(axisFmt(v), left - 10, y + fs * 0.32, { anchor: 'end', limit: left - 12 });
   }
   const tick = (x) => spec.x.tick_labels?.[String(x)] ?? String(x);
   const endpointYs = [];
@@ -285,8 +291,8 @@ export function renderChartPanel(spec, { width = 900, height = 520, theme = {}, 
       while (endpointYs.some((y) => Math.abs(y - ly) < fs * 1.2)) ly += fs * 1.25;
       if (ly > top + ph + fs * 0.5) fail('endpoint labels collide; split series or increase height');
       endpointYs.push(ly);
-      text(fmt(last[1]), left + pw + 10, ly + fs * 0.32, { limit: right - 12 });
-      displayed.push({ series: s.name, endpoint: last, endpoint_label: fmt(last[1]), claim: s.claim });
+      text(axisFmt(last[1]), left + pw + 10, ly + fs * 0.32, { limit: right - 12 });
+      displayed.push({ series: s.name, endpoint: last, endpoint_label: axisFmt(last[1]), claim: s.claim });
     } else {
       const cell = pw / actual.length;
       for (const [j, p] of actual.entries()) {
@@ -302,7 +308,7 @@ export function renderChartPanel(spec, { width = 900, height = 520, theme = {}, 
     text(tick(xmin), left, top + ph + fs + 8, { limit: pw / 2 });
     if (xmin !== xmax) text(tick(xmax), left + pw, top + ph + fs + 8, { anchor: 'end', limit: pw / 2 });
   }
-  text(`${spec.x.label} · ${spec.source_note}`, left, height - 12);
+  text(chartCaption(spec), left, height - 12);
   if (spec.series.length > 1) {
     let lx = left;
     for (const [i, s] of spec.series.entries()) {

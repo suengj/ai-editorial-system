@@ -7,13 +7,12 @@ card content; PMC continues to own market history and numeric lineage.
 
 ## Copy rules
 
-- Select a Korean-relevant market with genuine uncertainty (roughly 20–80%) and
-  a visible move in the available observation window. Prefer Fed/FOMC, US
-  politics, AI/technology or macro topics on Polymarket or Kalshi. Avoid flat,
-  near-expiry markets.
-- Open with a natural Korean question. Put the exact platform market name in
-  small type below it. Make the current PMC hero probability the largest type
-  on card 1, followed by one short Korean takeaway.
+- Choose a Korean-relevant market with a useful verified history. Use the exact
+  question and resolution rule in the sidecar; do not force a probability band
+  that changes the strongest verified story.
+- Open with a natural Korean statement or question. Make the current PMC hero
+  probability the largest type on card 1, followed by one short reader-facing
+  reason it matters. Keep the exact platform market name in the sidecar.
 - Use short, human-edited Korean. Each card has one point and 1–3 supporting
   lines containing concrete values and dates where the evidence supports them.
   Avoid report cadence, translated phrasing, abstract filler and repeated setup.
@@ -24,8 +23,8 @@ card content; PMC continues to own market history and numeric lineage.
 - Build the chart card with `scripts/bind-pmc-bundle.mjs`; copy the emitted
   `chart.spec.json` reference and SHA-256 into the rendered series. Verify the
   render against the same bundle. If movement is small, use an honest axis and
-  a delta callout; only use a zoomed axis when the numeric-visual policy permits
-  it and the actual range is plainly labeled.
+  a delta callout. Show actual y-axis tick values and the axis range in the chart
+  itself when zoomed; do not explain the axis in card prose.
 - Separate contract pricing from verified news. A price is a market signal,
   not evidence that an event happened. Cite every news claim in the sidecar
   JSON, with its date and direct source URL. Do not put research URLs on cards.
@@ -40,24 +39,26 @@ card content; PMC continues to own market history and numeric lineage.
 
 ## Five-card order
 
-1. `hook`: natural Korean question, exact market name in small type, huge PMC
-   probability and one-line takeaway.
-2. `trend`: chart of the actual available window. Label the dates visible in the
-   chart; for a seven-day history call it `이번 주`.
-3. `inflections`: one to three dated price turns from raw PMC values. Add event
-   context only when it has a dated, sidecar-cited source.
-4. `pricing-news`: contract price beside one to three independently verified
-   facts, each dated and linked in the sidecar. Keep interpretation concise.
-5. `watch-next`: next contract-relevant date and trigger, only when the exact
-   settlement rule or official schedule is verified. Otherwise use a verified
-   market-history takeaway that does not imply a trigger.
+1. `hook`: strong Korean headline, huge PMC probability and one-line reason it
+   matters.
+2. `trend`: chart of the actual available window, reader-facing dates and one
+   sentence of insight.
+3. `why`: two or three dated, directly sourced event lines woven into the raw
+   PMC price path. Keep temporal sequence distinct from proven causation.
+4. `korea-impact`: concise, verified USD/KRW, Korea-US rate differential and
+   Bank of Korea context.
+5. `watch-next`: a verified next date and the signals that can move the market
+   price.
 
 ## Visual direction
 
-Use the R4 Korean business-magazine language: Noto Serif KR headlines,
-Pretendard body, ivory background, navy type and a provider accent. Give every
-card a clear typographic grid and a deliberate chart, numeric block, comparison
-panel or simple geometric composition. Use a dominant hero number on card 1.
-Do not use paid image generation, empty beige layouts, faux data, dashboards,
-process language, pagination or footer copy. Cards are content-only; only the
-chart may carry a tiny provider credit.
+Reuse the existing `r4-photo-fullbleed` recipe, `hero`/`visual` layouts,
+`business-magazine-core` and `carousel-core`. Keep prediction-market work as a
+content variant. If the owner opts in to generated imagery, use the existing
+generated-image evidence path for text-free scenes with no logos, fake
+screenshots or real-person likenesses. Keep the PMC chart in its deterministic
+chart panel. Use Noto Serif KR headlines and AES Sans KR body copy. Give every
+card the same grid, margins and text baseline; keep each text block inside its
+container with padding. Contact sheets contain only the five cards in a
+centered 3+2 arrangement. Cards are content-only; only the chart may carry a
+tiny provider credit.
