@@ -18,7 +18,8 @@ export function resolveCopyProfile(profileId) {
 }
 
 const MAGNITUDES = '천백십만억조';
-const MAGNITUDE_FOLLOWING_UNITS = '(?:명|원|달러|유로|엔|개|건|곳|회|배|톤|kg|㎏|km|㎞|명|가구|%|p)';
+const COMMON_UNITS = '(?:달러|명|원|개|건|배|년|월|일|시간|분|초|위|점|회|표)';
+const BARE_NUMBER_MAN_PARTICLES = '(?:큼|에|의|이|은|을|도|으로)';
 const CURRENCY_PREFIXES = ['US$', 'KRW', 'USD', '$', '₩', '€', '¥', '£'];
 
 function escapeRegExp(value) {
@@ -72,12 +73,16 @@ export function countHeroNumericTokens(text, heroNumber) {
   const number = spacedCharacters(hero.numericCore);
   const unit = hero.unit ? `\\s*${spacedCharacters(hero.unit)}` : '';
 
-  // Only known numeric continuations are reserved. Korean particles and prose
-  // endings remain boundaries, including when attached directly to the unit.
-  let continuation = `(?![\\d${MAGNITUDES}]|\\.\\d)`;
+  // Units terminate the numeric token: only a numeric/decimal continuation is
+  // reserved (plus p/P for percent). Bare numbers and magnitudes instead reject
+  // magnitude, percent, and the closed common-unit vocabulary. A bare number
+  // may end before 만 when it is clearly particle-like (만큼, 만에, etc.).
+  let continuation = '(?!\\d|\\.\\d)';
   if (hero.unit === '%') continuation += '(?![pP])';
-  else if (!hero.unit && !hero.magnitude) continuation += `(?!\\s*[${MAGNITUDES}%]|,\\d)`;
-  else if (!hero.unit && hero.magnitude) continuation += `(?!\\s*${MAGNITUDE_FOLLOWING_UNITS})`;
+  else if (!hero.unit) {
+    const manParticle = hero.magnitude ? '(?!)' : `\\s*만${BARE_NUMBER_MAN_PARTICLES}`;
+    continuation += `(?!(?:(?!${manParticle})\\s*[${MAGNITUDES}%]|,\\d|\\s*${COMMON_UNITS}))`;
+  }
 
   const pattern = new RegExp(`${lead}${number}${unit}${continuation}`, 'giu');
   return [...text.matchAll(pattern)].length;
