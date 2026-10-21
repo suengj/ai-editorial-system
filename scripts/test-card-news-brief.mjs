@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { resolve } from 'node:path';
 import { validateCardNewsBrief, validateCardNewsChartFacts, validateCardNewsContentQa } from './lib/card-news-brief-core.mjs';
@@ -34,9 +34,19 @@ const officialChart = { type:'line', period:statsBrief.trend_eligibility.observa
 writeFileSync(officialChartPath, JSON.stringify(officialChart));
 const officialChartResult = validateCardNewsChartFacts(statsSeries, statsBrief, officialChartDir);
 assert.equal(officialChartResult.ok, true, `official-statistics charts bind to their source/period receipt without loading a PMC bundle (${JSON.stringify(officialChartResult.issues)})`);
+statsSeries.frames[0].blocks.find((block) => block.kind === 'chart').id = 'visual';
+statsSeries.frames[0].blocks.find((block) => block.kind === 'chart').ref = 'virtual/chart.json';
+mkdirSync(resolve(officialChartDir, 'virtual'));
+writeFileSync(resolve(officialChartDir, 'virtual/chart.json'), JSON.stringify(officialChart));
+statsBrief._series_dir = officialChartDir;
+assert.equal(validateCardNewsBrief(statsSeries, { ...statsBrief, _series_dir: officialChartDir }).ok, true, 'time-series trend eligibility is detected from chart geometry regardless of id or filename');
+const noTrendHistory = { ...statsBrief, trend_eligibility: { ...statsBrief.trend_eligibility, observations: [] }, _series_dir: officialChartDir };
+assert.equal(validateCardNewsBrief(statsSeries, noTrendHistory).ok, false, 'renamed time-series charts still require trend eligibility evidence');
 const wrongOfficialPeriod = structuredClone(officialChart); wrongOfficialPeriod.period = '2025 only';
-writeFileSync(officialChartPath, JSON.stringify(wrongOfficialPeriod));
+writeFileSync(resolve(officialChartDir, 'virtual/chart.json'), JSON.stringify(wrongOfficialPeriod));
 assert.equal(validateCardNewsChartFacts(statsSeries, statsBrief, officialChartDir).ok, false, 'official-statistics chart period must match its receipt');
+statsSeries.frames[0].blocks.find((block) => block.kind === 'chart').ref = 'official-trend-chart.json';
+writeFileSync(officialChartPath, JSON.stringify(officialChart));
 const statsNoComparable = structuredClone(statsBrief); statsNoComparable.trend_eligibility.comparable = false;
 assert(validateCardNewsBrief(statsSeries, statsNoComparable).issues.some((x) => x.code === 'TREND_COMPARABILITY_REQUIRED'));
 const statsNoSource = structuredClone(statsBrief); statsNoSource.trend_eligibility.source_url = '';

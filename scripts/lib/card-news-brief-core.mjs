@@ -18,6 +18,16 @@ function magnitudeStrings(value, out = []) {
   return out;
 }
 
+function isTrendChart(spec) {
+  if (spec?.type === 'number_visual' && spec.layout === 'trend-area') return true;
+  if (!['line', 'area'].includes(spec?.type)) return false;
+  const temporal = (point) => Array.isArray(point)
+    ? (typeof point[0] === 'string' && Number.isFinite(Date.parse(point[0])) || Number.isFinite(point[0]) && point[0] > 1e9)
+    : point && (typeof point.observed_at === 'string' || typeof point.t === 'string' || Number.isFinite(point.timestamp));
+  if ((spec.series ?? []).some((series) => (series.points ?? []).some(temporal)) || (spec.points ?? []).some(temporal)) return true;
+  return (spec.series ?? []).some((series) => /market_pmc|official[_ -]statistics/i.test(series.claim ?? series.source_type ?? ''));
+}
+
 /** Content gate shared by the resolver and carousel renderer. Sidecar facts never enter the card artwork. */
 export function validateCardNewsBrief(series, brief) {
   const issues = [];
@@ -48,7 +58,11 @@ export function validateCardNewsBrief(series, brief) {
     }
   }
   if (series.profiles?.artifact === 'visual/prediction-market-carousel') {
-    const trendFrames = series.frames.filter((frame) => (frame.blocks ?? []).some((block) => block.kind === 'chart' && /(?:trend|history|pmc)/i.test(`${block.id} ${block.ref}`)));
+    const trendFrames = series.frames.filter((frame) => (frame.blocks ?? []).some((block) => {
+      if (block.kind !== 'chart') return false;
+      try { return isTrendChart(JSON.parse(readFileSync(resolve(brief._series_dir ?? process.cwd(), block.ref), 'utf8'))); }
+      catch { return false; }
+    }));
     if (trendFrames.length) {
       const trendIssueAdd = (problem, cardId) => issues.push(issue(problem.code, problem.message, cardId));
       for (const frame of trendFrames) {
@@ -158,8 +172,7 @@ export function validateCardNewsChartFacts(series, brief, baseDir = process.cwd(
     try { spec = JSON.parse(readFileSync(resolve(baseDir, block.ref), 'utf8')); }
     catch { add(frame, `data visual bytes are missing or invalid: ${block.ref}`); continue; }
     const eligibility = brief.trend_eligibility ?? {};
-    const requiresTrendBinding = frame.function === 'show_evidence'
-      || ((eligibility.source_type === 'market_pmc' || sourcePmcBundle) && (spec.type === 'line' || spec.layout === 'trend-area'));
+    const requiresTrendBinding = isTrendChart(spec);
     if (requiresTrendBinding) {
       if (eligibility.source_type === 'market_pmc' || sourcePmcBundle) {
         try {
