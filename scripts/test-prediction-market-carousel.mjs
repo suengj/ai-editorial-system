@@ -186,7 +186,7 @@ const pmcTrendArea = {
 const forgedStartLabel = structuredClone(pmcTrendArea); forgedStartLabel.start_label = '89%';
 writeFileSync(resolve(pmcChartDir,'chart.spec.json'), JSON.stringify(forgedStartLabel));
 assert.equal(validateCardNewsChartFacts(boundTrendSeries,boundTrendBrief,pmcChartDir).ok,false,'a forged displayed start label fails PMC chart binding');
-for (const [field, value] of [['end_label','44%'],['delta_label','+4%p'],['start_date','10.99'],['end_date','10.98']]) {
+for (const [field, value] of [['start_label','31.2% 99%'],['end_label','44%'],['delta_label','+4%p'],['start_date','10.99'],['end_date','10.98']]) {
   const forged = {...pmcTrendArea,[field]:value};
   writeFileSync(resolve(pmcChartDir,'chart.spec.json'), JSON.stringify(forged));
   assert.equal(validateCardNewsChartFacts(boundTrendSeries,boundTrendBrief,pmcChartDir).ok,false,`a forged displayed ${field} fails PMC chart binding`);
@@ -197,6 +197,16 @@ assert.equal(validateCardNewsChartFacts(boundTrendSeries,boundTrendBrief,pmcChar
 const forgedChartSpec = pmcPlotToChartSpec(pmcBundle); forgedChartSpec.series[0].points[0][1] += 5;
 writeFileSync(resolve(pmcChartDir,'chart.spec.json'), JSON.stringify(forgedChartSpec));
 assert.equal(validateCardNewsChartFacts(boundTrendSeries,boundTrendBrief,pmcChartDir).ok,false,'a forged trend point fails PMC chart binding');
+const canonicalLineSpec = pmcPlotToChartSpec(pmcBundle);
+for (const [mutate, description] of [
+  [(s) => { s.x.tick_labels[String(s.series[0].points[0][0])] = '10.99'; }, 'tick'],
+  [(s) => { s.title = '2099.01'; }, 'title'],
+  [(s) => { s.period = '2099'; }, 'period'],
+]) {
+  const forged = structuredClone(canonicalLineSpec); mutate(forged);
+  writeFileSync(resolve(pmcChartDir,'chart.spec.json'), JSON.stringify(forged));
+  assert.equal(validateCardNewsChartFacts(boundTrendSeries,boundTrendBrief,pmcChartDir).ok,false,`forged displayed line-chart text (${description}) fails PMC binding`);
+}
 
 const trendPoints = Array.from({length:24},(_,i)=>({observed_at:new Date(Date.UTC(2026,9,14)+i*60*60*1000).toISOString(),value:i===0?90:i===23?81:90-(i/23)*9+(i%3===0?1.8:-1.2)}));
 const trendVisual = {type:'number_visual',layout:'trend-area',title:'test trend',source_note:'Kalshi',start:90,end:81,start_label:'90%',end_label:'81%',start_date:'10.14',end_date:'10.15',delta_label:'−9%p',points:trendPoints};

@@ -407,7 +407,7 @@ export function renderNumberVisualPanel(spec, { width = 900, height = 520, theme
     const left=pad+16, right=width-pad-12, top=height*0.39, bottom=height*0.78, y=(v)=>bottom-((v-yMin)/(yMax-yMin))*(bottom-top), x0=left+90*scale,x1=right;
     for(let i=0;i<5;i++) line(left,y(yMin+(yMax-yMin)*i/4),right,y(yMin+(yMax-yMin)*i/4),fg,0.12,1.5);
     const gid='trend-area-gradient'; els.push(`<defs><linearGradient id="${gid}" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="${accent}" stop-opacity="0.34"/><stop offset="100%" stop-color="${accent}" stop-opacity="0.015"/></linearGradient></defs>`);
-    let curve, curveSamples=[], curveEndpoints=null, flowSmoothing=null;
+    let curve, curvePaths=[], curveSamples=[], curveEndpoints=null, flowSmoothing=null;
     if (points) {
       const toMs = v => Date.parse(v.observed_at), first = toMs(points[0]), span = toMs(points.at(-1)) - first;
       if (points.some(p => !Number.isFinite(toMs(p))) || span <= 0) fail('trend-area observations need increasing timestamps');
@@ -437,34 +437,51 @@ export function renderNumberVisualPanel(spec, { width = 900, height = 520, theme
         visualPoints = smoothed;
         flowSmoothing = { method: 'uniform_resample_gaussian', parameters: { resample_count: resampleCount, sigma_samples: sigma, kernel_radius: radius, endpoints: 'raw_exact' } };
       }
+      const pointGroups = [];
+      if (renderMode === 'raw') {
+        const gapThresholdMs = 24 * 60 * 60 * 1000;
+        let group = [];
+        for (const point of visualPoints) {
+          if (group.length && toMs(point) - toMs(group.at(-1)) > gapThresholdMs) { pointGroups.push(group); group = []; }
+          group.push(point);
+        }
+        if (group.length) pointGroups.push(group);
+      } else pointGroups.push(visualPoints);
       const pts = visualPoints.map(p => ({x:x0 + (x1-x0) * (toMs(p)-first) / span, y:y(p.value)}));
       curveEndpoints={start:{...pts[0],value:visualPoints[0].value},end:{...pts.at(-1),value:visualPoints.at(-1).value}};
-      const h=pts.slice(0,-1).map((p,i)=>pts[i+1].x-p.x), sec=pts.slice(0,-1).map((p,i)=>(pts[i+1].y-p.y)/h[i]);
-      const slope=Array(pts.length).fill(0);
-      if(pts.length===2) slope[0]=slope[1]=sec[0];
-      else {
-        const endpoint=(h0,h1,d0,d1)=>{let v=((2*h0+h1)*d0-h0*d1)/(h0+h1);if(Math.sign(v)!==Math.sign(d0))v=0;else if(Math.sign(d0)!==Math.sign(d1)&&Math.abs(v)>3*Math.abs(d0))v=3*d0;return v;};
-        slope[0]=endpoint(h[0],h[1],sec[0],sec[1]);
-        slope[pts.length-1]=endpoint(h.at(-1),h.at(-2),sec.at(-1),sec.at(-2));
-        for(let i=1;i<pts.length-1;i++){if(sec[i-1]*sec[i]<=0)slope[i]=0;else{const w1=2*h[i]+h[i-1],w2=h[i]+2*h[i-1];slope[i]=(w1+w2)/(w1/sec[i-1]+w2/sec[i]);}}
+      let pointOffset = 0;
+      for (const pointGroup of pointGroups) {
+        const groupPts = pts.slice(pointOffset, pointOffset + pointGroup.length); pointOffset += pointGroup.length;
+        const h=groupPts.slice(0,-1).map((p,i)=>groupPts[i+1].x-p.x), sec=groupPts.slice(0,-1).map((p,i)=>(groupPts[i+1].y-p.y)/h[i]);
+        const slope=Array(groupPts.length).fill(0);
+        if(groupPts.length===2) slope[0]=slope[1]=sec[0];
+        else if(groupPts.length>2) {
+          const endpoint=(h0,h1,d0,d1)=>{let v=((2*h0+h1)*d0-h0*d1)/(h0+h1);if(Math.sign(v)!==Math.sign(d0))v=0;else if(Math.sign(d0)!==Math.sign(d1)&&Math.abs(v)>3*Math.abs(d0))v=3*d0;return v;};
+          slope[0]=endpoint(h[0],h[1],sec[0],sec[1]);
+          slope[groupPts.length-1]=endpoint(h.at(-1),h.at(-2),sec.at(-1),sec.at(-2));
+          for(let i=1;i<groupPts.length-1;i++){if(sec[i-1]*sec[i]<=0)slope[i]=0;else{const w1=2*h[i]+h[i-1],w2=h[i]+2*h[i-1];slope[i]=(w1+w2)/(w1/sec[i-1]+w2/sec[i]);}}
+        }
+        const segs=[];
+        for (let i=0;i<groupPts.length-1;i++) {
+          const p1=groupPts[i], p2=groupPts[i+1], d=h[i], c1x=p1.x+d/3, c2x=p2.x-d/3;
+          const c1y=p1.y+slope[i]*d/3, c2y=p2.y-slope[i+1]*d/3;
+          segs.push(`C ${n(c1x)} ${n(c1y)} ${n(c2x)} ${n(c2y)} ${n(p2.x)} ${n(p2.y)}`);
+        }
+        const path=`M ${n(groupPts[0].x)} ${n(groupPts[0].y)} ${segs.join(' ')}`;
+        curvePaths.push({ path, startX: groupPts[0].x, endX: groupPts.at(-1).x });
+        // Sample the same cubic segments at sub-pixel intervals for the label collision guard.
+        for (let i=0;i<groupPts.length-1;i++) {
+          const p1=groupPts[i],p2=groupPts[i+1],d=h[i],c1={x:p1.x+d/3,y:p1.y+slope[i]*d/3},c2={x:p2.x-d/3,y:p2.y-slope[i+1]*d/3};
+          for(let j=0;j<=16;j++){const t=j/16,u=1-t;curveSamples.push({x:u**3*p1.x+3*u*u*t*c1.x+3*u*t*t*c2.x+t**3*p2.x,y:u**3*p1.y+3*u*u*t*c1.y+3*u*t*t*c2.y+t**3*p2.y});}
+        }
       }
-      const segs=[];
-      for (let i=0;i<pts.length-1;i++) {
-        const p1=pts[i], p2=pts[i+1], d=h[i], c1x=p1.x+d/3, c2x=p2.x-d/3;
-        const c1y=p1.y+slope[i]*d/3, c2y=p2.y-slope[i+1]*d/3;
-        segs.push(`C ${n(c1x)} ${n(c1y)} ${n(c2x)} ${n(c2y)} ${n(p2.x)} ${n(p2.y)}`);
-      }
-      curve=`M ${n(pts[0].x)} ${n(pts[0].y)} ${segs.join(' ')}`;
-      // Sample the same cubic segments at sub-pixel intervals for the label collision guard.
-      for (let i=0;i<pts.length-1;i++) {
-        const p1=pts[i],p2=pts[i+1],d=h[i],c1={x:p1.x+d/3,y:p1.y+slope[i]*d/3},c2={x:p2.x-d/3,y:p2.y-slope[i+1]*d/3};
-        for(let j=0;j<=16;j++){const t=j/16,u=1-t;curveSamples.push({x:u**3*p1.x+3*u*u*t*c1.x+3*u*t*t*c2.x+t**3*p2.x,y:u**3*p1.y+3*u*u*t*c1.y+3*u*t*t*c2.y+t**3*p2.y});}
-      }
+      curve=curvePaths.map(({path})=>path).join(' ');
     } else {
       const cx1=x0+(x1-x0)*0.32, cx2=x0+(x1-x0)*0.69, cy1=y(start)+(y(end)-y(start))*0.22, cy2=y(start)+(y(end)-y(start))*0.78;
       curve=`M ${n(x0)} ${n(y(start))} C ${n(cx1)} ${n(cy1)} ${n(cx2)} ${n(cy2)} ${n(x1)} ${n(y(end))}`;
+      curvePaths=[{path:curve,startX:x0,endX:x1}];
     }
-    els.push(`<path d="${curve} L ${n(x1)} ${n(bottom)} L ${n(x0)} ${n(bottom)} Z" fill="url(#${gid})"/>`);
+    for (const segment of curvePaths) els.push(`<path d="${segment.path} L ${n(segment.endX)} ${n(bottom)} L ${n(segment.startX)} ${n(bottom)} Z" fill="url(#${gid})"/>`);
     els.push(`<path d="${curve}" fill="none" stroke="${accent}" stroke-width="${n(5*scale)}" stroke-linecap="round"/>`);
     els.push(`<circle cx="${n(x0)}" cy="${n(y(start))}" r="${n(8*scale)}" fill="${bg}" stroke="${accent}" stroke-width="${n(4*scale)}"/>`);
     els.push(`<circle cx="${n(x1)}" cy="${n(y(end))}" r="${n(15*scale)}" fill="${accent}" stroke="${bg}" stroke-width="${n(5*scale)}"/>`);

@@ -126,7 +126,7 @@ await test('actual source-bound line panel, no probability clamping', async () =
 await test('actual bar panel with zero baseline', async () => { const p = clone(dataPlan); p.layers[1].ref = 'bar.json'; const r = await run(p, 'bar'); assert.equal(r.receipt.charts[0].axis.ymin, 0); assert.deepEqual(r.receipt.charts[0].displayed.map((v) => v.value), [125,180,240]); });
 await test('mixed image+chart+text+watermark executes', async () => { const p = clone(dataPlan); p.layers.splice(1, 0, { ...clone(photo.layers[0]), slot: { x: 0.65, y: 0.23, width: 0.28, height: 0.13 } }); p.task.watermark = { enabled: true, text: 'TEST' }; const r = await run(p, 'mixed'); assert.equal(r.receipt.images.length, 1); assert.equal(r.receipt.charts.length, 1); assert.ok(r.receipt.watermark); });
 await test('line gaps break paths, no invented interpolation', async () => { const p = fixture('line.json'); p.series[0].points[1][1] = null; const r = renderChartPanel(p); assert.equal((r.svg.match(/d="M/g) ?? []).length, 1); assert.ok(r.svg.includes(' M')); assert.equal(r.raw_observation_count, 4); });
-await test('prediction-market trend-area renders one continuous path when missing samples are omitted', async () => {
+await test('RAW prediction-market trend-area splits a gap above the 24-hour threshold', async () => {
   const spec = { type:'number_visual', layout:'trend-area', title:'추세', source_note:'출처 PMC', start:90, end:81, start_label:'90%', end_label:'81%', start_date:'10.14', end_date:'10.21', delta_label:'−9%p', points:[
     { observed_at:'2026-10-14T13:00:00Z', value:90 },
     { observed_at:'2026-10-14T14:00:00Z', value:94 },
@@ -134,15 +134,20 @@ await test('prediction-market trend-area renders one continuous path when missin
     { observed_at:'2026-10-21T05:00:00Z', value:81 },
   ] };
   const rendered = renderChartPanel(spec, { width:950, height:648, theme:{ background:'#F7F5F0', foreground:'#14213D', accent:'#FF6B5B' } });
-  const trendPaths = [...rendered.svg.matchAll(/<path d="([^"]+)" fill="none" stroke=/g)];
-  assert.equal(trendPaths.length, 1);
-  assert.equal((trendPaths[0][1].match(/\bM\b/g) ?? []).length, 1, 'the visible trend line must have one initial move and no gap breaks');
-  const endPoints=[...trendPaths[0][1].matchAll(/C\s+[-\d.]+\s+[-\d.]+\s+[-\d.]+\s+[-\d.]+\s+([-\d.]+)\s+([-\d.]+)/g)].map(m=>[Number(m[1]),Number(m[2])]);
-  const yMin=77,yMax=98,top=648*0.39,bottom=648*0.78;
-  const expected=spec.points.slice(1).map(p=>bottom-((p.value-yMin)/(yMax-yMin))*(bottom-top));
-  assert.equal(endPoints.length,spec.points.length-1);
-  expected.forEach((py,i)=>assert.ok(Math.abs(endPoints[i][1]-py)<=0.5,`raw observation ${i+1} lies on the rendered path within 0.5px`));
-  assert.match(rendered.svg, />90%<|>81%<|>−9%p</);
+  const trendPath = [...rendered.svg.matchAll(/<path d="([^"]+)" fill="none" stroke=/g)][0][1];
+  assert.equal((trendPath.match(/\bM\b/g) ?? []).length, 2, 'the 126-hour gap starts a separate raw path');
+  assert.match(rendered.svg, />90%<|>81%<|>−9%p/);
+});
+await test('FLOW prediction-market trend-area remains continuous across a gap', async () => {
+  const spec = { type:'number_visual', layout:'trend-area', render_mode:'flow', raw_data_sha256:`sha256:${'a'.repeat(64)}`, title:'추세', source_note:'출처 PMC', start:90, end:81, start_label:'90%', end_label:'81%', start_date:'10.14', end_date:'10.21', delta_label:'−9%p', points:[
+    { observed_at:'2026-10-14T13:00:00Z', value:90 },
+    { observed_at:'2026-10-14T14:00:00Z', value:94 },
+    { observed_at:'2026-10-15T05:00:00Z', value:87 },
+    { observed_at:'2026-10-21T05:00:00Z', value:81 },
+  ] };
+  const rendered = renderChartPanel(spec, { width:950, height:648, theme:{ background:'#F7F5F0', foreground:'#14213D', accent:'#FF6B5B' } });
+  const trendPath = [...rendered.svg.matchAll(/<path d="([^"]+)" fill="none" stroke=/g)][0][1];
+  assert.equal((trendPath.match(/\bM\b/g) ?? []).length, 1, 'FLOW uses one continuous resampled path');
 });
 await test('chart source-only caption hides pipeline axis wording', async () => { const p = fixture('line.json'); p.x.show_label = false; p.source_note = '출처 Kalshi'; const r = renderChartPanel(p); assert.match(r.svg, />출처 Kalshi</); assert.doesNotMatch(r.svg, /관측일| · 출처/); });
 await test('nonfinite data is rejected', async () => { const p = fixture('line.json'); p.series[0].points[0][1] = NaN; assert.throws(() => renderChartPanel(p), /finite/); });

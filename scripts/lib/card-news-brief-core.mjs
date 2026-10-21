@@ -165,17 +165,26 @@ export function validateCardNewsChartFacts(series, brief, baseDir = process.cwd(
             const dateLabel = (iso) => { const d = new Date(iso); return `${String(d.getUTCMonth()+1).padStart(2,'0')}.${String(d.getUTCDate()).padStart(2,'0')}`; };
             const signedDelta = Number(bundle.plot.delta.value_pp);
             const expectedDelta = `${signedDelta > 0 ? '+' : signedDelta < 0 ? '−' : ''}${Number(Math.abs(signedDelta).toPrecision(12))}%p`;
+            const expectedStartLabel = `${expected[0]?.value}%`;
+            const expectedEndLabel = `${expected.at(-1)?.value}%`;
             const renderMode = spec.render_mode ?? (series.profiles?.artifact === 'visual/prediction-market-carousel' ? 'flow' : 'raw');
             if (!['raw','flow'].includes(renderMode) || (renderMode === 'flow' && ((spec.intermediate_labels?.length ?? 0) > 0 || spec.points?.some((point) => point.label !== undefined)))
               || JSON.stringify(spec.points) !== JSON.stringify(expected) || spec.start !== expected[0]?.value || spec.end !== expected.at(-1)?.value
-              || labelNumber(spec.start_label) !== expected[0]?.value || labelNumber(spec.end_label) !== expected.at(-1)?.value
+              || spec.start_label !== expectedStartLabel || spec.end_label !== expectedEndLabel
               || spec.start_date !== dateLabel(bundle.plot.delta.baseline_at) || spec.end_date !== dateLabel(bundle.plot.delta.last_at)
-              || spec.delta_label?.replace('-', '−') !== expectedDelta) add(frame, 'trend-area points, endpoints, dates, and signed delta must match the selected verified PMC bundle');
+              || spec.delta_label !== expectedDelta) add(frame, 'trend-area points, endpoints, dates, and signed delta must match the selected verified PMC bundle');
           } else {
             const expected = pmcPlotToChartSpec(bundle);
+            const displayedText = (chart) => ({
+              title: chart.title, period: chart.period, source_note: chart.source_note,
+              x: { label: chart.x?.label, show_label: chart.x?.show_label, tick_labels: chart.x?.tick_labels },
+              y: { label: chart.y?.label, unit: chart.y?.unit, decimals: chart.y?.decimals, min: chart.y?.min, max: chart.y?.max },
+              series: chart.series?.map((item) => ({ name: item.name, claim: item.claim })),
+            });
             const actualSeries = spec.series?.map((item) => ({ name: item.name, claim: item.claim, points: item.points }));
             const expectedSeries = expected.series.map((item) => ({ name: item.name, claim: item.claim, points: item.points }));
-            if (spec.type !== 'line' || JSON.stringify(actualSeries) !== JSON.stringify(expectedSeries)) add(frame, 'trend chart points and labels must match the selected verified PMC bundle');
+            if (spec.type !== 'line' || JSON.stringify(actualSeries) !== JSON.stringify(expectedSeries)
+              || JSON.stringify(displayedText(spec)) !== JSON.stringify(displayedText(expected))) add(frame, 'trend chart points and displayed labels must match the selected verified PMC bundle');
           }
         } catch { add(frame, 'trend chart cannot be bound to the selected verified PMC bundle'); }
       } else if (eligibility.source_type === 'official_statistics') {
