@@ -216,6 +216,7 @@ export async function compileExecution(plan, { baseDir = process.cwd(), preset =
         if (!['line', 'bar', 'flow'].includes(chart.type)) fail('CHART_BINDING', 'v1 binds line/bar/flow; use an existing rendered evidence image for another geometry');
       } else {
         next.mode = l.mode ?? 'exact_composite'; next.fit = l.fit ?? 'contain';
+        let replacedWithR7 = false;
         if (!['exact_composite', 'cutout_composite'].includes(next.mode)) fail('EDIT_REQUIRED', 'supply the actual edited background/cutout; no inpainting is performed by this compositor');
         if (!['contain', 'cover'].includes(next.fit)) fail('IMAGE_FIT', 'contain or cover');
         if (l.kind === 'image' && next.fit === 'cover' && coveredText && l.focal_box === undefined) fail('FOCAL_CROP', `${l.id}: a cover-cropped photo beneath text requires focal_box and focal_fallback`);
@@ -254,6 +255,7 @@ export async function compileExecution(plan, { baseDir = process.cwd(), preset =
               } else {
                 next.kind = 'generated'; next.ref = undefined; next.sha256 = undefined;
                 next.instruction = l.focal_fallback.r7_instruction; next.status = 'RENDER_REQUIRED';
+                replacedWithR7 = true;
                 fallback = 'r7-illustration';
               }
             } else fail('FOCAL_CROP', `${l.id}: visible focal area ${evaluated.visibleRatio.toFixed(4)} < ${ratio}; declare split_slot and r7_instruction fallback`);
@@ -263,12 +265,14 @@ export async function compileExecution(plan, { baseDir = process.cwd(), preset =
             : { box: f, crop: evaluated.crop, visible_area_ratio: Number(evaluated.visibleRatio.toFixed(4)), minimum_area_ratio: ratio, fallback, status: 'PASS' };
         }
         if (isGeneratedLayer(l)) next.generation_check = checkGeneration(l, file, png, baseDir);
-        for (const protectedBox of l.protect ?? []) {
-          const p = box(protectedBox, { width: png.width, height: png.height });
-          if (next.fit === 'cover') {
-            const scale = Math.max(pixelSlot.width / png.width, pixelSlot.height / png.height);
-            const ox = (pixelSlot.width - png.width * scale) / 2, oy = (pixelSlot.height - png.height * scale) / 2;
-            if (ox + p.x * scale < -0.01 || oy + p.y * scale < -0.01 || ox + (p.x + p.width) * scale > pixelSlot.width + 0.01 || oy + (p.y + p.height) * scale > pixelSlot.height + 0.01) fail('PROTECTED_CROP', l.id);
+        if (!replacedWithR7) {
+          for (const protectedBox of l.protect ?? []) {
+            const p = box(protectedBox, { width: png.width, height: png.height });
+            if (next.fit === 'cover') {
+              const scale = Math.max(pixelSlot.width / png.width, pixelSlot.height / png.height);
+              const ox = (pixelSlot.width - png.width * scale) / 2, oy = (pixelSlot.height - png.height * scale) / 2;
+              if (ox + p.x * scale < -0.01 || oy + p.y * scale < -0.01 || ox + (p.x + p.width) * scale > pixelSlot.width + 0.01 || oy + (p.y + p.height) * scale > pixelSlot.height + 0.01) fail('PROTECTED_CROP', l.id);
+            }
           }
         }
       }

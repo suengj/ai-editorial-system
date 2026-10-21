@@ -28,6 +28,9 @@ const wm = { render: (svg) => rasterize(svg, adapter), version: adapter.version 
 const source = encodePng({ width: 320, height: 200, channels: 4,
   pixels: Buffer.from(Array.from({ length: 320 * 200 }, (_, i) => [i % 256, Math.floor(i / 320) % 256, 100, 255]).flat()) });
 writeFileSync(resolve(dir, 'source.png'), source);
+const squareSource = encodePng({ width: 200, height: 200, channels: 4,
+  pixels: Buffer.from(Array.from({ length: 200 * 200 }, (_, i) => [i % 256, Math.floor(i / 200) % 256, 100, 255]).flat()) });
+writeFileSync(resolve(dir, 'square.png'), squareSource);
 const cutout = decodePng(source); for (let i = 3; i < cutout.pixels.length; i += 4) if (i < cutout.pixels.length / 5) cutout.pixels[i] = 0;
 writeFileSync(resolve(dir, 'cutout.png'), encodePng(cutout));
 const photo = clone(base);
@@ -62,6 +65,21 @@ await test('focal box is preserved through cover, split fallback, then R7 fallba
   const r7 = clone(covered); r7.layers[0].focal_fallback = { split_slot: { x: 0.1, y: 0.2, width: 0.6, height: 0.6 }, r7_instruction: 'R7: draw a nonverbal illustration of the key subject.' }; const r7Plan = await compile(r7); assert.equal(r7Plan.layers[0].focal_evidence.fallback, 'r7-illustration'); assert.equal(r7Plan.layers[0].focal_evidence.status, 'R7_RENDER_REQUIRED'); assert.equal(r7Plan.layers[0].focal_evidence.visible_area_ratio, undefined); assert.equal(r7Plan.layers[0].status, 'RENDER_REQUIRED');
   const noText = clone(baseFocal); noText.layers[0].focal_fallback = { split_slot: { x: 0.1, y: 0.2, width: 0.6, height: 0.375 }, r7_instruction: 'R7: draw a nonverbal illustration of the key subject.' }; assert.equal((await compile(noText)).layers[0].focal_evidence.fallback, 'r7-illustration');
   const safe = clone(baseFocal); safe.layers[0].slot = { x: 0.1, y: 0.2, width: 0.6, height: 0.375 }; const safePlan = await compile(safe); assert.equal(safePlan.layers[0].focal_evidence.fallback, 'cover');
+});
+await test('R7 pending illustration skips discarded photo protected-crop validation', async () => {
+  const p = clone(photo); p.layers[0].ref = 'square.png'; p.layers[0].fit = 'cover';
+  p.layers[0].slot = { x: 0.1, y: 0.2, width: 0.6, height: 0.375 };
+  p.layers[0].focal_box = { x: 0, y: 0, width: 1, height: 1 }; p.layers[0].focal_min_area_ratio = 1;
+  p.layers[0].focal_fallback = { split_slot: { x: 0.1, y: 0.2, width: 0.6, height: 0.375 }, r7_instruction: 'R7: draw a nonverbal illustration of the key subject.' };
+  p.layers.push({ id: 'caption', kind: 'text', text: 'A caption', source_ref: 'source.md', slot: { x: 0.2, y: 0.62, width: 0.5, height: 0.12 }, font_size: 32 });
+  const withoutProtect = await compile(p);
+  assert.equal(withoutProtect.status, 'RENDER_REQUIRED');
+  assert.equal(withoutProtect.layers[0].focal_evidence.fallback, 'r7-illustration');
+  const withProtect = clone(p); withProtect.layers[0].protect = [{ x: 0, y: 0, width: 1, height: 1 }];
+  const protectedPlan = await compile(withProtect);
+  assert.equal(protectedPlan.status, 'RENDER_REQUIRED');
+  assert.equal(protectedPlan.layers[0].kind, 'generated');
+  assert.equal(protectedPlan.layers[0].focal_evidence.fallback, 'r7-illustration');
 });
 await test('cutout requires actual alpha', async () => { const p = clone(photo); p.layers[0].mode = 'cutout_composite'; await reject(p, 'CUTOUT_REQUIRED'); p.layers[0].ref = 'cutout.png'; assert.equal((await compile(p)).layers[0].mode, 'cutout_composite'); });
 await test('inpainting is not falsely claimed', async () => { const p = clone(photo); p.layers[0].mode = 'generative_edit'; await reject(p, 'EDIT_REQUIRED'); });
