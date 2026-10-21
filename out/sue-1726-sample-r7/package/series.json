@@ -1,0 +1,462 @@
+{
+  "schema_version": "1.0.0",
+  "series_id": "sue-1726-round-6-fed-oct-dec-pricing",
+  "request": "SUE-1726 round 6: October hold pricing versus December hike pricing from supplied Kalshi PMC live markets.",
+  "source": {
+    "ref": "source-sidecar.json",
+    "sha256": "sha256:0183325dd3317b32ad824f56d6bdee6ab3fd6cb95f3402497b35a50470d01432",
+    "scope": "source_bound"
+  },
+  "profiles": {
+    "surface": "instagram",
+    "artifact": "visual/slide-image"
+  },
+  "recipe": "r4-photo-fullbleed",
+  "visual_style": {
+    "requested_style": "R4",
+    "content_kind": "other",
+    "photo_asset_quality": "strong"
+  },
+  "footer_policy": "content_only",
+  "series_label": "",
+  "task": {
+    "canvas": {
+      "width": 1080,
+      "height": 1350,
+      "aspect_ratio": "4:5"
+    },
+    "theme": {
+      "background": "#F7F5F0",
+      "foreground": "#14213D",
+      "accent": "#FF6B5B"
+    },
+    "text_policy": "hybrid_template",
+    "density": {
+      "semantic": "moderate",
+      "visual": "moderate"
+    },
+    "watermark": {
+      "enabled": false
+    }
+  },
+  "beats": [
+    {
+      "id": "hook",
+      "depends_on": []
+    },
+    {
+      "id": "how-to-read",
+      "depends_on": [
+        "hook"
+      ]
+    },
+    {
+      "id": "trend",
+      "depends_on": [
+        "how-to-read"
+      ]
+    },
+    {
+      "id": "why",
+      "depends_on": [
+        "trend"
+      ]
+    },
+    {
+      "id": "korea-impact",
+      "depends_on": [
+        "why"
+      ]
+    },
+    {
+      "id": "watch-next",
+      "depends_on": [
+        "korea-impact"
+      ]
+    }
+  ],
+  "frames": [
+    {
+      "id": "hook",
+      "function": "orient",
+      "beat_ids": [
+        "hook"
+      ],
+      "takeaway": "시장은 10월 직후엔 쉬지만 연말까지 한 차례 인상을 가격에 반영한다.",
+      "alt_text": "중앙은행 건물 사진과 12월까지 금리 인상 조건에 매겨진 시장 가격.",
+      "headline": "10월엔 쉬고,\n12월엔 올린다",
+      "layout": "hero-photo-scrim",
+      "source_note": "가격과 조건: Kalshi PMC live run.",
+      "blocks": [
+        {
+          "id": "hook-art",
+          "kind": "generated",
+          "region": "art",
+          "ref": "generated/hook.png",
+          "fit": "cover",
+          "rights_note": "Original generated text-free editorial image.",
+          "instruction": "Full-saturation editorial photo of a generic neoclassical central-bank building at dawn; no text, numbers, flags, people, logo or watermark.",
+          "generation": {
+            "provider": "OpenAI Images API",
+            "model": "gpt-image-2.5-flare",
+            "invocation_id": "req_324d872f43ae41089dc7a4c69ed5e403",
+            "mode": "api",
+            "asset_sha256": "sha256:31c6ca20e913e8c4babd10244a666423bce1e336b244d2ecaca9bb225dca8540",
+            "response_ref": "generated/hook-response.json",
+            "response_sha256": "sha256:6c660f3720bd889cd7337932c971c8cb081b562298132d283bf988cdfd1a1c2d"
+          }
+        },
+        {
+          "id": "hero-value",
+          "kind": "text",
+          "region": "hero-value",
+          "text": "81%",
+          "text_role": "hero",
+          "source_ref": "source-sidecar.json#oct-market+dec-market"
+        },
+        {
+          "id": "hook-key",
+          "kind": "text",
+          "region": "key",
+          "text": "12월까지 한 차례 인상",
+          "text_role": "label",
+          "source_ref": "source-sidecar.json#oct-market+dec-market"
+        },
+        {
+          "id": "hook-copy",
+          "kind": "text",
+          "region": "copy",
+          "text": "10월 회의 뒤 인상 가격은 15%에 머뭅니다.\n시장은 연말까지 한 차례 인상을 더 크게 봅니다.",
+          "text_role": "body",
+          "source_ref": "source-sidecar.json#oct-market+dec-market"
+        }
+      ]
+    },
+    {
+      "id": "how-to-read",
+      "function": "orient",
+      "beat_ids": [
+        "how-to-read"
+      ],
+      "takeaway": "계약은 12월 회의 뒤 기준금리 상단이 4.00%를 넘는지 묻는다.",
+      "alt_text": "Kalshi의 12월 금리 계약 조건과 최근 거래량.",
+      "headline": "81%는 무슨 뜻일까",
+      "layout": "read-blocks",
+      "source_note": "Kalshi 공개 시장 데이터.",
+      "blocks": [
+        {
+          "id": "read-key",
+          "kind": "text",
+          "region": "key",
+          "text": "12월 회의 뒤, 기준금리 상단이 4.00%보다 높으면 예로 정산",
+          "text_role": "body",
+          "source_ref": "source-sidecar.json#dec-market"
+        },
+        {
+          "id": "read-copy",
+          "kind": "text",
+          "region": "body",
+          "text": "81센트에 거래 중 = 시장이 매긴 인상 확률 81%.\n누적 5만6천 계약.",
+          "text_role": "body",
+          "source_ref": "source-sidecar.json#dec-market"
+        }
+      ]
+    },
+    {
+      "id": "trend",
+      "function": "show_evidence",
+      "beat_ids": [
+        "trend"
+      ],
+      "takeaway": "12월 인상 조건 가격은 관측 구간 첫 값에서 마지막 값까지 9%p 내렸다.",
+      "alt_text": "PMC 원관측 첫 값 90%와 마지막 값 81%, 두 점 사이의 하향 곡선.",
+      "headline": "인상 기대,\n한 발 물러섰다",
+      "layout": "trend-deep",
+      "source_note": "추세 방향과 수치: Kalshi PMC 원관측.",
+      "blocks": [
+        {
+          "id": "trend-art",
+          "kind": "generated",
+          "region": "content",
+          "ref": "generated/trend.png",
+          "fit": "cover",
+          "rights_note": "Original generated text-free editorial image.",
+          "instruction": "One smooth continuous text-free navy curve. Overall direction down from left to right, matching raw endpoints 90% to 81%. No labels or numbers.",
+          "generation": {
+            "provider": "OpenAI image_gen",
+            "model": "built-in image_gen",
+            "invocation_id": "01a15e37-117d-7263-8f68-ab294c604062",
+            "mode": "native",
+            "asset_sha256": "sha256:afa4045511648c849abe914862a3a3ceac56e18ace6ff2cde4b7d9b7e9548e7d",
+            "response_ref": "generated/trend-response.json",
+            "response_sha256": "sha256:eeb38f054abd1decdf62ee5931687f7fc0f3e5387173556bde41dafa4acb5d8f"
+          }
+        },
+        {
+          "id": "trend-info",
+          "kind": "text",
+          "region": "copy",
+          "text": "10월 14일 90% → 10월 21일 81%.\n일주일 새 9%p 낮아져, 12월 회의 전 인상 기대도 한풀 꺾였다.",
+          "text_role": "body",
+          "source_ref": "source-sidecar.json#dec-history"
+        }
+      ]
+    },
+    {
+      "id": "why",
+      "function": "explain_mechanism",
+      "beat_ids": [
+        "why"
+      ],
+      "takeaway": "높은 물가 상승률과 둔화된 고용 증가가 함께 정책 판단을 어렵게 한다.",
+      "alt_text": "경제 분석 책상 위의 그래프 종이와 연필.",
+      "headline": "물가는 뜨겁고,\n고용은 느려졌다",
+      "layout": "hero-photo-scrim",
+      "source_note": "BLS 발표자료.",
+      "blocks": [
+        {
+          "id": "why-art",
+          "kind": "generated",
+          "region": "art",
+          "ref": "generated/why.png",
+          "fit": "cover",
+          "rights_note": "Original generated text-free editorial image.",
+          "instruction": "Full-saturation editorial photo of an analyst desk with blank paper charts and pencil in natural light; no readable text, digits, screens, logos or people.",
+          "generation": {
+            "provider": "OpenAI Images API",
+            "model": "gpt-image-2.5-flare",
+            "invocation_id": "req_9e7aebba0a5c418b97e12a593b5af8ff",
+            "mode": "api",
+            "asset_sha256": "sha256:61019db1f27beee6b377436393a0c9daa4fbf955f844ea7bae23854d92162a35",
+            "response_ref": "generated/why-response.json",
+            "response_sha256": "sha256:4f8ca663546a33ce15e37d401f279cd3c5a32da72beef046e249c9e7669742cb"
+          }
+        },
+        {
+          "id": "why-value",
+          "kind": "text",
+          "region": "hero-value",
+          "text": "0.6%",
+          "text_role": "hero",
+          "source_ref": "source-sidecar.json#september-cpi+september-jobs"
+        },
+        {
+          "id": "why-key",
+          "kind": "text",
+          "region": "key",
+          "text": "9월 CPI, 전월보다 상승",
+          "text_role": "label",
+          "source_ref": "source-sidecar.json#september-cpi+september-jobs"
+        },
+        {
+          "id": "why-copy",
+          "kind": "text",
+          "region": "copy",
+          "text": "9월 비농업 고용은 29,000명 늘었습니다.\n물가와 고용 신호가 엇갈리면 연준의 다음 선택도 단순해지지 않습니다.",
+          "text_role": "body",
+          "source_ref": "source-sidecar.json#september-cpi+september-jobs"
+        }
+      ]
+    },
+    {
+      "id": "korea-impact",
+      "function": "show_consequence",
+      "beat_ids": [
+        "korea-impact"
+      ],
+      "takeaway": "미국 금리는 환율 자금흐름과 한국 대출금리를 통해 세 갈래로 이어진다.",
+      "alt_text": "서울 금융지구 사진 아래 한미 금리, 외환 흐름, 주담대 경로.",
+      "headline": "한국에 닿는\n세 갈래",
+      "layout": "korea-three",
+      "source_note": "연준·한국은행·한국은행 통계 인용 보도.",
+      "blocks": [
+        {
+          "id": "korea-art",
+          "kind": "generated",
+          "region": "art",
+          "ref": "generated/korea.png",
+          "fit": "cover",
+          "rights_note": "Original generated text-free editorial image.",
+          "instruction": "Full-strength Seoul financial-district photo with restrained red and blue light; no signs, text, numbers, logos, people or UI.",
+          "generation": {
+            "provider": "OpenAI Images API",
+            "model": "gpt-image-2.5-flare",
+            "invocation_id": "req_8fcd6d91b78143cb8059ec5e995630bd",
+            "mode": "api",
+            "asset_sha256": "sha256:3f03e2408ddb9d4d633c25b6fdcfc6852c2018827b12a8a82b6c06f8f9bf90e4",
+            "response_ref": "generated/korea-response.json",
+            "response_sha256": "sha256:e309a62520cd3bb4e66f63667243e4ff52bce3e8af83a9b07cefe90b581eabdf"
+          }
+        },
+        {
+          "id": "korea-rate",
+          "kind": "text",
+          "region": "rate",
+          "text": "금리차 · 미국 3.75–4.00%, 한국 3.00%. 인상 땐 격차 확대.",
+          "text_role": "body",
+          "source_ref": "source-sidecar.json#fed-range+bok-rate+bok-flows+mortgage-rate"
+        },
+        {
+          "id": "korea-fx",
+          "kind": "text",
+          "region": "fx",
+          "text": "국내에서 나가는 돈이 들어오는 돈의 약 2.5배.\n금리차가 벌어지면 원화 약세 압력.",
+          "text_role": "body",
+          "source_ref": "source-sidecar.json#fed-range+bok-rate+bok-flows+mortgage-rate"
+        },
+        {
+          "id": "korea-loan",
+          "kind": "text",
+          "region": "loan",
+          "text": "대출 · 신규 주담대 평균 4.66%(8월). 은행 조달비용도 변수.",
+          "text_role": "body",
+          "source_ref": "source-sidecar.json#fed-range+bok-rate+bok-flows+mortgage-rate"
+        }
+      ]
+    },
+    {
+      "id": "watch-next",
+      "function": "decision",
+      "beat_ids": [
+        "watch-next"
+      ],
+      "takeaway": "동결과 인상은 원·달러와 변동형 주택대출금리에 서로 다른 압력을 준다.",
+      "alt_text": "달력과 펜을 배경으로 동결과 인상의 환율·대출금리 영향을 비교한 카드.",
+      "headline": "동결과 인상,\n체감은 다르다",
+      "layout": "hero-photo-scrim",
+      "source_note": "연준 일정·한국은행 외환 분석·한국은행 대출금리 통계.",
+      "blocks": [
+        {
+          "id": "watch-art",
+          "kind": "generated",
+          "region": "art",
+          "ref": "generated/watch.png",
+          "fit": "cover",
+          "rights_note": "Original generated text-free editorial image.",
+          "instruction": "Full-saturation editorial photo of a blank paper calendar and navy pen in warm light; no dates, text, numbers, logos, people, UI or watermark.",
+          "generation": {
+            "provider": "OpenAI Images API",
+            "model": "gpt-image-2.5-flare",
+            "invocation_id": "req_a9ed0a7648d946a598a273013ac6cc2d",
+            "mode": "api",
+            "asset_sha256": "sha256:89e489d5b5e979d77b8806576b3c1576a1ae4cb3c490d05d9ecf83f483d5a1d3",
+            "response_ref": "generated/watch-response.json",
+            "response_sha256": "sha256:03cc42c058727be3733fac5169f222022affe657bf296488ec82ac6bf798253e"
+          }
+        },
+        {
+          "id": "watch-date",
+          "kind": "text",
+          "region": "hero-value",
+          "text": "10.28",
+          "text_role": "hero",
+          "source_ref": "source-sidecar.json#fomc-date+fed-range+bok-flows+mortgage-rate"
+        },
+        {
+          "id": "watch-key",
+          "kind": "text",
+          "region": "key",
+          "text": "10월 FOMC 결과가 갈림길",
+          "text_role": "label",
+          "source_ref": "source-sidecar.json#fomc-date+fed-range+bok-flows+mortgage-rate"
+        },
+        {
+          "id": "watch-copy",
+          "kind": "text",
+          "region": "copy",
+          "text": "동결: 금리차 유지, 원·달러 상승 압력 완화 여지, 대출금리 추가 상승 제한 여지.\n인상: 금리차 확대, 원·달러와 변동형 대출금리에 상방 압력.",
+          "text_role": "body",
+          "source_ref": "source-sidecar.json#fomc-date+fed-range+bok-flows+mortgage-rate"
+        }
+      ]
+    }
+  ],
+  "typography": {
+    "headline": {
+      "font_size": 68,
+      "weight": 700,
+      "max_lines": 2,
+      "line_height": 1.15,
+      "font_family": "'Noto Serif KR', 'Noto Serif CJK KR', serif"
+    },
+    "hero": {
+      "font_size": 120,
+      "weight": 800,
+      "max_lines": 1,
+      "line_height": 1.05,
+      "font_family": "AES Sans KR"
+    },
+    "body": {
+      "font_size": 36,
+      "weight": 600,
+      "max_lines": 9,
+      "line_height": 1.32,
+      "font_family": "AES Sans KR"
+    },
+    "label": {
+      "font_size": 32,
+      "weight": 800,
+      "max_lines": 2,
+      "line_height": 1.2,
+      "font_family": "AES Sans KR"
+    }
+  },
+  "content_kind": "card-news",
+  "brief_file": "brief.json",
+  "layouts": {
+    "read-blocks": {
+      "key": {
+        "x": 0.06,
+        "y": 0.36,
+        "width": 0.88,
+        "height": 0.14
+      },
+      "body": {
+        "x": 0.06,
+        "y": 0.53,
+        "width": 0.88,
+        "height": 0.31
+      }
+    },
+    "trend-deep": {
+      "content": {
+        "x": 0.06,
+        "y": 0.34,
+        "width": 0.88,
+        "height": 0.33
+      },
+      "copy": {
+        "x": 0.04,
+        "y": 0.7,
+        "width": 0.92,
+        "height": 0.18
+      }
+    },
+    "korea-three": {
+      "art": {
+        "x": 0.06,
+        "y": 0.33,
+        "width": 0.88,
+        "height": 0.18
+      },
+      "rate": {
+        "x": 0.06,
+        "y": 0.54,
+        "width": 0.88,
+        "height": 0.09
+      },
+      "fx": {
+        "x": 0.06,
+        "y": 0.65,
+        "width": 0.88,
+        "height": 0.09
+      },
+      "loan": {
+        "x": 0.06,
+        "y": 0.76,
+        "width": 0.88,
+        "height": 0.09
+      }
+    }
+  }
+}

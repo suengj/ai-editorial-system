@@ -1,0 +1,179 @@
+{
+  "schema_version": "1.0.0",
+  "lineage_root": "sha256:7ac30499a6cfd16c224b99bb94ca91c4d2fe9bd50a3f6850cbc38cbe9e8b21d9",
+  "repair_round": 0,
+  "repair_counted": false,
+  "repair_of": null,
+  "status": "GENERATED_COMPOSED_NEEDS_REVIEW",
+  "request_hash": "sha256:eb9b5d87ed43e9dadc3ea224d97609b6d2a3d65ffa9fc1921a6e22263114e8de",
+  "execution_hash": "sha256:aff2cd018ca1d4913e45a152d24550e74cf1229f506e0782ddb6f363159d56a5",
+  "renderer": {
+    "tool": "aes-visual-execution",
+    "version": "rsvg-convert version 2.60.0",
+    "name": "rsvg",
+    "font_stack": "'Noto Sans KR', 'Noto Sans CJK KR', sans-serif"
+  },
+  "inputs": [
+    {
+      "ref": "source-sidecar.json",
+      "sha256": "sha256:0183325dd3317b32ad824f56d6bdee6ab3fd6cb95f3402497b35a50470d01432"
+    },
+    {
+      "ref": "generated/hook.png",
+      "sha256": "sha256:31c6ca20e913e8c4babd10244a666423bce1e336b244d2ecaca9bb225dca8540"
+    }
+  ],
+  "geometry": {
+    "width": 1080,
+    "height": 1350,
+    "aspect_ratio": "4:5"
+  },
+  "outputs": {
+    "master": {
+      "ref": "master.png",
+      "sha256": "sha256:17b030ed4025846d1d9a0f097791060bf3ca8c61240bc111cc97bb43ddb54269"
+    },
+    "image": {
+      "ref": "image.png",
+      "sha256": "sha256:17b030ed4025846d1d9a0f097791060bf3ca8c61240bc111cc97bb43ddb54269"
+    },
+    "svg": {
+      "ref": "master.svg",
+      "sha256": "sha256:97eeb4868cd05087a971796df72136cd68e2c28f0c514f2dabc51fb1dab1be12"
+    }
+  },
+  "text": [
+    {
+      "id": "headline",
+      "text": "10월엔 쉬고,\n12월엔 올린다",
+      "source_ref": "request",
+      "lines": [
+        "10월엔 쉬고,",
+        "12월엔 올린다"
+      ],
+      "font_size": 68,
+      "slot": {
+        "x": 65,
+        "y": 108,
+        "width": 497,
+        "height": 297
+      },
+      "orphan": false
+    },
+    {
+      "id": "hero-value",
+      "text": "81%",
+      "source_ref": "source-sidecar.json#oct-market+dec-market",
+      "lines": [
+        "81%"
+      ],
+      "font_size": 120,
+      "slot": {
+        "x": 65,
+        "y": 459,
+        "width": 464,
+        "height": 216
+      },
+      "orphan": false
+    },
+    {
+      "id": "hook-key",
+      "text": "12월까지 한 차례 인상",
+      "source_ref": "source-sidecar.json#oct-market+dec-market",
+      "lines": [
+        "12월까지 한 차례 인상"
+      ],
+      "font_size": 32,
+      "slot": {
+        "x": 65,
+        "y": 716,
+        "width": 464,
+        "height": 122
+      },
+      "orphan": false
+    },
+    {
+      "id": "hook-copy",
+      "text": "10월 회의 뒤 인상 가격은 15%에 머뭅니다.\n시장은 연말까지 한 차례 인상을 더 크게 봅니다.",
+      "source_ref": "source-sidecar.json#oct-market+dec-market",
+      "lines": [
+        "10월 회의 뒤 인상 가격은 15%에",
+        "머뭅니다.",
+        "시장은 연말까지 한 차례 인상을",
+        "더 크게 봅니다."
+      ],
+      "font_size": 36,
+      "slot": {
+        "x": 65,
+        "y": 864,
+        "width": 464,
+        "height": 270
+      },
+      "orphan": false
+    }
+  ],
+  "charts": [],
+  "images": [
+    {
+      "id": "hook-art",
+      "ref": "generated/hook.png",
+      "source_sha256": "sha256:31c6ca20e913e8c4babd10244a666423bce1e336b244d2ecaca9bb225dca8540",
+      "mode": "exact_composite",
+      "fit": "cover",
+      "source_geometry": {
+        "width": 1024,
+        "height": 1280
+      },
+      "slot": {
+        "x": 0,
+        "y": 0,
+        "width": 1080,
+        "height": 1350
+      },
+      "resolution": {
+        "required_scale": 1.0547,
+        "upsampled": true,
+        "status": "UPSCALE_WARNING"
+      },
+      "rights_note": "Original generated text-free editorial image.",
+      "protect": []
+    }
+  ],
+  "generation": [
+    {
+      "id": "hook-art",
+      "provider": "OpenAI Images API",
+      "model": "gpt-image-2.5-flare",
+      "invocation_id": "req_324d872f43ae41089dc7a4c69ed5e403",
+      "mode": "api",
+      "asset_sha256": "sha256:31c6ca20e913e8c4babd10244a666423bce1e336b244d2ecaca9bb225dca8540",
+      "response_ref": "generated/hook-response.json",
+      "response_sha256": "sha256:6c660f3720bd889cd7337932c971c8cb081b562298132d283bf988cdfd1a1c2d",
+      "distinct_colours": 65,
+      "evidence_level": "SELF_ATTESTED",
+      "machine_verified": [
+        "asset_in_final_png"
+      ],
+      "flat_art_attestation": null,
+      "slot_pixels": 1458000,
+      "slot_pixels_changed_by_asset": 908652,
+      "consumed_ratio": 0.6232,
+      "asset_in_final_png": true,
+      "not_verified_reasons": []
+    }
+  ],
+  "watermark": null,
+  "mockup_labels": [],
+  "checks": {
+    "output_geometry": "PASS",
+    "text_fit": "PASS",
+    "inputs_rechecked": "PASS",
+    "numeric_render_binding": "NOT_APPLICABLE",
+    "generated_image": "GENERATED_COMPOSED_NEEDS_REVIEW",
+    "contrast": "NOT_APPLICABLE",
+    "actual_pixel_semantic_review": "NOT_RUN_PHASE4",
+    "source_truth": "NOT_ESTABLISHED_BY_RENDERER"
+  },
+  "api_calls": 0,
+  "publication_authorized": false
+}

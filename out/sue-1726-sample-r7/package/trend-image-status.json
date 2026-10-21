@@ -1,0 +1,19 @@
+{
+  "mode": "illustrative_trend_image",
+  "status": "PARITY_PASS_RENDERED",
+  "curve_direction": "down",
+  "curve_direction_source": "first and last raw PMC observations",
+  "history_observations": 48,
+  "start_value": 90,
+  "start_text": "90.0%",
+  "start_at": "2026-10-14T13:00:00Z",
+  "end_value": 81,
+  "end_text": "81.0%",
+  "end_at": "2026-10-21T05:00:00Z",
+  "change_pp": -9,
+  "change_text": "−9.0%p",
+  "overlay_rendered_by": "deterministic carousel typography",
+  "parity_check": "PASS",
+  "parity_rule": "direction, start, end and change are derived from first and last raw observations in ../pmc/run.json.",
+  "rendered_artifact": "rendered-round7/trend/image.png"
+}

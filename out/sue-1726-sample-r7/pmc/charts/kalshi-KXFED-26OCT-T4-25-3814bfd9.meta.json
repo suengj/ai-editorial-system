@@ -1,0 +1,95 @@
+{
+  "as_of": "2026-10-21T11:21:22.939885Z",
+  "canvas_px": [
+    1200,
+    675
+  ],
+  "chart_sha256": "75e07e10b8ce210460d084bcaa7ad3a01b946a011af9457437e8332aacf4773e",
+  "coverage": {
+    "count": 44,
+    "end": "2026-10-21T11:00:00Z",
+    "lead_seconds": 9517.060115,
+    "start": "2026-10-14T14:00:00Z",
+    "status": "full",
+    "tolerance_seconds": 21600.0,
+    "unavailable_gaps": 1
+  },
+  "currency": null,
+  "current_quote": {
+    "differs_from_history_endpoint": false,
+    "probability": 0.01,
+    "retrieved_at": "2026-10-21T11:21:22.939885Z",
+    "source_timestamp": null,
+    "source_timestamp_status": "unknown"
+  },
+  "delta": {
+    "baseline_at": "2026-10-14T14:00:00Z",
+    "baseline_value": 0.01,
+    "basis": "7d",
+    "last_at": "2026-10-21T11:00:00Z",
+    "last_value": 0.01,
+    "source": "raw_points",
+    "text": "+0%p",
+    "value_pp": 0.0
+  },
+  "display_mode": "pchip",
+  "duplicate_policy": "kept_last",
+  "end_time": "2026-10-28T17:55:00Z",
+  "event_id": "KXFED-26OCT",
+  "font": "Apple SD Gothic Neo",
+  "forecast_type": "last_price",
+  "hero": {
+    "basis": "last_valid_history_observation",
+    "decimals": 0,
+    "observed_at": "2026-10-21T11:00:00Z",
+    "text": "1%",
+    "value": 0.01
+  },
+  "history_type": "sampled",
+  "input_sha256": "af9e788418c20e13028ded57107cdeedeef34a6912d5eac0b678ee3f7d61118d",
+  "interpolation": {
+    "clipping": false,
+    "extrapolation": false,
+    "fallback": true,
+    "implementation": "builtin-fritsch-carlson",
+    "method": "pchip",
+    "note": "scipy unavailable: builtin PCHIP (same Fritsch-Carlson slopes as scipy)"
+  },
+  "market_id": "KXFED-26OCT-T4.25",
+  "market_status": "open",
+  "model_calls": 0,
+  "outcome": null,
+  "outcome_label": null,
+  "period": {
+    "end": "2026-10-21T11:00:00Z",
+    "start": "2026-10-14T14:00:00Z"
+  },
+  "plot_data_sha256": "0175518cd80364f7e5bc2e2c15f3f7ea0ce4aa29534951d6429d8d9e070fc794",
+  "pmc_chart_renderer": "pmc-chart/2",
+  "png_sha256": "75e07e10b8ce210460d084bcaa7ad3a01b946a011af9457437e8332aacf4773e",
+  "price_basis": "last_price (0..1 market signal, plotted as %)",
+  "profile": "analysis",
+  "provider": "kalshi",
+  "query_id": "05bbae4e81325cf1000265227d3f0c0c7463456ff636296966c418699e7f06e6",
+  "renderer": "matplotlib",
+  "renderer_version": "3.11.2",
+  "resolution_rules_sha256": "4ad36f8ec77f7af1d373ffa36df71b270870df706b0a61ce09419c564d2150aa",
+  "run_id": "eca409d3-7294-47f5-91cc-a3f1343c3412",
+  "source_url": "https://kalshi.com/markets/KXFED/KXFED-26OCT-T4.25",
+  "status": "ok",
+  "title": "Will the upper bound of the federal funds rate be above 4.25% following the Fed's Oct 28, 2026 meeting?",
+  "warnings": [],
+  "window": {
+    "effective": "7d",
+    "end": "2026-10-21T11:21:22.939885Z",
+    "requested": "7d",
+    "start": "2026-10-14T11:21:22.939885Z"
+  },
+  "y_axis": {
+    "label": null,
+    "max": 100,
+    "min": 0,
+    "mode": "full",
+    "unit": "%"
+  }
+}

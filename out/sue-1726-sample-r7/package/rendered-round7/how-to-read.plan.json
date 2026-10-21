@@ -1,0 +1,87 @@
+{
+  "schema_version": "1.0.0",
+  "request": "SUE-1726 round 6: October hold pricing versus December hike pricing from supplied Kalshi PMC live markets.",
+  "source": {
+    "ref": "source-sidecar.json",
+    "sha256": "sha256:0183325dd3317b32ad824f56d6bdee6ab3fd6cb95f3402497b35a50470d01432",
+    "scope": "source_bound"
+  },
+  "profiles": {
+    "surface": "instagram",
+    "artifact": "visual/slide-image"
+  },
+  "task": {
+    "canvas": {
+      "width": 1080,
+      "height": 1350,
+      "aspect_ratio": "4:5"
+    },
+    "theme": {
+      "background": "#F7F5F0",
+      "foreground": "#14213D",
+      "accent": "#FF6B5B"
+    },
+    "text_policy": "hybrid_template",
+    "density": {
+      "semantic": "moderate",
+      "visual": "moderate"
+    },
+    "watermark": {
+      "enabled": false
+    }
+  },
+  "layers": [
+    {
+      "id": "headline",
+      "kind": "text",
+      "text": "81%는 무슨 뜻일까",
+      "source_ref": "request",
+      "slot": {
+        "x": 0.06,
+        "y": 0.1,
+        "width": 0.88,
+        "height": 0.21
+      },
+      "font_size": 68,
+      "weight": 700,
+      "max_lines": 2,
+      "line_height": 1.15,
+      "font_family": "'Noto Serif KR', 'Noto Serif CJK KR', serif"
+    },
+    {
+      "id": "read-key",
+      "kind": "text",
+      "text": "12월 회의 뒤, 기준금리 상단이 4.00%보다 높으면 예로 정산",
+      "source_ref": "source-sidecar.json#dec-market",
+      "slot": {
+        "x": 0.06,
+        "y": 0.36,
+        "width": 0.88,
+        "height": 0.14
+      },
+      "font_size": 36,
+      "weight": 600,
+      "max_lines": 9,
+      "line_height": 1.32,
+      "font_family": "AES Sans KR"
+    },
+    {
+      "id": "read-copy",
+      "kind": "text",
+      "text": "81센트에 거래 중 = 시장이 매긴 인상 확률 81%.\n누적 5만6천 계약.",
+      "source_ref": "source-sidecar.json#dec-market",
+      "slot": {
+        "x": 0.06,
+        "y": 0.53,
+        "width": 0.88,
+        "height": 0.31
+      },
+      "font_size": 36,
+      "weight": 600,
+      "max_lines": 9,
+      "line_height": 1.32,
+      "font_family": "AES Sans KR"
+    }
+  ],
+  "caption": ""
+}

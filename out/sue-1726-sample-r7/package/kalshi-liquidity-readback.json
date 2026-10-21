@@ -1,0 +1,27 @@
+{
+  "source": "Kalshi public trade API market detail",
+  "request_started_at": "2026-10-21T11:33:48.698640+00:00",
+  "request_completed_at": "2026-10-21T11:33:49.673997+00:00",
+  "markets": {
+    "oct": {
+      "ticker": "KXFED-26OCT-T4.00",
+      "volume_24h_fp": "434.36",
+      "volume_fp": "245526.39",
+      "open_interest_fp": "72019.73",
+      "yes_bid_dollars": "0.1100",
+      "yes_ask_dollars": "0.1200",
+      "updated_time": "2026-09-30T18:52:10.746156Z",
+      "source_url": "https://api.elections.kalshi.com/trade-api/v2/markets/KXFED-26OCT-T4.00"
+    },
+    "dec": {
+      "ticker": "KXFED-26DEC-T4.00",
+      "volume_24h_fp": "557.58",
+      "volume_fp": "56056.35",
+      "open_interest_fp": "19255.76",
+      "yes_bid_dollars": "0.8100",
+      "yes_ask_dollars": "0.8400",
+      "updated_time": "2026-09-30T19:07:31.666119Z",
+      "source_url": "https://api.elections.kalshi.com/trade-api/v2/markets/KXFED-26DEC-T4.00"
+    }
+  }
+}

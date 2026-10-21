@@ -1,0 +1,267 @@
+{
+  "schema_version": "1.0.0",
+  "kind": "visual_execution",
+  "status": "GENERATED_COMPOSED_NEEDS_REVIEW",
+  "request": "SUE-1726 round 6: October hold pricing versus December hike pricing from supplied Kalshi PMC live markets.",
+  "request_hash": "sha256:e8f235e92294a7b93db51fabfce5418bd5e1b0ab0a80c09f78dab0c80aa6abc6",
+  "source": {
+    "ref": "source-sidecar.json",
+    "sha256": "sha256:0183325dd3317b32ad824f56d6bdee6ab3fd6cb95f3402497b35a50470d01432",
+    "scope": "source_bound"
+  },
+  "profiles": {
+    "surface": {
+      "id": "instagram",
+      "version": "1.0.0",
+      "sha256": "sha256:a9c6d095027ee38ca26e4649eae1a3320bf6800d39b9ac71b830934a467361e9"
+    },
+    "artifact": {
+      "id": "visual/slide-image",
+      "version": "1.0.0",
+      "sha256": "sha256:2a8fa7d1c41c4aac0d5b4e4952dcef2b0a529f9e600b252668de6a54a588c2da"
+    }
+  },
+  "canvas": {
+    "width": 1080,
+    "height": 1350,
+    "aspect_ratio": "4:5"
+  },
+  "theme": {
+    "background": "#F7F5F0",
+    "foreground": "#14213D",
+    "accent": "#FF6B5B",
+    "font_family": "'Noto Sans KR', 'Noto Sans CJK KR', sans-serif"
+  },
+  "density": {
+    "semantic": "moderate",
+    "visual": "moderate"
+  },
+  "text_policy": "hybrid_template",
+  "watermark": {
+    "enabled": false,
+    "text": "suengj.com",
+    "color": "#9CA3AF",
+    "opacity": 0.08,
+    "placement": "lower-center",
+    "scale": 0.03,
+    "safe_margins": {
+      "bottom": 0.05,
+      "left": 0.05,
+      "right": 0.05
+    },
+    "exclusion_zones": []
+  },
+  "watermark_layer": "overlay",
+  "field_origins": {
+    "canvas": "task",
+    "text_policy": "task",
+    "density": "task",
+    "watermark": "task",
+    "watermark_layer": "profile_or_renderer_default",
+    "theme.background": "task",
+    "theme.foreground": "task",
+    "theme.accent": "task",
+    "theme.font_family": "preset"
+  },
+  "resolved_requirements": {
+    "artifact": {
+      "primary_job": "Carry one primary information function — orient, assert, show evidence, explain mechanism, compare, qualify, turn, show consequence, or close — as one frame in a beat-ordered sequence (SLIDES-AND-CAROUSELS.md §1).",
+      "composition": {
+        "dominant_structure": "Primary assertion followed by primary evidence, in that order (Assertion-Evidence profile, SLIDES-AND-CAROUSELS.md §2).",
+        "supporting_modules_max": 1,
+        "reading_path": "Assertion, then evidence, then only the interpreting text needed.",
+        "negative_space": "moderate, density-profile dependent",
+        "chrome_level": "low; layout tokens and responsive behavior belong to the renderer, not the editorial spec (SLIDES-AND-CAROUSELS.md §10)"
+      },
+      "acceptance": [
+        "the frame's main point can be stated in one sentence",
+        "the title/assertion matches the evidence shown",
+        "the frame maps to one or more beat_id entries",
+        "the density profile (live_narrated/video_frame/silent_carousel/reference_deck) is explicit",
+        "narration dependency is explicit"
+      ],
+      "readability": {
+        "applies": true,
+        "gate": {
+          "viewport": "mobile / silent_carousel scale",
+          "requirements": [
+            "self-contained without narration when density profile is silent_carousel",
+            "frame-to-frame continuity is explicit",
+            "mobile legibility is critical for carousel surfaces"
+          ]
+        },
+        "rationale": "SLIDES-AND-CAROUSELS.md §4 makes mobile legibility a hard requirement of the silent_carousel density profile, and it generalizes the SUENGJ-ARTICLE-IMAGE-FAMILIES.md §5 mobile-gate principle to sequential frames."
+      }
+    },
+    "surface": {
+      "canvas": {
+        "width": 1080,
+        "height": 1350
+      },
+      "execution_guide": "editorial/STRUCTURED-VISUAL-EXECUTION.md",
+      "geometry_rule": "Portrait is a recipe default, not a platform mandate. Explicit task geometry wins when compatible with the actual destination.",
+      "readability": "Check actual full-size and mobile pixels. Text budgets are soft; never delete essential qualifiers or shrink indefinitely to fit.",
+      "overflow": "Re-layout, move nonessential detail to caption, or split into a declared series; no silent truncation.",
+      "voice_boundary": "Personal caption defaults do not force on-image headlines or other accounts into a personal-reflective voice."
+    },
+    "brand": null,
+    "density_review": "Declared intent, not measured coverage. Review actual semantic/visual density; explicit slots own geometry."
+  },
+  "layers": [
+    {
+      "id": "headline",
+      "kind": "text",
+      "text": "한국에 닿는\n세 갈래",
+      "source_ref": "request",
+      "slot": {
+        "x": 0.06,
+        "y": 0.1,
+        "width": 0.88,
+        "height": 0.21
+      },
+      "font_size": 68,
+      "weight": 700,
+      "max_lines": 2,
+      "line_height": 1.15,
+      "font_family": "'Noto Serif KR', 'Noto Serif CJK KR', serif",
+      "pixel_slot": {
+        "x": 65,
+        "y": 135,
+        "width": 950,
+        "height": 284
+      },
+      "align": "start"
+    },
+    {
+      "id": "korea-art",
+      "kind": "generated",
+      "ref": "generated/korea.png",
+      "fit": "cover",
+      "rights_note": "Original generated text-free editorial image.",
+      "instruction": "R4 owner-preferred photo-led editorial direction. Use the supplied strong source photo as the full-bleed visual whenever present, preserving the original pixels and recording crop/focal-point decisions. Keep factual text in the existing deterministic compositor regions. Do not replace a suitable photo with generated illustration. If a usable photo is absent or weak, resolve to R7 before rendering.\nFrame purpose: 미국 금리는 환율 자금흐름과 한국 대출금리를 통해 세 갈래로 이어진다.\nFull-strength Seoul financial-district photo with restrained red and blue light; no signs, text, numbers, logos, people or UI.\nCreate only the illustration for the content slot {\"x\":0.06,\"y\":0.33,\"width\":0.88,\"height\":0.18}. The compositor clips this asset to that slot; it adds headline, source, page count and watermark separately. Do not draw exact text, data, numbers or branding. A prompt alone is not pixel reservation.",
+      "generation": {
+        "provider": "OpenAI Images API",
+        "model": "gpt-image-2.5-flare",
+        "invocation_id": "req_8fcd6d91b78143cb8059ec5e995630bd",
+        "mode": "api",
+        "asset_sha256": "sha256:3f03e2408ddb9d4d633c25b6fdcfc6852c2018827b12a8a82b6c06f8f9bf90e4",
+        "response_ref": "generated/korea-response.json",
+        "response_sha256": "sha256:e309a62520cd3bb4e66f63667243e4ff52bce3e8af83a9b07cefe90b581eabdf"
+      },
+      "slot": {
+        "x": 0.06,
+        "y": 0.33,
+        "width": 0.88,
+        "height": 0.18
+      },
+      "pixel_slot": {
+        "x": 65,
+        "y": 446,
+        "width": 950,
+        "height": 243
+      },
+      "sha256": "sha256:3f03e2408ddb9d4d633c25b6fdcfc6852c2018827b12a8a82b6c06f8f9bf90e4",
+      "mode": "exact_composite",
+      "native_geometry": {
+        "width": 1024,
+        "height": 1280
+      },
+      "generation_check": {
+        "reasons": [],
+        "distinct_colours": 65,
+        "mode": "api",
+        "evidence_level": "SELF_ATTESTED",
+        "machine_verified": [
+          "asset_in_final_png"
+        ],
+        "response_sha256": "sha256:e309a62520cd3bb4e66f63667243e4ff52bce3e8af83a9b07cefe90b581eabdf",
+        "flat_art_attestation": null
+      }
+    },
+    {
+      "id": "korea-rate",
+      "kind": "text",
+      "text": "금리차 · 미국 3.75–4.00%, 한국 3.00%. 인상 땐 격차 확대.",
+      "source_ref": "source-sidecar.json#fed-range+bok-rate+bok-flows+mortgage-rate",
+      "slot": {
+        "x": 0.06,
+        "y": 0.54,
+        "width": 0.88,
+        "height": 0.09
+      },
+      "font_size": 36,
+      "weight": 600,
+      "max_lines": 9,
+      "line_height": 1.32,
+      "font_family": "AES Sans KR",
+      "pixel_slot": {
+        "x": 65,
+        "y": 729,
+        "width": 950,
+        "height": 122
+      },
+      "align": "start"
+    },
+    {
+      "id": "korea-fx",
+      "kind": "text",
+      "text": "국내에서 나가는 돈이 들어오는 돈의 약 2.5배.\n금리차가 벌어지면 원화 약세 압력.",
+      "source_ref": "source-sidecar.json#fed-range+bok-rate+bok-flows+mortgage-rate",
+      "slot": {
+        "x": 0.06,
+        "y": 0.65,
+        "width": 0.88,
+        "height": 0.09
+      },
+      "font_size": 36,
+      "weight": 600,
+      "max_lines": 9,
+      "line_height": 1.32,
+      "font_family": "AES Sans KR",
+      "pixel_slot": {
+        "x": 65,
+        "y": 878,
+        "width": 950,
+        "height": 122
+      },
+      "align": "start"
+    },
+    {
+      "id": "korea-loan",
+      "kind": "text",
+      "text": "대출 · 신규 주담대 평균 4.66%(8월). 은행 조달비용도 변수.",
+      "source_ref": "source-sidecar.json#fed-range+bok-rate+bok-flows+mortgage-rate",
+      "slot": {
+        "x": 0.06,
+        "y": 0.76,
+        "width": 0.88,
+        "height": 0.09
+      },
+      "font_size": 36,
+      "weight": 600,
+      "max_lines": 9,
+      "line_height": 1.32,
+      "font_family": "AES Sans KR",
+      "pixel_slot": {
+        "x": 65,
+        "y": 1026,
+        "width": 950,
+        "height": 122
+      },
+      "align": "start"
+    }
+  ],
+  "caption": "",
+  "legacy": null,
+  "generation": [],
+  "qa": {
+    "source_semantics": "NOT_REVIEWED",
+    "visual": "NOT_REVIEWED",
+    "publication": "NOT_AUTHORIZED"
+  },
+  "execution_hash": "sha256:490767c62e7acb32b4a0729b9e9b35257b7eb0e77e62718ed0e7010960105b8f",
+  "rasterizer": {
+    "name": "rsvg",
+    "version": "rsvg-convert version 2.60.0"
+  }
+}

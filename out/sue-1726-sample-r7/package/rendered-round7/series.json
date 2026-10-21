@@ -1,0 +1,285 @@
+{
+  "lineage_root": "sha256:801327c1d9c1267cbe58218c50f227976fb1e81e37d8f68dc02dcb2621d9c086",
+  "repair_round": 0,
+  "repair_counted": false,
+  "classification": "new_base_all_frames_changed",
+  "repaired_frames": [],
+  "schema_version": "1.0.0",
+  "series_id": "sue-1726-round-6-fed-oct-dec-pricing",
+  "recipe": "r4-photo-fullbleed",
+  "visual_style": {
+    "style": "R4",
+    "recipe": "r4-photo-fullbleed",
+    "reason": "explicit_style",
+    "requested": {
+      "requested_style": "R4",
+      "content_kind": "other",
+      "photo_asset_quality": "strong"
+    }
+  },
+  "recipe_hash": "sha256:a2dd49b4c8ce61a0c72ef8bafc6d4d075b2e2290d34b03c13e3f5f8f19cec105",
+  "runtime": {
+    "adapter": {
+      "name": "rsvg",
+      "version": "rsvg-convert version 2.60.0"
+    },
+    "font_environment": "sha256:828d8983aa1d9cc8e626706ab6b516a05baf1739b36c19b919f8c9eb6cd0ab4d",
+    "code": [
+      "sha256:f9889294af6387910c0c6545dd42e8d1895eb60cf6883dccd2dcb2c3a9802ee2",
+      "sha256:b78772f4920d86ad7e8fc0a73cee0fb4c0056f144f201cc7148f6accfde9c0e0",
+      "sha256:3d72ec49b3c83f69b61960bbe25078abe554d23b6ce6bd723784194864d33a2a",
+      "sha256:c4d708fedb3ca3ef287a21bba3a6993345106740e8b06d0860bb33eb4739b7c9",
+      "sha256:3baca5becaab607f6385941b91e0e7a5d4c27ba8be4a7c8c157c6612e0e9b831",
+      "sha256:b6f6cce8783c424028129ca7f7134f396e6e3b21f817e6e975d1725d437457b8"
+    ],
+    "bundled_fonts": "sha256:846c415c60d415e1a3d4e3681df9201f853d2a5cb7ef6a0416503a52cbcb9898"
+  },
+  "status": "GENERATED_COMPOSED_NEEDS_REVIEW",
+  "frames": [
+    {
+      "id": "hook",
+      "index": 1,
+      "function": "orient",
+      "beat_ids": [
+        "hook"
+      ],
+      "takeaway": "시장은 10월 직후엔 쉬지만 연말까지 한 차례 인상을 가격에 반영한다.",
+      "alt_text": "중앙은행 건물 사진과 12월까지 금리 인상 조건에 매겨진 시장 가격.",
+      "fingerprint": "sha256:3061a67101161a7998fb1b7897645d113a2b049c372f4cabf6f8e8a6afce5823",
+      "status": "GENERATED_COMPOSED_NEEDS_REVIEW",
+      "reused": false,
+      "outputs": {
+        "master.png": {
+          "ref": "hook/master.png",
+          "sha256": "sha256:17b030ed4025846d1d9a0f097791060bf3ca8c61240bc111cc97bb43ddb54269"
+        },
+        "image.png": {
+          "ref": "hook/image.png",
+          "sha256": "sha256:17b030ed4025846d1d9a0f097791060bf3ca8c61240bc111cc97bb43ddb54269"
+        },
+        "master.svg": {
+          "ref": "hook/master.svg",
+          "sha256": "sha256:97eeb4868cd05087a971796df72136cd68e2c28f0c514f2dabc51fb1dab1be12"
+        },
+        "execution.json": {
+          "ref": "hook/execution.json",
+          "sha256": "sha256:a367b8429c16e3c18b3fbe8f8d6f0c0ccf89092256dd2a0f88c821705c895aaa"
+        },
+        "receipt.json": {
+          "ref": "hook/receipt.json",
+          "sha256": "sha256:4a6e653b41ccd83bd043b3d321aec7d5016e03d4abfd37fb10bdabb65b0e79e9"
+        }
+      },
+      "phone": {
+        "ref": "hook/phone.png",
+        "sha256": "sha256:960144fe2224616d9879cd85a86a69483582acdc99434c1904fd68ae9d5a5101"
+      }
+    },
+    {
+      "id": "how-to-read",
+      "index": 2,
+      "function": "orient",
+      "beat_ids": [
+        "how-to-read"
+      ],
+      "takeaway": "계약은 12월 회의 뒤 기준금리 상단이 4.00%를 넘는지 묻는다.",
+      "alt_text": "Kalshi의 12월 금리 계약 조건과 최근 거래량.",
+      "fingerprint": "sha256:ea5ca2fd695371013ca4b8f95a49965f68019d3a4a39cfa802c1090ca1391fb9",
+      "status": "RENDERED_NEEDS_REVIEW",
+      "reused": false,
+      "outputs": {
+        "master.png": {
+          "ref": "how-to-read/master.png",
+          "sha256": "sha256:15c09e3f21915d23ee85bc394537ab77f4851bccf1033fb1c944abbf07d0506c"
+        },
+        "image.png": {
+          "ref": "how-to-read/image.png",
+          "sha256": "sha256:15c09e3f21915d23ee85bc394537ab77f4851bccf1033fb1c944abbf07d0506c"
+        },
+        "master.svg": {
+          "ref": "how-to-read/master.svg",
+          "sha256": "sha256:e51e2cafa931399ddab8ab58d50277293d3ebbffbbe9eb1cc50a5b85eb7415e3"
+        },
+        "execution.json": {
+          "ref": "how-to-read/execution.json",
+          "sha256": "sha256:6cb40f8aababf57926b21ec30a59e89fe90f5603c953d958e5492b5cee2f6847"
+        },
+        "receipt.json": {
+          "ref": "how-to-read/receipt.json",
+          "sha256": "sha256:8e51dc160e0c7eefc896711cd457ebbe30ea71513d2e614bd6695677e7c8b169"
+        }
+      },
+      "phone": {
+        "ref": "how-to-read/phone.png",
+        "sha256": "sha256:317fbb975a04b36cc09c84cef932d5160d0d217ef7279df6b0c7cd3999265295"
+      }
+    },
+    {
+      "id": "trend",
+      "index": 3,
+      "function": "show_evidence",
+      "beat_ids": [
+        "trend"
+      ],
+      "takeaway": "12월 인상 조건 가격은 관측 구간 첫 값에서 마지막 값까지 9%p 내렸다.",
+      "alt_text": "PMC 원관측 첫 값 90%와 마지막 값 81%, 두 점 사이의 하향 곡선.",
+      "fingerprint": "sha256:e4a90b30740ec216e37b1aa2eb7a6585998ea208dc717ab28c19035edc767e11",
+      "status": "GENERATED_COMPOSED_NEEDS_REVIEW",
+      "reused": false,
+      "outputs": {
+        "master.png": {
+          "ref": "trend/master.png",
+          "sha256": "sha256:fd8e35eabe06769f4a824b3db2ae6ac0b1ccfc54a49ae7a55b6c956d72b211cf"
+        },
+        "image.png": {
+          "ref": "trend/image.png",
+          "sha256": "sha256:fd8e35eabe06769f4a824b3db2ae6ac0b1ccfc54a49ae7a55b6c956d72b211cf"
+        },
+        "master.svg": {
+          "ref": "trend/master.svg",
+          "sha256": "sha256:cf70b32428cebb1b1a613be29ce280651fee29aab7a3bb0985d5166286e48c22"
+        },
+        "execution.json": {
+          "ref": "trend/execution.json",
+          "sha256": "sha256:8f8ea15b5324c0cc661fcb40e3febb23c7a36620e17004700dd894cdf90fb1b2"
+        },
+        "receipt.json": {
+          "ref": "trend/receipt.json",
+          "sha256": "sha256:32fdd77093d63a590d2a7057da737658995ddea7a37236fa83fa7af1e8a09d48"
+        }
+      },
+      "phone": {
+        "ref": "trend/phone.png",
+        "sha256": "sha256:e6626b7f42e2d7390e3d5ce9dd189350cf1c49c02afac5084034ba5d9c2577e8"
+      }
+    },
+    {
+      "id": "why",
+      "index": 4,
+      "function": "explain_mechanism",
+      "beat_ids": [
+        "why"
+      ],
+      "takeaway": "높은 물가 상승률과 둔화된 고용 증가가 함께 정책 판단을 어렵게 한다.",
+      "alt_text": "경제 분석 책상 위의 그래프 종이와 연필.",
+      "fingerprint": "sha256:d895f56b04665340a3a40e1fabf3dff9246a57e5de4e9d3f2263528d4ad88697",
+      "status": "GENERATED_COMPOSED_NEEDS_REVIEW",
+      "reused": false,
+      "outputs": {
+        "master.png": {
+          "ref": "why/master.png",
+          "sha256": "sha256:aa80831e6fcb1132c9a783c918271004191f8540cd400c2ced98bfbe55a5a4b8"
+        },
+        "image.png": {
+          "ref": "why/image.png",
+          "sha256": "sha256:aa80831e6fcb1132c9a783c918271004191f8540cd400c2ced98bfbe55a5a4b8"
+        },
+        "master.svg": {
+          "ref": "why/master.svg",
+          "sha256": "sha256:87f3ef4919ff10062123244ddd22fdd3e8ff82c6280bae6ff67fe14e0d6d8306"
+        },
+        "execution.json": {
+          "ref": "why/execution.json",
+          "sha256": "sha256:6b6987bf974829c30ad2ed62fce145b2d496f0520cea4937c555d6ede9857281"
+        },
+        "receipt.json": {
+          "ref": "why/receipt.json",
+          "sha256": "sha256:038f3f92d7eb81526f14f38400c6abb33e3ff80af4479c71e00cc0bb084d7c37"
+        }
+      },
+      "phone": {
+        "ref": "why/phone.png",
+        "sha256": "sha256:c80b7bc3bf39660f6f874c162b7ab284fe9e08182ecca77e8f1c9940c17762ca"
+      }
+    },
+    {
+      "id": "korea-impact",
+      "index": 5,
+      "function": "show_consequence",
+      "beat_ids": [
+        "korea-impact"
+      ],
+      "takeaway": "미국 금리는 환율 자금흐름과 한국 대출금리를 통해 세 갈래로 이어진다.",
+      "alt_text": "서울 금융지구 사진 아래 한미 금리, 외환 흐름, 주담대 경로.",
+      "fingerprint": "sha256:8611de953f10b12b1c948a92ac5e9a89448b3f167c15a209fb8417bfbfd10939",
+      "status": "GENERATED_COMPOSED_NEEDS_REVIEW",
+      "reused": false,
+      "outputs": {
+        "master.png": {
+          "ref": "korea-impact/master.png",
+          "sha256": "sha256:dc479850eeda18aac5b05698452cd76e340c1f0f73faf0c4fa16311563b3382a"
+        },
+        "image.png": {
+          "ref": "korea-impact/image.png",
+          "sha256": "sha256:dc479850eeda18aac5b05698452cd76e340c1f0f73faf0c4fa16311563b3382a"
+        },
+        "master.svg": {
+          "ref": "korea-impact/master.svg",
+          "sha256": "sha256:1f99385f35df2a5fcebf3875c30efc573209341ed9059036900221b16272a97c"
+        },
+        "execution.json": {
+          "ref": "korea-impact/execution.json",
+          "sha256": "sha256:8c9f0c75ff8d30c0e8c0bf642be49e1bc19e45b36e88b6e34505e56100a4db5c"
+        },
+        "receipt.json": {
+          "ref": "korea-impact/receipt.json",
+          "sha256": "sha256:6d5d34a255802265ded2ee177bedcf1e1eba2deccc404f2b4bb323440ee47b11"
+        }
+      },
+      "phone": {
+        "ref": "korea-impact/phone.png",
+        "sha256": "sha256:1001a6a5dd80131995afa1d4e0f7a53108241b970f31720799a2a9146f9f7742"
+      }
+    },
+    {
+      "id": "watch-next",
+      "index": 6,
+      "function": "decision",
+      "beat_ids": [
+        "watch-next"
+      ],
+      "takeaway": "동결과 인상은 원·달러와 변동형 주택대출금리에 서로 다른 압력을 준다.",
+      "alt_text": "달력과 펜을 배경으로 동결과 인상의 환율·대출금리 영향을 비교한 카드.",
+      "fingerprint": "sha256:c65bfb48e5f3516e6146fb572d95a3cfbf3c2893f73bfbe560d3261f71f838c3",
+      "status": "GENERATED_COMPOSED_NEEDS_REVIEW",
+      "reused": false,
+      "outputs": {
+        "master.png": {
+          "ref": "watch-next/master.png",
+          "sha256": "sha256:5d5a89ca97c208edb5c27ce16a085493aa8da84afd7b300017af4627dbe71405"
+        },
+        "image.png": {
+          "ref": "watch-next/image.png",
+          "sha256": "sha256:5d5a89ca97c208edb5c27ce16a085493aa8da84afd7b300017af4627dbe71405"
+        },
+        "master.svg": {
+          "ref": "watch-next/master.svg",
+          "sha256": "sha256:ad2270ae87e90c9090f2e8cbc1571ef3fc8d9b7cfaf3c2618c48774a1f3a5147"
+        },
+        "execution.json": {
+          "ref": "watch-next/execution.json",
+          "sha256": "sha256:77a2930c08c5024a9aa3eb1e4bedf4d39cb69e268acc5ac44a7110bc99badfde"
+        },
+        "receipt.json": {
+          "ref": "watch-next/receipt.json",
+          "sha256": "sha256:cb21c7ee57dc6ab2c451ce537b8e07fb5451d76a8166bcd45f58f161c2093f2f"
+        }
+      },
+      "phone": {
+        "ref": "watch-next/phone.png",
+        "sha256": "sha256:3b6fb5270abe72ad84f5d5411e154d739f07b6caef8d27a1345fc6b0e4121711"
+      }
+    }
+  ],
+  "qa": {
+    "mechanical": "PREFLIGHT_PASSED",
+    "visual": "NOT_REVIEWED",
+    "source_truth": "NOT_ESTABLISHED",
+    "publication": "NOT_AUTHORIZED"
+  },
+  "publication_authorized": false,
+  "contact_sheet": {
+    "ref": "contact-sheet.png",
+    "sha256": "sha256:08e17808222b0251b193c602efcdef4f70efe87b9732d09c5561c00ac090572a"
+  }
+}

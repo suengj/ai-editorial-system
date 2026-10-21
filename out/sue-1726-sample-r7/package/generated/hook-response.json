@@ -1,0 +1,22 @@
+{
+  "request_id": "req_324d872f43ae41089dc7a4c69ed5e403",
+  "model": "gpt-image-2.5-flare",
+  "created": 1792576028,
+  "quality": "low",
+  "size": "1024x1280",
+  "background": "opaque",
+  "output_format": "png",
+  "usage": {
+    "input_tokens": 140,
+    "input_tokens_details": {
+      "image_tokens": 0,
+      "text_tokens": 140
+    },
+    "output_tokens": 173,
+    "output_tokens_details": {
+      "image_tokens": 173,
+      "text_tokens": 0
+    },
+    "total_tokens": 313
+  }
+}

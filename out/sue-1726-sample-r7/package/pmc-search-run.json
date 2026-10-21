@@ -1,0 +1,425 @@
+{
+  "query_id": "da4561dd2cf9c675490422902c9083711e50a65986ac75aa1b02e897c3d729df",
+  "query_hash": "da4561dd2cf9c675490422902c9083711e50a65986ac75aa1b02e897c3d729df",
+  "run_id": "9f6ca776-a3fe-4560-ab22-e9e78e3e76b2",
+  "as_of": "2026-10-21T10:51:30.700352Z",
+  "results": [
+    {
+      "provider": "polymarket",
+      "market_id": "0xdf9bf27ee5757c55b44b8b9826ddc9ec3a8809aa3278634c45edbb7fc8f1a3e3",
+      "event_id": "606422",
+      "outcome_id": "111061902544814266207267295505639408607400625795891618462682726460921782993748",
+      "title": "Will there be no change in Fed interest rates after the October 2026 meeting?",
+      "original_url": "https://polymarket.com/event/fed-decision-in-october-20260617190323537",
+      "description": "The FED interest rates are defined in this market by the upper bound of the target federal funds range. The decisions on the target federal funds range are made by the Federal Open Market Committee (FOMC) meetings.\n\nThis market will resolve to the amount of basis points the upper bound of the target federal funds rate is changed by versus the level it was prior to the Federal Reserve's October 2026 meeting.\n\nIf the target federal funds rate is changed to a level not expressed in the displayed options, the change will be rounded up to the nearest 25 and will resolve to the relevant bracket. (e.g. if there's a cut/increase of 12.5 bps it will be considered to be 25 bps)\n\nThe resolution source for this market is the FOMC’s statement after its meeting scheduled for October 27-28, 2026 according to the official calendar: https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm.\n\nThe level and change of the target federal funds rate is also published at the official website of the Federal Reserve at https://www.federalreserve.gov/monetarypolicy/openmarket.htm.\n\nThis market may resolve as soon as the FOMC’s statement for their October meeting with relevant data is issued. If no statement is released by the end date of the next scheduled meeting, this market will resolve to the \"No change\" bracket.",
+      "resolution_rules": "The FED interest rates are defined in this market by the upper bound of the target federal funds range. The decisions on the target federal funds range are made by the Federal Open Market Committee (FOMC) meetings.\n\nThis market will resolve to the amount of basis points the upper bound of the target federal funds rate is changed by versus the level it was prior to the Federal Reserve's October 2026 meeting.\n\nIf the target federal funds rate is changed to a level not expressed in the displayed options, the change will be rounded up to the nearest 25 and will resolve to the relevant bracket. (e.g. if there's a cut/increase of 12.5 bps it will be considered to be 25 bps)\n\nThe resolution source for this market is the FOMC’s statement after its meeting scheduled for October 27-28, 2026 according to the official calendar: https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm.\n\nThe level and change of the target federal funds rate is also published at the official website of the Federal Reserve at https://www.federalreserve.gov/monetarypolicy/openmarket.htm.\n\nThis market may resolve as soon as the FOMC’s statement for their October meeting with relevant data is issued. If no statement is released by the end date of the next scheduled meeting, this market will resolve to the \"No change\" bracket.",
+      "end_time": "2026-10-29T03:59:00Z",
+      "status": "open",
+      "probability_value": 0.885,
+      "price": 0.885,
+      "forecast_type": "outcome_price",
+      "observed_at": "2026-10-21T10:51:30.700352Z",
+      "retrieved_at": "2026-10-21T10:51:30.700352Z",
+      "volume": 15021526.772935,
+      "volume_value": 15021526.772935,
+      "volume_unit": "USDC",
+      "currency": "USDC",
+      "liquidity_available": true,
+      "spread_available": true,
+      "activity_available": true,
+      "history": [],
+      "ranking_score": 0.7818181818181819,
+      "ranking_reasons": [
+        "relevance 0.727 (8/11 terms)",
+        "search terms matched: FOMC October 27 28",
+        "time horizon 1.0",
+        "condition match 0.727",
+        "volume used only as secondary tie-breaker"
+      ],
+      "missing_metrics": [
+        "history_incomplete",
+        "INSUFFICIENT_HISTORY",
+        "history_snapshot"
+      ],
+      "group_item_title": "No change",
+      "event_outcomes": [
+        {
+          "market_id": "0xa69ef420d8b4075ad8ba8611d02c63cb2ece46f5c8c643af223c272689b0c96f",
+          "group_item_title": "50+ bps decrease",
+          "question": "Will the Fed decrease interest rates by 50+ bps after the October 2026 meeting?",
+          "order": "0",
+          "probability": 0.0005,
+          "closed": false,
+          "event_id": "606422"
+        },
+        {
+          "market_id": "0x9cf563d7b55aa9aa876d5d7e55126347eee473f0ae56d799e325fdef2bf25297",
+          "group_item_title": "25 bps decrease",
+          "question": "Will the Fed decrease interest rates by 25 bps after the October 2026 meeting?",
+          "order": "1",
+          "probability": 0.0035,
+          "closed": false,
+          "event_id": "606422"
+        },
+        {
+          "market_id": "0xdf9bf27ee5757c55b44b8b9826ddc9ec3a8809aa3278634c45edbb7fc8f1a3e3",
+          "group_item_title": "No change",
+          "question": "Will there be no change in Fed interest rates after the October 2026 meeting?",
+          "order": "2",
+          "probability": 0.885,
+          "closed": false,
+          "event_id": "606422"
+        },
+        {
+          "market_id": "0x12aa13b3da17ceae1b0a59b5d5b77121e91bb79b4bb0b52bf6543ed3f8d0953b",
+          "group_item_title": "25 bps increase",
+          "question": "Will the Fed increase interest rates by 25 bps after the October 2026 meeting?",
+          "order": "3",
+          "probability": 0.115,
+          "closed": false,
+          "event_id": "606422"
+        },
+        {
+          "market_id": "0xde5d75ab7702875623ba509bc923241e1211da74a113521b3b70ddac930d7316",
+          "group_item_title": "50+ bps increase",
+          "question": "Will the Fed increase interest rates by 50+ bps after the October 2026 meeting?",
+          "order": "4",
+          "probability": 0.0035,
+          "closed": false,
+          "event_id": "606422"
+        }
+      ]
+    },
+    {
+      "provider": "polymarket",
+      "market_id": "0x12aa13b3da17ceae1b0a59b5d5b77121e91bb79b4bb0b52bf6543ed3f8d0953b",
+      "event_id": "606422",
+      "outcome_id": "55159722761418013044126414276680602270318000841690689684819994448621694923050",
+      "title": "Will the Fed increase interest rates by 25 bps after the October 2026 meeting?",
+      "original_url": "https://polymarket.com/event/fed-decision-in-october-20260617190323537",
+      "description": "The FED interest rates are defined in this market by the upper bound of the target federal funds range. The decisions on the target federal funds range are made by the Federal Open Market Committee (FOMC) meetings.\n\nThis market will resolve to the amount of basis points the upper bound of the target federal funds rate is changed by versus the level it was prior to the Federal Reserve's October 2026 meeting.\n\nIf the target federal funds rate is changed to a level not expressed in the displayed options, the change will be rounded up to the nearest 25 and will resolve to the relevant bracket. (e.g. if there's a cut/increase of 12.5 bps it will be considered to be 25 bps)\n\nThe resolution source for this market is the FOMC’s statement after its meeting scheduled for October 27-28, 2026 according to the official calendar: https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm.\n\nThe level and change of the target federal funds rate is also published at the official website of the Federal Reserve at https://www.federalreserve.gov/monetarypolicy/openmarket.htm.\n\nThis market may resolve as soon as the FOMC’s statement for their October meeting with relevant data is issued. If no statement is released by the end date of the next scheduled meeting, this market will resolve to the \"No change\" bracket.",
+      "resolution_rules": "The FED interest rates are defined in this market by the upper bound of the target federal funds range. The decisions on the target federal funds range are made by the Federal Open Market Committee (FOMC) meetings.\n\nThis market will resolve to the amount of basis points the upper bound of the target federal funds rate is changed by versus the level it was prior to the Federal Reserve's October 2026 meeting.\n\nIf the target federal funds rate is changed to a level not expressed in the displayed options, the change will be rounded up to the nearest 25 and will resolve to the relevant bracket. (e.g. if there's a cut/increase of 12.5 bps it will be considered to be 25 bps)\n\nThe resolution source for this market is the FOMC’s statement after its meeting scheduled for October 27-28, 2026 according to the official calendar: https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm.\n\nThe level and change of the target federal funds rate is also published at the official website of the Federal Reserve at https://www.federalreserve.gov/monetarypolicy/openmarket.htm.\n\nThis market may resolve as soon as the FOMC’s statement for their October meeting with relevant data is issued. If no statement is released by the end date of the next scheduled meeting, this market will resolve to the \"No change\" bracket.",
+      "end_time": "2026-10-29T03:59:00Z",
+      "status": "open",
+      "probability_value": 0.115,
+      "price": 0.115,
+      "forecast_type": "outcome_price",
+      "observed_at": "2026-10-21T10:51:30.700352Z",
+      "retrieved_at": "2026-10-21T10:51:30.700352Z",
+      "volume": 11560220.557085998,
+      "volume_value": 11560220.557085998,
+      "volume_unit": "USDC",
+      "currency": "USDC",
+      "liquidity_available": true,
+      "spread_available": true,
+      "activity_available": true,
+      "history": [],
+      "ranking_score": 0.7818181818181819,
+      "ranking_reasons": [
+        "relevance 0.727 (8/11 terms)",
+        "search terms matched: FOMC October 27 28",
+        "time horizon 1.0",
+        "condition match 0.727",
+        "volume used only as secondary tie-breaker"
+      ],
+      "missing_metrics": [
+        "history_incomplete",
+        "INSUFFICIENT_HISTORY",
+        "history_snapshot"
+      ],
+      "group_item_title": "25 bps increase",
+      "event_outcomes": [
+        {
+          "market_id": "0xa69ef420d8b4075ad8ba8611d02c63cb2ece46f5c8c643af223c272689b0c96f",
+          "group_item_title": "50+ bps decrease",
+          "question": "Will the Fed decrease interest rates by 50+ bps after the October 2026 meeting?",
+          "order": "0",
+          "probability": 0.0005,
+          "closed": false,
+          "event_id": "606422"
+        },
+        {
+          "market_id": "0x9cf563d7b55aa9aa876d5d7e55126347eee473f0ae56d799e325fdef2bf25297",
+          "group_item_title": "25 bps decrease",
+          "question": "Will the Fed decrease interest rates by 25 bps after the October 2026 meeting?",
+          "order": "1",
+          "probability": 0.0035,
+          "closed": false,
+          "event_id": "606422"
+        },
+        {
+          "market_id": "0xdf9bf27ee5757c55b44b8b9826ddc9ec3a8809aa3278634c45edbb7fc8f1a3e3",
+          "group_item_title": "No change",
+          "question": "Will there be no change in Fed interest rates after the October 2026 meeting?",
+          "order": "2",
+          "probability": 0.885,
+          "closed": false,
+          "event_id": "606422"
+        },
+        {
+          "market_id": "0x12aa13b3da17ceae1b0a59b5d5b77121e91bb79b4bb0b52bf6543ed3f8d0953b",
+          "group_item_title": "25 bps increase",
+          "question": "Will the Fed increase interest rates by 25 bps after the October 2026 meeting?",
+          "order": "3",
+          "probability": 0.115,
+          "closed": false,
+          "event_id": "606422"
+        },
+        {
+          "market_id": "0xde5d75ab7702875623ba509bc923241e1211da74a113521b3b70ddac930d7316",
+          "group_item_title": "50+ bps increase",
+          "question": "Will the Fed increase interest rates by 50+ bps after the October 2026 meeting?",
+          "order": "4",
+          "probability": 0.0035,
+          "closed": false,
+          "event_id": "606422"
+        }
+      ]
+    },
+    {
+      "provider": "polymarket",
+      "market_id": "0xa69ef420d8b4075ad8ba8611d02c63cb2ece46f5c8c643af223c272689b0c96f",
+      "event_id": "606422",
+      "outcome_id": "17010377994663817312158123655937348199252960045746746128731746451645055725586",
+      "title": "Will the Fed decrease interest rates by 50+ bps after the October 2026 meeting?",
+      "original_url": "https://polymarket.com/event/fed-decision-in-october-20260617190323537",
+      "description": "The FED interest rates are defined in this market by the upper bound of the target federal funds range. The decisions on the target federal funds range are made by the Federal Open Market Committee (FOMC) meetings.\n\nThis market will resolve to the amount of basis points the upper bound of the target federal funds rate is changed by versus the level it was prior to the Federal Reserve's October 2026 meeting.\n\nIf the target federal funds rate is changed to a level not expressed in the displayed options, the change will be rounded up to the nearest 25 and will resolve to the relevant bracket. (e.g. if there's a cut/increase of 12.5 bps it will be considered to be 25 bps)\n\nThe resolution source for this market is the FOMC’s statement after its meeting scheduled for October 27-28, 2026 according to the official calendar: https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm.\n\nThe level and change of the target federal funds rate is also published at the official website of the Federal Reserve at https://www.federalreserve.gov/monetarypolicy/openmarket.htm.\n\nThis market may resolve as soon as the FOMC’s statement for their October meeting with relevant data is issued. If no statement is released by the end date of the next scheduled meeting, this market will resolve to the \"No change\" bracket.",
+      "resolution_rules": "The FED interest rates are defined in this market by the upper bound of the target federal funds range. The decisions on the target federal funds range are made by the Federal Open Market Committee (FOMC) meetings.\n\nThis market will resolve to the amount of basis points the upper bound of the target federal funds rate is changed by versus the level it was prior to the Federal Reserve's October 2026 meeting.\n\nIf the target federal funds rate is changed to a level not expressed in the displayed options, the change will be rounded up to the nearest 25 and will resolve to the relevant bracket. (e.g. if there's a cut/increase of 12.5 bps it will be considered to be 25 bps)\n\nThe resolution source for this market is the FOMC’s statement after its meeting scheduled for October 27-28, 2026 according to the official calendar: https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm.\n\nThe level and change of the target federal funds rate is also published at the official website of the Federal Reserve at https://www.federalreserve.gov/monetarypolicy/openmarket.htm.\n\nThis market may resolve as soon as the FOMC’s statement for their October meeting with relevant data is issued. If no statement is released by the end date of the next scheduled meeting, this market will resolve to the \"No change\" bracket.",
+      "end_time": "2026-10-29T03:59:00Z",
+      "status": "open",
+      "probability_value": 0.0005,
+      "price": 0.0005,
+      "forecast_type": "outcome_price",
+      "observed_at": "2026-10-21T10:51:30.700352Z",
+      "retrieved_at": "2026-10-21T10:51:30.700352Z",
+      "volume": 9122299.594547,
+      "volume_value": 9122299.594547,
+      "volume_unit": "USDC",
+      "currency": "USDC",
+      "liquidity_available": true,
+      "spread_available": false,
+      "activity_available": true,
+      "history": [],
+      "ranking_score": 0.7818181818181819,
+      "ranking_reasons": [
+        "relevance 0.727 (8/11 terms)",
+        "search terms matched: FOMC October 27 28",
+        "time horizon 1.0",
+        "condition match 0.727",
+        "volume used only as secondary tie-breaker"
+      ],
+      "missing_metrics": [
+        "history_incomplete",
+        "INSUFFICIENT_HISTORY",
+        "history_snapshot",
+        "spread"
+      ],
+      "group_item_title": "50+ bps decrease",
+      "event_outcomes": [
+        {
+          "market_id": "0xa69ef420d8b4075ad8ba8611d02c63cb2ece46f5c8c643af223c272689b0c96f",
+          "group_item_title": "50+ bps decrease",
+          "question": "Will the Fed decrease interest rates by 50+ bps after the October 2026 meeting?",
+          "order": "0",
+          "probability": 0.0005,
+          "closed": false,
+          "event_id": "606422"
+        },
+        {
+          "market_id": "0x9cf563d7b55aa9aa876d5d7e55126347eee473f0ae56d799e325fdef2bf25297",
+          "group_item_title": "25 bps decrease",
+          "question": "Will the Fed decrease interest rates by 25 bps after the October 2026 meeting?",
+          "order": "1",
+          "probability": 0.0035,
+          "closed": false,
+          "event_id": "606422"
+        },
+        {
+          "market_id": "0xdf9bf27ee5757c55b44b8b9826ddc9ec3a8809aa3278634c45edbb7fc8f1a3e3",
+          "group_item_title": "No change",
+          "question": "Will there be no change in Fed interest rates after the October 2026 meeting?",
+          "order": "2",
+          "probability": 0.885,
+          "closed": false,
+          "event_id": "606422"
+        },
+        {
+          "market_id": "0x12aa13b3da17ceae1b0a59b5d5b77121e91bb79b4bb0b52bf6543ed3f8d0953b",
+          "group_item_title": "25 bps increase",
+          "question": "Will the Fed increase interest rates by 25 bps after the October 2026 meeting?",
+          "order": "3",
+          "probability": 0.115,
+          "closed": false,
+          "event_id": "606422"
+        },
+        {
+          "market_id": "0xde5d75ab7702875623ba509bc923241e1211da74a113521b3b70ddac930d7316",
+          "group_item_title": "50+ bps increase",
+          "question": "Will the Fed increase interest rates by 50+ bps after the October 2026 meeting?",
+          "order": "4",
+          "probability": 0.0035,
+          "closed": false,
+          "event_id": "606422"
+        }
+      ]
+    },
+    {
+      "provider": "polymarket",
+      "market_id": "0x9cf563d7b55aa9aa876d5d7e55126347eee473f0ae56d799e325fdef2bf25297",
+      "event_id": "606422",
+      "outcome_id": "33268510350568915228897273528353467773422190590579607471427765079749830445947",
+      "title": "Will the Fed decrease interest rates by 25 bps after the October 2026 meeting?",
+      "original_url": "https://polymarket.com/event/fed-decision-in-october-20260617190323537",
+      "description": "The FED interest rates are defined in this market by the upper bound of the target federal funds range. The decisions on the target federal funds range are made by the Federal Open Market Committee (FOMC) meetings.\n\nThis market will resolve to the amount of basis points the upper bound of the target federal funds rate is changed by versus the level it was prior to the Federal Reserve's October 2026 meeting.\n\nIf the target federal funds rate is changed to a level not expressed in the displayed options, the change will be rounded up to the nearest 25 and will resolve to the relevant bracket. (e.g. if there's a cut/increase of 12.5 bps it will be considered to be 25 bps)\n\nThe resolution source for this market is the FOMC’s statement after its meeting scheduled for October 27-28, 2026 according to the official calendar: https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm.\n\nThe level and change of the target federal funds rate is also published at the official website of the Federal Reserve at https://www.federalreserve.gov/monetarypolicy/openmarket.htm.\n\nThis market may resolve as soon as the FOMC’s statement for their October meeting with relevant data is issued. If no statement is released by the end date of the next scheduled meeting, this market will resolve to the \"No change\" bracket.",
+      "resolution_rules": "The FED interest rates are defined in this market by the upper bound of the target federal funds range. The decisions on the target federal funds range are made by the Federal Open Market Committee (FOMC) meetings.\n\nThis market will resolve to the amount of basis points the upper bound of the target federal funds rate is changed by versus the level it was prior to the Federal Reserve's October 2026 meeting.\n\nIf the target federal funds rate is changed to a level not expressed in the displayed options, the change will be rounded up to the nearest 25 and will resolve to the relevant bracket. (e.g. if there's a cut/increase of 12.5 bps it will be considered to be 25 bps)\n\nThe resolution source for this market is the FOMC’s statement after its meeting scheduled for October 27-28, 2026 according to the official calendar: https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm.\n\nThe level and change of the target federal funds rate is also published at the official website of the Federal Reserve at https://www.federalreserve.gov/monetarypolicy/openmarket.htm.\n\nThis market may resolve as soon as the FOMC’s statement for their October meeting with relevant data is issued. If no statement is released by the end date of the next scheduled meeting, this market will resolve to the \"No change\" bracket.",
+      "end_time": "2026-10-29T03:59:00Z",
+      "status": "open",
+      "probability_value": 0.0035,
+      "price": 0.0035,
+      "forecast_type": "outcome_price",
+      "observed_at": "2026-10-21T10:51:30.700352Z",
+      "retrieved_at": "2026-10-21T10:51:30.700352Z",
+      "volume": 8947979.737944001,
+      "volume_value": 8947979.737944001,
+      "volume_unit": "USDC",
+      "currency": "USDC",
+      "liquidity_available": true,
+      "spread_available": true,
+      "activity_available": true,
+      "history": [],
+      "ranking_score": 0.7818181818181819,
+      "ranking_reasons": [
+        "relevance 0.727 (8/11 terms)",
+        "search terms matched: FOMC October 27 28",
+        "time horizon 1.0",
+        "condition match 0.727",
+        "volume used only as secondary tie-breaker"
+      ],
+      "missing_metrics": [
+        "history_incomplete",
+        "INSUFFICIENT_HISTORY",
+        "history_snapshot"
+      ],
+      "group_item_title": "25 bps decrease",
+      "event_outcomes": [
+        {
+          "market_id": "0xa69ef420d8b4075ad8ba8611d02c63cb2ece46f5c8c643af223c272689b0c96f",
+          "group_item_title": "50+ bps decrease",
+          "question": "Will the Fed decrease interest rates by 50+ bps after the October 2026 meeting?",
+          "order": "0",
+          "probability": 0.0005,
+          "closed": false,
+          "event_id": "606422"
+        },
+        {
+          "market_id": "0x9cf563d7b55aa9aa876d5d7e55126347eee473f0ae56d799e325fdef2bf25297",
+          "group_item_title": "25 bps decrease",
+          "question": "Will the Fed decrease interest rates by 25 bps after the October 2026 meeting?",
+          "order": "1",
+          "probability": 0.0035,
+          "closed": false,
+          "event_id": "606422"
+        },
+        {
+          "market_id": "0xdf9bf27ee5757c55b44b8b9826ddc9ec3a8809aa3278634c45edbb7fc8f1a3e3",
+          "group_item_title": "No change",
+          "question": "Will there be no change in Fed interest rates after the October 2026 meeting?",
+          "order": "2",
+          "probability": 0.885,
+          "closed": false,
+          "event_id": "606422"
+        },
+        {
+          "market_id": "0x12aa13b3da17ceae1b0a59b5d5b77121e91bb79b4bb0b52bf6543ed3f8d0953b",
+          "group_item_title": "25 bps increase",
+          "question": "Will the Fed increase interest rates by 25 bps after the October 2026 meeting?",
+          "order": "3",
+          "probability": 0.115,
+          "closed": false,
+          "event_id": "606422"
+        },
+        {
+          "market_id": "0xde5d75ab7702875623ba509bc923241e1211da74a113521b3b70ddac930d7316",
+          "group_item_title": "50+ bps increase",
+          "question": "Will the Fed increase interest rates by 50+ bps after the October 2026 meeting?",
+          "order": "4",
+          "probability": 0.0035,
+          "closed": false,
+          "event_id": "606422"
+        }
+      ]
+    }
+  ],
+  "partial_errors": [
+    {
+      "error": "ACCESS_RESTRICTED",
+      "message": "Polymarket API access restricted (HTTP 451) for 0xdf9bf27ee5757c55b44b8b9826ddc9ec3a8809aa3278634c45edbb7fc8f1a3e3 window 2026-10-14T10:51:30.700352+00:00..2026-10-21T10:51:30.700352+00:00"
+    },
+    {
+      "error": "INSUFFICIENT_HISTORY",
+      "message": "no price history for 0xdf9bf27ee5757c55b44b8b9826ddc9ec3a8809aa3278634c45edbb7fc8f1a3e3"
+    },
+    {
+      "error": "ACCESS_RESTRICTED",
+      "message": "Polymarket API access restricted (HTTP 451) for 0x12aa13b3da17ceae1b0a59b5d5b77121e91bb79b4bb0b52bf6543ed3f8d0953b window 2026-10-14T10:51:30.700352+00:00..2026-10-21T10:51:30.700352+00:00"
+    },
+    {
+      "error": "INSUFFICIENT_HISTORY",
+      "message": "no price history for 0x12aa13b3da17ceae1b0a59b5d5b77121e91bb79b4bb0b52bf6543ed3f8d0953b"
+    },
+    {
+      "error": "ACCESS_RESTRICTED",
+      "message": "Polymarket API access restricted (HTTP 451) for 0xa69ef420d8b4075ad8ba8611d02c63cb2ece46f5c8c643af223c272689b0c96f window 2026-10-14T10:51:30.700352+00:00..2026-10-21T10:51:30.700352+00:00"
+    },
+    {
+      "error": "INSUFFICIENT_HISTORY",
+      "message": "no price history for 0xa69ef420d8b4075ad8ba8611d02c63cb2ece46f5c8c643af223c272689b0c96f"
+    },
+    {
+      "error": "ACCESS_RESTRICTED",
+      "message": "Polymarket API access restricted (HTTP 451) for 0x9cf563d7b55aa9aa876d5d7e55126347eee473f0ae56d799e325fdef2bf25297 window 2026-10-14T10:51:30.700352+00:00..2026-10-21T10:51:30.700352+00:00"
+    },
+    {
+      "error": "INSUFFICIENT_HISTORY",
+      "message": "no price history for 0x9cf563d7b55aa9aa876d5d7e55126347eee473f0ae56d799e325fdef2bf25297"
+    },
+    {
+      "error": "ACCESS_RESTRICTED",
+      "message": "Polymarket API access restricted (HTTP 451) for 0xde5d75ab7702875623ba509bc923241e1211da74a113521b3b70ddac930d7316 window 2026-10-14T10:51:30.700352+00:00..2026-10-21T10:51:30.700352+00:00"
+    },
+    {
+      "error": "INSUFFICIENT_HISTORY",
+      "message": "no price history for 0xde5d75ab7702875623ba509bc923241e1211da74a113521b3b70ddac930d7316"
+    },
+    {
+      "error": "ACCESS_RESTRICTED",
+      "message": "Polymarket API access restricted (HTTP 451) for 0x11ebfae2a842151dc4a9c36a595d13747f7fb5f5f2c0a21f330f8001d0b2c8ae window 2026-10-14T10:51:30.700352+00:00..2026-10-21T10:51:30.700352+00:00"
+    },
+    {
+      "error": "INSUFFICIENT_HISTORY",
+      "message": "no price history for 0x11ebfae2a842151dc4a9c36a595d13747f7fb5f5f2c0a21f330f8001d0b2c8ae"
+    },
+    {
+      "error": "ACCESS_RESTRICTED",
+      "message": "Polymarket API access restricted (HTTP 451) for 0x76359a4c3b4845933a9b02d895f1e005ef1d383b6f4aac3861e545b9f8a932d9 window 2026-10-14T10:51:30.700352+00:00..2026-10-21T10:51:30.700352+00:00"
+    },
+    {
+      "error": "INSUFFICIENT_HISTORY",
+      "message": "no price history for 0x76359a4c3b4845933a9b02d895f1e005ef1d383b6f4aac3861e545b9f8a932d9"
+    },
+    {
+      "error": "ACCESS_RESTRICTED",
+      "message": "Polymarket API access restricted (HTTP 451) for 0x078aeb1ec3b25e4a230d57cafd055ba6b9d0d52c431d8aed9c210f011e528666 window 2026-10-14T10:51:30.700352+00:00..2026-10-21T10:51:30.700352+00:00"
+    },
+    {
+      "error": "INSUFFICIENT_HISTORY",
+      "message": "no price history for 0x078aeb1ec3b25e4a230d57cafd055ba6b9d0d52c431d8aed9c210f011e528666"
+    }
+  ],
+  "window": {
+    "requested": "7d",
+    "effective": "7d",
+    "start": "2026-10-14T10:51:30.700352Z",
+    "end": "2026-10-21T10:51:30.700352Z"
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "schema_version": "1.0.0",
+  "would_a_smart_reader_learn_something_new": "12월 금리 인상 계약은 기준금리 상단 조건으로 정산되며, 그 가격은 한국의 환율과 대출금리에 이어질 수 있다.",
+  "one_surprising_fact": "12월 인상 계약 가격은 일주일 새 90%에서 81%로 9%p 낮아졌다.",
+  "sources_are_sidecar_only": true,
+  "disclaimers_or_meta_on_cards": false,
+  "reviewed_cards": [
+    "hook",
+    "how-to-read",
+    "trend",
+    "why",
+    "korea-impact",
+    "watch-next"
+  ],
+  "visual_review": "AGENT_SELF_REVIEW_PASS_OWNER_REVIEW_PENDING",
+  "numeric_review": "PMC_RAW_ENDPOINT_PARITY_PASS"
+}

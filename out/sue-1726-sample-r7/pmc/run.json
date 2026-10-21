@@ -1,0 +1,1716 @@
+{
+  "query_id": "05bbae4e81325cf1000265227d3f0c0c7463456ff636296966c418699e7f06e6",
+  "query_hash": "05bbae4e81325cf1000265227d3f0c0c7463456ff636296966c418699e7f06e6",
+  "run_id": "eca409d3-7294-47f5-91cc-a3f1343c3412",
+  "as_of": "2026-10-21T11:21:22.939885Z",
+  "results": [
+    {
+      "provider": "kalshi",
+      "market_id": "KXFED-26OCT-T4.00",
+      "event_id": "KXFED-26OCT",
+      "outcome_id": null,
+      "title": "Will the upper bound of the federal funds rate be above 4.00% following the Fed's Oct 28, 2026 meeting?",
+      "original_url": "https://kalshi.com/markets/KXFED/KXFED-26OCT-T4.00",
+      "description": "4.00%",
+      "resolution_rules": "If the upper bound of the target federal funds rate published on the Federal Reserve's official website is greater than 4.00% following the Federal Reserve's Oct 28, 2026 meeting, then the market resolves to Yes.",
+      "end_time": "2026-10-28T17:55:00Z",
+      "status": "open",
+      "probability_value": 0.15,
+      "price": 0.15,
+      "forecast_type": "last_price",
+      "observed_at": "2026-10-21T05:00:00Z",
+      "retrieved_at": "2026-10-21T11:21:22.939885Z",
+      "volume": 245526.39,
+      "volume_value": 245526.39,
+      "volume_unit": "contracts",
+      "currency": null,
+      "liquidity_available": true,
+      "spread_available": true,
+      "activity_available": true,
+      "history": [
+        {
+          "observed_at": "2026-10-14T12:00:00Z",
+          "value": 0.21,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-14T13:00:00Z",
+          "value": 0.47,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-14T14:00:00Z",
+          "value": 0.46,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-14T15:00:00Z",
+          "value": 0.41,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-14T16:00:00Z",
+          "value": 0.39,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-14T17:00:00Z",
+          "value": 0.35,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-14T18:00:00Z",
+          "value": 0.35,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-14T19:00:00Z",
+          "value": 0.34,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-14T20:00:00Z",
+          "value": 0.34,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-14T22:00:00Z",
+          "value": 0.32,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-14T23:00:00Z",
+          "value": 0.34,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-15T00:00:00Z",
+          "value": 0.31,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-15T01:00:00Z",
+          "value": 0.3,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-15T02:00:00Z",
+          "value": 0.25,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-15T03:00:00Z",
+          "value": 0.23,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-15T04:00:00Z",
+          "value": 0.24,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-15T05:00:00Z",
+          "value": 0.26,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-15T07:00:00Z",
+          "value": 0.22,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-15T10:00:00Z",
+          "value": 0.29,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-15T11:00:00Z",
+          "value": 0.26,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-15T12:00:00Z",
+          "value": 0.28,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-15T13:00:00Z",
+          "value": 0.29,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-15T14:00:00Z",
+          "value": 0.26,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-15T15:00:00Z",
+          "value": 0.26,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-15T18:00:00Z",
+          "value": 0.26,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-15T20:00:00Z",
+          "value": 0.26,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-15T21:00:00Z",
+          "value": 0.27,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-15T22:00:00Z",
+          "value": 0.33,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-16T02:00:00Z",
+          "value": 0.33,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-16T03:00:00Z",
+          "value": 0.27,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-16T04:00:00Z",
+          "value": 0.23,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-16T05:00:00Z",
+          "value": 0.15,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-16T06:00:00Z",
+          "value": 0.14,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-16T12:00:00Z",
+          "value": 0.13,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-16T13:00:00Z",
+          "value": 0.13,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-16T14:00:00Z",
+          "value": 0.14,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-16T16:00:00Z",
+          "value": 0.14,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-16T17:00:00Z",
+          "value": 0.13,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-16T18:00:00Z",
+          "value": 0.14,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-16T19:00:00Z",
+          "value": 0.14,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-16T20:00:00Z",
+          "value": 0.14,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-16T21:00:00Z",
+          "value": 0.14,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-16T22:00:00Z",
+          "value": 0.14,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-16T23:00:00Z",
+          "value": 0.19,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-17T00:00:00Z",
+          "value": 0.16,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-17T04:00:00Z",
+          "value": 0.15,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-17T06:00:00Z",
+          "value": 0.14,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-17T18:00:00Z",
+          "value": 0.15,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-17T21:00:00Z",
+          "value": 0.14,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-17T22:00:00Z",
+          "value": 0.14,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-17T23:00:00Z",
+          "value": 0.11,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-18T00:00:00Z",
+          "value": 0.11,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-18T01:00:00Z",
+          "value": 0.11,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-18T02:00:00Z",
+          "value": 0.14,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-18T07:00:00Z",
+          "value": 0.16,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-18T11:00:00Z",
+          "value": 0.15,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-18T14:00:00Z",
+          "value": 0.15,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-18T16:00:00Z",
+          "value": 0.16,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-18T20:00:00Z",
+          "value": 0.1,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-18T23:00:00Z",
+          "value": 0.09,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-19T02:00:00Z",
+          "value": 0.12,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-19T05:00:00Z",
+          "value": 0.15,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-19T06:00:00Z",
+          "value": 0.11,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-19T07:00:00Z",
+          "value": 0.1,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-19T12:00:00Z",
+          "value": 0.12,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-19T13:00:00Z",
+          "value": 0.13,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-19T14:00:00Z",
+          "value": 0.14,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-19T16:00:00Z",
+          "value": 0.16,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-19T20:00:00Z",
+          "value": 0.16,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-19T23:00:00Z",
+          "value": 0.17,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-20T01:00:00Z",
+          "value": 0.16,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-20T07:00:00Z",
+          "value": 0.16,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-20T13:00:00Z",
+          "value": 0.15,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-20T16:00:00Z",
+          "value": 0.12,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-20T17:00:00Z",
+          "value": 0.14,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-20T18:00:00Z",
+          "value": 0.15,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-20T21:00:00Z",
+          "value": 0.13,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-20T22:00:00Z",
+          "value": 0.14,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-21T03:00:00Z",
+          "value": 0.12,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-21T04:00:00Z",
+          "value": 0.13,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-21T05:00:00Z",
+          "value": 0.15,
+          "source": "kalshi_candlestick_price_close"
+        }
+      ],
+      "ranking_score": 0.7333333333333333,
+      "ranking_reasons": [
+        "relevance 0.667 (4/6 terms)",
+        "search terms matched: Fed funds rate, Fed rate",
+        "time horizon 1.0",
+        "condition match 0.667",
+        "volume used only as secondary tie-breaker"
+      ],
+      "missing_metrics": []
+    },
+    {
+      "provider": "kalshi",
+      "market_id": "KXFED-26DEC-T4.50",
+      "event_id": "KXFED-26DEC",
+      "outcome_id": null,
+      "title": "Will the upper bound of the federal funds rate be above 4.50% following the Fed's Dec 9, 2026 meeting?",
+      "original_url": "https://kalshi.com/markets/KXFED/KXFED-26DEC-T4.50",
+      "description": "4.50%",
+      "resolution_rules": "If the upper bound of the target federal funds rate published on the Federal Reserve's official website is greater than 4.50% following the Federal Reserve's Dec 9, 2026 meeting, then the market resolves to Yes.",
+      "end_time": "2026-12-09T18:55:00Z",
+      "status": "open",
+      "probability_value": 0.06,
+      "price": 0.06,
+      "forecast_type": "last_price",
+      "observed_at": "2026-10-21T01:00:00Z",
+      "retrieved_at": "2026-10-21T11:21:22.939885Z",
+      "volume": 173252.87,
+      "volume_value": 173252.87,
+      "volume_unit": "contracts",
+      "currency": null,
+      "liquidity_available": true,
+      "spread_available": true,
+      "activity_available": true,
+      "history": [
+        {
+          "observed_at": "2026-10-14T17:00:00Z",
+          "value": 0.06,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-14T22:00:00Z",
+          "value": 0.06,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-15T06:00:00Z",
+          "value": 0.06,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-15T14:00:00Z",
+          "value": 0.07,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-15T20:00:00Z",
+          "value": 0.09,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-15T21:00:00Z",
+          "value": 0.07,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-15T22:00:00Z",
+          "value": 0.11,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-16T00:00:00Z",
+          "value": 0.07,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-16T04:00:00Z",
+          "value": 0.06,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-16T05:00:00Z",
+          "value": 0.05,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-16T08:00:00Z",
+          "value": 0.04,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-16T12:00:00Z",
+          "value": 0.04,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-16T17:00:00Z",
+          "value": 0.05,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-16T18:00:00Z",
+          "value": 0.04,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-16T19:00:00Z",
+          "value": 0.09,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-16T20:00:00Z",
+          "value": 0.07,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-16T21:00:00Z",
+          "value": 0.08,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-16T22:00:00Z",
+          "value": 0.06,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-17T00:00:00Z",
+          "value": 0.06,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-17T12:00:00Z",
+          "value": 0.06,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-17T16:00:00Z",
+          "value": 0.06,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-17T21:00:00Z",
+          "value": 0.06,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-17T22:00:00Z",
+          "value": 0.05,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-18T07:00:00Z",
+          "value": 0.05,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-18T18:00:00Z",
+          "value": 0.06,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-18T22:00:00Z",
+          "value": 0.06,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-19T18:00:00Z",
+          "value": 0.05,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-19T23:00:00Z",
+          "value": 0.05,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-20T19:00:00Z",
+          "value": 0.04,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-20T20:00:00Z",
+          "value": 0.05,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-20T21:00:00Z",
+          "value": 0.05,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-21T01:00:00Z",
+          "value": 0.06,
+          "source": "kalshi_candlestick_price_close"
+        }
+      ],
+      "ranking_score": 0.7333333333333333,
+      "ranking_reasons": [
+        "relevance 0.667 (4/6 terms)",
+        "search terms matched: Fed funds rate, Fed rate",
+        "time horizon 1.0",
+        "condition match 0.667",
+        "volume used only as secondary tie-breaker"
+      ],
+      "missing_metrics": []
+    },
+    {
+      "provider": "kalshi",
+      "market_id": "KXFED-26OCT-T4.25",
+      "event_id": "KXFED-26OCT",
+      "outcome_id": null,
+      "title": "Will the upper bound of the federal funds rate be above 4.25% following the Fed's Oct 28, 2026 meeting?",
+      "original_url": "https://kalshi.com/markets/KXFED/KXFED-26OCT-T4.25",
+      "description": "4.25%",
+      "resolution_rules": "If the upper bound of the target federal funds rate published on the Federal Reserve's official website is greater than 4.25% following the Federal Reserve's Oct 28, 2026 meeting, then the market resolves to Yes.",
+      "end_time": "2026-10-28T17:55:00Z",
+      "status": "open",
+      "probability_value": 0.01,
+      "price": 0.01,
+      "forecast_type": "last_price",
+      "observed_at": "2026-10-21T11:00:00Z",
+      "retrieved_at": "2026-10-21T11:21:22.939885Z",
+      "volume": 62209.52,
+      "volume_value": 62209.52,
+      "volume_unit": "contracts",
+      "currency": null,
+      "liquidity_available": true,
+      "spread_available": true,
+      "activity_available": true,
+      "history": [
+        {
+          "observed_at": "2026-10-14T14:00:00Z",
+          "value": 0.01,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-14T15:00:00Z",
+          "value": 0.01,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-14T16:00:00Z",
+          "value": 0.02,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-14T18:00:00Z",
+          "value": 0.01,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-14T19:00:00Z",
+          "value": 0.02,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-14T21:00:00Z",
+          "value": 0.02,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-14T22:00:00Z",
+          "value": 0.02,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-15T00:00:00Z",
+          "value": 0.01,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-15T06:00:00Z",
+          "value": 0.01,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-15T07:00:00Z",
+          "value": 0.01,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-15T14:00:00Z",
+          "value": 0.01,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-15T21:00:00Z",
+          "value": 0.01,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-16T04:00:00Z",
+          "value": 0.01,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-16T10:00:00Z",
+          "value": 0.01,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-16T14:00:00Z",
+          "value": 0.01,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-16T15:00:00Z",
+          "value": 0.01,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-16T17:00:00Z",
+          "value": 0.01,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-16T23:00:00Z",
+          "value": 0.01,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-17T05:00:00Z",
+          "value": 0.01,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-17T11:00:00Z",
+          "value": 0.01,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-17T15:00:00Z",
+          "value": 0.01,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-17T16:00:00Z",
+          "value": 0.01,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-17T21:00:00Z",
+          "value": 0.01,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-18T00:00:00Z",
+          "value": 0.01,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-18T02:00:00Z",
+          "value": 0.01,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-18T04:00:00Z",
+          "value": 0.01,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-18T05:00:00Z",
+          "value": 0.01,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-18T06:00:00Z",
+          "value": 0.01,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-18T07:00:00Z",
+          "value": 0.01,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-18T13:00:00Z",
+          "value": 0.01,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-18T14:00:00Z",
+          "value": 0.01,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-18T18:00:00Z",
+          "value": 0.01,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-18T22:00:00Z",
+          "value": 0.01,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-19T00:00:00Z",
+          "value": 0.01,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-19T03:00:00Z",
+          "value": 0.01,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-19T04:00:00Z",
+          "value": 0.01,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-19T12:00:00Z",
+          "value": 0.01,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-19T17:00:00Z",
+          "value": 0.01,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-19T22:00:00Z",
+          "value": 0.01,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-20T10:00:00Z",
+          "value": 0.01,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-20T15:00:00Z",
+          "value": 0.01,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-20T16:00:00Z",
+          "value": 0.01,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-20T19:00:00Z",
+          "value": 0.01,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-21T11:00:00Z",
+          "value": 0.01,
+          "source": "kalshi_candlestick_price_close"
+        }
+      ],
+      "ranking_score": 0.7333333333333333,
+      "ranking_reasons": [
+        "relevance 0.667 (4/6 terms)",
+        "search terms matched: Fed funds rate, Fed rate",
+        "time horizon 1.0",
+        "condition match 0.667",
+        "volume used only as secondary tie-breaker"
+      ],
+      "missing_metrics": []
+    },
+    {
+      "provider": "kalshi",
+      "market_id": "KXFED-26DEC-T3.75",
+      "event_id": "KXFED-26DEC",
+      "outcome_id": null,
+      "title": "Will the upper bound of the federal funds rate be above 3.75% following the Fed's Dec 9, 2026 meeting?",
+      "original_url": "https://kalshi.com/markets/KXFED/KXFED-26DEC-T3.75",
+      "description": "3.75%",
+      "resolution_rules": "If the upper bound of the target federal funds rate published on the Federal Reserve's official website is greater than 3.75% following the Federal Reserve's Dec 9, 2026 meeting, then the market resolves to Yes.",
+      "end_time": "2026-12-09T18:55:00Z",
+      "status": "open",
+      "probability_value": 0.97,
+      "price": 0.97,
+      "forecast_type": "last_price",
+      "observed_at": "2026-10-21T03:00:00Z",
+      "retrieved_at": "2026-10-21T11:21:22.939885Z",
+      "volume": 61996.88,
+      "volume_value": 61996.88,
+      "volume_unit": "contracts",
+      "currency": null,
+      "liquidity_available": true,
+      "spread_available": true,
+      "activity_available": true,
+      "history": [
+        {
+          "observed_at": "2026-10-15T06:00:00Z",
+          "value": 0.96,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-17T14:00:00Z",
+          "value": 0.98,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-17T19:00:00Z",
+          "value": 0.98,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-17T20:00:00Z",
+          "value": 0.96,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-18T22:00:00Z",
+          "value": 0.96,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-20T21:00:00Z",
+          "value": 0.97,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-21T03:00:00Z",
+          "value": 0.97,
+          "source": "kalshi_candlestick_price_close"
+        }
+      ],
+      "ranking_score": 0.7333333333333333,
+      "ranking_reasons": [
+        "relevance 0.667 (4/6 terms)",
+        "search terms matched: Fed funds rate, Fed rate",
+        "time horizon 1.0",
+        "condition match 0.667",
+        "volume used only as secondary tie-breaker"
+      ],
+      "missing_metrics": []
+    },
+    {
+      "provider": "kalshi",
+      "market_id": "KXFED-26DEC-T4.00",
+      "event_id": "KXFED-26DEC",
+      "outcome_id": null,
+      "title": "Will the upper bound of the federal funds rate be above 4.00% following the Fed's Dec 9, 2026 meeting?",
+      "original_url": "https://kalshi.com/markets/KXFED/KXFED-26DEC-T4.00",
+      "description": "4.00%",
+      "resolution_rules": "If the upper bound of the target federal funds rate published on the Federal Reserve's official website is greater than 4.00% following the Federal Reserve's Dec 9, 2026 meeting, then the market resolves to Yes.",
+      "end_time": "2026-12-09T18:55:00Z",
+      "status": "open",
+      "probability_value": 0.81,
+      "price": 0.81,
+      "forecast_type": "last_price",
+      "observed_at": "2026-10-21T05:00:00Z",
+      "retrieved_at": "2026-10-21T11:21:22.939885Z",
+      "volume": 56056.35,
+      "volume_value": 56056.35,
+      "volume_unit": "contracts",
+      "currency": null,
+      "liquidity_available": true,
+      "spread_available": true,
+      "activity_available": true,
+      "history": [
+        {
+          "observed_at": "2026-10-14T13:00:00Z",
+          "value": 0.9,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-14T14:00:00Z",
+          "value": 0.94,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-14T18:00:00Z",
+          "value": 0.87,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-14T22:00:00Z",
+          "value": 0.89,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-15T02:00:00Z",
+          "value": 0.9,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-15T03:00:00Z",
+          "value": 0.89,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-15T04:00:00Z",
+          "value": 0.88,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-15T11:00:00Z",
+          "value": 0.88,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-15T12:00:00Z",
+          "value": 0.87,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-15T21:00:00Z",
+          "value": 0.86,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-16T08:00:00Z",
+          "value": 0.9,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-16T09:00:00Z",
+          "value": 0.83,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-16T12:00:00Z",
+          "value": 0.91,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-16T16:00:00Z",
+          "value": 0.83,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-16T18:00:00Z",
+          "value": 0.82,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-16T19:00:00Z",
+          "value": 0.81,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-16T21:00:00Z",
+          "value": 0.81,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-17T00:00:00Z",
+          "value": 0.82,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-17T04:00:00Z",
+          "value": 0.82,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-17T13:00:00Z",
+          "value": 0.83,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-17T19:00:00Z",
+          "value": 0.84,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-18T01:00:00Z",
+          "value": 0.83,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-18T04:00:00Z",
+          "value": 0.83,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-18T05:00:00Z",
+          "value": 0.83,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-18T15:00:00Z",
+          "value": 0.82,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-18T20:00:00Z",
+          "value": 0.83,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-18T21:00:00Z",
+          "value": 0.82,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-19T04:00:00Z",
+          "value": 0.83,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-19T05:00:00Z",
+          "value": 0.83,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-19T12:00:00Z",
+          "value": 0.82,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-19T13:00:00Z",
+          "value": 0.82,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-19T16:00:00Z",
+          "value": 0.81,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-19T17:00:00Z",
+          "value": 0.8,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-19T22:00:00Z",
+          "value": 0.8,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-20T12:00:00Z",
+          "value": 0.83,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-20T13:00:00Z",
+          "value": 0.82,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-20T14:00:00Z",
+          "value": 0.82,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-20T15:00:00Z",
+          "value": 0.81,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-20T16:00:00Z",
+          "value": 0.82,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-20T17:00:00Z",
+          "value": 0.81,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-20T19:00:00Z",
+          "value": 0.86,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-20T22:00:00Z",
+          "value": 0.81,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-20T23:00:00Z",
+          "value": 0.81,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-21T01:00:00Z",
+          "value": 0.84,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-21T02:00:00Z",
+          "value": 0.81,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-21T03:00:00Z",
+          "value": 0.82,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-21T04:00:00Z",
+          "value": 0.82,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-21T05:00:00Z",
+          "value": 0.81,
+          "source": "kalshi_candlestick_price_close"
+        }
+      ],
+      "ranking_score": 0.7333333333333333,
+      "ranking_reasons": [
+        "relevance 0.667 (4/6 terms)",
+        "search terms matched: Fed funds rate, Fed rate",
+        "time horizon 1.0",
+        "condition match 0.667",
+        "volume used only as secondary tie-breaker"
+      ],
+      "missing_metrics": []
+    },
+    {
+      "provider": "kalshi",
+      "market_id": "KXFED-26DEC-T4.25",
+      "event_id": "KXFED-26DEC",
+      "outcome_id": null,
+      "title": "Will the upper bound of the federal funds rate be above 4.25% following the Fed's Dec 9, 2026 meeting?",
+      "original_url": "https://kalshi.com/markets/KXFED/KXFED-26DEC-T4.25",
+      "description": "4.25%",
+      "resolution_rules": "If the upper bound of the target federal funds rate published on the Federal Reserve's official website is greater than 4.25% following the Federal Reserve's Dec 9, 2026 meeting, then the market resolves to Yes.",
+      "end_time": "2026-12-09T18:55:00Z",
+      "status": "open",
+      "probability_value": 0.14,
+      "price": 0.14,
+      "forecast_type": "last_price",
+      "observed_at": "2026-10-21T04:00:00Z",
+      "retrieved_at": "2026-10-21T11:21:22.939885Z",
+      "volume": 55591.6,
+      "volume_value": 55591.6,
+      "volume_unit": "contracts",
+      "currency": null,
+      "liquidity_available": true,
+      "spread_available": true,
+      "activity_available": true,
+      "history": [
+        {
+          "observed_at": "2026-10-14T13:00:00Z",
+          "value": 0.22,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-14T14:00:00Z",
+          "value": 0.34,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-14T15:00:00Z",
+          "value": 0.28,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-14T16:00:00Z",
+          "value": 0.26,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-14T20:00:00Z",
+          "value": 0.23,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-14T21:00:00Z",
+          "value": 0.27,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-14T22:00:00Z",
+          "value": 0.3,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-14T23:00:00Z",
+          "value": 0.26,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-15T03:00:00Z",
+          "value": 0.29,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-15T07:00:00Z",
+          "value": 0.22,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-15T10:00:00Z",
+          "value": 0.28,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-15T11:00:00Z",
+          "value": 0.25,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-15T16:00:00Z",
+          "value": 0.21,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-16T01:00:00Z",
+          "value": 0.3,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-16T02:00:00Z",
+          "value": 0.3,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-16T04:00:00Z",
+          "value": 0.26,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-16T05:00:00Z",
+          "value": 0.26,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-16T07:00:00Z",
+          "value": 0.21,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-16T08:00:00Z",
+          "value": 0.17,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-16T10:00:00Z",
+          "value": 0.17,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-16T12:00:00Z",
+          "value": 0.15,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-16T14:00:00Z",
+          "value": 0.14,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-16T16:00:00Z",
+          "value": 0.14,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-16T18:00:00Z",
+          "value": 0.14,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-16T19:00:00Z",
+          "value": 0.16,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-16T20:00:00Z",
+          "value": 0.16,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-16T23:00:00Z",
+          "value": 0.14,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-17T02:00:00Z",
+          "value": 0.14,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-17T15:00:00Z",
+          "value": 0.15,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-17T18:00:00Z",
+          "value": 0.15,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-18T08:00:00Z",
+          "value": 0.14,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-18T11:00:00Z",
+          "value": 0.14,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-18T15:00:00Z",
+          "value": 0.14,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-18T16:00:00Z",
+          "value": 0.14,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-18T20:00:00Z",
+          "value": 0.15,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-19T09:00:00Z",
+          "value": 0.15,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-19T11:00:00Z",
+          "value": 0.15,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-19T13:00:00Z",
+          "value": 0.14,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-19T16:00:00Z",
+          "value": 0.15,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-19T21:00:00Z",
+          "value": 0.14,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-19T23:00:00Z",
+          "value": 0.15,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-20T00:00:00Z",
+          "value": 0.15,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-20T03:00:00Z",
+          "value": 0.15,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-20T12:00:00Z",
+          "value": 0.14,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-20T15:00:00Z",
+          "value": 0.14,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-20T16:00:00Z",
+          "value": 0.14,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-20T17:00:00Z",
+          "value": 0.15,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-20T20:00:00Z",
+          "value": 0.15,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-20T21:00:00Z",
+          "value": 0.14,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-21T00:00:00Z",
+          "value": 0.14,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-21T01:00:00Z",
+          "value": 0.14,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-21T02:00:00Z",
+          "value": 0.15,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-21T04:00:00Z",
+          "value": 0.14,
+          "source": "kalshi_candlestick_price_close"
+        }
+      ],
+      "ranking_score": 0.7333333333333333,
+      "ranking_reasons": [
+        "relevance 0.667 (4/6 terms)",
+        "search terms matched: Fed funds rate, Fed rate",
+        "time horizon 1.0",
+        "condition match 0.667",
+        "volume used only as secondary tie-breaker"
+      ],
+      "missing_metrics": []
+    },
+    {
+      "provider": "kalshi",
+      "market_id": "KXFED-26DEC-T3.50",
+      "event_id": "KXFED-26DEC",
+      "outcome_id": null,
+      "title": "Will the upper bound of the federal funds rate be above 3.50% following the Fed's Dec 9, 2026 meeting?",
+      "original_url": "https://kalshi.com/markets/KXFED/KXFED-26DEC-T3.50",
+      "description": "3.50%",
+      "resolution_rules": "If the upper bound of the target federal funds rate published on the Federal Reserve's official website is greater than 3.50% following the Federal Reserve's Dec 9, 2026 meeting, then the market resolves to Yes.",
+      "end_time": "2026-12-09T18:55:00Z",
+      "status": "open",
+      "probability_value": 0.98,
+      "price": 0.98,
+      "forecast_type": "last_price",
+      "observed_at": "2026-10-21T03:00:00Z",
+      "retrieved_at": "2026-10-21T11:21:22.939885Z",
+      "volume": 37188.43,
+      "volume_value": 37188.43,
+      "volume_unit": "contracts",
+      "currency": null,
+      "liquidity_available": true,
+      "spread_available": true,
+      "activity_available": true,
+      "history": [
+        {
+          "observed_at": "2026-10-14T19:00:00Z",
+          "value": 0.98,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-17T14:00:00Z",
+          "value": 0.98,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-20T15:00:00Z",
+          "value": 0.99,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-20T17:00:00Z",
+          "value": 0.99,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-21T03:00:00Z",
+          "value": 0.98,
+          "source": "kalshi_candlestick_price_close"
+        }
+      ],
+      "ranking_score": 0.7333333333333333,
+      "ranking_reasons": [
+        "relevance 0.667 (4/6 terms)",
+        "search terms matched: Fed funds rate, Fed rate",
+        "time horizon 1.0",
+        "condition match 0.667",
+        "volume used only as secondary tie-breaker"
+      ],
+      "missing_metrics": []
+    },
+    {
+      "provider": "kalshi",
+      "market_id": "KXFED-26OCT-T3.75",
+      "event_id": "KXFED-26OCT",
+      "outcome_id": null,
+      "title": "Will the upper bound of the federal funds rate be above 3.75% following the Fed's Oct 28, 2026 meeting?",
+      "original_url": "https://kalshi.com/markets/KXFED/KXFED-26OCT-T3.75",
+      "description": "3.75%",
+      "resolution_rules": "If the upper bound of the target federal funds rate published on the Federal Reserve's official website is greater than 3.75% following the Federal Reserve's Oct 28, 2026 meeting, then the market resolves to Yes.",
+      "end_time": "2026-10-28T17:55:00Z",
+      "status": "open",
+      "probability_value": 0.99,
+      "price": 0.99,
+      "forecast_type": "last_price",
+      "observed_at": "2026-10-19T20:00:00Z",
+      "retrieved_at": "2026-10-21T11:21:22.939885Z",
+      "volume": 34857.96,
+      "volume_value": 34857.96,
+      "volume_unit": "contracts",
+      "currency": null,
+      "liquidity_available": true,
+      "spread_available": true,
+      "activity_available": true,
+      "history": [
+        {
+          "observed_at": "2026-10-14T21:00:00Z",
+          "value": 0.99,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-15T00:00:00Z",
+          "value": 0.99,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-15T01:00:00Z",
+          "value": 0.99,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-16T04:00:00Z",
+          "value": 0.99,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-16T09:00:00Z",
+          "value": 0.99,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-17T22:00:00Z",
+          "value": 0.99,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-18T02:00:00Z",
+          "value": 0.99,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-18T14:00:00Z",
+          "value": 0.99,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-18T17:00:00Z",
+          "value": 0.99,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-19T00:00:00Z",
+          "value": 0.99,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-19T10:00:00Z",
+          "value": 0.99,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-19T17:00:00Z",
+          "value": 0.99,
+          "source": "kalshi_candlestick_price_close"
+        },
+        {
+          "observed_at": "2026-10-19T20:00:00Z",
+          "value": 0.99,
+          "source": "kalshi_candlestick_price_close"
+        }
+      ],
+      "ranking_score": 0.7333333333333333,
+      "ranking_reasons": [
+        "relevance 0.667 (4/6 terms)",
+        "search terms matched: Fed funds rate, Fed rate",
+        "time horizon 1.0",
+        "condition match 0.667",
+        "volume used only as secondary tie-breaker"
+      ],
+      "missing_metrics": []
+    }
+  ],
+  "partial_errors": [
+    {
+      "error": "SEARCH_TRUNCATED",
+      "message": "22 Kalshi series matched; only the 12 best term matches were expanded"
+    }
+  ],
+  "window": {
+    "requested": "7d",
+    "effective": "7d",
+    "start": "2026-10-14T11:21:22.939885Z",
+    "end": "2026-10-21T11:21:22.939885Z"
+  },
+  "select_count": 8
+}
