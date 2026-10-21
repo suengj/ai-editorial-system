@@ -184,7 +184,9 @@ export function validateCardNewsChartFacts(series, brief, baseDir = process.cwd(
   const issues = [];
   let sourcePmcBundle = null;
   try { if (series.source?.ref) sourcePmcBundle = loadPmcPlotBundle(resolve(baseDir, series.source.ref)); } catch { /* A non-PMC source is validated by its declared receipt and facts. */ }
-  if (series.profiles?.artifact !== 'visual/prediction-market-carousel' && brief.trend_eligibility?.source_type !== 'market_pmc' && !sourcePmcBundle) return { ok: true, issues };
+  const hasDataVisual = series.frames?.some((frame) => (frame.blocks ?? []).some((block) => block.kind === 'chart'));
+  if (series.profiles?.artifact !== 'visual/prediction-market-carousel' && series.numeric_profile !== true
+    && brief.trend_eligibility?.source_type !== 'market_pmc' && !sourcePmcBundle && !hasDataVisual) return { ok: true, issues };
   const facts = new Map((brief.facts ?? []).map((fact) => [fact.id, fact]));
   const nums = (value) => String(value ?? '').match(/[-+−]?\d+(?:[.,]\d+)?/gu)?.map((n) => Number(n.replace(/,/g, '').replace('−', '-'))) ?? [];
   const add = (frame, message) => issues.push(issue('CARD_NEWS_CHART_NOT_CANONICAL', message, frame.id));

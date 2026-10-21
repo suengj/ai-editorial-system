@@ -94,6 +94,8 @@ writeFileSync(chartPath, JSON.stringify({ type:'number_visual', layout:'comparis
 const boundChartSeries = { profiles:{artifact:'visual/prediction-market-carousel'}, frames:[{id:'card-1',blocks:[{kind:'chart',ref:'chart.json'}]}] };
 const boundChartBrief = { facts:[{id:'fact-1',value:'confirmed value 42%',date:'2026-10-21'}], per_card:{'card-1':{visual_fact_ids:['fact-1']}} };
 assert.equal(validateCardNewsChartFacts(boundChartSeries, boundChartBrief, chartDir).ok, false, 'chart data cannot differ from its canonical brief fact');
+const genericNumericSeries = { ...boundChartSeries, numeric_profile:true, profiles:{ surface:'instagram', artifact:'visual/slide-image' } };
+assert.equal(validateCardNewsChartFacts(genericNumericSeries, boundChartBrief, chartDir).ok, false, 'generic numeric card-news profiles use the same chart-to-fact parity checks');
 const labeledPath = resolve(chartDir, 'labeled-chart.json');
 const labeledSeries = { profiles:{artifact:'visual/prediction-market-carousel'}, frames:[{id:'card-1',blocks:[{kind:'chart',ref:'labeled-chart.json'}]}] };
 const labeledBrief = { facts:[{id:'october',value:'October probability was 81%',date:'2025-10'}, {id:'december',value:'December probability was 15%',date:'2025-12'}], per_card:{'card-1':{visual_fact_ids:['october','december'],visual_value_bindings:[{label:'October',value:81,fact_id:'october',display_value:'81%'},{label:'December',value:15,fact_id:'december',display_value:'15%'}]}} };
