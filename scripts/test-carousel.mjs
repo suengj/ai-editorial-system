@@ -39,6 +39,32 @@ ok('job reference is retained for original authority path',()=>{const s=clone();
 ok('no chart values copied into prompts',()=>{assert(first.frames.flatMap((f)=>f.plan.layers).filter((l)=>l.kind==='chart').every((l)=>l.ref && !l.points && !l.instruction));});
 const gen=clone();gen.frames[0].layout='visual';gen.frames[0].blocks=[{id:'art',region:'content',kind:'generated',instruction:'One quiet paper sculpture.'}];
 ok('generation instructions explicitly stay in content slot',()=>{const l=planCarousel(gen).frames[0].plan.layers.find((x)=>x.kind==='generated');assert(l.instruction.includes('compositor clips'));assert.deepEqual(l.slot,loadVisualRecipes().layouts.visual.content);});
+ok('all supporting-art recipes resolve palette bindings to task theme colors',()=>{
+  const catalog=loadVisualRecipes();
+  const ids=['photo-editorial','flat-editorial','isometric','clay-3d','glass-3d','risograph','paper-collage','line-accent'];
+  for(const id of ids){
+    const s=clone();s.recipe=id;delete s.visual_style;
+    s.task.theme={background:'#123456',foreground:'#234567',accent:'#345678'};
+    s.frames[0].layout=undefined;
+    s.frames[0].blocks=[{id:'supporting-art',region:'content',kind:'generated',instruction:'A quiet visual metaphor for the stated takeaway.'}];
+    const planned=planCarousel(s,catalog);
+    const layer=planned.frames[0].plan.layers.find((x)=>x.id==='supporting-art');
+    assert.equal(planned.recipe,id);
+    assert.equal(planned.frames[0].layout,'visual');
+    assert.ok(layer,`${id} generated layer exists`);
+    for(const token of catalog.recipes[id].prompt_style_tokens)assert.ok(layer.instruction.includes(token),`${id} prompt includes style token ${token}`);
+    for(const [role,color] of Object.entries({background:'#123456',primary:'#234567',accent:'#345678',neutral:'#234567'}))assert.ok(layer.instruction.includes(`${role}=${color}`),`${id} prompt includes resolved ${role} color`);
+    assert.ok(!layer.instruction.includes('profile.palette.'),`${id} prompt contains no unresolved palette path`);
+    assert.ok(!layer.instruction.includes('undefined'),`${id} prompt contains no undefined`);
+  }
+  const themed=clone();themed.recipe='photo-editorial';delete themed.visual_style;themed.frames[0].layout=undefined;themed.frames[0].blocks=[{id:'supporting-art',region:'content',kind:'generated',instruction:'A quiet visual metaphor.'}];
+  themed.task.theme={background:'#123456',foreground:'#234567',accent:'#345678'};
+  const firstPrompt=planCarousel(themed,catalog).frames[0].plan.layers.find((layer)=>layer.id==='supporting-art').instruction;
+  themed.task.theme={background:'#654321',foreground:'#765432',accent:'#876543'};
+  const secondPrompt=planCarousel(themed,catalog).frames[0].plan.layers.find((layer)=>layer.id==='supporting-art').instruction;
+  assert.notEqual(firstPrompt,secondPrompt,'changing task theme changes prompt colors');
+  assert.ok(secondPrompt.includes('background=#654321')&&secondPrompt.includes('primary=#765432')&&secondPrompt.includes('accent=#876543'));
+});
 ok('unused recipe edits do not invalidate selected recipe',()=>{const c=loadVisualRecipes();c.recipes['pop-collage'].theme.background='#123456';assert.equal(planCarousel(base,c).recipe_hash,first.recipe_hash);});
 const mutations=[
  ['unknown root field',s=>s.style_axis='new','SERIES_UNKNOWN_FIELD'],

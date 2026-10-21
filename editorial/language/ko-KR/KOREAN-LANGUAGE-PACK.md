@@ -1,5 +1,44 @@
 # Korean language pack (ko-KR) — prose contract
 
+## Shared editorial copy checklist (profile-aware)
+
+Use these checks across Korean editorial copy, then resolve register through
+the selected target profile. They guide a review; they do not replace claim,
+source, rights, or approval checks.
+
+- State the subject, time period, and main change clearly. Answer a question
+  raised by the headline in the body.
+- Keep every factual claim and number traceable to a source and context. For
+  numbers, preserve units, periods, comparison bases, denominators, source,
+  and whether the value is a count, rate, percentage point, estimate, forecast,
+  or company metric.
+- Keep correlation, sequence, and causation distinct. Do not strengthen
+  certainty or intent beyond the evidence.
+- Prefer a visible actor and an active verb when that preserves meaning. Review
+  noun chains, nominalized `~에 대한`, vague `~를 통해`, the stock phrase
+  `~하는 것이 중요합니다`, double passive `되어지다`, and translated
+  connective scaffolding. These are review signals, not grammar verdicts.
+- Check superlatives such as `최고`, `최대`, `최초`, and `유일` against a
+  stated comparison set and evidence. The detector cannot decide whether a
+  claim is supported.
+- Read aloud once. Keep needed context, qualifications, and uncertainty while
+  removing words that only narrate the document's own work.
+- For cards and short-form copy, keep a clear opening promise, add a new fact,
+  mechanism, counterpoint, or implication in each beat, answer the opening
+  question, and keep source marks close to claims.
+
+The automated `scripts/korean-copy-lint.mjs` reads `copy_lint` from the language
+pack and resolves the selected target's tone family. Economics-desk profiles
+get additional warnings for abstract noun chains and work/meta phrases.
+Community copy can use a more conversational register; economics-only patterns
+are not applied to `trends-moa`. Every finding is `warn`: deterministic signals
+for a human pass, never hard blocks or autonomous rewrites. A repeated hero
+number is reported only when the caller supplies that value.
+
+This checklist is adapted from the SUE-1750 copy/UX research dossier. It is
+shared craft guidance, not a universal voice and not evidence that wording is
+factual or effective.
+
 Machine surface: `editorial/profiles/language/ko-KR.json`. That JSON is
 authoritative for ids, authority classes, scope, checkability, and status.
 This document explains the phenomena behind each rule and must not contradict

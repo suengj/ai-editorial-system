@@ -36,6 +36,10 @@
       "fit",
       "rights_note",
       "protect",
+      "focal_box",
+      "focal_min_area_ratio",
+      "focal_fallback",
+      "mockup_risk",
       "text",
       "source_ref",
       "instruction",
@@ -104,7 +108,7 @@
     }
   },
   "catalog_version": "1.0.0",
-  "content_digest": "sha256:440f6f1d8ea726e7ed20c5cf2a9340652c7ba1c6cf445a6ee34402d6eccc08d4",
+  "content_digest": "sha256:4abd400b4b50d44c87625efb7c30e028f654b48cf01b161166604ce04281ab8a",
   "field_domains": {
     "call_to_action": {
       "max_length": 200,
@@ -212,7 +216,7 @@
           {
             "path": "editorial/STRUCTURED-VISUAL-EXECUTION.md",
             "role": "core:visual",
-            "sha256": "09b473a88315cbae40ee936358df04252e98d83f842ca78b5dd0caec4ace656f"
+            "sha256": "68ad0fc1428807684c7c7fd6eefa54f91d28cb68814c50d9960b434cd9696824"
           },
           {
             "path": "editorial/constitution.md",
@@ -281,7 +285,7 @@
           {
             "path": "editorial/STRUCTURED-VISUAL-EXECUTION.md",
             "role": "core:visual",
-            "sha256": "09b473a88315cbae40ee936358df04252e98d83f842ca78b5dd0caec4ace656f"
+            "sha256": "68ad0fc1428807684c7c7fd6eefa54f91d28cb68814c50d9960b434cd9696824"
           },
           {
             "path": "editorial/constitution.md",
@@ -7942,7 +7946,7 @@
           {
             "path": "editorial/STRUCTURED-VISUAL-EXECUTION.md",
             "role": "core:visual",
-            "sha256": "09b473a88315cbae40ee936358df04252e98d83f842ca78b5dd0caec4ace656f"
+            "sha256": "68ad0fc1428807684c7c7fd6eefa54f91d28cb68814c50d9960b434cd9696824"
           },
           {
             "path": "editorial/SUENGJ-STYLE.md",
@@ -7957,7 +7961,7 @@
           {
             "path": "editorial/visual-recipes.v1.json",
             "role": "visual:values",
-            "sha256": "0b3f9290fa4ef9cad4f606f22f9ef25f66cf8e7d6f33730ab5a16658820ae703"
+            "sha256": "b15a0e5519fd4273747bb5bf7671cb8b7945ecb2102519c214fddd6e38e68a4f"
           }
         ]
       },
@@ -8043,12 +8047,12 @@
           {
             "path": "editorial/BUSINESS-IDEA-MAGAZINE.md",
             "role": "copy:business",
-            "sha256": "a7425dc356f743bfde00f33461ea7be2fd51c52335ed6ae2fc2f8f83b3698e57"
+            "sha256": "0765cd367eb04a3b930f94da7f8f8e60d3eb5e4ca96db7da18e2c4adfedc9aee"
           },
           {
             "path": "editorial/SIGNALYTICS-BENCHMARK-CARDS.md",
             "role": "copy:business",
-            "sha256": "92b81872e5edaa1da1e9938fd67e98a4dcae1c48b90e22c5ddc9cb69169b0170"
+            "sha256": "e9e9e4f2f4c630655e2ca10e538b0e7522218abb56dd96434d70d798734058f1"
           },
           {
             "path": "editorial/constitution.md",
@@ -8065,27 +8069,27 @@
           {
             "path": "editorial/BUSINESS-IDEA-MAGAZINE.md",
             "role": "copy:business",
-            "sha256": "a7425dc356f743bfde00f33461ea7be2fd51c52335ed6ae2fc2f8f83b3698e57"
+            "sha256": "0765cd367eb04a3b930f94da7f8f8e60d3eb5e4ca96db7da18e2c4adfedc9aee"
           },
           {
             "path": "editorial/SIGNALYTICS-BENCHMARK-CARDS.md",
             "role": "copy:business",
-            "sha256": "92b81872e5edaa1da1e9938fd67e98a4dcae1c48b90e22c5ddc9cb69169b0170"
+            "sha256": "e9e9e4f2f4c630655e2ca10e538b0e7522218abb56dd96434d70d798734058f1"
           },
           {
             "path": "editorial/SLIDES-AND-CAROUSELS.md",
             "role": "visual:rules",
-            "sha256": "e1b7d3a64082a7643e08a41fb1728663ab09b7051a0d81fed72d10281fb06b50"
+            "sha256": "0f4b92eb41380eda6ea96b71f86e59a73718f835dca4fac45fb65c13e7cbf64d"
           },
           {
             "path": "editorial/STRUCTURED-VISUAL-EXECUTION.md",
             "role": "core:visual",
-            "sha256": "09b473a88315cbae40ee936358df04252e98d83f842ca78b5dd0caec4ace656f"
+            "sha256": "68ad0fc1428807684c7c7fd6eefa54f91d28cb68814c50d9960b434cd9696824"
           },
           {
             "path": "editorial/business-idea-magazine.v1.json",
             "role": "visual:values",
-            "sha256": "35435a0f257b4a05175ab102dbe415e5a9661fd2c184386f43dfc3b0bd922a60"
+            "sha256": "c1c47e15f8b441ff5eda2f6daceac527d4c340c7a25a2860def44cd5a72bfe3d"
           },
           {
             "path": "editorial/constitution.md",
@@ -8095,7 +8099,7 @@
           {
             "path": "editorial/visual-recipes.v1.json",
             "role": "visual:values",
-            "sha256": "0b3f9290fa4ef9cad4f606f22f9ef25f66cf8e7d6f33730ab5a16658820ae703"
+            "sha256": "b15a0e5519fd4273747bb5bf7671cb8b7945ecb2102519c214fddd6e38e68a4f"
           }
         ]
       },
@@ -8130,7 +8134,7 @@
           {
             "path": "editorial/TRENDS-MOA-COMMUNITY-TONE.md",
             "role": "copy:community",
-            "sha256": "e8e0acdedae92ca18106436003ef8355d3a35e67577edbea576c740c9d52f383"
+            "sha256": "3da72396dfb0cee41f918ddeb88b0f25101bc0ac100dc5cb688f94173fce54ef"
           },
           {
             "path": "editorial/constitution.md",
@@ -8147,17 +8151,17 @@
           {
             "path": "editorial/SLIDES-AND-CAROUSELS.md",
             "role": "visual:rules",
-            "sha256": "e1b7d3a64082a7643e08a41fb1728663ab09b7051a0d81fed72d10281fb06b50"
+            "sha256": "0f4b92eb41380eda6ea96b71f86e59a73718f835dca4fac45fb65c13e7cbf64d"
           },
           {
             "path": "editorial/STRUCTURED-VISUAL-EXECUTION.md",
             "role": "core:visual",
-            "sha256": "09b473a88315cbae40ee936358df04252e98d83f842ca78b5dd0caec4ace656f"
+            "sha256": "68ad0fc1428807684c7c7fd6eefa54f91d28cb68814c50d9960b434cd9696824"
           },
           {
             "path": "editorial/TRENDS-MOA-COMMUNITY-TONE.md",
             "role": "copy:community",
-            "sha256": "e8e0acdedae92ca18106436003ef8355d3a35e67577edbea576c740c9d52f383"
+            "sha256": "3da72396dfb0cee41f918ddeb88b0f25101bc0ac100dc5cb688f94173fce54ef"
           },
           {
             "path": "editorial/constitution.md",
@@ -8167,7 +8171,7 @@
           {
             "path": "editorial/visual-recipes.v1.json",
             "role": "visual:values",
-            "sha256": "0b3f9290fa4ef9cad4f606f22f9ef25f66cf8e7d6f33730ab5a16658820ae703"
+            "sha256": "b15a0e5519fd4273747bb5bf7671cb8b7945ecb2102519c214fddd6e38e68a4f"
           }
         ]
       },
@@ -8642,6 +8646,39 @@
         }
       },
       "recipes": {
+        "clay-3d": {
+          "avoid": [
+            "Avoid toy-like rendering, miniature clutter, and spectacle that competes with evidence."
+          ],
+          "kind": "supporting_art",
+          "model": {
+            "cross_model_comparison": "pending_fal_403",
+            "default": "gpt-image-2.5-flare",
+            "status": "provisional_single_model"
+          },
+          "negative_constraints": [
+            "no legible text, letters, numerals, logos, flags, chart, axes, or UI",
+            "keep the upper 32% quiet and low-detail for a later headline overlay",
+            "charts and factual marks remain code-native"
+          ],
+          "palette_binding": {
+            "accent": "profile.palette.accent",
+            "background": "profile.palette.background",
+            "neutral": "profile.palette.neutral",
+            "primary": "profile.palette.primary_structure"
+          },
+          "prompt_style_tokens": [
+            "matte hand-molded clay",
+            "subtle surface imperfections",
+            "architectural forms",
+            "soft key light",
+            "grounded shadows",
+            "avoid toy-like rendering"
+          ],
+          "when_to_use": [
+            "A warm, tactile metaphor for a practical or human-scale concept."
+          ]
+        },
         "dark-data": {
           "default_layout": "visual",
           "generation_direction": "High-contrast dark editorial composition with restrained mint accents. Illustration supports rather than competes with evidence. Never invent KPI tiles, chart marks, performance percentages, or product brands.",
@@ -8670,6 +8707,198 @@
               "weight": 500
             }
           }
+        },
+        "flat-editorial": {
+          "avoid": [
+            "Avoid childish character design, decorative skyline detail, and complex facial expressions."
+          ],
+          "kind": "supporting_art",
+          "model": {
+            "cross_model_comparison": "pending_fal_403",
+            "default": "gpt-image-2.5-flare",
+            "status": "provisional_single_model"
+          },
+          "negative_constraints": [
+            "no legible text, letters, numerals, logos, flags, chart, axes, or UI",
+            "keep the upper 32% quiet and low-detail for a later headline overlay",
+            "charts and factual marks remain code-native"
+          ],
+          "palette_binding": {
+            "accent": "profile.palette.accent",
+            "background": "profile.palette.background",
+            "neutral": "profile.palette.neutral",
+            "primary": "profile.palette.primary_structure"
+          },
+          "prompt_style_tokens": [
+            "bold geometric silhouettes",
+            "crisp edges",
+            "three-color palette bound to profile tokens",
+            "controlled accent",
+            "sophisticated, not childish"
+          ],
+          "when_to_use": [
+            "Conceptual contrasts that benefit from a clear silhouette and limited shapes."
+          ]
+        },
+        "glass-3d": {
+          "avoid": [
+            "Avoid refraction or reflections that erase silhouettes or reduce contrast; respect brand materiality limits."
+          ],
+          "kind": "supporting_art",
+          "model": {
+            "cross_model_comparison": "pending_fal_403",
+            "default": "gpt-image-2.5-flare",
+            "status": "provisional_single_model"
+          },
+          "negative_constraints": [
+            "no legible text, letters, numerals, logos, flags, chart, axes, or UI",
+            "keep the upper 32% quiet and low-detail for a later headline overlay",
+            "charts and factual marks remain code-native"
+          ],
+          "palette_binding": {
+            "accent": "profile.palette.accent",
+            "background": "profile.palette.background",
+            "neutral": "profile.palette.neutral",
+            "primary": "profile.palette.primary_structure"
+          },
+          "prompt_style_tokens": [
+            "frosted and translucent glass",
+            "controlled refraction",
+            "separated silhouettes",
+            "edge highlights",
+            "protected contrast"
+          ],
+          "when_to_use": [
+            "A metaphor about transparency, layers, separation, or visibility."
+          ]
+        },
+        "isometric": {
+          "avoid": [
+            "Do not let diagram-like geometry imply measured values, scale, or a real chart."
+          ],
+          "kind": "supporting_art",
+          "model": {
+            "cross_model_comparison": "pending_fal_403",
+            "default": "gpt-image-2.5-flare",
+            "status": "provisional_single_model"
+          },
+          "negative_constraints": [
+            "no legible text, letters, numerals, logos, flags, chart, axes, or UI",
+            "keep the upper 32% quiet and low-detail for a later headline overlay",
+            "charts and factual marks remain code-native"
+          ],
+          "palette_binding": {
+            "accent": "profile.palette.accent",
+            "background": "profile.palette.background",
+            "neutral": "profile.palette.neutral",
+            "primary": "profile.palette.primary_structure"
+          },
+          "prompt_style_tokens": [
+            "fixed 30-degree axonometric camera",
+            "consistent object scale",
+            "clean diagrammatic geometry",
+            "controlled shadow",
+            "no labels"
+          ],
+          "when_to_use": [
+            "Process, structure, or relationships that benefit from a spatial explanatory metaphor."
+          ]
+        },
+        "line-accent": {
+          "avoid": [
+            "Keep line weight visible at phone size and limit accent colors to semantically useful marks."
+          ],
+          "kind": "supporting_art",
+          "model": {
+            "cross_model_comparison": "pending_fal_403",
+            "default": "gpt-image-2.5-flare",
+            "status": "provisional_single_model"
+          },
+          "negative_constraints": [
+            "no legible text, letters, numerals, logos, flags, chart, axes, or UI",
+            "keep the upper 32% quiet and low-detail for a later headline overlay",
+            "charts and factual marks remain code-native"
+          ],
+          "palette_binding": {
+            "accent": "profile.palette.accent",
+            "background": "profile.palette.background",
+            "neutral": "profile.palette.neutral",
+            "primary": "profile.palette.primary_structure"
+          },
+          "prompt_style_tokens": [
+            "fine confident contour lines",
+            "open background",
+            "one profile-bound accent and one contrasting profile-bound accent",
+            "simple phone-readable marks"
+          ],
+          "when_to_use": [
+            "Small mobile surfaces or explanations where open space and a few marks carry the idea."
+          ]
+        },
+        "paper-collage": {
+          "avoid": [
+            "Check rights for every reused source image or paper fragment; do not imply source images are reusable because they are public."
+          ],
+          "kind": "supporting_art",
+          "model": {
+            "cross_model_comparison": "pending_fal_403",
+            "default": "gpt-image-2.5-flare",
+            "status": "provisional_single_model"
+          },
+          "negative_constraints": [
+            "no legible text, letters, numerals, logos, flags, chart, axes, or UI",
+            "keep the upper 32% quiet and low-detail for a later headline overlay",
+            "charts and factual marks remain code-native"
+          ],
+          "palette_binding": {
+            "accent": "profile.palette.accent",
+            "background": "profile.palette.background",
+            "neutral": "profile.palette.neutral",
+            "primary": "profile.palette.primary_structure"
+          },
+          "prompt_style_tokens": [
+            "cut and torn archival paper",
+            "visible fibers and layered edges",
+            "tactile depth",
+            "balanced asymmetry"
+          ],
+          "when_to_use": [
+            "Combining distinct sourced concepts or showing change through layered paper forms."
+          ]
+        },
+        "photo-editorial": {
+          "avoid": [
+            "Do not imply documentary evidence or a real photographed event when the scene is generated.",
+            "Avoid decorative finance clichés and busy props."
+          ],
+          "kind": "supporting_art",
+          "model": {
+            "cross_model_comparison": "pending_fal_403",
+            "default": "gpt-image-2.5-flare",
+            "status": "provisional_single_model"
+          },
+          "negative_constraints": [
+            "no legible text, letters, numerals, logos, flags, chart, axes, or UI",
+            "keep the upper 32% quiet and low-detail for a later headline overlay",
+            "charts and factual marks remain code-native"
+          ],
+          "palette_binding": {
+            "accent": "profile.palette.accent",
+            "background": "profile.palette.background",
+            "neutral": "profile.palette.neutral",
+            "primary": "profile.palette.primary_structure"
+          },
+          "prompt_style_tokens": [
+            "restrained financial-desk still life",
+            "realistic limestone miniature",
+            "brushed metal",
+            "directional window light",
+            "tactile stone",
+            "full tonal range"
+          ],
+          "when_to_use": [
+            "Tactile, restrained economic or business context where a still life can carry the idea."
+          ]
         },
         "pop-collage": {
           "default_layout": "visual",
@@ -8714,6 +8943,39 @@
               "weight": 800
             }
           }
+        },
+        "risograph": {
+          "avoid": [
+            "Keep texture and registration shift controlled; reject unexpected hands or figures that make the metaphor busy."
+          ],
+          "kind": "supporting_art",
+          "model": {
+            "cross_model_comparison": "pending_fal_403",
+            "default": "gpt-image-2.5-flare",
+            "status": "provisional_single_model"
+          },
+          "negative_constraints": [
+            "no legible text, letters, numerals, logos, flags, chart, axes, or UI",
+            "keep the upper 32% quiet and low-detail for a later headline overlay",
+            "charts and factual marks remain code-native"
+          ],
+          "palette_binding": {
+            "accent": "profile.palette.accent",
+            "background": "profile.palette.background",
+            "neutral": "profile.palette.neutral",
+            "primary": "profile.palette.primary_structure"
+          },
+          "prompt_style_tokens": [
+            "uncoated paper grain",
+            "coarse halftone",
+            "slight registration shift",
+            "overprint",
+            "three spot inks bound to profile palette roles",
+            "controlled texture"
+          ],
+          "when_to_use": [
+            "Historical, cultural, or essay-like subjects where print texture supports the tone."
+          ]
         }
       },
       "regions": {
@@ -8744,6 +9006,15 @@
       },
       "schema_version": "1.0.0",
       "scope": "Task-selected realization presets, not a new intent axis or a replacement brand/reference authority. No factual payload or approval.",
+      "supporting_art_contract": {
+        "model_evidence": "E1 generated one sample per style with GPT Image 2.5 Flare. fal returned HTTP 403 for all attempted calls; cross-model comparison is pending. No provider winner or reproducibility claim is supported.",
+        "negative_constraints": [
+          "No legible words, letters, numerals, logos, flags, chart, axes, or UI.",
+          "Keep the upper 32% quiet and low-detail for a later headline overlay; place the hero art in the middle/lower area.",
+          "Charts, data values, labels, citations, and factual annotations stay code-native."
+        ],
+        "prompt_template": "Text-free vertical editorial supporting art for a Korean economics card. Show [subject and visual metaphor]. Keep all factual marks separate and code-native. Apply the selected recipe's style tokens and palette bindings."
+      },
       "typography": {
         "body": {
           "font_size": 38,
@@ -8778,6 +9049,6 @@
         }
       }
     },
-    "sha256": "0b3f9290fa4ef9cad4f606f22f9ef25f66cf8e7d6f33730ab5a16658820ae703"
+    "sha256": "b15a0e5519fd4273747bb5bf7671cb8b7945ecb2102519c214fddd6e38e68a4f"
   }
 }
