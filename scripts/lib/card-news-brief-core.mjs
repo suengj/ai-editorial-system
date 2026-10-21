@@ -151,6 +151,21 @@ export function validateCardNewsContentQa(contentQa, series=null) {
   return { ok: issues.length === 0, issues };
 }
 
+/** The complete set of spec strings consumed as SVG text by supported chart renderers. */
+export function renderedChartTextFields(spec) {
+  const fields = [spec?.title, spec?.source_note];
+  if (spec?.type === 'number_visual') {
+    if (spec.layout === 'comparison-bars' || spec.layout === 'dual-metric') fields.push(...(spec.items ?? []).flatMap((item) => [item.label, item.value_label]));
+    else if (spec.layout === 'dot-grid') fields.push(spec.value_label, spec.caption);
+    else if (spec.layout === 'trend-area') fields.push(spec.start_label, spec.end_label, spec.start_date, spec.end_date, spec.delta_label);
+    else if (spec.layout === 'rate-gap-ratio') fields.push(...(spec.rates ?? []).map((rate) => rate.label), spec.ratio?.caption, spec.ratio?.outflow_label, spec.ratio?.inflow_label, spec.ratio?.outflow_amount_label, spec.ratio?.inflow_amount_label, '2.5:1');
+    else if (spec.layout === 'scenario-split') fields.push(spec.date, ...(spec.scenarios ?? []).flatMap((scenario) => [scenario.label, ...(scenario.detail_lines ?? (scenario.detail ? [scenario.detail] : []))]));
+  } else if (['line', 'area'].includes(spec?.type)) {
+    fields.push(spec.period, spec.x?.label, ...Object.values(spec.x?.tick_labels ?? {}), spec.y?.label, spec.y?.unit, ...(spec.series ?? []).flatMap((series) => [series.name, series.claim]));
+  }
+  return fields.filter((value) => typeof value === 'string');
+}
+
 /** Confirm that numeric chart data and number-bearing labels belong to each card's cited facts. */
 export function validateCardNewsChartFacts(series, brief, baseDir = process.cwd()) {
   const issues = [];
@@ -221,15 +236,13 @@ export function validateCardNewsChartFacts(series, brief, baseDir = process.cwd(
       continue;
     }
     if (spec.type !== 'number_visual') continue;
-    let values = [], labels = [];
+    let values = [];
     if (spec.layout === 'comparison-bars') {
       values = (spec.items ?? []).map((item) => item.value);
-      labels = (spec.items ?? []).flatMap((item) => [item.label, item.value_label]);
     } else if (spec.layout === 'dot-grid') {
-      values = [spec.filled]; labels = [spec.value_label, spec.caption?.replace(/\b100\b/gu, '')];
+      values = [spec.filled];
     } else if (spec.layout === 'trend-area') {
       values = [spec.start, spec.end, ...(spec.points ?? []).map((point) => point.value)];
-      labels = [spec.start_label, spec.end_label, spec.start_date, spec.end_date, spec.delta_label];
       if (brief.trend_eligibility?.source_type === 'market_pmc') {
         try {
           const bundle = loadPmcPlotBundle(resolve(baseDir, series.source.ref));
@@ -238,16 +251,14 @@ export function validateCardNewsChartFacts(series, brief, baseDir = process.cwd(
       }
     } else if (spec.layout === 'dual-metric') {
       values = (spec.items ?? []).map((item) => item.value);
-      labels = (spec.items ?? []).flatMap((item) => [item.label, item.value_label]);
     } else if (spec.layout === 'rate-gap-ratio') {
       values = [...(spec.rates ?? []).map((rate) => rate.value), spec.ratio?.outflow, spec.ratio?.inflow];
-      labels = [...(spec.rates ?? []).map((rate) => rate.label), spec.ratio?.outflow_label, spec.ratio?.inflow_label];
-      labels.push(spec.ratio?.outflow_amount_label, spec.ratio?.inflow_amount_label);
+      if (Number.isFinite(spec.ratio?.outflow) && Number.isFinite(spec.ratio?.inflow) && spec.ratio.inflow > 0 && Math.abs(spec.ratio.outflow / spec.ratio.inflow - 2.5) <= 0.15) allowed.add(Number((spec.ratio.outflow / spec.ratio.inflow).toFixed(1)));
     } else if (spec.layout === 'scenario-split') {
-      labels = [spec.date, ...(spec.scenarios ?? []).flatMap((scenario) => [scenario.label, ...(scenario.detail_lines ?? [])])];
+      // Strings are checked below, including scenario.detail when detail_lines is absent.
     }
     if (values.some((value) => !Number.isFinite(value) || !allowed.has(value))) add(frame, 'chart data values must match numbers in the card visual_fact_ids');
-    if (labels.flatMap(nums).some((value) => !allowed.has(value))) add(frame, 'number-bearing chart labels must match the card visual_fact_ids');
+    if (renderedChartTextFields(spec).flatMap(nums).some((value) => !allowed.has(value))) add(frame, 'every rendered text field and number-bearing chart claim must match the card visual_fact_ids');
     const labeledValues = [ ...(spec.items ?? []).map((item) => ({ ...item, display_value: item.value_label })), ...(spec.rates ?? []) ].filter((item) => typeof item?.label === 'string' && Number.isFinite(item.value));
     if (spec.layout === 'rate-gap-ratio' && Number.isFinite(spec.ratio?.outflow) && Number.isFinite(spec.ratio?.inflow)) {
       labeledValues.push(

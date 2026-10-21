@@ -2,7 +2,8 @@ import assert from 'node:assert/strict';
 import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { resolve } from 'node:path';
-import { validateCardNewsBrief, validateCardNewsChartFacts, validateCardNewsContentQa } from './lib/card-news-brief-core.mjs';
+import { renderedChartTextFields, validateCardNewsBrief, validateCardNewsChartFacts, validateCardNewsContentQa } from './lib/card-news-brief-core.mjs';
+import { renderNumberVisualPanel } from './lib/chart-renderer.mjs';
 import { planCarousel } from './lib/carousel-core.mjs';
 
 const frames = Array.from({ length: 6 }, (_, i) => ({
@@ -107,6 +108,38 @@ const ratioSeries = { profiles:{artifact:'visual/prediction-market-carousel'},fr
 const ratioBrief = { facts:tupleFacts,per_card:{'card-1':{visual_fact_ids:tupleFacts.map((fact)=>fact.id),visual_value_bindings:tupleBindings}} };
 writeFileSync(ratioChartPath, JSON.stringify(ratioChart));
 assert.equal(validateCardNewsChartFacts(ratioSeries,ratioBrief,chartDir).ok,true,'rate and ratio labels bind to their own sourced values');
+const unboundRatioCaption = structuredClone(ratioChart); unboundRatioCaption.ratio.caption = '99:1 ratio claim';
+writeFileSync(ratioChartPath, JSON.stringify(unboundRatioCaption));
+assert.equal(validateCardNewsChartFacts(ratioSeries,ratioBrief,chartDir).ok,false,'ratio caption numbers are checked against cited facts');
+const scenarioPath = resolve(chartDir, 'scenario.json');
+const scenarioSpec = { type:'number_visual',layout:'scenario-split',title:'Scenario',source_note:'Source',date:'2026-10-21',scenarios:[{label:'Base',detail:'Impact 3%'},{label:'Risk',detail_lines:['Impact 4%']}] };
+writeFileSync(scenarioPath, JSON.stringify(scenarioSpec));
+const scenarioSeries = { profiles:{artifact:'visual/prediction-market-carousel'},frames:[{id:'card-1',blocks:[{kind:'chart',ref:'scenario.json'}]}] };
+const scenarioBrief = { facts:[{id:'scenario',value:'Scenario values 3% and 4%',date:'2026-10-21'}],per_card:{'card-1':{visual_fact_ids:['scenario']}} };
+assert.equal(validateCardNewsChartFacts(scenarioSeries,scenarioBrief,chartDir).ok,true);
+scenarioSpec.scenarios[0].detail = 'Impact 99%'; writeFileSync(scenarioPath, JSON.stringify(scenarioSpec));
+assert.equal(validateCardNewsChartFacts(scenarioSeries,scenarioBrief,chartDir).ok,false,'scenario.detail fallback numbers are checked against cited facts');
+const visualKinds = [
+  {type:'number_visual',layout:'comparison-bars',title:'A',source_note:'B',items:[{label:'C',value:4,value_label:'4%'}]},
+  {type:'number_visual',layout:'dot-grid',title:'A',source_note:'B',total:100,filled:4,value_label:'4%',caption:'C'},
+  {type:'number_visual',layout:'trend-area',title:'A',source_note:'B',start:3,end:4,start_label:'3%',end_label:'4%',start_date:'10.20',end_date:'10.21',points:[{observed_at:'2026-10-20T00:00:00Z',value:3},{observed_at:'2026-10-21T00:00:00Z',value:4}]},
+  {type:'number_visual',layout:'dual-metric',title:'A',source_note:'B',items:[{label:'C',value:4,max:5,value_label:'4%'},{label:'D',value:3,max:5,value_label:'3%'}]},
+  ratioChart,
+  scenarioSpec,
+];
+for (const [index, original] of visualKinds.entries()) {
+  const sentinelSpec = structuredClone(original);
+  const inject = (value) => typeof value === 'string' ? 'sentinel 9917' : Array.isArray(value) ? value.map(inject) : value && typeof value === 'object' ? Object.fromEntries(Object.entries(value).map(([key, child]) => [key, ['type','layout','render_mode'].includes(key) ? child : inject(child)])) : value;
+  const poisoned = inject(sentinelSpec);
+  const textFields = renderedChartTextFields(poisoned);
+  const validationSeries = {profiles:{artifact:'visual/prediction-market-carousel'},frames:[{id:'card-1',blocks:[{kind:'chart',ref:'sentinel.json'}]}]};
+  writeFileSync(resolve(chartDir,'sentinel.json'),JSON.stringify(poisoned));
+  const result = validateCardNewsChartFacts(validationSeries,{facts:tupleFacts,per_card:{'card-1':{visual_fact_ids:tupleFacts.map((fact)=>fact.id)} }},chartDir);
+  let svgHasSentinel = false;
+  try { svgHasSentinel = renderNumberVisualPanel(poisoned).svg.includes('sentinel 9917'); } catch { /* Invalid poisoned geometry is itself a safe rejection. */ }
+  if (svgHasSentinel) assert.equal(result.ok,false,`visual kind ${index} must reject every unbound rendered text number`);
+  assert(textFields.length > 0, `visual kind ${index} exposes rendered text fields to the parity gate`);
+}
 for (const mutate of [
   (chart) => [chart.rates[0].label,chart.rates[1].label]=[chart.rates[1].label,chart.rates[0].label],
   (chart) => [chart.ratio.outflow_label,chart.ratio.inflow_label]=[chart.ratio.inflow_label,chart.ratio.outflow_label],
