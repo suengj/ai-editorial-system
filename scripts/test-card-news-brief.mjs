@@ -84,8 +84,8 @@ assert.equal(validateCardNewsChartFacts(labeledSeries, labeledBrief, chartDir).o
 const tupleFacts = [
   {id:'us-rate',value:'United States rate 4%',date:'2026-10-21'},
   {id:'kr-rate',value:'Korea rate 3%',date:'2026-10-21'},
-  {id:'outflow',value:'Outflow USD 2.5B ratio term',date:'2026-10-21'},
-  {id:'inflow',value:'Inflow USD 1B ratio term',date:'2026-10-21'},
+  {id:'outflow',value:'Outflow USD 2.5B ratio term',date:'2026-10-21',direction:'outflow',amount:2.5},
+  {id:'inflow',value:'Inflow USD 1B ratio term',date:'2026-10-21',direction:'inflow',amount:1},
 ];
 const tupleBindings = [
   {label:'United States',value:4,fact_id:'us-rate'}, {label:'Korea',value:3,fact_id:'kr-rate'},
@@ -105,6 +105,13 @@ for (const mutate of [
   const swapped=structuredClone(ratioChart); mutate(swapped); writeFileSync(ratioChartPath,JSON.stringify(swapped));
   assert.equal(validateCardNewsChartFacts(ratioSeries,ratioBrief,chartDir).ok,false,'swapping any rate or flow label/value/fact tuple is rejected');
 }
+const fullFlowSwap=structuredClone(ratioChart);
+[fullFlowSwap.ratio.outflow_label,fullFlowSwap.ratio.inflow_label]=[fullFlowSwap.ratio.inflow_label,fullFlowSwap.ratio.outflow_label];
+const fullFlowBrief=structuredClone(ratioBrief);
+const flowBindings=fullFlowBrief.per_card['card-1'].visual_value_bindings.slice(2);
+[flowBindings[0].label,flowBindings[1].label]=[flowBindings[1].label,flowBindings[0].label];
+writeFileSync(ratioChartPath,JSON.stringify(fullFlowSwap));
+assert.equal(validateCardNewsChartFacts(ratioSeries,fullFlowBrief,chartDir).ok,false,'swapping both flow labels and their bindings cannot override direction-bound source facts');
 const dualChart = { type:'number_visual',layout:'dual-metric',items:[{label:'United States',value:4,max:5,value_label:'4%'},{label:'Korea',value:3,max:5,value_label:'3%'}] };
 writeFileSync(ratioChartPath,JSON.stringify(dualChart));
 const dualBrief = { facts:tupleFacts.slice(0,2),per_card:{'card-1':{visual_fact_ids:['us-rate','kr-rate'],visual_value_bindings:[{...tupleBindings[0],display_value:'4%'},{...tupleBindings[1],display_value:'3%'}]}} };

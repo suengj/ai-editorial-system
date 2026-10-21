@@ -158,7 +158,12 @@ export function validateCardNewsChartFacts(series, brief, baseDir = process.cwd(
           const bundle = loadPmcPlotBundle(resolve(baseDir, series.source.ref));
           if (spec.type === 'number_visual' && spec.layout === 'trend-area') {
             const expected = bundle.plot.points.filter((point) => point.value !== null).map((point) => ({ observed_at: point.observed_at, value: Number((point.value * 100).toPrecision(12)) }));
-            if (JSON.stringify(spec.points) !== JSON.stringify(expected) || spec.start !== expected[0]?.value || spec.end !== expected.at(-1)?.value) add(frame, 'trend-area points and endpoints must match non-missing observations in the selected verified PMC bundle');
+            const dateLabel = (iso) => { const d = new Date(iso); return `${String(d.getUTCMonth()+1).padStart(2,'0')}.${String(d.getUTCDate()).padStart(2,'0')}`; };
+            const signedDelta = Number(bundle.plot.delta.value_pp);
+            const expectedDelta = `${signedDelta > 0 ? '+' : signedDelta < 0 ? '−' : ''}${Number(Math.abs(signedDelta).toPrecision(12))}%p`;
+            if (JSON.stringify(spec.points) !== JSON.stringify(expected) || spec.start !== expected[0]?.value || spec.end !== expected.at(-1)?.value
+              || spec.start_date !== dateLabel(bundle.plot.delta.baseline_at) || spec.end_date !== dateLabel(bundle.plot.delta.last_at)
+              || spec.delta_label?.replace('-', '−') !== expectedDelta) add(frame, 'trend-area points, endpoints, dates, and signed delta must match the selected verified PMC bundle');
           } else {
             const expected = pmcPlotToChartSpec(bundle);
             const actualSeries = spec.series?.map((item) => ({ name: item.name, claim: item.claim, points: item.points }));
@@ -213,8 +218,8 @@ export function validateCardNewsChartFacts(series, brief, baseDir = process.cwd(
     const labeledValues = [ ...(spec.items ?? []).map((item) => ({ ...item, display_value: item.value_label })), ...(spec.rates ?? []) ].filter((item) => typeof item?.label === 'string' && Number.isFinite(item.value));
     if (spec.layout === 'rate-gap-ratio' && Number.isFinite(spec.ratio?.outflow) && Number.isFinite(spec.ratio?.inflow)) {
       labeledValues.push(
-        { label: spec.ratio.outflow_label, value: spec.ratio.outflow, display_value: spec.ratio.outflow_amount_label ?? String(spec.ratio.outflow) },
-        { label: spec.ratio.inflow_label, value: spec.ratio.inflow, display_value: spec.ratio.inflow_amount_label ?? String(spec.ratio.inflow) },
+        { label: spec.ratio.outflow_label, value: spec.ratio.outflow, display_value: spec.ratio.outflow_amount_label ?? String(spec.ratio.outflow), direction: 'outflow' },
+        { label: spec.ratio.inflow_label, value: spec.ratio.inflow, display_value: spec.ratio.inflow_amount_label ?? String(spec.ratio.inflow), direction: 'inflow' },
       );
     }
     if (labeledValues.length) {
@@ -225,7 +230,9 @@ export function validateCardNewsChartFacts(series, brief, baseDir = process.cwd(
           && (item.display_value === undefined || binding?.display_value === item.display_value));
         const binding = index >= 0 ? bindings[index] : null;
         const fact = binding && facts.get(binding.fact_id);
-        if (!binding || usedBindings.has(index) || !ids.includes(binding.fact_id) || !fact || !nums(fact.value).includes(item.value)) {
+        const expectedDirection = item.direction ?? null;
+        const directionMatch = !expectedDirection || (fact?.direction === expectedDirection && fact?.amount === item.value);
+        if (!binding || usedBindings.has(index) || !ids.includes(binding.fact_id) || !fact || !nums(fact.value).includes(item.value) || !directionMatch) {
           add(frame, `labeled value ${item.label}=${item.value} must bind to its own visual fact`);
         } else usedBindings.add(index);
       }
