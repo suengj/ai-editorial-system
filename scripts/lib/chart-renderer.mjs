@@ -296,7 +296,8 @@ export function renderChartPanel(spec, { width = 900, height = 520, theme = {}, 
       while (endpointYs.some((y) => Math.abs(y - ly) < fs * 1.2)) ly += fs * 1.25;
       if (ly > top + ph + fs * 0.5) fail('endpoint labels collide; split series or increase height');
       endpointYs.push(ly);
-      text(axisFmt(last[1]), left + pw + 10, ly + fs * 0.32, { weight: spec.emphasize_endpoint ? 800 : 400, size: spec.emphasize_endpoint ? snapCardNewsSize(fs + 4) : fs, limit: right - 12 });
+      const endpointLabelX = left + pw + (spec.emphasize_endpoint ? 32 : 10);
+      text(axisFmt(last[1]), endpointLabelX, ly + fs * 0.32, { weight: spec.emphasize_endpoint ? 800 : 400, size: spec.emphasize_endpoint ? snapCardNewsSize(fs + 4) : fs, limit: right - (spec.emphasize_endpoint ? 34 : 12) });
       displayed.push({ series: s.name, endpoint: last, endpoint_label: axisFmt(last[1]), claim: s.claim });
     } else {
       const cell = pw / actual.length;

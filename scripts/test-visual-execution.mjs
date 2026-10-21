@@ -148,6 +148,10 @@ await test('premium number visuals render bound values, grid, gradient area and 
   const ignoredLegacyType = renderChartPanel({ ...specs[0], typography:{hero_size:99,label_weight:500} }, { width:936,height:520,theme });
   assertCardNewsSvgTypeTokens(ignoredLegacyType.svg);
   for (const width of [936,1080]) assertCardNewsSvgTypeTokens(renderChartPanel({ ...fixture('line.json'), emphasize_endpoint:true }, { width,height:520,theme }).svg);
+  const separatedEndpoint=renderChartPanel({...fixture('line.json'),emphasize_endpoint:true},{width:936,height:520,theme});
+  const endpointTag=separatedEndpoint.displayed[0].endpoint_label;
+  const endpointX=Number([...separatedEndpoint.svg.matchAll(/<text x="([0-9.]+)"[^>]*>([^<]*)<\/text>/gu)].filter((match)=>match[2]===endpointTag).at(-1)?.[1]);
+  assert(endpointX>=separatedEndpoint.geometry.plot.x+separatedEndpoint.geometry.plot.width+24,'trend hero label occupies its own region beyond all gridlines and the endpoint marker');
   assert.match(ignoredLegacyType.svg,/font-size="150\.00"/,'legacy numeric style hints cannot override the fixed token scale');
   assert.equal(results[0].displayed.map(x=>x.value).join(','),'15,81');
   const fullScaleBars=renderChartPanel({...specs[0],items:[{label:'A',value:100,value_label:'100%'},{label:'B',value:0,value_label:'0%'}]},{width:950,height:648,theme});
