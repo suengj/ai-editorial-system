@@ -1,8 +1,0 @@
-{
-  "schema_version": "1.0.0",
-  "image_generation_calls": 0,
-  "image_generation_spend_usd": 0,
-  "spend_cap_usd": 0.04,
-  "rendering": "deterministic SVG and local rasterization",
-  "total_usd": 0
-}
