@@ -2,11 +2,13 @@
   "suite": "SUE-1759 writing, typesetting and video visual cases",
   "authority": "Evaluation fixtures only; not generation prompt answer sets. SUE-1754 owns human labels and calibration.",
   "status": "UNLABELLED",
+  "reused_cases": {
+    "ko-hedge-removal": "polish/c1.json",
+    "keep-good-copy": "polish/c6.json"
+  },
   "cases": [
     { "id": "ko-normal-passive", "kind": "normal", "input": "사실이 조사에서 밝혀졌다.", "check": "Do not blanket-correct 밝혀지다 as a double passive; preserve the stated finding." },
-    { "id": "ko-hedge-removal", "kind": "counterexample", "input": "신호로 읽힌다", "wrong_edit": "신호다", "check": "The edit removes an interpretive hedge; keep the original meaning." },
     { "id": "ko-strong-hook", "kind": "counterexample", "input": "무료보다 중요한 건 1년 총액입니다.", "evidence": "Synthetic fixture only: the supplied annual comparison shows the free-labelled option costs 36,000원 more over one year.", "check": "Keep a legitimate strong hook when evidence, scope and genre fit; this is not a real offer." },
-    { "id": "keep-good-copy", "kind": "counterexample", "input": "A fluent, accurate sentence with no evidenced local defect.", "expected_action": "KEEP" },
     { "id": "en-forecast", "kind": "bilingual", "input": "The company expects demand to recover.", "counterexample": "수요가 회복된다.", "check": "Preserve forecast attribution and certainty; assess English naturalness separately." },
     { "id": "typeset-mixed-units", "kind": "normal", "input": "OpenAI 매출 1,200 억 증가.", "check": "Mixed KO/EN glyphs, proper noun, unit pair, punctuation and caption meaning-unit wrap." },
     { "id": "typeset-overflow", "kind": "counterexample", "input": "Text exceeds the available block at the selected role size.", "check": "Re-edit without changing meaning, rearrange or split; do not only shrink." },

@@ -143,11 +143,9 @@ Therefore:
 
 1. **Read the delta plan first.** Confirm the draft is at P0/P1 for the axes
    Language Polish is allowed to touch. If not, route upstream.
-2. **Extract protected meaning** before editing: actor/attribution, negation,
-   possibility, forecast and certainty, comparison relation, period and
-   denominator, quoted subject, numbers with units, dates, citations, URLs and
-   protected terminology. Preserve the existing protected-span comparison;
-   this list directs review and does not claim a perfect semantic detector.
+2. **Extract protected meaning** before editing. Preserve the [existing
+   invariants](#invariants) and [protected-span comparison](#evidence); these
+   guide review but do not claim a perfect semantic detector.
 3. **Start from KEEP.** Do not create a candidate unless a concrete local
    defect is evidenced.
 4. **Treat soft language traits as detectors.** Translationese, nominalization,
@@ -185,10 +183,9 @@ Therefore:
    In English, review articles, number and tense, modifier placement,
    collocation, term consistency and pronoun reference for this genre; do not
    carry Korean word order into English. In Korean, keep norms separate from
-   advisory tendencies. `밝혀지다` is not an automatic double-passive error;
-   removing the interpretive hedge in `신호로 읽힌다 → 신호다` is a wrong
-   edit. A legitimate strong hook and an already-good sentence can both earn
-   `KEEP`.
+   advisory tendencies: `밝혀지다` is not an automatic double-passive error.
+   A legitimate strong hook can earn `KEEP`; see the [existing KEEP
+   guidance](#purpose) and [hedge counterexample](#capability-contract).
 12. **Re-extract protected spans and compare.** Identical multisets, or the
     candidate fails.
 13. **Record edit surface and rationale.** A large edit surface is an escalation
