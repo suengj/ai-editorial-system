@@ -44,6 +44,26 @@ test('visual task for trends.moa loads the community doc, visual rules, and not 
   yes(!paths(r).includes('editorial/SUENGJ-STYLE.md') && !paths(r).includes('editorial/SIGNALYTICS-BENCHMARK-CARDS.md'), 'no other voice');
   yes(!paths(r).includes('editorial/AI-IMAGE-GENERATION-GUIDE.md'), 'full type guide must stay outside the normal visual resolver load');
 });
+test('resolver reads the complete recipe catalog at the visual file-read boundary', () => {
+  const catalogPath = resolve(REPO_ROOT, 'editorial/visual-recipes.v1.json');
+  const observed = [];
+  const trackedReader = new RuleReader({ revision: 'visual-read-boundary', fs: {
+    statSync,
+    readFileSync: (path) => {
+      const bytes = readFileSync(path);
+      observed.push({ path, bytes });
+      return bytes;
+    },
+  } });
+  const r = resolveEditorial(intent('instagram', ['visual/social-card']), { targetId: 'trends-moa', taskKind: 'visual', reader: trackedReader });
+  eq(r.status, STATUS.READY);
+  const catalogReads = observed.filter((entry) => entry.path === catalogPath);
+  eq(catalogReads.length, 1, 'recipe catalog read count');
+  eq(catalogReads[0].bytes.length, statSync(catalogPath).size, 'recipe catalog bytes read');
+  const loadedCatalog = JSON.parse(catalogReads[0].bytes.toString('utf8'));
+  const directions = Object.values(loadedCatalog.recipes).map((recipe) => recipe.generation_direction).filter(Boolean);
+  yes(directions.length > 1 && directions.every((direction) => catalogReads[0].bytes.includes(direction)), 'file read must contain all recipe directions, not only a selected type');
+});
 test('ko-KR on-image card tasks load the language pack for signalytics-news and trends-moa', () => {
   for (const [targetId, artifact] of [['signalytics-news', 'visual/slide-image'], ['trends-moa', 'visual/social-card']]) {
     const cardIntent = { ...intent('instagram', [artifact]), constraints: { output_language: 'ko-KR' } };
