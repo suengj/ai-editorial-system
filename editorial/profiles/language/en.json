@@ -12,5 +12,5 @@
     "Korean language rules",
     "forced rewrites, hard blocks, or publication approval"
   ],
-  "notes": "Uncalibrated advisory English review prompts only; SUE-1754 owns human labels and calibration. Check articles/countability, number/tense, modifier placement, collocation/terms, pronoun reference, and genre fit. Preserve actor, negation, modality/certainty, comparison, period/denominator, numbers, and units. Example only: preserve 'The company expects demand to recover'; removing expects changes certainty. Keep KEEP / LOCAL_POLISH / UPSTREAM_REPLAN_REQUIRED available."
+  "notes": "Uncalibrated advisory English review prompts only; SUE-1754 owns human labels and calibration. Check articles/countability, number/tense, modifier placement, collocation/terms, pronoun reference, and genre fit. Preserve actor, negation, modality/certainty, comparison, period/denominator, numbers, and units. Keep KEEP / LOCAL_POLISH / UPSTREAM_REPLAN_REQUIRED available."
 }

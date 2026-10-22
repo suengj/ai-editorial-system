@@ -106,6 +106,7 @@ test('English requests load the small English advisory pack without loading Kore
   const en = JSON.parse(readFileSync(resolve(REPO_ROOT, 'editorial/profiles/language/en.json'), 'utf8'));
   yes(en.status === 'draft' && en.calibration_ref === null, 'English checks must remain uncalibrated and draft');
   yes(en.notes.includes('articles/countability') && en.notes.includes('pronoun reference'), 'English axes missing');
+  yes(!en.notes.includes('The company expects demand to recover') && !en.notes.includes('수요가 회복된다'), 'evaluation sentence or answer leaked into the English advisory pack');
 });
 test('recipe resolver projects only the selected type judgment into its generated prompt', () => {
   const catalog = loadVisualRecipes();

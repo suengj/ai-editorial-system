@@ -114,7 +114,7 @@
     }
   },
   "catalog_version": "1.0.0",
-  "content_digest": "sha256:bb30ddf81a375004c452222c2be14a38e3a5aa0c6f84fcbf748d75621ede1964",
+  "content_digest": "sha256:4b1553ea3cf7c08ab2ba33aa15b108c943df4f8224dc6350b645406f281b18c4",
   "field_domains": {
     "call_to_action": {
       "max_length": 200,
@@ -7968,7 +7968,7 @@
           {
             "path": "editorial/visual-recipes.v1.json",
             "role": "visual:values",
-            "sha256": "b33c409b5a0ff0d736ccc9ccf69bfa9154b5c80315345971ff80da17c2b49e6a"
+            "sha256": "f05ffef63e10dd874aa9756f998d26eb411848eba6c85670c458ad0f80cd86ff"
           }
         ]
       },
@@ -8136,7 +8136,7 @@
           {
             "path": "editorial/visual-recipes.v1.json",
             "role": "visual:values",
-            "sha256": "b33c409b5a0ff0d736ccc9ccf69bfa9154b5c80315345971ff80da17c2b49e6a"
+            "sha256": "f05ffef63e10dd874aa9756f998d26eb411848eba6c85670c458ad0f80cd86ff"
           }
         ]
       },
@@ -8210,7 +8210,7 @@
           {
             "path": "editorial/visual-recipes.v1.json",
             "role": "visual:values",
-            "sha256": "b33c409b5a0ff0d736ccc9ccf69bfa9154b5c80315345971ff80da17c2b49e6a"
+            "sha256": "f05ffef63e10dd874aa9756f998d26eb411848eba6c85670c458ad0f80cd86ff"
           }
         ]
       },
@@ -8897,7 +8897,7 @@
           "avoid": [
             "Avoid toy-like rendering, miniature clutter, and spectacle that competes with evidence."
           ],
-          "generation_direction": "3D: make silhouette, viewpoint, scale, light, material and contact coherent; repair reflections, floating forms or ornament locally.",
+          "generation_direction": "Keep 3D silhouette, viewpoint, light and material coherent.",
           "kind": "supporting_art",
           "model": {
             "cross_model_comparison": "pending_fal_403",
@@ -8943,7 +8943,7 @@
         },
         "editorial-minimal": {
           "default_layout": "text",
-          "generation_direction": "Restrained magazine composition; generous negative space; one clear subject; quiet material texture. No ornamental mini dashboards or icon grids. Typography remains in reserved compositor regions. Minimal: use only cues legible at phone size; remove meaningless icons and fragile lines.",
+          "generation_direction": "Restrained magazine composition; generous negative space; one clear subject; quiet material texture. No ornamental mini dashboards or icon grids. Typography remains in reserved compositor regions. At phone size, use only meaningful, legible marks.",
           "theme": {
             "accent": "#536756",
             "background": "#F7F4EC",
@@ -8960,7 +8960,7 @@
           "avoid": [
             "Avoid childish character design, decorative skyline detail, and complex facial expressions."
           ],
-          "generation_direction": "Character / editorial illustration: make pose, gaze, body-prop relation and line hierarchy explain the topic-fit metaphor; avoid broken connections and expression replacing explanation.",
+          "generation_direction": "Make pose and gaze explain the topic-fit metaphor.",
           "kind": "supporting_art",
           "model": {
             "cross_model_comparison": "pending_fal_403",
@@ -8993,7 +8993,7 @@
           "avoid": [
             "Avoid refraction or reflections that erase silhouettes or reduce contrast; respect brand materiality limits."
           ],
-          "generation_direction": "3D glass: keep refraction and highlights from erasing silhouette, contrast or contact; remove ornament that obscures form.",
+          "generation_direction": "Preserve silhouette and contrast through glass refraction.",
           "kind": "supporting_art",
           "model": {
             "cross_model_comparison": "pending_fal_403",
@@ -9026,7 +9026,7 @@
           "avoid": [
             "Do not let diagram-like geometry imply measured values, scale, or a real chart."
           ],
-          "generation_direction": "Isometric: keep projection, scale, overlap and flow consistent; verify connectors, and keep factual marks on a separate deterministic layer.",
+          "generation_direction": "Keep isometric projection, scale and connectors coherent.",
           "kind": "supporting_art",
           "model": {
             "cross_model_comparison": "pending_fal_403",
@@ -9059,7 +9059,7 @@
           "avoid": [
             "Keep line weight visible at phone size and limit accent colors to semantically useful marks."
           ],
-          "generation_direction": "Minimal / line art: use only marks that make the relationship legible at phone size; remove meaningless icons and strengthen fragile lines.",
+          "generation_direction": "Use meaningful line-art marks legible at phone size.",
           "kind": "supporting_art",
           "model": {
             "cross_model_comparison": "pending_fal_403",
@@ -9091,7 +9091,7 @@
           "avoid": [
             "Check rights for every reused source image or paper fragment; do not imply source images are reusable because they are public."
           ],
-          "generation_direction": "Collage: preserve each source fragment's identity and rights; keep edges and overlap legible without implying unrelated images share a scene.",
+          "generation_direction": "Keep each collage source's identity and edges legible.",
           "kind": "supporting_art",
           "model": {
             "cross_model_comparison": "pending_fal_403",
@@ -9124,7 +9124,7 @@
             "Do not imply documentary evidence or a real photographed event when the scene is generated.",
             "Avoid decorative finance clichés and busy props."
           ],
-          "generation_direction": "Photo: protect subject, action, viewpoint, focus and crop; do not let a composite read as documentary evidence.",
+          "generation_direction": "Protect the photo subject and crop to avoid documentary misreads.",
           "kind": "supporting_art",
           "model": {
             "cross_model_comparison": "pending_fal_403",
@@ -9156,7 +9156,7 @@
         },
         "pop-collage": {
           "default_layout": "visual",
-          "generation_direction": "Expressive paper collage with pink/orange/blue accents, torn edges, playful brush texture and one dominant silhouette. Restrict collage to its supplied content slot; no factual copy, faux numbers, logos, robot cliches or unrelated slogans unless specifically requested. Collage: keep each fragment's source and meaning legible; avoid texture that obscures evidence or implies unrelated photos share a scene.",
+          "generation_direction": "Expressive paper collage with pink/orange/blue accents, torn edges, playful brush texture and one dominant silhouette. Restrict collage to its supplied content slot; no factual copy, faux numbers, logos, robot cliches or unrelated slogans unless specifically requested. Keep each fragment's source and meaning legible.",
           "theme": {
             "accent": "#F15AAB",
             "background": "#201528",
@@ -9170,7 +9170,7 @@
         },
         "r4-photo-fullbleed": {
           "default_layout": "hero",
-          "generation_direction": "R4 owner-preferred photo-led editorial direction. Use the supplied strong source photo as the full-bleed visual whenever present, preserving the original pixels and recording crop/focal-point decisions. Keep factual text in the existing deterministic compositor regions. Do not replace a suitable photo with generated illustration. If a usable photo is absent or weak, resolve to R7 before rendering. Photo: protect subject, action, viewpoint, focus and crop; do not let a composite read as documentary evidence.",
+          "generation_direction": "R4 owner-preferred photo-led editorial direction. Use the supplied strong source photo as the full-bleed visual whenever present, preserving the original pixels and recording crop/focal-point decisions. Keep factual text in the existing deterministic compositor regions. Do not replace a suitable photo with generated illustration. If a usable photo is absent or weak, resolve to R7 before rendering. Protect subject and crop to avoid documentary misreads.",
           "theme": {
             "accent": "#536756",
             "background": "#F7F4EC",
@@ -9185,7 +9185,7 @@
         },
         "r7-illustration-fallback": {
           "default_layout": "r7-illustration",
-          "generation_direction": "R7 owner-preferred illustration fallback for weak or absent photo assets, and for lifestyle/practical-information content. Use one centered, large subject with clean color blocks and restrained highlighter accents. Keep all exact text, numbers, citations and labels in the deterministic compositor; never render them into the illustration. Illustration: use a topic-fit metaphor and clear foreground/background roles; remove unexplained decoration or false causal cues.",
+          "generation_direction": "R7 owner-preferred illustration fallback for weak or absent photo assets, and for lifestyle/practical-information content. Use one centered, large subject with clean color blocks and restrained highlighter accents. Keep all exact text, numbers, citations and labels in the deterministic compositor; never render them into the illustration. Use a topic-fit metaphor with clear figure-ground.",
           "theme": {
             "accent": "#FFD72E",
             "background": "#103DCA",
@@ -9202,7 +9202,7 @@
           "avoid": [
             "Keep texture and registration shift controlled; reject unexpected hands or figures that make the metaphor busy."
           ],
-          "generation_direction": "Collage / risograph: keep source meaning, edges and overlap legible; control texture and registration so neither obscures evidence nor invents one shared scene.",
+          "generation_direction": "Keep collage sources legible through texture and overlap.",
           "kind": "supporting_art",
           "model": {
             "cross_model_comparison": "pending_fal_403",
@@ -9332,6 +9332,6 @@
         }
       }
     },
-    "sha256": "b33c409b5a0ff0d736ccc9ccf69bfa9154b5c80315345971ff80da17c2b49e6a"
+    "sha256": "f05ffef63e10dd874aa9756f998d26eb411848eba6c85670c458ad0f80cd86ff"
   }
 }
