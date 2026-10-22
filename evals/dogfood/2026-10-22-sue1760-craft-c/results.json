@@ -1,0 +1,1346 @@
+{
+  "evaluation_id": "2026-10-22-sue1760-craft-c",
+  "issue": "SUE-1760",
+  "branch": "craft-c/sue-1760",
+  "base_commit": "721d9326f536846a5998a461d94e28e5b78d6aeb",
+  "comparison_head": "73ff9bbb3d89545512ecf7971a4afd9552b5154e",
+  "created_at": "2026-10-22",
+  "scope": {
+    "paid_api_calls": 0,
+    "image_generation_calls": 0,
+    "tts_calls": 0,
+    "video_renders": 0,
+    "renderer": "local AES compositor/rsvg and existing local outputs",
+    "human_labels": "not assigned; SUE-1754 owns language calibration"
+  },
+  "rule_inputs": {
+    "case-1": [
+      {
+        "path": "skills/editorial-polish/SKILL.md",
+        "before_sha256": "7c1603a515fe00b389a3b3e50d1d3e6c23dcd05c24def56dba0a6c5a1fe8bcec",
+        "after_sha256": "333eeadd733e62e216a241fa3c95391953ce3ffa284b3efeb8284584308b022b"
+      },
+      {
+        "path": "editorial/profiles/language/en.json",
+        "before_sha256": null,
+        "after_sha256": "279f232ce0c650dfe5a650b32755840daf2bbd5d6b3fb90b8eebd8b5af225ec0"
+      },
+      {
+        "path": "editorial/constitution.md",
+        "before_sha256": "6a6b58a9fce5f29099d74c23f10587c6560904ffe0a6a7c001e2ab330b2b6997",
+        "after_sha256": "82a7a8dfcc282b46a3c1289406b009a7104d6bc8d8dd3773dc861204a222df38"
+      },
+      {
+        "path": "skills/frame-article/SKILL.md",
+        "before_sha256": "588bb412db7df8ee45f4106c05399b42538fdfe03bce17cdba8fa17bd9db3805",
+        "after_sha256": "f1d5efa5dd062256609d76a9983e90a4fc928f3ed506efe22de864235841b537"
+      },
+      {
+        "path": "skills/write-article/SKILL.md",
+        "before_sha256": "74959a77b4f342a2a5c4c06c09c4517ec9213091763ea140e069d4a43fa5e4ac",
+        "after_sha256": "23c2a83d4f20abcad56a3d566e9e47f1c4360ca18a89b3dd71cc4e6d5494404d"
+      }
+    ],
+    "case-2": [
+      {
+        "path": "editorial/STRUCTURED-VISUAL-EXECUTION.md",
+        "before_sha256": "19e9ebf3f1c1f556a8d7a11027361b973cf54a22f1e08c15602e114387c12926",
+        "after_sha256": "3d9b97f4983a7e3d247546e8dc4d6cf99e64cb8ff0daa3e51fe01d9617d4e947"
+      },
+      {
+        "path": "skills/review-visual/SKILL.md",
+        "before_sha256": "57043920ea39eee418897710d9f27599595597c43552b14a928534dabe108efd",
+        "after_sha256": "57043920ea39eee418897710d9f27599595597c43552b14a928534dabe108efd"
+      },
+      {
+        "path": "editorial/visual-recipes.v1.json",
+        "before_sha256": "e28b6d2d41fd695a5925868ab160b19cebefb7fbad7a37de8a61b74dcbd0ad95",
+        "after_sha256": "f05ffef63e10dd874aa9756f998d26eb411848eba6c85670c458ad0f80cd86ff"
+      }
+    ],
+    "case-3": [
+      {
+        "path": "editorial/AI-IMAGE-GENERATION-GUIDE.md",
+        "before_sha256": "f5e13b92d6e581d61c2af62c6b63d046e8cbbe0c61e4c0b1666dc29e34ac0a7b",
+        "after_sha256": "f5e13b92d6e581d61c2af62c6b63d046e8cbbe0c61e4c0b1666dc29e34ac0a7b"
+      },
+      {
+        "path": "editorial/STRUCTURED-VISUAL-EXECUTION.md",
+        "before_sha256": "19e9ebf3f1c1f556a8d7a11027361b973cf54a22f1e08c15602e114387c12926",
+        "after_sha256": "3d9b97f4983a7e3d247546e8dc4d6cf99e64cb8ff0daa3e51fe01d9617d4e947"
+      },
+      {
+        "path": "editorial/visual-recipes.v1.json",
+        "before_sha256": "e28b6d2d41fd695a5925868ab160b19cebefb7fbad7a37de8a61b74dcbd0ad95",
+        "after_sha256": "f05ffef63e10dd874aa9756f998d26eb411848eba6c85670c458ad0f80cd86ff"
+      }
+    ],
+    "case-4": [
+      {
+        "path": "editorial/AI-IMAGE-GENERATION-GUIDE.md",
+        "before_sha256": "f5e13b92d6e581d61c2af62c6b63d046e8cbbe0c61e4c0b1666dc29e34ac0a7b",
+        "after_sha256": "f5e13b92d6e581d61c2af62c6b63d046e8cbbe0c61e4c0b1666dc29e34ac0a7b"
+      }
+    ],
+    "case-5": [
+      {
+        "path": "editorial/VIDEO-STORYBOARD.md",
+        "before_sha256": "29050b71ca4a2a2057a77f24a648f44486fd7fe5000c3b841a1a42ff2013b483",
+        "after_sha256": "4081d40e281e219a75bc0699e0d762a98278192c8fc70f04d84f3d71aa3a997d"
+      },
+      {
+        "path": "editorial/VISUAL-STORY-COMPILATION.md",
+        "before_sha256": "fae9c3740955db680db6646d98cad6d27515adb3887c3915f76cfb332f86a2c9",
+        "after_sha256": "b52e25a3d168ff9e8b05c7ed4b7c473dc1e836841d52c5e722b8e952951de494"
+      }
+    ]
+  },
+  "cases": [
+    {
+      "id": "case-1-copy-ko-en",
+      "status": "OWNER_REVIEW_PENDING",
+      "method": "Blind A/B copy pairs; only expression changed in the KO and EN core pair. Reused SUE-1759 and SUE-610 counterexamples. No judge or human labels created.",
+      "inputs": [
+        {
+          "id": "/Users/suengj/.claude/jobs/1cadbae0/tmp/src/aes/evals/dogfood/2026-09-05-sue610-conservative-polish/SUE-1759-cases.json",
+          "path": "/Users/suengj/.claude/jobs/1cadbae0/tmp/src/aes/evals/dogfood/2026-09-05-sue610-conservative-polish/SUE-1759-cases.json",
+          "sha256": "d372ba60cacf22c5ad61068f0d5acdd5180fbdda55e41b9464c76c603015716d",
+          "bytes": 2014
+        },
+        {
+          "id": "/Users/suengj/.claude/jobs/1cadbae0/tmp/src/aes/evals/dogfood/2026-09-05-sue610-conservative-polish/polish/c1.json",
+          "path": "/Users/suengj/.claude/jobs/1cadbae0/tmp/src/aes/evals/dogfood/2026-09-05-sue610-conservative-polish/polish/c1.json",
+          "sha256": "3b0b9bc1936a8c4f8a4be1c36ce5632eeb859e4cb4f5a66a25abbaaec2f9ba46",
+          "bytes": 2921
+        },
+        {
+          "id": "/Users/suengj/.claude/jobs/1cadbae0/tmp/src/aes/evals/dogfood/2026-09-05-sue610-conservative-polish/polish/c6.json",
+          "path": "/Users/suengj/.claude/jobs/1cadbae0/tmp/src/aes/evals/dogfood/2026-09-05-sue610-conservative-polish/polish/c6.json",
+          "sha256": "7b198bddd7bc5766e2531382f8460d795ffd5b8db9625995833ee877d4e4dbe9",
+          "bytes": 1226
+        }
+      ],
+      "outputs": [
+        {
+          "id": "ko-copy",
+          "pair_id": "pair-807dc383c3af",
+          "A_sha256": "8dfc6e0f43d7b80606fe03ee5392580600521853d2a6d1a245e6b4310efaf8ea",
+          "B_sha256": "6ecfcf369e396650c2ec0ef30f14a2d683c0caebd5e52ebb9976f4daae13cc80",
+          "A_equals_B": false
+        },
+        {
+          "id": "en-copy",
+          "pair_id": "pair-fde8a89859b9",
+          "A_sha256": "7d482002ff5b313a44a37e22e39270e8ad2c164906109781c1c0a49424d823b6",
+          "B_sha256": "5ac1ac19d16dc6c16b60cfd768e76bd13adc26226a191ac989fe50c3697ac4d5",
+          "A_equals_B": false
+        },
+        {
+          "id": "normal-passive",
+          "pair_id": "pair-df4d85e66843",
+          "A_sha256": "1bcfcf7db532cdab90b68a0966675d44a96121d05f52460d2442085f813ff83f",
+          "B_sha256": "1bcfcf7db532cdab90b68a0966675d44a96121d05f52460d2442085f813ff83f",
+          "A_equals_B": true
+        },
+        {
+          "id": "hedge",
+          "pair_id": "pair-32331df1f47b",
+          "A_sha256": "722effc89c651bd2cc85a235fa44417691794bef5b1788fe400eccc2b3bc92d8",
+          "B_sha256": "78c5aad65cdf056ba3eca3246c0aa7aee108aee65858901da9ba83184940660d",
+          "A_equals_B": false
+        },
+        {
+          "id": "strong-hook",
+          "pair_id": "pair-2a1a1501d778",
+          "A_sha256": "fb54b2d1ef00c6436d057496b0dcdaff656b6fa4a99065f761160c3b1ce3a316",
+          "B_sha256": "fb54b2d1ef00c6436d057496b0dcdaff656b6fa4a99065f761160c3b1ce3a316",
+          "A_equals_B": true
+        }
+      ],
+      "observations": {
+        "fact_preservation": "KO core pair retains report as actor and rising recovery possibility; EN pair retains company attribution and expectation. Separate from style.",
+        "language": {
+          "ko_naturalness": "The after clause form replaces an abstract nominal stack; machine observation only.",
+          "en_naturalness": "The after form is idiomatic and keeps the company as subject; machine observation only.",
+          "profile_fit": "KO pair uses synthetic blog-explainer context. EN pack is draft/uncalibrated; no calibrated profile-fit verdict."
+        },
+        "legibility": "text-only; not applicable",
+        "aesthetics": "not applicable",
+        "comprehension": "the core claim and possibility/expectation are explicit in both pairs; not human-tested"
+      },
+      "counterexamples": [
+        {
+          "id": "ko-normal-passive",
+          "outcome": "KEEP; 밝혀졌다 is left intact, no blanket passive correction."
+        },
+        {
+          "id": "ko-hedge-removal",
+          "outcome": "REJECT; reused SUE-610 c1 because 신호로 읽힌다 carries an interpretive hedge removed by 신호다."
+        },
+        {
+          "id": "ko-strong-hook",
+          "outcome": "KEEP; evidence-backed synthetic hook remains strong, not treated as universal advice."
+        },
+        {
+          "id": "keep-good-copy",
+          "outcome": "REUSED SUE-610 c6; action KEEP, zero edits. Excerpt is not embedded in fixture, so no text duplicated."
+        },
+        {
+          "id": "en-forecast",
+          "outcome": "The company expects demand to recover preserves forecast attribution and certainty. Demand will recover is a rejected certainty-strengthening counterexample."
+        }
+      ],
+      "owner_review": "pending; pairs listed in C-owner-review.json; key stored separately."
+    },
+    {
+      "id": "case-2-mixed-ko-en-number-card",
+      "status": "NO_PROMOTION",
+      "evidence_status": "REAL_OUTPUT_COMPARED",
+      "method": "Pinned 721d932 before and 73ff9bb after plans through the same local compositor. Text, facts, source image, source evidence, canvas and bundled font digest fixed; after changed slots and type size only. Initial narrow-column layout failed mobile legibility; one local layout repair moved text back to full width and enlarged image area.",
+      "inputs": [
+        {
+          "id": "721d932 plan",
+          "path": "/Users/suengj/.claude/jobs/1cadbae0/tmp/src/aes/out/sue-1760/case-2/before-plan-pinned.json",
+          "sha256": "ea5dcc96d21afeb78acc140c30e053f0d43397e8d5f431fcb090006514e2bb37",
+          "bytes": 4951
+        },
+        {
+          "id": "73ff9bb plan",
+          "path": "/Users/suengj/.claude/jobs/1cadbae0/tmp/src/aes/out/sue-1760/case-2/after-plan.json",
+          "sha256": "c80b81148962e31eb51a15b045ff766cd3e5b5c266415340ffaff263bdf74ed0",
+          "bytes": 4952
+        },
+        {
+          "id": "fixed source image",
+          "path": "/Volumes/OricoSSD/MacArchive/vq-v2-round1/phase0/baseline/m1-source/case-a.png",
+          "sha256": "e06601b81bce86978bdb7705f9ea35ac45a633b139b0ecbb0408f2ad1c630de1",
+          "bytes": 2050092
+        },
+        {
+          "id": "fixed source evidence",
+          "path": "/Volumes/OricoSSD/MacArchive/vq-v2-round1/phase0/baseline/m1-source/source-evidence.json",
+          "sha256": "82d9f391af17c776352ff98d27f6550fc79a6fe1cfb3777ee03cd6c759dc646e",
+          "bytes": 5200
+        },
+        {
+          "id": "AES Sans KR Regular",
+          "path": "/Users/suengj/.claude/jobs/1cadbae0/tmp/src/aes/assets/fonts/aes-sans-kr/AESSansKR-Regular.otf",
+          "sha256": "fdc9fb9f79107f489eaa8fc8bf52ab9ab8199e0663eaf988848f7351ad22aeb1",
+          "bytes": 372884
+        },
+        {
+          "id": "AES Sans KR Semibold",
+          "path": "/Users/suengj/.claude/jobs/1cadbae0/tmp/src/aes/assets/fonts/aes-sans-kr/AESSansKR-SemiBold.otf",
+          "sha256": "04354365960db76a24361d11c60b8c4a46a350172cc86ac0f53c36ab6d0417c2",
+          "bytes": 373280
+        },
+        {
+          "id": "AES Sans KR ExtraBold",
+          "path": "/Users/suengj/.claude/jobs/1cadbae0/tmp/src/aes/assets/fonts/aes-sans-kr/AESSansKR-ExtraBold.otf",
+          "sha256": "19f8a6a26c2c7faa0f2f05584f768fa547cfcdcb274a08138ffc9441c64d4f90",
+          "bytes": 369648
+        }
+      ],
+      "outputs": [
+        {
+          "id": "721d932 full 1080x1350",
+          "path": "/Users/suengj/.claude/jobs/1cadbae0/tmp/src/aes/out/sue-1760/case-2/before-full.png",
+          "sha256": "b3dab579c822f86d9ba3031b9345b181104ea375e70c8c6bd0ce8b022a7ad453",
+          "bytes": 671800
+        },
+        {
+          "id": "721d932 390x488",
+          "path": "/Users/suengj/.claude/jobs/1cadbae0/tmp/src/aes/out/sue-1760/case-2/before-390.png",
+          "sha256": "994b2d1ed387aeb26c321a34a66f1bdecad896edd669035213b1aa43d3e423f0",
+          "bytes": 109798
+        },
+        {
+          "id": "73ff9bb full 1080x1350",
+          "path": "/Users/suengj/.claude/jobs/1cadbae0/tmp/src/aes/out/sue-1760/case-2/after-full.png",
+          "sha256": "e68dcae726aa15f4f47b91e0f2be4d1d6e11caa0454cb1f165b3681bbf040db6",
+          "bytes": 733926
+        },
+        {
+          "id": "73ff9bb 390x488",
+          "path": "/Users/suengj/.claude/jobs/1cadbae0/tmp/src/aes/out/sue-1760/case-2/after-390.png",
+          "sha256": "be24fd7e0ffc9c65c5ecd6947bed2e97765a947b0a542e5e70687666ee55ae8f",
+          "bytes": 114029
+        },
+        {
+          "id": "full/mobile contact sheet",
+          "path": "/Users/suengj/.claude/jobs/1cadbae0/tmp/src/aes/out/sue-1760/case-2/contact-sheet.png",
+          "sha256": "0ed3e41d609a379721518b5c8166d19ab128b8c84cde2cac7e42f4637de47a56",
+          "bytes": 489641
+        },
+        {
+          "id": "721d932 compositor receipt",
+          "path": "/Users/suengj/.claude/jobs/1cadbae0/tmp/src/aes/out/sue-1760/case-2/before-render-pinned/receipt.json",
+          "sha256": "28cdd5acf73f70227d30540121c9265e8d9c84692cd59c96446a44626b9617ac",
+          "bytes": 5800
+        },
+        {
+          "id": "73ff9bb compositor receipt",
+          "path": "/Users/suengj/.claude/jobs/1cadbae0/tmp/src/aes/out/sue-1760/case-2/after-render-fontfixed/receipt.json",
+          "sha256": "c126422dd4584706d75be4b0253e213f8f111d299f234270f24262ce98d257e4",
+          "bytes": 5800
+        }
+      ],
+      "observations": {
+        "fact_preservation": "Copy and numeric strings match exactly; 10만 곳+, 1,300만+, 3% and source qualifiers are preserved.",
+        "language": "copy fixed; no language judgment intended.",
+        "legibility": "No number-unit split or awkward line-edge punctuation observed; reading order remains title → photo → facts → source. Text-fit gates PASS. At 390px B has slightly smaller copy and source; readability does not clearly improve. Font stack AES Sans KR; identical digest 1cb4369a005e1d34a0f1e9069d142a1db2b1f1994263c02a8e740cebb9f19348. Visually no missing glyph observed; receipt does not emit a per-glyph fallback list.",
+        "aesthetics": "B gives the image a taller slot but otherwise resembles A; no decisive hierarchy improvement.",
+        "comprehension": "All numeric relationships and the unverified settlement qualifier remain readable at full size; at 390px source detail remains small."
+      },
+      "counterexamples": [
+        {
+          "id": "typeset-mixed-units",
+          "outcome": "MSE stays adjacent to source; 3% stays together; 10만 곳+ and 1,300만+ stay intact."
+        },
+        {
+          "id": "typeset-overflow",
+          "outcome": "Both outputs fit; no truncation. Narrow-column first attempt reduced mobile legibility and was locally fixed once."
+        }
+      ],
+      "decision": "NO_PROMOTION; modest image-area change does not outweigh slight mobile text/source reduction. Owner review still available."
+    },
+    {
+      "id": "case-3-image-led-cover",
+      "status": "OWNER_REVIEW_PENDING",
+      "evidence_status": "REAL_OUTPUT_COMPARED",
+      "method": "Directly inspected SUE-1700 comparison pixels, then rerendered the same cover source with pinned 721d932 and 73ff9bb local AES compositor plans. Exact source image, source evidence, font bundle and text fixed; only art/text placement and type sizes changed.",
+      "inputs": [
+        {
+          "id": "721d932 plan",
+          "path": "/Users/suengj/.claude/jobs/1cadbae0/tmp/src/aes/out/sue-1760/case-3/before-plan-pinned.json",
+          "sha256": "62da616cc1bc5225bea40db8830a1e2a970c86b61c759166612936f5e3ae241c",
+          "bytes": 5341
+        },
+        {
+          "id": "73ff9bb plan",
+          "path": "/Users/suengj/.claude/jobs/1cadbae0/tmp/src/aes/out/sue-1760/case-3/after-plan.json",
+          "sha256": "21e14d981ea6e0d945c14d75a9e2c7f887b8d21449e6dae6cda8544800efbed1",
+          "bytes": 4942
+        },
+        {
+          "id": "fixed source image",
+          "path": "/Volumes/OricoSSD/MacArchive/vq-v2-round1/phase0/baseline/m1-source/cover.png",
+          "sha256": "9dd879ca5d13e9e43af265ba0909ff81860fc9916a0b501d71f2a602e00e1e78",
+          "bytes": 2804107
+        },
+        {
+          "id": "fixed source evidence",
+          "path": "/Volumes/OricoSSD/MacArchive/vq-v2-round1/phase0/baseline/m1-source/source-evidence.json",
+          "sha256": "82d9f391af17c776352ff98d27f6550fc79a6fe1cfb3777ee03cd6c759dc646e",
+          "bytes": 5200
+        },
+        {
+          "id": "existing asset provenance",
+          "path": "/Volumes/OricoSSD/MacArchive/vq-v2-round1/phase0/baseline/m1-source/cover-generation.log",
+          "sha256": "fe45f6bfeb0108c2ccc4d0af0d2abf1d85c60dfb2ded37704e7e832de7b6b360",
+          "bytes": 5174
+        },
+        {
+          "id": "AES Sans KR Regular",
+          "path": "/Users/suengj/.claude/jobs/1cadbae0/tmp/src/aes/assets/fonts/aes-sans-kr/AESSansKR-Regular.otf",
+          "sha256": "fdc9fb9f79107f489eaa8fc8bf52ab9ab8199e0663eaf988848f7351ad22aeb1",
+          "bytes": 372884
+        },
+        {
+          "id": "AES Sans KR Semibold",
+          "path": "/Users/suengj/.claude/jobs/1cadbae0/tmp/src/aes/assets/fonts/aes-sans-kr/AESSansKR-SemiBold.otf",
+          "sha256": "04354365960db76a24361d11c60b8c4a46a350172cc86ac0f53c36ab6d0417c2",
+          "bytes": 373280
+        },
+        {
+          "id": "AES Sans KR ExtraBold",
+          "path": "/Users/suengj/.claude/jobs/1cadbae0/tmp/src/aes/assets/fonts/aes-sans-kr/AESSansKR-ExtraBold.otf",
+          "sha256": "19f8a6a26c2c7faa0f2f05584f768fa547cfcdcb274a08138ffc9441c64d4f90",
+          "bytes": 369648
+        },
+        {
+          "id": "reused SUE-1700 comparison board",
+          "path": "/Volumes/OricoSSD/MacArchive/vq-v2-round1/phase1/run5/comparison-1080x1350.png",
+          "sha256": "a7e228c7d58dfb4f9de32305b7f44590b8b067cb68c6bb0c55ed5a643471d640",
+          "bytes": 2275846
+        },
+        {
+          "id": "reused SUE-1700 mobile comparison board",
+          "path": "/Volumes/OricoSSD/MacArchive/vq-v2-round1/phase1/run5/comparison-390px-downscaled.png",
+          "sha256": "3f2cd9207cdfe59057e4da7e5c2a8b468e0536dfa68ec11dfc6cf82f4a7162be",
+          "bytes": 422749
+        }
+      ],
+      "outputs": [
+        {
+          "id": "721d932 full",
+          "path": "/Users/suengj/.claude/jobs/1cadbae0/tmp/src/aes/out/sue-1760/case-3/before-full.png",
+          "sha256": "c818fec91239f2600d2e46c8701cf6b5dd28ca216c399edb803452bd059951fc",
+          "bytes": 1248865
+        },
+        {
+          "id": "73ff9bb full",
+          "path": "/Users/suengj/.claude/jobs/1cadbae0/tmp/src/aes/out/sue-1760/case-3/after-full.png",
+          "sha256": "6a3883088f46048ed5f9623045188ab00cd92169a82ab3ce5a759114478fa9c3",
+          "bytes": 1997084
+        },
+        {
+          "id": "721d932 390px",
+          "path": "/Users/suengj/.claude/jobs/1cadbae0/tmp/src/aes/out/sue-1760/case-3/before-390.png",
+          "sha256": "fe85cb490c62037c30fe2718a481e69da53f8021de9218d0a4d5919ad33bf0ec",
+          "bytes": 154852
+        },
+        {
+          "id": "73ff9bb 390px",
+          "path": "/Users/suengj/.claude/jobs/1cadbae0/tmp/src/aes/out/sue-1760/case-3/after-390.png",
+          "sha256": "aae502a41ae36b2d970ac91c2df70839d08e6b0d45c47d2dadee2a62a489f9d7",
+          "bytes": 214786
+        },
+        {
+          "id": "721d932 receipt",
+          "path": "/Users/suengj/.claude/jobs/1cadbae0/tmp/src/aes/out/sue-1760/case-3/before-render-pinned/receipt.json",
+          "sha256": "96d43842490c951f06ce2ecd752d6ec1e223ebc7366202c90aebdd22be857c1b",
+          "bytes": 5701
+        },
+        {
+          "id": "73ff9bb receipt",
+          "path": "/Users/suengj/.claude/jobs/1cadbae0/tmp/src/aes/out/sue-1760/case-3/after-render-fontfixed/receipt.json",
+          "sha256": "99bf17dc9b2c2cf27b160118197cbe3e2c22942deef93c0643872db83d04d29b",
+          "bytes": 5701
+        }
+      ],
+      "observations": {
+        "fact_preservation": "Headline/body/source/page text and source evidence hashes held fixed.",
+        "language": "copy fixed.",
+        "legibility": "After image keeps the gate/empty driveway/parked cars visible; title does not cover the photo. Before title does not physically overlap the subject but opaque text-safe bands hide most of the image. No obvious key-subject crop loss in after.",
+        "aesthetics": "Large visible improvement in focal image exposure and clearer image/text separation in this sample; human taste not settled.",
+        "comprehension": "Empty driveway beside parked street remains the visual premise; the after crop shows that relationship before the headline/body."
+      },
+      "counterexamples": [
+        {
+          "id": "image-subject-covered",
+          "outcome": "The exact before does not overlay type on the photo; instead the solid bands obscure nearly all of it. After keeps the focal image exposed and the title below it."
+        }
+      ],
+      "decision": "Owner aesthetic review pending; no adoption claim."
+    },
+    {
+      "id": "case-4-per-type-samples",
+      "status": "REAL_OUTPUT_COMPARED",
+      "method": "Inspected the actual bytes of the registered/local sample images; no render or edits.",
+      "inputs": [
+        {
+          "id": "/Users/suengj/.claude/jobs/1cadbae0/tmp/src/aes/examples/vq-v2-round4/round7-illustrated/assets/cover.png",
+          "path": "/Users/suengj/.claude/jobs/1cadbae0/tmp/src/aes/examples/vq-v2-round4/round7-illustrated/assets/cover.png",
+          "sha256": "dc5d6628be08c2b2a39d983b267b3979dfed5464f8837d5f4f41a61ba9a96ee9",
+          "bytes": 1227694
+        },
+        {
+          "id": "/Users/suengj/.claude/jobs/1cadbae0/tmp/src/aes/examples/vq-v2-round4/round7-illustrated/assets/opportunity.png",
+          "path": "/Users/suengj/.claude/jobs/1cadbae0/tmp/src/aes/examples/vq-v2-round4/round7-illustrated/assets/opportunity.png",
+          "sha256": "7c0a0e8c2d0be876b1ba4ad1891303b7e47f20fa5c0829458773c5df2dbb7cd6",
+          "bytes": 1154259
+        },
+        {
+          "id": "/Volumes/OricoSSD/MacArchive/vq-v2-round1/phase0/baseline/m1-source/cover.png",
+          "path": "/Volumes/OricoSSD/MacArchive/vq-v2-round1/phase0/baseline/m1-source/cover.png",
+          "sha256": "9dd879ca5d13e9e43af265ba0909ff81860fc9916a0b501d71f2a602e00e1e78",
+          "bytes": 2804107
+        },
+        {
+          "id": "/Volumes/OricoSSD/MacArchive/vq-v2-round1/phase0/baseline/m1-source/case-a.png",
+          "path": "/Volumes/OricoSSD/MacArchive/vq-v2-round1/phase0/baseline/m1-source/case-a.png",
+          "sha256": "e06601b81bce86978bdb7705f9ea35ac45a633b139b0ecbb0408f2ad1c630de1",
+          "bytes": 2050092
+        }
+      ],
+      "outputs": [],
+      "per_type": {
+        "3D": "NOT_AVAILABLE; no accessible representative sample identified.",
+        "anime": "NOT_AVAILABLE; no accessible representative sample identified.",
+        "editorial_illustration": {
+          "status": "REAL_OUTPUT_COMPARED",
+          "observations": "round7 cover has a clear house/car/space silhouette and strong foreground/background color; opportunity image uses car, pin and coins, but their causal/transaction relation is not explicit and could read as generic icon collage."
+        },
+        "photo_real_generated": {
+          "status": "REAL_OUTPUT_COMPARED",
+          "observations": "M1 cover source shows an empty driveway beside parked cars; the focal relation is clear. JustPark sample keeps hand/key visible; no obvious physical inconsistency in inspected crop. These are synthetic/generated assets, not factual photographs."
+        }
+      },
+      "observations": {
+        "fact_preservation": "not evaluated as evidence claims; no source truth inferred from illustration.",
+        "language": "not applicable",
+        "legibility": "no text inside raw sample images; overlay legibility not evaluated here.",
+        "aesthetics": "type-specific observations only; no score.",
+        "comprehension": "illustrative metaphor is readable but generic risk noted for car/pin/coins."
+      },
+      "owner_review": "pending for taste/adoption."
+    },
+    {
+      "id": "case-5-visual-captions",
+      "status": "REAL_OUTPUT_COMPARED",
+      "method": "Held the existing final-v4 MP4, job scene copy, and render_plan caption pages/timecodes fixed. Extracted five frames with local ffmpeg; no video/TTS/audio render. Script provenance link in job.json points to a missing original worktree file, but scene copy and timing are embedded in the accessible job/render-plan artifacts; narration_audio is off.",
+      "inputs": [
+        {
+          "id": "existing final-v4 MP4",
+          "path": "/Volumes/OricoSSD/MacArchive/shorts-gen-renders/final-v4-sue1646-20261017/daily-water-korean-001/revision-1/9x16/video.mp4",
+          "sha256": "04460cbb0d697b29c71c30176903f3e219dbc1b8cf53fcfd69492fed555b173a",
+          "bytes": 25383301
+        },
+        {
+          "id": "scene copy / request",
+          "path": "/Volumes/OricoSSD/MacArchive/shorts-gen-renders/final-v4-sue1646-20261017/daily-water-korean-001/revision-1/job.json",
+          "sha256": "ba633047ad213b57c33ec1652f86d3caa631d253dcc61632c331930df42e81a4",
+          "bytes": 8910
+        },
+        {
+          "id": "caption pages / timing",
+          "path": "/Volumes/OricoSSD/MacArchive/shorts-gen-renders/final-v4-sue1646-20261017/daily-water-korean-001/revision-1/render_plan.json",
+          "sha256": "4259f4509dd0378549c88db1d0d48229dcc7a972aa125949777404d18d3f5577",
+          "bytes": 25877
+        },
+        {
+          "id": "render lineage",
+          "path": "/Volumes/OricoSSD/MacArchive/shorts-gen-renders/final-v4-sue1646-20261017/daily-water-korean-001/revision-1/manifest.json",
+          "sha256": "dbf0d7d267d8353e842d8dcf9b3eab641e4917a2937afc27b7ef0b9829b36838",
+          "bytes": 4360
+        },
+        {
+          "id": "video request and constraints",
+          "path": "/Volumes/OricoSSD/MacArchive/shorts-gen-renders/final-v4-sue1646-20261017/daily-water-korean-001/revision-1/delivery/video-plan.json",
+          "sha256": "6e09dedcc2d8ace06dd738f138e4a15626682c0a856e6510caa5be2f40a02b61",
+          "bytes": 8122
+        }
+      ],
+      "outputs": [
+        {
+          "id": "frame-5s",
+          "path": "/Users/suengj/.claude/jobs/1cadbae0/tmp/src/aes/out/sue-1760/video-frames/frame-5.png",
+          "sha256": "03e0c39af548aa9e4b06aeeec0e0bb7ed925283fb49f33298b863f3f8b1a7bb9",
+          "bytes": 2215849
+        },
+        {
+          "id": "frame-14s",
+          "path": "/Users/suengj/.claude/jobs/1cadbae0/tmp/src/aes/out/sue-1760/video-frames/frame-14.png",
+          "sha256": "d263fbfcd2a4c924bac9d6c7d9e7f4867ec7ff82138d1063874c9d8aebd9106c",
+          "bytes": 27911
+        },
+        {
+          "id": "frame-24s",
+          "path": "/Users/suengj/.claude/jobs/1cadbae0/tmp/src/aes/out/sue-1760/video-frames/frame-24.png",
+          "sha256": "77ddbf962ca7448fdf77943a4f88751c2ef1f01d9918161fb912c73f2d8f4ed5",
+          "bytes": 72686
+        },
+        {
+          "id": "frame-34s",
+          "path": "/Users/suengj/.claude/jobs/1cadbae0/tmp/src/aes/out/sue-1760/video-frames/frame-34.png",
+          "sha256": "8ee5dc1dbf8dc10a0ac82b6571bc87157b4f946dfbad50d0fdcdfd272472664b",
+          "bytes": 2762722
+        },
+        {
+          "id": "frame-44s",
+          "path": "/Users/suengj/.claude/jobs/1cadbae0/tmp/src/aes/out/sue-1760/video-frames/frame-44.png",
+          "sha256": "10a052f6a7c3c6c5cd560ce3d42bfe9cabdcf458ecbe083734af25fa7644d127",
+          "bytes": 2060545
+        }
+      ],
+      "caption_audit": {
+        "video": {
+          "path": "/Volumes/OricoSSD/MacArchive/shorts-gen-renders/final-v4-sue1646-20261017/daily-water-korean-001/revision-1/9x16/video.mp4",
+          "sha256": "04460cbb0d697b29c71c30176903f3e219dbc1b8cf53fcfd69492fed555b173a",
+          "duration_s": 50,
+          "narration_audio": "off"
+        },
+        "inputs": {
+          "job.json": {
+            "sha256": "ba633047ad213b57c33ec1652f86d3caa631d253dcc61632c331930df42e81a4",
+            "bytes": 8910
+          },
+          "render_plan.json": {
+            "sha256": "4259f4509dd0378549c88db1d0d48229dcc7a972aa125949777404d18d3f5577",
+            "bytes": 25877
+          },
+          "manifest.json": {
+            "sha256": "dbf0d7d267d8353e842d8dcf9b3eab641e4917a2937afc27b7ef0b9829b36838",
+            "bytes": 4360
+          },
+          "delivery/video-plan.json": {
+            "sha256": "6e09dedcc2d8ace06dd738f138e4a15626682c0a856e6510caa5be2f40a02b61",
+            "bytes": 8122
+          },
+          "assets/assets.json": {
+            "sha256": "c31c0cc3b96a0ee301dcc3e5912d4cc0d23c7af9f22c1a27648a210aff22a32e",
+            "bytes": 4088
+          }
+        },
+        "scenes": [
+          {
+            "scene_id": "scene-001",
+            "source_text": "하루에 물은\n얼마나 마실까?",
+            "source_sha256": "492405981915e12636f14208b7b467ab8660151a0a2090cdb43f11964cb664e5",
+            "caption_text": "하루에 물은 얼마나 마실까?",
+            "cue_timings": [
+              {
+                "start_s": 0.0,
+                "end_s": 3.066667,
+                "full_caption_at_s": 1.566666
+              },
+              {
+                "start_s": 3.066667,
+                "end_s": 6.133333,
+                "full_caption_at_s": 4.633333
+              }
+            ],
+            "numbers_in_source": [],
+            "numbers_preserved": true,
+            "negations_in_source": [],
+            "conditions_in_source": [],
+            "condition_terms_preserved": true
+          },
+          {
+            "scene_id": "scene-002",
+            "source_text": "필요한 양은\n사람마다 달라요",
+            "source_sha256": "1a8a2b5b4e8e76a8cdd025dfbbb9911814062b95635d9be292f81445c9d45f97",
+            "caption_text": "필요한 양은 사람마다 달라요",
+            "cue_timings": [
+              {
+                "start_s": 5.813333,
+                "end_s": 9.913333,
+                "full_caption_at_s": 7.896666
+              },
+              {
+                "start_s": 9.913333,
+                "end_s": 14.013333,
+                "full_caption_at_s": 11.996666
+              }
+            ],
+            "numbers_in_source": [],
+            "numbers_preserved": true,
+            "negations_in_source": [],
+            "conditions_in_source": [],
+            "condition_terms_preserved": true
+          },
+          {
+            "scene_id": "scene-003",
+            "source_text": "19–30세 참고치\n여성 2.7L · 남성 3.7L",
+            "source_sha256": "5eb80b2dc145c483a07005b80bf1bc938cd88986c98b250330334055f62fb8fb",
+            "caption_text": "19–30세 참고치 여성 2.7L · 남성 3.7L",
+            "cue_timings": [
+              {
+                "start_s": 13.813333,
+                "end_s": 16.441905,
+                "full_caption_at_s": 15.160952
+              },
+              {
+                "start_s": 16.441905,
+                "end_s": 21.699048,
+                "full_caption_at_s": 20.418095
+              },
+              {
+                "start_s": 21.699048,
+                "end_s": 23.013333,
+                "full_caption_at_s": 21.732381
+              }
+            ],
+            "numbers_in_source": [
+              "19–30세",
+              "2.7L",
+              "3.7L"
+            ],
+            "numbers_preserved": true,
+            "negations_in_source": [],
+            "conditions_in_source": [],
+            "condition_terms_preserved": true
+          },
+          {
+            "scene_id": "scene-004",
+            "source_text": "총수분은 음료와\n음식 속 수분까지",
+            "source_sha256": "d33a85cd050a4e04ce8622aacf3110ef637d360d093f0686b3c126dc6c1f7e8d",
+            "caption_text": "총수분은 음료와 음식 속 수분까지",
+            "cue_timings": [
+              {
+                "start_s": 22.893333,
+                "end_s": 26.573333,
+                "full_caption_at_s": 24.766666
+              },
+              {
+                "start_s": 26.573333,
+                "end_s": 32.093333,
+                "full_caption_at_s": 30.286666
+              }
+            ],
+            "numbers_in_source": [],
+            "numbers_preserved": true,
+            "negations_in_source": [],
+            "conditions_in_source": [],
+            "condition_terms_preserved": true
+          },
+          {
+            "scene_id": "scene-005",
+            "source_text": "국과 과일에도\n수분이 들어 있어요",
+            "source_sha256": "f39ba05f8ad22f567c1d99ca1139df509ee90a918eab43bd55659db3a6382ec9",
+            "caption_text": "국과 과일에도 수분이 들어 있어요",
+            "cue_timings": [
+              {
+                "start_s": 31.773333,
+                "end_s": 35.853333,
+                "full_caption_at_s": 33.846666
+              },
+              {
+                "start_s": 35.853333,
+                "end_s": 41.973333,
+                "full_caption_at_s": 39.966666
+              }
+            ],
+            "numbers_in_source": [],
+            "numbers_preserved": true,
+            "negations_in_source": [],
+            "conditions_in_source": [],
+            "condition_terms_preserved": true
+          },
+          {
+            "scene_id": "scene-006",
+            "source_text": "더위·활동량에 따라\n개인차가 있어요",
+            "source_sha256": "95516377e930ab48f6384eaac95b37c709fe3130d6c5471a784ea8174e08d857",
+            "caption_text": "더위·활동량에 따라 개인차가 있어요",
+            "cue_timings": [
+              {
+                "start_s": 41.773333,
+                "end_s": 45.89,
+                "full_caption_at_s": 43.865
+              },
+              {
+                "start_s": 45.89,
+                "end_s": 50.006667,
+                "full_caption_at_s": 47.981666
+              }
+            ],
+            "numbers_in_source": [],
+            "numbers_preserved": true,
+            "negations_in_source": [],
+            "conditions_in_source": [
+              "따라"
+            ],
+            "condition_terms_preserved": true
+          }
+        ]
+      },
+      "observations": {
+        "fact_preservation": "19–30세, 2.7L and 3.7L survive scene 3 caption pages; 더위·활동량에 따라 survives scene 6. Source has no negation; negation check is not applicable.",
+        "language": "Korean copy fixed; no rewrite.",
+        "legibility": "Caption does not cover the woman’s face at 44s; chart remains above the caption at 24s. The opening caption is large and over the lower glass/scene, not a face/chart.",
+        "aesthetics": "No before/after video layout comparison was performed.",
+        "comprehension": "Displayed caption page text concatenates to each embedded scene text; all checked conditions/numbers preserved. No speech completeness claim because narration is off."
+      },
+      "counterexamples": [
+        {
+          "id": "video-caption-omission",
+          "outcome": "Existing fixture remains a synthetic negative; actual final-v4 sample did not drop its displayed number or condition. No actual negation present to test."
+        }
+      ]
+    },
+    {
+      "id": "case-6-selective-loading",
+      "status": "VERIFIED_DOCS",
+      "method": "Reused the baseline JSON/temporary synthetic intent payloads and ran the real resolver independently in the 721d932 worktree and 73ff9bb branch. Counted full resolver-loaded file bytes as Unicode code points and offline tiktoken o200k_base tokens; all receipts READY and integrity VERIFIED.",
+      "inputs": [
+        {
+          "id": "/Users/suengj/.claude/jobs/1cadbae0/tmp/src/aes/out/sue-1760/load-inputs/text-intent.json",
+          "path": "/Users/suengj/.claude/jobs/1cadbae0/tmp/src/aes/out/sue-1760/load-inputs/text-intent.json",
+          "sha256": "7b3c9b7258c9b451d6f8332f178084ff8df364f67a872475e8a8a02123446f0b",
+          "bytes": 1378
+        },
+        {
+          "id": "/Users/suengj/.claude/jobs/1cadbae0/tmp/src/aes/out/sue-1760/load-inputs/visual-intent.json",
+          "path": "/Users/suengj/.claude/jobs/1cadbae0/tmp/src/aes/out/sue-1760/load-inputs/visual-intent.json",
+          "sha256": "79e42bae4e989fff04b4277bfe516db8a12e538e1ee717f7f917b58febb523c3",
+          "bytes": 1381
+        },
+        {
+          "id": "/Users/suengj/.claude/jobs/1cadbae0/tmp/src/aes/out/sue-1760/load-inputs/video-plan.json",
+          "path": "/Users/suengj/.claude/jobs/1cadbae0/tmp/src/aes/out/sue-1760/load-inputs/video-plan.json",
+          "sha256": "322f06b1ff8bc97e3be0fdac5ee6b1de5fac9ef3c4b2be8e708835eda32caf89",
+          "bytes": 97
+        }
+      ],
+      "outputs": [
+        {
+          "id": "/Users/suengj/.claude/jobs/1cadbae0/tmp/src/aes/out/sue-1760/load-summary.json",
+          "path": "/Users/suengj/.claude/jobs/1cadbae0/tmp/src/aes/out/sue-1760/load-summary.json",
+          "sha256": "ad1cd547169c07646c296cdb45b8a874105d3fb91f2b6d4138e2ca789351f9ca",
+          "bytes": 13295
+        },
+        {
+          "id": "721d932 text resolver receipt",
+          "path": "/Users/suengj/.claude/jobs/1cadbae0/tmp/src/aes/out/sue-1760/load-before-text.json",
+          "sha256": "75235843eca746c756bbff2078eba1f38fd208db9ffbc9dd7dd6130c76a47192",
+          "bytes": 5892
+        },
+        {
+          "id": "721d932 visual resolver receipt",
+          "path": "/Users/suengj/.claude/jobs/1cadbae0/tmp/src/aes/out/sue-1760/load-before-visual.json",
+          "sha256": "8490b838a5885938b7b341f89d631d3d675566ed3633080ca3bbe32322f14268",
+          "bytes": 9345
+        },
+        {
+          "id": "721d932 video resolver receipt",
+          "path": "/Users/suengj/.claude/jobs/1cadbae0/tmp/src/aes/out/sue-1760/load-before-video.json",
+          "sha256": "2b34c04a2782fb6f1923c794749361d04d353e321d10c3c53ee0644fde23c8aa",
+          "bytes": 7283
+        },
+        {
+          "id": "73ff9bb text resolver receipt",
+          "path": "/Users/suengj/.claude/jobs/1cadbae0/tmp/src/aes/out/sue-1760/load-after-text.json",
+          "sha256": "252a19f168babcf1426f233fbe7f6f30f1ecfdc03acbef416caa89d4785c64f7",
+          "bytes": 5892
+        },
+        {
+          "id": "73ff9bb visual resolver receipt",
+          "path": "/Users/suengj/.claude/jobs/1cadbae0/tmp/src/aes/out/sue-1760/load-after-visual.json",
+          "sha256": "6040bb9e3f1e5b3478b61610fe0b248e069294dc0e67d15c41a4b7cee1e662f3",
+          "bytes": 9345
+        },
+        {
+          "id": "73ff9bb video resolver receipt",
+          "path": "/Users/suengj/.claude/jobs/1cadbae0/tmp/src/aes/out/sue-1760/load-after-video.json",
+          "sha256": "40261db35482cdc029b8567081b52dfdd740447e0a1e119a3fc8de71ebfe9827",
+          "bytes": 7283
+        }
+      ],
+      "measurements": [
+        {
+          "task": "text",
+          "input": {
+            "id": "/Users/suengj/.claude/jobs/1cadbae0/tmp/src/aes/out/sue-1760/load-inputs/text-intent.json",
+            "path": "/Users/suengj/.claude/jobs/1cadbae0/tmp/src/aes/out/sue-1760/load-inputs/text-intent.json",
+            "sha256": "7b3c9b7258c9b451d6f8332f178084ff8df364f67a872475e8a8a02123446f0b",
+            "bytes": 1378
+          },
+          "before_receipt": {
+            "id": "/Users/suengj/.claude/jobs/1cadbae0/tmp/src/aes/out/sue-1760/load-before-text.json",
+            "path": "/Users/suengj/.claude/jobs/1cadbae0/tmp/src/aes/out/sue-1760/load-before-text.json",
+            "sha256": "75235843eca746c756bbff2078eba1f38fd208db9ffbc9dd7dd6130c76a47192",
+            "bytes": 5892
+          },
+          "after_receipt": {
+            "id": "/Users/suengj/.claude/jobs/1cadbae0/tmp/src/aes/out/sue-1760/load-after-text.json",
+            "path": "/Users/suengj/.claude/jobs/1cadbae0/tmp/src/aes/out/sue-1760/load-after-text.json",
+            "sha256": "252a19f168babcf1426f233fbe7f6f30f1ecfdc03acbef416caa89d4785c64f7",
+            "bytes": 5892
+          },
+          "before": {
+            "commit": "721d932",
+            "status": "READY",
+            "integrity": "VERIFIED",
+            "file_count": 6,
+            "characters": 26284,
+            "tokens_o200k_base": 5894
+          },
+          "after": {
+            "commit": "73ff9bb",
+            "status": "READY",
+            "integrity": "VERIFIED",
+            "file_count": 6,
+            "characters": 27034,
+            "tokens_o200k_base": 6043
+          },
+          "before_loaded_files": [
+            {
+              "path": "editorial/constitution.md",
+              "sha256": "6a6b58a9fce5f29099d74c23f10587c6560904ffe0a6a7c001e2ab330b2b6997",
+              "bytes": 6060,
+              "characters": 6030,
+              "tokens_o200k_base": 1341
+            },
+            {
+              "path": "editorial/voice.md",
+              "sha256": "f6c953c4a2c0792bc0189f016343df299373caf5f104958efc864c47e92deaaa",
+              "bytes": 11427,
+              "characters": 10879,
+              "tokens_o200k_base": 2379
+            },
+            {
+              "path": "editorial/profiles/transformation/synthesize.json",
+              "sha256": "c33a4896b85cacd29035e2f1adcceacb76f894e18c0521f8b5f27e664ef46bd2",
+              "bytes": 2332,
+              "characters": 2329,
+              "tokens_o200k_base": 508
+            },
+            {
+              "path": "editorial/profiles/content/research.json",
+              "sha256": "bf9d2579088a0f63f866387374b73747562015fb9247892719ea2841078ae6de",
+              "bytes": 3182,
+              "characters": 3182,
+              "tokens_o200k_base": 723
+            },
+            {
+              "path": "editorial/profiles/audience/general-reader.json",
+              "sha256": "77fd970983cdbad238bc96654892a047d65905234f49d81700ad27c3243d4672",
+              "bytes": 1881,
+              "characters": 1881,
+              "tokens_o200k_base": 439
+            },
+            {
+              "path": "editorial/profiles/surface/suengj-com.json",
+              "sha256": "f71cb6167188cf2e1577dd61f50366adcfebf81b60a9e4185b42dfd73ed18c8e",
+              "bytes": 1992,
+              "characters": 1983,
+              "tokens_o200k_base": 504
+            }
+          ],
+          "after_loaded_files": [
+            {
+              "path": "editorial/constitution.md",
+              "sha256": "82a7a8dfcc282b46a3c1289406b009a7104d6bc8d8dd3773dc861204a222df38",
+              "bytes": 6304,
+              "characters": 6274,
+              "tokens_o200k_base": 1388
+            },
+            {
+              "path": "editorial/voice.md",
+              "sha256": "b5b9d43936e209613510c00c77659999e9082b2cf1234aa9ef8e6b0e0e6f5de5",
+              "bytes": 11933,
+              "characters": 11385,
+              "tokens_o200k_base": 2481
+            },
+            {
+              "path": "editorial/profiles/transformation/synthesize.json",
+              "sha256": "c33a4896b85cacd29035e2f1adcceacb76f894e18c0521f8b5f27e664ef46bd2",
+              "bytes": 2332,
+              "characters": 2329,
+              "tokens_o200k_base": 508
+            },
+            {
+              "path": "editorial/profiles/content/research.json",
+              "sha256": "bf9d2579088a0f63f866387374b73747562015fb9247892719ea2841078ae6de",
+              "bytes": 3182,
+              "characters": 3182,
+              "tokens_o200k_base": 723
+            },
+            {
+              "path": "editorial/profiles/audience/general-reader.json",
+              "sha256": "77fd970983cdbad238bc96654892a047d65905234f49d81700ad27c3243d4672",
+              "bytes": 1881,
+              "characters": 1881,
+              "tokens_o200k_base": 439
+            },
+            {
+              "path": "editorial/profiles/surface/suengj-com.json",
+              "sha256": "f71cb6167188cf2e1577dd61f50366adcfebf81b60a9e4185b42dfd73ed18c8e",
+              "bytes": 1992,
+              "characters": 1983,
+              "tokens_o200k_base": 504
+            }
+          ]
+        },
+        {
+          "task": "visual",
+          "input": {
+            "id": "/Users/suengj/.claude/jobs/1cadbae0/tmp/src/aes/out/sue-1760/load-inputs/visual-intent.json",
+            "path": "/Users/suengj/.claude/jobs/1cadbae0/tmp/src/aes/out/sue-1760/load-inputs/visual-intent.json",
+            "sha256": "79e42bae4e989fff04b4277bfe516db8a12e538e1ee717f7f917b58febb523c3",
+            "bytes": 1381
+          },
+          "before_receipt": {
+            "id": "/Users/suengj/.claude/jobs/1cadbae0/tmp/src/aes/out/sue-1760/load-before-visual.json",
+            "path": "/Users/suengj/.claude/jobs/1cadbae0/tmp/src/aes/out/sue-1760/load-before-visual.json",
+            "sha256": "8490b838a5885938b7b341f89d631d3d675566ed3633080ca3bbe32322f14268",
+            "bytes": 9345
+          },
+          "after_receipt": {
+            "id": "/Users/suengj/.claude/jobs/1cadbae0/tmp/src/aes/out/sue-1760/load-after-visual.json",
+            "path": "/Users/suengj/.claude/jobs/1cadbae0/tmp/src/aes/out/sue-1760/load-after-visual.json",
+            "sha256": "6040bb9e3f1e5b3478b61610fe0b248e069294dc0e67d15c41a4b7cee1e662f3",
+            "bytes": 9345
+          },
+          "before": {
+            "commit": "721d932",
+            "status": "READY",
+            "integrity": "VERIFIED",
+            "file_count": 9,
+            "characters": 76290,
+            "tokens_o200k_base": 22252
+          },
+          "after": {
+            "commit": "73ff9bb",
+            "status": "READY",
+            "integrity": "VERIFIED",
+            "file_count": 9,
+            "characters": 78596,
+            "tokens_o200k_base": 22719
+          },
+          "before_loaded_files": [
+            {
+              "path": "editorial/constitution.md",
+              "sha256": "6a6b58a9fce5f29099d74c23f10587c6560904ffe0a6a7c001e2ab330b2b6997",
+              "bytes": 6060,
+              "characters": 6030,
+              "tokens_o200k_base": 1341
+            },
+            {
+              "path": "editorial/STRUCTURED-VISUAL-EXECUTION.md",
+              "sha256": "19e9ebf3f1c1f556a8d7a11027361b973cf54a22f1e08c15602e114387c12926",
+              "bytes": 38881,
+              "characters": 25853,
+              "tokens_o200k_base": 9634
+            },
+            {
+              "path": "editorial/profiles/transformation/synthesize.json",
+              "sha256": "c33a4896b85cacd29035e2f1adcceacb76f894e18c0521f8b5f27e664ef46bd2",
+              "bytes": 2332,
+              "characters": 2329,
+              "tokens_o200k_base": 508
+            },
+            {
+              "path": "editorial/profiles/content/research.json",
+              "sha256": "bf9d2579088a0f63f866387374b73747562015fb9247892719ea2841078ae6de",
+              "bytes": 3182,
+              "characters": 3182,
+              "tokens_o200k_base": 723
+            },
+            {
+              "path": "editorial/profiles/audience/general-reader.json",
+              "sha256": "77fd970983cdbad238bc96654892a047d65905234f49d81700ad27c3243d4672",
+              "bytes": 1881,
+              "characters": 1881,
+              "tokens_o200k_base": 439
+            },
+            {
+              "path": "editorial/profiles/surface/instagram.json",
+              "sha256": "b39a6b4c2191ffdf44c28f0f34a3d72746ef86a1787d9f56c4e478e6d9928798",
+              "bytes": 2587,
+              "characters": 2585,
+              "tokens_o200k_base": 562
+            },
+            {
+              "path": "editorial/profiles/artifact/visual-social-card.json",
+              "sha256": "52a959cb5e783ef23530ef6f997b72825441f72be4d6f41bb737bc2d9098e1ab",
+              "bytes": 3488,
+              "characters": 3477,
+              "tokens_o200k_base": 880
+            },
+            {
+              "path": "editorial/SUENGJ-STYLE.md",
+              "sha256": "438a35e1d6c497d87f7bcaa84cfda2d9c02c08a32dc879d449983f20bb55933e",
+              "bytes": 12783,
+              "characters": 12471,
+              "tokens_o200k_base": 2808
+            },
+            {
+              "path": "editorial/visual-recipes.v1.json",
+              "sha256": "e28b6d2d41fd695a5925868ab160b19cebefb7fbad7a37de8a61b74dcbd0ad95",
+              "bytes": 18483,
+              "characters": 18482,
+              "tokens_o200k_base": 5357
+            }
+          ],
+          "after_loaded_files": [
+            {
+              "path": "editorial/constitution.md",
+              "sha256": "82a7a8dfcc282b46a3c1289406b009a7104d6bc8d8dd3773dc861204a222df38",
+              "bytes": 6304,
+              "characters": 6274,
+              "tokens_o200k_base": 1388
+            },
+            {
+              "path": "editorial/STRUCTURED-VISUAL-EXECUTION.md",
+              "sha256": "3d9b97f4983a7e3d247546e8dc4d6cf99e64cb8ff0daa3e51fe01d9617d4e947",
+              "bytes": 40012,
+              "characters": 26984,
+              "tokens_o200k_base": 9877
+            },
+            {
+              "path": "editorial/profiles/transformation/synthesize.json",
+              "sha256": "c33a4896b85cacd29035e2f1adcceacb76f894e18c0521f8b5f27e664ef46bd2",
+              "bytes": 2332,
+              "characters": 2329,
+              "tokens_o200k_base": 508
+            },
+            {
+              "path": "editorial/profiles/content/research.json",
+              "sha256": "bf9d2579088a0f63f866387374b73747562015fb9247892719ea2841078ae6de",
+              "bytes": 3182,
+              "characters": 3182,
+              "tokens_o200k_base": 723
+            },
+            {
+              "path": "editorial/profiles/audience/general-reader.json",
+              "sha256": "77fd970983cdbad238bc96654892a047d65905234f49d81700ad27c3243d4672",
+              "bytes": 1881,
+              "characters": 1881,
+              "tokens_o200k_base": 439
+            },
+            {
+              "path": "editorial/profiles/surface/instagram.json",
+              "sha256": "b39a6b4c2191ffdf44c28f0f34a3d72746ef86a1787d9f56c4e478e6d9928798",
+              "bytes": 2587,
+              "characters": 2585,
+              "tokens_o200k_base": 562
+            },
+            {
+              "path": "editorial/profiles/artifact/visual-social-card.json",
+              "sha256": "52a959cb5e783ef23530ef6f997b72825441f72be4d6f41bb737bc2d9098e1ab",
+              "bytes": 3488,
+              "characters": 3477,
+              "tokens_o200k_base": 880
+            },
+            {
+              "path": "editorial/SUENGJ-STYLE.md",
+              "sha256": "438a35e1d6c497d87f7bcaa84cfda2d9c02c08a32dc879d449983f20bb55933e",
+              "bytes": 12783,
+              "characters": 12471,
+              "tokens_o200k_base": 2808
+            },
+            {
+              "path": "editorial/visual-recipes.v1.json",
+              "sha256": "f05ffef63e10dd874aa9756f998d26eb411848eba6c85670c458ad0f80cd86ff",
+              "bytes": 19414,
+              "characters": 19413,
+              "tokens_o200k_base": 5534
+            }
+          ]
+        },
+        {
+          "task": "video",
+          "input": {
+            "id": "/Users/suengj/.claude/jobs/1cadbae0/tmp/src/aes/out/sue-1760/load-inputs/video-plan.json",
+            "path": "/Users/suengj/.claude/jobs/1cadbae0/tmp/src/aes/out/sue-1760/load-inputs/video-plan.json",
+            "sha256": "322f06b1ff8bc97e3be0fdac5ee6b1de5fac9ef3c4b2be8e708835eda32caf89",
+            "bytes": 97
+          },
+          "before_receipt": {
+            "id": "/Users/suengj/.claude/jobs/1cadbae0/tmp/src/aes/out/sue-1760/load-before-video.json",
+            "path": "/Users/suengj/.claude/jobs/1cadbae0/tmp/src/aes/out/sue-1760/load-before-video.json",
+            "sha256": "2b34c04a2782fb6f1923c794749361d04d353e321d10c3c53ee0644fde23c8aa",
+            "bytes": 7283
+          },
+          "after_receipt": {
+            "id": "/Users/suengj/.claude/jobs/1cadbae0/tmp/src/aes/out/sue-1760/load-after-video.json",
+            "path": "/Users/suengj/.claude/jobs/1cadbae0/tmp/src/aes/out/sue-1760/load-after-video.json",
+            "sha256": "40261db35482cdc029b8567081b52dfdd740447e0a1e119a3fc8de71ebfe9827",
+            "bytes": 7283
+          },
+          "before": {
+            "commit": "721d932",
+            "status": "READY",
+            "integrity": "VERIFIED",
+            "file_count": 8,
+            "characters": 84794,
+            "tokens_o200k_base": 20364
+          },
+          "after": {
+            "commit": "73ff9bb",
+            "status": "READY",
+            "integrity": "VERIFIED",
+            "file_count": 8,
+            "characters": 85734,
+            "tokens_o200k_base": 20551
+          },
+          "before_loaded_files": [
+            {
+              "path": "editorial/VIDEO-STORYBOARD.md",
+              "sha256": "29050b71ca4a2a2057a77f24a648f44486fd7fe5000c3b841a1a42ff2013b483",
+              "bytes": 12786,
+              "characters": 12703,
+              "tokens_o200k_base": 2652
+            },
+            {
+              "path": "editorial/VISUAL-STORY-COMPILATION.md",
+              "sha256": "fae9c3740955db680db6646d98cad6d27515adb3887c3915f76cfb332f86a2c9",
+              "bytes": 14466,
+              "characters": 14040,
+              "tokens_o200k_base": 2998
+            },
+            {
+              "path": "editorial/AUDIO-SCRIPT.md",
+              "sha256": "341dfa6f4c597807fde2dc97710e6690e2e1ee8ad8b6c945b55edff942473628",
+              "bytes": 22685,
+              "characters": 22593,
+              "tokens_o200k_base": 4500
+            },
+            {
+              "path": "editorial/VIDEO-ENGINE-MAPPING.md",
+              "sha256": "ee3d38f161b0cd8d73823f0da1a290bc5e6234d53d49c27451da7261f2ee5027",
+              "bytes": 12831,
+              "characters": 12825,
+              "tokens_o200k_base": 2804
+            },
+            {
+              "path": "editorial/font-preferences.v1.json",
+              "sha256": "e692cbe790440c2a9118abd92dbe51c0c941dc95a83906a54fe7ad5debe84f2f",
+              "bytes": 12458,
+              "characters": 12378,
+              "tokens_o200k_base": 4212
+            },
+            {
+              "path": "editorial/font-inventory.v1.json",
+              "sha256": "8e796c670f96ac2a9c59875aaccc033acd2155d629fc79de2e8f0e20f3e64f66",
+              "bytes": 6797,
+              "characters": 6685,
+              "tokens_o200k_base": 2390
+            },
+            {
+              "path": "editorial/profiles/surface/report-deck.json",
+              "sha256": "a20185fca8456d1cc039fe3f6479a5368a17091b0114b3da320ef73b7d3bd5ef",
+              "bytes": 2692,
+              "characters": 2692,
+              "tokens_o200k_base": 555
+            },
+            {
+              "path": "editorial/profiles/video/narrated-explainer.json",
+              "sha256": "59508120c531cb4578cf119aa91ad01566317e76d1872c8ee79b5a5cfbccb099",
+              "bytes": 878,
+              "characters": 878,
+              "tokens_o200k_base": 253
+            }
+          ],
+          "after_loaded_files": [
+            {
+              "path": "editorial/VIDEO-STORYBOARD.md",
+              "sha256": "4081d40e281e219a75bc0699e0d762a98278192c8fc70f04d84f3d71aa3a997d",
+              "bytes": 13360,
+              "characters": 13277,
+              "tokens_o200k_base": 2764
+            },
+            {
+              "path": "editorial/VISUAL-STORY-COMPILATION.md",
+              "sha256": "b52e25a3d168ff9e8b05c7ed4b7c473dc1e836841d52c5e722b8e952951de494",
+              "bytes": 14832,
+              "characters": 14406,
+              "tokens_o200k_base": 3073
+            },
+            {
+              "path": "editorial/AUDIO-SCRIPT.md",
+              "sha256": "341dfa6f4c597807fde2dc97710e6690e2e1ee8ad8b6c945b55edff942473628",
+              "bytes": 22685,
+              "characters": 22593,
+              "tokens_o200k_base": 4500
+            },
+            {
+              "path": "editorial/VIDEO-ENGINE-MAPPING.md",
+              "sha256": "ee3d38f161b0cd8d73823f0da1a290bc5e6234d53d49c27451da7261f2ee5027",
+              "bytes": 12831,
+              "characters": 12825,
+              "tokens_o200k_base": 2804
+            },
+            {
+              "path": "editorial/font-preferences.v1.json",
+              "sha256": "e692cbe790440c2a9118abd92dbe51c0c941dc95a83906a54fe7ad5debe84f2f",
+              "bytes": 12458,
+              "characters": 12378,
+              "tokens_o200k_base": 4212
+            },
+            {
+              "path": "editorial/font-inventory.v1.json",
+              "sha256": "8e796c670f96ac2a9c59875aaccc033acd2155d629fc79de2e8f0e20f3e64f66",
+              "bytes": 6797,
+              "characters": 6685,
+              "tokens_o200k_base": 2390
+            },
+            {
+              "path": "editorial/profiles/surface/report-deck.json",
+              "sha256": "a20185fca8456d1cc039fe3f6479a5368a17091b0114b3da320ef73b7d3bd5ef",
+              "bytes": 2692,
+              "characters": 2692,
+              "tokens_o200k_base": 555
+            },
+            {
+              "path": "editorial/profiles/video/narrated-explainer.json",
+              "sha256": "59508120c531cb4578cf119aa91ad01566317e76d1872c8ee79b5a5cfbccb099",
+              "bytes": 878,
+              "characters": 878,
+              "tokens_o200k_base": 253
+            }
+          ]
+        }
+      ],
+      "observations": {
+        "fact_preservation": "not applicable",
+        "language": "not applicable",
+        "legibility": "not applicable",
+        "aesthetics": "not applicable",
+        "comprehension": "not applicable"
+      },
+      "counterexamples": [],
+      "limitations": "Counts cover full resolver-loaded files, not activated Skill bodies or tool results. They show cost increase on selected routes, not a context saving. No token savings inferred."
+    }
+  ],
+  "blind_review": {
+    "owner_review_file": "/private/tmp/claude-501/-Users-suengj-Developer-PJT/1cadbae0-eec1-441f-b4dd-f4c444af22de/scratchpad/craft/C-owner-review.json",
+    "key_file": "/private/tmp/claude-501/-Users-suengj-Developer-PJT/1cadbae0-eec1-441f-b4dd-f4c444af22de/scratchpad/craft/C-key.json",
+    "pairs": {
+      "ko-copy": {
+        "pair_id": "pair-807dc383c3af",
+        "A_sha256": "8dfc6e0f43d7b80606fe03ee5392580600521853d2a6d1a245e6b4310efaf8ea",
+        "B_sha256": "6ecfcf369e396650c2ec0ef30f14a2d683c0caebd5e52ebb9976f4daae13cc80",
+        "A_equals_B": false
+      },
+      "en-copy": {
+        "pair_id": "pair-fde8a89859b9",
+        "A_sha256": "7d482002ff5b313a44a37e22e39270e8ad2c164906109781c1c0a49424d823b6",
+        "B_sha256": "5ac1ac19d16dc6c16b60cfd768e76bd13adc26226a191ac989fe50c3697ac4d5",
+        "A_equals_B": false
+      },
+      "normal-passive": {
+        "pair_id": "pair-df4d85e66843",
+        "A_sha256": "1bcfcf7db532cdab90b68a0966675d44a96121d05f52460d2442085f813ff83f",
+        "B_sha256": "1bcfcf7db532cdab90b68a0966675d44a96121d05f52460d2442085f813ff83f",
+        "A_equals_B": true
+      },
+      "hedge": {
+        "pair_id": "pair-32331df1f47b",
+        "A_sha256": "722effc89c651bd2cc85a235fa44417691794bef5b1788fe400eccc2b3bc92d8",
+        "B_sha256": "78c5aad65cdf056ba3eca3246c0aa7aee108aee65858901da9ba83184940660d",
+        "A_equals_B": false
+      },
+      "strong-hook": {
+        "pair_id": "pair-2a1a1501d778",
+        "A_sha256": "fb54b2d1ef00c6436d057496b0dcdaff656b6fa4a99065f761160c3b1ce3a316",
+        "B_sha256": "fb54b2d1ef00c6436d057496b0dcdaff656b6fa4a99065f761160c3b1ce3a316",
+        "A_equals_B": true
+      },
+      "number-card": {
+        "pair_id": "pair-af8c45986438",
+        "A": {
+          "full_sha256": "e68dcae726aa15f4f47b91e0f2be4d1d6e11caa0454cb1f165b3681bbf040db6",
+          "mobile_sha256": "be24fd7e0ffc9c65c5ecd6947bed2e97765a947b0a542e5e70687666ee55ae8f"
+        },
+        "B": {
+          "full_sha256": "b3dab579c822f86d9ba3031b9345b181104ea375e70c8c6bd0ce8b022a7ad453",
+          "mobile_sha256": "994b2d1ed387aeb26c321a34a66f1bdecad896edd669035213b1aa43d3e423f0"
+        },
+        "contact_sheet": {
+          "id": "/Users/suengj/.claude/jobs/1cadbae0/tmp/src/aes/out/sue-1760/case-2/contact-sheet.png",
+          "path": "/Users/suengj/.claude/jobs/1cadbae0/tmp/src/aes/out/sue-1760/case-2/contact-sheet.png",
+          "sha256": "0ed3e41d609a379721518b5c8166d19ab128b8c84cde2cac7e42f4637de47a56",
+          "bytes": 489641
+        }
+      },
+      "image-cover": {
+        "pair_id": "pair-06f942fb1326",
+        "A": {
+          "full_sha256": "c818fec91239f2600d2e46c8701cf6b5dd28ca216c399edb803452bd059951fc",
+          "mobile_sha256": "fe85cb490c62037c30fe2718a481e69da53f8021de9218d0a4d5919ad33bf0ec"
+        },
+        "B": {
+          "full_sha256": "6a3883088f46048ed5f9623045188ab00cd92169a82ab3ce5a759114478fa9c3",
+          "mobile_sha256": "aae502a41ae36b2d970ac91c2df70839d08e6b0d45c47d2dadee2a62a489f9d7"
+        },
+        "contact_sheet": null
+      }
+    },
+    "human_labels": "OWNER_REVIEW_PENDING",
+    "owner_review_sha256": "f5464cecc3953779a4c762e3e4913f9f16a5037d2ca832330f8e852f3d7d64d3",
+    "key_sha256": "297bff9566557cb0e8c77102c5deda2e3343dcb781aedc4dd474b78b9a60beb9",
+    "blind_contact_sheet": {
+      "id": "randomized owner-facing contact sheet",
+      "path": "/Users/suengj/.claude/jobs/1cadbae0/tmp/src/aes/out/sue-1760/blind/pair-af8c45986438/contact-sheet.png",
+      "sha256": "944a62b8febc347f175d5844136a5215350ce0d533c1f6d5030e6cb4453e4078"
+    }
+  },
+  "validation": {
+    "command": "PYTHONPATH=/tmp/aes-sue1726-pydeps npm test",
+    "exit_code": 0,
+    "result": "PASS"
+  }
+}
