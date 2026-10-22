@@ -60,7 +60,21 @@ await ok('breaks only at spaces; number+unit stay together', () => {
   const lines = T.balancedWrap('매출 1,200 억 돌파 가능성이 크다', { width: 190, size: 20, maxLines: 4 }, mono);
   assert(lines.every((l) => !l.endsWith('1,200')), JSON.stringify(lines));
 });
-await ok('overflow is an error, text never truncated', () => assert.throws(() => T.balancedWrap('가'.repeat(5) + ' ' + '나'.repeat(40), { width: 100, size: 20, maxLines: 1 }, mono), code('TEXT_OVERFLOW')));
+await ok('mixed KO/EN keeps proper nouns and digits with units across line breaks', () => {
+  const text = 'OpenAI 매출 1,200 억 증가.';
+  const lines = T.balancedWrap(text, { width: 90, size: 10, maxLines: 4 }, mono);
+  assert.equal(lines.join(' '), text);
+  assert.equal(T.atomize(text).find((atom) => atom.w.startsWith('1,200')).w, '1,200 억');
+  assert(lines.every((line) => !/^[,.;:!?%)\]}]/u.test(line) && !/[([{]$/u.test(line)), JSON.stringify(lines));
+});
+await ok('caption role wraps at meaning-bearing spaces without losing punctuation or copy', () => {
+  const text = '회사는 수요가 회복될 것으로 예상한다. 조건은 금리와 기간이다.';
+  const caption = T.resolveScale('caption');
+  const lines = T.balancedWrap(text, { width: 240, size: caption.font_size, maxLines: caption.max_lines }, mono);
+  assert(lines.length > 1 && lines.join(' ') === text, JSON.stringify(lines));
+  assert(lines.every((line) => !/^[,.;:!?]/u.test(line)), JSON.stringify(lines));
+});
+await ok('overflow is reported for re-edit/layout review; text is never truncated', () => assert.throws(() => T.balancedWrap('가'.repeat(5) + ' ' + '나'.repeat(40), { width: 100, size: 20, maxLines: 1 }, mono), code('TEXT_OVERFLOW')));
 await ok('over-wide eojeol falls back to grapheme split', () => assert(T.balancedWrap('가'.repeat(30), { width: 120, size: 20, maxLines: 6 }, mono).length > 1));
 await ok('emphasis measured at its heavier weight', () => {
   const t = '돈이 되는 자리를 찾아라', em = T.locateEmphasis(t, [{ match: '돈이 되는 자리', weight: 900 }]);

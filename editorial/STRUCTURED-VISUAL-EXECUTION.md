@@ -279,6 +279,14 @@ node scripts/test-carousel.mjs --render
 
 `schemas/art-direction-plan.schema.json` defines an optional, additive plan for the business magazine compiler. It records the message, focal subject, reading order, block roles, asset rights/source, exact protected claims and fields, review tags, brand invariants, and reused recipes. The validator requires the five magazine roles in order; a `trend` frame is allowed only with a source-backed `trend_evidence_ref`. Repeated layout and block-role signatures produce `LAYOUT_REPETITION` as a review warning, never a diversity failure.
 
+Before rendering, use `message` or `asset.rationale` to record the image's job
+(evidence, mechanism, metaphor or mood); use `reading_order` for the sightline,
+`focal_subject` for the subject to protect, and existing block regions plus
+`avoid` to identify text-safe and crop-safe areas. Do not add fields. For an
+image-style judgment, consult only the selected type's row in §8 of
+`AI-IMAGE-GENERATION-GUIDE.md`; the guide is not part of the resolver's normal
+visual load.
+
 The path is `packet.art_direction` → `compileBusinessMagazine` → `series.json` and sidecar → `planCarousel` → existing `render-carousel` / `render-visual`. A money `diagram` uses a deterministic SVG flow layer in the existing chart/compositor path; generated blocks remain pending until their asset is verified in the final PNG. The plan hash is carried as `art_direction_sha256`, and avoid tags appear in the still-unreviewed carousel worklist.
 
 The web catalog exports the schema and additive layouts. Editorial Studio can adopt them after updating its pinned catalog and running its own `npm run aes:check`; this change does not move that pin or assert Studio adoption.
@@ -286,6 +294,13 @@ The web catalog exports the schema and additive layouts. Editorial Studio can ad
 ## Typography engine (SUE-1614, opt-in)
 
 Existing layers render unchanged. New optional text-layer fields: `balance` (Korean balanced wrap, no orphan last line, eojeol breaks), `letter_spacing` (em), `emphasis` (`[{match, weight?, color?}]`, text is still printed exactly), `normalize`, `optical_margin`, `font_family`, `min_contrast` (WCAG ratio measured on rendered background pixels; below it fails `CONTRAST_FAIL`). Solid layers accept `gradient` stops and `auto_scrim: {for:[text ids], target_contrast, max_opacity?, feather?}` (opacity solved from the actual photo luminance). Set `task.theme.font_family` to `'AES Sans KR', sans-serif` to use the bundled OFL font (`assets/fonts/aes-sans-kr`, weights 400/600/800/900, Pretendard subset): the rasterizer then sees only bundled fonts and an unavailable weight or glyph raises `FONT_FALLBACK`. Type-scale tokens: `scripts/lib/typography-core.mjs` (`TYPE_SCALE`). Chrome token resolution (account label, handle, kicker ...): `scripts/lib/chrome-tokens.mjs` (`UNRESOLVED_LABEL`, `ACCOUNT_LEAK`).
+
+Assign headline, number, body, annotation and source roles before selecting scale.
+At the intended full and mobile sizes, inspect mixed Hangul/English glyphs and
+baseline, number+unit pairs, proper nouns, punctuation at line edges, and
+caption wraps. On overflow, re-edit without changing meaning, rearrange blocks
+or split the content; do not solve it only by shrinking type. Web spacing
+override and raster/caption legibility are separate checks.
 
 ### Hybrid card method (SUE-1616)
 

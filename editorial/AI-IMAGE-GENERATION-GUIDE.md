@@ -266,6 +266,22 @@ Score or explicitly review:
 
 A technically valid render can still FAIL on 1–7.
 
+### Selected-type judgment notes (experimental, not a style default)
+
+Read only the row for the selected image type. In the brief, state why that
+type serves the message, what must remain intact, and the one layer to repair
+if it fails.
+
+| Type | Design for | Watch for; repair locally |
+|---|---|---|
+| 3D | silhouette, viewpoint, scale, light, material and contact | reflections erasing form, floating objects, ornament; adjust material, light or background |
+| Anime / character | pose, gaze, expression, body–prop relation, line hierarchy and series continuity | broken connections, competing background lines, expression replacing explanation; separate line, shading and background |
+| Editorial illustration | topic-fit metaphor, form hierarchy, foreground/background and color roles | generic icon mash-up or false causation; remove decoration that cannot be explained |
+| Isometric | projection, axes, scale, overlap, flow and label correspondence | contradictory connectors or invented precision; verify marks on a separate factual layer |
+| Photo / photoreal | subject, action, viewpoint, light, focus and crop | key subject cut off or composite mistaken for news evidence; preserve supplied originals and disclose staging per policy |
+| Collage / risograph | source and meaning of each piece, edges, overlap and texture | texture over evidence or unrelated photos implying one scene; check rights and preserve source identity |
+| Minimal / line art | few elements that make the relationship legible at output size | meaningless icons, fragile lines or empty space; add only the cue needed to read the relation |
+
 ## 9. Negative visual corpus
 
 Keep rejected outputs as explicit negative evidence.
