@@ -114,7 +114,7 @@
     }
   },
   "catalog_version": "1.0.0",
-  "content_digest": "sha256:1ed866c75dd8ecb27cb0ca5719b538bcfd1b89726df94c39d04772a9aff2c272",
+  "content_digest": "sha256:b7bc73c1f425d6d7cf5b673990e5c7f23133d79553b338ed4b2f90fb1a96a6b2",
   "field_domains": {
     "call_to_action": {
       "max_length": 200,
@@ -210,24 +210,24 @@
           {
             "path": "editorial/constitution.md",
             "role": "core:text",
-            "sha256": "6a6b58a9fce5f29099d74c23f10587c6560904ffe0a6a7c001e2ab330b2b6997"
+            "sha256": "82a7a8dfcc282b46a3c1289406b009a7104d6bc8d8dd3773dc861204a222df38"
           },
           {
             "path": "editorial/voice.md",
             "role": "core:text",
-            "sha256": "f6c953c4a2c0792bc0189f016343df299373caf5f104958efc864c47e92deaaa"
+            "sha256": "19b26867c8ffb7bd64d75773d01167607fbe93164596d973f44f29ca89dd2356"
           }
         ],
         "visual": [
           {
             "path": "editorial/STRUCTURED-VISUAL-EXECUTION.md",
             "role": "core:visual",
-            "sha256": "19e9ebf3f1c1f556a8d7a11027361b973cf54a22f1e08c15602e114387c12926"
+            "sha256": "930920c4b595ba1deb411a10a85e55324e2d65aeaad06f46d660c041098722a0"
           },
           {
             "path": "editorial/constitution.md",
             "role": "core:visual",
-            "sha256": "6a6b58a9fce5f29099d74c23f10587c6560904ffe0a6a7c001e2ab330b2b6997"
+            "sha256": "82a7a8dfcc282b46a3c1289406b009a7104d6bc8d8dd3773dc861204a222df38"
           }
         ]
       },
@@ -250,12 +250,12 @@
           {
             "path": "editorial/constitution.md",
             "role": "core:text",
-            "sha256": "6a6b58a9fce5f29099d74c23f10587c6560904ffe0a6a7c001e2ab330b2b6997"
+            "sha256": "82a7a8dfcc282b46a3c1289406b009a7104d6bc8d8dd3773dc861204a222df38"
           },
           {
             "path": "editorial/voice.md",
             "role": "core:text",
-            "sha256": "f6c953c4a2c0792bc0189f016343df299373caf5f104958efc864c47e92deaaa"
+            "sha256": "19b26867c8ffb7bd64d75773d01167607fbe93164596d973f44f29ca89dd2356"
           }
         ]
       },
@@ -279,24 +279,24 @@
           {
             "path": "editorial/constitution.md",
             "role": "core:text",
-            "sha256": "6a6b58a9fce5f29099d74c23f10587c6560904ffe0a6a7c001e2ab330b2b6997"
+            "sha256": "82a7a8dfcc282b46a3c1289406b009a7104d6bc8d8dd3773dc861204a222df38"
           },
           {
             "path": "editorial/voice.md",
             "role": "core:text",
-            "sha256": "f6c953c4a2c0792bc0189f016343df299373caf5f104958efc864c47e92deaaa"
+            "sha256": "19b26867c8ffb7bd64d75773d01167607fbe93164596d973f44f29ca89dd2356"
           }
         ],
         "visual": [
           {
             "path": "editorial/STRUCTURED-VISUAL-EXECUTION.md",
             "role": "core:visual",
-            "sha256": "19e9ebf3f1c1f556a8d7a11027361b973cf54a22f1e08c15602e114387c12926"
+            "sha256": "930920c4b595ba1deb411a10a85e55324e2d65aeaad06f46d660c041098722a0"
           },
           {
             "path": "editorial/constitution.md",
             "role": "core:visual",
-            "sha256": "6a6b58a9fce5f29099d74c23f10587c6560904ffe0a6a7c001e2ab330b2b6997"
+            "sha256": "82a7a8dfcc282b46a3c1289406b009a7104d6bc8d8dd3773dc861204a222df38"
           }
         ]
       },
@@ -312,13 +312,14 @@
     "manifest": {
       "manifest_version": "2026-10-16.1",
       "path": "editorial/entry-manifest.json",
-      "sha256": "e172539140f795171273b81ecc9ed058dcd19d4390b7a06d8eee880b5a2b8b39"
+      "sha256": "326da11e23e091b1e5e4f7600e98a30ba143ae991da5ec0f1260affccd6f0b4c"
     },
     "note": "The AES git commit is deliberately not embedded. The consumer pins the AES commit and this file's sha256.",
     "profile_version_semantics": "<manifest_version>+<aes_commit>; the consumer supplies aes_commit from its own pin",
     "rule_refs_scope": "rule_refs are the target/flow-fixed subset only. Axis and language profile files are resolved per request via axis_profile_paths / language_packs. Approved-example excerpts are never included."
   },
   "language_packs": {
+    "en": "editorial/profiles/language/en.json",
     "ko": "editorial/profiles/language/ko-KR.json",
     "ko-KR": "editorial/profiles/language/ko-KR.json"
   },
@@ -7940,19 +7941,19 @@
           {
             "path": "editorial/constitution.md",
             "role": "core:text",
-            "sha256": "6a6b58a9fce5f29099d74c23f10587c6560904ffe0a6a7c001e2ab330b2b6997"
+            "sha256": "82a7a8dfcc282b46a3c1289406b009a7104d6bc8d8dd3773dc861204a222df38"
           },
           {
             "path": "editorial/voice.md",
             "role": "core:text",
-            "sha256": "f6c953c4a2c0792bc0189f016343df299373caf5f104958efc864c47e92deaaa"
+            "sha256": "19b26867c8ffb7bd64d75773d01167607fbe93164596d973f44f29ca89dd2356"
           }
         ],
         "visual": [
           {
             "path": "editorial/STRUCTURED-VISUAL-EXECUTION.md",
             "role": "core:visual",
-            "sha256": "19e9ebf3f1c1f556a8d7a11027361b973cf54a22f1e08c15602e114387c12926"
+            "sha256": "930920c4b595ba1deb411a10a85e55324e2d65aeaad06f46d660c041098722a0"
           },
           {
             "path": "editorial/SUENGJ-STYLE.md",
@@ -7962,7 +7963,7 @@
           {
             "path": "editorial/constitution.md",
             "role": "core:visual",
-            "sha256": "6a6b58a9fce5f29099d74c23f10587c6560904ffe0a6a7c001e2ab330b2b6997"
+            "sha256": "82a7a8dfcc282b46a3c1289406b009a7104d6bc8d8dd3773dc861204a222df38"
           },
           {
             "path": "editorial/visual-recipes.v1.json",
@@ -8011,12 +8012,12 @@
           {
             "path": "editorial/constitution.md",
             "role": "core:text",
-            "sha256": "6a6b58a9fce5f29099d74c23f10587c6560904ffe0a6a7c001e2ab330b2b6997"
+            "sha256": "82a7a8dfcc282b46a3c1289406b009a7104d6bc8d8dd3773dc861204a222df38"
           },
           {
             "path": "editorial/voice.md",
             "role": "core:text",
-            "sha256": "f6c953c4a2c0792bc0189f016343df299373caf5f104958efc864c47e92deaaa"
+            "sha256": "19b26867c8ffb7bd64d75773d01167607fbe93164596d973f44f29ca89dd2356"
           }
         ]
       },
@@ -8068,12 +8069,12 @@
           {
             "path": "editorial/constitution.md",
             "role": "core:text",
-            "sha256": "6a6b58a9fce5f29099d74c23f10587c6560904ffe0a6a7c001e2ab330b2b6997"
+            "sha256": "82a7a8dfcc282b46a3c1289406b009a7104d6bc8d8dd3773dc861204a222df38"
           },
           {
             "path": "editorial/voice.md",
             "role": "core:text",
-            "sha256": "f6c953c4a2c0792bc0189f016343df299373caf5f104958efc864c47e92deaaa"
+            "sha256": "19b26867c8ffb7bd64d75773d01167607fbe93164596d973f44f29ca89dd2356"
           }
         ],
         "visual": [
@@ -8110,7 +8111,7 @@
           {
             "path": "editorial/STRUCTURED-VISUAL-EXECUTION.md",
             "role": "core:visual",
-            "sha256": "19e9ebf3f1c1f556a8d7a11027361b973cf54a22f1e08c15602e114387c12926"
+            "sha256": "930920c4b595ba1deb411a10a85e55324e2d65aeaad06f46d660c041098722a0"
           },
           {
             "path": "editorial/business-idea-magazine.v1.json",
@@ -8120,7 +8121,7 @@
           {
             "path": "editorial/constitution.md",
             "role": "core:visual",
-            "sha256": "6a6b58a9fce5f29099d74c23f10587c6560904ffe0a6a7c001e2ab330b2b6997"
+            "sha256": "82a7a8dfcc282b46a3c1289406b009a7104d6bc8d8dd3773dc861204a222df38"
           },
           {
             "path": "editorial/prediction-market-carousel.v1.json",
@@ -8177,12 +8178,12 @@
           {
             "path": "editorial/constitution.md",
             "role": "core:text",
-            "sha256": "6a6b58a9fce5f29099d74c23f10587c6560904ffe0a6a7c001e2ab330b2b6997"
+            "sha256": "82a7a8dfcc282b46a3c1289406b009a7104d6bc8d8dd3773dc861204a222df38"
           },
           {
             "path": "editorial/voice.md",
             "role": "core:text",
-            "sha256": "f6c953c4a2c0792bc0189f016343df299373caf5f104958efc864c47e92deaaa"
+            "sha256": "19b26867c8ffb7bd64d75773d01167607fbe93164596d973f44f29ca89dd2356"
           }
         ],
         "visual": [
@@ -8194,7 +8195,7 @@
           {
             "path": "editorial/STRUCTURED-VISUAL-EXECUTION.md",
             "role": "core:visual",
-            "sha256": "19e9ebf3f1c1f556a8d7a11027361b973cf54a22f1e08c15602e114387c12926"
+            "sha256": "930920c4b595ba1deb411a10a85e55324e2d65aeaad06f46d660c041098722a0"
           },
           {
             "path": "editorial/TRENDS-MOA-COMMUNITY-TONE.md",
@@ -8204,7 +8205,7 @@
           {
             "path": "editorial/constitution.md",
             "role": "core:visual",
-            "sha256": "6a6b58a9fce5f29099d74c23f10587c6560904ffe0a6a7c001e2ab330b2b6997"
+            "sha256": "82a7a8dfcc282b46a3c1289406b009a7104d6bc8d8dd3773dc861204a222df38"
           },
           {
             "path": "editorial/visual-recipes.v1.json",
@@ -8245,11 +8246,11 @@
       },
       {
         "path": "editorial/VIDEO-STORYBOARD.md",
-        "sha256": "29050b71ca4a2a2057a77f24a648f44486fd7fe5000c3b841a1a42ff2013b483"
+        "sha256": "4081d40e281e219a75bc0699e0d762a98278192c8fc70f04d84f3d71aa3a997d"
       },
       {
         "path": "editorial/VISUAL-STORY-COMPILATION.md",
-        "sha256": "fae9c3740955db680db6646d98cad6d27515adb3887c3915f76cfb332f86a2c9"
+        "sha256": "b52e25a3d168ff9e8b05c7ed4b7c473dc1e836841d52c5e722b8e952951de494"
       },
       {
         "path": "editorial/font-inventory.v1.json",

@@ -158,6 +158,10 @@ adding more style rules or looping the same weak realization indefinitely.
 2. **Write from the reader contract.** The draft should move the intended
    reader from their starting understanding to the frame's core message. A
    section exists only when that movement needs it.
+   Check the core claim and its important limits independently. Each paragraph
+   or card must add a fact, mechanism, contrast, implication or needed context;
+   restating the hook does not resolve it. Preserve a strong, evidence-backed
+   hook when it fits the selected genre and audience.
 3. **Respect the delta plan.** Preserve axes already at LOW/P0. Realise the
    upstream P2/P3 decisions that have already been made; do not re-expand scope
    simply because the Writer is capable of doing so.

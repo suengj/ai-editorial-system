@@ -231,6 +231,15 @@ rhetorical moves. Flag for human or judge review when any of these dominate:
 These are quality signatures, not AI-origin detectors. The system evaluates the
 prose it has, not who or what produced it.
 
+The selected profile and genre may support a forceful opening, including a
+community post's strong hook, when its promise is resolved by the body and its
+scope and certainty match the evidence. Do not normalize every voice to one
+register or treat an already-good sentence as requiring a rewrite; `KEEP` is a
+successful polish result.
+For profile comparisons, hold topic and evidence fixed: the selected voice and
+tone may differ in register and structure, but neither may alter claim scope
+or certainty.
+
 ## Protected against style-only rewrite
 
 A polish pass may change rhythm, connectives, ordering within a paragraph, and

@@ -41,6 +41,7 @@ test('visual task for trends.moa loads the community doc, visual rules, and not 
   eq(r.status, STATUS.READY);
   yes(paths(r).includes('editorial/STRUCTURED-VISUAL-EXECUTION.md') && paths(r).includes('editorial/visual-recipes.v1.json'), 'visual docs');
   yes(!paths(r).includes('editorial/SUENGJ-STYLE.md') && !paths(r).includes('editorial/SIGNALYTICS-BENCHMARK-CARDS.md'), 'no other voice');
+  yes(!paths(r).includes('editorial/AI-IMAGE-GENERATION-GUIDE.md'), 'full type guide must stay outside the normal visual resolver load');
 });
 test('ko-KR on-image card tasks load the language pack for signalytics-news and trends-moa', () => {
   for (const [targetId, artifact] of [['signalytics-news', 'visual/slide-image'], ['trends-moa', 'visual/social-card']]) {
@@ -74,6 +75,16 @@ test('ko-KR pack stays inactive outside activation scope and preserves rule auth
   const attribution = pack.rules.find((r) => r.id === 'reg-news-attribution-placement');
   yes(attribution.application_mode === 'deprecated_as_instruction' && !active.has(attribution.id), 'quotation rule must remain inactive');
   yes(pack.activation_scope.note.includes('do not rewrite whole copy') && pack.notes.includes('No whole-copy rewrite, invented quotation'), 'quote preservation and local repair boundary missing');
+});
+test('English requests load the small English advisory pack without loading Korean rules', () => {
+  const englishIntent = { ...intent('linkedin'), constraints: { output_language: 'en' } };
+  const r = resolveEditorial(englishIntent, { targetId: 'personal-linkedin', taskKind: 'text', reader: reader() });
+  eq(r.status, STATUS.READY);
+  yes(paths(r).includes('editorial/profiles/language/en.json'), 'English pack not loaded');
+  yes(!paths(r).includes('editorial/profiles/language/ko-KR.json'), 'Korean pack leaked into English route');
+  const en = JSON.parse(readFileSync(resolve(REPO_ROOT, 'editorial/profiles/language/en.json'), 'utf8'));
+  yes(en.status === 'advisory' && en.calibration_ref.includes('pending'), 'English checks must remain uncalibrated/advisory');
+  yes(en.review_axes.some((axis) => axis.includes('articles')) && en.review_axes.some((axis) => axis.includes('pronoun')), 'English axes missing');
 });
 test('video task route loads only its registered video semantic core and SHA-pinned profile', () => {
   const r = resolveEditorial(intent('newsletter', ['video/educational-summary']), { reader: reader() });
