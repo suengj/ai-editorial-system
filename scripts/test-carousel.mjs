@@ -58,6 +58,8 @@ ok('all supporting-art recipes resolve palette bindings to task theme colors',()
     assert.equal(planned.recipe,id);
     assert.equal(planned.frames[0].layout,'visual');
     assert.ok(layer,`${id} generated layer exists`);
+    assert.ok(layer.instruction.includes(catalog.recipes[id].generation_direction),`${id} selected judgment is in the generated prompt`);
+    for(const otherId of ids.filter((candidate)=>candidate!==id))assert.ok(!layer.instruction.includes(catalog.recipes[otherId].generation_direction),`${id} prompt excludes ${otherId} judgment`);
     for(const token of catalog.recipes[id].prompt_style_tokens)assert.ok(layer.instruction.includes(token),`${id} prompt includes style token ${token}`);
     for(const [role,color] of Object.entries({background:'#123456',primary:'#234567',accent:'#345678',neutral:'#234567'}))assert.ok(layer.instruction.includes(`${role}=${color}`),`${id} prompt includes resolved ${role} color`);
     assert.ok(!layer.instruction.includes('profile.palette.'),`${id} prompt contains no unresolved palette path`);

@@ -34,7 +34,7 @@
     "video-genre/data-journalism": { "path": "editorial/profiles/video/genre-data-journalism.json", "revision": 1, "sha256": "0d0f739f3e6a82560956256a2a951ab5d97d82f75f172f87e9d7b290c5eb1ec4", "base_profile_id": "video/educational-summary" },
     "video-genre/learning": { "path": "editorial/profiles/video/genre-learning.json", "revision": 1, "sha256": "fef62993a7949ea8e2cb11c1c026e9900373789a1dfceef1d52a70f7a3f5c261", "base_profile_id": "video/educational-summary" }
   },
-  "language_packs": { "ko": "editorial/profiles/language/ko-KR.json", "ko-KR": "editorial/profiles/language/ko-KR.json" },
+  "language_packs": { "ko": "editorial/profiles/language/ko-KR.json", "ko-KR": "editorial/profiles/language/ko-KR.json", "en": "editorial/profiles/language/en.json" },
   "locked_fields": ["facts", "figures", "numbers", "quotations", "sources", "source_evidence", "citations", "rights", "approval", "publication_authority", "account_identity", "freshness"],
   "locked_field_terms": {"facts": ["사실", "fact"], "figures": ["수치", "숫자", "통계", "figure", "number", "percent"], "numbers": ["숫자", "수치"], "quotations": ["인용", "quote", "quotation"], "sources": ["출처", "source", "reference"], "source_evidence": ["근거 봉투", "source evidence", "source envelope"], "citations": ["인용", "citation"], "rights": ["권리", "저작권", "라이선스", "copyright", "license", "licence"], "approval": ["승인", "허가", "approve", "approved", "approval"], "publication_authority": ["발행", "게시 권한", "publish"], "account_identity": ["계정", "account", "identity"], "freshness": ["최신", "기준일", "freshness", "as of"]},
   "precedence": ["explicit_request", "task_row", "sheet_override", "account_series", "surface_brand_default"],

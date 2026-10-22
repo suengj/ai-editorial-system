@@ -115,6 +115,10 @@ framed.
    Record audience, purpose, the one-sentence takeaway, and the minimum argument
    path. A repository, report, or folder tree may be the subject of research;
    it is not automatically the article's table of contents.
+   Verification case: state the reader's question, core answer, evidence,
+   necessary background and limits separately. For each opening promise, point
+   to where the body resolves it; an unanswered hook or a stronger opening
+   without the answer is a frame defect.
 2. **Inventory.** List each source with its kind, origin, authored date, and
    disposition. Note what each one is actually authoritative *for* — a vendor
    page is primary for its own prices and weak for anyone's margins.

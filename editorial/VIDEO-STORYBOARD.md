@@ -239,11 +239,20 @@ its words remain traceable to the spoken script.
 
 Required QA:
 
+- each scene has one delivery goal linked to narration and visible evidence;
+- full captions preserve the spoken information; optional keyword emphasis is
+  decorative and never substitutes for captions;
 - no dropped negation/qualification;
-- names/numbers match the script;
+- names, numbers, units and conditions match the script;
 - timing does not expose a conclusion before the spoken evidence arrives;
-- line breaks remain readable;
+- line breaks follow speech meaning units and remain readable;
+- captions or long on-screen copy do not compete; move/recompose them when they
+  cover a face, hand or load-bearing chart area;
 - speaker identity is clear when more than one speaker exists.
+
+When audio and timecodes are fixed, do not silently rewrite narration: record a
+script mismatch for upstream re-alignment. These checks do not authorize TTS,
+sound or renderer changes.
 
 ## 9. Audio description / integrated description is planned early
 

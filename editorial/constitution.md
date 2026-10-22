@@ -101,6 +101,11 @@ it must not leak into narrative sentences as unexplained production jargon.
 
 ## 9. Density over volume
 
+For verification, ask whether an independent reader can state the core claim
+and its important limits separately, and where the body resolves the opening
+promise. A stronger hook without an answer or without its subject is not an
+improvement.
+
 Every paragraph changes what the reader knows or understands: a number, a
 mechanism, a distinction, a consequence, or the explanation needed to make a
 hard inference legible. Filler sections, restated headings, and paragraphs that

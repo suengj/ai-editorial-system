@@ -143,8 +143,9 @@ Therefore:
 
 1. **Read the delta plan first.** Confirm the draft is at P0/P1 for the axes
    Language Polish is allowed to touch. If not, route upstream.
-2. **Extract protected spans** before editing: numbers with units, dates,
-   citation markers, quotations, URLs, and protected technical terms.
+2. **Extract protected meaning** before editing. Preserve the [existing
+   invariants](#invariants) and [protected-span comparison](#evidence); these
+   guide review but do not claim a perfect semantic detector.
 3. **Start from KEEP.** Do not create a candidate unless a concrete local
    defect is evidenced.
 4. **Treat soft language traits as detectors.** Translationese, nominalization,
@@ -179,6 +180,13 @@ Therefore:
     a genuine self-question, restrained social punctuation, or a postscript are
     not defects by category; change them only when the local candidate is
     clearly better under the overlay's own generation test.
+   In English, review articles, number and tense, modifier placement,
+   collocation, term consistency and pronoun reference for this genre; do not
+   carry Korean word order into English. In Korean, keep norms separate from
+   advisory tendencies: `밝혀지다` is not an automatic double-passive error.
+   A strong hook earns `KEEP` when its sentence states its concrete claim or
+   figure; rewrite hooks pointing to unstated evidence to state it at equal
+   strength, without inventing facts.
 12. **Re-extract protected spans and compare.** Identical multisets, or the
     candidate fails.
 13. **Record edit surface and rationale.** A large edit surface is an escalation

@@ -1,0 +1,16 @@
+{
+  "schema_version": "1.1.0",
+  "pack_id": "en",
+  "language": "en",
+  "status": "draft",
+  "doc_ref": "editorial/voice.md",
+  "calibration_ref": null,
+  "authorities": [],
+  "rules": [],
+  "not_authoritative_for": [
+    "facts, claims, numbers, quotations, or source interpretation",
+    "Korean language rules",
+    "forced rewrites, hard blocks, or publication approval"
+  ],
+  "notes": "Uncalibrated advisory English review prompts only; SUE-1754 owns human labels and calibration. Check articles/countability, number/tense, modifier placement, collocation/terms, pronoun reference, and genre fit. Preserve actor, negation, modality/certainty, comparison, period/denominator, numbers, and units. Keep KEEP / LOCAL_POLISH / UPSTREAM_REPLAN_REQUIRED available."
+}

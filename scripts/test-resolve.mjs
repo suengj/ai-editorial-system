@@ -14,6 +14,7 @@ import {
   checkDeliveryPackage, selectExamples, hashOf, STATUS, REPO_ROOT,
 } from './lib/resolve-core.mjs';
 import { assessPolish } from './lib/polish-invariants.mjs';
+import { loadVisualRecipes, planCarousel } from './lib/carousel-core.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 let pass = 0, fail = 0;
@@ -41,6 +42,27 @@ test('visual task for trends.moa loads the community doc, visual rules, and not 
   eq(r.status, STATUS.READY);
   yes(paths(r).includes('editorial/STRUCTURED-VISUAL-EXECUTION.md') && paths(r).includes('editorial/visual-recipes.v1.json'), 'visual docs');
   yes(!paths(r).includes('editorial/SUENGJ-STYLE.md') && !paths(r).includes('editorial/SIGNALYTICS-BENCHMARK-CARDS.md'), 'no other voice');
+  yes(!paths(r).includes('editorial/AI-IMAGE-GENERATION-GUIDE.md'), 'full type guide must stay outside the normal visual resolver load');
+});
+test('resolver reads the complete recipe catalog at the visual file-read boundary', () => {
+  const catalogPath = resolve(REPO_ROOT, 'editorial/visual-recipes.v1.json');
+  const observed = [];
+  const trackedReader = new RuleReader({ revision: 'visual-read-boundary', fs: {
+    statSync,
+    readFileSync: (path) => {
+      const bytes = readFileSync(path);
+      observed.push({ path, bytes });
+      return bytes;
+    },
+  } });
+  const r = resolveEditorial(intent('instagram', ['visual/social-card']), { targetId: 'trends-moa', taskKind: 'visual', reader: trackedReader });
+  eq(r.status, STATUS.READY);
+  const catalogReads = observed.filter((entry) => entry.path === catalogPath);
+  eq(catalogReads.length, 1, 'recipe catalog read count');
+  eq(catalogReads[0].bytes.length, statSync(catalogPath).size, 'recipe catalog bytes read');
+  const loadedCatalog = JSON.parse(catalogReads[0].bytes.toString('utf8'));
+  const directions = Object.values(loadedCatalog.recipes).map((recipe) => recipe.generation_direction).filter(Boolean);
+  yes(directions.length > 1 && directions.every((direction) => catalogReads[0].bytes.includes(direction)), 'file read must contain all recipe directions, not only a selected type');
 });
 test('ko-KR on-image card tasks load the language pack for signalytics-news and trends-moa', () => {
   for (const [targetId, artifact] of [['signalytics-news', 'visual/slide-image'], ['trends-moa', 'visual/social-card']]) {
@@ -74,6 +96,35 @@ test('ko-KR pack stays inactive outside activation scope and preserves rule auth
   const attribution = pack.rules.find((r) => r.id === 'reg-news-attribution-placement');
   yes(attribution.application_mode === 'deprecated_as_instruction' && !active.has(attribution.id), 'quotation rule must remain inactive');
   yes(pack.activation_scope.note.includes('do not rewrite whole copy') && pack.notes.includes('No whole-copy rewrite, invented quotation'), 'quote preservation and local repair boundary missing');
+});
+test('English requests load the small English advisory pack without loading Korean rules', () => {
+  const englishIntent = { ...intent('linkedin'), constraints: { output_language: 'en' } };
+  const r = resolveEditorial(englishIntent, { targetId: 'personal-linkedin', taskKind: 'text', reader: reader() });
+  eq(r.status, STATUS.READY);
+  yes(paths(r).includes('editorial/profiles/language/en.json'), 'English pack not loaded');
+  yes(!paths(r).includes('editorial/profiles/language/ko-KR.json'), 'Korean pack leaked into English route');
+  const en = JSON.parse(readFileSync(resolve(REPO_ROOT, 'editorial/profiles/language/en.json'), 'utf8'));
+  yes(en.status === 'draft' && en.calibration_ref === null, 'English checks must remain uncalibrated and draft');
+  yes(en.notes.includes('articles/countability') && en.notes.includes('pronoun reference'), 'English axes missing');
+  yes(!en.notes.includes('The company expects demand to recover') && !en.notes.includes('수요가 회복된다'), 'evaluation sentence or answer leaked into the English advisory pack');
+});
+test('recipe resolver projects only the selected type judgment into its generated prompt', () => {
+  const catalog = loadVisualRecipes();
+  const ids = ['photo-editorial','flat-editorial','isometric','clay-3d','glass-3d','risograph','paper-collage','line-accent'];
+  const fixture = JSON.parse(readFileSync(resolve(REPO_ROOT, 'scripts/fixtures/carousel/series.json'), 'utf8'));
+  for (const id of ids) {
+    const series = structuredClone(fixture);
+    series.recipe = id;
+    delete series.visual_style;
+    series.frames[0].layout = undefined;
+    series.frames[0].blocks = [{ id:'supporting-art', region:'content', kind:'generated', instruction:'A quiet visual metaphor.' }];
+    const plan = planCarousel(series, catalog);
+    const prompt = plan.frames[0].plan.layers.find((layer) => layer.id === 'supporting-art').instruction;
+    yes(prompt.includes(catalog.recipes[id].generation_direction), `${id} judgment missing from selected prompt`);
+    for (const other of ids.filter((candidate) => candidate !== id)) {
+      yes(!prompt.includes(catalog.recipes[other].generation_direction), `${other} judgment leaked into ${id} prompt`);
+    }
+  }
 });
 test('video task route loads only its registered video semantic core and SHA-pinned profile', () => {
   const r = resolveEditorial(intent('newsletter', ['video/educational-summary']), { reader: reader() });
