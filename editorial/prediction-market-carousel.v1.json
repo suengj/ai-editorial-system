@@ -1,0 +1,118 @@
+{
+  "schema_version": "1.0.0",
+  "artifact": "visual/prediction-market-carousel",
+  "series_id": "prediction-market-news",
+  "target": "signalytics-news",
+  "canvas": {
+    "width": 1080,
+    "height": 1350,
+    "aspect_ratio": "4:5"
+  },
+  "card_count": 5,
+  "density_profile": "silent_carousel",
+  "visual_style": {
+    "default": "R4",
+    "fallback": "R7",
+    "fallback_when": "no suitable rights-cleared photo"
+  },
+  "palette": {
+    "background": "#F7F5F0",
+    "text": "#14213D",
+    "accent": "#FF6B5B",
+    "accent_rule": "Use Kalshi coral only for Kalshi; keep Polymarket cobalt reserved for Polymarket.",
+    "contrast": "Use the off-white and navy task override when R7's default color pairing fails phone-size contrast."
+  },
+  "layout": {
+    "hook": "shared R4 photo-fullbleed hero with a large hash-verified PMC probability and one reader-facing takeaway",
+    "trend": "shared chart panel showing source dates, source-bound observations, honest zoomed axis ticks, and one sentence of insight",
+    "why": "shared R4 photo-fullbleed hero pairing verified CPI and chair remarks with the contemporaneous PMC price path",
+    "korea_impact": "shared R4 photo-fullbleed hero on USD/KRW, the Korea-US policy-rate differential, and the Bank of Korea",
+    "watch_next": "shared R4 date-led hero with the verified FOMC meeting and price-moving signals"
+  },
+  "data_contract": {
+    "chart_card": "scripts/bind-pmc-bundle.mjs",
+    "numbers": "hash-verified PMC bundle only",
+    "observation_values": "copy only; no smoothing or manual extension",
+    "news_facts": "directly verified public sources; cite claim IDs in source-sidecar.json",
+    "generated_images": "explicit owner-opt-in only; text-free; no logos, UI, screenshots, or real-person likeness"
+  },
+  "beats": [
+    {
+      "id": "hook",
+      "depends_on": []
+    },
+    {
+      "id": "trend",
+      "depends_on": [
+        "hook"
+      ]
+    },
+    {
+      "id": "why",
+      "depends_on": [
+        "trend"
+      ]
+    },
+    {
+      "id": "korea-impact",
+      "depends_on": [
+        "why"
+      ]
+    },
+    {
+      "id": "watch-next",
+      "depends_on": [
+        "korea-impact"
+      ]
+    }
+  ],
+  "frames": [
+    {
+      "id": "hook",
+      "function": "orient",
+      "headline": "시장은 이미 ‘인상’에 걸었다",
+      "takeaway": "92%의 가격 신호와 한 줄의 한국 독자 관점.",
+      "body": "[PMC hero value]가 가장 큰 글자.",
+      "visual": "shared R4 photo-fullbleed"
+    },
+    {
+      "id": "trend",
+      "function": "show_evidence",
+      "headline": "이번 주, 10월 14일 → 19일",
+      "takeaway": "이번 주 1%p 내렸다.",
+      "body": "[PMC chart bundle; visible source credit: 출처 Kalshi]",
+      "visual": "shared deterministic PMC chart panel"
+    },
+    {
+      "id": "why",
+      "function": "explain_mechanism",
+      "headline": "CPI와 워시 발언이 만든 맥락",
+      "takeaway": "2–3 dated lines connect public facts and contemporaneous PMC prices.",
+      "body": "[Verified CPI 0.6% m/m; verified Chair remarks; source citations in sidecar]",
+      "visual": "shared R4 photo-fullbleed"
+    },
+    {
+      "id": "korea-impact",
+      "function": "show_consequence",
+      "headline": "원/달러 · 한미 금리차 · 한국은행",
+      "takeaway": "현재 정책금리와 환율 전달 경로를 짧고 사실적으로.",
+      "body": "[Verified current US and Korean policy rates; official BOK FX explanation; citations in sidecar]",
+      "visual": "shared R4 photo-fullbleed"
+    },
+    {
+      "id": "watch-next",
+      "function": "decision",
+      "headline": "10월 27–28일",
+      "takeaway": "FOMC date block plus the signals that can move the market price.",
+      "body": "[Verified FOMC schedule; inflation data and Fed statements]",
+      "visual": "shared R4 date-led hero"
+    }
+  ],
+  "exclusions": [
+    "disclaimer_card",
+    "investment_advice_copy",
+    "betting_or_investment_cta",
+    "standalone_timestamp_card",
+    "boilerplate_footer"
+  ]
+}

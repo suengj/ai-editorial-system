@@ -9,16 +9,32 @@ import { isolatedEnv } from './svg-tools.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 export const FONT_DIR = resolve(HERE, '../../assets/fonts/aes-sans-kr');
+export const SERIF_FONT_DIR = resolve(HERE, '../../assets/fonts/noto-serif-kr-pmc');
+export const SERIF_FONT_PATH = resolve(SERIF_FONT_DIR, 'NotoSerifKR-PMC.ttf');
+export const OPTIONAL_SERIF_FONT_ENV = 'AES_NOTO_SERIF_KR_FONT'; // legacy override; normal renders use the repository bundle
 export const FONT_PREFERENCES_PATH = resolve(HERE, '../../editorial/font-preferences.v1.json');
 export const FONT_INVENTORY_PATH = resolve(HERE, '../../editorial/font-inventory.v1.json');
 export const ENTRY_MANIFEST_PATH = resolve(HERE, '../../editorial/entry-manifest.json');
 export const BUNDLED_FAMILY = 'AES Sans KR';
+export const BUNDLED_SERIF_FAMILY = 'Noto Serif KR';
 export const typographyError = (code, message) => Object.assign(new Error(message), { code });
 
 let manifestCache = null;
 let preferencesCache = null;
 let inventoryCache = null;
 export const fontManifest = () => (manifestCache ??= JSON.parse(readFileSync(resolve(FONT_DIR, 'manifest.json'), 'utf8')));
+export function serifFontManifest() {
+  const manifest = JSON.parse(readFileSync(resolve(SERIF_FONT_DIR, 'manifest.json'), 'utf8'));
+  const font = readFileSync(SERIF_FONT_PATH), license = readFileSync(resolve(SERIF_FONT_DIR, 'LICENSE'));
+  if (manifest?.schema_version !== 'aes-font-registration/1' || manifest.font_id !== 'noto-serif-kr-pmc'
+    || manifest.family !== BUNDLED_SERIF_FAMILY || manifest.weight !== 600
+    || manifest.files?.font !== 'NotoSerifKR-PMC.ttf' || sha256(font) !== manifest.files.font_sha256
+    || manifest.files.license !== 'LICENSE' || sha256(license) !== manifest.files.license_sha256
+    || manifest.coverage?.ks_x_1001_common_hangul_syllables !== 2350) {
+    throw typographyError('FONT_CONTRACT_INVALID', 'bundled Noto Serif KR registration or asset digest is invalid');
+  }
+  return manifest;
+}
 /** AES-owned accepted candidates. The contract does not select a production default. */
 const entryManifest = () => JSON.parse(readFileSync(ENTRY_MANIFEST_PATH, 'utf8'));
 const sha256 = (bytes) => createHash('sha256').update(bytes).digest('hex');
@@ -159,22 +175,58 @@ export function assertFontCoverage(text, weight) {
   if (missing.length) throw typographyError('FONT_FALLBACK', `glyphs not in ${BUNDLED_FAMILY} subset would be substituted: ${missing.slice(0, 8).join(' ')}`);
 }
 
+export const requestsBundledSerif = (stack) => typeof stack === 'string'
+  && stack.split(',')[0].trim().replace(/^['"]|['"]$/g, '') === BUNDLED_SERIF_FAMILY;
+
+/** Serif resolution and glyph coverage are fail-closed because no fallback is allowed for card headlines. */
+export function verifyBundledSerifResolution(env = bundledFontEnv()) {
+  const r = spawnSync('fc-match', ['-f', '%{file}', `${BUNDLED_SERIF_FAMILY}:weight=180`], { env: isolatedEnv(env), encoding: 'utf8', timeout: 5000 });
+  if (r.error || r.status !== 0 || resolve(r.stdout.trim()) !== SERIF_FONT_PATH) {
+    throw typographyError('FONT_FALLBACK', `fontconfig did not resolve ${BUNDLED_SERIF_FAMILY} to the registered bundled face`);
+  }
+  return r.stdout.trim();
+}
+
+export function assertBundledSerifCoverage(text) {
+  const r = spawnSync('fc-query', ['--format=%{charset}', SERIF_FONT_PATH], { encoding: 'utf8', timeout: 5000 });
+  if (r.error || r.status !== 0) throw typographyError('FONT_FALLBACK', 'cannot inspect bundled Noto Serif KR glyph coverage');
+  const available = new Set();
+  for (const token of r.stdout.trim().split(/\s+/u)) {
+    if (!token) continue;
+    const [startText, endText = startText] = token.split('-');
+    const start = Number.parseInt(startText, 16), end = Number.parseInt(endText, 16);
+    if (!Number.isFinite(start) || !Number.isFinite(end)) throw typographyError('FONT_FALLBACK', 'invalid Noto Serif KR charset registry');
+    for (let cp = start; cp <= end; cp++) available.add(cp);
+  }
+  const missing = [...new Set([...text].filter((ch) => !/\s/u.test(ch) && !available.has(ch.codePointAt(0))))];
+  if (missing.length) throw typographyError('FONT_FALLBACK', `glyphs not in bundled ${BUNDLED_SERIF_FAMILY} subset: ${missing.slice(0, 8).join(' ')}`);
+}
+
 /** Digest of manifest.json + every bundled font file; part of render-reuse fingerprints. */
 export function bundledFontDigest() {
   const h = createHash('sha256'), m = fontManifest();
   h.update(readFileSync(resolve(FONT_DIR, 'manifest.json')));
   for (const f of Object.values(m.files)) h.update(readFileSync(resolve(FONT_DIR, f)));
+  serifFontManifest();
+  h.update(readFileSync(resolve(SERIF_FONT_DIR, 'manifest.json')));
+  h.update(readFileSync(SERIF_FONT_PATH));
+  const serifPath = process.env[OPTIONAL_SERIF_FONT_ENV];
+  if (serifPath) { h.update(OPTIONAL_SERIF_FONT_ENV); h.update(serifPath); h.update(readFileSync(resolve(serifPath))); }
   return `sha256:${h.digest('hex')}`;
 }
 
 /** Environment that makes the rasterizer see ONLY the bundled fonts (no system fonts, same result on any machine). */
 export function bundledFontEnv() {
-  const tag = createHash('sha256').update(FONT_DIR).digest('hex').slice(0, 12);
+  const overridePath = process.env[OPTIONAL_SERIF_FONT_ENV] ? resolve(process.env[OPTIONAL_SERIF_FONT_ENV]) : null;
+  serifFontManifest();
+  if (overridePath && !existsSync(overridePath)) throw typographyError('FONT_FALLBACK', `${OPTIONAL_SERIF_FONT_ENV} does not exist: ${overridePath}`);
+  const dirs = [FONT_DIR, SERIF_FONT_DIR, ...(overridePath ? [dirname(overridePath)] : [])];
+  const tag = createHash('sha256').update(dirs.join('\n')).digest('hex').slice(0, 12);
   const dir = resolve(tmpdir(), `aes-fontconfig-${tag}`);
   const conf = resolve(dir, 'fonts.conf');
   if (!existsSync(conf)) {
     mkdirSync(resolve(dir, 'cache'), { recursive: true });
-    writeFileSync(conf, `<?xml version="1.0"?><!DOCTYPE fontconfig SYSTEM "fonts.dtd"><fontconfig><dir>${FONT_DIR}</dir><cachedir>${resolve(dir, 'cache')}</cachedir></fontconfig>\n`);
+    writeFileSync(conf, `<?xml version="1.0"?><!DOCTYPE fontconfig SYSTEM "fonts.dtd"><fontconfig>${dirs.map((fontDir) => `<dir>${fontDir.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;')}</dir>`).join('')}<cachedir>${resolve(dir, 'cache')}</cachedir></fontconfig>\n`);
   }
   // PANGOCAIRO_BACKEND=fc: on macOS pango defaults to CoreText, which ignores FONTCONFIG_FILE and would silently use system fonts.
   return { FONTCONFIG_FILE: conf, FONTCONFIG_PATH: dir, PANGOCAIRO_BACKEND: 'fc' };
@@ -198,6 +250,28 @@ export const TYPE_SCALE = Object.freeze({
   body:     { font_size: 36,  weight: 400, letter_spacing: 0, line_height: 1.5, max_lines: 6 },
   caption:  { font_size: 28,  weight: 400, letter_spacing: 0, line_height: 1.4, max_lines: 3 },
   source:   { font_size: 24,  weight: 400, letter_spacing: 0.005, line_height: 1.3, max_lines: 2 },
+});
+/** Shared card-news tokens at the 1080px logical canvas. These are consumed by carousel planning. */
+export const CARD_NEWS_TYPE_TOKENS = Object.freeze({
+  canvas_width: 1080,
+  margin_px: 72,
+  panel_geometry: Object.freeze({ x: 72, width: 936 }),
+  headline: Object.freeze({ font_family: "'Noto Serif KR', 'Noto Serif CJK KR', serif", font_size: 64, weight: 600, max_lines: 2, line_height: 1.2 }),
+  hero: Object.freeze({ font_size: 150, weight: 800, max_lines: 1, line_height: 1.05 }),
+  secondary: Object.freeze({ font_size: 110, weight: 700, max_lines: 2, line_height: 1.1 }),
+  label: Object.freeze({ font_size: 34, weight: 600, max_lines: 2, line_height: 1.2 }),
+  chip: Object.freeze({ font_size: 34, weight: 700, max_lines: 1, line_height: 1.1 }),
+  body: Object.freeze({ font_size: 36, weight: 400, max_lines: 2, line_height: 1.35 }),
+});
+export const CARD_NEWS_TYPE_ROLES = Object.freeze({
+  headline: CARD_NEWS_TYPE_TOKENS.headline,
+  hero: CARD_NEWS_TYPE_TOKENS.hero,
+  date: CARD_NEWS_TYPE_TOKENS.secondary,
+  secondary: CARD_NEWS_TYPE_TOKENS.secondary,
+  eyebrow: CARD_NEWS_TYPE_TOKENS.label,
+  label: CARD_NEWS_TYPE_TOKENS.label,
+  chip: CARD_NEWS_TYPE_TOKENS.chip,
+  body: CARD_NEWS_TYPE_TOKENS.body,
 });
 export function resolveScale(role, overrides = {}, scale = TYPE_SCALE) {
   if (!Object.hasOwn(scale, role)) throw typographyError('TYPE_SCALE_ROLE', `unknown type-scale role: ${role}`);

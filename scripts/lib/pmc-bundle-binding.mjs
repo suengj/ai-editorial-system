@@ -124,6 +124,10 @@ export function loadPmcPlotBundle(plotPath) {
 }
 
 const utcDay = (iso) => iso.slice(0, 10);
+const koreanDay = (iso) => {
+  const [, month, day] = iso.slice(0, 10).split('-').map(Number);
+  return `${month}월 ${day}일`;
+};
 const PROVIDER_LABEL = { polymarket: 'Polymarket', kalshi: 'Kalshi', manifold: 'Manifold' };
 const clean = (v) => Number(v.toPrecision(12)); // 0.42*100 -> 42, removes float noise only
 
@@ -163,13 +167,16 @@ export function pmcPlotToChartSpec(bundle) {
   const first = plot.points[0].observed_at, last = plot.points.at(-1).observed_at;
   const axis = plotAxis(plot);
   const label = plot.meta.outcome_label ?? plot.meta.outcome ?? '';
+  const firstDay = koreanDay(first), lastDay = koreanDay(last);
+  const period = new Date(first).getUTCMonth() === new Date(last).getUTCMonth()
+    ? `${firstDay} → ${lastDay.replace(/^\d+월 /, '')}` : `${firstDay} → ${lastDay}`;
   return {
     type: 'line',
-    title: label ? `${PROVIDER_LABEL[provider] ?? provider} · ${label}` : (PROVIDER_LABEL[provider] ?? provider),
-    period: `${utcDay(first)} ~ ${utcDay(last)} 관측`,
+    title: period,
+    period: '이번 주',
     source_note: `출처 ${PROVIDER_LABEL[provider] ?? provider}`,
-    x: { label: '관측일(UTC)', tick_labels: { [String(pts[0][0])]: utcDay(first), [String(pts.at(-1)[0])]: utcDay(last) } },
-    y: { label: '시장 확률', unit: '%', decimals: plot.hero?.decimals ?? 1, min: axis.min, max: axis.max },
+    x: { label: '날짜', show_label: false, tick_labels: { [String(pts[0][0])]: firstDay, [String(pts.at(-1)[0])]: lastDay } },
+    y: { label: '확률', unit: '%', decimals: plot.hero?.decimals ?? 1, min: axis.min, max: axis.max },
     series: [{ name: label || provider, claim: `pmc:${provider}:${plot.meta.market_id}:${bundle.plot_data_sha256.slice(0, 12)}`, points: pts }],
   };
 }
@@ -256,8 +263,15 @@ export function verifyRenderAgainstBundle(bundle, execution) {
   const endpoint = chart.displayed[0];
   pass('endpoint_matches_pmc_hero', endpoint.endpoint_label === plot.hero.text, `${endpoint.endpoint_label} vs ${plot.hero.text}`);
   pass('endpoint_is_last_observation', endpoint.endpoint[0] === Date.parse(last.observed_at) && endpoint.endpoint[1] === clean(last.value * 100), `${JSON.stringify(endpoint.endpoint)}`);
-  pass('hero_text_layer', execution.text.some((t) => t.id === 'hero' && t.text === plot.hero.text), 'hero text layer differs from PMC hero.text');
-  if (plot.delta?.text) pass('delta_text_layer', execution.text.some((t) => t.id === 'delta' && t.text.endsWith(plot.delta.text)), 'delta text layer differs from PMC delta.text');
+  pass('hero_text_layer', execution.text.some((t) => t.id === 'hero' && t.text === plot.hero.text) || endpoint.endpoint_label === plot.hero.text,
+    'neither a matching hero text layer nor the chart endpoint label matches PMC hero.text');
+  if (plot.delta?.text) {
+    const pp = plot.delta.value_pp;
+    const readerDelta = Number.isFinite(pp) ? `${Math.abs(pp).toLocaleString('ko-KR', { maximumFractionDigits: 2 })}%p ${pp < 0 ? '내렸다' : pp > 0 ? '올랐다' : '변화 없다'}` : null;
+    pass('delta_text_layer', execution.text.some((t) => t.id === 'delta' && t.text.endsWith(plot.delta.text)) ||
+      (readerDelta && execution.text.some((t) => t.text.includes(readerDelta))),
+    'neither the raw PMC delta layer nor its Korean reader-copy equivalent appears in visible text');
+  }
   pass('unit_percent', chart.axis.unit === '%', `unit ${chart.axis.unit}`);
   const axis = plotAxis(plot);
   pass('axis_matches_pmc', chart.axis.ymin === axis.min && chart.axis.ymax === axis.max, `${chart.axis.ymin}..${chart.axis.ymax} vs ${axis.min}..${axis.max}`);

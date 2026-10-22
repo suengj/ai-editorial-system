@@ -41,6 +41,7 @@
       "focal_fallback",
       "mockup_risk",
       "text",
+      "text_role",
       "source_ref",
       "instruction",
       "generation",
@@ -92,6 +93,11 @@
       "profiles",
       "recipe",
       "visual_style",
+      "footer_policy",
+      "content_kind",
+      "requires_brief",
+      "numeric_profile",
+      "brief_file",
       "task",
       "typography",
       "regions",
@@ -108,7 +114,7 @@
     }
   },
   "catalog_version": "1.0.0",
-  "content_digest": "sha256:4abd400b4b50d44c87625efb7c30e028f654b48cf01b161166604ce04281ab8a",
+  "content_digest": "sha256:1ed866c75dd8ecb27cb0ca5719b538bcfd1b89726df94c39d04772a9aff2c272",
   "field_domains": {
     "call_to_action": {
       "max_length": 200,
@@ -216,7 +222,7 @@
           {
             "path": "editorial/STRUCTURED-VISUAL-EXECUTION.md",
             "role": "core:visual",
-            "sha256": "68ad0fc1428807684c7c7fd6eefa54f91d28cb68814c50d9960b434cd9696824"
+            "sha256": "19e9ebf3f1c1f556a8d7a11027361b973cf54a22f1e08c15602e114387c12926"
           },
           {
             "path": "editorial/constitution.md",
@@ -285,7 +291,7 @@
           {
             "path": "editorial/STRUCTURED-VISUAL-EXECUTION.md",
             "role": "core:visual",
-            "sha256": "68ad0fc1428807684c7c7fd6eefa54f91d28cb68814c50d9960b434cd9696824"
+            "sha256": "19e9ebf3f1c1f556a8d7a11027361b973cf54a22f1e08c15602e114387c12926"
           },
           {
             "path": "editorial/constitution.md",
@@ -306,7 +312,7 @@
     "manifest": {
       "manifest_version": "2026-10-16.1",
       "path": "editorial/entry-manifest.json",
-      "sha256": "534684145b93337610c7e1903606446d68cfb0ff669f51d0b1d951961a6cf15e"
+      "sha256": "e172539140f795171273b81ecc9ed058dcd19d4390b7a06d8eee880b5a2b8b39"
     },
     "note": "The AES git commit is deliberately not embedded. The consumer pins the AES commit and this file's sha256.",
     "profile_version_semantics": "<manifest_version>+<aes_commit>; the consumer supplies aes_commit from its own pin",
@@ -7946,7 +7952,7 @@
           {
             "path": "editorial/STRUCTURED-VISUAL-EXECUTION.md",
             "role": "core:visual",
-            "sha256": "68ad0fc1428807684c7c7fd6eefa54f91d28cb68814c50d9960b434cd9696824"
+            "sha256": "19e9ebf3f1c1f556a8d7a11027361b973cf54a22f1e08c15602e114387c12926"
           },
           {
             "path": "editorial/SUENGJ-STYLE.md",
@@ -7961,7 +7967,7 @@
           {
             "path": "editorial/visual-recipes.v1.json",
             "role": "visual:values",
-            "sha256": "b15a0e5519fd4273747bb5bf7671cb8b7945ecb2102519c214fddd6e38e68a4f"
+            "sha256": "e28b6d2d41fd695a5925868ab160b19cebefb7fbad7a37de8a61b74dcbd0ad95"
           }
         ]
       },
@@ -8047,12 +8053,17 @@
           {
             "path": "editorial/BUSINESS-IDEA-MAGAZINE.md",
             "role": "copy:business",
-            "sha256": "0765cd367eb04a3b930f94da7f8f8e60d3eb5e4ca96db7da18e2c4adfedc9aee"
+            "sha256": "081478e6d86f7b3cddae9ccfbe9a62f10ad57c39b6ff7b8c602f090b73661d24"
           },
           {
             "path": "editorial/SIGNALYTICS-BENCHMARK-CARDS.md",
             "role": "copy:business",
-            "sha256": "e9e9e4f2f4c630655e2ca10e538b0e7522218abb56dd96434d70d798734058f1"
+            "sha256": "90de266ca6de9aba0f8428d514b267e49d625e50ecf4a9daddb41a52383ea20f"
+          },
+          {
+            "path": "editorial/SIGNALYTICS-PREDICTION-MARKET-CAROUSEL.md",
+            "role": "copy:business",
+            "sha256": "8e01ec25d0db1223cdc3c748498ace325ae9f639a278fbffae00f02166d10690"
           },
           {
             "path": "editorial/constitution.md",
@@ -8069,22 +8080,37 @@
           {
             "path": "editorial/BUSINESS-IDEA-MAGAZINE.md",
             "role": "copy:business",
-            "sha256": "0765cd367eb04a3b930f94da7f8f8e60d3eb5e4ca96db7da18e2c4adfedc9aee"
+            "sha256": "081478e6d86f7b3cddae9ccfbe9a62f10ad57c39b6ff7b8c602f090b73661d24"
+          },
+          {
+            "path": "editorial/INSTAGRAM-NUMERIC-VISUAL-POLICY.md",
+            "role": "visual:rules",
+            "sha256": "52b0982c5416267331b75b37d9834ed0074523e5691b8b44f8afdd1118d445e0"
+          },
+          {
+            "path": "editorial/PMC-BUNDLE-BINDING.md",
+            "role": "visual:rules",
+            "sha256": "00e802c65f9d21df8a3bad20c4a4d4264eb36acf9644f2682e5722c6947629d6"
           },
           {
             "path": "editorial/SIGNALYTICS-BENCHMARK-CARDS.md",
             "role": "copy:business",
-            "sha256": "e9e9e4f2f4c630655e2ca10e538b0e7522218abb56dd96434d70d798734058f1"
+            "sha256": "90de266ca6de9aba0f8428d514b267e49d625e50ecf4a9daddb41a52383ea20f"
+          },
+          {
+            "path": "editorial/SIGNALYTICS-PREDICTION-MARKET-CAROUSEL.md",
+            "role": "copy:business",
+            "sha256": "8e01ec25d0db1223cdc3c748498ace325ae9f639a278fbffae00f02166d10690"
           },
           {
             "path": "editorial/SLIDES-AND-CAROUSELS.md",
             "role": "visual:rules",
-            "sha256": "0f4b92eb41380eda6ea96b71f86e59a73718f835dca4fac45fb65c13e7cbf64d"
+            "sha256": "1d8ee53826ff7b96cc9154b558cc499b28d6cae592b5c0995e8487dfd5ac1441"
           },
           {
             "path": "editorial/STRUCTURED-VISUAL-EXECUTION.md",
             "role": "core:visual",
-            "sha256": "68ad0fc1428807684c7c7fd6eefa54f91d28cb68814c50d9960b434cd9696824"
+            "sha256": "19e9ebf3f1c1f556a8d7a11027361b973cf54a22f1e08c15602e114387c12926"
           },
           {
             "path": "editorial/business-idea-magazine.v1.json",
@@ -8097,9 +8123,19 @@
             "sha256": "6a6b58a9fce5f29099d74c23f10587c6560904ffe0a6a7c001e2ab330b2b6997"
           },
           {
+            "path": "editorial/prediction-market-carousel.v1.json",
+            "role": "visual:values",
+            "sha256": "785b015fa3c33d15881fe37ff2aad4bec40136d079d74a1838a135f1aa4a5e38"
+          },
+          {
+            "path": "editorial/templates/prediction-market-carousel.series.json",
+            "role": "visual:values",
+            "sha256": "33e25835c9bf252bd7a7f7fa233b223edd6df62f59af3c5ccdff7445dfb7f253"
+          },
+          {
             "path": "editorial/visual-recipes.v1.json",
             "role": "visual:values",
-            "sha256": "b15a0e5519fd4273747bb5bf7671cb8b7945ecb2102519c214fddd6e38e68a4f"
+            "sha256": "e28b6d2d41fd695a5925868ab160b19cebefb7fbad7a37de8a61b74dcbd0ad95"
           }
         ]
       },
@@ -8109,7 +8145,9 @@
         "visual"
       ],
       "visual_artifacts": [
-        "visual/slide-image"
+        "visual/slide-image",
+        "visual/evidence-visual",
+        "visual/prediction-market-carousel"
       ],
       "visual_defaults": {
         "canvas": {
@@ -8151,12 +8189,12 @@
           {
             "path": "editorial/SLIDES-AND-CAROUSELS.md",
             "role": "visual:rules",
-            "sha256": "0f4b92eb41380eda6ea96b71f86e59a73718f835dca4fac45fb65c13e7cbf64d"
+            "sha256": "1d8ee53826ff7b96cc9154b558cc499b28d6cae592b5c0995e8487dfd5ac1441"
           },
           {
             "path": "editorial/STRUCTURED-VISUAL-EXECUTION.md",
             "role": "core:visual",
-            "sha256": "68ad0fc1428807684c7c7fd6eefa54f91d28cb68814c50d9960b434cd9696824"
+            "sha256": "19e9ebf3f1c1f556a8d7a11027361b973cf54a22f1e08c15602e114387c12926"
           },
           {
             "path": "editorial/TRENDS-MOA-COMMUNITY-TONE.md",
@@ -8171,7 +8209,7 @@
           {
             "path": "editorial/visual-recipes.v1.json",
             "role": "visual:values",
-            "sha256": "b15a0e5519fd4273747bb5bf7671cb8b7945ecb2102519c214fddd6e38e68a4f"
+            "sha256": "e28b6d2d41fd695a5925868ab160b19cebefb7fbad7a37de8a61b74dcbd0ad95"
           }
         ]
       },
@@ -8511,22 +8549,172 @@
           "background_regions": [
             "art"
           ],
+          "recurring_regions": {
+            "eyebrow": {
+              "height": 0.035,
+              "width": 0.44,
+              "x": 0.06,
+              "y": 0.04
+            },
+            "headline": {
+              "height": 0.22,
+              "width": 0.88,
+              "x": 0.06,
+              "y": 0.08
+            },
+            "pagination": {
+              "height": 0.03,
+              "width": 0.14,
+              "x": 0.8,
+              "y": 0.9
+            },
+            "source": {
+              "height": 0.03,
+              "width": 0.42,
+              "x": 0.06,
+              "y": 0.9
+            }
+          },
           "solid_bands": [
             {
               "fill": "theme.background",
-              "height": 0.565,
-              "id": "hero-text-safe-band",
-              "width": 1,
-              "x": 0,
-              "y": 0.035
+              "gradient": [
+                [
+                  0,
+                  0.92
+                ],
+                [
+                  0.42,
+                  0.84
+                ],
+                [
+                  0.78,
+                  0.4
+                ],
+                [
+                  1,
+                  0
+                ]
+              ],
+              "height": 0.92,
+              "id": "r4-text-zone-scrim",
+              "width": 0.92,
+              "x": 0.04,
+              "y": 0.04
+            }
+          ]
+        },
+        "hero-clean": {
+          "background_regions": [
+            "art"
+          ],
+          "recurring_regions": {
+            "eyebrow": {
+              "height": 0.035,
+              "width": 0.44,
+              "x": 0.06,
+              "y": 0.04
             },
+            "headline": {
+              "height": 0.22,
+              "width": 0.46,
+              "x": 0.06,
+              "y": 0.08
+            },
+            "pagination": {
+              "height": 0.03,
+              "width": 0.14,
+              "x": 0.8,
+              "y": 0.9
+            },
+            "source": {
+              "height": 0.03,
+              "width": 0.42,
+              "x": 0.06,
+              "y": 0.9
+            }
+          },
+          "solid_bands": [
             {
               "fill": "theme.background",
-              "height": 0.08,
-              "id": "hero-source-safe-band",
+              "gradient": [
+                [
+                  0,
+                  0.98
+                ],
+                [
+                  0.54,
+                  0.98
+                ],
+                [
+                  0.75,
+                  0.48
+                ],
+                [
+                  1,
+                  0
+                ]
+              ],
+              "height": 1,
+              "id": "left-text-zone",
               "width": 1,
               "x": 0,
-              "y": 0.85
+              "y": 0
+            }
+          ]
+        },
+        "hero-photo-scrim": {
+          "background_regions": [
+            "art"
+          ],
+          "recurring_regions": {
+            "eyebrow": {
+              "height": 0.035,
+              "width": 0.44,
+              "x": 0.06,
+              "y": 0.04
+            },
+            "headline": {
+              "height": 0.22,
+              "width": 0.46,
+              "x": 0.06,
+              "y": 0.08
+            },
+            "pagination": {
+              "height": 0.015,
+              "width": 0.14,
+              "x": 0.36,
+              "y": 0.845
+            },
+            "source": {
+              "height": 0.015,
+              "width": 0.28,
+              "x": 0.06,
+              "y": 0.845
+            }
+          },
+          "solid_bands": [
+            {
+              "fill": "theme.background",
+              "gradient": [
+                [
+                  0,
+                  0.92
+                ],
+                [
+                  0.78,
+                  0.92
+                ],
+                [
+                  1,
+                  0.25
+                ]
+              ],
+              "height": 0.86,
+              "id": "left-text-zone",
+              "width": 0.54,
+              "x": 0,
+              "y": 0
             }
           ]
         }
@@ -8577,7 +8765,65 @@
             "height": 0.24,
             "width": 0.88,
             "x": 0.06,
+            "y": 0.56
+          },
+          "hero-value": {
+            "height": 0.17,
+            "width": 0.88,
+            "x": 0.06,
             "y": 0.36
+          }
+        },
+        "hero-clean": {
+          "art": {
+            "height": 1,
+            "width": 1,
+            "x": 0,
+            "y": 0
+          },
+          "copy": {
+            "height": 0.2,
+            "width": 0.43,
+            "x": 0.06,
+            "y": 0.64
+          },
+          "hero-value": {
+            "height": 0.16,
+            "width": 0.43,
+            "x": 0.06,
+            "y": 0.34
+          },
+          "key": {
+            "height": 0.09,
+            "width": 0.43,
+            "x": 0.06,
+            "y": 0.53
+          }
+        },
+        "hero-photo-scrim": {
+          "art": {
+            "height": 1,
+            "width": 1,
+            "x": 0,
+            "y": 0
+          },
+          "copy": {
+            "height": 0.2,
+            "width": 0.43,
+            "x": 0.06,
+            "y": 0.64
+          },
+          "hero-value": {
+            "height": 0.16,
+            "width": 0.43,
+            "x": 0.06,
+            "y": 0.34
+          },
+          "key": {
+            "height": 0.09,
+            "width": 0.43,
+            "x": 0.06,
+            "y": 0.53
           }
         },
         "r7-illustration": {
@@ -8699,7 +8945,7 @@
           "theme": {
             "accent": "#536756",
             "background": "#F7F4EC",
-            "font_family": "'Noto Serif CJK KR', 'Noto Serif KR', Georgia, serif",
+            "font_family": "'Noto Serif KR', 'Noto Serif CJK KR', Georgia, serif",
             "foreground": "#14213D"
           },
           "typography": {
@@ -9022,6 +9268,20 @@
           "max_lines": 7,
           "weight": 400
         },
+        "chip": {
+          "font_family": "AES Sans KR",
+          "font_size": 34,
+          "line_height": 1.1,
+          "max_lines": 1,
+          "weight": 700
+        },
+        "date": {
+          "font_family": "'Noto Serif KR', 'Noto Serif CJK KR', serif",
+          "font_size": 96,
+          "line_height": 1.1,
+          "max_lines": 1,
+          "weight": 700
+        },
         "eyebrow": {
           "font_size": 28,
           "line_height": 1.15,
@@ -9033,6 +9293,20 @@
           "line_height": 1.2,
           "max_lines": 2,
           "weight": 700
+        },
+        "hero": {
+          "font_family": "AES Sans KR",
+          "font_size": 232,
+          "line_height": 1.05,
+          "max_lines": 1,
+          "weight": 800
+        },
+        "label": {
+          "font_family": "AES Sans KR",
+          "font_size": 28,
+          "line_height": 1.2,
+          "max_lines": 2,
+          "weight": 600
         },
         "pagination": {
           "align": "end",
@@ -9049,6 +9323,6 @@
         }
       }
     },
-    "sha256": "b15a0e5519fd4273747bb5bf7671cb8b7945ecb2102519c214fddd6e38e68a4f"
+    "sha256": "e28b6d2d41fd695a5925868ab160b19cebefb7fbad7a37de8a61b74dcbd0ad95"
   }
 }

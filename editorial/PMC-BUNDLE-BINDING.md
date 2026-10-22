@@ -10,7 +10,7 @@ Prediction-Market-Crawler(PMC)가 만든 **plot bundle**을 `renderChartPanel`·
 | 이 경로 | PMC 파일의 무결성 검증, 관측값을 **복사**해 차트 spec 구성, 카드 plan 구성, 렌더 결과가 PMC 숫자와 같은지 대조 |
 | owner | 최종 시각 판단과 게시 승인 (이 경로는 어느 것도 대신하지 않는다) |
 
-입력 값은 바꾸지 않는다. 값 수정·보간·이동평균·forward-fill·갭 메우기는 하지 않는다. 데이터가 달라져야 하면 PMC에서 새 bundle을 만든다.
+원시 관측값과 표시 숫자는 바꾸지 않는다. 기본 `raw` mode는 모든 원 관측을 정확한 monotone 경로로 그리고 smoothing·resampling·simplification을 금지한다. 예측시장 card-news profile이 선택한 `flow` mode만 내부 곡선을 시각적으로 smoothing할 수 있으며, raw 양 끝점·방향·signed delta와 모든 표시 숫자/날짜는 검증된 PMC bundle과 일치해야 한다. 중간 관측값 라벨이 있는 차트에는 `flow`를 쓸 수 없다. 데이터 수정·forward-fill·갭 메우기는 하지 않는다.
 
 ## 2. 실행 순서
 

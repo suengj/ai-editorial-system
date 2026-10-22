@@ -111,6 +111,23 @@ for (const [name, base, mut, code] of M) {
 ok('spec with no watermark passes', (() => { const t = clone(load('single-smooth')); delete t.watermark; return checkNumericCard(t).length === 0; })());
 ok('custom watermark text passes when enabled', (() => { const t = clone(load('single-smooth')); t.watermark = { enabled: true, text: 'example.org', layer: 'behind_plot', opacity: 0.07 }; return checkNumericCard(t).length === 0; })());
 ok('profile marks watermark optional, default off', P.watermark.optional === true && P.watermark.default_enabled === false);
+ok('profile enables owner-selected illustrative trend mode', P.chart_image_modes?.allowed?.includes('illustrative_trend_image') === true && P.chart_image_modes?.illustrative_trend_image?.owner_decision === true && P.chart_image_modes?.illustrative_trend_image?.history_required === true);
+const trendImage = clone(load('single-smooth'));
+const trendObs = trendImage.series[0].observations;
+const trendStart = trendObs[0], trendEnd = trendObs.at(-1), trendDelta = trendEnd.p - trendStart.p;
+trendImage.rendering.chart_geometry = 'illustrative_trend_image';
+trendImage.rendering.image_ai_role = 'trend_illustration';
+trendImage.rendering.trend_image = { curve: 'smooth_continuous', direction: trendDelta > 0 ? 'up' : 'down', direction_source: 'raw_history', contains_text: false, contains_numbers: false, contains_axes: false };
+trendImage.rendering.overlays = { start_value: trendStart.p, start_text: `${trendStart.p.toFixed(1)}%`, end_value: trendEnd.p, end_text: `${trendEnd.p.toFixed(1)}%`, change_pp: Number(trendDelta.toFixed(1)), change_text: `${trendDelta > 0 ? '+' : '−'}${Math.abs(trendDelta).toFixed(1)}%p` };
+ok('illustrative trend passes when image is text free and renderer overlays match raw history', checkNumericCard(trendImage).length === 0, JSON.stringify(checkNumericCard(trendImage)));
+const wrongTrendDirection = clone(trendImage); wrongTrendDirection.rendering.trend_image.direction = trendDelta > 0 ? 'down' : 'up';
+ok('illustrative trend rejects direction mismatch', checkNumericCard(wrongTrendDirection).some((e) => e.code === 'TREND_DIRECTION'));
+const wrongTrendOverlay = clone(trendImage); wrongTrendOverlay.rendering.overlays.end_value += 1;
+ok('illustrative trend rejects overlay that differs from PMC history', checkNumericCard(wrongTrendOverlay).some((e) => e.code === 'TREND_OVERLAY_END'));
+const textTrend = clone(trendImage); textTrend.rendering.trend_image.contains_text = true;
+ok('illustrative trend rejects text or numbers inside generated image', checkNumericCard(textTrend).some((e) => e.code === 'TREND_IMAGE_TEXT'));
+const missingTrendHistory = clone(trendImage); missingTrendHistory.series[0].observations = [];
+ok('illustrative trend rejects missing PMC history', checkNumericCard(missingTrendHistory).some((e) => e.code === 'OBS_MIN' || e.code === 'TREND_HISTORY_REQUIRED'));
 // positive control: production publication passes when every gate is met
 const pub = clone(load('single-smooth')); pub.publication.requested = true; pub.qa.owner_approval = { status: 'approved', scope: 'production' };
 ok('publication allowed only with numeric+visual QA and owner production approval', checkNumericCard(pub).length === 0);

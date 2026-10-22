@@ -72,10 +72,28 @@
       },
       "copy": {
         "x": 0.06,
-        "y": 0.36,
+        "y": 0.56,
         "width": 0.88,
         "height": 0.24
+      },
+      "hero-value": {
+        "x": 0.06,
+        "y": 0.36,
+        "width": 0.88,
+        "height": 0.17
       }
+    },
+    "hero-clean": {
+      "art": { "x": 0, "y": 0, "width": 1, "height": 1 },
+      "hero-value": { "x": 0.06, "y": 0.34, "width": 0.43, "height": 0.16 },
+      "key": { "x": 0.06, "y": 0.53, "width": 0.43, "height": 0.09 },
+      "copy": { "x": 0.06, "y": 0.64, "width": 0.43, "height": 0.2 }
+    },
+    "hero-photo-scrim": {
+      "art": { "x": 0, "y": 0, "width": 1, "height": 1 },
+      "hero-value": { "x": 0.06, "y": 0.34, "width": 0.43, "height": 0.16 },
+      "key": { "x": 0.06, "y": 0.53, "width": 0.43, "height": 0.09 },
+      "copy": { "x": 0.06, "y": 0.64, "width": 0.43, "height": 0.2 }
     },
     "r7-illustration": {
       "art": {
@@ -152,23 +170,38 @@
         "art"
       ],
       "solid_bands": [
-        {
-          "id": "hero-text-safe-band",
-          "x": 0,
-          "y": 0.035,
-          "width": 1,
-          "height": 0.565,
-          "fill": "theme.background"
-        },
-        {
-          "id": "hero-source-safe-band",
-          "x": 0,
-          "y": 0.85,
-          "width": 1,
-          "height": 0.08,
-          "fill": "theme.background"
-        }
-      ]
+        { "id": "r4-text-zone-scrim", "x": 0.04, "y": 0.04, "width": 0.92, "height": 0.92, "fill": "theme.background", "gradient": [[0, 0.92], [0.42, 0.84], [0.78, 0.4], [1, 0]] }
+      ],
+      "recurring_regions": {
+        "headline": { "x": 0.06, "y": 0.08, "width": 0.88, "height": 0.22 },
+        "eyebrow": { "x": 0.06, "y": 0.04, "width": 0.44, "height": 0.035 },
+        "source": { "x": 0.06, "y": 0.9, "width": 0.42, "height": 0.03 },
+        "pagination": { "x": 0.8, "y": 0.9, "width": 0.14, "height": 0.03 }
+      }
+    },
+    "hero-clean": {
+      "background_regions": ["art"],
+      "solid_bands": [
+        { "id": "left-text-zone", "x": 0, "y": 0, "width": 1, "height": 1, "fill": "theme.background", "gradient": [[0, 0.98], [0.54, 0.98], [0.75, 0.48], [1, 0]] }
+      ],
+      "recurring_regions": {
+        "headline": { "x": 0.06, "y": 0.08, "width": 0.46, "height": 0.22 },
+        "eyebrow": { "x": 0.06, "y": 0.04, "width": 0.44, "height": 0.035 },
+        "source": { "x": 0.06, "y": 0.9, "width": 0.42, "height": 0.03 },
+        "pagination": { "x": 0.8, "y": 0.9, "width": 0.14, "height": 0.03 }
+      }
+    },
+    "hero-photo-scrim": {
+      "background_regions": ["art"],
+      "solid_bands": [
+        { "id": "left-text-zone", "x": 0, "y": 0, "width": 0.54, "height": 0.86, "fill": "theme.background", "gradient": [[0, 0.92], [0.78, 0.92], [1, 0.25]] }
+      ],
+      "recurring_regions": {
+        "headline": { "x": 0.06, "y": 0.08, "width": 0.46, "height": 0.22 },
+        "eyebrow": { "x": 0.06, "y": 0.04, "width": 0.44, "height": 0.035 },
+        "source": { "x": 0.06, "y": 0.845, "width": 0.28, "height": 0.015 },
+        "pagination": { "x": 0.36, "y": 0.845, "width": 0.14, "height": 0.015 }
+      }
     }
   },
   "typography": {
@@ -183,6 +216,27 @@
       "weight": 700,
       "max_lines": 2,
       "line_height": 1.2
+    },
+    "hero": {
+      "font_size": 232,
+      "weight": 800,
+      "max_lines": 1,
+      "line_height": 1.05,
+      "font_family": "AES Sans KR"
+    },
+    "label": {
+      "font_size": 28,
+      "weight": 600,
+      "max_lines": 2,
+      "line_height": 1.2,
+      "font_family": "AES Sans KR"
+    },
+    "chip": {
+      "font_size": 34,
+      "weight": 700,
+      "max_lines": 1,
+      "line_height": 1.1,
+      "font_family": "AES Sans KR"
     },
     "body": {
       "font_size": 38,
@@ -202,6 +256,13 @@
       "max_lines": 1,
       "line_height": 1.15,
       "align": "end"
+    },
+    "date": {
+      "font_size": 96,
+      "weight": 700,
+      "max_lines": 1,
+      "line_height": 1.1,
+      "font_family": "'Noto Serif KR', 'Noto Serif CJK KR', serif"
     }
   },
   "recipes": {
@@ -210,7 +271,7 @@
         "background": "#F7F4EC",
         "foreground": "#14213D",
         "accent": "#536756",
-        "font_family": "'Noto Serif CJK KR', 'Noto Serif KR', Georgia, serif"
+        "font_family": "'Noto Serif KR', 'Noto Serif CJK KR', Georgia, serif"
       },
       "typography": {
         "headline": {

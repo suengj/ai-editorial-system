@@ -9,7 +9,7 @@ import { resolve } from 'node:path';
 import { loadAxisProfiles } from './profile-core.mjs';
 import { sha256, resolveWatermark, applyWatermark, decodePng, encodePng, WATERMARK_CHUNK_KEY, FONT_STACK } from './watermark-core.mjs';
 import { renderChartPanel, validateChartAgainstArticle } from './chart-renderer.mjs';
-import { balancedWrap, normalizeKoreanText, locateEmphasis, weightRuns, hasOrphan, requestsBundledFont, assertFontCoverage, bundledFontEnv, verifyBundledResolution, hexToRgb, contrastRatio, worstBackground, autoScrimOpacity } from './typography-core.mjs';
+import { balancedWrap, normalizeKoreanText, locateEmphasis, weightRuns, hasOrphan, requestsBundledFont, requestsBundledSerif, assertFontCoverage, assertBundledSerifCoverage, bundledFontEnv, bundledFontDigest, SERIF_FONT_PATH, verifyBundledResolution, verifyBundledSerifResolution, hexToRgb, contrastRatio, worstBackground, autoScrimOpacity } from './typography-core.mjs';
 import { esc, svgDocument, findRasterizer, rasterize, textMeasurer, wrapText } from './svg-tools.mjs';
 
 // SUE-1426 R2: a generated image only counts as image-generation success with real evidence
@@ -213,7 +213,7 @@ export async function compileExecution(plan, { baseDir = process.cwd(), preset =
       if (l.kind === 'chart') {
         // Chart values stay in their existing canonical spec, not in the prompt.
         const chart = JSON.parse(file.bytes);
-        if (!['line', 'bar', 'flow'].includes(chart.type)) fail('CHART_BINDING', 'v1 binds line/bar/flow; use an existing rendered evidence image for another geometry');
+        if (!['line', 'bar', 'flow', 'number_visual'].includes(chart.type)) fail('CHART_BINDING', 'v1 binds line/bar/flow/number_visual');
       } else {
         next.mode = l.mode ?? 'exact_composite'; next.fit = l.fit ?? 'contain';
         let replacedWithR7 = false;
@@ -305,7 +305,7 @@ export async function compileExecution(plan, { baseDir = process.cwd(), preset =
   const packet = {
     schema_version: EXECUTION_VERSION, kind: 'visual_execution', status: pending.length ? 'RENDER_REQUIRED' : 'COMPOSITION_REQUIRED',
     request: plan.request, request_hash: digest(plan), source: { ref: source.ref, sha256: source.sha256, scope: plan.source.scope },
-    profiles: Object.fromEntries(Object.entries(profiles).map(([axis, p]) => [axis, { id: plan.profiles[axis], version: p.profile_version ?? p.schema_version, sha256: digest(p) }])),
+    profiles: Object.fromEntries(Object.entries(profiles).map(([axis, p]) => [axis, { id: plan.profiles[axis], version: p.profile_version ?? p.schema_version, sha256: digest(p), ...(p.trend_render_mode ? { trend_render_mode: p.trend_render_mode } : {}) }])),
     canvas, theme, density, text_policy: policy, watermark, watermark_layer: watermarkLayer, field_origins: origins,
     resolved_requirements: {
       artifact: { primary_job: profiles.artifact.primary_job, composition: profiles.artifact.composition, acceptance: profiles.artifact.acceptance, readability: profiles.artifact.readability_gate },
@@ -394,9 +394,14 @@ export async function executeVisual(plan, { baseDir = process.cwd(), preset = {}
     writeFileSync(resolve(outDir, 'execution.json'), `${JSON.stringify(packet, null, 2)}\n`);
     return packet;
   }
-  if (requestsBundledFont(packet.theme.font_family) || packet.layers.some((l) => requestsBundledFont(l.font_family))) {
+  const usesSans = requestsBundledFont(packet.theme.font_family) || packet.layers.some((l) => requestsBundledFont(l.font_family));
+  const usesSerif = requestsBundledSerif(packet.theme.font_family) || packet.layers.some((l) => requestsBundledSerif(l.font_family));
+  if (usesSans || usesSerif) {
     adapter = { ...adapter, env: bundledFontEnv() }; // rasterizer sees only the bundled fonts: same result on any machine
-    for (const w of new Set(packet.layers.filter((l) => l.kind === 'text').flatMap((l) => [l.weight, ...(l.emphasis ?? []).map((e) => e.weight ?? l.weight)]))) verifyBundledResolution(w, adapter.env);
+    if (usesSerif) verifyBundledSerifResolution(adapter.env);
+    for (const l of packet.layers.filter((layer) => layer.kind === 'text' && requestsBundledFont(layer.font_family ?? packet.theme.font_family))) {
+      for (const w of new Set([l.weight, ...(l.emphasis ?? []).map((e) => e.weight ?? l.weight)])) verifyBundledResolution(w, adapter.env);
+    }
   }
   const { width, height } = packet.canvas;
   const measure = textMeasurer(adapter, packet.theme.font_family);
@@ -411,7 +416,12 @@ export async function executeVisual(plan, { baseDir = process.cwd(), preset = {}
     if (l.kind === 'text') {
       const rich = l.balance || l.emphasis || l.letter_spacing !== undefined || l.font_family || l.normalize || l.optical_margin || l.min_contrast !== undefined;
       if (!rich) {
-        const lines = wrapText(l.text, { width: b.width, height: b.height, size: l.font_size, weight: l.weight, maxLines: l.max_lines, lineHeight: l.line_height }, measure);
+        let lines;
+        try { lines = wrapText(l.text, { width: b.width, height: b.height, size: l.font_size, weight: l.weight, maxLines: l.max_lines, lineHeight: l.line_height }, measure); }
+        catch (error) {
+          if (!error.code && /^TEXT_OVERFLOW:/u.test(error.message ?? '')) error.code = 'TEXT_OVERFLOW';
+          error.message = `${l.id}: ${error.message}`; throw error;
+        }
         const x = b.x + (l.align === 'middle' ? b.width / 2 : l.align === 'end' ? b.width : 0);
         elements.push(`<text font-family="${esc(packet.theme.font_family)}" font-size="${l.font_size}" font-weight="${l.weight}" fill="${l.color ?? packet.theme.foreground}" text-anchor="${l.align}">${lines.map((t, i) => `<tspan x="${x}" y="${b.y + l.font_size + i * l.font_size * l.line_height}">${esc(t)}</tspan>`).join('')}</text>`);
         isText.add(elements.length - 1);
@@ -422,11 +432,18 @@ export async function executeVisual(plan, { baseDir = process.cwd(), preset = {}
       const printed = l.normalize ? normalizeKoreanText(l.text) : l.text;
       const emph = locateEmphasis(printed, (l.emphasis ?? []).map((e) => ({ ...e, weight: e.weight ?? l.weight })));
       if (requestsBundledFont(family)) { assertFontCoverage(printed, l.weight); for (const e of emph) assertFontCoverage(printed.slice(e.start, e.end), e.weight); }
+      if (requestsBundledSerif(family)) assertBundledSerifCoverage(printed);
       const lm = family === packet.theme.font_family ? measure : textMeasurer(adapter, family);
       const spaced = (t, z, w) => lm(t, z, w) + (l.letter_spacing ?? 0) * z * [...t].length;
-      const lines = l.balance
-        ? balancedWrap(printed, { width: b.width, size: l.font_size, weight: l.weight, maxLines: l.max_lines, emphasis: emph }, spaced)
-        : wrapText(printed, { width: b.width, height: b.height, size: l.font_size, weight: l.weight, maxLines: l.max_lines, lineHeight: l.line_height }, spaced);
+      let lines;
+      try {
+        lines = l.balance
+          ? balancedWrap(printed, { width: b.width, size: l.font_size, weight: l.weight, maxLines: l.max_lines, emphasis: emph }, spaced)
+          : wrapText(printed, { width: b.width, height: b.height, size: l.font_size, weight: l.weight, maxLines: l.max_lines, lineHeight: l.line_height }, spaced);
+      } catch (error) {
+        if (!error.code && /^TEXT_OVERFLOW:/u.test(error.message ?? '')) error.code = 'TEXT_OVERFLOW';
+        error.message = `${l.id}: ${error.message}`; throw error;
+      }
       if (lines.length * l.font_size * l.line_height > b.height) fail('TEXT_OVERFLOW', `${l.id}: ${lines.length} lines exceed the slot height; text was not truncated`);
       const x = b.x + (l.align === 'middle' ? b.width / 2 : l.align === 'end' ? b.width : 0) - (l.optical_margin && l.align === 'start' ? Math.round(l.font_size * 0.04) : 0);
       let cursor = 0; const tsp = [];
@@ -463,7 +480,16 @@ export async function executeVisual(plan, { baseDir = process.cwd(), preset = {}
     } else {
       const file = localInput(l.ref, baseDir, l.sha256); inputs.push(file);
       if (l.kind === 'chart') {
-        const spec = JSON.parse(file.bytes);
+        const chartSpec = JSON.parse(file.bytes);
+        const spec = chartSpec.type === 'number_visual' && chartSpec.layout === 'trend-area'
+          ? {
+              ...chartSpec,
+              render_mode: chartSpec.render_mode ?? packet.profiles.artifact.trend_render_mode ?? 'raw',
+              ...(packet.profiles.artifact.trend_render_mode === 'flow' ? {
+                raw_data_sha256: `sha256:${JSON.parse(source.bytes).plot_data_sha256 ?? ''}`,
+              } : {}),
+            }
+          : chartSpec;
         if (article?.verification) {
           const errors = validateChartAgainstArticle(spec, article);
           if (errors.length) fail('CHART_CLAIM', errors.join('; '));
@@ -554,7 +580,7 @@ export async function executeVisual(plan, { baseDir = process.cwd(), preset = {}
   const repairCounted = Boolean(repairOf) && priorOk && isRenderedOk(packet.status);
   const receipt = {
     schema_version: EXECUTION_VERSION, lineage_root: lineage, repair_round: repairCounted ? repairRound + 1 : repairRound, repair_counted: repairCounted, repair_of: repairPrior, status: packet.status, request_hash: packet.request_hash, execution_hash: packet.execution_hash,
-    renderer: { tool: 'aes-visual-execution', version: EXECUTION_VERSION, ...packet.rasterizer, font_stack: packet.theme.font_family },
+    renderer: { tool: 'aes-visual-execution', version: EXECUTION_VERSION, ...packet.rasterizer, font_stack: packet.theme.font_family, font_digest: bundledFontDigest(), ...(usesSerif ? { serif_face: SERIF_FONT_PATH } : {}) },
     inputs: inputs.map((f) => ({ ref: f.ref, sha256: f.sha256 })), geometry: packet.canvas,
     outputs: (() => { const d = isRenderedOk(packet.status) ? '' : 'rejected/'; return { master: { ref: `${d}master.png`, sha256: sha256(master) }, image: { ref: `${d}image.png`, sha256: sha256(final) }, svg: { ref: `${d}master.svg`, sha256: sha256(cleanSvg) } }; })(),
     text: textEvidence, charts, images: imageEvidence, generation: generationEvidence, watermark: watermarkEvidence,

@@ -25,7 +25,7 @@ completion nor permission to post on social media.
 
 | AI art direction (may) | Deterministic rendering (must) |
 |---|---|
-| grounded title, layout, palette choice, hierarchy, optional decorative assets | exact numbers, axes, chart geometry, endpoint labels, footer, final composition |
+| grounded title, layout, palette choice, hierarchy, optional decorative assets; under the explicit owner-selected illustrative mode, a text-free trend curve whose direction is fixed by raw observations | exact numbers, axes, chart geometry or numeric overlays, endpoint labels, footer, final composition |
 
 - The AI never changes or invents numbers, dates, quotes, sources, coverage or market conditions.
   Any number in the AI title, bare or with a unit, must be a value the deterministic lane displays
@@ -35,16 +35,21 @@ completion nor permission to post on social media.
   or a short summary of the user's request. The deterministic lane only displays it. Provenance is
   recorded as `title_origin` ∈ {`source_rewrite`, `request_summary`, `source_verbatim`}; when present,
   an unknown value fails (`TITLE_ORIGIN`).
-- An image model never draws or redraws the data chart. `rendering.image_ai_role` is `none` or
-  `decorative_only`, and decorative assets never overlap the plot or carry data.
+- The default image model role is `none` or `decorative_only`. By explicit owner decision,
+  `illustrative_trend_image` may replace the plotted chart image. It may contain only one smooth,
+  continuous, text-free curve; its up/down direction must match the first and last raw PMC
+  observations. It contains no labels, numbers, axes, grid, logos or interface elements. The
+  renderer adds the start → end values and `%p` change as typography copied from those observations.
+  A current quote alone cannot stand in for a history endpoint. This mode is blocked when the source
+  observations are unavailable, and the parity checker validates direction, endpoints and delta.
 
 ## 2. Approved visual direction
 
 - 1080 × 1350 portrait, or the same ratio at 2×.
 - Off-white `#F7F5F0` background with navy `#14213D` text.
 - Polymarket cobalt `#2E5BFF` and Kalshi coral `#FF6B5B`, used for those providers only.
-- Single market: one hero number plus the chart. Dual comparison: two equal number cards and two distinct lines.
-- Smooth lines from real observations and direct endpoint labels. Period / coverage / source / as-of remain traceable metadata, but production artwork shows only the subset that materially helps the reader; `as_of` is a small note when visible, not a headline KPI.
+- Single market: one hero number plus a data visual. Dual comparison: two equal number cards and two distinct data visuals.
+- Smooth lines from real observations and direct endpoint labels. Period / coverage / source / as-of remain traceable metadata; production artwork does not show source, retrieval, freshness, as-of, or timestamp footers/cards.
 - The watermark is **optional and off by default** (`optional: true`, `default_enabled: false`). It is
   used only when requested, and its text is configurable (`suengj.com` is just one example). A spec with
   no watermark, or `enabled: false`, passes. When enabled, the text must be non-empty and match the
@@ -75,13 +80,23 @@ Default omissions from the pixels:
   participation, or price reliability is itself part of the editorial point;
 - **internal workflow identifiers** — never render Linear/SUE issue numbers, query/run IDs, condition
   IDs, hashes, renderer names, local/cloud paths, or engineering status labels in a production card;
-- **generic boilerplate** such as `정보 제공용` or `투자 권유 아님` — do not add it by default.
-  Show legal/compliance wording only when the publication context explicitly requires it;
+- **generic boilerplate** such as `정보 제공용` or `투자 권유 아님` — never put it on a card-news card;
 - **post-chart explanation blocks** — do not append a mini-report below the graph merely because
   source material exists. Put material explanation in a concise annotation, the caption, or a
   dedicated analysis card;
-- **redundant metadata rows** — `as_of` belongs in a small note/footer or artifact metadata,
-  not beside the probability as an equal-weight metric.
+- **redundant metadata rows** — `as_of` belongs in the brief or artifact metadata, never on the card.
+
+### Shared card-news rules
+
+When this numeric visual is part of a card-news carousel, the shared contract
+in [`SLIDES-AND-CAROUSELS.md`](SLIDES-AND-CAROUSELS.md) applies: each card has a
+data visual as its hero, and all shown values match the brief. Trend data is
+eligible only with non-zero 24-hour volume, a fresh update, and at least two
+raw history points. No history means no trend card; direction must come from
+the first and last history points. Do not render disclaimers, timestamps,
+workflow terms (`선두`, `원관측`, `illustrative`, `연출`, `USD bn`), or a claim
+that the numbers are inaccurate. Use the shared 1080px typography and margin
+tokens from `scripts/lib/typography-core.mjs`.
 
 The card should answer one visual question quickly. If the reader also needs to understand **why**
 the market is pricing the event that way, use a separate analysis beat/card rather than turning
@@ -94,9 +109,8 @@ loss; it means moving operational detail to the correct layer.**
 ## 3. Fact rules
 
 - The last point of the history is not the current quote, and `retrieved_at` is not `as_of`. Never
-  append a quote to the history. Endpoint labels come from the last history observation. When
-  `as_of` is visible on the card, render it as a compact note using an actual observation or quote
-  time; it may otherwise live in the artifact metadata.
+  append a quote to the history. Endpoint labels come from the last history observation. Keep
+  `as_of` and retrieval timestamps in artifact metadata; they do not render on card-news artwork.
 - Show the actual observed period. If 7 days were requested but only 3 exist, label it 3 days, and
   never write "7-day change" without a valid 7-day baseline.
 - Values use `%` and deltas use `%p`. A delta is the last raw value minus a raw baseline
@@ -105,9 +119,22 @@ loss; it means moving operational detail to the correct layer.**
 - The axis defaults to the full 0–100%. A zoom is deterministic: pad by 5 points, round to 5, keep a
   minimum span of 20 points and clamp to 0..100. A zoom label must state its actual range, and a
   dual comparison uses one shared axis.
-- Interpolation is shape-preserving (monotone), linear or step, and keeps every raw point. A moving
-  average is allowed only when requested and labeled. Gaps longer than `max_gap_hours` (default 24)
-  are drawn as separate segments, never bridged. No forward-fill and no synthetic points.
+- `raw` is the default trend render mode. It preserves the exact monotone path through every raw
+  observation; smoothing, resampling, simplification, forward-fill, and synthetic points are
+  prohibited in this mode. Charts that label intermediate observations must use `raw`.
+- **Owner decision (2026-10-21):** card-news trend panels may explicitly use `flow` for a smoothed
+  visual when intermediate points are not labeled. In `flow`, a deterministic resample and Gaussian
+  smoothing may shape the curve, then a monotone curve is drawn through the visual samples. The first
+  and last rendered points must equal the raw endpoints exactly; direction and signed delta must
+  match the raw series. The receipt records `render_mode: flow`, the method and parameters, and the
+  raw PMC data hash. Every visible value and date (including start label, hero, delta badge, and date
+  labels) is independently checked against the verified raw PMC bundle. No caveat text is shown on
+  the card. `flow` is the default only in the prediction-market carousel profile; all other charts
+  default to `raw`.
+- The raw mode retains the canonical interpolation rule: shape-preserving monotone, linear, or step,
+  with every raw point. Moving averages are not used to label observations. Gaps longer than
+  `max_gap_hours` (default 24) are drawn as separate segments, never bridged. No forward-fill or
+  synthetic points.
 
 ## 4. QA and approval
 

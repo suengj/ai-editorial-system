@@ -1,0 +1,311 @@
+{
+  "schema_version": "1.0.0",
+  "series_id": "prediction-market-series",
+  "request": "Signalytics five-card Korean editorial series using the shared R4 photo-fullbleed carousel and the existing PMC chart panel.",
+  "source": {
+    "ref": "pmc/inputs/pmc.plot.json",
+    "scope": "source_bound"
+  },
+  "profiles": {
+    "surface": "instagram",
+    "artifact": "visual/prediction-market-carousel"
+  },
+  "content_kind": "card-news",
+  "requires_brief": true,
+  "numeric_profile": true,
+  "recipe": "r4-photo-fullbleed",
+  "visual_style": {
+    "requested_style": "R4",
+    "content_kind": "other",
+    "photo_asset_quality": "strong"
+  },
+  "footer_policy": "content_only",
+  "series_label": "",
+  "task": {
+    "canvas": {
+      "width": 1080,
+      "height": 1350,
+      "aspect_ratio": "4:5"
+    },
+    "theme": {
+      "background": "#F7F5F0",
+      "foreground": "#14213D",
+      "accent": "#FF6B5B"
+    },
+    "text_policy": "hybrid_template",
+    "density": {
+      "semantic": "moderate",
+      "visual": "moderate"
+    },
+    "watermark": {
+      "enabled": false
+    }
+  },
+  "beats": [
+    {
+      "id": "hook",
+      "depends_on": []
+    },
+    {
+      "id": "trend",
+      "depends_on": [
+        "hook"
+      ]
+    },
+    {
+      "id": "why",
+      "depends_on": [
+        "trend"
+      ]
+    },
+    {
+      "id": "korea-impact",
+      "depends_on": [
+        "why"
+      ]
+    },
+    {
+      "id": "watch-next",
+      "depends_on": [
+        "korea-impact"
+      ]
+    }
+  ],
+  "frames": [
+    {
+      "id": "hook",
+      "function": "orient",
+      "beat_ids": [
+        "hook"
+      ],
+      "takeaway": "시리즈의 핵심 가격 신호는 92%다.",
+      "alt_text": "연준 금리 인상 시장 가격 92%를 크게 보여주는 표지와 연준 건물을 상징하는 장면.",
+      "headline": "시장은 이미\n‘인상’에 걸었다",
+      "source_note": "내부 귀속 정보 — 카드에는 표시하지 않음",
+      "layout": "hero",
+      "blocks": [
+        {
+          "id": "hook-art",
+          "region": "art",
+          "kind": "generated",
+          "ref": "generated/hook.png",
+          "fit": "cover",
+          "rights_note": "Original generated editorial scene for this series.",
+          "focal_box": {
+            "x": 0.54,
+            "y": 0.34,
+            "width": 0.38,
+            "height": 0.48
+          },
+          "focal_min_area_ratio": 1,
+          "instruction": "Text-free full-bleed editorial photograph: a dignified generic neoclassical central-bank building exterior at early morning, no seal, flag, signage, recognizable person, text, or numbers. Keep the upper-left and central text area pale, quiet, and uncluttered; place the building mass and warm sunlight toward the right and lower third. Vertical 4:5 crop-safe composition."
+        },
+        {
+          "id": "hero-value",
+          "region": "hero-value",
+          "kind": "text",
+          "text": "92%",
+          "text_role": "hero",
+          "source_ref": "pmc/inputs/pmc.plot.json"
+        },
+        {
+          "id": "hook-copy",
+          "region": "copy",
+          "kind": "text",
+          "text": "인하를 예상했다면, 이 숫자는 정반대 신호다.",
+          "text_role": "body",
+          "source_ref": "source-sidecar.json"
+        }
+      ]
+    },
+    {
+      "id": "trend",
+      "function": "show_evidence",
+      "beat_ids": [
+        "trend"
+      ],
+      "takeaway": "10월 14일 → 19일 사이 1%p 내렸다.",
+      "alt_text": "10월 14일부터 19일까지의 Kalshi 확률 원관측을 표시한 선형 차트. 세로축은 85%부터 95%까지 실제 눈금으로 표시.",
+      "headline": "이번 주, 1%p 내렸지만\n여전히 90%대",
+      "source_note": "내부 귀속 정보 — 카드에는 표시하지 않음",
+      "layout": "visual",
+      "blocks": [
+        {
+          "id": "trend-chart",
+          "region": "content",
+          "kind": "chart",
+          "ref": "pmc/inputs/chart.spec.json",
+          "sha256": "PLACEHOLDER: replace with chart.spec.json SHA-256"
+        }
+      ]
+    },
+    {
+      "id": "why",
+      "function": "explain_mechanism",
+      "beat_ids": [
+        "why"
+      ],
+      "takeaway": "CPI 발표 뒤 계약 가격은 93%에서 90%대로 움직였다.",
+      "alt_text": "9월 CPI와 워시 의장의 발언, 같은 주 금리 인상 계약 가격의 흐름을 한 장에 엮은 장면.",
+      "headline": "물가는 올랐고,\n연준은 방향을 열어뒀다",
+      "source_note": "내부 귀속 정보 — 카드에는 표시하지 않음",
+      "layout": "hero",
+      "blocks": [
+        {
+          "id": "why-art",
+          "region": "art",
+          "kind": "generated",
+          "ref": "generated/why.png",
+          "fit": "cover",
+          "rights_note": "Original generated editorial scene for this series.",
+          "focal_box": {
+            "x": 0.54,
+            "y": 0.34,
+            "width": 0.38,
+            "height": 0.48
+          },
+          "focal_min_area_ratio": 1,
+          "instruction": "Text-free full-bleed editorial photograph of an economist desk: printed but completely unreadable blank chart paper, pencil, neutral coffee cup and warm window light; no letters, numbers, logos, fake screen, portrait, or UI. Keep the upper-left and central overlay region pale and visually quiet; place the paper and objects toward the right and lower third. Vertical 4:5 crop-safe composition."
+        },
+        {
+          "id": "why-value",
+          "region": "hero-value",
+          "kind": "text",
+          "text": "0.6%",
+          "text_role": "hero",
+          "source_ref": "source-sidecar.json"
+        },
+        {
+          "id": "why-copy",
+          "region": "copy",
+          "kind": "text",
+          "text": "10월 14일 · 9월 CPI 전월 대비 0.6% 상승, 계약은 93%에서 출발.\n10월 16일 · 워시가 두 차례 회의 결과를 예단하지 않자, 가격은 90%대에 남았다.",
+          "text_role": "body",
+          "source_ref": "source-sidecar.json"
+        }
+      ]
+    },
+    {
+      "id": "korea-impact",
+      "function": "show_consequence",
+      "beat_ids": [
+        "korea-impact"
+      ],
+      "takeaway": "미국 금리와 원/달러, 한국은행 판단이 맞물린다.",
+      "alt_text": "서울 금융지구를 상징하는 장면과 현재 미국·한국 기준금리 차이, 원/달러 환율 변수를 짧게 설명한 카드.",
+      "headline": "한국에선\n원/달러와 금리차",
+      "source_note": "내부 귀속 정보 — 카드에는 표시하지 않음",
+      "layout": "hero",
+      "blocks": [
+        {
+          "id": "korea-art",
+          "region": "art",
+          "kind": "generated",
+          "ref": "generated/korea.png",
+          "fit": "cover",
+          "rights_note": "Original generated editorial scene for this series.",
+          "focal_box": {
+            "x": 0.54,
+            "y": 0.34,
+            "width": 0.38,
+            "height": 0.48
+          },
+          "focal_min_area_ratio": 1,
+          "instruction": "Text-free full-bleed editorial photograph of Seoul financial-district towers at blue hour with subtle abstract red-and-blue light reflections suggesting currency exchange; no currency banknotes, letters, numbers, logos, signage, recognizable people, or UI. Keep the upper-left and central overlay region pale and quiet; place towers and light reflections to the right and lower third. Vertical 4:5 crop-safe composition."
+        },
+        {
+          "id": "korea-value",
+          "region": "hero-value",
+          "kind": "text",
+          "text": "3.75–4.00%",
+          "text_role": "hero",
+          "source_ref": "source-sidecar.json"
+        },
+        {
+          "id": "korea-copy",
+          "region": "copy",
+          "kind": "text",
+          "text": "한국 기준금리 3.00%보다 높다.\nFed가 올리면 한미 금리차가 벌어진다.\n달러·원 흐름과 한국은행 판단에도 변수다.",
+          "text_role": "body",
+          "source_ref": "source-sidecar.json"
+        }
+      ]
+    },
+    {
+      "id": "watch-next",
+      "function": "decision",
+      "beat_ids": [
+        "watch-next"
+      ],
+      "takeaway": "FOMC 결정과 다음 물가 지표, 연준 발언이 가격을 바꿀 변수다.",
+      "alt_text": "큰 날짜 27–28과 FOMC 회의, 이후 가격에 영향을 줄 수 있는 물가 지표와 연준 발언.",
+      "headline": "10월",
+      "source_note": "내부 귀속 정보 — 카드에는 표시하지 않음",
+      "layout": "hero",
+      "blocks": [
+        {
+          "id": "watch-art",
+          "region": "art",
+          "kind": "generated",
+          "ref": "generated/watch.png",
+          "fit": "cover",
+          "rights_note": "Original generated editorial scene for this series.",
+          "focal_box": {
+            "x": 0.34,
+            "y": 0.34,
+            "width": 0.64,
+            "height": 0.64
+          },
+          "focal_min_area_ratio": 1,
+          "instruction": "Text-free editorial photograph of a blank paper calendar with a coral-circled empty week square, navy pen and warm window light. Keep upper-left and center pale for dark headline overlay. No dates, letters, numbers, logos, screens, charts, UI, people, or watermark."
+        },
+        {
+          "id": "meeting-date",
+          "region": "hero-value",
+          "kind": "text",
+          "text": "27–28",
+          "text_role": "hero",
+          "source_ref": "source-sidecar.json"
+        },
+        {
+          "id": "watch-copy",
+          "region": "copy",
+          "kind": "text",
+          "text": "FOMC 회의 결과, 물가 지표와 연준 발언이\n시장 가격을 바꿀 다음 신호다.",
+          "text_role": "body",
+          "source_ref": "source-sidecar.json"
+        }
+      ]
+    }
+  ],
+  "typography": {
+    "headline": {
+      "font_size": 68,
+      "weight": 700,
+      "max_lines": 2,
+      "line_height": 1.15,
+      "font_family": "'Noto Serif KR', 'Noto Serif CJK KR', serif"
+    },
+    "hero": {
+      "font_size": 214,
+      "weight": 800,
+      "max_lines": 1,
+      "line_height": 1.05,
+      "font_family": "AES Sans KR"
+    },
+    "body": {
+      "font_size": 36,
+      "weight": 600,
+      "max_lines": 7,
+      "line_height": 1.35,
+      "font_family": "AES Sans KR"
+    },
+    "label": {
+      "font_size": 30,
+      "weight": 600,
+      "max_lines": 2,
+      "line_height": 1.2,
+      "font_family": "AES Sans KR"
+    }
+  }
+}

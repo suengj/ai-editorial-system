@@ -75,6 +75,15 @@ await ok('type scale roles + override + unknown role', () => {
   assert(T.TYPE_SCALE.display.line_height < T.TYPE_SCALE.body.line_height && T.TYPE_SCALE.display.letter_spacing < 0);
   assert.equal(T.resolveScale('body', { font_size: 40 }).font_size, 40); assert.throws(() => T.resolveScale('nope'), code('TYPE_SCALE_ROLE'));
 });
+await ok('shared card-news tokens are the 1080px owner scale', () => {
+  assert.equal(T.CARD_NEWS_TYPE_TOKENS.canvas_width, 1080);
+  assert.equal(T.CARD_NEWS_TYPE_TOKENS.margin_px, 72);
+  assert.deepEqual([T.CARD_NEWS_TYPE_TOKENS.headline.font_size, T.CARD_NEWS_TYPE_TOKENS.headline.weight], [64, 600]);
+  assert.deepEqual([T.CARD_NEWS_TYPE_TOKENS.hero.font_size, T.CARD_NEWS_TYPE_TOKENS.secondary.font_size], [150, 110]);
+  assert.deepEqual([T.CARD_NEWS_TYPE_TOKENS.label.font_size, T.CARD_NEWS_TYPE_TOKENS.body.font_size, T.CARD_NEWS_TYPE_TOKENS.body.max_lines], [34, 36, 2]);
+  assert.deepEqual([T.CARD_NEWS_TYPE_TOKENS.chip.font_size, T.CARD_NEWS_TYPE_TOKENS.chip.weight], [34, 700]);
+  assert.match(T.CARD_NEWS_TYPE_TOKENS.headline.font_family, /Noto Serif KR/);
+});
 await ok('WCAG maths', () => { assert.equal(T.contrastRatio([0, 0, 0], [255, 255, 255]).toFixed(1), '21.0'); assert(T.contrastRatio([255, 255, 255], [255, 255, 255]) === 1); });
 await ok('autoScrimOpacity: 0 on dark, >0 on bright, null when impossible', () => {
   const W = [255, 255, 255], K = [11, 24, 36];
@@ -108,6 +117,16 @@ await ok('font digest covers bytes; env isolates FONTCONFIG_*', () => {
   assert(!('FONTCONFIG_SYSROOT' in e) && e.FONTCONFIG_FILE && e.FONTCONFIG_PATH);
   assert.throws(() => isolatedEnv({ FONTCONFIG_FILE: 'x' }));
 });
+await ok('registered bundled Noto Serif face resolves, is digest-bound, and fails closed on missing glyphs', () => {
+  const oldPath = process.env[T.OPTIONAL_SERIF_FONT_ENV]; delete process.env[T.OPTIONAL_SERIF_FONT_ENV];
+  try {
+    assert.equal(T.serifFontManifest().weight, 600);
+    assert.equal(T.verifyBundledSerifResolution(T.bundledFontEnv()), T.SERIF_FONT_PATH);
+    assert(/^sha256:[0-9a-f]{64}$/.test(T.bundledFontDigest()));
+    T.assertBundledSerifCoverage('사업 2026 ₩ %');
+    assert.throws(() => T.assertBundledSerifCoverage('사업 뷁'), code('FONT_FALLBACK'));
+  } finally { if (oldPath !== undefined) process.env[T.OPTIONAL_SERIF_FONT_ENV] = oldPath; }
+});
 await ok('verifyChromeText compares printed vs resolved', () => {
   const r = resolveChrome({ target: 'acctA', catalog }); assert(verifyChromeText(r, { brand_label: 'ALPHA LAB' }));
   assert.throws(() => verifyChromeText(r, { brand_label: 'OTHER' }), code('UNRESOLVED_LABEL'));
@@ -131,6 +150,12 @@ if (!adapter) { skipped++; console.log('SKIP render tests: no rasterizer'); } el
       head({ balance: true, letter_spacing: -0.025, optical_margin: true, min_contrast: 4.5, emphasis: [{ match: '돈이 되는 자리', weight: 900, color: '#FFD479' }] })]), { baseDir: dir, outDir: out('ok') });
     assert.equal(r.receipt.checks.contrast, 'PASS'); assert(r.receipt.checks.auto_scrim[0].opacity > 0.3);
     assert.equal(r.receipt.text[0].orphan, false); assert.equal(r.receipt.text[0].lines.join(' '), r.receipt.text[0].text);
+  });
+  await ok('render: actual headline uses registered Noto Serif KR face', async () => {
+    const r = await executeVisual(mk([photo, head({ font_family: "'Noto Serif KR', serif", font_size: 64, weight: 600, balance: true, min_contrast: 1 })]), { baseDir: dir, outDir: out('serif-headline') });
+    assert.equal(r.receipt.renderer.serif_face, T.SERIF_FONT_PATH);
+    assert.equal(r.receipt.renderer.font_digest, T.bundledFontDigest());
+    assert(readFileSync(out('serif-headline/master.svg'), 'utf8').includes("font-family=\"'Noto Serif KR', serif\""));
   });
   await ok('render: no scrim on bright photo -> CONTRAST_FAIL', async () => {
     await assert.rejects(executeVisual(mk([photo, head({ min_contrast: 4.5 })]), { baseDir: dir, outDir: out('bad') }), code('CONTRAST_FAIL'));

@@ -50,12 +50,19 @@ console.log('B3a: documented render commands work end to end');
 const profile = loadBusinessMagazineProfile(), day = '2026-10-08';
 const evidence = { schema_version: '1.0.0', as_of: day,
   sources: [{ id: 's1', url: 'https://example.com/a', title: 'Synthetic source A', kind: 'official', published_at: null, checked_at: day }, { id: 's2', url: 'https://example.com/b', title: 'Synthetic source B', kind: 'official', published_at: day, checked_at: day }],
-  claims: [{ id: 'a', kind: 'fact', text: 'Synthetic A offers a service.', source_ids: ['s1'] }, { id: 'b', kind: 'fact', text: 'Synthetic B offers an adjacent service.', source_ids: ['s2'] }, { id: 'h', kind: 'assumption', text: 'A small paid experiment is proposed.', source_ids: [] }],
+  claims: [
+    { id: 'a', kind: 'fact', text: 'Synthetic fact A recorded 12 units in the annual source.', source_ids: ['s1'] },
+    { id: 'b', kind: 'fact', text: 'Synthetic fact B recorded 14 units in the annual source.', source_ids: ['s2'] },
+    { id: 'c', kind: 'fact', text: 'Synthetic fact C recorded 16 units in the annual source.', source_ids: ['s1'] },
+    { id: 'd', kind: 'fact', text: 'Synthetic fact D recorded 18 units in the annual source.', source_ids: ['s2'] },
+    { id: 'e', kind: 'fact', text: 'Synthetic fact E recorded 20 units in the annual source.', source_ids: ['s1'] },
+    { id: 'f', kind: 'fact', text: 'Synthetic fact F recorded 22 units in the annual source.', source_ids: ['s2'] },
+    { id: 'h', kind: 'assumption', text: 'A small paid experiment is proposed.', source_ids: [] }],
   cases: [{ id: 'a', name: 'Synthetic A', match: 'same_model', claim_ids: ['a'] }, { id: 'b', name: 'Synthetic B', match: 'adjacent', claim_ids: ['b'] }] };
 const packet = { schema_version: '1.0.0', series_id: 'bizmag-test', request: '가상 자료로 5장 계획을 검증한다.', series_label: '', evidence_ref: 'evidence.json',
   idea: { problem: 'unused capacity', target: 'small shops', payer: 'buyer', mechanism: 'matching', revenue: 'proposed transaction fee' },
   money: { value_flow: 'shop to buyer', payment_flow: 'buyer to platform to shop', platform_revenue: 'fee, not gross transaction volume', main_cost: 'support and settlement' },
-  frames: profile.frame_roles.map((role, i) => ({ role, headline: `가상 제목 ${i + 1}`, body: '가상 설명입니다.', takeaway: '가상 의미입니다.', alt_text: '가상 검증용 카드입니다.', claim_ids: [i === 2 ? 'a' : i === 3 ? 'b' : 'h'], ...(i === 2 ? { case_id: 'a' } : {}), ...(i === 3 ? { case_id: 'b', case_mode: 'compare' } : {}) })), caption: 'Synthetic fixture. Not a real company claim.' };
+  frames: profile.frame_roles.map((role, i) => ({ role, headline: `가상 제목 ${i + 1}`, body: `가상 근거 ${[[12, 16], [18], [12], [14, 22], [20]][i].join('과 ')}은 공개된 자료에 기록되어 있으며 첫 번째 관측 기간과 비교 기준을 함께 설명합니다.\n두 번째 문장에서는 이 수치가 사업 구조와 어떤 관계인지 독자가 판단할 맥락을 구체적으로 덧붙입니다.`, takeaway: '가상 의미입니다.', alt_text: '가상 검증용 카드입니다.', claim_ids: [['a','c'], ['d'], ['a'], ['b','f'], ['e','h']][i], ...(i === 2 ? { case_id: 'a' } : {}), ...(i === 3 ? { case_id: 'b', case_mode: 'compare' } : {}) })), caption: 'Synthetic fixture. Not a real company claim.' };
 
 test('BUSINESS-IDEA-MAGAZINE.md: the Signalytics packet flow (compile -> resolve --plan -> render, then --previous revision) runs as written', () => {
   const scratch = tmp(); writeFileSync(resolve(scratch, 'evidence.json'), JSON.stringify(evidence)); writeFileSync(resolve(scratch, 'packet.json'), JSON.stringify(packet));
@@ -66,8 +73,14 @@ test('BUSINESS-IDEA-MAGAZINE.md: the Signalytics packet flow (compile -> resolve
     if (c.includes('bizmag-revised')) { // the doc says "revised spec"; produce one headline edit
       const s = JSON.parse(readFileSync(resolve(scratch, 'bizmag-plan/series.json'), 'utf8')); s.frames[1].blocks = s.frames[1].blocks; s.frames[1].headline = '수정한 제목';
       mkdirSync(resolve(scratch, 'bizmag-revised'), { recursive: true }); writeFileSync(resolve(scratch, 'bizmag-revised/series.json'), JSON.stringify(s));
+      writeFileSync(resolve(scratch, 'bizmag-revised/brief.json'), readFileSync(resolve(scratch, 'bizmag-plan/brief.json')));
+      writeFileSync(resolve(scratch, 'bizmag-revised/content-qa.json'), JSON.stringify({ ...JSON.parse(readFileSync(resolve(scratch, 'bizmag-plan/content-qa.json'), 'utf8')), reviewed_cards: s.frames.map(frame => frame.id) }));
     }
     const r = runDoc(c, scratch, { '/content/packet.json': resolve(scratch, 'packet.json') });
+    if (c.includes('compile-business-magazine.mjs') && r.status === 0) {
+      const s = JSON.parse(readFileSync(resolve(scratch, 'bizmag-plan/series.json'), 'utf8'));
+      writeFileSync(resolve(scratch, 'bizmag-plan/content-qa.json'), JSON.stringify({ schema_version: '1.0.0', would_a_smart_reader_learn_something_new: 'The card sequence separates sourced facts from business assumptions and gives a reader useful context.', one_surprising_fact: 'The sourced figures vary across the selected observation periods.', reviewed_cards: s.frames.map(frame => frame.id), sources_are_sidecar_only: true, disclaimers_or_meta_on_cards: false }));
+    }
     const rendering = /render-carousel/.test(c);
     const documentedPendingArt = rendering && r.status === 2 && /INCOMPLETE:/.test(r.stdout);
     yes(r.status === 0 || documentedPendingArt || (rendering && !hasRasterizer && r.status === 2), `\`${c}\` exit ${r.status}: ${r.stdout.slice(-300)}${r.stderr.slice(0, 300)}`);
@@ -92,6 +105,20 @@ test('resolve-editorial --plan derives surface/artifact; the account is never in
   eq(r.status, 2); yes(/TARGET_REQUIRED/.test(r.stderr + r.stdout), 'target required');
   const ok = run(['scripts/resolve-editorial.mjs', '--plan', 'scripts/fixtures/carousel/series.json', '--target', 'signalytics-news']);
   eq(ok.status, 0, ok.stderr);
+});
+test('resolve-editorial blocks generic card-news plans when their brief sidecar is absent', () => {
+  const dir = tmp();
+  const plan = { schema_version:'1.0.0', series_id:'generic-card-news', content_kind:'card-news', source:{ref:'source.md',scope:'illustrative'}, profiles:{surface:'instagram',artifact:'visual/slide-image'}, frames:[] };
+  const file = resolve(dir,'series.json'); writeFileSync(file,JSON.stringify(plan));
+  const result = run(['scripts/resolve-editorial.mjs','--plan',file,'--target','personal-instagram']);
+  eq(result.status,2); yes(/BLOCKED_CARD_NEWS_BRIEF/u.test(result.stdout),'missing card-news brief must block READY');
+});
+test('resolve-editorial applies shared prerequisites to numeric profiles with missing card-news flags', () => {
+  const dir = tmp();
+  const plan = { schema_version:'1.0.0', series_id:'numeric-slide-image', numeric_profile:true, source:{ref:'source.md',scope:'illustrative'}, profiles:{surface:'instagram',artifact:'visual/slide-image'}, frames:[] };
+  const file = resolve(dir,'series.json'); writeFileSync(file,JSON.stringify(plan));
+  const result = run(['scripts/resolve-editorial.mjs','--plan',file,'--target','personal-instagram']);
+  eq(result.status,2); yes(/BLOCKED_CARD_NEWS_BRIEF/u.test(result.stdout),'numeric_profile invokes the shared prerequisite checker before READY');
 });
 
 console.log('B1: RuleReader validity');

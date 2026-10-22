@@ -200,8 +200,24 @@ export function compileBusinessMagazine(packet, evidence, { sourceRef, sourceSha
     const frameFunction = f.role === 'case-b' && f.case_mode === 'deep-dive' ? 'qualify' : f.role === 'trend' ? 'show_evidence' : profile.frame_functions[functionIndex];
     return { id: f.role, function: frameFunction, beat_ids: [f.role], takeaway: f.takeaway, alt_text: f.alt_text, headline: f.headline, source_note: sourceNote, layout: artDirection ? artDirection.frames[i].layout : f.visual ? 'split' : 'text', blocks, ...(artMeta ? { art_direction: artMeta } : {}) };
   });
-  const series = { schema_version: '1.0.0', series_id: packet.series_id, request: packet.request, source: { ref: sourceRef, ...(sourceSha ? { sha256: sourceSha } : {}), scope: 'source_bound' }, profiles: { surface: 'instagram', artifact: 'visual/slide-image' }, recipe: profile.recipe, ...structuredClone(profile.series_options), series_label: packet.series_label ?? '', beats: expectedRoles.map((id, i) => ({ id, depends_on: i ? [expectedRoles[i - 1]] : [] })), frames, ...(artDirection ? { art_direction_sha256: artDirectionHash(artDirection) } : {}) };
-  const compatibility = planCarousel(series);
+  const series = { schema_version: '1.0.0', series_id: packet.series_id, request: packet.request, source: { ref: sourceRef, ...(sourceSha ? { sha256: sourceSha } : {}), scope: 'source_bound' }, profiles: { surface: 'instagram', artifact: 'visual/slide-image' }, content_kind: 'card-news', brief_file: 'brief.json', recipe: profile.recipe, ...structuredClone(profile.series_options), footer_policy: 'content_only', series_label: packet.series_label ?? '', beats: expectedRoles.map((id, i) => ({ id, depends_on: i ? [expectedRoles[i - 1]] : [] })), frames, ...(artDirection ? { art_direction_sha256: artDirectionHash(artDirection) } : {}) };
+  const briefFacts = [...claims.values()].filter(claim => claim.kind === 'fact').map(claim => {
+    const source = sources.get(claim.source_ids[0]);
+    return { id: claim.id, value: claim.text, date: source.checked_at, source_url: source.url, source_name: source.title };
+  });
+  const brief = {
+    schema_version: '1.0.0', reader_question: packet.request,
+    angle: `${packet.idea.problem}; ${packet.idea.mechanism}; ${packet.idea.revenue}`,
+    so_what: `${packet.money.value_flow}; ${packet.money.payment_flow}; ${packet.money.platform_revenue}`,
+    facts: briefFacts,
+    per_card: Object.fromEntries(packet.frames.map(frame => {
+      const evidenceFactIds = frame.claim_ids.filter(id => claims.get(id)?.kind === 'fact');
+      const evidence = evidenceFactIds.map(id => claims.get(id).text).join('; ');
+      const claim = frame.headline.trim().length >= 8 ? frame.headline : frame.takeaway;
+      return [frame.role, { claim, evidence, evidence_fact_ids: evidenceFactIds, takeaway: frame.takeaway }];
+    })),
+  };
+  const compatibility = planCarousel(series, undefined, brief);
   const caption = `${packet.caption.trim()}\n\n사실과 제안 구분: 실제 사례의 출처는 아래에 기재했습니다. 신규 사업의 수익성과 시장 공백은 검증 전 가설입니다.\n자료 기준: ${evidence.as_of}\n${[...sources.values()].map(s => `[${s.id}] ${s.title}\n${s.url}`).join('\n\n')}\n`;
   const planHash = artDirection ? artDirectionHash(artDirection) : null;
   const frameLabel = artDirection?.frames.length === 6 ? 'Six ordered frame briefs' : 'Five ordered frame briefs';
@@ -212,5 +228,5 @@ export function compileBusinessMagazine(packet, evidence, { sourceRef, sourceSha
     : `\n- ${direction.role}: ${direction.visual_mode}; focal subject: ${direction.focal_subject}. ${direction.message} Asset rationale: ${direction.asset.rationale}. Generate illustration only; never draw copy, numbers, logos, screenshots, product UI, metrics, or citations.`)).join('') : '';
   const generationBrief = artDirection ? `${baseBrief}\n\nArtDirectionPlan sha256: ${planHash}${generatedBrief ? `\nGenerated-block instructions:${generatedBrief}` : ''}` : baseBrief;
   const sidecar = { profile: profile.id, idea: structuredClone(packet.idea), money: structuredClone(packet.money), evidence: structuredClone(evidence), frames: frameMap, source_ref: sourceRef, source_sha256: sourceSha ?? null, planning: 'PASS', renderer_plan_count: compatibility.frames.length, semantic_review: 'NOT_REVIEWED', source_truth: 'DECLARED_SUPPORT_NOT_INDEPENDENTLY_VERIFIED', visual_review: 'NOT_REVIEWED', publication_authorized: false, ...(artDirection ? { art_direction_sha256: planHash, art_direction_warnings: artFrames.warnings } : {}) };
-  return { series, caption, sidecar, generation_brief: generationBrief, ...(artDirection && Object.keys(derivedAssets).length ? { derived_assets: derivedAssets } : {}) };
+  return { series, brief, caption, sidecar, generation_brief: generationBrief, ...(artDirection && Object.keys(derivedAssets).length ? { derived_assets: derivedAssets } : {}) };
 }

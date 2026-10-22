@@ -56,12 +56,12 @@ console.log('1: legacy report-deck slide images stay renderable');
       const rc = node(['scripts/resolve-editorial.mjs', '--plan', resolve(d, 'plan.json'), '--flow', 'report', '--out', resolve(d, 'r.json')]); eq(rc.status, 0, rc.stderr + rc.stdout);
       const r2 = node(['scripts/render-visual.mjs', '--plan', resolve(d, 'plan.json'), '--out', resolve(d, 'o2'), '--profile-receipt', resolve(d, 'r.json')]); eq(r2.status, 0, r2.stderr);
     });
-    test('render-carousel CLI: a report-deck series renders without a receipt (exit 0)', () => {
+    test('render-carousel CLI: report-deck series writes review-required output without a receipt (exit 2)', () => {
       const d = tmp(), s = JSON.parse(readFileSync(resolve(ROOT, 'scripts/fixtures/carousel/series.json'), 'utf8')); s.profiles = { surface: 'report-deck', artifact: 'visual/slide-image' };
       for (const f of ['source.md', 'counts.json']) cpSync(resolve(ROOT, 'scripts/fixtures/carousel', f), resolve(d, f));
       writeFileSync(resolve(d, 'series.json'), JSON.stringify(s));
       const r = node(['scripts/render-carousel.mjs', '--plan', resolve(d, 'series.json'), '--out', resolve(d, 'o')]);
-      eq(r.status, 0, r.stderr + r.stdout);
+      eq(r.status, 2, r.stderr + r.stdout); yes(/INCOMPLETE|COMPOSED_NEEDS_REVIEW/.test(r.stdout), r.stdout);
     });
   } else console.log('  skip render CLI tests (no rasterizer)');
 }
@@ -327,9 +327,9 @@ console.log('trends-moa carousel (visual/slide-image) reuses generic carousel ru
     for (const bad of ['BUSINESS-IDEA-MAGAZINE', 'SIGNALYTICS-BENCHMARK-CARDS', 'SUENGJ-STYLE', 'business-idea-magazine.v1']) yes(!paths.some((x) => x.includes(bad)), `${bad} loaded`);
   });
   if (hasRasterizer) {
-    test('render-carousel --profile-receipt renders for trends-moa; no output PNG is stamped with trends.moa/signalytics branding', () => {
-      const o = resolve(d, 'o-tm'), r = node(['scripts/render-carousel.mjs', '--plan', p, '--out', o, '--profile-receipt', tm.out]); eq(r.status, 0, r.stdout + r.stderr); yes(/target:trends-moa/.test(r.stdout), r.stdout);
-      yes(existsSync(resolve(o, 'opening/image.png')), 'no frame');
+    test('render-carousel --profile-receipt writes review-required output for trends-moa; no PNG is stamped with account branding', () => {
+      const o = resolve(d, 'o-tm'), r = node(['scripts/render-carousel.mjs', '--plan', p, '--out', o, '--profile-receipt', tm.out]); eq(r.status, 2, r.stdout + r.stderr); yes(/INCOMPLETE|COMPOSED_NEEDS_REVIEW/.test(r.stdout), r.stdout); yes(/target:trends-moa/.test(r.stdout), r.stdout);
+      yes(existsSync(resolve(o, 'evidence/image.png')) || existsSync(resolve(o, 'evidence/rejected/image.png')), 'no frame pixels were written');
     });
     test('a signalytics-news receipt cannot be re-labelled as trends-moa (and vice versa): hash/profile-id mismatch refuses the render', () => {
       for (const [src, dst] of [[sg.out, 'trends-moa'], [tm.out, 'signalytics-news']]) {

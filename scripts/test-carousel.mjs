@@ -5,7 +5,7 @@ import { readFileSync, writeFileSync, mkdirSync, mkdtempSync, copyFileSync, exis
 import { dirname, resolve } from 'node:path';
 import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
-import { planCarousel, executeCarousel, loadVisualRecipes } from './lib/carousel-core.mjs';
+import { planCarousel, executeCarousel, loadVisualRecipes, isForbiddenCardNewsCopy } from './lib/carousel-core.mjs';
 import { resolveDefaultVisualStyle } from './lib/visual-style-policy.mjs';
 
 const ROOT=resolve(dirname(fileURLToPath(import.meta.url)),'..');
@@ -14,6 +14,10 @@ const base=JSON.parse(readFileSync(resolve(FIX,'series.json'),'utf8'));
 const clone=(x=base)=>structuredClone(x); let passed=0;
 const ok=(name,fn)=>{fn();passed++;console.log(`PASS ${name}`);};
 const bad=(name,mut,code)=>ok(name,()=>{const v=clone();mut(v);assert.throws(()=>planCarousel(v),(e)=>e.code===code);});
+ok('shared card-news copy gate rejects boilerplate, timing, workflow jargon, and false-accuracy caveats',()=>{
+  for(const phrase of ['투자 권유 아님','2026-10-21 기준 시각','as-of 11:30','선두','원관측','illustrative','연출 이미지','USD bn','수치는 정확하지 않음']) assert(isForbiddenCardNewsCopy(phrase),phrase);
+  assert.equal(isForbiddenCardNewsCopy('물가가 오르자 시장 금리도 움직였다.'),false);
+});
 const first=planCarousel(base),json=JSON.stringify(base);
 ok('three frames and original order',()=>assert.deepEqual(first.frames.map((f)=>f.id),['opening','evidence','closing']));
 ok('input unchanged',()=>assert.equal(JSON.stringify(base),json));
@@ -23,6 +27,8 @@ ok('series footer is empty by default and only renders an explicit account handl
 ok('role hierarchy and independent layouts',()=>{assert(first.typography.headline.font_size>first.typography.body.font_size);assert.equal(new Set(first.frames.map((f)=>f.layout)).size,3);});
 ok('silent profile and no narration dependency',()=>{assert.equal(first.density_profile,'silent_carousel');assert.equal(first.narration_dependency,'none');});
 ok('original recipe catalogue remains available beside R4/R7',()=>{const recipes=loadVisualRecipes().recipes;assert.equal(new Set(['editorial-minimal','dark-data','pop-collage'].map((id)=>recipes[id].theme.background)).size,3);assert(recipes['r4-photo-fullbleed']);assert(recipes['r7-illustration-fallback']);});
+ok('R4 clean hero has a bounded left text zone over full-bleed art',()=>{const c=loadVisualRecipes();assert(c.layouts['hero-clean'].art&&c.layouts['hero-clean'].key&&c.layouts['hero-clean'].copy);const e=c.layout_effects['hero-clean'];assert(e.background_regions.includes('art'));assert(e.solid_bands.some((b)=>b.id==='left-text-zone'&&b.gradient&&b.width===1));assert(e.recurring_regions.headline.width<0.5);});
+ok('R4 photo scrim stays within the text column and preserves full-strength art elsewhere',()=>{const c=loadVisualRecipes();const e=c.layout_effects['hero-photo-scrim'];assert(c.layouts['hero-photo-scrim']);assert(e.background_regions.includes('art'));const b=e.solid_bands.find((x)=>x.id==='left-text-zone');assert(b&&b.width===0.54&&b.height===0.86&&b.gradient);assert(e.recurring_regions.headline.width<0.5);});
 ok('existing legacy-default series route through the approved selector',()=>{assert.equal(first.recipe,'r7-illustration-fallback');assert.equal(first.visual_style.reason,'photo_asset_absent');const withPhoto=clone();withPhoto.frames[0].blocks[0]={id:'photo',region:'content',kind:'image',ref:'photo.png'};assert.equal(planCarousel(withPhoto).recipe,'r4-photo-fullbleed');});
 ok('R4 is the default and records its basis',()=>{const s=clone();s.visual_style={requested_style:'AUTO',content_kind:'other',photo_asset_quality:'strong'};const p=planCarousel(s);assert.equal(p.recipe,'r4-photo-fullbleed');assert.equal(p.visual_style.reason,'strong_photo_asset');});
 ok('R7 fallback applies only to documented triggers',()=>{for(const input of [{content_kind:'other',photo_asset_quality:'absent'},{content_kind:'other',photo_asset_quality:'weak'},{content_kind:'lifestyle_practical',photo_asset_quality:'strong'}])assert.equal(resolveDefaultVisualStyle(input).recipe,'r7-illustration-fallback');assert.equal(resolveDefaultVisualStyle({content_kind:'other',photo_asset_quality:'unknown'}).recipe,'r4-photo-fullbleed');});

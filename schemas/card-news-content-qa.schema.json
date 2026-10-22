@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://suengj.com/schemas/card-news-content-qa.schema.json",
+  "title": "AES Card News Content Self Check",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "would_a_smart_reader_learn_something_new", "one_surprising_fact", "reviewed_cards", "sources_are_sidecar_only", "disclaimers_or_meta_on_cards"],
+  "properties": {
+    "schema_version": { "const": "1.0.0" },
+    "would_a_smart_reader_learn_something_new": { "type": "string", "minLength": 20 },
+    "one_surprising_fact": { "type": "string", "minLength": 10 },
+    "reviewed_cards": { "type": "array", "minItems": 1, "items": { "type": "string" } },
+    "sources_are_sidecar_only": { "const": true },
+    "disclaimers_or_meta_on_cards": { "const": false }
+  }
+}

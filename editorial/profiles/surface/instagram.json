@@ -22,7 +22,7 @@
     "hashtags": "optional; historical author usage is not a requirement",
     "call_to_action": "normally none; do not manufacture an engagement question"
   },
-  "artifact_fit": ["text/brief", "visual/social-card", "visual/thumbnail", "visual/evidence-visual", "visual/body-infographic", "visual/slide-image"],
+  "artifact_fit": ["text/brief", "visual/social-card", "visual/thumbnail", "visual/evidence-visual", "visual/body-infographic", "visual/slide-image", "visual/prediction-market-carousel"],
   "visual_defaults": {
     "canvas": { "width": 1080, "height": 1350 },
     "execution_guide": "editorial/STRUCTURED-VISUAL-EXECUTION.md",

@@ -147,6 +147,9 @@ SUE-1417 · 명시적으로 선택하는 시리즈 프로필. 새 서비스·DB�
 # 원고/근거 구조 점검 + 기존 carousel 입력 생성. 이미지 생성이 아님.
 node scripts/compile-business-magazine.mjs --packet /content/packet.json --out /tmp/bizmag-plan
 
+# brief.json은 컴파일러가 사실/카드 연결을 검증한다. content-qa.json은 카드별 학습 가치와
+# 놀라운 사실을 사람이 검토한 뒤 작성해야 하며, 이를 만들기 전에는 resolve/render가 차단된다.
+
 # Instagram plan은 profile receipt 없이 렌더되지 않는다(SUE-1426). Signalytics 흐름은 packet.json에서
 # 시작해 intent.json이 없으므로, series.json의 surface/artifact에서 receipt를 만든다.
 node scripts/resolve-editorial.mjs --plan /tmp/bizmag-plan/series.json --target signalytics-news --out /tmp/bizmag-receipt.json
@@ -164,7 +167,7 @@ node scripts/test-business-magazine.mjs
 `resolve-editorial --plan`은 계정을 추측하지 않는다(`--target`은 필수). receipt는 무결성 검사용
 기록이지 암호학적 인증이 아니다(§ STRUCTURED-VISUAL-EXECUTION.md 「SNS 렌더 게이트」).
 
-컴파일 결과: `series.json`, `editorial-sidecar.json`, `caption.md`, `generation-brief.md`.
+컴파일 결과: `series.json`, `brief.json`, `editorial-sidecar.json`, `caption.md`, `generation-brief.md`.
 `PLANNED_NOT_RENDERED`는 그림도, 사실 인증도, 게시 승인도 아니다.
 source/claim ID 연결 검사는 인용이 실제 주장을 뒷받침한다는 의미 검증을 대체하지 않는다.
 `generation-brief.md`는 native 도구/미술 감독에 전달할 전체 문맥이며, 개별 그림

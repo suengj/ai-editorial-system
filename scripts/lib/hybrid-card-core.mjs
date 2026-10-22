@@ -122,7 +122,8 @@ function countOutsideChanges(before, after) {
 /** Draw only the top/bottom chrome bands and prove every body pixel is unchanged. */
 export function renderNativeChrome(cardBytes, { label, sourceLine, pageMark, tokens, rasterizer = null } = {}) {
   if (!text(label)) fail('UNRESOLVED_LABEL', 'native card chrome needs a catalog-resolved target display label');
-  if (!text(sourceLine) || !text(pageMark)) fail('NATIVE_CHROME_TEXT', 'source line and page mark are required');
+  const footerEnabled = text(sourceLine) && text(pageMark);
+  if (Boolean(text(sourceLine)) !== Boolean(text(pageMark))) fail('NATIVE_CHROME_TEXT', 'source line and page mark must either both be present or both be omitted');
   if (!object(tokens) || !/^#[0-9a-f]{6}$/i.test(tokens.background ?? '') || !/^#[0-9a-f]{6}$/i.test(tokens.foreground ?? '')) {
     fail('NATIVE_CHROME_TOKENS', 'resolved background and foreground palette tokens are required');
   }
@@ -132,17 +133,18 @@ export function renderNativeChrome(cardBytes, { label, sourceLine, pageMark, tok
   const fontFamily = tokens.font_family ?? FONT_STACK;
   const measure = textMeasurer(adapter, fontFamily);
   const labelWidth = measure(label, 28, 700) + [...label].length * 3;
-  const sourceWidth = measure(sourceLine, 24, 400);
-  const pageWidth = measure(pageMark, 26, 400);
   if (labelWidth > 936) fail('NATIVE_CHROME_OVERFLOW', 'catalog target display label does not fit its chrome band');
-  if (sourceWidth + pageWidth + 36 > 936) fail('NATIVE_CHROME_OVERFLOW', 'source line and page mark do not fit on the fixed footer line');
-  const svg = svgDocument(1080, 1350, [
-    `<rect x="0" y="0" width="1080" height="140" fill="${tokens.background}"/>`,
+  if (footerEnabled && measure(sourceLine, 24, 400) + measure(pageMark, 26, 400) + 36 > 936) fail('NATIVE_CHROME_OVERFLOW', 'source line and page mark do not fit on the fixed footer line');
+  const footer = footerEnabled ? [
     `<rect x="0" y="1240" width="1080" height="110" fill="${tokens.background}"/>`,
-    `<text x="72" y="86" font-family="${esc(fontFamily)}" font-size="28" font-weight="700" letter-spacing="3" fill="${tokens.foreground}">${esc(label)}</text>`,
-    `<rect x="72" y="104" width="936" height="2" fill="${tokens.foreground}"/>`,
     `<text x="72" y="1296" font-family="${esc(fontFamily)}" font-size="24" font-weight="400" fill="${tokens.foreground}">${esc(sourceLine)}</text>`,
     `<text x="1008" y="1296" text-anchor="end" font-family="${esc(fontFamily)}" font-size="26" font-weight="400" fill="${tokens.foreground}">${esc(pageMark)}</text>`,
+  ] : [];
+  const svg = svgDocument(1080, 1350, [
+    `<rect x="0" y="0" width="1080" height="140" fill="${tokens.background}"/>`,
+    `<text x="72" y="86" font-family="${esc(fontFamily)}" font-size="28" font-weight="700" letter-spacing="3" fill="${tokens.foreground}">${esc(label)}</text>`,
+    `<rect x="72" y="104" width="936" height="2" fill="${tokens.foreground}"/>`,
+    ...footer,
   ].join(''));
   const overlay = decodePng(rasterize(svg, adapter));
   if (overlay.width !== original.width || overlay.height !== original.height || overlay.channels !== 4) fail('NATIVE_CHROME_OVERLAY', 'chrome raster must be a same-size RGBA PNG');
@@ -162,8 +164,8 @@ export function renderNativeChrome(cardBytes, { label, sourceLine, pageMark, tok
   return {
     bytes,
     proof: {
-      schema_version: '1.0.0', label, source_line: sourceLine, page_mark: pageMark,
-      bands: NATIVE_CHROME_BANDS.map((band) => ({ ...band })),
+      schema_version: '1.0.0', label, source_line: footerEnabled ? sourceLine : null, page_mark: footerEnabled ? pageMark : null, footer_enabled: footerEnabled,
+      bands: (footerEnabled ? NATIVE_CHROME_BANDS : NATIVE_CHROME_BANDS.filter((band) => band.y === 0)).map((band) => ({ ...band })),
       tokens: { background: tokens.background, foreground: tokens.foreground, font_family: fontFamily },
       source_sha256: sha256(cardBytes), output_sha256: sha256(bytes), outside_changed_pixels: outsideChangedPixels,
     },

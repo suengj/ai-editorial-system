@@ -16,9 +16,12 @@ import { fileURLToPath } from 'node:url';
 import { spawnSync } from 'node:child_process';
 import { executeVisual, compileExecution } from './lib/visual-execution-core.mjs';
 import { renderChartPanel } from './lib/chart-renderer.mjs';
+import { CARD_NEWS_TYPE_TOKENS } from './lib/typography-core.mjs';
 import { findRasterizer, textMeasurer } from './lib/svg-tools.mjs';
 import { decodePng } from './lib/watermark-core.mjs';
 import { loadPmcPlotBundle, pmcPlotToChartSpec, buildCardPlan, verifyRenderAgainstBundle, pmcPlotDataHash, providerAccent, resolveTitleOrigin, checkTitleNumbers, PmcBindingError } from './lib/pmc-bundle-binding.mjs';
+import { validateCardNewsChartFacts } from './lib/card-news-brief-core.mjs';
+import { CAROUSEL_CONSTRAINTS } from './lib/carousel-core.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const fx = resolve(root, 'scripts/fixtures/pmc-bundle');
@@ -99,9 +102,54 @@ try {
     assert.equal(s.y.min, 0); assert.equal(s.y.max, 100); assert.equal(s.y.unit, '%');
     assert.equal(s.source_note, '출처 Manifold'); assert.ok(!/https?:|\//.test(s.source_note));
   });
-  await test('a bundle without an outcome label gets a clean series title (no dangling separator)', () => {
+  await test('PMC trend dates and signed delta are bound to the bundle', () => {
+    const bundle=loadPmcPlotBundle(GAP), points=bundle.plot.points.map(p=>({observed_at:p.observed_at,value:Number((p.value*100).toPrecision(12))})), dt=(v)=>`${String(new Date(v).getUTCMonth()+1).padStart(2,'0')}.${String(new Date(v).getUTCDate()).padStart(2,'0')}`, delta=Number(bundle.plot.delta.value_pp), spec={type:'number_visual',layout:'trend-area',start:points[0].value,end:points.at(-1).value,start_label:`${points[0].value}%`,end_label:`${points.at(-1).value}%`,start_date:dt(bundle.plot.delta.baseline_at),end_date:dt(bundle.plot.delta.last_at),delta_label:`${delta>0?'+':delta<0?'−':''}${Number(Math.abs(delta).toPrecision(12))}%p`,points};
+    const d=resolve(dir,'trend-labels');mkdirSync(d,{recursive:true});copyFileSync(GAP,resolve(d,'pmc.plot.json'));writeFileSync(resolve(d,'trend.json'),JSON.stringify(spec));
+    const s={profiles:{artifact:'visual/prediction-market-carousel'},source:{ref:'pmc.plot.json'},frames:[{id:'trend',function:'show_evidence',blocks:[{kind:'chart',ref:'trend.json'}]}]};
+    const b={trend_eligibility:{source_type:'market_pmc'},per_card:{trend:{visual_fact_ids:[]}}};
+    assert.equal(validateCardNewsChartFacts(s,b,d).ok,true);
+    for(const [key,value] of [['delta_label','+99%p'],['start_date','12.31'],['end_date','01.01']]) { writeFileSync(resolve(d,'trend.json'),JSON.stringify({...spec,[key]:value}));assert.equal(validateCardNewsChartFacts(s,b,d).ok,false,`forged ${key} rejected`); }
+  });
+  await test('PMC source binding rejects forged trend and line-chart data for every allowed frame function', () => {
+    const bundle = loadPmcPlotBundle(GAP);
+    const points = bundle.plot.points.map((p) => ({ observed_at:p.observed_at, value:Number((p.value*100).toPrecision(12)) }));
+    const dt = (v) => `${String(new Date(v).getUTCMonth()+1).padStart(2,'0')}.${String(new Date(v).getUTCDate()).padStart(2,'0')}`;
+    const delta = Number(bundle.plot.delta.value_pp);
+    const trend = { type:'number_visual', layout:'trend-area', start:points[0].value, end:points.at(-1).value, start_label:`${points[0].value}%`, end_label:`${points.at(-1).value}%`, start_date:dt(bundle.plot.delta.baseline_at), end_date:dt(bundle.plot.delta.last_at), delta_label:`${delta>0?'+':delta<0?'−':''}${Number(Math.abs(delta).toPrecision(12))}%p`, points };
+    const line = pmcPlotToChartSpec(bundle);
+    const d = resolve(dir,'function-independent-binding'); mkdirSync(d,{recursive:true}); copyFileSync(GAP,resolve(d,'pmc.plot.json'));
+    const chartPath = resolve(d,'chart.json');
+    const brief = { trend_eligibility:{source_type:'market_pmc'}, per_card:{trend:{visual_fact_ids:[]}} };
+    const seriesFor = (fn) => ({profiles:{artifact:'visual/prediction-market-carousel'},source:{ref:'pmc.plot.json'},frames:[{id:'trend',function:fn,blocks:[{kind:'chart',ref:'chart.json'}]}]});
+    for (const frameFunction of CAROUSEL_CONSTRAINTS.frame_functions) {
+      for (const [label, mutate] of [
+        ['trend date',(s) => { s.start_date='12.31'; }],
+        ['trend observation',(s) => { s.points[1].value += 1; }],
+      ]) {
+        const forged = structuredClone(trend); mutate(forged); writeFileSync(chartPath,JSON.stringify(forged));
+        assert.equal(validateCardNewsChartFacts(seriesFor(frameFunction),brief,d).ok,false,`${frameFunction} rejects forged ${label}`);
+      }
+      for (const [label, mutate] of [
+        ['title',(s) => { s.title='forged title'; }],
+        ['period',(s) => { s.period='forged period'; }],
+        ['date ticks',(s) => { s.x.tick_labels=['forged']; }],
+        ['observation',(s) => { s.series[0].points[0][1] += 1; }],
+      ]) {
+        const forged = structuredClone(line); mutate(forged); writeFileSync(chartPath,JSON.stringify(forged));
+        assert.equal(validateCardNewsChartFacts(seriesFor(frameFunction),brief,d).ok,false,`${frameFunction} rejects forged line-chart ${label}`);
+      }
+    }
+    const nonEditorialProfile = seriesFor('compare'); nonEditorialProfile.profiles.artifact = 'visual/evidence-visual';
+    const alteredData = structuredClone(line); alteredData.series[0].points[0][1] += 1; writeFileSync(chartPath,JSON.stringify(alteredData));
+    assert.equal(validateCardNewsChartFacts(nonEditorialProfile,brief,d).ok,false,'a PMC bundle reference triggers binding even when the artifact profile is different');
+  });
+  await test('chart-facing period and captions use reader language without process labels', () => {
     const b = loadPmcPlotBundle(GAP); b.plot.meta.outcome_label = null; b.plot.meta.outcome = null;
-    const s = pmcPlotToChartSpec(b); assert.equal(s.title, 'Manifold'); assert.equal(s.series[0].name, 'manifold');
+    const s = pmcPlotToChartSpec(b);
+    assert.match(s.title, /^\d+월 \d+일 → /); assert.equal(s.period, '이번 주'); assert.equal(s.series[0].name, 'manifold');
+    assert.equal(s.x.label, '날짜'); assert.equal(s.x.show_label, false);
+    assert.equal(s.source_note, '출처 Manifold');
+    assert(!/UTC|관측|시장 확률|202\d-/.test(`${s.period} ${s.x.label} ${s.source_note}`));
   });
   await test('a typed title without --title-origin is request_summary; PMC meta.title is source_verbatim', () => {
     const b = loadPmcPlotBundle(GAP), opts = { specRef: 'c', specSha256: 'sha256:x', plotRef: 'pmc.plot.json' };
@@ -150,10 +198,26 @@ try {
     const img = decodePng(readFileSync(resolve(dir, 'out-main/image.png'))); assert.deepEqual([img.width, img.height], [1080, 1350]);
     assert.equal(r.receipt.checks.actual_pixel_semantic_review, 'NOT_RUN_PHASE4');
   });
+  await test('reader-facing Korean delta and chart endpoint preserve PMC parity without a raw delta string', () => {
+    const b = bind('reader-copy');
+    const receipt = receiptFor(b.bundle, b.spec);
+    const pp = b.bundle.plot.delta.value_pp;
+    receipt.text = [{ id: 'headline', text: `이번 주, ${Math.abs(pp).toLocaleString('ko-KR', { maximumFractionDigits: 2 })}%p ${pp < 0 ? '내렸다' : '올랐다'}` }];
+    const qa = verifyRenderAgainstBundle(b.bundle, receipt);
+    assert.equal(qa.ok, true); assert.deepEqual(qa.notes, []);
+    assert.equal(qa.checks.hero_text_layer, 'PASS'); assert.equal(qa.checks.delta_text_layer, 'PASS');
+  });
   await rtest('the gap is drawn as two separate sub-paths, not bridged', async () => {
     const b = bind('in-gap'); const r = renderChartPanel(b.spec, { width: 972, height: 675, theme: b.plan.task.theme ?? {}, measure: textMeasurer(adapter) });
     const d = r.svg.match(/<path d="([^"]+)"/)[1];
     assert.equal((d.match(/M/g) ?? []).length, 2, 'the single null starts a second sub-path'); assert.equal(r.raw_observation_count, b.bundle.plot.points.length + 1);
+  });
+  await rtest('PMC line-chart SVG text uses shared card-news type tokens', async () => {
+    const b = bind('in-gap'); const r = renderChartPanel(b.spec, { width: 936, height: 675, theme: b.plan.task.theme ?? {}, measure: textMeasurer(adapter) });
+    const sizes = [...r.svg.matchAll(/font-size="([0-9.]+)"/gu)].map((match) => Number(match[1]));
+    assert(sizes.length >= 8);
+    const allowed = new Set(Object.values(CARD_NEWS_TYPE_TOKENS).map((token) => token?.font_size).filter(Number.isFinite));
+    assert(sizes.every((size) => allowed.has(size)), `all SVG text sizes must be shared tokens; got ${[...new Set(sizes)].join(',')}`);
   });
   await rtest('theme-only change leaves the data, spec and numbers unchanged', async () => {
     const a = bind('in-theme-a'), c = bind('in-theme-b', { accent: '#B5532F' });

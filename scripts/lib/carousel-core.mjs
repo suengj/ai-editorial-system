@@ -10,18 +10,19 @@ import { spawnSync } from 'node:child_process';
 import { resolveChrome, verifyChromeText } from './chrome-tokens.mjs';
 import { buildNativeCardPrompt, intakeNativeCard, nativeReviewToFeedbackRecord, containedNativePath, renderNativeChrome, validateNativeCardReview } from './hybrid-card-core.mjs';
 import { resolveDefaultVisualStyle } from './visual-style-policy.mjs';
+import { validateCardNewsBrief, validateCardNewsPrerequisites } from './card-news-brief-core.mjs';
 
-import { bundledFontDigest } from './typography-core.mjs';
+import { bundledFontDigest, CARD_NEWS_TYPE_ROLES, CARD_NEWS_TYPE_TOKENS } from './typography-core.mjs';
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 export const CAROUSEL_VERSION = '1.0.0';
 /** Series constraints as data (single source for planCarousel and the web catalog export). */
 export const CAROUSEL_CONSTRAINTS = Object.freeze({
   frames: Object.freeze({ min: 1, max: 20 }),
   beats: Object.freeze({ min: 1, max: 60 }),
-  series_fields: Object.freeze(['schema_version','series_id','request','source','profiles','recipe','visual_style','task','typography','regions','layouts','series_label','beats','frames','art_direction_sha256']),
+  series_fields: Object.freeze(['schema_version','series_id','request','source','profiles','recipe','visual_style','footer_policy','content_kind','requires_brief','numeric_profile','brief_file','task','typography','regions','layouts','series_label','beats','frames','art_direction_sha256']),
   frame_fields: Object.freeze(['id','function','beat_ids','takeaway','alt_text','headline','headline_emphasis','source_note','layout','blocks','caption','job_ref','art_direction']),
   art_direction_fields: Object.freeze(['plan_id','visual_mode','focal_subject','message','reading_order','asset','asset_block_id','avoid','protected','brand_elements','reuse','render_method','native_prompt_strings']),
-  block_fields: Object.freeze(['id','region','kind','ref','sha256','mode','fit','rights_note','protect','focal_box','focal_min_area_ratio','focal_fallback','mockup_risk','text','source_ref','instruction','generation','provenance']),
+  block_fields: Object.freeze(['id','region','kind','ref','sha256','mode','fit','rights_note','protect','focal_box','focal_min_area_ratio','focal_fallback','mockup_risk','text','text_role','source_ref','instruction','generation','provenance']),
   block_kinds: Object.freeze(['text','image','chart','generated']),
   frame_functions: Object.freeze(['orient','assert','show_evidence','explain_mechanism','compare','qualify','turn','show_consequence','decision','close']),
 });
@@ -36,6 +37,9 @@ export function receiptConfirmsGeneratedAsset(status, receipt, masterSha256, blo
 const fail = (code, message) => { const e = new Error(message); e.code = code; throw e; };
 const need = (condition, code, message) => { if (!condition) fail(code, message); };
 const text = (s) => typeof s === 'string' && s.trim().length > 0;
+const contentOnlyCopyIssue = (s) => /\[[^\]]+\]|\{\{[^}]+\}\}|\b(?:PLACEHOLDER|TODO|TBD)\b|편집자 확인 필요/i.test(s)
+  || /30일 요청|실제 차트는 7일|거래가 관측된 점만 이었다|움직임은 확인, 원인은 확인 중|계약 가격은 사건의 확인이 아니다|확정하지 않(?:습니다|는다|음)|확정되지 않(?:습니다|는다|음)|단정할 수 없(?:습니다|다)|단정하지 않(?:습니다|는다|음)|투자\s*권유|정보\s*제공|disclaimer|면책|참고용|\bPMC\b|\b\d+\s*\/\s*\d+\b|as[- ]?of|updated\s*at|timestamp|타임스탬프|기준\s*시각|기준\s*일|업데이트\s*시각|선두|원관측|illustrative|연출|USD\s*bn|수치는\s*정확하지\s*않음/i.test(s);
+export const isForbiddenCardNewsCopy = (value) => contentOnlyCopyIssue(String(value ?? ''));
 const slug = (s) => typeof s === 'string' && /^[a-z0-9][a-z0-9-]*$/.test(s);
 function keys(value, allowed, where) {
   need(obj(value), 'SERIES_INPUT', `${where} must be an object`);
@@ -83,15 +87,26 @@ function supportingArtDirection(recipe, theme = {}) {
 }
 
 /** Pure planning: emits unchanged v1 single-image plans, not rendered evidence. */
-export function planCarousel(series, catalog=loadVisualRecipes()) {
+export function planCarousel(series, catalog=loadVisualRecipes(), contentBrief=null) {
   keys(series, CAROUSEL_CONSTRAINTS.series_fields, 'series');
   need(series.schema_version === CAROUSEL_VERSION && slug(series.series_id), 'SERIES_VERSION', 'v1 and a slug series_id are required');
+  const prerequisites = validateCardNewsPrerequisites(series);
+  const contractIssues = prerequisites.issues.filter((problem) => ['CARD_NEWS_BRIEF_CONTRACT','CARD_NEWS_PROFILE_CONTRACT','CARD_NEWS_NUMERIC_PROFILE'].includes(problem.code));
+  need(contractIssues.length === 0, contractIssues[0]?.code ?? 'CARD_NEWS_PROFILE_CONTRACT', contractIssues.map((problem) => problem.message).join('; '));
+  if (series.profiles?.artifact === 'visual/prediction-market-carousel') need(contentBrief, 'CARD_NEWS_BRIEF_REQUIRED', 'the selected prediction-market profile requires its sourced brief');
+  if (series.content_kind === 'card-news') need(contentBrief, 'CARD_NEWS_BRIEF_REQUIRED', 'brief.json is required for every card-news series');
+  need(prerequisites.ok, prerequisites.issues[0]?.code ?? 'CARD_NEWS_PROFILE_CONTRACT', prerequisites.issues.map((problem) => problem.message).join('; '));
+  if (series.content_kind === 'card-news') {
+    const briefCheck = validateCardNewsBrief(series, contentBrief);
+    need(briefCheck.ok, 'CARD_NEWS_BRIEF_INVALID', briefCheck.issues.map((x) => `${x.code}${x.card_id ? `:${x.card_id}` : ''}`).join(', '));
+  }
+  need(series.footer_policy === undefined || ['source_and_pagination','content_only'].includes(series.footer_policy), 'SERIES_FOOTER_POLICY', 'footer_policy must be source_and_pagination or content_only');
   if (series.art_direction_sha256 !== undefined) need(typeof series.art_direction_sha256 === 'string' && /^sha256:[a-f0-9]{64}$/.test(series.art_direction_sha256), 'SERIES_ART_DIRECTION', 'art_direction_sha256 must be a SHA-256 digest');
   need(text(series.request) && (series.series_label === undefined || series.series_label === '' || /^@[A-Za-z0-9._]+$/.test(series.series_label)), 'SERIES_INPUT', 'request required; optional footer series_label may only be an explicit publishing account handle');
   keys(series.source, ['ref','sha256','scope'], 'source');
   need(text(series.source.ref) && ['source_bound','illustrative'].includes(series.source.scope), 'SERIES_SOURCE', 'actual source ref and scope required');
   keys(series.profiles, ['surface','artifact','brand'], 'profiles');
-  need(text(series.profiles.surface) && series.profiles.artifact === 'visual/slide-image', 'SERIES_PROFILE', 'use existing visual/slide-image and a compatible surface');
+  need(text(series.profiles.surface) && ['visual/slide-image','visual/prediction-market-carousel'].includes(series.profiles.artifact), 'SERIES_PROFILE', 'use a registered slide-image or prediction-market-carousel artifact and a compatible surface');
   need(Array.isArray(series.frames), 'SERIES_FRAMES', 'frames array required');
   need(series.visual_style === undefined || obj(series.visual_style), 'SERIES_STYLE', 'visual_style must be an object');
   const hasPhotoAsset = series.frames.some((frame) => Array.isArray(frame?.blocks) && frame.blocks.some((block) => block?.kind === 'image'));
@@ -130,31 +145,38 @@ export function planCarousel(series, catalog=loadVisualRecipes()) {
   const task = series.task ?? {};
   keys(task, ['canvas','theme','text_policy','density','watermark','watermark_layer'], 'task');
   need(task.text_policy !== 'no_text', 'SERIES_TEXT', 'silent carousel includes headlines, sources and pagination');
+  if (series.content_kind === 'card-news') need((task.canvas?.width ?? 1080) === CARD_NEWS_TYPE_TOKENS.canvas_width, 'CARD_NEWS_CANVAS', 'shared card-news typography requires a 1080px logical canvas');
   const preset = {canvas:{width:1080,aspect_ratio:'4:5'},theme:{...recipe.theme},text_policy:'hybrid_template',density:{semantic:'moderate',visual:'low'},watermark:{enabled:false}};
   keys(series.typography ?? {}, Object.keys(catalog.typography), 'typography');
-  const typography = mergeRoles(mergeRoles(catalog.typography,recipe.typography),series.typography);
+  let typography = mergeRoles(mergeRoles(catalog.typography,recipe.typography),series.typography);
   for (const [role,style] of Object.entries(typography)) {
-    keys(style,['font_size','weight','max_lines','line_height','align'],`typography.${role}`);
-    need(Number.isInteger(style.font_size) && style.font_size >= 14 && style.font_size <= 256 && [400,500,600,700,800].includes(style.weight) && Number.isInteger(style.max_lines) && style.max_lines >= 1 && style.max_lines <= 20 && style.line_height >= 1.05 && style.line_height <= 2 && (style.align === undefined || ['start','middle','end'].includes(style.align)), 'SERIES_TYPE', role);
+    keys(style,['font_size','weight','max_lines','line_height','align','font_family'],`typography.${role}`);
+    need(Number.isInteger(style.font_size) && style.font_size >= 14 && style.font_size <= 256 && [400,500,600,700,800].includes(style.weight) && Number.isInteger(style.max_lines) && style.max_lines >= 1 && style.max_lines <= 20 && style.line_height >= 1.05 && style.line_height <= 2 && (style.align === undefined || ['start','middle','end'].includes(style.align)) && (style.font_family === undefined || text(style.font_family)), 'SERIES_TYPE', role);
   }
+  if (series.content_kind === 'card-news') typography = Object.fromEntries(Object.entries(typography).filter(([role]) => CARD_NEWS_TYPE_ROLES[role]).map(([role, style]) => [role, { ...style, ...CARD_NEWS_TYPE_ROLES[role] }]));
   keys(series.regions ?? {},Object.keys(catalog.regions),'regions');
-  keys(series.layouts ?? {},Object.keys(catalog.layouts),'layouts');
+  need(obj(series.layouts ?? {}) && Object.keys(series.layouts ?? {}).every(slug), 'SERIES_LAYOUT', 'custom layout ids must be slugs');
   const recurring = {...catalog.regions, ...(series.regions ?? {})};
   const layouts = {...catalog.layouts,...(series.layouts ?? {})};
   for (const [name,layout] of Object.entries(layouts)) {
-    keys(layout,Object.keys(catalog.layouts[name]),`layouts.${name}`);
-    need(Object.keys(catalog.layouts[name]).every((k)=>layout[k]), 'SERIES_REGION', `missing region in ${name}`);
+    const baseLayout = catalog.layouts[name] ?? {};
+    keys(layout,Object.keys(baseLayout).length ? Object.keys(baseLayout) : Object.keys(layout),`layouts.${name}`);
+    need(Object.keys(baseLayout).every((k)=>layout[k]), 'SERIES_REGION', `missing region in ${name}`);
     const effect = catalog.layout_effects?.[name] ?? {};
     const backgroundRegions = effect.background_regions ?? [];
     need(Array.isArray(backgroundRegions) && backgroundRegions.every((id) => Object.hasOwn(layout, id)), 'SERIES_LAYOUT_EFFECT', `${name}: invalid background region`);
     const solidBands = effect.solid_bands ?? [];
-    const bandedBackgroundRegions = solidBands.length ? backgroundRegions : [];
+    if (backgroundRegions.length) need(solidBands.length > 0, 'SERIES_TEXT_SAFE_BAND', `${name}: a background behind text requires an explicit solid/scrim safe band`);
+    const bandedBackgroundRegions = effect.background_regions ?? [];
     const rec = {...recurring, ...(effect.recurring_regions ?? {})};
-    checkRegions({...rec,...layout},{bandedBackgroundRegions});
+    const regionsToCheck = (series.footer_policy ?? 'source_and_pagination') === 'content_only'
+      ? Object.fromEntries(Object.entries(rec).filter(([id]) => !['source','pagination'].includes(id)))
+      : rec;
+    checkRegions({...regionsToCheck,...layout},{bandedBackgroundRegions});
     for (const band of solidBands) {
       need(obj(band) && /^[a-z0-9][a-z0-9-]*$/.test(band.id ?? '') && ['x','y','width','height'].every(k => Number.isFinite(band[k]) && band[k] >= 0 && band[k] <= 1) && band.width > 0 && band.height > 0 && band.x + band.width <= 1 && band.y + band.height <= 1 && (band.fill === 'theme.background' || /^#[0-9a-f]{6}$/i.test(band.fill ?? '')) && (band.gradient === undefined || (Array.isArray(band.gradient) && band.gradient.length >= 2 && band.gradient.every(st => Array.isArray(st) && st.length === 2 && st.every(n => Number.isFinite(n) && n >= 0 && n <= 1)))), 'SERIES_LAYOUT_EFFECT', `${name}: invalid solid band`);
     }
-    if (backgroundRegions.length) {
+    if (backgroundRegions.length && solidBands.length) {
       const contains = (outer, inner) => inner.x >= outer.x && inner.y >= outer.y && inner.x + inner.width <= outer.x + outer.width && inner.y + inner.height <= outer.y + outer.height;
       const textRegions = [rec.eyebrow, rec.headline, rec.source, rec.pagination];
       need(solidBands.length > 0 && textRegions.every(region => solidBands.some(band => contains(band, region))), 'SERIES_TEXT_SAFE_BAND', `${name}: recurring text regions must fit inside a declared solid/scrim text-safe band`);
@@ -176,6 +198,10 @@ export function planCarousel(series, catalog=loadVisualRecipes()) {
     keys(f,CAROUSEL_CONSTRAINTS.frame_fields,'frame');
     need(slug(f.id) && !ids.has(f.id), 'SERIES_FRAME_ID', 'unique frame slug required'); ids.add(f.id);
     need(functions.includes(f.function) && text(f.takeaway) && text(f.alt_text) && text(f.headline) && text(f.source_note), 'SERIES_MEANING', `${f.id}: function, takeaway, alt text, headline and source_note required`);
+    if (series.footer_policy === 'content_only') {
+      const visibleCopy = [f.headline, ...(f.blocks ?? []).filter((b) => b?.kind === 'text').map((b) => b.text)].filter((s) => typeof s === 'string').join('\n');
+      need(!contentOnlyCopyIssue(visibleCopy), 'SERIES_COPY', `${f.id}: visible copy contains a placeholder or process/meta phrase`);
+    }
     need(Array.isArray(f.beat_ids) && f.beat_ids.length && new Set(f.beat_ids).size===f.beat_ids.length, 'SERIES_BEATS', f.id);
     for (const id of f.beat_ids) {
       need(beats.has(id), 'SERIES_BEATS', `unknown beat ${id}`);
@@ -208,8 +234,9 @@ export function planCarousel(series, catalog=loadVisualRecipes()) {
     need(layout, 'SERIES_LAYOUT', String(layoutName));
     need(Array.isArray(frameBlocks) && frameBlocks.length > 0 && frameBlocks.length <= Object.keys(layout).length, 'SERIES_BLOCKS', `${f.id}: one block per region; split independent messages`);
     const textSafeEffect = catalog.layout_effects?.[layoutName] ?? {};
-    if ((textSafeEffect.background_regions ?? []).length) {
+    if ((textSafeEffect.background_regions ?? []).length && frameBlocks.some((block) => block?.kind === 'text')) {
       const bands = textSafeEffect.solid_bands ?? [];
+      need(bands.length > 0, 'SERIES_TEXT_SAFE_BAND', `${layoutName}: text over a background requires a declared solid/scrim safe band`);
       const contains = (outer, inner) => inner && inner.x >= outer.x && inner.y >= outer.y && inner.x + inner.width <= outer.x + outer.width && inner.y + inner.height <= outer.y + outer.height;
       for (const b of frameBlocks) if (b?.kind === 'text') need(bands.some(band => contains(band, layout[b.region])), 'SERIES_TEXT_SAFE_BAND', `${layoutName}.${b.region}: text region must fit inside a declared solid/scrim text-safe band`);
     }
@@ -237,21 +264,38 @@ export function planCarousel(series, catalog=loadVisualRecipes()) {
     const layers=[], backgroundLayers=[], occupied=new Set();
     const lfx = catalog.layout_effects?.[layoutName] ?? {};
     const rec = {...recurring, ...(lfx.recurring_regions ?? {})};
-    const sty = (role) => ({...typography[role], ...(lfx.text_style?.[role] ?? {})});
+    const sty = (role) => {
+      const style = {...typography[role], ...(lfx.text_style?.[role] ?? {})};
+      if (series.content_kind === 'card-news') {
+        const token = CARD_NEWS_TYPE_ROLES[role];
+        need(token, 'CARD_NEWS_TYPE_ROLE', `no shared card-news token for ${role}`);
+        return {...style, ...token, min_contrast: 4.5};
+      }
+      return style;
+    };
     const addText = (id,value,slot,role,source_ref='request') => layers.push({id,kind:'text',text:value,source_ref,slot,...sty(role)});
     if (series.series_label) addText('series-label',series.series_label,rec.eyebrow,'eyebrow');
-    addText('headline',f.headline,rec.headline,'headline');
+    const margin = series.content_kind === 'card-news' ? CARD_NEWS_TYPE_TOKENS.margin_px / CARD_NEWS_TYPE_TOKENS.canvas_width : null;
+    const tokenSlot = (slot) => {
+      if (margin === null) return slot;
+      const right = slot.x + slot.width;
+      if (slot.x < margin + 0.002 && right > 1 - margin - 0.002) return { ...slot, x: margin, width: 1 - margin * 2 };
+      if (slot.x < margin + 0.002) return { ...slot, x: margin, width: right - margin };
+      return slot;
+    };
+    addText('headline',f.headline,tokenSlot(rec.headline),'headline');
     if (f.headline_emphasis!==undefined) { need(Array.isArray(f.headline_emphasis)&&f.headline_emphasis.every((e)=>obj(e)&&text(e.match)&&f.headline.includes(e.match)),'SERIES_TEXT',`${f.id}: headline_emphasis spans must be substrings of the headline`); layers.at(-1).emphasis=structuredClone(f.headline_emphasis); }
     for (const b of frameBlocks) {
       keys(b,CAROUSEL_CONSTRAINTS.block_fields,'block');
       need(slug(b.id) && !['series-label','headline','source','pagination'].includes(b.id) && !layers.some((l)=>l.id===b.id),'SERIES_LAYER_ID',String(b.id));
       need(layout[b.region] && !occupied.has(b.region),'SERIES_REGION',`unknown or duplicate region ${b.region}`); occupied.add(b.region);
       need(CAROUSEL_CONSTRAINTS.block_kinds.includes(b.kind),'SERIES_LAYER',String(b.kind));
-      const {region,...layer}=b; layer.slot=layout[region];
+      const {region,text_role,...layer}=b; layer.slot=tokenSlot(layout[region]);
       if (b.kind==='text') {
-        keys(b,['id','region','kind','text','source_ref'],'text block');
+        keys(b,['id','region','kind','text','text_role','source_ref'],'text block');
         need(text(b.text) && text(b.source_ref),'SERIES_TEXT',b.id);
-        Object.assign(layer,sty('body'));
+        need(text_role === undefined || Object.hasOwn(typography, text_role), 'SERIES_TYPE', `${b.id}: unknown text_role`);
+        Object.assign(layer,sty(text_role ?? 'body'));
       } else if (b.kind==='chart') {
         keys(b,['id','region','kind','ref','sha256'],'chart block');
         need(text(b.ref),'SERIES_SOURCE',b.id);
@@ -289,14 +333,16 @@ export function planCarousel(series, catalog=loadVisualRecipes()) {
       }));
       layers.push(...backgroundLayers, ...bands, ...contentLayers);
     }
-    addText('source',f.source_note,rec.source,'source',series.source.ref);
-    addText('pagination',`${i+1} / ${series.frames.length}`,rec.pagination,'pagination');
+    if ((series.footer_policy ?? 'source_and_pagination') === 'source_and_pagination') {
+      addText('source',f.source_note,rec.source,'source',series.source.ref);
+      addText('pagination',`${i+1} / ${series.frames.length}`,rec.pagination,'pagination');
+    }
     const plan = {schema_version:'1.0.0',request:series.request,source:series.source,profiles:series.profiles,task:lfx.theme?{...structuredClone(task),theme:{...(task.theme??{}),...lfx.theme}}:structuredClone(task),layers,caption:f.caption??''};
     if (f.job_ref) plan.job_ref=f.job_ref;
     frames.push({id:f.id,index:i+1,function:f.function,beat_ids:f.beat_ids,takeaway:f.takeaway,alt_text:f.alt_text,layout:layoutName,...(f.art_direction?{art_direction:structuredClone(f.art_direction)}:{}),plan});
   }
   need([...beats.keys()].every((id)=>used.has(id)),'SERIES_BEAT_MISSING','a declared beat is not represented');
-  return {schema_version:CAROUSEL_VERSION,series_id:series.series_id,recipe:resolvedRecipeId,...(style?{visual_style:{...style,requested:styleInput}}:{}),recipe_hash:hash({version:catalog.schema_version,recipe,regions:recurring,layouts,typography,layout_effects:catalog.layout_effects??{}}),...(series.art_direction_sha256?{art_direction_sha256:series.art_direction_sha256}:{}),preset,typography,frames,
+  return {schema_version:CAROUSEL_VERSION,series_id:series.series_id,recipe:resolvedRecipeId,...(style?{visual_style:{...style,requested:styleInput}}:{}),...(series.content_kind === 'card-news' ? {card_news_type_tokens:CARD_NEWS_TYPE_TOKENS} : {}),recipe_hash:hash({version:catalog.schema_version,recipe,regions:recurring,typography,card_news_type_tokens:series.content_kind === 'card-news' ? CARD_NEWS_TYPE_TOKENS : null,layout_effects:catalog.layout_effects??{}}),...(series.art_direction_sha256?{art_direction_sha256:series.art_direction_sha256}:{}),preset,typography,frames,
     density_profile:'silent_carousel',narration_dependency:'none',
     review_contract:'editorial/SLIDES-AND-CAROUSELS.md#11-series-information-consistency-contract',
     review_owner:'skills/review-visual/; SUE-646/647; user Phase4 SUE-1337',
@@ -328,10 +374,10 @@ const writeJson=(p,x)=>writeFileSync(p,`${JSON.stringify(x,null,2)}\n`);
 const basenameSafe=(root,path)=>{ need(typeof path==='string' && !relative(root,resolve(root,path)).startsWith('..') && !path.startsWith('/'),'SERIES_REUSE','invalid prior output locator'); return resolve(root,path); };
 
 /** Existing executor owns typography, charts, source hashing and image bytes. */
-export async function executeCarousel(series,{baseDir=process.cwd(),outDir,rasterizer='auto',previousDir=null,targetId=null,targetCatalog=null,nativeSession=null,nativeSessionBaseDir=baseDir}={}) {
+export async function executeCarousel(series,{baseDir=process.cwd(),outDir,rasterizer='auto',previousDir=null,targetId=null,targetCatalog=null,nativeSession=null,nativeSessionBaseDir=baseDir,contentBrief=null}={}) {
   const {compileExecution,executeVisual,prepareOutput,isRenderedOk,GENERATED_OK,RENDER_OK,lineageRootOf,checkRepairLineage,enforceRepairLimit,appendLedger}=await import('./visual-execution-core.mjs');
   const {findRasterizer,rasterize,svgDocument}=await import('./svg-tools.mjs');
-  const compiled=planCarousel(series);
+  const compiled=planCarousel(series,undefined,contentBrief);
   const nativeFrames=compiled.frames.filter((f)=>f.art_direction?.render_method==='native_card');
   const hybridFrames=compiled.frames.filter((f)=>['native_card','compositor'].includes(f.art_direction?.render_method));
   const nativeIds=new Set(nativeFrames.map((f)=>f.id));
@@ -361,8 +407,9 @@ export async function executeCarousel(series,{baseDir=process.cwd(),outDir,raste
   const packets=[];
   for (const f of compiled.frames) packets.push(await compileExecution(f.plan,{baseDir,preset:compiled.preset}));
   const chrome=hybridFrames.length?resolveHybridChrome(targetId,targetCatalog):null;
+  const hasChromeFooter=(series.footer_policy??'source_and_pagination')==='source_and_pagination';
   const pageMarkFor=(f)=>chrome.values.page_mark_format.replaceAll('{index}',String(f.index)).replaceAll('{total}',String(compiled.frames.length));
-  const verifyChrome=(proof,f)=>{verifyChromeText(chrome,{[chrome.values.kicker?'kicker':'brand_label']:proof.label});need(proof.page_mark===pageMarkFor(f),'UNRESOLVED_LABEL',`${f.id}: printed page mark differs from page_mark_format`);};
+  const verifyChrome=(proof,f)=>{verifyChromeText(chrome,{[chrome.values.kicker?'kicker':'brand_label']:proof.label});need(proof.footer_enabled===hasChromeFooter,'UNRESOLVED_LABEL',`${f.id}: chrome footer does not match the content policy`);if(hasChromeFooter)need(proof.page_mark===pageMarkFor(f),'UNRESOLVED_LABEL',`${f.id}: printed page mark differs from page_mark_format`);else need(proof.page_mark===null&&proof.source_line===null,'UNRESOLVED_LABEL',`${f.id}: content-only chrome must omit its footer`);};
   const targetLabel=chrome?(chrome.values.kicker??chrome.values.brand_label):null;
   const nativePrompts=new Map(nativeFrames.map((f)=>[f.id,buildNativeCardPrompt(f,{palette:packets[compiled.frames.indexOf(f)].theme,fontFamily:packets[compiled.frames.indexOf(f)].theme.font_family})]));
   const prior=previousDir?JSON.parse(readFileSync(resolve(previousDir,'series.json'),'utf8')):null;
@@ -422,7 +469,7 @@ export async function executeCarousel(series,{baseDir=process.cwd(),outDir,raste
         } else {
           const intake=intakeNativeCard({pngPath:supplied.png_path,sourceDir:supplied.source_dir,receipt:supplied.receipt,baseDir:nativeSessionBaseDir,rasterizer:adapter});
           const sourceLayer=f.plan.layers.find((layer)=>layer.id==='source');
-          const composed=renderNativeChrome(intake.bytes,{label:targetLabel,sourceLine:sourceLayer?.text,pageMark:pageMarkFor(f),tokens:packets[i].theme,rasterizer:adapter});
+          const composed=renderNativeChrome(intake.bytes,{label:targetLabel,...(hasChromeFooter?{sourceLine:sourceLayer?.text,pageMark:pageMarkFor(f)}:{}),tokens:packets[i].theme,rasterizer:adapter});
           need(hash(readFileSync(intake.path))===intake.receipt.source_sha256,'NATIVE_SOURCE_CHANGED',`${f.id}: native source changed during rendering`);
           const finalSha=hash(composed.bytes);
           const review=supplied.review??(supplied.review_path?JSON.parse(readFileSync(containedNativePath(nativeSessionBaseDir,supplied.review_path,'review_path'),'utf8')):null);
@@ -451,11 +498,13 @@ export async function executeCarousel(series,{baseDir=process.cwd(),outDir,raste
           writeJson(resolve(dir,'receipt.json'),outputReceipt);
         }
       } else {
-        const executed=await executeVisual(f.plan,{baseDir,preset:compiled.preset,outDir:dir,rasterizer});
+        let executed;
+        try { executed=await executeVisual(f.plan,{baseDir,preset:compiled.preset,outDir:dir,rasterizer}); }
+        catch (error) { error.message=`${f.id}: ${error.message}`; throw error; }
         entry.status=executed.status;
         if(f.art_direction?.render_method==='compositor' && isRenderedOk(entry.status)) {
           const sourceLayer=f.plan.layers.find((layer)=>layer.id==='source');
-          const chromeOptions={label:targetLabel,sourceLine:sourceLayer?.text,pageMark:pageMarkFor(f),tokens:packets[i].theme,rasterizer:adapter};
+          const chromeOptions={label:targetLabel,...(hasChromeFooter?{sourceLine:sourceLayer?.text,pageMark:pageMarkFor(f)}:{}),tokens:packets[i].theme,rasterizer:adapter};
           const masterChrome=renderNativeChrome(readFileSync(resolve(dir,'master.png')),{...chromeOptions});
           const imageChrome=renderNativeChrome(readFileSync(resolve(dir,'image.png')),{...chromeOptions});
           verifyChrome(masterChrome.proof,f); verifyChrome(imageChrome.proof,f);
@@ -502,9 +551,16 @@ export async function executeCarousel(series,{baseDir=process.cwd(),outDir,raste
         const phone=rasterize(svgDocument(phoneWidth,phoneHeight,element),adapter);
         writeFileSync(resolve(outDir,f.id,'phone.png'),phone);
         f.phone={ref:`${f.id}/phone.png`,sha256:hash(phone)};
-        tiles.push(`<svg x="${(i%3)*phoneWidth}" y="${Math.floor(i/3)*phoneHeight}" width="${phoneWidth}" height="${phoneHeight}">${element}</svg>`);
+        // The registered PMC five-card package uses a centered 3+2 grid; generic carousels retain their 3-column grid.
+        const gap=12, sheetWidth=phoneWidth*3+gap*4, contentWidth=sheetWidth-gap*2;
+        const row=i<3?0:Math.floor(i/3), col=i%3, rowCount=compiled.frames.length===5&&row===1?2:3;
+        const rowWidth=rowCount*phoneWidth+(rowCount-1)*gap;
+        const x=gap+Math.round((contentWidth-rowWidth)/2)+col*(phoneWidth+gap), y=gap+row*(phoneHeight+gap);
+        const phoneElement=`<image width="${phoneWidth}" height="${phoneHeight}" xlink:href="data:image/png;base64,${phone.toString('base64')}"/>`;
+        tiles.push(`<svg x="${x}" y="${y}" width="${phoneWidth}" height="${phoneHeight}">${phoneElement}</svg>`);
       }
-      const sheet=rasterize(svgDocument(Math.min(3,result.frames.length)*phoneWidth,Math.ceil(result.frames.length/3)*phoneHeight,tiles.join('')),adapter);
+      const gap=12, sheetWidth=Math.min(3,result.frames.length)*phoneWidth+(Math.min(3,result.frames.length)-1)*gap+gap*2, sheetHeight=Math.ceil(result.frames.length/3)*phoneHeight+(Math.ceil(result.frames.length/3)-1)*gap+gap*2;
+      const sheet=rasterize(svgDocument(sheetWidth,sheetHeight,`<rect x="0" y="0" width="${sheetWidth}" height="${sheetHeight}" fill="#E8E4DA"/>${tiles.join('')}`),adapter);
       writeFileSync(resolve(outDir,'contact-sheet.png'),sheet); result.contact_sheet={ref:'contact-sheet.png',sha256:hash(sheet)};
     }
     writeJson(resolve(outDir,'review-worklist.json'),{series_id:series.series_id,...(series.art_direction_sha256?{art_direction_sha256:series.art_direction_sha256}:{}),review_owner:compiled.review_owner,status:'NOT_REVIEWED',not_a_visual_review_record:true,

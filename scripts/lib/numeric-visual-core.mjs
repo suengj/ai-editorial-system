@@ -41,6 +41,27 @@ export function computeAxis(allPoints, { zoom, padding_pp, min_span_pp }) {
 /** Actual observed span in whole days (floor), never the requested window. */
 export const observedDays = (obs) => Math.floor((ts(obs[obs.length - 1].t) - ts(obs[0].t)) / DAY);
 
+/** Market trend gate shared by numeric-card producers; freshness is measured at the recorded check time. */
+export function checkTrendCardEligibility(input, maxAgeHours = 24) {
+  const issues = [];
+  const add = (code, message) => issues.push({ code, message });
+  const volume = Number(input?.volume_24h);
+  if (!Number.isFinite(volume) || volume <= 0) add('TREND_ILLIQUID', '24-hour market volume must be non-zero');
+  const updated = ts(input?.updated_at), checked = ts(input?.checked_at);
+  if (!Number.isFinite(updated) || !Number.isFinite(checked) || checked < updated || checked - updated > maxAgeHours * HOUR) add('TREND_STALE', 'market update must be fresh within the configured age at checked_at');
+  const observations = Array.isArray(input?.observations) ? input.observations : [];
+  if (observations.length < 2) add('TREND_HISTORY_REQUIRED', 'trend cards require at least two history points');
+  if (observations.length >= 2) {
+    const first = observations[0], last = observations.at(-1);
+    if (observations.some((point, index) => !Number.isFinite(ts(point?.t)) || !Number.isFinite(point?.p) || point.p < 0 || point.p > 100 || (index > 0 && ts(point.t) <= ts(observations[index - 1]?.t)))) {
+      add('TREND_HISTORY_INVALID', 'history must contain finite 0..100 probabilities in strictly increasing timestamp order');
+    }
+    const actual = last.p > first.p ? 'up' : last.p < first.p ? 'down' : 'flat';
+    if (!['up', 'down'].includes(actual) || input.direction !== actual) add('TREND_DIRECTION', 'trend direction must match the first and last history points');
+  }
+  return issues;
+}
+
 /**
  * @returns {{code:string, where:string, message:string}[]} empty when the spec complies.
  */
@@ -50,6 +71,7 @@ export function checkNumericCard(spec, profile = loadNumericProfile()) {
   const d = profile.units.decimals;
   if (!spec || typeof spec !== 'object') return [{ code: 'SPEC', where: '$', message: 'spec must be an object' }];
   if (spec.profile !== profile.profile) err('PROFILE', 'profile', `must be ${profile.profile}`);
+  if (spec.trend_card === true) for (const issue of checkTrendCardEligibility(spec.trend_eligibility)) err(issue.code, 'trend_eligibility', issue.message);
 
   // ---- lane separation
   const art = spec.art_direction ?? {};
@@ -57,9 +79,12 @@ export function checkNumericCard(spec, profile = loadNumericProfile()) {
     if (ART_KEYS_FORBIDDEN.includes(k)) err('LANE_ART_OWNS_DATA', `art_direction.${k}`, 'AI art direction may not carry factual/chart data');
     else if (!profile.lanes.ai_art_direction.owns.includes(k)) err('LANE_ART_UNKNOWN', `art_direction.${k}`, 'unknown art-direction field');
   }
-  if (spec.rendering?.chart_geometry !== 'deterministic') err('LANE_CHART_NOT_DETERMINISTIC', 'rendering.chart_geometry', 'chart geometry must be rendered by deterministic code');
+  const illustrativeTrend = spec.rendering?.chart_geometry === 'illustrative_trend_image';
+  const trendModeAllowed = profile.chart_image_modes?.allowed?.includes('illustrative_trend_image') === true;
+  if (spec.rendering?.chart_geometry !== 'deterministic' && !(illustrativeTrend && trendModeAllowed)) err('LANE_CHART_NOT_DETERMINISTIC', 'rendering.chart_geometry', 'chart geometry must be deterministic or use the owner-approved illustrative trend mode');
   if (spec.rendering?.final_composition !== 'deterministic') err('LANE_COMPOSITION_NOT_DETERMINISTIC', 'rendering.final_composition', 'final composition must be deterministic');
-  if (!['none', 'decorative_only'].includes(spec.rendering?.image_ai_role)) err('LANE_IMAGE_AI_DRAWS_DATA', 'rendering.image_ai_role', 'image AI may only be none or decorative_only');
+  const allowedImageRoles = illustrativeTrend && trendModeAllowed ? ['none', 'decorative_only', 'trend_illustration'] : ['none', 'decorative_only'];
+  if (!allowedImageRoles.includes(spec.rendering?.image_ai_role)) err('LANE_IMAGE_AI_DRAWS_DATA', 'rendering.image_ai_role', 'image AI may only be none/decorative, or supply a text-free illustrative trend curve in the owner-approved mode');
   for (const [i, a] of (art.decorative_assets ?? []).entries()) {
     if (a.overlaps_plot || a.contains_data) err('LANE_DECORATION_OVER_DATA', `art_direction.decorative_assets[${i}]`, 'decorative assets must not overlap the plot or contain data');
   }
@@ -154,6 +179,27 @@ export function checkNumericCard(spec, profile = loadNumericProfile()) {
     }
     if (spec.interpolation?.preserves_all_points !== true) err('INTERPOLATION_POINTS', 'interpolation.preserves_all_points', 'every raw point and endpoint must be preserved');
     endpoints.push(last);
+  }
+
+  // Owner-approved illustration: the image supplies curve direction only. All labels remain
+  // deterministic text derived from the first/last raw PMC observations.
+  if (illustrativeTrend) {
+    const ti = spec.rendering?.trend_image ?? {};
+    const overlays = spec.rendering?.overlays ?? {};
+    if (!trendModeAllowed) err('TREND_MODE_NOT_APPROVED', 'rendering.chart_geometry', 'illustrative trend mode is not enabled by the profile');
+    if (series.length !== 1 || (series[0]?.observations?.length ?? 0) < 2) err('TREND_HISTORY_REQUIRED', 'series', 'illustrative trend requires one series with at least two raw history observations');
+    if (ti.curve !== 'smooth_continuous') err('TREND_CURVE', 'rendering.trend_image.curve', 'illustrative trend image must describe one smooth continuous curve');
+    if (ti.contains_text !== false || ti.contains_numbers !== false || ti.contains_axes !== false) err('TREND_IMAGE_TEXT', 'rendering.trend_image', 'illustrative trend image must contain no text, numbers or axes');
+    if (ti.direction_source !== 'raw_history') err('TREND_DIRECTION_SOURCE', 'rendering.trend_image.direction_source', 'curve direction must come from raw PMC history endpoints');
+    if (series[0]?.observations?.length >= 2) {
+      const obs = series[0].observations, first = obs[0], last = obs.at(-1);
+      const want = last.p > first.p ? 'up' : last.p < first.p ? 'down' : 'flat';
+      if (!['up', 'down'].includes(want) || ti.direction !== want) err('TREND_DIRECTION', 'rendering.trend_image.direction', `curve direction must match raw endpoints (${want})`);
+      const delta = round(last.p - first.p, d);
+      if (overlays.start_value !== first.p || overlays.start_text !== fmtPct(first.p, d)) err('TREND_OVERLAY_START', 'rendering.overlays', `start overlay must equal ${fmtPct(first.p, d)}`);
+      if (overlays.end_value !== last.p || overlays.end_text !== fmtPct(last.p, d)) err('TREND_OVERLAY_END', 'rendering.overlays', `end overlay must equal ${fmtPct(last.p, d)}`);
+      if (overlays.change_pp !== delta || overlays.change_text !== fmtPp(delta, d)) err('TREND_OVERLAY_DELTA', 'rendering.overlays', `change overlay must equal ${fmtPp(delta, d)}`);
+    }
   }
 
   // ---- axis (one shared, deterministic)

@@ -5,8 +5,69 @@ This document governs **sequential visual surfaces** compiled from a
 carousels, scrollytelling steps, and frames intended to be assembled into a
 narrated video.
 
-It governs information structure, not a slide vendor, theme, animation engine,
-or typography implementation.
+### Card-news editorial brief gate
+
+Every card-news carousel must set `content_kind: "card-news"` on its series
+plan and carry a sibling `brief.json` conforming to
+[`schemas/card-news-brief.schema.json`](../schemas/card-news-brief.schema.json).
+The brief is a render prerequisite, not optional research notes. It records the
+reader question, one-sentence angle, 6–10 dated facts with source URL/name,
+reader implication, and a claim/evidence/takeaway map for every card. At least
+six distinct facts must be used across the series. Research sources stay in the
+sidecar; cards do not display research URLs.
+
+The resolver and renderer reject a card-news series with a missing or invalid
+brief, a card without a sourced evidence line, a number/slogan in place of
+substance, fewer than two substantive body lines or 45 non-space body
+characters, more than 120 body characters, or fewer than six distinct facts
+used. Headline text is excluded from the body-length check. Each rendered
+series also carries `content-qa.json` conforming to
+[`schemas/card-news-content-qa.schema.json`](../schemas/card-news-content-qa.schema.json),
+with a reader-learning answer and its single most surprising fact. The
+resolver and renderer require both sidecars. These thresholds are a floor and ceiling for
+readability, not a substitute for an editor's judgment.
+
+The brief gate remains required for every card-news profile, including
+Signalytics, trends.moa, Business Magazine, and prediction-market. The brief
+and `content-qa.json` are sidecars; they do not authorize visible source lines,
+workflow notes, or compliance boilerplate on cards.
+
+### Card-news content and numeric-card contract
+
+Card-news artwork carries the story only. Do not add a disclaimer card, an
+"투자 권유 아님" notice, or an as-of/timestamp card or footer. Keep source,
+retrieval, and freshness details in the brief or artifact metadata. Do not put
+workflow or production terms on cards, including `선두`, `원관측`,
+`illustrative`, `연출`, or `USD bn`. Never qualify the work by saying
+"수치는 정확하지 않음"; correct or omit an unsupported number instead.
+
+Every card in a numeric profile must have a data visual as its hero. Use a
+truthful bar, ring, dot-grid, gauge, smooth area chart, gap bracket, or split
+scenario tied to the brief. The visual's flow and comparison matter more than
+an exact scale, while every displayed number must remain in exact parity with
+the brief. A photograph or decorative illustration alone is not a data visual.
+Do not repeat a hero number in supporting copy. Give each card one new fact.
+Write in a sharp Korean economics-desk voice with a concrete subject and verb.
+Scenario cards state the reader impact, such as the effect on 환율 or
+대출금리.
+
+Trend cards are permitted only for liquid markets with non-zero 24-hour
+volume, a fresh update, and at least two historical points. Without history,
+omit the trend card. Derive direction from the history; never invent it.
+
+At a 1080px canvas width, render card-news from the shared tokens in
+`scripts/lib/typography-core.mjs`: Noto Serif KR headline at 64px/600; one
+150px hero size with 110px secondary size; 34px labels and bold chips; 36px
+body copy, at most two lines; 72px margins; fixed panel geometry. Do not add
+other card-news font sizes. The carousel planner applies these tokens to the
+text layers passed to the renderer, so profile typography overrides cannot
+silently change the scale.
+
+Use full-saturation photography. If text needs contrast, confine a scrim to
+the text zone; never place a full white veil over the photograph.
+
+This document governs information structure, not a slide vendor, theme, or
+animation engine.
 
 Research basis:
 [`../benchmarks/VISUAL-STORYTELLING-SLIDES-INFOGRAPHICS.md`](../benchmarks/VISUAL-STORYTELLING-SLIDES-INFOGRAPHICS.md).

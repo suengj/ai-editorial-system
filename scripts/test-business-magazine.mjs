@@ -12,21 +12,30 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const profile = loadBusinessMagazineProfile(), day = '2026-10-08';
 const evidence = { schema_version: '1.0.0', as_of: day,
   sources: [{ id: 's1', url: 'https://example.com/a', title: 'Synthetic source A', kind: 'official', published_at: null, checked_at: day }, { id: 's2', url: 'https://example.com/b', title: 'Synthetic source B', kind: 'official', published_at: day, checked_at: day }],
-  claims: [{ id: 'a', kind: 'fact', text: 'Synthetic A offers a service.', source_ids: ['s1'] }, { id: 'b', kind: 'fact', text: 'Synthetic B offers an adjacent service.', source_ids: ['s2'] }, { id: 'h', kind: 'assumption', text: 'A small paid experiment is proposed.', source_ids: [] }],
+  claims: [
+    { id: 'a', kind: 'fact', text: 'Synthetic fact A recorded 12 units in the annual source.', source_ids: ['s1'] },
+    { id: 'b', kind: 'fact', text: 'Synthetic fact B recorded 14 units in the annual source.', source_ids: ['s2'] },
+    { id: 'c', kind: 'fact', text: 'Synthetic fact C recorded 16 units in the annual source.', source_ids: ['s1'] },
+    { id: 'd', kind: 'fact', text: 'Synthetic fact D recorded 18 units in the annual source.', source_ids: ['s2'] },
+    { id: 'e', kind: 'fact', text: 'Synthetic fact E recorded 20 units in the annual source.', source_ids: ['s1'] },
+    { id: 'f', kind: 'fact', text: 'Synthetic fact F recorded 22 units in the annual source.', source_ids: ['s2'] },
+    { id: 'h', kind: 'assumption', text: 'A small paid experiment is proposed.', source_ids: [] }],
   cases: [{ id: 'a', name: 'Synthetic A', match: 'same_model', claim_ids: ['a'] }, { id: 'b', name: 'Synthetic B', match: 'adjacent', claim_ids: ['b'] }] };
 const packet = { schema_version: '1.0.0', series_id: 'bizmag-test', request: '가상 자료로 5장 계획을 검증한다.', series_label: '', evidence_ref: 'evidence.json',
   idea: { problem: 'unused capacity', target: 'small shops', payer: 'buyer', mechanism: 'matching', revenue: 'proposed transaction fee' },
   money: { value_flow: 'shop to buyer', payment_flow: 'buyer to platform to shop', platform_revenue: 'fee, not gross transaction volume', main_cost: 'support and settlement' },
-  frames: profile.frame_roles.map((role, i) => ({ role, headline: `가상 제목 ${i + 1}`, body: '가상 설명입니다.', takeaway: '가상 의미입니다.', alt_text: '가상 검증용 카드입니다.', claim_ids: [i === 2 ? 'a' : i === 3 ? 'b' : 'h'], ...(i === 2 ? { case_id: 'a' } : {}), ...(i === 3 ? { case_id: 'b', case_mode: 'compare' } : {}) })), caption: 'Synthetic fixture. Not a real company claim.' };
+  frames: profile.frame_roles.map((role, i) => ({ role, headline: `가상 제목 ${i + 1}`, body: `가상 근거 ${[[12, 16], [18], [12], [14, 22], [20]][i].join('과 ')}은 공개된 자료에 기록되어 있으며 첫 번째 관측 기간과 비교 기준을 함께 설명합니다.\n두 번째 문장에서는 이 수치가 사업 구조와 어떤 관계인지 독자가 판단할 맥락을 구체적으로 덧붙입니다.`, takeaway: '가상 의미입니다.', alt_text: '가상 검증용 카드입니다.', claim_ids: [['a','c'], ['d'], ['a'], ['b','f'], ['e','h']][i], ...(i === 2 ? { case_id: 'a' } : {}), ...(i === 3 ? { case_id: 'b', case_mode: 'compare' } : {}) })), caption: 'Synthetic fixture. Not a real company claim.' };
 const opts = { sourceRef: '/stable/evidence.json', asOf: day };
 let count = 0;
 function test(name, fn) { fn(); count++; console.log(`PASS ${name}`); }
 function negative(name, edit, code) { test(name, () => { const p = structuredClone(packet), e = structuredClone(evidence); edit(p, e); assert.throws(() => compileBusinessMagazine(p, e, opts), error => error.code === code); }); }
 const before = JSON.stringify([packet, evidence, profile]);
 const output = compileBusinessMagazine(packet, evidence, opts);
-test('photo-absent business-magazine series defaults through the owner R7 fallback', () => { assert.equal(output.series.visual_style, undefined); const p = planCarousel(output.series); assert.equal(p.recipe, 'r7-illustration-fallback'); assert.equal(p.frames[0].layout, 'r7-illustration'); });
-test('business-magazine photo asset takes the R4 full-bleed path', () => { const p = structuredClone(packet); p.frames[0].visual = { kind: 'image', ref: 'cover-photo.png', rights_note: 'test source photo' }; const series = compileBusinessMagazine(p, evidence, opts).series; const plan = planCarousel(series); assert.equal(plan.recipe, 'r4-photo-fullbleed'); assert.equal(plan.frames[0].layout, 'hero'); assert.equal(plan.frames[0].plan.layers.find((l) => l.kind === 'image').slot.width, 1); assert.equal(plan.frames[0].plan.layers.find((l) => l.kind === 'image').slot.height, 1); });
-test('existing carousel compiler accepts five ordered frames', () => assert.equal(planCarousel(output.series).frames.length, 5));
+test('business-magazine emits card-news and a brief accepted by the shared contract', () => { assert.equal(output.series.content_kind, 'card-news'); assert.equal(output.series.brief_file, 'brief.json'); assert.equal(output.brief.facts.length, 6); assert.equal(planCarousel(output.series, undefined, output.brief).frames.length, 5); });
+test('short card headlines use the sourced card takeaway as the schema-valid claim', () => { const p=structuredClone(packet); p.frames[2].headline='A'; const r=compileBusinessMagazine(p,evidence,opts); assert.equal(r.brief.per_card[p.frames[2].role].claim,p.frames[2].takeaway); });
+test('photo-absent business-magazine series defaults through the owner R7 fallback', () => { assert.equal(output.series.visual_style, undefined); const p = planCarousel(output.series, undefined, output.brief); assert.equal(p.recipe, 'r7-illustration-fallback'); assert.equal(p.frames[0].layout, 'r7-illustration'); });
+test('business-magazine photo asset uses the R4 full-height hero within the card-news safe margin', () => { const p = structuredClone(packet); p.frames[0].visual = { kind: 'image', ref: 'cover-photo.png', rights_note: 'test source photo' }; const compiled = compileBusinessMagazine(p, evidence, opts); const plan = planCarousel(compiled.series, undefined, compiled.brief); assert.equal(plan.recipe, 'r4-photo-fullbleed'); assert.equal(plan.frames[0].layout, 'hero'); assert.equal(plan.frames[0].plan.layers.find((l) => l.kind === 'image').slot.width, 1 - 2 * 72 / 1080); assert.equal(plan.frames[0].plan.layers.find((l) => l.kind === 'image').slot.height, 1); });
+test('existing carousel compiler accepts five ordered frames through brief contract', () => assert.equal(planCarousel(output.series, undefined, output.brief).frames.length, 5));
 test('inputs and shared profile are not mutated', () => assert.equal(JSON.stringify([packet, evidence, profile]), before));
 test('no account or publication authority inferred', () => { assert.equal(output.series.profiles.brand, undefined); assert.equal(output.sidecar.publication_authorized, false); assert.equal(output.series.task.watermark.enabled, false); });
 test('semantic and visual review are not claimed', () => { assert.equal(output.sidecar.semantic_review, 'NOT_REVIEWED'); assert.equal(output.sidecar.visual_review, 'NOT_REVIEWED'); assert.match(output.sidecar.source_truth, /^DECLARED/); });
@@ -34,8 +43,8 @@ test('all source URLs reach caption', () => evidence.sources.forEach(s => assert
 test('opportunity and CTA visible', () => { assert.match(output.series.frames[4].source_note, /가정/); assert.ok(output.series.frames[4].blocks[0].text.includes(profile.cta)); });
 test('adjacent case visibly distinguished', () => assert.match(output.series.frames[3].source_note, /인접 사례/));
 test('money details reach generation brief', () => assert.ok(output.generation_brief.includes(packet.money.platform_revenue)));
-test('headline-only revision leaves other four plans identical', () => { const p = structuredClone(packet); p.frames[1].headline = '수정한 제목'; const revised = compileBusinessMagazine(p, evidence, opts); const a = planCarousel(output.series), b = planCarousel(revised.series); [0, 2, 3, 4].forEach(i => assert.deepEqual(a.frames[i], b.frames[i])); assert.notDeepEqual(a.frames[1], b.frames[1]); });
-test('one-case deep dive is truthful fallback', () => { const p = structuredClone(packet), e = structuredClone(evidence); e.cases.pop(); p.frames[3].case_id = 'a'; p.frames[3].claim_ids = ['a']; p.frames[3].case_mode = 'deep-dive'; assert.equal(compileBusinessMagazine(p, e, opts).series.frames[3].function, 'qualify'); });
+test('headline-only revision leaves other four plans identical', () => { const p = structuredClone(packet); p.frames[1].headline = '수정한 제목'; const revised = compileBusinessMagazine(p, evidence, opts); const a = planCarousel(output.series, undefined, output.brief), b = planCarousel(revised.series, undefined, revised.brief); [0, 2, 3, 4].forEach(i => assert.deepEqual(a.frames[i], b.frames[i])); assert.notDeepEqual(a.frames[1], b.frames[1]); });
+test('one-case deep dive is truthful fallback', () => { const p = structuredClone(packet), e = structuredClone(evidence); e.cases.pop(); p.frames[3].case_id = 'a'; p.frames[3].claim_ids = ['a', 'b', 'f']; p.frames[3].case_mode = 'deep-dive'; assert.equal(compileBusinessMagazine(p, e, opts).series.frames[3].function, 'qualify'); });
 test('prepared visual refs resolve against packet, not output', () => { const p = structuredClone(packet); p.frames[0].visual = { kind: 'image', ref: 'art.png', rights_note: 'synthetic authored asset' }; const r = compileBusinessMagazine(p, evidence, { ...opts, baseDir: '/input' }); assert.equal(r.series.frames[0].blocks[0].ref, '/input/art.png'); });
 test('missing generated bytes stays an instruction, never an output', () => { const p = structuredClone(packet); p.frames[0].visual = { kind: 'generated', instruction: 'Unbranded conceptual still life.' }; const r = compileBusinessMagazine(p, evidence, opts); assert.equal(r.series.frames[0].blocks[0].ref, undefined); assert.equal(r.sidecar.visual_review, 'NOT_REVIEWED'); });
 negative('wrong frame count', p => p.frames.pop(), 'BIZ_FIVE_FRAMES');
@@ -56,7 +65,7 @@ negative('future source check', (p, e) => e.sources[0].checked_at = '2026-10-09'
 negative('publication later than check', (p, e) => e.sources[0].published_at = '2026-10-09', 'BIZ_DATE');
 negative('case supported by assumption only', (p, e) => e.cases[0].claim_ids = ['h'], 'BIZ_CASE');
 negative('case card cites wrong company', p => p.frames[2].claim_ids = ['b'], 'BIZ_CASE');
-negative('same company disguised as second case', p => { p.frames[3].case_id = 'a'; p.frames[3].claim_ids = ['a']; }, 'BIZ_CASE_MODE');
+negative('same company disguised as second case', p => { p.frames[3].case_id = 'a'; p.frames[3].claim_ids = ['a', 'b', 'f']; }, 'BIZ_CASE_MODE');
 negative('different company disguised as deep dive', p => p.frames[3].case_mode = 'deep-dive', 'BIZ_CASE_MODE');
 negative('opportunity presented only as fact', p => p.frames[4].claim_ids = ['a'], 'BIZ_OPPORTUNITY');
 negative('unrecognized frame style override', p => p.frames[0].theme = {}, 'BIZ_UNKNOWN_FIELD');
@@ -67,7 +76,7 @@ try {
   const epath = resolve(temp, 'evidence.json'), ppath = resolve(temp, 'packet.json'), out = resolve(temp, 'out');
   writeFileSync(epath, JSON.stringify(evidence)); writeFileSync(ppath, JSON.stringify(packet));
   const cli = (...args) => spawnSync(process.execPath, [resolve(root, 'scripts/compile-business-magazine.mjs'), ...args], { encoding: 'utf8' });
-  test('real CLI writes handoff with actual evidence hash', () => { const r = cli('--packet', ppath, '--out', out); assert.equal(r.status, 0, r.stderr); const s = JSON.parse(readFileSync(resolve(out, 'series.json'))); assert.equal(s.source.ref, epath); assert.equal(s.source.sha256, `sha256:${createHash('sha256').update(readFileSync(epath)).digest('hex')}`); assert.ok(existsSync(resolve(out, 'generation-brief.md'))); assert.equal(JSON.parse(r.stdout).status, 'PLANNED_NOT_RENDERED'); });
+  test('real CLI writes card-news series, validated brief, and evidence hash', () => { const r = cli('--packet', ppath, '--out', out); assert.equal(r.status, 0, r.stderr); const s = JSON.parse(readFileSync(resolve(out, 'series.json'))); assert.equal(s.content_kind, 'card-news'); assert.equal(s.brief_file, 'brief.json'); assert.equal(s.source.ref, epath); assert.equal(s.source.sha256, `sha256:${createHash('sha256').update(readFileSync(epath)).digest('hex')}`); assert.ok(existsSync(resolve(out, 'brief.json'))); assert.ok(existsSync(resolve(out, 'generation-brief.md'))); assert.equal(JSON.parse(r.stdout).status, 'PLANNED_NOT_RENDERED'); });
   test('CLI refuses existing outputs', () => assert.notEqual(cli('--packet', ppath, '--out', out).status, 0));
   test('CLI rejects unknown options', () => assert.notEqual(cli('--publish', 'yes').status, 0));
   test('CLI failure creates no output', () => { const broken = structuredClone(packet); broken.frames.pop(); writeFileSync(ppath, JSON.stringify(broken)); const badOut = resolve(temp, 'bad'); assert.notEqual(cli('--packet', ppath, '--out', badOut).status, 0); assert.equal(existsSync(badOut), false); });
