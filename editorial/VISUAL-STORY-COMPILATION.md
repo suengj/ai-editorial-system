@@ -424,6 +424,11 @@ Before any renderer is selected, inspect the plan for:
 - the plan does not preserve article detail merely because it exists;
 - omission does not distort the thesis;
 - important qualifications have not been optimized away.
+- for video, each scene's single delivery goal is carried by narration and
+  on-screen evidence; complete captions retain negation, conditions, numbers
+  and units, while optional emphasis remains decorative;
+- caption and body-text placement does not obscure a face, hand or key chart
+  evidence, and long copy is reordered or split when it competes with captions.
 
 ### Cross-surface consistency
 
