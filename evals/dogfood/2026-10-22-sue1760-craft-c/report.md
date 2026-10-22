@@ -7,7 +7,7 @@
 | Case | Status | Finding |
 |---|---|---|
 | KO/EN copy | `OWNER_REVIEW_PENDING` | Machine observations preserve actor, forecast/hedge strength and meaning. Korean clause form and English collocation look more natural; human labels remain with SUE-1754. |
-| Mixed KO/EN number card | `NO_PROMOTION` (`REAL_OUTPUT_COMPARED`) | Fixed assets/copy rendered at 1080×1350 and 390×488. Compared with baseline, the after layout gives only a modest photo-area gain and slightly smaller mobile copy/source; units and figures stay intact. |
+| Mixed KO/EN number card | `NO_PROMOTION` (`REAL_OUTPUT_COMPARED`) | Fixed assets/copy rendered at 1080×1350 and 390×488. Compared with baseline, the after layout gives only a modest photo-area gain and smaller body copy (38px→34px; source unchanged at 30px); units and figures stay intact. |
 | Image-led cover | `OWNER_REVIEW_PENDING` (`REAL_OUTPUT_COMPARED`) | Pinned compositor rerender exposes the driveway photo in the upper 54%; before text does not cover the subject, but opaque bands hide most of the image. Owner taste is not decided. |
 | Per-type samples | `REAL_OUTPUT_COMPARED` | Illustration and photo-real generated samples inspected. No 3D or anime representatives were accessible (`NOT_AVAILABLE`). |
 | Visual captions | `REAL_OUTPUT_COMPARED` | Existing final-v4 scene copy and timing are accessible in the job/render-plan; numbers and the conditional survive. Face/chart overlap was not observed in the sampled frames. Narration is off. |

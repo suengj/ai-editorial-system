@@ -288,7 +288,7 @@
       "observations": {
         "fact_preservation": "Copy and numeric strings match exactly; 10만 곳+, 1,300만+, 3% and source qualifiers are preserved.",
         "language": "copy fixed; no language judgment intended.",
-        "legibility": "No number-unit split or awkward line-edge punctuation observed; reading order remains title → photo → facts → source. Text-fit gates PASS. At 390px the after render has slightly smaller copy and source than baseline; readability does not clearly improve. Font stack AES Sans KR; identical digest 1cb4369a005e1d34a0f1e9069d142a1db2b1f1994263c02a8e740cebb9f19348. Visually no missing glyph observed; receipt does not emit a per-glyph fallback list.",
+        "legibility": "No number-unit split or awkward line-edge punctuation observed; reading order remains title → photo → facts → source. Text-fit gates PASS. At 390px the after render has smaller body copy than baseline (38px→34px at full size); the source line is unchanged at 30px; readability does not clearly improve. Font stack AES Sans KR; identical digest 1cb4369a005e1d34a0f1e9069d142a1db2b1f1994263c02a8e740cebb9f19348. Visually no missing glyph observed; receipt does not emit a per-glyph fallback list.",
         "aesthetics": "The after render gives the image a taller slot than baseline but otherwise resembles it; no decisive hierarchy improvement.",
         "comprehension": "All numeric relationships and the unverified settlement qualifier remain readable at full size; at 390px source detail remains small."
       },
@@ -302,7 +302,7 @@
           "outcome": "Both outputs fit; no truncation. Narrow-column first attempt reduced mobile legibility and was locally fixed once."
         }
       ],
-      "decision": "NO_PROMOTION; modest image-area change does not outweigh slight mobile text/source reduction. Owner review still available."
+      "decision": "NO_PROMOTION; modest image-area change does not outweigh the smaller body copy (38px→34px); source text unchanged. Owner review still available."
     },
     {
       "id": "case-3-image-led-cover",
