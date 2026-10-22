@@ -184,8 +184,9 @@ Therefore:
    collocation, term consistency and pronoun reference for this genre; do not
    carry Korean word order into English. In Korean, keep norms separate from
    advisory tendencies: `밝혀지다` is not an automatic double-passive error.
-   A legitimate strong hook can earn `KEEP`; see the [existing KEEP
-   guidance](#purpose) and [hedge counterexample](#capability-contract).
+   A strong hook earns `KEEP` when its sentence states its concrete claim or
+   figure; rewrite hooks pointing to unstated evidence to state it at equal
+   strength, without inventing facts.
 12. **Re-extract protected spans and compare.** Identical multisets, or the
     candidate fails.
 13. **Record edit surface and rationale.** A large edit surface is an escalation
