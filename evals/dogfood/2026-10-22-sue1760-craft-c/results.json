@@ -288,8 +288,8 @@
       "observations": {
         "fact_preservation": "Copy and numeric strings match exactly; 10만 곳+, 1,300만+, 3% and source qualifiers are preserved.",
         "language": "copy fixed; no language judgment intended.",
-        "legibility": "No number-unit split or awkward line-edge punctuation observed; reading order remains title → photo → facts → source. Text-fit gates PASS. At 390px B has slightly smaller copy and source; readability does not clearly improve. Font stack AES Sans KR; identical digest 1cb4369a005e1d34a0f1e9069d142a1db2b1f1994263c02a8e740cebb9f19348. Visually no missing glyph observed; receipt does not emit a per-glyph fallback list.",
-        "aesthetics": "B gives the image a taller slot but otherwise resembles A; no decisive hierarchy improvement.",
+        "legibility": "No number-unit split or awkward line-edge punctuation observed; reading order remains title → photo → facts → source. Text-fit gates PASS. At 390px the after render has slightly smaller copy and source than baseline; readability does not clearly improve. Font stack AES Sans KR; identical digest 1cb4369a005e1d34a0f1e9069d142a1db2b1f1994263c02a8e740cebb9f19348. Visually no missing glyph observed; receipt does not emit a per-glyph fallback list.",
+        "aesthetics": "The after render gives the image a taller slot than baseline but otherwise resembles it; no decisive hierarchy improvement.",
         "comprehension": "All numeric relationships and the unverified settlement qualifier remain readable at full size; at 390px source detail remains small."
       },
       "counterexamples": [
