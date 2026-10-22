@@ -2,32 +2,15 @@
   "schema_version": "1.1.0",
   "pack_id": "en",
   "language": "en",
-  "status": "advisory",
-  "calibration_ref": "SUE-1754 (human labels and calibration pending)",
-  "scope": "English expression review only; does not encode Korean rules or authorize factual edits.",
-  "review_axes": [
-    "articles and countability",
-    "number and tense",
-    "modifier placement and sentence structure",
-    "collocation and terminology consistency",
-    "pronoun reference and antecedents",
-    "genre and audience fit"
+  "status": "draft",
+  "doc_ref": "editorial/voice.md",
+  "calibration_ref": null,
+  "authorities": [],
+  "rules": [],
+  "not_authoritative_for": [
+    "facts, claims, numbers, quotations, or source interpretation",
+    "Korean language rules",
+    "forced rewrites, hard blocks, or publication approval"
   ],
-  "protected_meaning": [
-    "actor and quoted subject",
-    "negation and affirmation",
-    "possibility, forecast and certainty",
-    "comparison relation, period and denominator",
-    "numbers, units and protected terminology"
-  ],
-  "examples": [
-    {
-      "case": "forecast attribution and certainty",
-      "source": "The company expects demand to recover.",
-      "meaning_preserving": "회사는 수요가 회복될 것으로 예상한다.",
-      "meaning_changing": "수요가 회복된다.",
-      "status": "illustrative; not a factual report"
-    }
-  ],
-  "authority": "Advisory review prompts only. Preserve KEEP / LOCAL_POLISH / UPSTREAM_REPLAN_REQUIRED; no style check is a hard block or forced rewrite."
+  "notes": "Uncalibrated advisory English review prompts only; SUE-1754 owns human labels and calibration. Check articles/countability, number/tense, modifier placement, collocation/terms, pronoun reference, and genre fit. Preserve actor, negation, modality/certainty, comparison, period/denominator, numbers, and units. Example only: preserve 'The company expects demand to recover'; removing expects changes certainty. Keep KEEP / LOCAL_POLISH / UPSTREAM_REPLAN_REQUIRED available."
 }

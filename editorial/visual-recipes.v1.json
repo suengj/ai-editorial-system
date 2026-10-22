@@ -278,7 +278,7 @@
           "weight": 500
         }
       },
-      "generation_direction": "Restrained magazine composition; generous negative space; one clear subject; quiet material texture. No ornamental mini dashboards or icon grids. Typography remains in reserved compositor regions.",
+      "generation_direction": "Restrained magazine composition; generous negative space; one clear subject; quiet material texture. No ornamental mini dashboards or icon grids. Typography remains in reserved compositor regions. Minimal: use only cues legible at phone size; remove meaningless icons and fragile lines.",
       "default_layout": "text"
     },
     "dark-data": {
@@ -306,7 +306,7 @@
           "weight": 800
         }
       },
-      "generation_direction": "Expressive paper collage with pink/orange/blue accents, torn edges, playful brush texture and one dominant silhouette. Restrict collage to its supplied content slot; no factual copy, faux numbers, logos, robot cliches or unrelated slogans unless specifically requested.",
+      "generation_direction": "Expressive paper collage with pink/orange/blue accents, torn edges, playful brush texture and one dominant silhouette. Restrict collage to its supplied content slot; no factual copy, faux numbers, logos, robot cliches or unrelated slogans unless specifically requested. Collage: keep each fragment's source and meaning legible; avoid texture that obscures evidence or implies unrelated photos share a scene.",
       "default_layout": "visual"
     },
     "r4-photo-fullbleed": {
@@ -321,7 +321,7 @@
           "weight": 700
         }
       },
-      "generation_direction": "R4 owner-preferred photo-led editorial direction. Use the supplied strong source photo as the full-bleed visual whenever present, preserving the original pixels and recording crop/focal-point decisions. Keep factual text in the existing deterministic compositor regions. Do not replace a suitable photo with generated illustration. If a usable photo is absent or weak, resolve to R7 before rendering.",
+      "generation_direction": "R4 owner-preferred photo-led editorial direction. Use the supplied strong source photo as the full-bleed visual whenever present, preserving the original pixels and recording crop/focal-point decisions. Keep factual text in the existing deterministic compositor regions. Do not replace a suitable photo with generated illustration. If a usable photo is absent or weak, resolve to R7 before rendering. Photo: protect subject, action, viewpoint, focus and crop; do not let a composite read as documentary evidence.",
       "default_layout": "hero"
     },
     "r7-illustration-fallback": {
@@ -336,7 +336,7 @@
           "weight": 800
         }
       },
-      "generation_direction": "R7 owner-preferred illustration fallback for weak or absent photo assets, and for lifestyle/practical-information content. Use one centered, large subject with clean color blocks and restrained highlighter accents. Keep all exact text, numbers, citations and labels in the deterministic compositor; never render them into the illustration.",
+      "generation_direction": "R7 owner-preferred illustration fallback for weak or absent photo assets, and for lifestyle/practical-information content. Use one centered, large subject with clean color blocks and restrained highlighter accents. Keep all exact text, numbers, citations and labels in the deterministic compositor; never render them into the illustration. Illustration: use a topic-fit metaphor and clear foreground/background roles; remove unexplained decoration or false causal cues.",
       "default_layout": "r7-illustration"
     },
     "photo-editorial": {
@@ -346,6 +346,7 @@
       "palette_binding": {"background": "profile.palette.background", "primary": "profile.palette.primary_structure", "accent": "profile.palette.accent", "neutral": "profile.palette.neutral"},
       "when_to_use": ["Tactile, restrained economic or business context where a still life can carry the idea."],
       "avoid": ["Do not imply documentary evidence or a real photographed event when the scene is generated.", "Avoid decorative finance clichés and busy props."],
+      "generation_direction": "Photo: protect subject, action, viewpoint, focus and crop; do not let a composite read as documentary evidence.",
       "model": {"default": "gpt-image-2.5-flare", "status": "provisional_single_model", "cross_model_comparison": "pending_fal_403"}
     },
     "flat-editorial": {
@@ -355,6 +356,7 @@
       "palette_binding": {"background": "profile.palette.background", "primary": "profile.palette.primary_structure", "accent": "profile.palette.accent", "neutral": "profile.palette.neutral"},
       "when_to_use": ["Conceptual contrasts that benefit from a clear silhouette and limited shapes."],
       "avoid": ["Avoid childish character design, decorative skyline detail, and complex facial expressions."],
+      "generation_direction": "Character / editorial illustration: make pose, gaze, body-prop relation and line hierarchy explain the topic-fit metaphor; avoid broken connections and expression replacing explanation.",
       "model": {"default": "gpt-image-2.5-flare", "status": "provisional_single_model", "cross_model_comparison": "pending_fal_403"}
     },
     "isometric": {
@@ -364,6 +366,7 @@
       "palette_binding": {"background": "profile.palette.background", "primary": "profile.palette.primary_structure", "accent": "profile.palette.accent", "neutral": "profile.palette.neutral"},
       "when_to_use": ["Process, structure, or relationships that benefit from a spatial explanatory metaphor."],
       "avoid": ["Do not let diagram-like geometry imply measured values, scale, or a real chart."],
+      "generation_direction": "Isometric: keep projection, scale, overlap and flow consistent; verify connectors, and keep factual marks on a separate deterministic layer.",
       "model": {"default": "gpt-image-2.5-flare", "status": "provisional_single_model", "cross_model_comparison": "pending_fal_403"}
     },
     "clay-3d": {
@@ -373,6 +376,7 @@
       "palette_binding": {"background": "profile.palette.background", "primary": "profile.palette.primary_structure", "accent": "profile.palette.accent", "neutral": "profile.palette.neutral"},
       "when_to_use": ["A warm, tactile metaphor for a practical or human-scale concept."],
       "avoid": ["Avoid toy-like rendering, miniature clutter, and spectacle that competes with evidence."],
+      "generation_direction": "3D: make silhouette, viewpoint, scale, light, material and contact coherent; repair reflections, floating forms or ornament locally.",
       "model": {"default": "gpt-image-2.5-flare", "status": "provisional_single_model", "cross_model_comparison": "pending_fal_403"}
     },
     "glass-3d": {
@@ -382,6 +386,7 @@
       "palette_binding": {"background": "profile.palette.background", "primary": "profile.palette.primary_structure", "accent": "profile.palette.accent", "neutral": "profile.palette.neutral"},
       "when_to_use": ["A metaphor about transparency, layers, separation, or visibility."],
       "avoid": ["Avoid refraction or reflections that erase silhouettes or reduce contrast; respect brand materiality limits."],
+      "generation_direction": "3D glass: keep refraction and highlights from erasing silhouette, contrast or contact; remove ornament that obscures form.",
       "model": {"default": "gpt-image-2.5-flare", "status": "provisional_single_model", "cross_model_comparison": "pending_fal_403"}
     },
     "risograph": {
@@ -391,6 +396,7 @@
       "palette_binding": {"background": "profile.palette.background", "primary": "profile.palette.primary_structure", "accent": "profile.palette.accent", "neutral": "profile.palette.neutral"},
       "when_to_use": ["Historical, cultural, or essay-like subjects where print texture supports the tone."],
       "avoid": ["Keep texture and registration shift controlled; reject unexpected hands or figures that make the metaphor busy."],
+      "generation_direction": "Collage / risograph: keep source meaning, edges and overlap legible; control texture and registration so neither obscures evidence nor invents one shared scene.",
       "model": {"default": "gpt-image-2.5-flare", "status": "provisional_single_model", "cross_model_comparison": "pending_fal_403"}
     },
     "paper-collage": {
@@ -400,6 +406,7 @@
       "palette_binding": {"background": "profile.palette.background", "primary": "profile.palette.primary_structure", "accent": "profile.palette.accent", "neutral": "profile.palette.neutral"},
       "when_to_use": ["Combining distinct sourced concepts or showing change through layered paper forms."],
       "avoid": ["Check rights for every reused source image or paper fragment; do not imply source images are reusable because they are public."],
+      "generation_direction": "Collage: preserve each source fragment's identity and rights; keep edges and overlap legible without implying unrelated images share a scene.",
       "model": {"default": "gpt-image-2.5-flare", "status": "provisional_single_model", "cross_model_comparison": "pending_fal_403"}
     },
     "line-accent": {
@@ -409,6 +416,7 @@
       "palette_binding": {"background": "profile.palette.background", "primary": "profile.palette.primary_structure", "accent": "profile.palette.accent", "neutral": "profile.palette.neutral"},
       "when_to_use": ["Small mobile surfaces or explanations where open space and a few marks carry the idea."],
       "avoid": ["Keep line weight visible at phone size and limit accent colors to semantically useful marks."],
+      "generation_direction": "Minimal / line art: use only marks that make the relationship legible at phone size; remove meaningless icons and strengthen fragile lines.",
       "model": {"default": "gpt-image-2.5-flare", "status": "provisional_single_model", "cross_model_comparison": "pending_fal_403"}
     }
   }

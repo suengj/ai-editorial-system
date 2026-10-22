@@ -282,10 +282,12 @@ node scripts/test-carousel.mjs --render
 Before rendering, use `message` or `asset.rationale` to record the image's job
 (evidence, mechanism, metaphor or mood); use `reading_order` for the sightline,
 `focal_subject` for the subject to protect, and existing block regions plus
-`avoid` to identify text-safe and crop-safe areas. Do not add fields. For an
-image-style judgment, consult only the selected type's row in §8 of
-`AI-IMAGE-GENERATION-GUIDE.md`; the guide is not part of the resolver's normal
-visual load.
+`avoid` to identify text-safe and crop-safe areas. Do not add fields. For image
+style judgment, use the selected recipe's `generation_direction`; that note is
+projected into the plan for the selected recipe only. The resolver loads the
+existing recipe catalogue as one file, while `planCarousel` includes only the
+selected recipe direction in the generated layer prompt. The general image
+guide is not part of the resolver's normal visual load.
 
 The path is `packet.art_direction` → `compileBusinessMagazine` → `series.json` and sidecar → `planCarousel` → existing `render-carousel` / `render-visual`. A money `diagram` uses a deterministic SVG flow layer in the existing chart/compositor path; generated blocks remain pending until their asset is verified in the final PNG. The plan hash is carried as `art_direction_sha256`, and avoid tags appear in the still-unreviewed carousel worklist.
 

@@ -14,6 +14,7 @@ import {
   checkDeliveryPackage, selectExamples, hashOf, STATUS, REPO_ROOT,
 } from './lib/resolve-core.mjs';
 import { assessPolish } from './lib/polish-invariants.mjs';
+import { loadVisualRecipes, planCarousel } from './lib/carousel-core.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 let pass = 0, fail = 0;
@@ -83,8 +84,26 @@ test('English requests load the small English advisory pack without loading Kore
   yes(paths(r).includes('editorial/profiles/language/en.json'), 'English pack not loaded');
   yes(!paths(r).includes('editorial/profiles/language/ko-KR.json'), 'Korean pack leaked into English route');
   const en = JSON.parse(readFileSync(resolve(REPO_ROOT, 'editorial/profiles/language/en.json'), 'utf8'));
-  yes(en.status === 'advisory' && en.calibration_ref.includes('pending'), 'English checks must remain uncalibrated/advisory');
-  yes(en.review_axes.some((axis) => axis.includes('articles')) && en.review_axes.some((axis) => axis.includes('pronoun')), 'English axes missing');
+  yes(en.status === 'draft' && en.calibration_ref === null, 'English checks must remain uncalibrated and draft');
+  yes(en.notes.includes('articles/countability') && en.notes.includes('pronoun reference'), 'English axes missing');
+});
+test('recipe resolver projects only the selected type judgment into its generated prompt', () => {
+  const catalog = loadVisualRecipes();
+  const ids = ['photo-editorial','flat-editorial','isometric','clay-3d','glass-3d','risograph','paper-collage','line-accent'];
+  const fixture = JSON.parse(readFileSync(resolve(REPO_ROOT, 'scripts/fixtures/carousel/series.json'), 'utf8'));
+  for (const id of ids) {
+    const series = structuredClone(fixture);
+    series.recipe = id;
+    delete series.visual_style;
+    series.frames[0].layout = undefined;
+    series.frames[0].blocks = [{ id:'supporting-art', region:'content', kind:'generated', instruction:'A quiet visual metaphor.' }];
+    const plan = planCarousel(series, catalog);
+    const prompt = plan.frames[0].plan.layers.find((layer) => layer.id === 'supporting-art').instruction;
+    yes(prompt.includes(catalog.recipes[id].generation_direction), `${id} judgment missing from selected prompt`);
+    for (const other of ids.filter((candidate) => candidate !== id)) {
+      yes(!prompt.includes(catalog.recipes[other].generation_direction), `${other} judgment leaked into ${id} prompt`);
+    }
+  }
 });
 test('video task route loads only its registered video semantic core and SHA-pinned profile', () => {
   const r = resolveEditorial(intent('newsletter', ['video/educational-summary']), { reader: reader() });
