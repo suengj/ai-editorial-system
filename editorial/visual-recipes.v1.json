@@ -1,6 +1,11 @@
 {
   "schema_version": "1.0.0",
   "scope": "Task-selected realization presets, not a new intent axis or a replacement brand/reference authority. No factual payload or approval.",
+  "supporting_art_contract": {
+    "prompt_template": "Text-free vertical editorial supporting art for a Korean economics card. Show [subject and visual metaphor]. Keep all factual marks separate and code-native. Apply the selected recipe's style tokens and palette bindings.",
+    "negative_constraints": ["No legible words, letters, numerals, logos, flags, chart, axes, or UI.", "Keep the upper 32% quiet and low-detail for a later headline overlay; place the hero art in the middle/lower area.", "Charts, data values, labels, citations, and factual annotations stay code-native."],
+    "model_evidence": "E1 generated one sample per style with GPT Image 2.5 Flare. fal returned HTTP 403 for all attempted calls; cross-model comparison is pending. No provider winner or reproducibility claim is supported."
+  },
   "regions": {
     "eyebrow": {
       "x": 0.06,
@@ -333,6 +338,78 @@
       },
       "generation_direction": "R7 owner-preferred illustration fallback for weak or absent photo assets, and for lifestyle/practical-information content. Use one centered, large subject with clean color blocks and restrained highlighter accents. Keep all exact text, numbers, citations and labels in the deterministic compositor; never render them into the illustration.",
       "default_layout": "r7-illustration"
+    },
+    "photo-editorial": {
+      "kind": "supporting_art",
+      "prompt_style_tokens": ["restrained financial-desk still life", "realistic limestone miniature", "brushed metal", "directional window light", "tactile stone", "full tonal range"],
+      "negative_constraints": ["no legible text, letters, numerals, logos, flags, chart, axes, or UI", "keep the upper 32% quiet and low-detail for a later headline overlay", "charts and factual marks remain code-native"],
+      "palette_binding": {"background": "profile.palette.background", "primary": "profile.palette.primary_structure", "accent": "profile.palette.accent", "neutral": "profile.palette.neutral"},
+      "when_to_use": ["Tactile, restrained economic or business context where a still life can carry the idea."],
+      "avoid": ["Do not imply documentary evidence or a real photographed event when the scene is generated.", "Avoid decorative finance clichés and busy props."],
+      "model": {"default": "gpt-image-2.5-flare", "status": "provisional_single_model", "cross_model_comparison": "pending_fal_403"}
+    },
+    "flat-editorial": {
+      "kind": "supporting_art",
+      "prompt_style_tokens": ["bold geometric silhouettes", "crisp edges", "three-color palette bound to profile tokens", "controlled accent", "sophisticated, not childish"],
+      "negative_constraints": ["no legible text, letters, numerals, logos, flags, chart, axes, or UI", "keep the upper 32% quiet and low-detail for a later headline overlay", "charts and factual marks remain code-native"],
+      "palette_binding": {"background": "profile.palette.background", "primary": "profile.palette.primary_structure", "accent": "profile.palette.accent", "neutral": "profile.palette.neutral"},
+      "when_to_use": ["Conceptual contrasts that benefit from a clear silhouette and limited shapes."],
+      "avoid": ["Avoid childish character design, decorative skyline detail, and complex facial expressions."],
+      "model": {"default": "gpt-image-2.5-flare", "status": "provisional_single_model", "cross_model_comparison": "pending_fal_403"}
+    },
+    "isometric": {
+      "kind": "supporting_art",
+      "prompt_style_tokens": ["fixed 30-degree axonometric camera", "consistent object scale", "clean diagrammatic geometry", "controlled shadow", "no labels"],
+      "negative_constraints": ["no legible text, letters, numerals, logos, flags, chart, axes, or UI", "keep the upper 32% quiet and low-detail for a later headline overlay", "charts and factual marks remain code-native"],
+      "palette_binding": {"background": "profile.palette.background", "primary": "profile.palette.primary_structure", "accent": "profile.palette.accent", "neutral": "profile.palette.neutral"},
+      "when_to_use": ["Process, structure, or relationships that benefit from a spatial explanatory metaphor."],
+      "avoid": ["Do not let diagram-like geometry imply measured values, scale, or a real chart."],
+      "model": {"default": "gpt-image-2.5-flare", "status": "provisional_single_model", "cross_model_comparison": "pending_fal_403"}
+    },
+    "clay-3d": {
+      "kind": "supporting_art",
+      "prompt_style_tokens": ["matte hand-molded clay", "subtle surface imperfections", "architectural forms", "soft key light", "grounded shadows", "avoid toy-like rendering"],
+      "negative_constraints": ["no legible text, letters, numerals, logos, flags, chart, axes, or UI", "keep the upper 32% quiet and low-detail for a later headline overlay", "charts and factual marks remain code-native"],
+      "palette_binding": {"background": "profile.palette.background", "primary": "profile.palette.primary_structure", "accent": "profile.palette.accent", "neutral": "profile.palette.neutral"},
+      "when_to_use": ["A warm, tactile metaphor for a practical or human-scale concept."],
+      "avoid": ["Avoid toy-like rendering, miniature clutter, and spectacle that competes with evidence."],
+      "model": {"default": "gpt-image-2.5-flare", "status": "provisional_single_model", "cross_model_comparison": "pending_fal_403"}
+    },
+    "glass-3d": {
+      "kind": "supporting_art",
+      "prompt_style_tokens": ["frosted and translucent glass", "controlled refraction", "separated silhouettes", "edge highlights", "protected contrast"],
+      "negative_constraints": ["no legible text, letters, numerals, logos, flags, chart, axes, or UI", "keep the upper 32% quiet and low-detail for a later headline overlay", "charts and factual marks remain code-native"],
+      "palette_binding": {"background": "profile.palette.background", "primary": "profile.palette.primary_structure", "accent": "profile.palette.accent", "neutral": "profile.palette.neutral"},
+      "when_to_use": ["A metaphor about transparency, layers, separation, or visibility."],
+      "avoid": ["Avoid refraction or reflections that erase silhouettes or reduce contrast; respect brand materiality limits."],
+      "model": {"default": "gpt-image-2.5-flare", "status": "provisional_single_model", "cross_model_comparison": "pending_fal_403"}
+    },
+    "risograph": {
+      "kind": "supporting_art",
+      "prompt_style_tokens": ["uncoated paper grain", "coarse halftone", "slight registration shift", "overprint", "three spot inks bound to profile palette roles", "controlled texture"],
+      "negative_constraints": ["no legible text, letters, numerals, logos, flags, chart, axes, or UI", "keep the upper 32% quiet and low-detail for a later headline overlay", "charts and factual marks remain code-native"],
+      "palette_binding": {"background": "profile.palette.background", "primary": "profile.palette.primary_structure", "accent": "profile.palette.accent", "neutral": "profile.palette.neutral"},
+      "when_to_use": ["Historical, cultural, or essay-like subjects where print texture supports the tone."],
+      "avoid": ["Keep texture and registration shift controlled; reject unexpected hands or figures that make the metaphor busy."],
+      "model": {"default": "gpt-image-2.5-flare", "status": "provisional_single_model", "cross_model_comparison": "pending_fal_403"}
+    },
+    "paper-collage": {
+      "kind": "supporting_art",
+      "prompt_style_tokens": ["cut and torn archival paper", "visible fibers and layered edges", "tactile depth", "balanced asymmetry"],
+      "negative_constraints": ["no legible text, letters, numerals, logos, flags, chart, axes, or UI", "keep the upper 32% quiet and low-detail for a later headline overlay", "charts and factual marks remain code-native"],
+      "palette_binding": {"background": "profile.palette.background", "primary": "profile.palette.primary_structure", "accent": "profile.palette.accent", "neutral": "profile.palette.neutral"},
+      "when_to_use": ["Combining distinct sourced concepts or showing change through layered paper forms."],
+      "avoid": ["Check rights for every reused source image or paper fragment; do not imply source images are reusable because they are public."],
+      "model": {"default": "gpt-image-2.5-flare", "status": "provisional_single_model", "cross_model_comparison": "pending_fal_403"}
+    },
+    "line-accent": {
+      "kind": "supporting_art",
+      "prompt_style_tokens": ["fine confident contour lines", "open background", "one profile-bound accent and one contrasting profile-bound accent", "simple phone-readable marks"],
+      "negative_constraints": ["no legible text, letters, numerals, logos, flags, chart, axes, or UI", "keep the upper 32% quiet and low-detail for a later headline overlay", "charts and factual marks remain code-native"],
+      "palette_binding": {"background": "profile.palette.background", "primary": "profile.palette.primary_structure", "accent": "profile.palette.accent", "neutral": "profile.palette.neutral"},
+      "when_to_use": ["Small mobile surfaces or explanations where open space and a few marks carry the idea."],
+      "avoid": ["Keep line weight visible at phone size and limit accent colors to semantically useful marks."],
+      "model": {"default": "gpt-image-2.5-flare", "status": "provisional_single_model", "cross_model_comparison": "pending_fal_403"}
     }
   }
 }

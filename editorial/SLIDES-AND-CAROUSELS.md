@@ -501,6 +501,15 @@ SlideDeckPlan may be rendered in the publication's default visual language or
 with an explicitly authorized dimension-level override without changing slide
 boundaries unless actual fit QA exposes a structural defect.
 
+Supporting-art treatments are selectable values in
+[`visual-recipes.v1.json`](visual-recipes.v1.json), including photo-editorial,
+flat-editorial, isometric, clay-3d, glass-3d, risograph, paper-collage, and
+line-accent. A selected recipe is a profile-resolved visual-language choice,
+not a universal default. Its palette binds to the selected profile's color
+tokens. Generated artwork remains text-free supporting art; charts and factual
+marks stay code-native. E1's default model is provisional pending the recorded
+cross-model comparison.
+
 ## 11. Series information-consistency contract
 
 A multi-frame slide or carousel set is **one information system**, not a

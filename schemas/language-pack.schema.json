@@ -61,6 +61,34 @@
         "note": { "type": "string", "minLength": 1 }
       }
     },
+    "copy_lint": {
+      "description": "Deterministic, profile-aware Korean copy signals. All are advisory; this detector has no hard-block authority.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["version", "profile_targets", "rules"],
+      "properties": {
+        "version": { "const": 1 },
+        "profile_targets": {
+          "type": "object",
+          "additionalProperties": { "enum": ["economics-desk", "community", "personal", "general"] },
+          "minProperties": 1
+        },
+        "rules": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["id", "pattern", "message", "profiles"],
+            "properties": {
+              "id": { "type": "string", "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$" },
+              "pattern": { "type": "string", "minLength": 1 },
+              "message": { "type": "string", "minLength": 1 },
+              "profiles": { "type": "array", "minItems": 1, "items": { "enum": ["economics-desk", "community", "personal", "general"] } }
+            }
+          }
+        }
+      }
+    },
     "authorities": {
       "description": "External bodies and works this pack rests on. Each records what it governs AND what it does not, so a public-language guide cannot quietly become a literary style authority.",
       "type": "array",
