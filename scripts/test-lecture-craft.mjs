@@ -42,7 +42,11 @@ for (const path of ['skills/compile-visual-story/references/math-lecture.md', 's
 // negative controls ensure a broken candidate is rejected, not just recognized.
 const cases = JSON.parse(read('evals/fixtures/video/math-lecture-cases.json'));
 assert.equal(cases.status, 'acceptance_cases_not_outcome_evidence');
-const productionCraft = read('skills/compile-visual-story/references/math-lecture.md');
+const productionReferences = [
+  read('skills/compile-visual-story/references/math-lecture.md'),
+  read('skills/compile-audio-script/references/math-lecture.md'),
+];
+const [productionCraft, productionAudio] = productionReferences;
 const findCase = (id) => {
   const item = cases.cases.find((candidate) => candidate.id === id);
   assert.ok(item, `missing evaluator case ${id}`);
@@ -61,8 +65,11 @@ const convention = new Map(conventionLines.flatMap((line) => {
   const match = line.match(/^\| `([^`]+)` \| `([^`]+)`/);
   return match ? [[match[1], match[2]]] : [];
 }));
+const audioConvention = new Map([...productionAudio.matchAll(/`([^`]+)`\s*→\s*`([^`]+)`/g)]
+  .map((match) => [match[1], match[2]]));
 const readings = new Map(speechCase.input.map((notation, i) => {
   assert.equal(speechCase.expected_house_reading[i], convention.get(notation), `fixture reading for ${notation} must match production convention`);
+  assert.equal(speechCase.expected_house_reading[i], audioConvention.get(notation), `fixture reading for ${notation} must match audio production convention`);
   return [notation, convention.get(notation)];
 }));
 const readingMatches = (notation, spoken) => readings.get(notation) === spoken;
@@ -70,6 +77,19 @@ assert.equal(readingMatches('1/2', '이분의 일'), true, 'house reading passes
 assert.equal(readingMatches('1/2', '일분의 이'), false, 'reversed fraction reading fails');
 assert.equal(speechCase.input.length, speechCase.expected_house_reading.length);
 assert.ok(speechCase.reject_if.length >= 2, 'spoken-notation negative controls remain present');
+
+const ttsCase = findCase('tts-script-only');
+assert.deepEqual(ttsCase.input, { language: 'ko', genre: 'video-genre/math-lecture' });
+assert.equal(ttsCase.expected_default, 'Gemini Charon', 'TTS handoff retains the declared default');
+assert.equal(ttsCase.tts_input, 'canonical narration script only', 'TTS handoff requires the canonical script');
+assert.ok(ttsCase.reject_if.includes('prepend production instructions to TTS input'));
+assert.ok(ttsCase.reject_if.includes('claim pronunciation quality without listening evidence'));
+const canonicalNarration = '엑스 제곱에서 일은, 인수분해하면 엑스 마이너스 일과 엑스 플러스 일의 곱입니다.';
+const ttsInputIsScriptOnly = (contents) => ttsCase.tts_input === 'canonical narration script only'
+  && contents === canonicalNarration;
+assert.equal(ttsInputIsScriptOnly(canonicalNarration), true, 'canonical script-only TTS handoff passes');
+assert.equal(ttsInputIsScriptOnly(`Gemini Charon으로 천천히 읽어 주세요. ${canonicalNarration}`), false,
+  'production instructions in TTS contents fail');
 
 const syncCase = findCase('stepwise-derivation-sync');
 const spokenSteps = ['2(x + 1) = 8', 'x + 1 = 4', 'x = 3'];
