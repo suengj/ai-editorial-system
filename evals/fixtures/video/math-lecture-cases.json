@@ -1,0 +1,31 @@
+{
+  "suite": "SUE-1764 math lecture craft",
+  "status": "acceptance_cases_not_outcome_evidence",
+  "cases": [
+    {
+      "id": "formula-span-preservation",
+      "input": "x^2 - 1 = (x - 1)(x + 1), for x != 1",
+      "must_preserve": ["x^2", "-", "=", "(x - 1)(x + 1)", "x != 1"],
+      "reject_if": ["drop the domain condition", "change the minus sign", "silently factor or expand differently"]
+    },
+    {
+      "id": "korean-spoken-notation",
+      "input": ["x^2", "a_1", "1/2", "a/b"],
+      "expected_house_reading": ["엑스 제곱", "에이 아래 첨자 일", "이분의 일", "비 분의 에이"],
+      "reject_if": ["read numerator/denominator in the wrong order", "leave exponent or subscript scope ambiguous"]
+    },
+    {
+      "id": "stepwise-derivation-sync",
+      "input": ["2(x + 1) = 8", "x + 1 = 4", "x = 3"],
+      "must_show": ["one justified transformation per reveal", "narration names the current equation", "caption matches the spoken beat"],
+      "reject_if": ["reveal the result before the operation", "caption or highlight covers an operator or condition"]
+    },
+    {
+      "id": "tts-script-only",
+      "input": {"language": "ko", "genre": "video-genre/math-lecture"},
+      "expected_default": "Gemini Charon",
+      "tts_input": "canonical narration script only",
+      "reject_if": ["prepend production instructions to TTS input", "claim pronunciation quality without listening evidence"]
+    }
+  ]
+}

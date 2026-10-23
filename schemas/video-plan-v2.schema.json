@@ -126,7 +126,7 @@
       "properties": {
         "profile_id": {
           "type": "string",
-          "pattern": "^video-genre/(motion-design|science-explainer|shortform-native|data-journalism|learning)$"
+          "pattern": "^video-genre/(motion-design|science-explainer|shortform-native|data-journalism|learning|math-lecture)$"
         },
         "revision": {
           "type": "integer",

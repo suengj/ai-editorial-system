@@ -32,7 +32,8 @@
     "video-genre/science-explainer": { "path": "editorial/profiles/video/genre-science-explainer.json", "revision": 1, "sha256": "3ff43070cdbed658f1b9569690674224b0e8cf5fef8118e4c48b429d7e7bf88a", "base_profile_id": "video/educational-summary" },
     "video-genre/shortform-native": { "path": "editorial/profiles/video/genre-shortform-native.json", "revision": 1, "sha256": "d77ac66bb774df4218e18a3ed9c2ef4948026fbd250f340fd521b19b7ccf7c4c", "base_profile_id": "video/interactive-information" },
     "video-genre/data-journalism": { "path": "editorial/profiles/video/genre-data-journalism.json", "revision": 1, "sha256": "0d0f739f3e6a82560956256a2a951ab5d97d82f75f172f87e9d7b290c5eb1ec4", "base_profile_id": "video/educational-summary" },
-    "video-genre/learning": { "path": "editorial/profiles/video/genre-learning.json", "revision": 1, "sha256": "fef62993a7949ea8e2cb11c1c026e9900373789a1dfceef1d52a70f7a3f5c261", "base_profile_id": "video/educational-summary" }
+    "video-genre/learning": { "path": "editorial/profiles/video/genre-learning.json", "revision": 1, "sha256": "fef62993a7949ea8e2cb11c1c026e9900373789a1dfceef1d52a70f7a3f5c261", "base_profile_id": "video/educational-summary" },
+    "video-genre/math-lecture": { "path": "editorial/profiles/video/genre-math-lecture.json", "revision": 1, "sha256": "38df3ef62c0dc21f932c92b939861c36505e16b6f226ec08ab214a2425b6a7c1", "base_profile_id": "video/educational-summary" }
   },
   "language_packs": { "ko": "editorial/profiles/language/ko-KR.json", "ko-KR": "editorial/profiles/language/ko-KR.json", "en": "editorial/profiles/language/en.json" },
   "locked_fields": ["facts", "figures", "numbers", "quotations", "sources", "source_evidence", "citations", "rights", "approval", "publication_authority", "account_identity", "freshness"],

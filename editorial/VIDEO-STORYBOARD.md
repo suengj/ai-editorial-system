@@ -50,6 +50,12 @@ Related contracts:
 - `AUDIO-SCRIPT.md`
 - `IMAGE-GENERATION.md`
 
+Evaluation fixtures and expected answers are evaluator-only. Production
+contexts must not load answer-bearing cases, expected readings, or solved
+steps; production uses the applicable rule and the current task's source
+material. Tests for conditional loading and protected transformations must
+include negative controls that fail when the forbidden path is taken.
+
 ## 1. Video is temporal assembly, not another summary pass
 
 The video does not independently decide what its source evidence means.

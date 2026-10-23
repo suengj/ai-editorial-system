@@ -1,6 +1,6 @@
 ---
 name: compile-visual-story
-version: 0.1.0
+version: 0.2.0
 description: Compile a human-finalized article and approved artifact plan into one provider-neutral argument-beat graph that can feed slides, infographics, audio compilation, and video without claim drift.
 when_not_to_use: Do not use to decide what the article argues, verify new claims, write final spoken narration, render media, choose a vendor, or plan distribution artifacts that plan-artifacts has not approved.
 inputs:
@@ -47,6 +47,9 @@ governed_by:
   - editorial/RIGHTS-AND-PROVENANCE.md
 allowed_tools:
   - file_read
+references:
+  - path: references/math-lecture.md
+    load_when: the selected video genre is video-genre/math-lecture
 evidence:
   acceptance:
     - every fact-bearing beat carries only claim_ids that are verified on the input article

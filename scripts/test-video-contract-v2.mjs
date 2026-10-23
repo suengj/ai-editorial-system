@@ -66,7 +66,7 @@ for (const [id, pin] of Object.entries(profiles)) {
 }
 for (const [id,pin] of Object.entries(manifest.video_style_profiles ?? {})) { const bytes=readFileSync(resolve(ROOT,pin.path)); const profile=JSON.parse(bytes); check(`${id} revision 2 style profile validates and matches its byte pin`, validate(profile,profileSchema).length===0 && profile.revision===2 && createHash('sha256').update(bytes).digest('hex')===pin.sha256); }
 const genreSchema = JSON.parse(readFileSync(resolve(ROOT, 'schemas/video-genre-preset.schema.json'), 'utf8'));
-check('manifest pins the five additive genre presets', Object.keys(manifest.video_genre_presets ?? {}).sort().join() === ['video-genre/data-journalism','video-genre/learning','video-genre/motion-design','video-genre/science-explainer','video-genre/shortform-native'].sort().join());
+check('manifest pins the six additive genre presets', Object.keys(manifest.video_genre_presets ?? {}).sort().join() === ['video-genre/data-journalism','video-genre/learning','video-genre/math-lecture','video-genre/motion-design','video-genre/science-explainer','video-genre/shortform-native'].sort().join());
 for (const [id, pin] of Object.entries(manifest.video_genre_presets ?? {})) {
   const bytes = readFileSync(resolve(ROOT, pin.path)); const preset = JSON.parse(bytes);
   check(`${id} validates against its base family and byte pin`, validate(preset, genreSchema).length === 0 && preset.profile_id === id && preset.base_profile_id === pin.base_profile_id && createHash('sha256').update(bytes).digest('hex') === pin.sha256 && Boolean(profiles[pin.base_profile_id]));
@@ -152,6 +152,10 @@ check('origin/main v2 example and family profile retain their original byte pins
 check('legacy family profile shape remains valid unchanged', validate(read(ROOT, 'editorial/profiles/video/educational-summary.json'), profileSchema).length === 0 && createHash('sha256').update(readFileSync(resolve(ROOT, 'editorial/profiles/video/educational-summary.json'))).digest('hex') === '52958745b4033174373a99e952349de9779577d2bc0343a98bea33906ba348b3');
 const badGenrePin = clone(example45); badGenrePin.genre_preset_ref = { profile_id:'video-genre/motion-design', revision:1, sha256:'0'.repeat(64) };
 check('video plan rejects a stale or mismatched genre preset pin', codes('video-plan-v2', badGenrePin).includes(CODES.PROFILE_PIN));
+const mathLecturePlan = clone(read(ALLOW, 'video-plan-v2-revision2-educational-summary.json'));
+const mathLecturePin = manifest.video_genre_presets['video-genre/math-lecture'];
+mathLecturePlan.genre_preset_ref = { profile_id:'video-genre/math-lecture', revision:mathLecturePin.revision, sha256:mathLecturePin.sha256 };
+check('revision 2 video plan accepts the exactly pinned math-lecture genre preset', codes('video-plan-v2', mathLecturePlan).length === 0);
 check('interactive profile fixtures cover sequential, simultaneous, and hybrid', ['sequential','simultaneous','hybrid'].every((mode) => read(ALLOW, `video-plan-v2-interactive-${mode}.json`).semantic_controls.presentation === mode));
 check('square and portrait social aspects are allowed in addition to the required landscape and portrait aspects', ['1:1','4:5'].every((aspect) => {
   const plan = clone(example45); plan.aspect_ratio = aspect; return codes('video-plan-v2', plan).length === 0;
