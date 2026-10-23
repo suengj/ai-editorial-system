@@ -114,7 +114,7 @@
     }
   },
   "catalog_version": "1.0.0",
-  "content_digest": "sha256:4b1553ea3cf7c08ab2ba33aa15b108c943df4f8224dc6350b645406f281b18c4",
+  "content_digest": "sha256:76d6c848557b0a720f2e11ae47b9f0fb681ef14794dc73a862df4a624a50cafa",
   "field_domains": {
     "call_to_action": {
       "max_length": 200,
@@ -312,7 +312,7 @@
     "manifest": {
       "manifest_version": "2026-10-16.1",
       "path": "editorial/entry-manifest.json",
-      "sha256": "326da11e23e091b1e5e4f7600e98a30ba143ae991da5ec0f1260affccd6f0b4c"
+      "sha256": "2d82d32667afc79b229310d5eea50cd7f7f69f63bc02edb4abadf86ab8470ec1"
     },
     "note": "The AES git commit is deliberately not embedded. The consumer pins the AES commit and this file's sha256.",
     "profile_version_semantics": "<manifest_version>+<aes_commit>; the consumer supplies aes_commit from its own pin",
@@ -5205,7 +5205,8 @@
               "science-explainer",
               "shortform-native",
               "data-journalism",
-              "learning"
+              "learning",
+              "math-lecture"
             ]
           },
           "overrides": {
@@ -5388,7 +5389,7 @@
             "type": "object"
           },
           "profile_id": {
-            "pattern": "^video-genre/(motion-design|science-explainer|shortform-native|data-journalism|learning)$",
+            "pattern": "^video-genre/(motion-design|science-explainer|shortform-native|data-journalism|learning|math-lecture)$",
             "type": "string"
           },
           "revision": {
@@ -5410,7 +5411,7 @@
         "title": "AES Video Genre Preset",
         "type": "object"
       },
-      "sha256": "888896ddd169fad1c09df62313a1a9e3c5a5b64643dbaf823196f647d025c7c5"
+      "sha256": "1e66cbfc04fb3aeaaf2a5259b548b6f951e74b82e89de9f5e813176f4c0b38dc"
     },
     "video-plan": {
       "id": "https://suengj.com/schemas/video-plan.schema.json",
@@ -6659,7 +6660,7 @@
             "additionalProperties": false,
             "properties": {
               "profile_id": {
-                "pattern": "^video-genre/(motion-design|science-explainer|shortform-native|data-journalism|learning)$",
+                "pattern": "^video-genre/(motion-design|science-explainer|shortform-native|data-journalism|learning|math-lecture)$",
                 "type": "string"
               },
               "revision": {
@@ -6736,7 +6737,7 @@
         "title": "AES Video Plan v2",
         "type": "object"
       },
-      "sha256": "e1a909e786ae5b752af4bbb1bbc979fbb753378a2540a096d1602e5fb85700d8"
+      "sha256": "2a703fea4f9985242d779deb8dac40e7776a280f81c710f9fc60f04edfc3f867"
     },
     "video-profile": {
       "id": "https://suengj.com/schemas/video-profile.schema.json",
@@ -8307,6 +8308,24 @@
         },
         "revision": 1,
         "sha256": "fef62993a7949ea8e2cb11c1c026e9900373789a1dfceef1d52a70f7a3f5c261"
+      },
+      "video-genre/math-lecture": {
+        "base_profile_id": "video/educational-summary",
+        "path": "editorial/profiles/video/genre-math-lecture.json",
+        "profile": {
+          "base_profile_id": "video/educational-summary",
+          "genre": "math-lecture",
+          "overrides": {
+            "motion": {
+              "build_one_concept_at_a_time": true
+            }
+          },
+          "profile_id": "video-genre/math-lecture",
+          "revision": 1,
+          "schema_version": "1.0.0"
+        },
+        "revision": 1,
+        "sha256": "38df3ef62c0dc21f932c92b939861c36505e16b6f226ec08ab214a2425b6a7c1"
       },
       "video-genre/motion-design": {
         "base_profile_id": "video/educational-summary",

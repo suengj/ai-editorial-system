@@ -1,6 +1,6 @@
 ---
 name: compile-audio-script
-version: 0.1.0
+version: 0.2.0
 description: Compile a human-finalized canonical article into clean listener-first narration plus provider-neutral pronunciation, delivery, and segment/timing state before any TTS renderer is selected.
 when_not_to_use: Do not use to render speech, choose a vendor, clone a voice, or create audio from an unfinalized article. Do not use when plan-artifacts has skipped audio.
 inputs:
@@ -51,6 +51,9 @@ governed_by:
   - schemas/AUDIO-PLAN-CONTRACT.md
 allowed_tools:
   - file_read
+references:
+  - path: references/math-lecture.md
+    load_when: the selected video genre is video-genre/math-lecture and the output language is Korean
 evidence:
   acceptance:
     - narration_text contains only text intended to be spoken and no provider markup or stage directions
