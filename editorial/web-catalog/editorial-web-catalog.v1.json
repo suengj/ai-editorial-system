@@ -114,7 +114,7 @@
     }
   },
   "catalog_version": "1.0.0",
-  "content_digest": "sha256:76d6c848557b0a720f2e11ae47b9f0fb681ef14794dc73a862df4a624a50cafa",
+  "content_digest": "sha256:4bb68b8d157a89e32d82cd342d69bc31168bc8b88a88b47e1549801e5ac78345",
   "field_domains": {
     "call_to_action": {
       "max_length": 200,
@@ -8247,7 +8247,7 @@
       },
       {
         "path": "editorial/VIDEO-STORYBOARD.md",
-        "sha256": "4081d40e281e219a75bc0699e0d762a98278192c8fc70f04d84f3d71aa3a997d"
+        "sha256": "99676c404060934e66b5fcc9607c238a3db1ec0b496eee2e51788488edf2f4a6"
       },
       {
         "path": "editorial/VISUAL-STORY-COMPILATION.md",

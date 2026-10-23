@@ -63,10 +63,7 @@ This is a routing default, not evidence of availability, pronunciation quality,
 or a completed listening evaluation. Regenerate only the incorrect narration
 segment after a localized pronunciation defect is confirmed.
 
-## Acceptance cases
-
-Use the paired cases in `evals/fixtures/video/math-lecture-cases.json`. Reject
-outputs that alter a protected symbol, omit a stated condition, change the
-meaning of a fraction/subscript/exponent in speech, reveal a step out of order,
-or let captions obscure the formula. Pass only after a listener can match the
-spoken and displayed steps to the same derivation.
+Evaluation cases, expected readings, and solved example steps belong only in
+the evaluator. They are not production context. Production applies the
+conventions and synchronization checks above to the source material in the
+current task; it does not load answer-bearing evaluation fixtures.
