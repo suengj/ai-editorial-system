@@ -17,6 +17,37 @@ handoff, not an integration that exists today.
 
 ## Evidence audit
 
+### VIDEO-CRAFT-3 production follow-up (2026-11-01)
+
+The audits below describe their original snapshots. The later UC1 economy
+9:16 Remotion, UC2 math 16:9 Manim+FFmpeg and UC3 dashboard 16:9 tests now inform
+[storyboard decisions](../../editorial/VIDEO-STORYBOARD.md) and
+[engine handoff](../../editorial/VIDEO-ENGINE-MAPPING.md). They do not establish
+a deployed generic backend or supersede v1/v2 source/rights gates.
+
+Before handoff, freeze FACTS and its hash (format, date, base, source/date line,
+and who supplied each interpretation), selected image prompts/hashes and
+AI-image disclosure, and the confirmed Gemini 3.8 flash TTS / Rasalgethi voice.
+Chirp3-HD is a rejected trial. Store the actual API model ID in the receipt.
+Measure per-beat audio, concatenate with fixed gaps, and derive one timeline;
+UC1 word times remain proportional estimates. Word-sync PASS requires measured
+provider timestamps or forced alignment bound to the final audio.
+
+`video-qa.schema.json` adds only optional evidence fields: checks
+`caption_number_integrity`, `footer_min_size`, `word_sync`, `independent_viewing`,
+plus `word_timing: measured|estimated` and final MP4 `output_sha256`. Existing
+records remain valid. Record actual caption/footer glyph heights through
+`measurable_evidence` (px with frame dimensions), numeric chunk/line integrity,
+and hash-bound independent viewing evidence. Editorial floors are in the
+storyboard: ≤2 caption lines, ~4% frame-height glyphs, no scrim over chart data,
+and footer glyphs ≥34 px at 1080×1920 / ≥28 px at 1920×1080.
+
+These fields use the existing check and measurement shapes. They add no
+runtime alignment or automatic threshold enforcement; an estimated word schedule
+cannot support a word-sync pass. The schema remains 1.0.0 and required gates
+are unchanged. Consumer schema pins need review before downstream adoption;
+this documentation/schema change makes no consumer-compatibility claim.
+
 ### AES audio and roadmap (SUE-566 / SUE-456)
 
 SUE-566 already defines audience-aware `audio/monologue`, `audio/dialogue`,

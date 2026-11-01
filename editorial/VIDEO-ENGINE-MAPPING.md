@@ -60,6 +60,35 @@ cannot be justified by a broad source reference.
 
 ## Narration, captions, and BGM
 
+Use the VIDEO-CRAFT-3 confirmed voice, Gemini 3.8 flash TTS / Rasalgethi;
+Chirp3-HD was evaluated and rejected. Keep the receipt's actual API model ID,
+voice, beat audio hashes and measured durations. Concatenate per-beat audio
+with fixed gaps and derive all beat windows from it. UC1's proportional cue/
+word distribution stays `estimated`; measured beat boundaries do not satisfy
+the word-alignment evidence requirement below.
+
+When burning captions with FFmpeg, write resolution and style **inside the
+ASS file**, then burn with `ffmpeg -i input.mp4 -vf "ass=captions.ass" ...`.
+UC2's working 1920×1080 starting style is:
+
+```ini
+[Script Info]
+PlayResX: 1920
+PlayResY: 1080
+[V4+ Styles]
+Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
+Style: Default,Noto Sans CJK KR,64,&H00FFFFFF,&H00FFFFFF,&H80101827,&H80101827,0,0,0,0,100,100,0,0,3,6,0,2,100,100,40,1
+```
+
+Keep the timed `[Events]` section when converting SRT to ASS. `BorderStyle=3`,
+translucent `BackColour`, `Outline=6` and `MarginV=40` belong to that ASS style;
+adjust margins to the approved safe zone. Set PlayResX/Y to the actual video
+size for each aspect. **Never rely on `subtitles` filter `force_style`**:
+the SRT decoder's default 384×288 script produced tiny captions even when
+nominal font size was raised. Verify encoded glyphs around 4% of frame height,
+not FontSize alone. Reflow to ≤2 lines without splitting numeric/unit tokens;
+reserve data-free space for the entire scrim.
+
 | AES contract | shorts_gen field | Mapping rule |
 |---|---|---|
 | Narration script reference and canonical spoken turns | `script_ref`, scene text passed to `tts_captions` | Preserve AES `beat_id` and `scene_id` beside each text span. The engine's current TTS stage joins scene text; it does not yet consume the full AES narration-script structure. |
@@ -78,6 +107,21 @@ approval decision; AES does not infer account identity from the entry.
 
 ## QA, lineage, and authority boundaries
 
+For renderer selection, repeat the same 5–10 s scene with identical facts,
+font, fps and assets. UC1 chose Remotion for layout/editability after an 8 s
+comparison (FFmpeg 5.4 s / 248 MB RSS; Remotion 63 s / 1,355 MB); these are local
+measurements, not universal ratios. Use Manim Community for UC2 math clips
+and FFmpeg for assembly. Reset each clip's timebase and timestamps
+(`fps=30,settb=AVTB,setpts=PTS-STARTPTS`) before concat; correct duration sums
+alone did not prevent UC2's premature summary. Verify final encoded cue frames.
+
+Remotion/Chromium requires a **local socket**, even with all assets offline.
+UC1 v2 failed in a network-denied sandbox; offline validation was not render
+QA. Run the generated `uc1v2/tools/render.sh` outside that sandbox in an
+execution environment permitting local sockets. Run one heavy render job at a
+time under `nice` (corpus: `nice -n 15`), record concurrency/RSS/time, and then
+extract stills from the encoded MP4. A blocked render remains pending.
+
 `video-qa.schema.json` records factual, rights, visual, audio, caption, BGM,
 technical, provider, cost, and approval evidence. The engine's
 `StageResult`, `ArtifactManifest`, and `RenderReceipt` provide execution status,
@@ -90,7 +134,14 @@ checked against the exact canonical narration text. A catalog carries its
 requirement even when the catalog is validated by itself.
 Video QA also records `checks.source_evidence_resolution`; a `PASS` requires
 that check and its evidence, in addition to the factual, rights, and approval
-checks. Measured render duration must match the plan within one second; BGM
+checks. Optional checks `caption_number_integrity`, `footer_min_size`,
+`word_sync` and `independent_viewing` use the existing status/evidence shape.
+Optional `word_timing` records `measured` or `estimated`; `output_sha256` binds
+the final MP4. Use existing measurements for actual caption/footer glyph px,
+frame dimensions and action-anchor deltas. Independent viewing evidence must
+name that output hash. These additive fields record evidence; schema validity
+alone neither measures media nor enforces the new editorial thresholds.
+Measured render duration must match the plan within one second; BGM
 mode evidence must match the plan and loudness, ducking, and clipping values
 must use finite values and their declared units.
 

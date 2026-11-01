@@ -81,6 +81,14 @@ The storyboard decides:
 It may not invent a new claim, new interpretation, or more dramatic certainty
 because video benefits from a stronger hook.
 
+Before writing a factual beat, pin `FACTS.md` and its SHA-256. Treat its display
+and attribution rules as binding across script, chart, captions and ending.
+For UC1 this means one decimal (2.9%, never 3%), date and comparison base
+(2026년 9월 / 전년동월대비), and a visible source/release-date line. Separate
+official figures from interpretation: the base-effect explanation is
+`통계 당국 브리핑(뉴스1·노컷뉴스 보도, 10.2.)`, not a direct official-page claim.
+Show that attribution from the interpretation's first appearance.
+
 ## 2. Beat identity is the synchronization key
 
 Use stable `beat_id`s to connect modalities.
@@ -126,7 +134,12 @@ A beat needs enough time to:
 - register a qualification or contrast.
 
 Some frames may persist through several spoken sentences. Others may change
-quickly because the visual itself is simple.
+quickly because the visual itself is simple. Hold a worked comparison until
+its conclusion and qualification have finished; UC2 lost its answer when the
+summary cut arrived early. Extend the comparison frame and trim an equivalent
+summary interval without moving approved audio/captions. In a walkthrough,
+keep both compared cards visible under the answer; show the next panel only
+when the narration moves there.
 
 A useful rule:
 
@@ -181,8 +194,21 @@ Visual Story Plan ──┤
 The spoken version may contain more connective explanation than the frame. That
 is expected.
 
-Provider-specific TTS controls remain governed by `AUDIO-SCRIPT.md` and the TTS
+For VIDEO-CRAFT-3 and its Shorts continuation, the owner-confirmed narration
+choice is **Gemini 3.8 flash TTS / Rasalgethi**. Google Chirp3-HD was evaluated
+and rejected; the early Aoede renders are historical trials. Preserve the
+actual API model ID and voice in the generation receipt separately from this
+owner-facing label; older test commands are not a new model-ID prescription.
+Provider-specific controls remain governed by `AUDIO-SCRIPT.md` and the TTS
 provider benchmark.
+
+Synthesize and measure each beat separately, then concatenate with fixed gaps
+(UC1 v2: four 0.25 s gaps). Derive beat windows from those audio durations and
+gaps, and use the same timing artifact for visuals, captions and mux. This gives
+exact beat sync; it does not measure words. UC1 in-beat/word times were
+**estimated proportionally**. Word-sync PASS requires measured provider
+word timestamps or forced alignment bound to the final audio hash. A new
+voice or edit invalidates timing and downstream evidence.
 
 ## 6. Visual and narration should complement each other
 
@@ -251,10 +277,28 @@ Required QA:
 - no dropped negation/qualification;
 - names, numbers, units and conditions match the script;
 - timing does not expose a conclusion before the spoken evidence arrives;
+- never split a number, decimal, percent or unit across chunks **or** lines,
+  including spoken numerals: `생활물가지수는 이 / 점 오 퍼센트` is a failure;
+  keep `이 점 오 퍼센트` (or the approved display form `2.5%`) together;
+- use at most two lines, with actual encoded glyph height about 4% of frame
+  height (about 77 px at 1080×1920; 43 px at 1920×1080); nominal font size is
+  only a starting value, and numeric integrity takes priority over char limits;
 - line breaks follow speech meaning units and remain readable;
 - captions or long on-screen copy do not compete; move/recompose them when they
   cover a face, hand or load-bearing chart area;
+- the scrim as well as its text clears chart data and relevant UI; recompose
+  the content or caption zone rather than covering evidence with a full-width band;
+- source, attribution and AI-image disclosure use a minimum rendered glyph
+  height of **34 px at 1080×1920** and **28 px at 1920×1080**; review a phone-size
+  encoded frame, wrap long credits, and hold the ending credits at least 2 s;
 - speaker identity is clear when more than one speaker exists.
+
+These footer floors are production rules prompted by UC1's small-footer
+finding, not measured acceptance of the old output. Reserve platform UI space
+before setting the caption/source rail; the UC1 v2 coordinates are not a
+universal Shorts safe-area preset. For FFmpeg burn-in, use an explicitly sized
+and styled ASS track and the `ass` filter; see
+[engine mapping](VIDEO-ENGINE-MAPPING.md#narration-captions-and-bgm).
 
 When audio and timecodes are fixed, do not silently rewrite narration: record a
 script mismatch for upstream re-alignment. These checks do not authorize TTS,
@@ -313,6 +357,15 @@ poster module
 
 Re-render only when geometry/timing/legibility demands a new output. Reuse
 meaning, not screenshots.
+
+For generated illustrative backgrounds, use Codex `image_gen` with one shared
+style paragraph and shared exclusion lines across beats. Record the exact
+prompt, tool (model only if reported), date, dimensions and selected file's
+SHA-256. Exclude text, numbers, logos, signage, UI, faux data and brand trade
+dress; render facts as deterministic overlays. Inspect the actual asset:
+UC1's unbranded triple-lens phone still read as an iPhone and was regenerated
+as a plain generic slab without lenses. Show `AI 생성 이미지 · 설명용` on screen
+while generated imagery appears. Illustration never supplies factual evidence.
 
 ## 12. Staleness and incremental rebuild
 
@@ -401,6 +454,24 @@ Follow `AUDIO-SCRIPT.md` render QA:
 - visual-only information has an alternative path;
 - flashing/motion patterns do not create avoidable barriers.
 
+Before accepting the encoded output, sample every cue start + 0.5 s, each
+beat midpoint, and both sides of every cut; inspect full size and phone size.
+Use this UC2 regression checklist (IDs from `QA-SUP1.md` / `FIX-SUP1.md`):
+
+- [ ] **M1:** answer/comparison remains visible through the complete takeaway.
+- [ ] **M2:** hook heading clears the rectangle; title/content bounds do not intersect.
+- [ ] **m3:** dimension labels clear shapes and frame edges; no clipped units.
+- [ ] **m4:** perimeter, area and comparison occupy separate readable rows.
+- [ ] **m5:** every scene has visible content at its first frame; no empty,
+  black or flat transition flash. A Manim still alone cannot certify cuts.
+
+Also check numeric caption integrity, actual glyph sizes and footer floors;
+for walkthroughs, crop to the narrated ROI (body text ≥18 px at 1080p), retain
+the clicked control, and verify action-to-caption anchors within ±0.3 s.
+Keep DEMO labels away from controls and all caption scrims away from chart data.
+UC3's accepted sparkline occlusion was a historical residual, not permission
+to cover evidence in new videos.
+
 ### Technical
 
 - aspect ratio/resolution/frame rate/container correct;
@@ -451,6 +522,12 @@ motion-first family can be added as another renderer/profile after it can pass
 the same claim, continuity, accessibility, and lineage requirements.
 
 ## 16. Stop rule
+
+Technical checks and independent viewing review must identify the **same final
+MP4 SHA-256**. Record reviewer, sampled frames/time ranges and remaining issues;
+any output replacement invalidates that review. Watching the final output,
+including listening, is required; missing listening or rendering stays pending.
+A SHOWABLE verdict with estimated words does not imply word-sync PASS.
 
 Video is accepted when:
 
