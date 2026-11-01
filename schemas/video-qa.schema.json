@@ -24,7 +24,11 @@
         "caption_completeness_alignment": { "$ref": "#/$defs/check" },
         "bgm_loudness_ducking_clipping": { "$ref": "#/$defs/check" },
         "technical_resolution_fps_duration": { "$ref": "#/$defs/check" },
-        "provider_configured": { "$ref": "#/$defs/check" }
+        "provider_configured": { "$ref": "#/$defs/check" },
+        "caption_number_integrity": { "$ref": "#/$defs/check", "description": "No number, decimal, percent or unit split across caption chunks or lines, including spoken forms." },
+        "footer_min_size": { "$ref": "#/$defs/check", "description": "Encoded source, attribution and disclosure glyph heights meet the storyboard floor at the recorded frame dimensions." },
+        "word_sync": { "$ref": "#/$defs/check", "description": "A pass needs measured provider word timestamps or forced alignment tied to the final audio; proportional estimates are insufficient." },
+        "independent_viewing": { "$ref": "#/$defs/check", "description": "Independent viewing evidence identifies the final output SHA-256, reviewer, inspected ranges and residual findings." }
       }
     },
     "gates": {
@@ -37,6 +41,8 @@
       }
     },
     "measurable_evidence": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/measurement" } },
+    "word_timing": { "enum": ["measured", "estimated"], "description": "Word-level timing provenance, independent of measured beat durations; omitted means not reported." },
+    "output_sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$", "description": "SHA-256 of the final encoded MP4 to which this QA and independent viewing apply." },
     "repair": { "$ref": "#/$defs/repair" }
   },
   "$defs": {
