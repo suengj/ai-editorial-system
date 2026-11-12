@@ -25,6 +25,21 @@ function check(files, bytes = source, ev = evidence) {
     for (const sp of doc.source_ref.spans) assert.equal(hash(bytes.subarray(sp.byte_start,sp.byte_end)), sp.sha256, 'span hash');
   }
   assert.deepEqual(story.source_ref, deck.source_ref);
+  const spans = new Map(story.source_ref.spans.map(span => [span.span_id, span]));
+  assert.equal(spans.size, story.source_ref.spans.length, 'span IDs must be unique');
+  for (const beat of story.beats) {
+    assert(beat.source_span_ids?.length > 0, `${beat.beat_id}: factual beat requires citations`);
+    for (const id of beat.source_span_ids) assert(spans.has(id), `${beat.beat_id}: unresolved span ${id}`);
+  }
+  const canonical = JSON.parse(bytes.toString('utf8').match(/## 기계 검증 데이터\s+```json\s+([\s\S]*?)\s+```/)[1]);
+  const facts = Object.fromEntries(canonical.facts.map(f => [f.id, f]));
+  // The story's stadium claims are deliberately bound to these canonical facts;
+  // a mere occurrence of the same numbers elsewhere does not establish direction.
+  assert.equal(story.beats.find(b => b.beat_id === 'beat-02').assertion,
+    `백의 자리 숫자가 0~4이면 버리고 5~9이면 올린다. 가 경기장 (A)은 ${facts.F1.display}이다.`);
+  assert.equal(story.beats.find(b => b.beat_id === 'beat-04').assertion,
+    `나 경기장 (B)이 가 경기장 (A)보다 실제 관중이 ${facts.F4.value}명 더 많다.`);
+  assert.equal(facts.F2.value - facts.F1.value, facts.F4.value, 'stadium difference');
   const ids = story.beats.map(b => b.beat_id);
   assert.deepEqual(ids, Array.from({length:6},(_,i)=>`beat-0${i+1}`));
   assert.deepEqual(deck.slides.map(s=>s.beat_ids[0]), ids, 'slide beat lineage');
@@ -35,9 +50,20 @@ function check(files, bytes = source, ev = evidence) {
   for (const seq of [script.turns.map(t=>t.scene_id), audio.segments.map(s=>s.scene_id), audio.captions.segments.map(s=>s.scene_id)]) assert.deepEqual(seq,sceneIds,'scene lineage');
   for (const scene of video.scenes) assert(ids.includes(scene.beat_id) && deck.slides.some(slide=>slide.beat_ids.includes(scene.beat_id)), 'scene linked to story and slide');
   assert.equal(video.source_evidence.sources[0].sha256, ev.sha256);
+  assert(!files['brief.md'].includes('영상 품질 검증은 미통과') && files['brief.md'].includes('영상 품질 검증을 통과'), 'brief video validation status');
   const videoIssues = validateVideoDocument('video-plan-v2',video,{verifiedProtectedSpans:resolveLocalSourceEvidence(video)});
   assert.deepEqual(videoIssues, []);
-  for (const f of docs['spoken-forms.json'].forms) { assert(bytes.includes(Buffer.from(f.display)), `display not in source: ${f.display}`); assert(bytes.includes(Buffer.from(f.spoken)), `spoken form not in source: ${f.spoken}`); }
+  const [roundedWithUnit] = facts.F3.display.match(/→ ([\d,]+명)/).slice(1);
+  const [roundedSpokenWithUnit] = facts.F3.spoken.match(/→ (팔만 삼천 명)/).slice(1);
+  const [min, max, rounded] = facts.F5.display.match(/[\d,]+/g);
+  const [, minSpoken, maxSpoken, roundedSpoken] = facts.F5.spoken.match(/^(.+)부터 (.+)까지 → (.+)$/);
+  const [upper, upperRounded] = facts.F7.display.match(/[\d,]+/g);
+  const [upperSpoken, upperRoundedSpoken] = facts.F7.spoken.split(' → ');
+  const pairs = [[facts.F1.display, facts.F1.spoken], [facts.F2.display, facts.F2.spoken],
+    [roundedWithUnit, roundedSpokenWithUnit], [`${facts.F4.value}명`, facts.F4.spoken.split('은 ')[1]],
+    [min, minSpoken], [max, maxSpoken], [rounded, roundedSpoken],
+    [upper, upperSpoken], [upperRounded, upperRoundedSpoken], [facts.F9.value.toLocaleString('en-US'), facts.F9.spoken]];
+  for (const f of docs['spoken-forms.json'].forms) assert(pairs.some(([display, spoken]) => f.display === display && f.spoken === spoken), `unsupported display/spoken pair: ${f.display} → ${f.spoken}`);
   for (const [name, text] of Object.entries(files)) for (const n of text.match(/\b\d{2,3},\d{3}\b/g) ?? []) assert(bytes.includes(Buffer.from(n)), `${name}: unsupported number ${n}`);
   assert.equal(audio.status, 'script_checked');
   assert.equal(audio.measurement.measured_audio_duration_seconds, null);
@@ -65,6 +91,10 @@ function check(files, bytes = source, ev = evidence) {
   assert.deepEqual(validateVideoDocument('audio-plan-v2',audio,context),[]);
 }
 check(original);
+assert(!original['brief.md'].includes('영상 품질 검증은 미통과'), 'brief must reflect passing video validation');
+assert(original['brief.md'].includes('영상 품질 검증을 통과'), 'brief must report video validation');
+assert.throws(() => check(alteredBriefFailure()));
+function alteredBriefFailure() { return {...original, 'brief.md': original['brief.md'].replace('영상 품질 검증을 통과', '영상 품질 검증은 미통과')}; }
 const tooLong = JSON.parse(original['video-plan-v2-rounding.json']);
 tooLong.scenes[0].timing.end_seconds = 12.5;
 assert(validateVideoDocument('video-plan-v2', tooLong, {verifiedProtectedSpans:resolveLocalSourceEvidence(tooLong)}).some(i => i.message === 'scene scene-01 exceeds effective preset maximum 12s'), '12.5-second scene must fail the preset gate');
@@ -76,6 +106,11 @@ for (const [doc, schema] of [[JSON.parse(original['visual-story.json']), schemas
   assert.deepEqual(validate(doc,schema),[]); delete doc.article_ref.claims_hash; assert(validate(doc,schema).length);
 }
 assert.throws(()=>check(original, null));
+const changeJson = (name, mutate) => altered(name, text => { const doc = JSON.parse(text); mutate(doc); return JSON.stringify(doc); });
+assert.throws(() => check(changeJson('spoken-forms.json', doc => { doc.forms[0].spoken = '팔만 삼천이백 명'; })), /display\/spoken pair/);
+assert.throws(() => check(changeJson('visual-story.json', doc => { doc.beats[3].assertion = '가 경기장 (A)이 나 경기장 (B)보다 실제 관중이 400명 더 많다.'; })));
+assert.throws(() => check(changeJson('visual-story.json', doc => { doc.beats[0].source_span_ids = ['missing-span']; })), /unresolved span/);
+assert.throws(() => check(changeJson('visual-story.json', doc => { doc.beats[0].source_span_ids = []; })));
 const mutatedScript = JSON.parse(original['narration-script-v2-rounding.json']);
 mutatedScript.turns[0].spoken_text = mutatedScript.turns[0].spoken_text.replace('두 경기장', '세 경기장');
 const video = JSON.parse(original['video-plan-v2-rounding.json']);

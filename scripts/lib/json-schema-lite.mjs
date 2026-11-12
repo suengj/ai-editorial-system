@@ -43,27 +43,60 @@ function resolveRef(ref, root) {
   return node;
 }
 
+// Inspect schemas independently of the instance: a nonmatching branch must not
+// hide a keyword we cannot evaluate. Traverse only schema-valued keywords.
+function schemaErrors(schema, root, path = '$schema', seen = new Set()) {
+  if (typeof schema === 'boolean') return [];
+  if (!schema || typeof schema !== 'object' || Array.isArray(schema))
+    return [{ path, message: 'invalid schema: expected object or boolean' }];
+  if (seen.has(schema)) return [];
+  seen.add(schema);
+  const errors = [];
+  for (const key of Object.keys(schema)) {
+    if (!KNOWN_KEYWORDS.has(key)) errors.push({ path, message: `schema uses unsupported keyword "${key}"` });
+  }
+  for (const key of ['properties']) {
+    if (schema[key] && typeof schema[key] === 'object' && !Array.isArray(schema[key])) {
+      for (const [name, sub] of Object.entries(schema[key])) errors.push(...schemaErrors(sub, root, `${path}.${key}.${name}`, seen));
+    }
+  }
+  for (const key of ['items', 'additionalProperties']) {
+    if (schema[key] !== undefined) errors.push(...schemaErrors(schema[key], root, `${path}.${key}`, seen));
+  }
+  if (Array.isArray(schema.oneOf)) schema.oneOf.forEach((sub, i) => errors.push(...schemaErrors(sub, root, `${path}.oneOf[${i}]`, seen)));
+  if (schema.$ref) {
+    try { errors.push(...schemaErrors(resolveRef(schema.$ref, root), root, `${path}.$ref`, seen)); }
+    catch (error) { errors.push({ path, message: error.message }); }
+  }
+  return errors;
+}
+
 /**
  * Validate `value` against `schema`. Returns an array of
  * `{ path, message }` — empty means valid.
  */
 export function validate(value, schema, root = schema, path = '$') {
-  const errors = [];
+  return validateValue(value, schema, root, path);
+}
 
-  for (const key of Object.keys(schema)) {
-    if (!KNOWN_KEYWORDS.has(key)) {
-      errors.push({ path, message: `schema uses unsupported keyword "${key}"` });
-    }
-  }
+function validateValue(value, schema, root, path) {
+  if (schema === true) return [];
+  if (schema === false) return [{ path, message: 'boolean false schema rejects all values' }];
+  const errors = Object.keys(schema).filter(key => !KNOWN_KEYWORDS.has(key))
+    .map(key => ({path, message: `schema uses unsupported keyword "${key}"`}));
 
   if (schema.oneOf !== undefined) {
-    if (!Array.isArray(schema.oneOf) || schema.oneOf.filter((branch) => validate(value, branch, root, path).length === 0).length !== 1) {
+    if (Array.isArray(schema.oneOf)) {
+      for (const branch of schema.oneOf) errors.push(...schemaErrors(branch, root));
+      if (errors.length) return errors;
+    }
+    if (!Array.isArray(schema.oneOf) || schema.oneOf.filter((branch) => validateValue(value, branch, root, path).length === 0).length !== 1) {
       errors.push({ path, message: 'expected exactly one matching oneOf branch' });
     }
   }
 
   if (schema.$ref) {
-    return validate(value, resolveRef(schema.$ref, root), root, path);
+    return [...errors, ...validateValue(value, resolveRef(schema.$ref, root), root, path)];
   }
 
   if (schema.type !== undefined) {
@@ -113,7 +146,7 @@ export function validate(value, schema, root = schema, path = '$') {
     errors.push({ path, message: `above maximum ${schema.maximum}` });
   }
 
-  if (typeOf(value) === 'array' && schema.items) {
+  if (typeOf(value) === 'array' && schema.items !== undefined) {
     if (schema.minItems !== undefined && value.length < schema.minItems) {
       errors.push({ path, message: `fewer than minItems ${schema.minItems}` });
     }
@@ -122,7 +155,7 @@ export function validate(value, schema, root = schema, path = '$') {
     }
     if (schema.uniqueItems === true && new Set(value.map((item) => JSON.stringify(item))).size !== value.length) errors.push({ path, message: 'array items are not unique' });
     value.forEach((item, i) => {
-      errors.push(...validate(item, schema.items, root, `${path}[${i}]`));
+      errors.push(...validateValue(item, schema.items, root, `${path}[${i}]`));
     });
   }
 
@@ -135,11 +168,11 @@ export function validate(value, schema, root = schema, path = '$') {
     const props = schema.properties ?? {};
     for (const [key, sub] of Object.entries(value)) {
       if (key in props) {
-        errors.push(...validate(sub, props[key], root, `${path}.${key}`));
+        errors.push(...validateValue(sub, props[key], root, `${path}.${key}`));
       } else if (schema.additionalProperties === false) {
         errors.push({ path: `${path}.${key}`, message: 'unexpected property' });
       } else if (schema.additionalProperties && typeof schema.additionalProperties === 'object') {
-        errors.push(...validate(sub, schema.additionalProperties, root, `${path}.${key}`));
+        errors.push(...validateValue(sub, schema.additionalProperties, root, `${path}.${key}`));
       }
     }
   }

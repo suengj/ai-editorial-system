@@ -43,6 +43,7 @@
  */
 
 import { createHash } from 'node:crypto';
+import { validate } from './lib/json-schema-lite.mjs';
 import { mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -72,6 +73,13 @@ const canon = (v) => {
   return v;
 };
 const same = (a, b) => JSON.stringify(canon(a)) === JSON.stringify(canon(b));
+
+// oneOf must reject unreadable branches and count boolean schemas correctly.
+check('oneOf rejects unsupported branch keywords', validate('x', {oneOf: [{type:'string'}, {not:{type:'number'}}]}).some(e => e.message.includes('unsupported keyword')));
+check('oneOf false branch cannot match', validate(5, {oneOf: [false, {type:'string'}]}).length > 0);
+check('oneOf true branch matches', validate(5, {oneOf: [true, {type:'string'}]}).length === 0);
+check('oneOf counts two matching branches', validate('x', {oneOf: [true, {type:'string'}]}).length > 0);
+check('oneOf rejects unsupported nested keyword in nonmatching branch', validate('x', {oneOf: [{type:'string'}, {type:'object', properties:{x:{not:{type:'number'}}}}]}).some(e => e.message.includes('unsupported keyword')));
 
 // --- article_ref -------------------------------------------------------
 console.log('article_ref parity (schemas/artifact.schema.json is canonical)');
