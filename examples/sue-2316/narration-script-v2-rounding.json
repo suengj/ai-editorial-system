@@ -1,0 +1,110 @@
+{
+  "schema_version": "2.0.0",
+  "script_id": "narration-script:rounding",
+  "video_plan_ref": "video-plan:rounding",
+  "source_evidence_ref": "source-evidence:rounding",
+  "goal": "반올림 결과와 실제 관중 수의 차이를 이해한다.",
+  "audience": "child-upper-elementary",
+  "turns": [
+    {
+      "turn_id": "turn-01",
+      "beat_id": "beat-01",
+      "scene_id": "scene-01",
+      "spoken_text": "관중 수를 반올림하면 같아도 실제 수는 다를 수 있어요.",
+      "on_screen_text": [],
+      "source_refs": [
+        "source-1"
+      ],
+      "evidence_span_ids": [
+        "evidence-beat-01"
+      ]
+    },
+    {
+      "turn_id": "turn-02",
+      "beat_id": "beat-02",
+      "scene_id": "scene-02",
+      "spoken_text": "천의 자리까지 반올림할 때는 백의 자리 숫자를 봐요.",
+      "on_screen_text": [],
+      "source_refs": [
+        "source-1"
+      ],
+      "evidence_span_ids": [
+        "evidence-beat-02"
+      ]
+    },
+    {
+      "turn_id": "turn-03",
+      "beat_id": "beat-03",
+      "scene_id": "scene-03",
+      "spoken_text": "팔만 이천팔백 명과 팔만 삼천이백 명은 모두 팔만 삼천 명이 돼요.",
+      "on_screen_text": [],
+      "source_refs": [
+        "source-1"
+      ],
+      "evidence_span_ids": [
+        "evidence-beat-03"
+      ]
+    },
+    {
+      "turn_id": "turn-04",
+      "beat_id": "beat-04",
+      "scene_id": "scene-04",
+      "spoken_text": "실제 관중 수의 차이는 사백 명이에요.",
+      "on_screen_text": [],
+      "source_refs": [
+        "source-1"
+      ],
+      "evidence_span_ids": [
+        "evidence-beat-04"
+      ]
+    },
+    {
+      "turn_id": "turn-05",
+      "beat_id": "beat-05",
+      "scene_id": "scene-05",
+      "spoken_text": "팔만 이천오백부터 팔만 삼천사백구십구까지는 팔만 삼천으로 반올림해요.",
+      "on_screen_text": [],
+      "source_refs": [
+        "source-1"
+      ],
+      "evidence_span_ids": [
+        "evidence-beat-05"
+      ]
+    },
+    {
+      "turn_id": "turn-06",
+      "beat_id": "beat-06",
+      "scene_id": "scene-06",
+      "spoken_text": "팔만 삼천사백구십구는 팔만 삼천, 팔만 삼천오백은 팔만 사천이 돼요.",
+      "on_screen_text": [],
+      "source_refs": [
+        "source-1"
+      ],
+      "evidence_span_ids": [
+        "evidence-beat-06"
+      ]
+    }
+  ],
+  "pronunciation_glossary": [],
+  "protected_values": [],
+  "delivery": {
+    "voice": "single narrator",
+    "tone": "친근하고 또렷하게",
+    "pace": "차분하게",
+    "pause_after_ms": [
+      250
+    ],
+    "emphasis": []
+  },
+  "canonical_script_check": {
+    "phase": "pre_tts",
+    "performed": true,
+    "outcome": "fail",
+    "evidence_ref": "examples/sue-2316/brief.md"
+  },
+  "caption_policy": {
+    "with_narration": "on",
+    "max_lines": 2,
+    "safe_zone": "caption-safe"
+  }
+}

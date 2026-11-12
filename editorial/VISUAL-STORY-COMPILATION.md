@@ -8,9 +8,7 @@ This article-and-claim graph remains the shared route for article-derived
 surfaces. AES VideoPlan v2 also supports a separate source-evidence route for
 video: a versioned envelope of PDF, Markdown, text, image, footage, chart, or
 instruction sources may feed a source-grounded video plan without an article,
-editorial package, article ID, claim ID, author, or quotation. That route uses
-the video-specific source references and rights records; it does not fabricate
-the Visual Story Plan's article lineage.
+editorial package, article ID, claim ID, author, or quotation. A source-only Visual Story Plan may instead carry `source_ref` with a source-evidence ID, repo-local path, SHA-256 and byte spans, as defined in `schemas/visual-story-plan.schema.json`. Verify the bytes and rights; do not fabricate article or claim IDs. Article-derived plans retain their existing article and claim lineage.
 
 It sits below the Editorial Constitution and `MEDIA-STRATEGY.md`, and above the
 surface-specific contracts:

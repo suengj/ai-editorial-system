@@ -5,15 +5,15 @@ description: Compile an approved Visual Story Plan slide mapping into a provider
 when_not_to_use: Do not use for single-canvas infographics/posters, for deciding what the article argues, for verifying new claims, for selecting Samsung or other brand-specific reference slides, or for rendering media.
 inputs:
   - finalized Visual Story Plan with slide/carousel surface mapping
-  - verified claim set referenced by the plan
+  - verified claim set for an article plan, or verified source evidence for a source-only plan
   - target sequential-surface density profile
   - optional semantic presentation plan
 outputs:
   - provider-neutral SlideDeckPlan conforming to schemas/slide-deck-plan.schema.json
 requires:
-  - exact article_ref inherited from the Visual Story Plan
+  - exact article_ref or source_ref inherited from the Visual Story Plan
   - stable beat_ids for every candidate slide
-  - verified claim lineage for every fact-bearing beat
+  - verified claim lineage for article beats, or verified source-byte spans for source-only beats
   - an approved slide/carousel artifact from plan-artifacts
 authority:
   may:
@@ -42,12 +42,12 @@ allowed_tools:
 evidence:
   acceptance:
     - every slide maps to one or more stable beat_ids
-    - every fact-bearing content role resolves to verified claim and source lineage
+    - every fact-bearing content role resolves to verified claim and source lineage, or verified source-byte spans on the source-only route
     - every slide has an explicit necessity decision, function, topology, and semantic-fit result
     - a FAIL semantic-fit result never proceeds as render-ready
     - reference requirements name craft authority and exclusions without selecting a brand-specific source
     - no infographic/poster plan is rewritten through slide-specific rules
-    - the output carries the exact article_ref from the Visual Story Plan
+    - the output carries the exact article_ref or source_ref from the Visual Story Plan
 ---
 
 # compile-slide-deck
@@ -81,9 +81,10 @@ recompiling slide boundaries or message topology.
 
 ## Inputs
 
-A finalized Visual Story Plan with stable beat ids, exact article lineage,
-verified claims for every fact-bearing beat, the approved slide/carousel
-artifact decision, and the target sequential-surface density profile.
+A finalized Visual Story Plan with stable beat ids, exact article lineage and
+verified claims for article-derived beats, or verified source-byte spans for
+source-only beats, plus the approved slide/carousel artifact decision and the
+target sequential-surface density profile.
 
 ## Outputs
 
@@ -91,6 +92,8 @@ One provider-neutral `SlideDeckPlan` conforming to
 `schemas/slide-deck-plan.schema.json`. It contains slide partition decisions,
 function, topology, slide-level content roles, semantic fit, evidence authority,
 and bounded craft-reference requirements.
+
+For a source-only plan, inherit the exact `source_ref`, verify the source hash and byte spans, and trace each factual beat to them. Do not create article or claim IDs. The article preconditions below remain unchanged for article-derived plans.
 
 ## Preconditions
 

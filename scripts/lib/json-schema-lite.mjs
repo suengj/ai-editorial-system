@@ -2,7 +2,7 @@
  * json-schema-lite — a dependency-free validator for the JSON Schema subset
  * this repository actually uses.
  *
- * Supported: type, const, enum, required, properties, additionalProperties,
+ * Supported: oneOf, type, const, enum, required, properties, additionalProperties,
  * items, minItems, maxItems, minProperties, maxProperties, pattern, minLength, maxLength, minimum, maximum, format (date, date-time), $ref into
  * local $defs, and union types via array-valued `type`.
  *
@@ -13,7 +13,7 @@
 
 const KNOWN_KEYWORDS = new Set([
   '$schema', '$id', '$ref', '$defs', 'title', 'description',
-  'type', 'const', 'enum', 'required', 'properties', 'additionalProperties',
+  'oneOf', 'type', 'const', 'enum', 'required', 'properties', 'additionalProperties',
   'items', 'minItems', 'maxItems', 'minProperties', 'maxProperties', 'uniqueItems', 'pattern', 'minLength', 'maxLength', 'minimum', 'maximum', 'exclusiveMinimum', 'format',
 ]);
 
@@ -53,6 +53,12 @@ export function validate(value, schema, root = schema, path = '$') {
   for (const key of Object.keys(schema)) {
     if (!KNOWN_KEYWORDS.has(key)) {
       errors.push({ path, message: `schema uses unsupported keyword "${key}"` });
+    }
+  }
+
+  if (schema.oneOf !== undefined) {
+    if (!Array.isArray(schema.oneOf) || schema.oneOf.filter((branch) => validate(value, branch, root, path).length === 0).length !== 1) {
+      errors.push({ path, message: 'expected exactly one matching oneOf branch' });
     }
   }
 

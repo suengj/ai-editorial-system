@@ -1,0 +1,97 @@
+{
+  "schema_version": "1.0.0",
+  "source_ref": {
+    "kind": "source-evidence",
+    "evidence_id": "source-evidence:rounding",
+    "path": "examples/sue-2316/source/lesson-facts.md",
+    "sha256": "c02e2ebd0a7cddce3bdf1b25e834a87bdb2fb4494b15888eea6b440a8351bc48",
+    "spans": [
+      {
+        "span_id": "evidence-beat-01",
+        "byte_start": 2300,
+        "byte_end": 2504,
+        "sha256": "8abea3df3fa362ccd04487e66d09385920edba53f581acd2fccef2db124089c3"
+      },
+      {
+        "span_id": "evidence-beat-02",
+        "byte_start": 2505,
+        "byte_end": 2635,
+        "sha256": "0d998632369e7df11106997da9a51f5c71da4d60a622ffbc0d2ed94c04da4b20"
+      },
+      {
+        "span_id": "evidence-beat-03",
+        "byte_start": 2636,
+        "byte_end": 2718,
+        "sha256": "6263087921edc13aed68393e44be0084602c38b416ce7764d46a11ab32d986eb"
+      },
+      {
+        "span_id": "evidence-beat-04",
+        "byte_start": 2719,
+        "byte_end": 2786,
+        "sha256": "0c87bb53a2bd0fd1f018e6f5f02f22455911f189c7e1ade2e0f906c949edd141"
+      },
+      {
+        "span_id": "evidence-beat-05",
+        "byte_start": 2787,
+        "byte_end": 2932,
+        "sha256": "d7b690fb372773ca83fa64dcfe46f7987f75aa7cd074b22e466192e66304c142"
+      },
+      {
+        "span_id": "evidence-beat-06",
+        "byte_start": 2933,
+        "byte_end": 3040,
+        "sha256": "6ab4a50ff46ebbf658ff3a41a5c8c2a8bc0589a013c2c1dcdc16f54844fb02fe"
+      }
+    ]
+  },
+  "beats": [
+    {
+      "beat_id": "beat-01",
+      "function": "hook",
+      "assertion": "반올림한 관중 수가 같아도 실제 관중 수는 다를 수 있다.",
+      "source_span_ids": [
+        "evidence-beat-01"
+      ]
+    },
+    {
+      "beat_id": "beat-02",
+      "function": "rule",
+      "assertion": "천의 자리까지 반올림할 때 백의 자리 숫자를 본다.",
+      "source_span_ids": [
+        "evidence-beat-02"
+      ]
+    },
+    {
+      "beat_id": "beat-03",
+      "function": "result",
+      "assertion": "82,800명과 83,200명은 모두 83,000명으로 반올림된다.",
+      "source_span_ids": [
+        "evidence-beat-03"
+      ]
+    },
+    {
+      "beat_id": "beat-04",
+      "function": "difference",
+      "assertion": "실제 관중 수의 차이는 400명이다.",
+      "source_span_ids": [
+        "evidence-beat-04"
+      ]
+    },
+    {
+      "beat_id": "beat-05",
+      "function": "range",
+      "assertion": "82,500부터 83,499까지의 정수는 83,000으로 반올림된다.",
+      "source_span_ids": [
+        "evidence-beat-05"
+      ]
+    },
+    {
+      "beat_id": "beat-06",
+      "function": "question",
+      "assertion": "83,499는 83,000으로, 83,500은 84,000으로 반올림된다.",
+      "source_span_ids": [
+        "evidence-beat-06"
+      ]
+    }
+  ]
+}

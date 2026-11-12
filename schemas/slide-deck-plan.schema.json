@@ -5,10 +5,12 @@
   "description": "Provider-neutral editorial planning contract for sequential slide/report-deck surfaces. It decides slide scope, function, information topology, semantic fit, evidence authority, and craft-reference requirements. Brand-specific layouts, reference IDs, theme tokens, typography, coordinates, renderer strategy, and rendering remain downstream.",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schema_version", "article_ref", "surface_profile", "slides"],
+  "required": ["schema_version", "surface_profile", "slides"],
+  "oneOf": [{ "required": ["article_ref"] }, { "required": ["source_ref"] }],
   "properties": {
     "schema_version": { "const": "1.0.0" },
     "article_ref": { "$ref": "#/$defs/article_ref" },
+    "source_ref": { "$ref": "#/$defs/source_ref" },
     "surface_profile": {
       "enum": ["live_narrated", "video_frame", "silent_carousel", "reference_deck", "working_report"]
     },
@@ -19,6 +21,66 @@
     }
   },
   "$defs": {
+    "source_ref": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "evidence_id",
+        "path",
+        "sha256",
+        "spans"
+      ],
+      "properties": {
+        "kind": {
+          "const": "source-evidence"
+        },
+        "evidence_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "spans": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "span_id",
+              "byte_start",
+              "byte_end",
+              "sha256"
+            ],
+            "properties": {
+              "span_id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "byte_start": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "byte_end": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              }
+            }
+          }
+        }
+      }
+    },
     "article_ref": {
       "type": "object",
       "additionalProperties": false,

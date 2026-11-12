@@ -1,0 +1,41 @@
+{
+  "source_ref": "examples/sue-2316/source/lesson-facts.md",
+  "forms": [
+    {
+      "display": "82,800명",
+      "spoken": "팔만 이천팔백 명"
+    },
+    {
+      "display": "83,200명",
+      "spoken": "팔만 삼천이백 명"
+    },
+    {
+      "display": "83,000명",
+      "spoken": "팔만 삼천 명"
+    },
+    {
+      "display": "400명",
+      "spoken": "사백 명"
+    },
+    {
+      "display": "82,500",
+      "spoken": "팔만 이천오백"
+    },
+    {
+      "display": "83,499",
+      "spoken": "팔만 삼천사백구십구"
+    },
+    {
+      "display": "83,000",
+      "spoken": "팔만 삼천"
+    },
+    {
+      "display": "83,500",
+      "spoken": "팔만 삼천오백"
+    },
+    {
+      "display": "84,000",
+      "spoken": "팔만 사천"
+    }
+  ]
+}

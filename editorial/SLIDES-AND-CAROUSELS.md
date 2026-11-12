@@ -671,3 +671,5 @@ shows a concrete readability or visual-system defect.
 ## One-line rule
 
 > **Build slides and carousels as a sequence of message-bearing argument beats: prefer assertion plus truthful visual support, vary text density by consumption mode, and use progressive reveal only when it clarifies reasoning rather than decorating it.**
+
+For a source-only Visual Story Plan, inherit its exact `source_ref` and verify its source bytes and cited spans. Article-derived decks retain their existing article and claim lineage; do not invent article or claim IDs. See `schemas/slide-deck-plan.schema.json`.

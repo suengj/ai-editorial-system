@@ -1,0 +1,174 @@
+{
+  "schema_version": "2.0.0",
+  "plan_id": "audioplan:rounding",
+  "video_plan_ref": "video-plan:rounding",
+  "script_ref": "narration-script:rounding",
+  "source_evidence_ref": "source-evidence:rounding",
+  "goal": "반올림 결과와 실제 관중 수의 차이를 이해한다.",
+  "audience": "child-upper-elementary",
+  "canonical_script_check": {
+    "phase": "pre_tts",
+    "performed": true,
+    "outcome": "fail",
+    "evidence_ref": "examples/sue-2316/brief.md"
+  },
+  "segments": [
+    {
+      "segment_id": "seg-01",
+      "beat_id": "beat-01",
+      "scene_id": "scene-01",
+      "spoken_text": "관중 수를 반올림하면 같아도 실제 수는 다를 수 있어요.",
+      "narration_span_hash": "e667a03c1d7b5427e69d4a4e40f4d9f97f07e36006e851e3b9376fb3187b921e",
+      "target_duration_seconds": 8,
+      "pause_after_ms": 250,
+      "emphasis": []
+    },
+    {
+      "segment_id": "seg-02",
+      "beat_id": "beat-02",
+      "scene_id": "scene-02",
+      "spoken_text": "천의 자리까지 반올림할 때는 백의 자리 숫자를 봐요.",
+      "narration_span_hash": "4d249773f261709def8f40a350893aebfce7866952389df58e2809d750782c57",
+      "target_duration_seconds": 10,
+      "pause_after_ms": 250,
+      "emphasis": []
+    },
+    {
+      "segment_id": "seg-03",
+      "beat_id": "beat-03",
+      "scene_id": "scene-03",
+      "spoken_text": "팔만 이천팔백 명과 팔만 삼천이백 명은 모두 팔만 삼천 명이 돼요.",
+      "narration_span_hash": "e49f245de4be3c7fb0b014bdc4b7057a84a3ed0dbcb4a38fb4a142ede40fd45c",
+      "target_duration_seconds": 10,
+      "pause_after_ms": 250,
+      "emphasis": []
+    },
+    {
+      "segment_id": "seg-04",
+      "beat_id": "beat-04",
+      "scene_id": "scene-04",
+      "spoken_text": "실제 관중 수의 차이는 사백 명이에요.",
+      "narration_span_hash": "8366ca57271c9418faaf30d73e641e86212b047f128ae5bea952ef704461a4c7",
+      "target_duration_seconds": 12,
+      "pause_after_ms": 250,
+      "emphasis": []
+    },
+    {
+      "segment_id": "seg-05",
+      "beat_id": "beat-05",
+      "scene_id": "scene-05",
+      "spoken_text": "팔만 이천오백부터 팔만 삼천사백구십구까지는 팔만 삼천으로 반올림해요.",
+      "narration_span_hash": "3f01915748dd546a81454b938c0a93817af06f806643eaa72a2a8eb6188c38e2",
+      "target_duration_seconds": 12,
+      "pause_after_ms": 250,
+      "emphasis": []
+    },
+    {
+      "segment_id": "seg-06",
+      "beat_id": "beat-06",
+      "scene_id": "scene-06",
+      "spoken_text": "팔만 삼천사백구십구는 팔만 삼천, 팔만 삼천오백은 팔만 사천이 돼요.",
+      "narration_span_hash": "f774ec4b430bbe474d3b14fc4cd9b100ef690aa3d3a5c2b40e50e941cf99e618",
+      "target_duration_seconds": 8,
+      "pause_after_ms": 250,
+      "emphasis": []
+    }
+  ],
+  "pronunciation_glossary": [],
+  "protected_values": [],
+  "delivery_intent": {
+    "voice": "single narrator",
+    "tone": "친근하고 또렷하게",
+    "pace": "차분하게",
+    "pause_policy": "각 비트 뒤 잠시 쉼",
+    "emphasis": []
+  },
+  "measurement": {
+    "provider_status": "unknown",
+    "measured_audio_duration_seconds": null,
+    "measured_at": null,
+    "evidence_ref": null
+  },
+  "reconciliation": {
+    "phase": "post_measurement",
+    "action": "blocked",
+    "affected_scene_ids": [
+      "scene-01",
+      "scene-02",
+      "scene-03",
+      "scene-04",
+      "scene-05",
+      "scene-06"
+    ],
+    "evidence_ref": "examples/sue-2316/brief.md"
+  },
+  "captions": {
+    "enabled": true,
+    "max_lines": 2,
+    "safe_zone": "caption-safe",
+    "alignment_status": "not_yet",
+    "segments": [
+      {
+        "scene_id": "scene-01",
+        "start_seconds": 0,
+        "end_seconds": 8,
+        "exact_text": "관중 수를 반올림하면 같아도 실제 수는 다를 수 있어요.",
+        "lines": [
+          "관중 수를 반올림하면 같아도 실제 수는 다를 수 있어요."
+        ],
+        "protected_exact_words": []
+      },
+      {
+        "scene_id": "scene-02",
+        "start_seconds": 8,
+        "end_seconds": 18,
+        "exact_text": "천의 자리까지 반올림할 때는 백의 자리 숫자를 봐요.",
+        "lines": [
+          "천의 자리까지 반올림할 때는 백의 자리 숫자를 봐요."
+        ],
+        "protected_exact_words": []
+      },
+      {
+        "scene_id": "scene-03",
+        "start_seconds": 18,
+        "end_seconds": 28,
+        "exact_text": "팔만 이천팔백 명과 팔만 삼천이백 명은 모두 팔만 삼천 명이 돼요.",
+        "lines": [
+          "팔만 이천팔백 명과 팔만 삼천이백 명은 모두 팔만 삼천 명이 돼요."
+        ],
+        "protected_exact_words": []
+      },
+      {
+        "scene_id": "scene-04",
+        "start_seconds": 28,
+        "end_seconds": 40,
+        "exact_text": "실제 관중 수의 차이는 사백 명이에요.",
+        "lines": [
+          "실제 관중 수의 차이는 사백 명이에요."
+        ],
+        "protected_exact_words": []
+      },
+      {
+        "scene_id": "scene-05",
+        "start_seconds": 40,
+        "end_seconds": 52,
+        "exact_text": "팔만 이천오백부터 팔만 삼천사백구십구까지는 팔만 삼천으로 반올림해요.",
+        "lines": [
+          "팔만 이천오백부터 팔만 삼천사백구십구까지는 팔만 삼천으로 반올림해요."
+        ],
+        "protected_exact_words": []
+      },
+      {
+        "scene_id": "scene-06",
+        "start_seconds": 52,
+        "end_seconds": 60,
+        "exact_text": "팔만 삼천사백구십구는 팔만 삼천, 팔만 삼천오백은 팔만 사천이 돼요.",
+        "lines": [
+          "팔만 삼천사백구십구는 팔만 삼천, 팔만 삼천오백은 팔만 사천이 돼요."
+        ],
+        "protected_exact_words": []
+      }
+    ]
+  },
+  "status": "blocked"
+}
