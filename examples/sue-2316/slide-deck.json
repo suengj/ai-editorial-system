@@ -4,42 +4,42 @@
     "kind": "source-evidence",
     "evidence_id": "source-evidence:rounding",
     "path": "examples/sue-2316/source/lesson-facts.md",
-    "sha256": "c02e2ebd0a7cddce3bdf1b25e834a87bdb2fb4494b15888eea6b440a8351bc48",
+    "sha256": "fc021b378084a7b07b71b70fbd0020cfd5c30df546cbedd27071eaad94800ef5",
     "spans": [
       {
         "span_id": "evidence-beat-01",
-        "byte_start": 2300,
-        "byte_end": 2504,
-        "sha256": "8abea3df3fa362ccd04487e66d09385920edba53f581acd2fccef2db124089c3"
+        "byte_start": 2558,
+        "byte_end": 2817,
+        "sha256": "fcbc4daff9140458b8dc6d306ac4120316d62f5a83773e1bf4788cc6df9a4f0d"
       },
       {
         "span_id": "evidence-beat-02",
-        "byte_start": 2505,
-        "byte_end": 2635,
+        "byte_start": 2818,
+        "byte_end": 2948,
         "sha256": "0d998632369e7df11106997da9a51f5c71da4d60a622ffbc0d2ed94c04da4b20"
       },
       {
         "span_id": "evidence-beat-03",
-        "byte_start": 2636,
-        "byte_end": 2718,
-        "sha256": "6263087921edc13aed68393e44be0084602c38b416ce7764d46a11ab32d986eb"
+        "byte_start": 2949,
+        "byte_end": 3055,
+        "sha256": "a59739b1865a4a9e45a364f6b2e9f4cc5719010d76af850a4bb34e32ca0e9080"
       },
       {
         "span_id": "evidence-beat-04",
-        "byte_start": 2719,
-        "byte_end": 2786,
-        "sha256": "0c87bb53a2bd0fd1f018e6f5f02f22455911f189c7e1ade2e0f906c949edd141"
+        "byte_start": 3056,
+        "byte_end": 3147,
+        "sha256": "0d18224018f5985605b166a0ff21af208f9d0453572c50a971c9ea38cde9eafc"
       },
       {
         "span_id": "evidence-beat-05",
-        "byte_start": 2787,
-        "byte_end": 2932,
-        "sha256": "d7b690fb372773ca83fa64dcfe46f7987f75aa7cd074b22e466192e66304c142"
+        "byte_start": 3148,
+        "byte_end": 3319,
+        "sha256": "2f99cf3d1c1f7c06b1f5119e5e6daf39f450efeb1d4ade79b53989542f2a504e"
       },
       {
         "span_id": "evidence-beat-06",
-        "byte_start": 2933,
-        "byte_end": 3040,
+        "byte_start": 3320,
+        "byte_end": 3427,
         "sha256": "6ab4a50ff46ebbf658ff3a41a5c8c2a8bc0589a013c2c1dcdc16f54844fb02fe"
       }
     ]
@@ -57,11 +57,11 @@
       },
       "function": "orient",
       "topology": "single_focus",
-      "primary_message": "반올림한 관중 수가 같아도 실제 관중 수는 다를 수 있다.",
+      "primary_message": "두 경기장 모두 약 83,000명으로 반올림되지만 실제 수는 다를 수 있다.",
       "content_roles": [
         {
           "role": "headline",
-          "content": "반올림한 관중 수가 같아도 실제 관중 수는 다를 수 있다.",
+          "content": "두 경기장 모두 약 83,000명으로 반올림되지만 실제 수는 다를 수 있다.",
           "source_references": [
             "evidence-beat-01"
           ]
@@ -103,11 +103,11 @@
       },
       "function": "explain_mechanism",
       "topology": "sequential_flow",
-      "primary_message": "천의 자리까지 반올림할 때 백의 자리 숫자를 본다.",
+      "primary_message": "백의 자리 숫자가 0~4이면 버리고 5~9이면 올린다. 가 경기장 (A)은 82,800명이다.",
       "content_roles": [
         {
           "role": "headline",
-          "content": "천의 자리까지 반올림할 때 백의 자리 숫자를 본다.",
+          "content": "백의 자리 숫자가 0~4이면 버리고 5~9이면 올린다. 가 경기장 (A)은 82,800명이다.",
           "source_references": [
             "evidence-beat-02"
           ]
@@ -149,11 +149,11 @@
       },
       "function": "show_evidence",
       "topology": "comparison",
-      "primary_message": "82,800명과 83,200명은 모두 83,000명으로 반올림된다.",
+      "primary_message": "가 경기장 (A)과 나 경기장 (B)은 모두 83,000명으로 반올림된다.",
       "content_roles": [
         {
           "role": "headline",
-          "content": "82,800명과 83,200명은 모두 83,000명으로 반올림된다.",
+          "content": "가 경기장 (A)과 나 경기장 (B)은 모두 83,000명으로 반올림된다.",
           "source_references": [
             "evidence-beat-03"
           ]
@@ -195,11 +195,11 @@
       },
       "function": "compare",
       "topology": "comparison",
-      "primary_message": "실제 관중 수의 차이는 400명이다.",
+      "primary_message": "나 경기장 (B)이 가 경기장 (A)보다 실제 관중이 400명 더 많다.",
       "content_roles": [
         {
           "role": "headline",
-          "content": "실제 관중 수의 차이는 400명이다.",
+          "content": "나 경기장 (B)이 가 경기장 (A)보다 실제 관중이 400명 더 많다.",
           "source_references": [
             "evidence-beat-04"
           ]
@@ -241,11 +241,11 @@
       },
       "function": "show_evidence",
       "topology": "sequential_flow",
-      "primary_message": "82,500부터 83,499까지의 정수는 83,000으로 반올림된다.",
+      "primary_message": "82,500부터 83,499까지 정수 1,000개가 83,000으로 반올림된다.",
       "content_roles": [
         {
           "role": "headline",
-          "content": "82,500부터 83,499까지의 정수는 83,000으로 반올림된다.",
+          "content": "82,500부터 83,499까지 정수 1,000개가 83,000으로 반올림된다.",
           "source_references": [
             "evidence-beat-05"
           ]

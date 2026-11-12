@@ -15,7 +15,7 @@ const source = readFileSync(root+'source/lesson-facts.md');
 const schemas = ['visual-story-plan','slide-deck-plan'].map(n => json(`schemas/${n}.schema.json`));
 function check(files, bytes = source, ev = evidence) {
   assert(bytes && hash(bytes) === ev.sha256 && bytes.length === ev.bytes, 'source hash or length');
-  assert.equal(ev.origin_commit, 'b59d37f');
+  assert.equal(ev.origin_commit, '710251f');
   const docs = Object.fromEntries(names.filter(n => n.endsWith('.json')).map(n => [n, JSON.parse(files[n])]));
   const story = docs['visual-story.json'], deck = docs['slide-deck.json'], video = docs['video-plan-v2-rounding.json'], script = docs['narration-script-v2-rounding.json'], audio = docs['audio-plan-v2-rounding.json'];
   for (const [doc,schema] of [[story,schemas[0]],[deck,schemas[1]]]) {
@@ -29,15 +29,25 @@ function check(files, bytes = source, ev = evidence) {
   assert.deepEqual(ids, Array.from({length:6},(_,i)=>`beat-0${i+1}`));
   for (const seq of [deck.slides.map(s=>s.beat_ids[0]),video.scenes.map(s=>s.beat_id),script.turns.map(t=>t.beat_id),audio.segments.map(s=>s.beat_id)]) assert.deepEqual(seq,ids,'beat lineage');
   assert.equal(video.source_evidence.sources[0].sha256, ev.sha256);
-  assert.deepEqual(validateVideoDocument('video-plan-v2',video,{verifiedProtectedSpans:resolveLocalSourceEvidence(video)}),[]);
+  const videoIssues = validateVideoDocument('video-plan-v2',video,{verifiedProtectedSpans:resolveLocalSourceEvidence(video)});
+  assert.deepEqual(videoIssues.map(i => i.message), ['scene scene-02 exceeds effective preset maximum 12s', 'scene scene-05 exceeds effective preset maximum 12s', 'scene scene-06 exceeds effective preset maximum 12s']);
   for (const f of docs['spoken-forms.json'].forms) { assert(bytes.includes(Buffer.from(f.display)), `display not in source: ${f.display}`); assert(bytes.includes(Buffer.from(f.spoken)), `spoken form not in source: ${f.spoken}`); }
   for (const [name, text] of Object.entries(files)) for (const n of text.match(/\b\d{2,3},\d{3}\b/g) ?? []) assert(bytes.includes(Buffer.from(n)), `${name}: unsupported number ${n}`);
-  assert.equal(audio.status, 'blocked');
-  assert.match(files['brief.md'], /BLOCKED/);
+  assert.equal(audio.status, 'script_checked');
+  assert.equal(audio.measurement.measured_audio_duration_seconds, null);
+  assert.equal(audio.captions.alignment_status, 'not_yet');
+  assert.equal(video.approval.status, 'pending');
   const context = {videoPlan:video, verifiedProtectedSpans:resolveLocalSourceEvidence(video), narrationScript:script};
   const scriptIssues = validateVideoDocument('narration-script-v2',script,context);
-  assert.equal(scriptIssues.length,6);
-  assert(scriptIssues.every(i=>i.code==='protected-value-not-source-verified'));
+  assert.deepEqual(scriptIssues, []);
+  const locked = source.toString('utf8').split('## Locked narration (approved wording, ko)')[1].split('## 출처와 권리')[0];
+  const lines = [...locked.matchAll(/^(beat-0[1-6])\.([1-3]): (.+)$/gm)];
+  assert.equal(lines.length, 13);
+  const cited = script.turns.flatMap(turn => turn.evidence_span_ids.map(id => ({beat: turn.beat_id, span: video.source_evidence.sources[0].evidence_spans.find(s => s.span_id === id)})));
+  assert.deepEqual(cited.map(({beat,span}) => [beat,span.exact_text]), lines.map(m => [m[1],m[3]]));
+  const syllables = [30,66,34,38,64,58];
+  assert(video.target_duration_seconds >= 55 && video.target_duration_seconds <= 65);
+  for (let i = 0; i < 6; i++) assert(audio.segments[i].target_duration_seconds >= syllables[i] / 4.7 + 0.4); 
   assert.deepEqual(validateVideoDocument('audio-plan-v2',audio,context),[]);
 }
 check(original);
@@ -49,7 +59,12 @@ for (const [doc, schema] of [[JSON.parse(original['visual-story.json']), schemas
   assert.deepEqual(validate(doc,schema),[]); delete doc.article_ref.claims_hash; assert(validate(doc,schema).length);
 }
 assert.throws(()=>check(original, null));
+const mutatedScript = JSON.parse(original['narration-script-v2-rounding.json']);
+mutatedScript.turns[0].spoken_text = mutatedScript.turns[0].spoken_text.replace('두 경기장', '세 경기장');
+const video = JSON.parse(original['video-plan-v2-rounding.json']);
+assert(validateVideoDocument('narration-script-v2', mutatedScript, {videoPlan: video, verifiedProtectedSpans: resolveLocalSourceEvidence(video)}).some(i => i.code === 'protected-value-not-source-verified'));
+assert.throws(()=>check({...original, 'narration-script-v2-rounding.json': JSON.stringify(mutatedScript)}));
 for (const name of names) assert.throws(()=>check(altered(name,t=>t.includes('82,800') ? t.replace('82,800','82,900') : name.endsWith('.json') ? t.replace(/\}\s*$/, ',"injected":"82,900"}') : t+'\n82,900')));
 for (const name of ['visual-story.json','slide-deck.json','video-plan-v2-rounding.json','narration-script-v2-rounding.json','audio-plan-v2-rounding.json']) assert.throws(()=>check(altered(name,t=>t.replace(/("beat_id":\s*"|"beat_ids":\s*\[\s*")beat-01/, '$1beat-99'))));
 for (const name of ['visual-story.json','slide-deck.json']) assert.throws(()=>check(altered(name,t=>t.replace('"source_ref": {','"article_ref":{"article_id":"a","version_number":1,"content_hash":"h","claims_hash":"h"},"source_ref": {'))));
-console.log('source-only lesson: PASS (blocked narration and negative cases verified)');
+console.log('source-only lesson: PASS (source-verified narration and negative cases verified)');
