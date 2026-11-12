@@ -1,0 +1,846 @@
+{
+  "schema_version": "2.0.0",
+  "plan_id": "video-plan:rounding",
+  "profile_ref": {
+    "profile_id": "video/educational-summary",
+    "revision": 2,
+    "sha256": "c6e716370a35326c83c31c8fb827fe356b995d176983f63700f707877f17a479"
+  },
+  "source_evidence": {
+    "schema_version": "1.0.0",
+    "envelope_id": "source-evidence:rounding",
+    "sources": [
+      {
+        "source_id": "source-1",
+        "source_ref": "examples/sue-2316/source/lesson-facts.md",
+        "kind": "markdown",
+        "sha256": "fc021b378084a7b07b71b70fbd0020cfd5c30df546cbedd27071eaad94800ef5",
+        "evidence_spans": [
+          {
+            "span_id": "evidence-beat-01",
+            "exact_text": "- `beat-01` 훅: “두 경기장 모두 관중이 약 83,000명인데 정말 똑같이 왔을까?” 가 경기장은 82,800명, 나 경기장은 83,200명이다. 여기서 같다는 것은 천의 자리까지 **반올림한 관중 수**다. (F1, F2, F3, F8)",
+            "source_sha256": "fc021b378084a7b07b71b70fbd0020cfd5c30df546cbedd27071eaad94800ef5",
+            "extraction_sha256": "fc021b378084a7b07b71b70fbd0020cfd5c30df546cbedd27071eaad94800ef5",
+            "byte_start": 2558,
+            "byte_end": 2817,
+            "span_sha256": "fcbc4daff9140458b8dc6d306ac4120316d62f5a83773e1bf4788cc6df9a4f0d",
+            "evidence_ref": "source-extraction://sha256/fc021b378084a7b07b71b70fbd0020cfd5c30df546cbedd27071eaad94800ef5/fc021b378084a7b07b71b70fbd0020cfd5c30df546cbedd27071eaad94800ef5/span/evidence-beat-01/fcbc4daff9140458b8dc6d306ac4120316d62f5a83773e1bf4788cc6df9a4f0d"
+          },
+          {
+            "span_id": "evidence-beat-02",
+            "exact_text": "- `beat-02` 규칙: 천의 자리까지 반올림하려면 백의 자리를 보고 0~4는 버리고 5~9는 올린다. (F1, F2, F3)",
+            "source_sha256": "fc021b378084a7b07b71b70fbd0020cfd5c30df546cbedd27071eaad94800ef5",
+            "extraction_sha256": "fc021b378084a7b07b71b70fbd0020cfd5c30df546cbedd27071eaad94800ef5",
+            "byte_start": 2818,
+            "byte_end": 2948,
+            "span_sha256": "0d998632369e7df11106997da9a51f5c71da4d60a622ffbc0d2ed94c04da4b20",
+            "evidence_ref": "source-extraction://sha256/fc021b378084a7b07b71b70fbd0020cfd5c30df546cbedd27071eaad94800ef5/fc021b378084a7b07b71b70fbd0020cfd5c30df546cbedd27071eaad94800ef5/span/evidence-beat-02/0d998632369e7df11106997da9a51f5c71da4d60a622ffbc0d2ed94c04da4b20"
+          },
+          {
+            "span_id": "evidence-beat-03",
+            "exact_text": "- `beat-03` 결과: 가 경기장과 나 경기장은 모두 83,000명으로 반올림된다. (F1, F2, F3)",
+            "source_sha256": "fc021b378084a7b07b71b70fbd0020cfd5c30df546cbedd27071eaad94800ef5",
+            "extraction_sha256": "fc021b378084a7b07b71b70fbd0020cfd5c30df546cbedd27071eaad94800ef5",
+            "byte_start": 2949,
+            "byte_end": 3055,
+            "span_sha256": "a59739b1865a4a9e45a364f6b2e9f4cc5719010d76af850a4bb34e32ca0e9080",
+            "evidence_ref": "source-extraction://sha256/fc021b378084a7b07b71b70fbd0020cfd5c30df546cbedd27071eaad94800ef5/fc021b378084a7b07b71b70fbd0020cfd5c30df546cbedd27071eaad94800ef5/span/evidence-beat-03/a59739b1865a4a9e45a364f6b2e9f4cc5719010d76af850a4bb34e32ca0e9080"
+          },
+          {
+            "span_id": "evidence-beat-04",
+            "exact_text": "- `beat-04` 실제 차이: 나 경기장 − 가 경기장 = 400명이다. (F1, F2, F4, F8)",
+            "source_sha256": "fc021b378084a7b07b71b70fbd0020cfd5c30df546cbedd27071eaad94800ef5",
+            "extraction_sha256": "fc021b378084a7b07b71b70fbd0020cfd5c30df546cbedd27071eaad94800ef5",
+            "byte_start": 3056,
+            "byte_end": 3147,
+            "span_sha256": "0d18224018f5985605b166a0ff21af208f9d0453572c50a971c9ea38cde9eafc",
+            "evidence_ref": "source-extraction://sha256/fc021b378084a7b07b71b70fbd0020cfd5c30df546cbedd27071eaad94800ef5/fc021b378084a7b07b71b70fbd0020cfd5c30df546cbedd27071eaad94800ef5/span/evidence-beat-04/0d18224018f5985605b166a0ff21af208f9d0453572c50a971c9ea38cde9eafc"
+          },
+          {
+            "span_id": "evidence-beat-05",
+            "exact_text": "- `beat-05` 수직선: 82,500 / 83,000 / 83,500을 표시한다. 83,000으로 반올림되는 정수 범위는 82,500..83,499이며 정수는 1,000개다. (F5, F6, F7, F9)",
+            "source_sha256": "fc021b378084a7b07b71b70fbd0020cfd5c30df546cbedd27071eaad94800ef5",
+            "extraction_sha256": "fc021b378084a7b07b71b70fbd0020cfd5c30df546cbedd27071eaad94800ef5",
+            "byte_start": 3148,
+            "byte_end": 3319,
+            "span_sha256": "2f99cf3d1c1f7c06b1f5119e5e6daf39f450efeb1d4ade79b53989542f2a504e",
+            "evidence_ref": "source-extraction://sha256/fc021b378084a7b07b71b70fbd0020cfd5c30df546cbedd27071eaad94800ef5/fc021b378084a7b07b71b70fbd0020cfd5c30df546cbedd27071eaad94800ef5/span/evidence-beat-05/2f99cf3d1c1f7c06b1f5119e5e6daf39f450efeb1d4ade79b53989542f2a504e"
+          },
+          {
+            "span_id": "evidence-beat-06",
+            "exact_text": "- `beat-06` 마무리 질문: “그럼 83,499는? 83,500은?” 답: 각각 83,000, 84,000이다. (F5, F7)",
+            "source_sha256": "fc021b378084a7b07b71b70fbd0020cfd5c30df546cbedd27071eaad94800ef5",
+            "extraction_sha256": "fc021b378084a7b07b71b70fbd0020cfd5c30df546cbedd27071eaad94800ef5",
+            "byte_start": 3320,
+            "byte_end": 3427,
+            "span_sha256": "6ab4a50ff46ebbf658ff3a41a5c8c2a8bc0589a013c2c1dcdc16f54844fb02fe",
+            "evidence_ref": "source-extraction://sha256/fc021b378084a7b07b71b70fbd0020cfd5c30df546cbedd27071eaad94800ef5/fc021b378084a7b07b71b70fbd0020cfd5c30df546cbedd27071eaad94800ef5/span/evidence-beat-06/6ab4a50ff46ebbf658ff3a41a5c8c2a8bc0589a013c2c1dcdc16f54844fb02fe"
+          },
+          {
+            "span_id": "evidence-beat-01-line-1",
+            "exact_text": "두 경기장 모두 관중이 약 팔만 삼천 명이래요.",
+            "source_sha256": "fc021b378084a7b07b71b70fbd0020cfd5c30df546cbedd27071eaad94800ef5",
+            "extraction_sha256": "fc021b378084a7b07b71b70fbd0020cfd5c30df546cbedd27071eaad94800ef5",
+            "byte_start": 3484,
+            "byte_end": 3546,
+            "span_sha256": "f5e0c10d2b6baab0beee944e487156de1f4df0dc877219ba84249d7716795dc0",
+            "evidence_ref": "source-extraction://sha256/fc021b378084a7b07b71b70fbd0020cfd5c30df546cbedd27071eaad94800ef5/fc021b378084a7b07b71b70fbd0020cfd5c30df546cbedd27071eaad94800ef5/span/evidence-beat-01-line-1/f5e0c10d2b6baab0beee944e487156de1f4df0dc877219ba84249d7716795dc0"
+          },
+          {
+            "span_id": "evidence-beat-01-line-2",
+            "exact_text": "그런데 정말 똑같이 왔을까요?",
+            "source_sha256": "fc021b378084a7b07b71b70fbd0020cfd5c30df546cbedd27071eaad94800ef5",
+            "extraction_sha256": "fc021b378084a7b07b71b70fbd0020cfd5c30df546cbedd27071eaad94800ef5",
+            "byte_start": 3558,
+            "byte_end": 3598,
+            "span_sha256": "339d0d02a7436f36449e514115d55a09e67ec12ef039ac793de59e4946986ba4",
+            "evidence_ref": "source-extraction://sha256/fc021b378084a7b07b71b70fbd0020cfd5c30df546cbedd27071eaad94800ef5/fc021b378084a7b07b71b70fbd0020cfd5c30df546cbedd27071eaad94800ef5/span/evidence-beat-01-line-2/339d0d02a7436f36449e514115d55a09e67ec12ef039ac793de59e4946986ba4"
+          },
+          {
+            "span_id": "evidence-beat-02-line-1",
+            "exact_text": "천의 자리까지 반올림할 땐 백의 자리 숫자를 봐요. 영부터 사까지는 버리고, 오부터 구까지는 올려요.",
+            "source_sha256": "fc021b378084a7b07b71b70fbd0020cfd5c30df546cbedd27071eaad94800ef5",
+            "extraction_sha256": "fc021b378084a7b07b71b70fbd0020cfd5c30df546cbedd27071eaad94800ef5",
+            "byte_start": 3610,
+            "byte_end": 3746,
+            "span_sha256": "633a23c34064c65762c38d8a5efdcb35458d7eba899d13ce578c090ddf1b8240",
+            "evidence_ref": "source-extraction://sha256/fc021b378084a7b07b71b70fbd0020cfd5c30df546cbedd27071eaad94800ef5/fc021b378084a7b07b71b70fbd0020cfd5c30df546cbedd27071eaad94800ef5/span/evidence-beat-02-line-1/633a23c34064c65762c38d8a5efdcb35458d7eba899d13ce578c090ddf1b8240"
+          },
+          {
+            "span_id": "evidence-beat-02-line-2",
+            "exact_text": "가 경기장은 팔만 이천팔백 명. 백의 자리 숫자가 팔이니까 올려요.",
+            "source_sha256": "fc021b378084a7b07b71b70fbd0020cfd5c30df546cbedd27071eaad94800ef5",
+            "extraction_sha256": "fc021b378084a7b07b71b70fbd0020cfd5c30df546cbedd27071eaad94800ef5",
+            "byte_start": 3758,
+            "byte_end": 3847,
+            "span_sha256": "f13655534ca835ec97c275a528f25a1a621f6f35dfbdcb494c636d9063de99d7",
+            "evidence_ref": "source-extraction://sha256/fc021b378084a7b07b71b70fbd0020cfd5c30df546cbedd27071eaad94800ef5/fc021b378084a7b07b71b70fbd0020cfd5c30df546cbedd27071eaad94800ef5/span/evidence-beat-02-line-2/f13655534ca835ec97c275a528f25a1a621f6f35dfbdcb494c636d9063de99d7"
+          },
+          {
+            "span_id": "evidence-beat-03-line-1",
+            "exact_text": "가 경기장은 팔만 삼천 명이 돼요.",
+            "source_sha256": "fc021b378084a7b07b71b70fbd0020cfd5c30df546cbedd27071eaad94800ef5",
+            "extraction_sha256": "fc021b378084a7b07b71b70fbd0020cfd5c30df546cbedd27071eaad94800ef5",
+            "byte_start": 3859,
+            "byte_end": 3904,
+            "span_sha256": "78728c44e59ef2b9c4460ffe12861be45eab8af23baee30a47bceed6c13002ce",
+            "evidence_ref": "source-extraction://sha256/fc021b378084a7b07b71b70fbd0020cfd5c30df546cbedd27071eaad94800ef5/fc021b378084a7b07b71b70fbd0020cfd5c30df546cbedd27071eaad94800ef5/span/evidence-beat-03-line-1/78728c44e59ef2b9c4460ffe12861be45eab8af23baee30a47bceed6c13002ce"
+          },
+          {
+            "span_id": "evidence-beat-03-line-2",
+            "exact_text": "나 경기장의 팔만 삼천이백 명도 팔만 삼천 명이 돼요.",
+            "source_sha256": "fc021b378084a7b07b71b70fbd0020cfd5c30df546cbedd27071eaad94800ef5",
+            "extraction_sha256": "fc021b378084a7b07b71b70fbd0020cfd5c30df546cbedd27071eaad94800ef5",
+            "byte_start": 3916,
+            "byte_end": 3988,
+            "span_sha256": "c7f421fca863cf39e56b84277d64d3f2a486e3c33138c6d8faaca9d982d5e4fa",
+            "evidence_ref": "source-extraction://sha256/fc021b378084a7b07b71b70fbd0020cfd5c30df546cbedd27071eaad94800ef5/fc021b378084a7b07b71b70fbd0020cfd5c30df546cbedd27071eaad94800ef5/span/evidence-beat-03-line-2/c7f421fca863cf39e56b84277d64d3f2a486e3c33138c6d8faaca9d982d5e4fa"
+          },
+          {
+            "span_id": "evidence-beat-04-line-1",
+            "exact_text": "하지만 실제로 나 경기장이 사백 명 더 많아요.",
+            "source_sha256": "fc021b378084a7b07b71b70fbd0020cfd5c30df546cbedd27071eaad94800ef5",
+            "extraction_sha256": "fc021b378084a7b07b71b70fbd0020cfd5c30df546cbedd27071eaad94800ef5",
+            "byte_start": 4000,
+            "byte_end": 4062,
+            "span_sha256": "c29aa881e7e482ffea65df2cf0f58c18b8f5f768db4375147cc0980654ad4d80",
+            "evidence_ref": "source-extraction://sha256/fc021b378084a7b07b71b70fbd0020cfd5c30df546cbedd27071eaad94800ef5/fc021b378084a7b07b71b70fbd0020cfd5c30df546cbedd27071eaad94800ef5/span/evidence-beat-04-line-1/c29aa881e7e482ffea65df2cf0f58c18b8f5f768db4375147cc0980654ad4d80"
+          },
+          {
+            "span_id": "evidence-beat-04-line-2",
+            "exact_text": "반올림한 수가 같다고 실제 수가 같은 건 아니에요.",
+            "source_sha256": "fc021b378084a7b07b71b70fbd0020cfd5c30df546cbedd27071eaad94800ef5",
+            "extraction_sha256": "fc021b378084a7b07b71b70fbd0020cfd5c30df546cbedd27071eaad94800ef5",
+            "byte_start": 4074,
+            "byte_end": 4142,
+            "span_sha256": "8be1dd44249338472e3b23c9fbde2cb0bba2f20b50f4117be48e812637014b3b",
+            "evidence_ref": "source-extraction://sha256/fc021b378084a7b07b71b70fbd0020cfd5c30df546cbedd27071eaad94800ef5/fc021b378084a7b07b71b70fbd0020cfd5c30df546cbedd27071eaad94800ef5/span/evidence-beat-04-line-2/8be1dd44249338472e3b23c9fbde2cb0bba2f20b50f4117be48e812637014b3b"
+          },
+          {
+            "span_id": "evidence-beat-05-line-1",
+            "exact_text": "수직선에서 팔만 이천오백부터 팔만 삼천사백구십구까지 모두 팔만 삼천이 돼요.",
+            "source_sha256": "fc021b378084a7b07b71b70fbd0020cfd5c30df546cbedd27071eaad94800ef5",
+            "extraction_sha256": "fc021b378084a7b07b71b70fbd0020cfd5c30df546cbedd27071eaad94800ef5",
+            "byte_start": 4154,
+            "byte_end": 4262,
+            "span_sha256": "6b4e37b0bb78453f20392ae24c6f80a0efbe1bc54e7e464ab57cff82dc4cac0d",
+            "evidence_ref": "source-extraction://sha256/fc021b378084a7b07b71b70fbd0020cfd5c30df546cbedd27071eaad94800ef5/fc021b378084a7b07b71b70fbd0020cfd5c30df546cbedd27071eaad94800ef5/span/evidence-beat-05-line-1/6b4e37b0bb78453f20392ae24c6f80a0efbe1bc54e7e464ab57cff82dc4cac0d"
+          },
+          {
+            "span_id": "evidence-beat-05-line-2",
+            "exact_text": "그러니까 팔만 삼천이라는 이름 아래에 실제 수가 천 개나 모여 있는 셈이에요.",
+            "source_sha256": "fc021b378084a7b07b71b70fbd0020cfd5c30df546cbedd27071eaad94800ef5",
+            "extraction_sha256": "fc021b378084a7b07b71b70fbd0020cfd5c30df546cbedd27071eaad94800ef5",
+            "byte_start": 4274,
+            "byte_end": 4379,
+            "span_sha256": "4f8a278345972814d7c61cf888b1947e83c89da2845fc0e7e765afc93ed0fc72",
+            "evidence_ref": "source-extraction://sha256/fc021b378084a7b07b71b70fbd0020cfd5c30df546cbedd27071eaad94800ef5/fc021b378084a7b07b71b70fbd0020cfd5c30df546cbedd27071eaad94800ef5/span/evidence-beat-05-line-2/4f8a278345972814d7c61cf888b1947e83c89da2845fc0e7e765afc93ed0fc72"
+          },
+          {
+            "span_id": "evidence-beat-06-line-1",
+            "exact_text": "그럼 팔만 삼천사백구십구는? 팔만 삼천오백은?",
+            "source_sha256": "fc021b378084a7b07b71b70fbd0020cfd5c30df546cbedd27071eaad94800ef5",
+            "extraction_sha256": "fc021b378084a7b07b71b70fbd0020cfd5c30df546cbedd27071eaad94800ef5",
+            "byte_start": 4391,
+            "byte_end": 4454,
+            "span_sha256": "2795ca1f3ba4abebebdaabff71a8a8667be9e3efdfd4077527e388e535a5c541",
+            "evidence_ref": "source-extraction://sha256/fc021b378084a7b07b71b70fbd0020cfd5c30df546cbedd27071eaad94800ef5/fc021b378084a7b07b71b70fbd0020cfd5c30df546cbedd27071eaad94800ef5/span/evidence-beat-06-line-1/2795ca1f3ba4abebebdaabff71a8a8667be9e3efdfd4077527e388e535a5c541"
+          },
+          {
+            "span_id": "evidence-beat-06-line-2",
+            "exact_text": "잠깐 생각해 봐요. 각각 팔만 삼천, 팔만 사천이에요.",
+            "source_sha256": "fc021b378084a7b07b71b70fbd0020cfd5c30df546cbedd27071eaad94800ef5",
+            "extraction_sha256": "fc021b378084a7b07b71b70fbd0020cfd5c30df546cbedd27071eaad94800ef5",
+            "byte_start": 4466,
+            "byte_end": 4536,
+            "span_sha256": "6d25541c8803aa72ce405e396fed751a2de84d19d0ecd91c4a727e2346de2d8e",
+            "evidence_ref": "source-extraction://sha256/fc021b378084a7b07b71b70fbd0020cfd5c30df546cbedd27071eaad94800ef5/fc021b378084a7b07b71b70fbd0020cfd5c30df546cbedd27071eaad94800ef5/span/evidence-beat-06-line-2/6d25541c8803aa72ce405e396fed751a2de84d19d0ecd91c4a727e2346de2d8e"
+          },
+          {
+            "span_id": "evidence-beat-06-line-3",
+            "exact_text": "반올림한 수가 같아도 실제 수는 다를 수 있어요.",
+            "source_sha256": "fc021b378084a7b07b71b70fbd0020cfd5c30df546cbedd27071eaad94800ef5",
+            "extraction_sha256": "fc021b378084a7b07b71b70fbd0020cfd5c30df546cbedd27071eaad94800ef5",
+            "byte_start": 4548,
+            "byte_end": 4613,
+            "span_sha256": "d299b567aa383e2ca15bf4b7a67fb126727b96dd58b0da68bf716ccc5c70015b",
+            "evidence_ref": "source-extraction://sha256/fc021b378084a7b07b71b70fbd0020cfd5c30df546cbedd27071eaad94800ef5/fc021b378084a7b07b71b70fbd0020cfd5c30df546cbedd27071eaad94800ef5/span/evidence-beat-06-line-3/d299b567aa383e2ca15bf4b7a67fb126727b96dd58b0da68bf716ccc5c70015b"
+          }
+        ],
+        "rights": {
+          "status": "unknown",
+          "license": null,
+          "rights_owner": null,
+          "attribution": null,
+          "platforms": [],
+          "commercial_use": null,
+          "modification_allowed": null,
+          "evidence_ref": null
+        }
+      }
+    ]
+  },
+  "duration_class": "short",
+  "target_duration_seconds": 64.4,
+  "aspect_ratio": "9:16",
+  "fps": 30,
+  "language": "ko",
+  "semantic_controls": {
+    "thinking": "quiet",
+    "reveal": "step_by_step",
+    "presentation": "hybrid"
+  },
+  "scenes": [
+    {
+      "scene_id": "scene-01",
+      "beat_id": "beat-01",
+      "function": "hook",
+      "timing": {
+        "start_seconds": 0,
+        "end_seconds": 6.8
+      },
+      "source_only": true,
+      "source_refs": [
+        "source-1"
+      ],
+      "layers": [
+        {
+          "layer_id": "layer-01",
+          "source_ref": "source-1",
+          "rights_ref": "source-1",
+          "z": 0,
+          "timing": {
+            "start_seconds": 0,
+            "end_seconds": 6.8
+          },
+          "fit": "contain",
+          "crop": {
+            "mode": "none",
+            "focal_point": null
+          },
+          "safe_zone": {
+            "x": 0.1,
+            "y": 0.1,
+            "width": 0.8,
+            "height": 0.8
+          },
+          "motion_intention": "hold"
+        }
+      ],
+      "on_screen_text": []
+    },
+    {
+      "scene_id": "scene-02a",
+      "beat_id": "beat-02",
+      "function": "concept",
+      "timing": {
+        "start_seconds": 6.8,
+        "end_seconds": 15.35
+      },
+      "source_only": true,
+      "source_refs": [
+        "source-1"
+      ],
+      "layers": [
+        {
+          "layer_id": "layer-02a",
+          "source_ref": "source-1",
+          "rights_ref": "source-1",
+          "z": 0,
+          "timing": {
+            "start_seconds": 6.8,
+            "end_seconds": 15.35
+          },
+          "fit": "contain",
+          "crop": {
+            "mode": "none",
+            "focal_point": null
+          },
+          "safe_zone": {
+            "x": 0.1,
+            "y": 0.1,
+            "width": 0.8,
+            "height": 0.8
+          },
+          "motion_intention": "hold"
+        }
+      ],
+      "on_screen_text": []
+    },
+    {
+      "scene_id": "scene-02b",
+      "beat_id": "beat-02",
+      "function": "concept",
+      "timing": {
+        "start_seconds": 15.35,
+        "end_seconds": 21.3
+      },
+      "source_only": true,
+      "source_refs": [
+        "source-1"
+      ],
+      "layers": [
+        {
+          "layer_id": "layer-02b",
+          "source_ref": "source-1",
+          "rights_ref": "source-1",
+          "z": 0,
+          "timing": {
+            "start_seconds": 15.35,
+            "end_seconds": 21.3
+          },
+          "fit": "contain",
+          "crop": {
+            "mode": "none",
+            "focal_point": null
+          },
+          "safe_zone": {
+            "x": 0.1,
+            "y": 0.1,
+            "width": 0.8,
+            "height": 0.8
+          },
+          "motion_intention": "hold"
+        }
+      ],
+      "on_screen_text": []
+    },
+    {
+      "scene_id": "scene-03",
+      "beat_id": "beat-03",
+      "function": "concept",
+      "timing": {
+        "start_seconds": 21.3,
+        "end_seconds": 29
+      },
+      "source_only": true,
+      "source_refs": [
+        "source-1"
+      ],
+      "layers": [
+        {
+          "layer_id": "layer-03",
+          "source_ref": "source-1",
+          "rights_ref": "source-1",
+          "z": 0,
+          "timing": {
+            "start_seconds": 21.3,
+            "end_seconds": 29
+          },
+          "fit": "contain",
+          "crop": {
+            "mode": "none",
+            "focal_point": null
+          },
+          "safe_zone": {
+            "x": 0.1,
+            "y": 0.1,
+            "width": 0.8,
+            "height": 0.8
+          },
+          "motion_intention": "hold"
+        }
+      ],
+      "on_screen_text": []
+    },
+    {
+      "scene_id": "scene-04",
+      "beat_id": "beat-04",
+      "function": "concept",
+      "timing": {
+        "start_seconds": 29,
+        "end_seconds": 37.5
+      },
+      "source_only": true,
+      "source_refs": [
+        "source-1"
+      ],
+      "layers": [
+        {
+          "layer_id": "layer-04",
+          "source_ref": "source-1",
+          "rights_ref": "source-1",
+          "z": 0,
+          "timing": {
+            "start_seconds": 29,
+            "end_seconds": 37.5
+          },
+          "fit": "contain",
+          "crop": {
+            "mode": "none",
+            "focal_point": null
+          },
+          "safe_zone": {
+            "x": 0.1,
+            "y": 0.1,
+            "width": 0.8,
+            "height": 0.8
+          },
+          "motion_intention": "hold"
+        }
+      ],
+      "on_screen_text": []
+    },
+    {
+      "scene_id": "scene-05a",
+      "beat_id": "beat-05",
+      "function": "concept",
+      "timing": {
+        "start_seconds": 37.5,
+        "end_seconds": 44.6
+      },
+      "source_only": true,
+      "source_refs": [
+        "source-1"
+      ],
+      "layers": [
+        {
+          "layer_id": "layer-05a",
+          "source_ref": "source-1",
+          "rights_ref": "source-1",
+          "z": 0,
+          "timing": {
+            "start_seconds": 37.5,
+            "end_seconds": 44.6
+          },
+          "fit": "contain",
+          "crop": {
+            "mode": "none",
+            "focal_point": null
+          },
+          "safe_zone": {
+            "x": 0.1,
+            "y": 0.1,
+            "width": 0.8,
+            "height": 0.8
+          },
+          "motion_intention": "hold"
+        }
+      ],
+      "on_screen_text": []
+    },
+    {
+      "scene_id": "scene-05b",
+      "beat_id": "beat-05",
+      "function": "concept",
+      "timing": {
+        "start_seconds": 44.6,
+        "end_seconds": 51.6
+      },
+      "source_only": true,
+      "source_refs": [
+        "source-1"
+      ],
+      "layers": [
+        {
+          "layer_id": "layer-05b",
+          "source_ref": "source-1",
+          "rights_ref": "source-1",
+          "z": 0,
+          "timing": {
+            "start_seconds": 44.6,
+            "end_seconds": 51.6
+          },
+          "fit": "contain",
+          "crop": {
+            "mode": "none",
+            "focal_point": null
+          },
+          "safe_zone": {
+            "x": 0.1,
+            "y": 0.1,
+            "width": 0.8,
+            "height": 0.8
+          },
+          "motion_intention": "hold"
+        }
+      ],
+      "on_screen_text": []
+    },
+    {
+      "scene_id": "scene-06a",
+      "beat_id": "beat-06",
+      "function": "key_takeaway",
+      "timing": {
+        "start_seconds": 51.6,
+        "end_seconds": 59.9
+      },
+      "source_only": true,
+      "source_refs": [
+        "source-1"
+      ],
+      "layers": [
+        {
+          "layer_id": "layer-06a",
+          "source_ref": "source-1",
+          "rights_ref": "source-1",
+          "z": 0,
+          "timing": {
+            "start_seconds": 51.6,
+            "end_seconds": 59.9
+          },
+          "fit": "contain",
+          "crop": {
+            "mode": "none",
+            "focal_point": null
+          },
+          "safe_zone": {
+            "x": 0.1,
+            "y": 0.1,
+            "width": 0.8,
+            "height": 0.8
+          },
+          "motion_intention": "hold"
+        }
+      ],
+      "on_screen_text": []
+    },
+    {
+      "scene_id": "scene-06b",
+      "beat_id": "beat-06",
+      "function": "key_takeaway",
+      "timing": {
+        "start_seconds": 59.9,
+        "end_seconds": 64.4
+      },
+      "source_only": true,
+      "source_refs": [
+        "source-1"
+      ],
+      "layers": [
+        {
+          "layer_id": "layer-06b",
+          "source_ref": "source-1",
+          "rights_ref": "source-1",
+          "z": 0,
+          "timing": {
+            "start_seconds": 59.9,
+            "end_seconds": 64.4
+          },
+          "fit": "contain",
+          "crop": {
+            "mode": "none",
+            "focal_point": null
+          },
+          "safe_zone": {
+            "x": 0.1,
+            "y": 0.1,
+            "width": 0.8,
+            "height": 0.8
+          },
+          "motion_intention": "hold"
+        }
+      ],
+      "on_screen_text": []
+    }
+  ],
+  "audio": {
+    "narration_mode": "narrated",
+    "narration_script_ref": "narration-script:rounding",
+    "audio_plan_ref": "audioplan:rounding",
+    "tts_contract_ref": "tts-contract:rounding",
+    "measured_audio_duration_seconds": null,
+    "reconciliation_action": "pending",
+    "bgm_mode": "off"
+  },
+  "captions": {
+    "enabled": true,
+    "max_lines": 2,
+    "safe_zone": "caption-safe",
+    "protected_exact_text": [],
+    "alignment_status": "not_yet",
+    "planned_segments": [
+      {
+        "scene_id": "scene-01",
+        "exact_text": "두 경기장 모두 관중이 약 팔만 삼천 명이래요."
+      },
+      {
+        "scene_id": "scene-01",
+        "exact_text": "그런데 정말 똑같이 왔을까요?"
+      },
+      {
+        "scene_id": "scene-02a",
+        "exact_text": "천의 자리까지 반올림할 땐 백의 자리 숫자를 봐요."
+      },
+      {
+        "scene_id": "scene-02a",
+        "exact_text": "영부터 사까지는 버리고, 오부터 구까지는 올려요."
+      },
+      {
+        "scene_id": "scene-02b",
+        "exact_text": "가 경기장은 팔만 이천팔백 명. 백의 자리 숫자가"
+      },
+      {
+        "scene_id": "scene-02b",
+        "exact_text": "팔이니까 올려요."
+      },
+      {
+        "scene_id": "scene-03",
+        "exact_text": "가 경기장은 팔만 삼천 명이 돼요. 나 경기장의"
+      },
+      {
+        "scene_id": "scene-03",
+        "exact_text": "팔만 삼천이백 명도 팔만 삼천 명이 돼요."
+      },
+      {
+        "scene_id": "scene-04",
+        "exact_text": "하지만 실제로 나 경기장이 사백 명 더 많아요."
+      },
+      {
+        "scene_id": "scene-04",
+        "exact_text": "반올림한 수가 같다고 실제 수가 같은 건 아니에요."
+      },
+      {
+        "scene_id": "scene-05a",
+        "exact_text": "수직선에서 팔만 이천오백부터 팔만"
+      },
+      {
+        "scene_id": "scene-05a",
+        "exact_text": "삼천사백구십구까지 모두 팔만 삼천이 돼요."
+      },
+      {
+        "scene_id": "scene-05b",
+        "exact_text": "그러니까 팔만 삼천이라는 이름 아래에 실제 수가 천"
+      },
+      {
+        "scene_id": "scene-05b",
+        "exact_text": "개나 모여 있는 셈이에요."
+      },
+      {
+        "scene_id": "scene-06a",
+        "exact_text": "그럼 팔만 삼천사백구십구는? 팔만"
+      },
+      {
+        "scene_id": "scene-06a",
+        "exact_text": "삼천오백은? 잠깐 생각해 봐요. 각각 팔만 삼천,"
+      },
+      {
+        "scene_id": "scene-06a",
+        "exact_text": "팔만 사천이에요."
+      },
+      {
+        "scene_id": "scene-06b",
+        "exact_text": "반올림한 수가 같아도 실제 수는"
+      },
+      {
+        "scene_id": "scene-06b",
+        "exact_text": "다를 수 있어요."
+      }
+    ]
+  },
+  "approval": {
+    "status": "pending",
+    "evidence_ref": null
+  },
+  "change_requests": [],
+  "genre_preset_ref": {
+    "profile_id": "video-genre/math-lecture",
+    "revision": 1,
+    "sha256": "38df3ef62c0dc21f932c92b939861c36505e16b6f226ec08ab214a2425b6a7c1"
+  },
+  "render_requirements": {
+    "hook_end_seconds": 1.5,
+    "caption_samples": [
+      {
+        "scene_id": "scene-01",
+        "exact_text": "두 경기장 모두 관중이 약 팔만 삼천 명이래요.",
+        "lines": [
+          "두 경기장 모두 관중이 약",
+          "팔만 삼천 명이래요."
+        ]
+      },
+      {
+        "scene_id": "scene-01",
+        "exact_text": "그런데 정말 똑같이 왔을까요?",
+        "lines": [
+          "그런데 정말 똑같이",
+          "왔을까요?"
+        ]
+      },
+      {
+        "scene_id": "scene-02a",
+        "exact_text": "천의 자리까지 반올림할 땐 백의 자리 숫자를 봐요.",
+        "lines": [
+          "천의 자리까지 반올림할 땐",
+          "백의 자리 숫자를 봐요."
+        ]
+      },
+      {
+        "scene_id": "scene-02a",
+        "exact_text": "영부터 사까지는 버리고, 오부터 구까지는 올려요.",
+        "lines": [
+          "영부터 사까지는 버리고,",
+          "오부터 구까지는 올려요."
+        ]
+      },
+      {
+        "scene_id": "scene-02b",
+        "exact_text": "가 경기장은 팔만 이천팔백 명. 백의 자리 숫자가",
+        "lines": [
+          "가 경기장은 팔만 이천팔백",
+          "명. 백의 자리 숫자가"
+        ]
+      },
+      {
+        "scene_id": "scene-02b",
+        "exact_text": "팔이니까 올려요.",
+        "lines": [
+          "팔이니까 올려요."
+        ]
+      },
+      {
+        "scene_id": "scene-03",
+        "exact_text": "가 경기장은 팔만 삼천 명이 돼요. 나 경기장의",
+        "lines": [
+          "가 경기장은 팔만 삼천",
+          "명이 돼요. 나 경기장의"
+        ]
+      },
+      {
+        "scene_id": "scene-03",
+        "exact_text": "팔만 삼천이백 명도 팔만 삼천 명이 돼요.",
+        "lines": [
+          "팔만 삼천이백 명도 팔만",
+          "삼천 명이 돼요."
+        ]
+      },
+      {
+        "scene_id": "scene-04",
+        "exact_text": "하지만 실제로 나 경기장이 사백 명 더 많아요.",
+        "lines": [
+          "하지만 실제로 나 경기장이",
+          "사백 명 더 많아요."
+        ]
+      },
+      {
+        "scene_id": "scene-04",
+        "exact_text": "반올림한 수가 같다고 실제 수가 같은 건 아니에요.",
+        "lines": [
+          "반올림한 수가 같다고 실제",
+          "수가 같은 건 아니에요."
+        ]
+      },
+      {
+        "scene_id": "scene-05a",
+        "exact_text": "수직선에서 팔만 이천오백부터 팔만",
+        "lines": [
+          "수직선에서 팔만",
+          "이천오백부터 팔만"
+        ]
+      },
+      {
+        "scene_id": "scene-05a",
+        "exact_text": "삼천사백구십구까지 모두 팔만 삼천이 돼요.",
+        "lines": [
+          "삼천사백구십구까지 모두",
+          "팔만 삼천이 돼요."
+        ]
+      },
+      {
+        "scene_id": "scene-05b",
+        "exact_text": "그러니까 팔만 삼천이라는 이름 아래에 실제 수가 천",
+        "lines": [
+          "그러니까 팔만 삼천이라는",
+          "이름 아래에 실제 수가 천"
+        ]
+      },
+      {
+        "scene_id": "scene-05b",
+        "exact_text": "개나 모여 있는 셈이에요.",
+        "lines": [
+          "개나 모여 있는 셈이에요."
+        ]
+      },
+      {
+        "scene_id": "scene-06a",
+        "exact_text": "그럼 팔만 삼천사백구십구는? 팔만",
+        "lines": [
+          "그럼 팔만",
+          "삼천사백구십구는? 팔만"
+        ]
+      },
+      {
+        "scene_id": "scene-06a",
+        "exact_text": "삼천오백은? 잠깐 생각해 봐요. 각각 팔만 삼천,",
+        "lines": [
+          "삼천오백은? 잠깐 생각해",
+          "봐요. 각각 팔만 삼천,"
+        ]
+      },
+      {
+        "scene_id": "scene-06a",
+        "exact_text": "팔만 사천이에요.",
+        "lines": [
+          "팔만 사천이에요."
+        ]
+      },
+      {
+        "scene_id": "scene-06b",
+        "exact_text": "반올림한 수가 같아도 실제 수는",
+        "lines": [
+          "반올림한 수가 같아도",
+          "실제 수는"
+        ]
+      },
+      {
+        "scene_id": "scene-06b",
+        "exact_text": "다를 수 있어요.",
+        "lines": [
+          "다를 수 있어요."
+        ]
+      }
+    ],
+    "min_contrast_ratio": 4.5,
+    "safe_margins": {
+      "top": 0.12,
+      "bottom": 0.2,
+      "left": 0.06,
+      "right": 0.13
+    },
+    "integrated_loudness_lufs": -14,
+    "true_peak_dbtp": -1,
+    "sfx_events": [],
+    "bgm_loudness_lufs": -22,
+    "ducking_db": -11
+  }
+}

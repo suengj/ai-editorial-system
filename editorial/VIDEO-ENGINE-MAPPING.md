@@ -22,8 +22,8 @@ a separate 2.0.0 video plan.
 | AES contract | shorts_gen field | Mapping rule |
 |---|---|---|
 | `video-plan-v2.profile_ref.profile_id` | `request.aes.profile_id` | Preserve the exact ID, including the `video/` prefix. |
-| `video-plan-v2.profile_ref.sha256` | `request.aes.sha` | Pass the full lowercase SHA-256 digest unchanged. |
-| Profile `revision` and `manifest_ref` | `request.aes.manifest_ref`; `request.provenance` | Keep the revision and manifest identity in provenance because `AESReference` has no separate revision field. The hash is the content pin. |
+| Manifest JSON bytes, or canonical JSON bytes of the selected object | `request.aes.sha` | Pass the SHA-256 of the local `manifest_ref` file bytes or of its selected object in canonical JSON, as validated by the engine. Record `profile_ref.sha256` separately in provenance. |
+| Profile `revision` and `manifest_ref` | `request.aes.manifest_ref`; `request.provenance` | Keep the revision and manifest identity in provenance because `AESReference` has no separate revision field. The profile hash remains a separate profile content pin. |
 | `plan_id` and source-envelope identity | `job_id`, `content_id`, `request.provenance` | These are production identities. They do not create an article ID, claim, author, or quotation. |
 
 ## Evidence, rights, and scenes

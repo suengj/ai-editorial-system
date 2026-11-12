@@ -1,0 +1,153 @@
+{
+  "schema_version": "2.0.0",
+  "script_id": "narration-script:rounding",
+  "video_plan_ref": "video-plan:rounding",
+  "source_evidence_ref": "source-evidence:rounding",
+  "goal": "반올림 결과와 실제 관중 수의 차이를 이해한다.",
+  "audience": "child-upper-elementary",
+  "turns": [
+    {
+      "turn_id": "turn-01",
+      "beat_id": "beat-01",
+      "scene_id": "scene-01",
+      "spoken_text": "두 경기장 모두 관중이 약 팔만 삼천 명이래요. 그런데 정말 똑같이 왔을까요?",
+      "on_screen_text": [],
+      "source_refs": [
+        "source-1"
+      ],
+      "evidence_span_ids": [
+        "evidence-beat-01-line-1",
+        "evidence-beat-01-line-2"
+      ]
+    },
+    {
+      "turn_id": "turn-02a",
+      "beat_id": "beat-02",
+      "scene_id": "scene-02a",
+      "spoken_text": "천의 자리까지 반올림할 땐 백의 자리 숫자를 봐요. 영부터 사까지는 버리고, 오부터 구까지는 올려요.",
+      "on_screen_text": [],
+      "source_refs": [
+        "source-1"
+      ],
+      "evidence_span_ids": [
+        "evidence-beat-02-line-1"
+      ]
+    },
+    {
+      "turn_id": "turn-02b",
+      "beat_id": "beat-02",
+      "scene_id": "scene-02b",
+      "spoken_text": "가 경기장은 팔만 이천팔백 명. 백의 자리 숫자가 팔이니까 올려요.",
+      "on_screen_text": [],
+      "source_refs": [
+        "source-1"
+      ],
+      "evidence_span_ids": [
+        "evidence-beat-02-line-2"
+      ]
+    },
+    {
+      "turn_id": "turn-03",
+      "beat_id": "beat-03",
+      "scene_id": "scene-03",
+      "spoken_text": "가 경기장은 팔만 삼천 명이 돼요. 나 경기장의 팔만 삼천이백 명도 팔만 삼천 명이 돼요.",
+      "on_screen_text": [],
+      "source_refs": [
+        "source-1"
+      ],
+      "evidence_span_ids": [
+        "evidence-beat-03-line-1",
+        "evidence-beat-03-line-2"
+      ]
+    },
+    {
+      "turn_id": "turn-04",
+      "beat_id": "beat-04",
+      "scene_id": "scene-04",
+      "spoken_text": "하지만 실제로 나 경기장이 사백 명 더 많아요. 반올림한 수가 같다고 실제 수가 같은 건 아니에요.",
+      "on_screen_text": [],
+      "source_refs": [
+        "source-1"
+      ],
+      "evidence_span_ids": [
+        "evidence-beat-04-line-1",
+        "evidence-beat-04-line-2"
+      ]
+    },
+    {
+      "turn_id": "turn-05a",
+      "beat_id": "beat-05",
+      "scene_id": "scene-05a",
+      "spoken_text": "수직선에서 팔만 이천오백부터 팔만 삼천사백구십구까지 모두 팔만 삼천이 돼요.",
+      "on_screen_text": [],
+      "source_refs": [
+        "source-1"
+      ],
+      "evidence_span_ids": [
+        "evidence-beat-05-line-1"
+      ]
+    },
+    {
+      "turn_id": "turn-05b",
+      "beat_id": "beat-05",
+      "scene_id": "scene-05b",
+      "spoken_text": "그러니까 팔만 삼천이라는 이름 아래에 실제 수가 천 개나 모여 있는 셈이에요.",
+      "on_screen_text": [],
+      "source_refs": [
+        "source-1"
+      ],
+      "evidence_span_ids": [
+        "evidence-beat-05-line-2"
+      ]
+    },
+    {
+      "turn_id": "turn-06a",
+      "beat_id": "beat-06",
+      "scene_id": "scene-06a",
+      "spoken_text": "그럼 팔만 삼천사백구십구는? 팔만 삼천오백은? 잠깐 생각해 봐요. 각각 팔만 삼천, 팔만 사천이에요.",
+      "on_screen_text": [],
+      "source_refs": [
+        "source-1"
+      ],
+      "evidence_span_ids": [
+        "evidence-beat-06-line-1",
+        "evidence-beat-06-line-2"
+      ]
+    },
+    {
+      "turn_id": "turn-06b",
+      "beat_id": "beat-06",
+      "scene_id": "scene-06b",
+      "spoken_text": "반올림한 수가 같아도 실제 수는 다를 수 있어요.",
+      "on_screen_text": [],
+      "source_refs": [
+        "source-1"
+      ],
+      "evidence_span_ids": [
+        "evidence-beat-06-line-3"
+      ]
+    }
+  ],
+  "pronunciation_glossary": [],
+  "protected_values": [],
+  "delivery": {
+    "voice": "single narrator",
+    "tone": "친근하고 또렷하게",
+    "pace": "약 초당 4.7음절 계획; 실측 필요",
+    "pause_after_ms": [
+      400
+    ],
+    "emphasis": []
+  },
+  "canonical_script_check": {
+    "phase": "pre_tts",
+    "performed": true,
+    "outcome": "pass",
+    "evidence_ref": "examples/sue-2316/brief.md"
+  },
+  "caption_policy": {
+    "with_narration": "on",
+    "max_lines": 2,
+    "safe_zone": "caption-safe"
+  }
+}
