@@ -270,11 +270,49 @@
       "on_screen_text": []
     },
     {
-      "scene_id": "scene-02",
+      "scene_id": "scene-02a",
       "beat_id": "beat-02",
       "function": "concept",
       "timing": {
         "start_seconds": 6.8,
+        "end_seconds": 15.35
+      },
+      "source_only": true,
+      "source_refs": [
+        "source-1"
+      ],
+      "layers": [
+        {
+          "layer_id": "layer-02a",
+          "source_ref": "source-1",
+          "rights_ref": "source-1",
+          "z": 0,
+          "timing": {
+            "start_seconds": 6.8,
+            "end_seconds": 15.35
+          },
+          "fit": "contain",
+          "crop": {
+            "mode": "none",
+            "focal_point": null
+          },
+          "safe_zone": {
+            "x": 0.1,
+            "y": 0.1,
+            "width": 0.8,
+            "height": 0.8
+          },
+          "motion_intention": "hold"
+        }
+      ],
+      "on_screen_text": []
+    },
+    {
+      "scene_id": "scene-02b",
+      "beat_id": "beat-02",
+      "function": "concept",
+      "timing": {
+        "start_seconds": 15.35,
         "end_seconds": 21.3
       },
       "source_only": true,
@@ -283,12 +321,12 @@
       ],
       "layers": [
         {
-          "layer_id": "layer-02",
+          "layer_id": "layer-02b",
           "source_ref": "source-1",
           "rights_ref": "source-1",
           "z": 0,
           "timing": {
-            "start_seconds": 6.8,
+            "start_seconds": 15.35,
             "end_seconds": 21.3
           },
           "fit": "contain",
@@ -384,11 +422,49 @@
       "on_screen_text": []
     },
     {
-      "scene_id": "scene-05",
+      "scene_id": "scene-05a",
       "beat_id": "beat-05",
       "function": "concept",
       "timing": {
         "start_seconds": 37.5,
+        "end_seconds": 44.6
+      },
+      "source_only": true,
+      "source_refs": [
+        "source-1"
+      ],
+      "layers": [
+        {
+          "layer_id": "layer-05a",
+          "source_ref": "source-1",
+          "rights_ref": "source-1",
+          "z": 0,
+          "timing": {
+            "start_seconds": 37.5,
+            "end_seconds": 44.6
+          },
+          "fit": "contain",
+          "crop": {
+            "mode": "none",
+            "focal_point": null
+          },
+          "safe_zone": {
+            "x": 0.1,
+            "y": 0.1,
+            "width": 0.8,
+            "height": 0.8
+          },
+          "motion_intention": "hold"
+        }
+      ],
+      "on_screen_text": []
+    },
+    {
+      "scene_id": "scene-05b",
+      "beat_id": "beat-05",
+      "function": "concept",
+      "timing": {
+        "start_seconds": 44.6,
         "end_seconds": 51.6
       },
       "source_only": true,
@@ -397,12 +473,12 @@
       ],
       "layers": [
         {
-          "layer_id": "layer-05",
+          "layer_id": "layer-05b",
           "source_ref": "source-1",
           "rights_ref": "source-1",
           "z": 0,
           "timing": {
-            "start_seconds": 37.5,
+            "start_seconds": 44.6,
             "end_seconds": 51.6
           },
           "fit": "contain",
@@ -422,11 +498,49 @@
       "on_screen_text": []
     },
     {
-      "scene_id": "scene-06",
+      "scene_id": "scene-06a",
       "beat_id": "beat-06",
       "function": "key_takeaway",
       "timing": {
         "start_seconds": 51.6,
+        "end_seconds": 59.9
+      },
+      "source_only": true,
+      "source_refs": [
+        "source-1"
+      ],
+      "layers": [
+        {
+          "layer_id": "layer-06a",
+          "source_ref": "source-1",
+          "rights_ref": "source-1",
+          "z": 0,
+          "timing": {
+            "start_seconds": 51.6,
+            "end_seconds": 59.9
+          },
+          "fit": "contain",
+          "crop": {
+            "mode": "none",
+            "focal_point": null
+          },
+          "safe_zone": {
+            "x": 0.1,
+            "y": 0.1,
+            "width": 0.8,
+            "height": 0.8
+          },
+          "motion_intention": "hold"
+        }
+      ],
+      "on_screen_text": []
+    },
+    {
+      "scene_id": "scene-06b",
+      "beat_id": "beat-06",
+      "function": "key_takeaway",
+      "timing": {
+        "start_seconds": 59.9,
         "end_seconds": 64.4
       },
       "source_only": true,
@@ -435,12 +549,12 @@
       ],
       "layers": [
         {
-          "layer_id": "layer-06",
+          "layer_id": "layer-06b",
           "source_ref": "source-1",
           "rights_ref": "source-1",
           "z": 0,
           "timing": {
-            "start_seconds": 51.6,
+            "start_seconds": 59.9,
             "end_seconds": 64.4
           },
           "fit": "contain",
@@ -485,19 +599,19 @@
         "exact_text": "그런데 정말 똑같이 왔을까요?"
       },
       {
-        "scene_id": "scene-02",
+        "scene_id": "scene-02a",
         "exact_text": "천의 자리까지 반올림할 땐 백의 자리 숫자를 봐요."
       },
       {
-        "scene_id": "scene-02",
+        "scene_id": "scene-02a",
         "exact_text": "영부터 사까지는 버리고, 오부터 구까지는 올려요."
       },
       {
-        "scene_id": "scene-02",
+        "scene_id": "scene-02b",
         "exact_text": "가 경기장은 팔만 이천팔백 명. 백의 자리 숫자가"
       },
       {
-        "scene_id": "scene-02",
+        "scene_id": "scene-02b",
         "exact_text": "팔이니까 올려요."
       },
       {
@@ -517,35 +631,39 @@
         "exact_text": "반올림한 수가 같다고 실제 수가 같은 건 아니에요."
       },
       {
-        "scene_id": "scene-05",
+        "scene_id": "scene-05a",
         "exact_text": "수직선에서 팔만 이천오백부터 팔만"
       },
       {
-        "scene_id": "scene-05",
+        "scene_id": "scene-05a",
         "exact_text": "삼천사백구십구까지 모두 팔만 삼천이 돼요."
       },
       {
-        "scene_id": "scene-05",
+        "scene_id": "scene-05b",
         "exact_text": "그러니까 팔만 삼천이라는 이름 아래에 실제 수가 천"
       },
       {
-        "scene_id": "scene-05",
+        "scene_id": "scene-05b",
         "exact_text": "개나 모여 있는 셈이에요."
       },
       {
-        "scene_id": "scene-06",
+        "scene_id": "scene-06a",
         "exact_text": "그럼 팔만 삼천사백구십구는? 팔만"
       },
       {
-        "scene_id": "scene-06",
+        "scene_id": "scene-06a",
         "exact_text": "삼천오백은? 잠깐 생각해 봐요. 각각 팔만 삼천,"
       },
       {
-        "scene_id": "scene-06",
-        "exact_text": "팔만 사천이에요. 반올림한 수가 같아도 실제 수는"
+        "scene_id": "scene-06a",
+        "exact_text": "팔만 사천이에요."
       },
       {
-        "scene_id": "scene-06",
+        "scene_id": "scene-06b",
+        "exact_text": "반올림한 수가 같아도 실제 수는"
+      },
+      {
+        "scene_id": "scene-06b",
         "exact_text": "다를 수 있어요."
       }
     ]
@@ -580,7 +698,7 @@
         ]
       },
       {
-        "scene_id": "scene-02",
+        "scene_id": "scene-02a",
         "exact_text": "천의 자리까지 반올림할 땐 백의 자리 숫자를 봐요.",
         "lines": [
           "천의 자리까지 반올림할 땐",
@@ -588,7 +706,7 @@
         ]
       },
       {
-        "scene_id": "scene-02",
+        "scene_id": "scene-02a",
         "exact_text": "영부터 사까지는 버리고, 오부터 구까지는 올려요.",
         "lines": [
           "영부터 사까지는 버리고,",
@@ -596,7 +714,7 @@
         ]
       },
       {
-        "scene_id": "scene-02",
+        "scene_id": "scene-02b",
         "exact_text": "가 경기장은 팔만 이천팔백 명. 백의 자리 숫자가",
         "lines": [
           "가 경기장은 팔만 이천팔백",
@@ -604,7 +722,7 @@
         ]
       },
       {
-        "scene_id": "scene-02",
+        "scene_id": "scene-02b",
         "exact_text": "팔이니까 올려요.",
         "lines": [
           "팔이니까 올려요."
@@ -643,7 +761,7 @@
         ]
       },
       {
-        "scene_id": "scene-05",
+        "scene_id": "scene-05a",
         "exact_text": "수직선에서 팔만 이천오백부터 팔만",
         "lines": [
           "수직선에서 팔만",
@@ -651,7 +769,7 @@
         ]
       },
       {
-        "scene_id": "scene-05",
+        "scene_id": "scene-05a",
         "exact_text": "삼천사백구십구까지 모두 팔만 삼천이 돼요.",
         "lines": [
           "삼천사백구십구까지 모두",
@@ -659,7 +777,7 @@
         ]
       },
       {
-        "scene_id": "scene-05",
+        "scene_id": "scene-05b",
         "exact_text": "그러니까 팔만 삼천이라는 이름 아래에 실제 수가 천",
         "lines": [
           "그러니까 팔만 삼천이라는",
@@ -667,14 +785,14 @@
         ]
       },
       {
-        "scene_id": "scene-05",
+        "scene_id": "scene-05b",
         "exact_text": "개나 모여 있는 셈이에요.",
         "lines": [
           "개나 모여 있는 셈이에요."
         ]
       },
       {
-        "scene_id": "scene-06",
+        "scene_id": "scene-06a",
         "exact_text": "그럼 팔만 삼천사백구십구는? 팔만",
         "lines": [
           "그럼 팔만",
@@ -682,7 +800,7 @@
         ]
       },
       {
-        "scene_id": "scene-06",
+        "scene_id": "scene-06a",
         "exact_text": "삼천오백은? 잠깐 생각해 봐요. 각각 팔만 삼천,",
         "lines": [
           "삼천오백은? 잠깐 생각해",
@@ -690,15 +808,22 @@
         ]
       },
       {
-        "scene_id": "scene-06",
-        "exact_text": "팔만 사천이에요. 반올림한 수가 같아도 실제 수는",
+        "scene_id": "scene-06a",
+        "exact_text": "팔만 사천이에요.",
         "lines": [
-          "팔만 사천이에요. 반올림한",
-          "수가 같아도 실제 수는"
+          "팔만 사천이에요."
         ]
       },
       {
-        "scene_id": "scene-06",
+        "scene_id": "scene-06b",
+        "exact_text": "반올림한 수가 같아도 실제 수는",
+        "lines": [
+          "반올림한 수가 같아도",
+          "실제 수는"
+        ]
+      },
+      {
+        "scene_id": "scene-06b",
         "exact_text": "다를 수 있어요.",
         "lines": [
           "다를 수 있어요."

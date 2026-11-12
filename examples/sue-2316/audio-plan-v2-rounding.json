@@ -24,12 +24,22 @@
       "emphasis": []
     },
     {
-      "segment_id": "seg-02",
+      "segment_id": "seg-02a",
       "beat_id": "beat-02",
-      "scene_id": "scene-02",
-      "spoken_text": "천의 자리까지 반올림할 땐 백의 자리 숫자를 봐요. 영부터 사까지는 버리고, 오부터 구까지는 올려요. 가 경기장은 팔만 이천팔백 명. 백의 자리 숫자가 팔이니까 올려요.",
-      "narration_span_hash": "4dacb3ce85f4b16ec8fc8a15b2918a09a6f29f8997e2ede5992868543caa1d8c",
-      "target_duration_seconds": 14.5,
+      "scene_id": "scene-02a",
+      "spoken_text": "천의 자리까지 반올림할 땐 백의 자리 숫자를 봐요. 영부터 사까지는 버리고, 오부터 구까지는 올려요.",
+      "narration_span_hash": "633a23c34064c65762c38d8a5efdcb35458d7eba899d13ce578c090ddf1b8240",
+      "target_duration_seconds": 8.55,
+      "pause_after_ms": 0,
+      "emphasis": []
+    },
+    {
+      "segment_id": "seg-02b",
+      "beat_id": "beat-02",
+      "scene_id": "scene-02b",
+      "spoken_text": "가 경기장은 팔만 이천팔백 명. 백의 자리 숫자가 팔이니까 올려요.",
+      "narration_span_hash": "f13655534ca835ec97c275a528f25a1a621f6f35dfbdcb494c636d9063de99d7",
+      "target_duration_seconds": 5.95,
       "pause_after_ms": 400,
       "emphasis": []
     },
@@ -54,22 +64,42 @@
       "emphasis": []
     },
     {
-      "segment_id": "seg-05",
+      "segment_id": "seg-05a",
       "beat_id": "beat-05",
-      "scene_id": "scene-05",
-      "spoken_text": "수직선에서 팔만 이천오백부터 팔만 삼천사백구십구까지 모두 팔만 삼천이 돼요. 그러니까 팔만 삼천이라는 이름 아래에 실제 수가 천 개나 모여 있는 셈이에요.",
-      "narration_span_hash": "a4c75dbef343bd60d3c96899861c5b24d397183297f641da513bf40ac5622688",
-      "target_duration_seconds": 14.1,
+      "scene_id": "scene-05a",
+      "spoken_text": "수직선에서 팔만 이천오백부터 팔만 삼천사백구십구까지 모두 팔만 삼천이 돼요.",
+      "narration_span_hash": "6b4e37b0bb78453f20392ae24c6f80a0efbe1bc54e7e464ab57cff82dc4cac0d",
+      "target_duration_seconds": 7.1,
+      "pause_after_ms": 0,
+      "emphasis": []
+    },
+    {
+      "segment_id": "seg-05b",
+      "beat_id": "beat-05",
+      "scene_id": "scene-05b",
+      "spoken_text": "그러니까 팔만 삼천이라는 이름 아래에 실제 수가 천 개나 모여 있는 셈이에요.",
+      "narration_span_hash": "4f8a278345972814d7c61cf888b1947e83c89da2845fc0e7e765afc93ed0fc72",
+      "target_duration_seconds": 7,
       "pause_after_ms": 400,
       "emphasis": []
     },
     {
-      "segment_id": "seg-06",
+      "segment_id": "seg-06a",
       "beat_id": "beat-06",
-      "scene_id": "scene-06",
-      "spoken_text": "그럼 팔만 삼천사백구십구는? 팔만 삼천오백은? 잠깐 생각해 봐요. 각각 팔만 삼천, 팔만 사천이에요. 반올림한 수가 같아도 실제 수는 다를 수 있어요.",
-      "narration_span_hash": "6dcb609d51d2cba2bb266da124a7e496c0963b28c5931c5d41255feb1bbcf8aa",
-      "target_duration_seconds": 12.8,
+      "scene_id": "scene-06a",
+      "spoken_text": "그럼 팔만 삼천사백구십구는? 팔만 삼천오백은? 잠깐 생각해 봐요. 각각 팔만 삼천, 팔만 사천이에요.",
+      "narration_span_hash": "b739e2b3a295e37ef5d5ef1c03c037fd34750e6dab9cee251e56cda532016185",
+      "target_duration_seconds": 8.3,
+      "pause_after_ms": 0,
+      "emphasis": []
+    },
+    {
+      "segment_id": "seg-06b",
+      "beat_id": "beat-06",
+      "scene_id": "scene-06b",
+      "spoken_text": "반올림한 수가 같아도 실제 수는 다를 수 있어요.",
+      "narration_span_hash": "d299b567aa383e2ca15bf4b7a67fb126727b96dd58b0da68bf716ccc5c70015b",
+      "target_duration_seconds": 4.5,
       "pause_after_ms": 400,
       "emphasis": []
     }
@@ -112,12 +142,22 @@
         "protected_exact_words": []
       },
       {
-        "scene_id": "scene-02",
+        "scene_id": "scene-02a",
         "start_seconds": 6.8,
-        "end_seconds": 21.3,
-        "exact_text": "천의 자리까지 반올림할 땐 백의 자리 숫자를 봐요. 영부터 사까지는 버리고, 오부터 구까지는 올려요. 가 경기장은 팔만 이천팔백 명. 백의 자리 숫자가 팔이니까 올려요.",
+        "end_seconds": 15.35,
+        "exact_text": "천의 자리까지 반올림할 땐 백의 자리 숫자를 봐요. 영부터 사까지는 버리고, 오부터 구까지는 올려요.",
         "lines": [
-          "천의 자리까지 반올림할 땐 백의 자리 숫자를 봐요. 영부터 사까지는 버리고, 오부터 구까지는 올려요. 가 경기장은 팔만 이천팔백 명. 백의 자리 숫자가 팔이니까 올려요."
+          "천의 자리까지 반올림할 땐 백의 자리 숫자를 봐요. 영부터 사까지는 버리고, 오부터 구까지는 올려요."
+        ],
+        "protected_exact_words": []
+      },
+      {
+        "scene_id": "scene-02b",
+        "start_seconds": 15.35,
+        "end_seconds": 21.3,
+        "exact_text": "가 경기장은 팔만 이천팔백 명. 백의 자리 숫자가 팔이니까 올려요.",
+        "lines": [
+          "가 경기장은 팔만 이천팔백 명. 백의 자리 숫자가 팔이니까 올려요."
         ],
         "protected_exact_words": []
       },
@@ -142,22 +182,42 @@
         "protected_exact_words": []
       },
       {
-        "scene_id": "scene-05",
+        "scene_id": "scene-05a",
         "start_seconds": 37.5,
-        "end_seconds": 51.6,
-        "exact_text": "수직선에서 팔만 이천오백부터 팔만 삼천사백구십구까지 모두 팔만 삼천이 돼요. 그러니까 팔만 삼천이라는 이름 아래에 실제 수가 천 개나 모여 있는 셈이에요.",
+        "end_seconds": 44.6,
+        "exact_text": "수직선에서 팔만 이천오백부터 팔만 삼천사백구십구까지 모두 팔만 삼천이 돼요.",
         "lines": [
-          "수직선에서 팔만 이천오백부터 팔만 삼천사백구십구까지 모두 팔만 삼천이 돼요. 그러니까 팔만 삼천이라는 이름 아래에 실제 수가 천 개나 모여 있는 셈이에요."
+          "수직선에서 팔만 이천오백부터 팔만 삼천사백구십구까지 모두 팔만 삼천이 돼요."
         ],
         "protected_exact_words": []
       },
       {
-        "scene_id": "scene-06",
-        "start_seconds": 51.6,
-        "end_seconds": 64.4,
-        "exact_text": "그럼 팔만 삼천사백구십구는? 팔만 삼천오백은? 잠깐 생각해 봐요. 각각 팔만 삼천, 팔만 사천이에요. 반올림한 수가 같아도 실제 수는 다를 수 있어요.",
+        "scene_id": "scene-05b",
+        "start_seconds": 44.6,
+        "end_seconds": 51.6,
+        "exact_text": "그러니까 팔만 삼천이라는 이름 아래에 실제 수가 천 개나 모여 있는 셈이에요.",
         "lines": [
-          "그럼 팔만 삼천사백구십구는? 팔만 삼천오백은? 잠깐 생각해 봐요. 각각 팔만 삼천, 팔만 사천이에요. 반올림한 수가 같아도 실제 수는 다를 수 있어요."
+          "그러니까 팔만 삼천이라는 이름 아래에 실제 수가 천 개나 모여 있는 셈이에요."
+        ],
+        "protected_exact_words": []
+      },
+      {
+        "scene_id": "scene-06a",
+        "start_seconds": 51.6,
+        "end_seconds": 59.9,
+        "exact_text": "그럼 팔만 삼천사백구십구는? 팔만 삼천오백은? 잠깐 생각해 봐요. 각각 팔만 삼천, 팔만 사천이에요.",
+        "lines": [
+          "그럼 팔만 삼천사백구십구는? 팔만 삼천오백은? 잠깐 생각해 봐요. 각각 팔만 삼천, 팔만 사천이에요."
+        ],
+        "protected_exact_words": []
+      },
+      {
+        "scene_id": "scene-06b",
+        "start_seconds": 59.9,
+        "end_seconds": 64.4,
+        "exact_text": "반올림한 수가 같아도 실제 수는 다를 수 있어요.",
+        "lines": [
+          "반올림한 수가 같아도 실제 수는 다를 수 있어요."
         ],
         "protected_exact_words": []
       }

@@ -21,16 +21,28 @@
       ]
     },
     {
-      "turn_id": "turn-02",
+      "turn_id": "turn-02a",
       "beat_id": "beat-02",
-      "scene_id": "scene-02",
-      "spoken_text": "천의 자리까지 반올림할 땐 백의 자리 숫자를 봐요. 영부터 사까지는 버리고, 오부터 구까지는 올려요. 가 경기장은 팔만 이천팔백 명. 백의 자리 숫자가 팔이니까 올려요.",
+      "scene_id": "scene-02a",
+      "spoken_text": "천의 자리까지 반올림할 땐 백의 자리 숫자를 봐요. 영부터 사까지는 버리고, 오부터 구까지는 올려요.",
       "on_screen_text": [],
       "source_refs": [
         "source-1"
       ],
       "evidence_span_ids": [
-        "evidence-beat-02-line-1",
+        "evidence-beat-02-line-1"
+      ]
+    },
+    {
+      "turn_id": "turn-02b",
+      "beat_id": "beat-02",
+      "scene_id": "scene-02b",
+      "spoken_text": "가 경기장은 팔만 이천팔백 명. 백의 자리 숫자가 팔이니까 올려요.",
+      "on_screen_text": [],
+      "source_refs": [
+        "source-1"
+      ],
+      "evidence_span_ids": [
         "evidence-beat-02-line-2"
       ]
     },
@@ -63,31 +75,55 @@
       ]
     },
     {
-      "turn_id": "turn-05",
+      "turn_id": "turn-05a",
       "beat_id": "beat-05",
-      "scene_id": "scene-05",
-      "spoken_text": "수직선에서 팔만 이천오백부터 팔만 삼천사백구십구까지 모두 팔만 삼천이 돼요. 그러니까 팔만 삼천이라는 이름 아래에 실제 수가 천 개나 모여 있는 셈이에요.",
+      "scene_id": "scene-05a",
+      "spoken_text": "수직선에서 팔만 이천오백부터 팔만 삼천사백구십구까지 모두 팔만 삼천이 돼요.",
       "on_screen_text": [],
       "source_refs": [
         "source-1"
       ],
       "evidence_span_ids": [
-        "evidence-beat-05-line-1",
+        "evidence-beat-05-line-1"
+      ]
+    },
+    {
+      "turn_id": "turn-05b",
+      "beat_id": "beat-05",
+      "scene_id": "scene-05b",
+      "spoken_text": "그러니까 팔만 삼천이라는 이름 아래에 실제 수가 천 개나 모여 있는 셈이에요.",
+      "on_screen_text": [],
+      "source_refs": [
+        "source-1"
+      ],
+      "evidence_span_ids": [
         "evidence-beat-05-line-2"
       ]
     },
     {
-      "turn_id": "turn-06",
+      "turn_id": "turn-06a",
       "beat_id": "beat-06",
-      "scene_id": "scene-06",
-      "spoken_text": "그럼 팔만 삼천사백구십구는? 팔만 삼천오백은? 잠깐 생각해 봐요. 각각 팔만 삼천, 팔만 사천이에요. 반올림한 수가 같아도 실제 수는 다를 수 있어요.",
+      "scene_id": "scene-06a",
+      "spoken_text": "그럼 팔만 삼천사백구십구는? 팔만 삼천오백은? 잠깐 생각해 봐요. 각각 팔만 삼천, 팔만 사천이에요.",
       "on_screen_text": [],
       "source_refs": [
         "source-1"
       ],
       "evidence_span_ids": [
         "evidence-beat-06-line-1",
-        "evidence-beat-06-line-2",
+        "evidence-beat-06-line-2"
+      ]
+    },
+    {
+      "turn_id": "turn-06b",
+      "beat_id": "beat-06",
+      "scene_id": "scene-06b",
+      "spoken_text": "반올림한 수가 같아도 실제 수는 다를 수 있어요.",
+      "on_screen_text": [],
+      "source_refs": [
+        "source-1"
+      ],
+      "evidence_span_ids": [
         "evidence-beat-06-line-3"
       ]
     }

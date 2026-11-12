@@ -27,10 +27,16 @@ function check(files, bytes = source, ev = evidence) {
   assert.deepEqual(story.source_ref, deck.source_ref);
   const ids = story.beats.map(b => b.beat_id);
   assert.deepEqual(ids, Array.from({length:6},(_,i)=>`beat-0${i+1}`));
-  for (const seq of [deck.slides.map(s=>s.beat_ids[0]),video.scenes.map(s=>s.beat_id),script.turns.map(t=>t.beat_id),audio.segments.map(s=>s.beat_id)]) assert.deepEqual(seq,ids,'beat lineage');
+  assert.deepEqual(deck.slides.map(s=>s.beat_ids[0]), ids, 'slide beat lineage');
+  const sceneBeats = ['beat-01','beat-02','beat-02','beat-03','beat-04','beat-05','beat-05','beat-06','beat-06'];
+  for (const seq of [video.scenes.map(s=>s.beat_id),script.turns.map(t=>t.beat_id),audio.segments.map(s=>s.beat_id)]) assert.deepEqual(seq,sceneBeats,'scene beat lineage');
+  const sceneIds = video.scenes.map(s=>s.scene_id);
+  assert.deepEqual(sceneIds, ['scene-01','scene-02a','scene-02b','scene-03','scene-04','scene-05a','scene-05b','scene-06a','scene-06b']);
+  for (const seq of [script.turns.map(t=>t.scene_id), audio.segments.map(s=>s.scene_id), audio.captions.segments.map(s=>s.scene_id)]) assert.deepEqual(seq,sceneIds,'scene lineage');
+  for (const scene of video.scenes) assert(ids.includes(scene.beat_id) && deck.slides.some(slide=>slide.beat_ids.includes(scene.beat_id)), 'scene linked to story and slide');
   assert.equal(video.source_evidence.sources[0].sha256, ev.sha256);
   const videoIssues = validateVideoDocument('video-plan-v2',video,{verifiedProtectedSpans:resolveLocalSourceEvidence(video)});
-  assert.deepEqual(videoIssues.map(i => i.message), ['scene scene-02 exceeds effective preset maximum 12s', 'scene scene-05 exceeds effective preset maximum 12s', 'scene scene-06 exceeds effective preset maximum 12s']);
+  assert.deepEqual(videoIssues, []);
   for (const f of docs['spoken-forms.json'].forms) { assert(bytes.includes(Buffer.from(f.display)), `display not in source: ${f.display}`); assert(bytes.includes(Buffer.from(f.spoken)), `spoken form not in source: ${f.spoken}`); }
   for (const [name, text] of Object.entries(files)) for (const n of text.match(/\b\d{2,3},\d{3}\b/g) ?? []) assert(bytes.includes(Buffer.from(n)), `${name}: unsupported number ${n}`);
   assert.equal(audio.status, 'script_checked');
@@ -43,14 +49,25 @@ function check(files, bytes = source, ev = evidence) {
   const locked = source.toString('utf8').split('## Locked narration (approved wording, ko)')[1].split('## 출처와 권리')[0];
   const lines = [...locked.matchAll(/^(beat-0[1-6])\.([1-3]): (.+)$/gm)];
   assert.equal(lines.length, 13);
+  for (const [sceneId, lineNumbers] of Object.entries({'scene-02a':[1], 'scene-02b':[2], 'scene-05a':[1], 'scene-05b':[2], 'scene-06a':[1,2], 'scene-06b':[3]})) {
+    const turn = script.turns.find(t=>t.scene_id === sceneId);
+    assert.deepEqual(turn.evidence_span_ids, lineNumbers.map(n=>`evidence-${turn.beat_id}-line-${n}`), 'split at locked narration lines');
+  }
   const cited = script.turns.flatMap(turn => turn.evidence_span_ids.map(id => ({beat: turn.beat_id, span: video.source_evidence.sources[0].evidence_spans.find(s => s.span_id === id)})));
   assert.deepEqual(cited.map(({beat,span}) => [beat,span.exact_text]), lines.map(m => [m[1],m[3]]));
-  const syllables = [30,66,34,38,64,58];
   assert(video.target_duration_seconds >= 55 && video.target_duration_seconds <= 65);
-  for (let i = 0; i < 6; i++) assert(audio.segments[i].target_duration_seconds >= syllables[i] / 4.7 + 0.4); 
+  for (const segment of audio.segments) {
+    const scene = video.scenes.find(s=>s.scene_id === segment.scene_id);
+    const syllables = (segment.spoken_text.match(/[가-힣]/g) ?? []).length;
+    assert(Math.abs(segment.target_duration_seconds - (scene.timing.end_seconds - scene.timing.start_seconds)) < 1e-9);
+    assert(segment.target_duration_seconds >= syllables / 4.7 + segment.pause_after_ms / 1000);
+  }
   assert.deepEqual(validateVideoDocument('audio-plan-v2',audio,context),[]);
 }
 check(original);
+const tooLong = JSON.parse(original['video-plan-v2-rounding.json']);
+tooLong.scenes[0].timing.end_seconds = 12.5;
+assert(validateVideoDocument('video-plan-v2', tooLong, {verifiedProtectedSpans:resolveLocalSourceEvidence(tooLong)}).some(i => i.message === 'scene scene-01 exceeds effective preset maximum 12s'), '12.5-second scene must fail the preset gate');
 const altered = (name, fn) => {const c={...original}; c[name]=fn(c[name]); return c;};
 assert.throws(()=>check(original, Buffer.from('tampered')));
 assert.throws(()=>check(original, source, {...evidence, sha256:'0'.repeat(64)}));
